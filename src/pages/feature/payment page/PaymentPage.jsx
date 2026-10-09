@@ -2,10 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Footer, Header } from "../../../components/Layout";
 import { useCart } from "../../../CartContext";
-import { useFlavors } from "../../../FlavorContext";
-import { getCartPricing } from "../../../cartPricing";
-import { apiRequest } from "../../../api";
-import { useLanguage } from "../../../LanguageContext";
+import { useFlavors } from "../../../flavor-context/FlavorContext";
+import {
+  formatCartMoney,
+  getCartPricing,
+  USD_TO_XAF,
+} from "../../../cartPricing";
+import { apiRequest, CUSTOMER_TOKEN_KEY } from "../../../api/api";
+import { useLanguage } from "../../../language/LanguageContext";
 
 const CHECKOUT_DETAILS_KEY = "antixor-icy-checkout-details";
 const paymentMethods = [
@@ -39,24 +43,26 @@ const paymentMethods = [
   },
 ];
 
-function formatMoney(cents, currency = "usd", language = "en") {
-  return new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
-    style: "currency",
-    currency: currency.toUpperCase(),
-  }).format(cents / 100);
+function formatMoney(cents, currency = "xaf", language = "en") {
+  const amountXaf = currency.toLowerCase() === "usd"
+    ? Math.round((cents / 100) * USD_TO_XAF)
+    : cents;
+  return formatCartMoney(amountXaf, "xaf", language);
 }
 
 export function PaymentPage() {
   const { cartItems, clearCart } = useCart();
   const { refreshFlavors } = useFlavors();
   const { t, language } = useLanguage();
-  const { subtotal, freeScoops, discount, total } = getCartPricing(cartItems);
+  const { currency, subtotal, freeScoops, discount, total } = getCartPricing(cartItems);
+  const hasMenuItems = cartItems.some((item) => item.itemType === "menu");
   const hasUnavailableItems = cartItems.some(
     (item) => item.availableQuantity < item.quantity,
   );
   const { state } = useLocation();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const loyaltyOrderId = searchParams.get("loyalty_order_id");
   const cancelled = searchParams.get("cancelled") === "1";
   const [checkoutDetails] = useState(() => {
     if (state?.checkoutDetails) return state.checkoutDetails;
@@ -66,6 +72,12 @@ export function PaymentPage() {
       return null;
     }
   });
+  const codeDiscount = Number(checkoutDetails?.discountAmount || 0);
+  const loyaltyDiscount = checkoutDetails?.redeemLoyaltyPoints
+    ? Number(checkoutDetails?.loyaltyPointsToRedeem || 0) * 10
+    : 0
+  const deliveryFee = Number(checkoutDetails?.deliveryFee || 0)
+  const finalTotal = Math.max(0, Math.round(total - codeDiscount - loyaltyDiscount + deliveryFee));
   const [isStartingCheckout, setIsStartingCheckout] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("card");
   const [paymentStatus, setPaymentStatus] = useState(
@@ -75,14 +87,20 @@ export function PaymentPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!sessionId) return undefined;
+    if (!sessionId && !loyaltyOrderId) return undefined;
     let cancelledRequest = false;
     setPaymentStatus("checking");
-    apiRequest(`/payment/session/${encodeURIComponent(sessionId)}`)
+    const verification = sessionId
+      ? apiRequest(`/payment/session/${encodeURIComponent(sessionId)}`)
+      : apiRequest(`/customer/orders/${encodeURIComponent(loyaltyOrderId)}`, {
+          token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY),
+        })
+    verification
       .then(({ order: paidOrder }) => {
         if (cancelledRequest) return;
         setOrder(paidOrder);
         setPaymentStatus("paid");
+        window.scrollTo(0, 0);
         sessionStorage.removeItem(CHECKOUT_DETAILS_KEY);
         clearCart();
         refreshFlavors({ showLoading: false });
@@ -95,12 +113,12 @@ export function PaymentPage() {
     return () => {
       cancelledRequest = true;
     };
-  }, [clearCart, refreshFlavors, sessionId]);
+  }, [clearCart, loyaltyOrderId, refreshFlavors, sessionId]);
 
-  if (!sessionId && cartItems.length === 0 && !cancelled) {
+  if (!sessionId && !loyaltyOrderId && cartItems.length === 0 && !cancelled) {
     return <Navigate to="/cart" replace />;
   }
-  if (!sessionId && !checkoutDetails && !cancelled) {
+  if (!sessionId && !loyaltyOrderId && !checkoutDetails && !cancelled) {
     return <Navigate to="/checkout" replace />;
   }
 
@@ -113,7 +131,10 @@ export function PaymentPage() {
         body: {
           items: cartItems.map(({ id, quantity }) => ({ id, quantity })),
           checkoutDetails,
+          discountCode: checkoutDetails?.discountCode || "",
+          redeemLoyaltyPoints: checkoutDetails?.redeemLoyaltyPoints === true,
         },
+        token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY) || undefined,
       });
       sessionStorage.setItem(
         CHECKOUT_DETAILS_KEY,
@@ -127,12 +148,12 @@ export function PaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fffefa] text-[#102c50]">
+    <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
 
       <main className="mx-auto max-w-[1160px] px-5 py-10 sm:px-8 sm:py-14 lg:px-12">
         {paymentStatus === "paid" ? (
-          <section className="mx-auto max-w-2xl rounded-[28px] border border-[#dce9c8] bg-white p-6 text-center shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-10">
+          <section aria-live="polite" className="mx-auto max-w-2xl rounded-[28px] border border-[#dce9c8] bg-white p-6 text-center shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-10" role="status">
             <span
               aria-hidden="true"
               className="mx-auto grid size-16 place-items-center rounded-full bg-[#d8f29a] text-3xl font-bold text-[#163e35]"
@@ -162,7 +183,7 @@ export function PaymentPage() {
             </Link>
           </section>
         ) : paymentStatus === "checking" ? (
-          <section className="mx-auto max-w-2xl rounded-[28px] border border-[#ece8de] bg-white p-8 text-center">
+          <section className="mx-auto max-w-2xl rounded-[28px] border border-[#d9d6cc] bg-white p-8 text-center">
             <p className="font-display text-2xl font-bold">
               {t("Checking your payment…")}
             </p>
@@ -185,7 +206,7 @@ export function PaymentPage() {
               )}
             </p>
             <Link
-              className="mt-6 inline-flex rounded-full border-2 border-[#29415f] px-5 py-2.5 text-sm font-bold transition hover:bg-[#f4f1e7]"
+              className="mt-6 inline-flex rounded-full border-2 border-[#65748a] px-5 py-2.5 text-sm font-bold transition hover:bg-[#f4f1e7]"
               to="/contact"
             >
               {t("Contact support")}
@@ -210,6 +231,11 @@ export function PaymentPage() {
               <p className="mt-2 text-sm text-[#65748a]">
                 {t("Choose a payment method available for your location.")}
               </p>
+              <p className="mt-3 rounded-xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-3 text-sm leading-6 text-[#624f00]">
+                {t(hasMenuItems
+                  ? "Menu items and FCFA prices are illustrative examples, not confirmed local menu items or prices. Orders are handled by this independent website."
+                  : "Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
+              </p>
             </div>
 
             {cancelled && (
@@ -224,18 +250,19 @@ export function PaymentPage() {
             )}
 
             <div className="grid items-start gap-8 lg:grid-cols-[1fr_380px]">
-              <section className="space-y-6 rounded-[24px] border border-[#ece8de] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7">
-                <div className="border-b border-[#ece8de] pb-6">
+              <section className="space-y-6 rounded-[24px] border border-[#d9d6cc] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7">
+                <div className="border-b border-[#d9d6cc] pb-6">
                   <h2 className="font-display text-2xl font-bold">
-                    {t("Delivering to")}
+                    {t(checkoutDetails?.fulfillmentType === 'pickup' ? 'Pickup at' : 'Delivering to')}
                   </h2>
                   <p className="mt-2 text-sm font-semibold">
                     {checkoutDetails?.name}
                   </p>
                   <p className="mt-1 text-sm text-[#65748a]">
-                    {checkoutDetails?.address}, {checkoutDetails?.city}{" "}
-                    {checkoutDetails?.postalCode}
+                    {checkoutDetails?.residence ? `${checkoutDetails.residence}, ` : ''}
+                    {checkoutDetails?.city}
                   </p>
+                  {checkoutDetails?.scheduledDate && <p className="mt-1 text-sm text-[#65748a]">{t('Scheduled date')}: {checkoutDetails.scheduledDate} · {t(checkoutDetails.timeSlotLabel)}</p>}
                   <p className="mt-1 text-sm text-[#65748a]">
                     {checkoutDetails?.email}
                   </p>
@@ -250,8 +277,8 @@ export function PaymentPage() {
                       <label
                         className={`flex items-start gap-3 rounded-2xl border p-4 transition ${
                           method.available
-                            ? "cursor-pointer border-[#ece8de] hover:border-[#bd9c00] has-[:checked]:border-[#bd9c00] has-[:checked]:bg-[#fff9dc]"
-                            : "cursor-not-allowed border-[#ece8de] bg-[#f8f7f2] opacity-75"
+                            ? "cursor-pointer border-[#d9d6cc] hover:border-[#bd9c00] has-[:checked]:border-[#bd9c00] has-[:checked]:bg-[#fff9dc]"
+                            : "cursor-not-allowed border-[#d9d6cc] bg-[#f8f7f2] opacity-75"
                         }`}
                         key={method.id}
                       >
@@ -320,8 +347,8 @@ export function PaymentPage() {
                     ? t("Connecting to Stripe…")
                     : t("Pay {amount} securely", {
                         amount: formatMoney(
-                          Math.round(total * 100),
-                          "usd",
+                          finalTotal,
+                          currency,
                           language,
                         ),
                       })}
@@ -337,11 +364,11 @@ export function PaymentPage() {
                 )}
               </section>
 
-              <aside className="h-fit space-y-4 rounded-[28px] border border-[#ece8de] bg-white p-6 shadow-[0_8px_30px_rgba(18,44,80,0.06)]">
+              <aside className="h-fit space-y-4 rounded-[28px] border border-[#d9d6cc] bg-white p-6 shadow-[0_8px_30px_rgba(18,44,80,0.06)]">
                 <h2 className="font-display text-2xl font-bold">
                   {t("Order summary")}
                 </h2>
-                <div className="space-y-4 border-t border-[#ece8de] pt-4">
+                <div className="space-y-4 border-t border-[#d9d6cc] pt-4">
                   {cartItems.map((item) => (
                     <div className="flex items-center gap-3" key={item.id}>
                       <img
@@ -358,16 +385,20 @@ export function PaymentPage() {
                         </p>
                       </div>
                       <span className="shrink-0 whitespace-nowrap text-sm font-semibold">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {formatMoney(
+                          Math.round(item.price * item.quantity),
+                          currency,
+                          language,
+                        )}
                       </span>
                     </div>
                   ))}
                 </div>
-                <div className="space-y-3 border-t border-[#ece8de] pt-4 text-sm">
+                <div className="space-y-3 border-t border-[#d9d6cc] pt-4 text-sm">
                   <div className="flex justify-between">
                     <span className="text-[#65748a]">{t("Subtotal")}</span>
                     <span className="font-semibold">
-                      ${subtotal.toFixed(2)}
+                      {formatMoney(Math.round(subtotal), currency, language)}
                     </span>
                   </div>
                   {discount > 0 && (
@@ -377,15 +408,33 @@ export function PaymentPage() {
                           count: freeScoops,
                         })}
                       </span>
-                      <span className="font-bold">−${discount.toFixed(2)}</span>
+                      <span className="font-bold">−{formatMoney(Math.round(discount), currency, language)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between border-t border-[#ece8de] pt-3">
+                  {checkoutDetails?.discountCode && codeDiscount > 0 && (
+                    <div className="flex justify-between text-[#163e35]">
+                      <span className="font-semibold">{t("Discount code {code}", { code: checkoutDetails.discountCode })}</span>
+                      <span className="font-bold">−{formatMoney(codeDiscount, currency, language)}</span>
+                    </div>
+                  )}
+                  {loyaltyDiscount > 0 && (
+                    <div className="flex justify-between text-[#163e35]">
+                      <span className="font-semibold">{t("Loyalty reward ({points} points)", { points: checkoutDetails?.loyaltyPointsToRedeem })}</span>
+                      <span className="font-bold">−{formatMoney(loyaltyDiscount, currency, language)}</span>
+                    </div>
+                  )}
+                  {deliveryFee > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-[#65748a]">{t("Delivery fee")}</span>
+                      <span className="font-semibold">{formatMoney(deliveryFee, currency, language)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between border-t border-[#d9d6cc] pt-3">
                     <span className="font-display text-lg font-bold">
                       {t("Total")}
                     </span>
                     <span className="font-display text-2xl font-bold text-[#bd9c00]">
-                      ${total.toFixed(2)}
+                      {formatMoney(finalTotal, currency, language)}
                     </span>
                   </div>
                 </div>

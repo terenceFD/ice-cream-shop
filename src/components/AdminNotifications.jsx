@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { apiRequest } from '../api'
-import { useAdminAuth } from '../AdminAuthContext'
-import { useLanguage } from '../LanguageContext'
+import { apiRequest } from '../api/api'
+import { useAdminAuth } from '../pages/feature/admin/AdminAuthContext'
+import { useLanguage } from '../language/LanguageContext'
 
 function formatDate(value) {
   const date = new Date(`${value.replace(' ', 'T')}Z`)
@@ -107,14 +107,14 @@ export function AdminNotifications() {
   }
 
   return (
-    <section className="mb-8 scroll-mt-6 rounded-[24px] border border-[#ece8de] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7" id="notifications">
+    <section className="mb-8 scroll-mt-6 rounded-[24px] border border-[#d9d6cc] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7" id="notifications">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="mb-2 inline-block rounded-full bg-[#ffeb9c] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em]">{t('Inbox')}</p>
           <h2 className="font-display text-2xl font-bold">{t('Contact notifications')}{unreadCount > 0 ? ` (${unreadCount} ${t('New').toLowerCase()})` : ''}</h2>
           <p className="mt-1 text-sm text-[#65748a]">{t('Messages submitted through the website contact form.')}</p>
         </div>
-        <button className="rounded-full border-2 border-[#29415f] px-4 py-2 text-sm font-bold transition hover:bg-[#f4f1e7] disabled:opacity-60" disabled={isLoading} onClick={refresh} type="button">
+        <button className="rounded-full border-2 border-[#65748a] px-4 py-2 text-sm font-bold transition hover:bg-[#f4f1e7] disabled:opacity-60" disabled={isLoading} onClick={refresh} type="button">
           {t('Refresh')}
         </button>
       </div>
@@ -127,7 +127,7 @@ export function AdminNotifications() {
       ) : (
         <div className="mt-5 space-y-3">
           {messages.map((message) => (
-            <article className={`rounded-2xl border p-4 sm:p-5 ${message.isRead ? 'border-[#ece8de] bg-white' : 'border-[#eadb8a] bg-[#fffdf1]'}`} key={message.id}>
+            <article className={`rounded-2xl border p-4 sm:p-5 ${message.isRead ? 'border-[#d9d6cc] bg-white' : 'border-[#eadb8a] bg-[#fffdf1]'}`} key={message.id}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -142,8 +142,8 @@ export function AdminNotifications() {
                   </button>
                 )}
               </div>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[#29415f]">{message.message}</p>
-              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-[#ece8de] pt-3 text-xs text-[#65748a]">
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[#65748a]">{message.message}</p>
+              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-[#d9d6cc] pt-3 text-xs text-[#65748a]">
                 <span className="font-semibold text-[#102c50]">{message.name}</span>
                 <a className="underline underline-offset-2 hover:text-[#102c50]" href={`mailto:${message.email}`}>{message.email}</a>
                 {message.phone && <a className="underline underline-offset-2 hover:text-[#102c50]" href={`tel:${message.phone}`}>{message.phone}</a>}
@@ -151,7 +151,7 @@ export function AdminNotifications() {
               <div className="mt-4">
                 {replyingTo === message.id ? (
                   <form className="space-y-3" onSubmit={(event) => sendReply(event, message)}>
-                    <label className="block text-sm font-semibold text-[#29415f]" htmlFor={`reply-${message.id}`}>
+                    <label className="block text-sm font-semibold text-[#65748a]" htmlFor={`reply-${message.id}`}>
                       {t('Reply to {name}', { name: message.name })}
                     </label>
                     <textarea
@@ -175,7 +175,7 @@ export function AdminNotifications() {
                   </form>
                 ) : (
                   <div className="flex flex-wrap items-center gap-3">
-                    <button className="rounded-full border border-[#29415f] px-4 py-2 text-sm font-bold transition hover:bg-[#f4f1e7]" onClick={() => { setReplyingTo(message.id); setReplyDraft(''); setReplySent((current) => ({ ...current, [message.id]: false })) }} type="button">
+                    <button className="rounded-full border border-[#65748a] px-4 py-2 text-sm font-bold transition hover:bg-[#f4f1e7]" onClick={() => { setReplyingTo(message.id); setReplyDraft(''); setReplySent((current) => ({ ...current, [message.id]: false })) }} type="button">
                       {t('Reply')}
                     </button>
                     {replySent[message.id] && <p className="text-sm font-semibold text-[#163e35]" role="status">{t('Reply email sent to {email}.', { email: message.email })}</p>}

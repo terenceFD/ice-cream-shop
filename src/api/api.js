@@ -23,7 +23,10 @@ export async function apiRequest(path, { body, token, ...options } = {}) {
   try {
     result = await response.json()
   } catch {
-    if (!response.ok) throw new Error(`API request failed (${response.status}).`)
+    if (!response.ok) {
+      const endpoint = new URL(`${API_BASE_URL}/api${path}`, window.location.origin).pathname
+      throw new Error(`API request failed (${response.status}) for ${options.method || 'GET'} ${endpoint}.`)
+    }
     throw new Error('The API server returned an invalid response.')
   }
   if (!response.ok) {
@@ -33,7 +36,9 @@ export async function apiRequest(path, { body, token, ...options } = {}) {
       window.dispatchEvent(new Event('admin-session-expired'))
       window.dispatchEvent(new Event('customer-session-expired'))
     }
-    throw new Error(result.error || `API request failed (${response.status}).`)
+    if (result.error) throw new Error(result.error)
+    const endpoint = new URL(`${API_BASE_URL}/api${path}`, window.location.origin).pathname
+    throw new Error(`API request failed (${response.status}) for ${options.method || 'GET'} ${endpoint}.`)
   }
   return result
 }

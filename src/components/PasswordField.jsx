@@ -1,17 +1,17 @@
 import { useState } from 'react'
-import { useLanguage } from '../LanguageContext'
+import { useLanguage } from '../language/LanguageContext'
 
 export function PasswordField({ label, ...inputProps }) {
   const [isVisible, setIsVisible] = useState(false)
   const { t } = useLanguage()
 
   return (
-    <label className="block text-sm font-semibold text-[#29415f]">
+    <label className="block text-sm font-semibold text-[#65748a]">
       {label}
       <span className="relative mt-1.5 block">
         <input
           {...inputProps}
-          className="w-full rounded-xl border border-[#d9d6cc] bg-[#fffefa] px-4 py-3 pr-16 font-normal outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+          className="w-full rounded-xl border border-[#d9d6cc] bg-[#f8f7f2] px-4 py-3 pr-16 font-normal outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
           type={isVisible ? 'text' : 'password'}
         />
         <button

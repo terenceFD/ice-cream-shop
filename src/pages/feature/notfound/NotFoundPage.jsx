@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
 import { Footer, Header } from '../../../components/Layout'
-import { useLanguage } from '../../../LanguageContext'
+import { useLanguage } from '../../../language/LanguageContext'
 
 export function NotFoundPage() {
   const { t } = useLanguage()
   return (
-    <div className="flex min-h-screen flex-col bg-[#fffefa] text-[#102c50]">
+    <div className="flex min-h-screen flex-col bg-[#f8f7f2] text-[#102c50]">
       <Header />
       <main className="flex flex-1 items-center justify-center px-5 py-16 text-center">
         <div>

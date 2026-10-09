@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { apiRequest, ADMIN_TOKEN_KEY } from '../../../api'
+import { apiRequest, ADMIN_TOKEN_KEY } from '../../../api/api'
 
 const AdminAuthContext = createContext(null)
 

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Footer, Header } from "../../../components/Layout";
-import { useAdminAuth } from "../../../AdminAuthContext";
+import { useAdminAuth } from "./AdminAuthContext";
 import { PasswordField } from "../../../components/PasswordField";
-import { useLanguage } from "../../../LanguageContext";
+import { useLanguage } from "../../../language/LanguageContext";
 
 export function AdminLoginPage() {
   const { isAdmin, login } = useAdminAuth();
@@ -35,10 +35,10 @@ export function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fffefa] text-[#102c50]">
+    <div className="flex min-h-screen flex-col bg-[#f8f7f2] text-[#102c50]">
       <Header />
       <main className="flex flex-1 items-center justify-center px-5 py-12 sm:px-8">
-        <section className="w-full max-w-md rounded-[28px] border border-[#ece8de] bg-white p-6 shadow-[0_12px_40px_rgba(18,44,80,0.08)] sm:p-9">
+        <section className="w-full max-w-md rounded-[28px] border border-[#d9d6cc] bg-white p-6 shadow-[0_12px_40px_rgba(18,44,80,0.08)] sm:p-9">
           <p className="mb-2 inline-block rounded-full bg-[#ffeb9c] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em]">
             {t("Admin portal")}
           </p>
@@ -56,11 +56,11 @@ export function AdminLoginPage() {
           </div>
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-            <label className="block text-sm font-semibold text-[#29415f]">
+            <label className="block text-sm font-semibold text-[#65748a]">
               {t("Admin email")}
               <input
                 autoComplete="username"
-                className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#fffefa] px-4 py-3 font-normal outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+                className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#f8f7f2] px-4 py-3 font-normal outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
                 onChange={(event) => setEmail(event.target.value)}
                 required
                 type="email"

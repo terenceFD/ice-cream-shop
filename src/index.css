@@ -4,15 +4,34 @@
 @theme {
   --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Fredoka', ui-rounded, 'Arial Rounded MT Bold', sans-serif;
+  --color-brand-pink: #ffdc32;
+  --color-brand-pink-dark: #bd9c00;
+  --color-brand-cream: #f8f7f2;
+  --color-brand-brown: #102c50;
+  --color-brand-muted: #65748a;
+  --color-brand-border: #d9d6cc;
+}
+
+:root {
+  color-scheme: light;
+  --brand-pink: #ffdc32;
+  --brand-pink-dark: #bd9c00;
+  --brand-cream: #f8f7f2;
+  --brand-brown: #102c50;
+  --brand-muted: #65748a;
+  --brand-border: #d9d6cc;
 }
 
 html {
   scroll-behavior: smooth;
+  background: var(--brand-cream);
 }
 
 body {
   min-width: 0;
   margin: 0;
+  color: var(--brand-brown);
+  background: var(--brand-cream);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
@@ -22,22 +41,55 @@ body {
   background: #ffdc32;
 }
 
-.scroll-reveal-enabled [data-scroll-reveal] {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 650ms ease, transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1);
+:focus-visible {
+  outline: 3px solid var(--brand-pink-dark);
+  outline-offset: 3px;
 }
 
-.scroll-reveal-enabled [data-scroll-reveal].is-scroll-revealed {
+@media (prefers-contrast: more) {
+  body {
+    color: #102c50;
+  }
+
+  input,
+  select,
+  textarea,
+  button,
+  a {
+    border-color: currentColor;
+  }
+}
+
+.scroll-reveal-enabled [data-scroll-reveal]:not([data-scroll-reveal="skip"]) {
+  opacity: 0;
+  filter: blur(6px);
+  transform: translate3d(0, 24px, 0) scale(0.985);
+  transition:
+    opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    filter 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--scroll-reveal-delay, 0ms);
+  will-change: opacity, filter, transform;
+}
+
+.scroll-reveal-enabled [data-scroll-reveal]:not([data-scroll-reveal="skip"]).is-scroll-revealed {
   opacity: 1;
-  transform: translateY(0);
+  filter: blur(0);
+  transform: translate3d(0, 0, 0) scale(1);
+  will-change: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scroll-reveal-enabled [data-scroll-reveal] {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .scroll-reveal-enabled [data-scroll-reveal]:not([data-scroll-reveal="skip"]) {
     opacity: 1;
+    filter: none;
     transform: none;
     transition: none;
+    will-change: auto;
   }
 }
 

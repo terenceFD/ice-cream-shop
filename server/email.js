@@ -39,8 +39,12 @@ export async function sendNewOrderNotification({ recipients, orderId, customerNa
   }
 
   const { transporter, from } = createTransporter()
+  const formatAmount = (amount) => new Intl.NumberFormat('en-CM', {
+    style: 'currency',
+    currency: currency.toUpperCase(),
+  }).format(amount / (currency.toLowerCase() === 'xaf' ? 1 : 100))
   const itemLines = items.map((item) =>
-    `- ${item.quantity} × ${item.flavorName} ($${(item.lineTotalCents / 100).toFixed(2)})`
+    `- ${item.quantity} × ${item.flavorName} (${formatAmount(item.lineTotalCents)})`
   )
   await transporter.sendMail({
     from,
@@ -57,9 +61,97 @@ export async function sendNewOrderNotification({ recipients, orderId, customerNa
       'Items:',
       ...itemLines,
       '',
-      `Order total: ${(totalCents / 100).toFixed(2)} ${currency.toUpperCase()}`,
+      `Order total: ${formatAmount(totalCents)}`,
       '',
       `View this order in the admin dashboard: ${orderUrl}`,
+    ].join('\n'),
+  })
+}
+
+export async function sendOrderStatusUpdate({
+  to,
+  recipientName,
+  orderId,
+  status,
+  totalCents,
+  currency = 'xaf',
+  items = [],
+  earnedPoints = 0,
+  fulfillmentType,
+  scheduledFor,
+  deliveryFee = 0,
+}) {
+  const statusLabels = {
+    accepted: 'has been accepted',
+    preparing: 'is being prepared',
+    ready: 'is ready',
+    out_for_delivery: 'is out for delivery',
+    delivered: 'has been delivered',
+  }
+  const statusLabel = statusLabels[status]
+  if (!statusLabel) throw new Error('The requested order status cannot be emailed.')
+  const { transporter, from } = createTransporter()
+  const formatAmount = (amount) => new Intl.NumberFormat('en-CM', {
+    style: 'currency',
+    currency: currency.toUpperCase(),
+  }).format(amount / (currency.toLowerCase() === 'xaf' ? 1 : 100))
+  const receipt = Number.isSafeInteger(totalCents)
+    ? [
+        '',
+        'Digital receipt',
+        ...items.map((item) => `- ${item.quantity} × ${item.flavorName}: ${formatAmount(item.lineTotalCents)}`),
+        ...(deliveryFee > 0 ? [`Delivery fee: ${formatAmount(deliveryFee)}`] : []),
+        ...(scheduledFor ? [`${fulfillmentType === 'pickup' ? 'Pickup' : 'Delivery'} scheduled for: ${new Date(scheduledFor).toLocaleString('en-CM', { timeZone: 'Africa/Douala' })}`] : []),
+        `Total paid: ${formatAmount(totalCents)}`,
+        ...(earnedPoints > 0 ? [`Loyalty points earned: ${earnedPoints}`] : []),
+      ]
+    : []
+  await transporter.sendMail({
+    from,
+    to,
+    subject: `Update on your Antixor Icy order #${orderId}`,
+    text: [
+      `Hello ${recipientName},`,
+      '',
+      `Your order #${orderId} ${statusLabel}.`,
+      ...receipt,
+      '',
+      'Thank you,',
+      'Antixor Icy',
+    ].join('\n'),
+  })
+}
+
+export async function sendCakeRequestNotification({
+  recipients,
+  requestId,
+  customerName,
+  customerEmail,
+  customerPhone,
+  size,
+  flavor,
+  message,
+  toppings,
+  pickupDate,
+}) {
+  if (!recipients.length) {
+    throw new Error('No admin email addresses are available for cake-request notifications.')
+  }
+  const { transporter, from } = createTransporter()
+  await transporter.sendMail({
+    from,
+    to: recipients,
+    subject: `Custom cake request #${requestId}`,
+    text: [
+      `A custom cake request (#${requestId}) was submitted.`,
+      `Customer: ${customerName}`,
+      `Email: ${customerEmail}`,
+      `Phone: ${customerPhone}`,
+      `Size: ${size}`,
+      `Flavor: ${flavor}`,
+      `Toppings: ${toppings.join(', ') || 'None'}`,
+      `Pickup date requested: ${pickupDate}`,
+      `Message: ${message || 'None'}`,
     ].join('\n'),
   })
 }

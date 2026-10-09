@@ -7,9 +7,46 @@ import {
   useState,
 } from "react";
 import { useFlavors } from "./flavor-context/FlavorContext";
+import { findMenuItem } from "./data";
+import { USD_TO_XAF } from "./cartPricing";
 
 const CartContext = createContext();
 const CART_STORAGE_KEY = "antixor-icy-cart";
+
+function normalizeMenuCartItem(item) {
+  if (!item || typeof item.id !== "string") return null
+  const knownItem = findMenuItem(item.id)
+  if (knownItem) {
+    return {
+      ...knownItem,
+      ...item,
+      itemType: "menu",
+      currency: "xaf",
+      price: item.priceXaf ?? item.price ?? knownItem.priceXaf,
+      availableQuantity: Number.isSafeInteger(item.availableQuantity)
+        ? item.availableQuantity
+        : Number.isSafeInteger(item.stock)
+          ? Math.max(0, item.stock - (item.reservedStock || 0))
+          : knownItem.availableQuantity,
+    }
+  }
+  if (!item.id.startsWith("menu:custom:") || typeof item.name !== "string"
+    || typeof item.detail !== "string" || typeof item.image !== "string"
+    || !Number.isSafeInteger(item.priceXaf) || item.priceXaf < 1) {
+    return null
+  }
+  return {
+    ...item,
+    itemType: "menu",
+    currency: "xaf",
+    price: item.priceXaf,
+    availableQuantity: Number.isSafeInteger(item.availableQuantity)
+      ? item.availableQuantity
+      : Number.isSafeInteger(item.stock)
+        ? Math.max(0, item.stock - (item.reservedStock || 0))
+        : Number.MAX_SAFE_INTEGER,
+  }
+}
 
 function loadCart(flavors) {
   try {
@@ -23,10 +60,24 @@ function loadCart(flavors) {
 
     return parsedCart.flatMap((item) => {
       if (!item || typeof item !== "object") return [];
+      if (item.itemType === "menu") {
+        const menuItem = normalizeMenuCartItem(item);
+        return menuItem &&
+          Number.isSafeInteger(item.quantity) &&
+          item.quantity > 0
+          ? [{ ...menuItem, quantity: item.quantity }]
+          : [];
+      }
       const flavor = flavors.find((entry) => entry.id === item.id);
       const savedFlavor =
         typeof item.name === "string" && Number.isFinite(item.price)
-          ? item
+          ? {
+              ...item,
+              price: (item.currency || "usd") === "usd"
+                ? Math.round(item.price * USD_TO_XAF)
+                : item.price,
+              currency: "xaf",
+            }
           : null;
       return (flavor || savedFlavor) &&
         Number.isSafeInteger(item.quantity) &&
@@ -46,6 +97,7 @@ export function CartProvider({ children }) {
   const cartItems = useMemo(() => {
     if (loading || error) return savedItems;
     return savedItems.flatMap((item) => {
+      if (item.itemType === "menu") return [item];
       const flavor = flavors.find((entry) => entry.id === item.id);
       const availableQuantity = flavor?.availableQuantity ?? flavor?.stock ?? 0;
       return flavor
@@ -73,23 +125,53 @@ export function CartProvider({ children }) {
     }
   }, [cartItems, error, loading, savedItems]);
 
-  const addToCart = (flavor) => {
-    setSavedItems((prev) => {
-      const availableQuantity =
-        flavor.availableQuantity ?? flavor.stock ?? Number.MAX_SAFE_INTEGER;
-      if (availableQuantity < 1) return prev;
-      const existing = prev.find((item) => item.id === flavor.id);
-      if (existing) {
-        if (existing.quantity >= availableQuantity) return prev;
-        return prev.map((item) =>
-          item.id === flavor.id
-            ? { ...item, ...flavor, quantity: item.quantity + 1 }
-            : item,
-        );
-      }
-      return [...prev, { ...flavor, quantity: 1 }];
-    });
+  const addToCart = (product) => {
+    const item = product.itemType === "menu" ? normalizeMenuCartItem(product) : product;
+    if (!item) return false;
+    const availableQuantity =
+      item.availableQuantity ?? item.stock ?? Number.MAX_SAFE_INTEGER;
+    if (availableQuantity < 1) return false;
+    const existing = savedItems.find((entry) => entry.id === item.id);
+    if (existing) {
+      if (existing.quantity >= availableQuantity) return false;
+      setSavedItems((prev) =>
+        prev.map((entry) =>
+          entry.id === item.id
+            ? { ...item, quantity: entry.quantity + 1 }
+            : entry,
+        ),
+      );
+    } else {
+      setSavedItems((prev) => [...prev, { ...item, quantity: 1 }]);
+    }
+    return true;
   };
+
+  const addItemsToCart = (products) => {
+    let addedCount = 0
+    const updated = [...savedItems]
+    for (const product of products) {
+      const item = product.itemType === 'menu' ? normalizeMenuCartItem(product) : product
+      if (!item) continue
+      const availableQuantity = item.availableQuantity ?? item.stock ?? Number.MAX_SAFE_INTEGER
+      const currentIndex = updated.findIndex((entry) => entry.id === item.id)
+      const current = currentIndex < 0 ? null : updated[currentIndex]
+      const currentQuantity = current?.quantity || 0
+      const quantity = Math.min(
+        Number.isSafeInteger(product.quantity) ? product.quantity : 1,
+        Math.max(0, availableQuantity - currentQuantity),
+      )
+      if (quantity < 1) continue
+      addedCount += quantity
+      if (current) {
+        updated[currentIndex] = { ...current, ...item, quantity: currentQuantity + quantity }
+      } else {
+        updated.push({ ...item, quantity })
+      }
+    }
+    setSavedItems(updated)
+    return addedCount
+  }
 
   const removeFromCart = (flavorId) => {
     setSavedItems((prev) => prev.filter((item) => item.id !== flavorId));
@@ -107,8 +189,11 @@ export function CartProvider({ children }) {
     if (quantity <= 0) {
       removeFromCart(flavorId);
     } else {
+      const savedItem = savedItems.find((item) => item.id === flavorId);
       const flavor = flavors.find((item) => item.id === flavorId);
-      const availableQuantity = flavor?.availableQuantity ?? flavor?.stock ?? 0;
+      const availableQuantity = savedItem?.itemType === "menu"
+        ? savedItem.availableQuantity
+        : flavor?.availableQuantity ?? flavor?.stock ?? 0;
       if (availableQuantity < 1) {
         removeFromCart(flavorId);
         return;
@@ -135,6 +220,7 @@ export function CartProvider({ children }) {
       value={{
         cartItems,
         addToCart,
+        addItemsToCart,
         removeFromCart,
         updateCartFlavor,
         updateQuantity,

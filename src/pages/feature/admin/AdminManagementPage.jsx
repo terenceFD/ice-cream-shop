@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { PasswordField } from "../../../components/PasswordField";
-import { useAdminAuth } from "../../../AdminAuthContext";
-import { useLanguage } from "../../../LanguageContext";
+import { useAdminAuth } from "./AdminAuthContext";
+import { useLanguage } from "../../../language/LanguageContext";
 
 const inputClassName =
   "mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-white px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40";
@@ -113,7 +113,7 @@ export function AdminManagementPage() {
       </div>
 
       <div className="grid items-start gap-8 lg:grid-cols-[1fr_0.9fr]">
-        <section className="rounded-[24px] border border-[#ece8de] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7">
+        <section className="rounded-[24px] border border-[#d9d6cc] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7">
           <h2 className="font-display text-2xl font-bold">
             {t("Add an admin")}
           </h2>
@@ -202,7 +202,7 @@ export function AdminManagementPage() {
           </form>
         </section>
 
-        <section className="rounded-[24px] border border-[#ece8de] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7">
+        <section className="rounded-[24px] border border-[#d9d6cc] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7">
           <h2 className="font-display text-2xl font-bold">
             {t("Admin accounts")}
           </h2>
@@ -211,7 +211,7 @@ export function AdminManagementPage() {
               count: admins.length,
             })}
           </p>
-          <div className="mt-5 divide-y divide-[#ece8de]">
+          <div className="mt-5 divide-y divide-[#d9d6cc]">
             {admins.map((admin) => (
               <article
                 className="flex items-center gap-3 py-4 first:pt-0 last:pb-0"

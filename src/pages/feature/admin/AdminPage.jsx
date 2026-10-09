@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useFlavors } from "../../../FlavorContext";
-import { useAdminAuth } from "../../../AdminAuthContext";
+import { useFlavors } from "../../../flavor-context/FlavorContext";
+import { useAdminAuth } from "./AdminAuthContext";
 import { useCart } from "../../../CartContext";
-import { useLanguage } from "../../../LanguageContext";
+import { useLanguage } from "../../../language/LanguageContext";
+import { formatCartMoney } from "../../../cartPricing";
 
 const inputClassName =
   "mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-white px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40";
@@ -90,7 +91,7 @@ export function AdminPage() {
     setMessage("");
     setError("");
     const price = Number(form.price);
-    if (!Number.isFinite(price) || price <= 0) {
+    if (!Number.isSafeInteger(price) || price <= 0) {
       setError("Enter a price greater than zero.");
       return;
     }
@@ -108,7 +109,7 @@ export function AdminPage() {
         stock,
         image: form.image.trim(),
         tag: form.tag.trim() || "New flavor",
-        origin: form.origin.trim() || "Antixor Icy",
+        origin: form.origin.trim() || "Not specified",
         color: "bg-[#fff1cf]",
         servings: 2,
         allergies: [],
@@ -140,7 +141,7 @@ export function AdminPage() {
     if (!flavorToEdit) return;
 
     const price = Number(editForm.price);
-    if (!Number.isFinite(price) || price <= 0) {
+    if (!Number.isSafeInteger(price) || price <= 0) {
       setError("Enter a price greater than zero.");
       return;
     }
@@ -157,7 +158,7 @@ export function AdminPage() {
       stock,
       image: editForm.image.trim(),
       tag: editForm.tag.trim() || "New flavor",
-      origin: editForm.origin.trim() || "Antixor Icy",
+      origin: editForm.origin.trim() || "Not specified",
     };
     setError("");
     try {
@@ -207,14 +208,14 @@ export function AdminPage() {
         </div>
         <Link
           to="/flavors"
-          className="rounded-full border-2 border-[#29415f] px-5 py-2.5 text-sm font-bold transition hover:bg-[#f4f1e7]"
+          className="rounded-full border-2 border-[#65748a] px-5 py-2.5 text-sm font-bold transition hover:bg-[#f4f1e7]"
         >
           {t("View customer shop")}
         </Link>
       </div>
 
       <div className="grid min-w-0 items-start gap-8 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-        <section className="min-w-0 rounded-[24px] border border-[#ece8de] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7">
+        <section className="min-w-0 rounded-[24px] border border-[#d9d6cc] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7">
           <h2 className="font-display text-2xl font-bold">
             {t("Add a flavor")}
           </h2>
@@ -255,14 +256,14 @@ export function AdminPage() {
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block text-sm font-semibold">
-                {t("Price per scoop ($)")}
+                {t("Price per scoop (FCFA)")}
                 <input
                   className={inputClassName}
-                  min="0.01"
+                  min="1"
                   name="price"
                   onChange={handleChange}
                   required
-                  step="0.01"
+                  step="1"
                   type="number"
                   value={form.price}
                 />
@@ -353,7 +354,7 @@ export function AdminPage() {
             </div>
           </div>
           <div className="mb-4 grid gap-3 sm:grid-cols-2">
-            <label className="block text-sm font-semibold text-[#29415f]">
+            <label className="block text-sm font-semibold text-[#65748a]">
               {t("Search flavors")}
               <input
                 className={inputClassName}
@@ -363,7 +364,7 @@ export function AdminPage() {
                 value={flavorSearch}
               />
             </label>
-            <label className="block text-sm font-semibold text-[#29415f]">
+            <label className="block text-sm font-semibold text-[#65748a]">
               {t("Flavor tag")}
               <select
                 className={inputClassName}
@@ -378,7 +379,7 @@ export function AdminPage() {
                 ))}
               </select>
             </label>
-            <label className="block text-sm font-semibold text-[#29415f]">
+            <label className="block text-sm font-semibold text-[#65748a]">
               {t("Stock status")}
               <select
                 className={inputClassName}
@@ -408,8 +409,8 @@ export function AdminPage() {
             </p>
           )}
 
-          <div className="overflow-hidden rounded-[24px] border border-[#ece8de] bg-white shadow-[0_8px_30px_rgba(18,44,80,0.05)]">
-            <div className="divide-y divide-[#ece8de]">
+          <div className="overflow-hidden rounded-[24px] border border-[#d9d6cc] bg-white shadow-[0_8px_30px_rgba(18,44,80,0.05)]">
+            <div className="divide-y divide-[#d9d6cc]">
               {filteredFlavors.map((flavor) => (
                 <article
                   className="flex items-center gap-4 p-4 sm:p-5"
@@ -439,7 +440,7 @@ export function AdminPage() {
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="font-bold">${flavor.price.toFixed(2)}</p>
+                    <p className="font-bold">{formatCartMoney(flavor.price, "xaf")}</p>
                     <Link
                       className="mt-1 inline-block text-xs font-semibold text-[#65748a] underline decoration-[#ffdc32] underline-offset-2 hover:text-[#102c50]"
                       to={`/flavor/${flavor.id}`}
@@ -448,7 +449,7 @@ export function AdminPage() {
                     </Link>
                     <button
                       aria-label={`Edit ${flavor.name}`}
-                      className="mt-2 block rounded-full border border-[#d9d6cc] px-3 py-1 text-xs font-bold text-[#29415f] transition hover:bg-[#f4f1e7]"
+                      className="mt-2 block rounded-full border border-[#d9d6cc] px-3 py-1 text-xs font-bold text-[#65748a] transition hover:bg-[#f4f1e7]"
                       onClick={() => openEditForm(flavor)}
                       type="button"
                     >
@@ -528,14 +529,14 @@ export function AdminPage() {
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block text-sm font-semibold">
-                  {t("Price per scoop ($)")}
+                  {t("Price per scoop (FCFA)")}
                   <input
                     className={inputClassName}
-                    min="0.01"
+                    min="1"
                     name="price"
                     onChange={handleEditChange}
                     required
-                    step="0.01"
+                    step="1"
                     type="number"
                     value={editForm.price}
                   />
@@ -592,7 +593,7 @@ export function AdminPage() {
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button
-                  className="rounded-full border-2 border-[#29415f] px-5 py-2.5 text-sm font-bold transition hover:bg-[#f4f1e7]"
+                  className="rounded-full border-2 border-[#65748a] px-5 py-2.5 text-sm font-bold transition hover:bg-[#f4f1e7]"
                   onClick={() => setFlavorToEdit(null)}
                   type="button"
                 >
@@ -633,7 +634,7 @@ export function AdminPage() {
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
-                className="rounded-full border-2 border-[#29415f] px-5 py-2.5 text-sm font-bold transition hover:bg-[#f4f1e7]"
+                className="rounded-full border-2 border-[#65748a] px-5 py-2.5 text-sm font-bold transition hover:bg-[#f4f1e7]"
                 onClick={() => setFlavorToDelete(null)}
                 type="button"
               >

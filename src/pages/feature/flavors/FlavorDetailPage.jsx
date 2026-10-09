@@ -1,21 +1,22 @@
 import { useParams, Link, Navigate, useNavigate } from "react-router-dom";
 import { Header, Footer, ArrowIcon } from "../../../components/Layout";
 import { useCart } from "../../../CartContext";
-import { useFlavors } from "../../../FlavorContext";
-import { useLanguage } from "../../../LanguageContext";
+import { useFlavors } from "../../../flavor-context/FlavorContext";
+import { useLanguage } from "../../../language/LanguageContext";
+import { formatCartMoney } from "../../../cartPricing";
 
 export function FlavorDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { flavors, loading, error } = useFlavors();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const flavor = flavors.find((f) => f.id === Number(id));
 
   if (!flavor && loading) {
     return (
-      <div className="flex min-h-screen flex-col bg-[#fffefa]">
+      <div className="flex min-h-screen flex-col bg-[#f8f7f2]">
         <Header />
         <main className="grid flex-1 place-items-center">
           <p className="text-sm font-semibold text-[#65748a]" role="status">
@@ -29,7 +30,7 @@ export function FlavorDetailPage() {
 
   if (!flavor) {
     return (
-      <div className="min-h-screen bg-[#fffefa] flex flex-col">
+      <div className="min-h-screen bg-[#f8f7f2] flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -63,14 +64,14 @@ export function FlavorDetailPage() {
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-[#fffefa] text-[#102c50]">
+    <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
 
       <main>
         <div className="mx-auto max-w-[1320px] px-5 py-8 sm:px-8 lg:px-12">
           <button
             onClick={() => navigate(-1)}
-            className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-[#29415f] transition hover:text-[#102c50]"
+            className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-[#65748a] transition hover:text-[#102c50]"
           >
             <svg className="size-4" viewBox="0 0 24 24" fill="none">
               <path
@@ -115,7 +116,7 @@ export function FlavorDetailPage() {
                   <h2 className="font-display text-2xl font-bold text-[#102c50]">
                     {t("About this flavor")}
                   </h2>
-                  <p className="mt-3 text-base leading-7 text-[#29415f]">
+                  <p className="mt-3 text-base leading-7 text-[#65748a]">
                     {t(flavor.description)}
                   </p>
                 </div>
@@ -145,7 +146,7 @@ export function FlavorDetailPage() {
                       {flavor.allergies.map((allergen) => (
                         <span
                           key={allergen}
-                          className="inline-block rounded-full bg-[#fff1cf] px-3 py-1.5 text-sm font-medium text-[#29415f]"
+                          className="inline-block rounded-full bg-[#fff1cf] px-3 py-1.5 text-sm font-medium text-[#65748a]"
                         >
                           {t(allergen)}
                         </span>
@@ -161,7 +162,10 @@ export function FlavorDetailPage() {
                     {t("Price per scoop")}
                   </p>
                   <p className="font-display text-5xl font-bold text-[#ffdc32]">
-                    ${flavor.price.toFixed(2)}
+                    {formatCartMoney(flavor.price, "xaf", language)}
+                  </p>
+                  <p className="mt-1 max-w-sm text-xs leading-5 text-[#65748a]">
+                    {t("Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
                   </p>
                 </div>
 
@@ -188,7 +192,7 @@ export function FlavorDetailPage() {
                   </button>
                   <Link
                     to="/cart"
-                    className="flex items-center justify-center gap-2 rounded-full border-2 border-[#29415f] px-8 py-4 text-lg font-bold text-[#102c50] transition hover:bg-[#f4f1e7]"
+                    className="flex items-center justify-center gap-2 rounded-full border-2 border-[#65748a] px-8 py-4 text-lg font-bold text-[#102c50] transition hover:bg-[#f4f1e7]"
                   >
                     <span>{t("View cart")}</span>
                     <ArrowIcon diagonal />
@@ -200,7 +204,7 @@ export function FlavorDetailPage() {
         </section>
 
         {relatedFlavors.length > 0 && (
-          <section className="border-t border-[#ece8de] px-5 py-16 sm:px-8 sm:py-20 lg:px-12">
+          <section className="border-t border-[#d9d6cc] px-5 py-16 sm:px-8 sm:py-20 lg:px-12">
             <div className="mx-auto max-w-[1320px]">
               <h2 className="font-display text-3xl font-bold text-[#102c50] sm:text-4xl">
                 {t("You might also love")}
@@ -210,7 +214,7 @@ export function FlavorDetailPage() {
                   <Link
                     key={relatedFlavor.id}
                     to={`/flavor/${relatedFlavor.id}`}
-                    className="group overflow-hidden rounded-[22px] border border-[#ece8de] bg-white shadow-[0_8px_30px_rgba(18,44,80,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_14px_38px_rgba(18,44,80,0.12)]"
+                    className="group overflow-hidden rounded-[22px] border border-[#d9d6cc] bg-white shadow-[0_8px_30px_rgba(18,44,80,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_14px_38px_rgba(18,44,80,0.12)]"
                   >
                     <div
                       className={`relative aspect-[0.9] overflow-hidden ${relatedFlavor.color}`}
@@ -220,7 +224,7 @@ export function FlavorDetailPage() {
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                         src={relatedFlavor.image}
                       />
-                      <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[9px] font-bold text-[#29415f] shadow-sm">
+                      <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[9px] font-bold text-[#65748a] shadow-sm">
                         {t(relatedFlavor.tag)}
                       </span>
                     </div>
@@ -233,7 +237,7 @@ export function FlavorDetailPage() {
                       </p>
                       <div className="mt-3 flex items-center justify-between">
                         <span className="text-sm font-extrabold text-[#102c50]">
-                          ${relatedFlavor.price.toFixed(2)}
+                          {formatCartMoney(relatedFlavor.price, "xaf", language)}
                         </span>
                         <button
                           onClick={(e) => {

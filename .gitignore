@@ -17,6 +17,7 @@ dist-ssr
 server/*.sqlite
 server/*.sqlite-shm
 server/*.sqlite-wal
+server/uploads/
 
 # Editor directories and files
 .vscode/*

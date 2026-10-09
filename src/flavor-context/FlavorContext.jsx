@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { ADMIN_TOKEN_KEY, apiRequest } from './api'
+import { ADMIN_TOKEN_KEY, apiRequest } from '../api/api'
 
 const FlavorContext = createContext(null)
 

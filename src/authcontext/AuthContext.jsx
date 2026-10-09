@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { apiRequest, CUSTOMER_TOKEN_KEY } from "./api";
+import { apiRequest, CUSTOMER_TOKEN_KEY } from "../api/api";
 
 const AuthContext = createContext(null);
 
@@ -67,12 +67,22 @@ export function AuthProvider({ children }) {
     return result.customer;
   }
 
-  function signup({ name, email, password }) {
-    return authenticate("/auth/register", { name, email, password });
+  function signup({ name, email, password, profilePicture = "" }) {
+    return authenticate("/auth/register", { name, email, password, profilePicture });
   }
 
   function login({ email, password }) {
     return authenticate("/auth/login", { email, password });
+  }
+
+  async function updateProfile(profile) {
+    const result = await apiRequest("/auth/profile", {
+      method: "PUT",
+      token,
+      body: profile,
+    });
+    setCustomer(result.customer);
+    return result.customer;
   }
 
   async function logout() {
@@ -87,7 +97,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ customer, isLoading, sessionError, signup, login, logout }}
+      value={{ customer, isLoading, sessionError, signup, login, logout, updateProfile }}
     >
       {children}
     </AuthContext.Provider>

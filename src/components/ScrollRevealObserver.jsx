@@ -16,15 +16,26 @@ export function ScrollRevealObserver() {
         observer.unobserve(entry.target)
       }
     }, {
-      rootMargin: '0px 0px -32px 0px',
+      rootMargin: '0px 0px -48px 0px',
       threshold: 0,
     })
 
     function observePageSections() {
-      const elements = document.querySelectorAll('main section, main article')
+      const elements = document.querySelectorAll('main > *, main section, main article, main form, footer')
       for (const element of elements) {
-        const parentSection = element.parentElement?.closest('main section, main article')
-        if (parentSection || revealedElements.has(element)) continue
+        if (element.dataset.scrollReveal === 'skip' || revealedElements.has(element)) continue
+        const isMainChild = element.parentElement?.tagName === 'MAIN'
+        const containsAnimatedContent = element.matches('main > *')
+          && !element.matches('section, article, form')
+          && element.querySelector('section, article, form')
+        if (isMainChild && containsAnimatedContent) continue
+
+        if (element.matches('article')) {
+          const siblingCards = Array.from(element.parentElement.children)
+            .filter((sibling) => sibling.tagName === 'ARTICLE')
+          const cardIndex = siblingCards.indexOf(element)
+          element.style.setProperty('--scroll-reveal-delay', `${(cardIndex % 6) * 65}ms`)
+        }
         element.dataset.scrollReveal = ''
         revealedElements.add(element)
         observer.observe(element)
@@ -43,6 +54,7 @@ export function ScrollRevealObserver() {
       for (const element of revealedElements) {
         delete element.dataset.scrollReveal
         element.classList.remove('is-scroll-revealed')
+        element.style.removeProperty('--scroll-reveal-delay')
       }
     }
   }, [pathname])

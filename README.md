@@ -1,6 +1,17 @@
-# Antixor Icy
+# Cold Stone Creamery Cameroon — Independent Guide
 
-A responsive ice-cream shop built with React, Vite, and Tailwind CSS, backed by an Express API and SQLite database.
+An independent, bilingual guide to publicly listed Cold Stone Creamery locations and global menu categories in Cameroon, alongside a separate operator-managed online catalog. Built with React, Vite, Tailwind CSS, Express, and SQLite.
+
+This website is not an official Cold Stone Creamery website and does not claim affiliation. Public branch listings and global menu categories are informational only. Local branch hours, current operations, menu, product availability, and prices require confirmation with the relevant store. The separate website catalog and checkout are managed by this site's operator; catalog items and USD prices are not verified Cold Stone Cameroon products or prices.
+
+The `/locations` page currently lists publicly indexed areas in Bonanjo, Bonamoussadi, Bonabéri, and Ange Raphaël in Douala, and Bastos in Yaoundé. Listings are subject to change and include map-search links for confirmation. Checkout lets customers choose one of these listed town/area options and enter their residence details. On `/menu`, browse image-led categories and product examples from the global brand menu, including Signature Creations. Selecting a product shows its details, an illustrative FCFA estimate, and similar products. Selecting **Order now** adds that example to the cart and uses a separate XAF Stripe checkout; the server validates menu items and prices independently, and Stripe must support XAF for payment to proceed. These are not a confirmed Cameroon branch menu or prices; local availability, recipes, and prices may differ. Menu photos are local copies of the files supplied in `menu-images/`.
+
+No current itemized Cameroon price list could be verified. Search-result snippets that mention a starting price are not treated as a confirmed branch price because the item, serving size, and date could not be established. The online shop continues to use the existing operator-managed USD catalog and checkout; it is explicitly separated from the Cold Stone information guide.
+
+Research references:
+- [Cold Stone Creamery global menu](https://www.coldstonecreamery.com/menu/)
+- [Cold Stone Creamery Cameroon Instagram](https://www.instagram.com/coldstonecameroon/)
+- [Cold Stone Creamery Cameroon Facebook](https://www.facebook.com/ColdStoneCreameryCameroon/)
 
 ## Getting started
 
@@ -18,28 +29,33 @@ Create the first admin once:
 npm run seed:admin
 ```
 
-Run the API and frontend in separate terminals:
+Start the API and frontend together:
 
 ```sh
-npm run dev:server
 npm run dev
 ```
 
-The Express API listens on port 3001 and Vite proxies `/api` requests to it. SQLite creates `server/database.sqlite` automatically and seeds the initial flavor catalog on first start. Customer registrations and flavor changes are persisted in this database. Do not commit `.env` or the SQLite database.
+The development command waits for the Express API health check on port 3001 before starting Vite, which proxies `/api` requests to the API. To run either process separately, use `npm run dev:server` for the API or `npm run dev:frontend` for Vite. SQLite creates `server/database.sqlite` automatically. Customer registrations and flavor changes are persisted in this database. Do not commit `.env` or the SQLite database.
 
 ## Payments and order management
 
-Checkout offers Card, MTN Mobile Money, Orange Money, and Crypto. Card payments use Stripe-hosted Checkout; set `STRIPE_SECRET_KEY` in `.env` to a Stripe test-mode secret key while developing. MTN Mobile Money, Orange Money, and Crypto are shown as coming soon and cannot be selected until their payment providers are integrated. The server creates each order from current database prices, applies the Buy 2 Get 1 Free discount, reserves available flavor stock during checkout, and records the order and payment state in SQLite. Reserved stock is deducted only after Stripe confirms payment, or released when Stripe reports an expired or failed session. Checkout sessions expire after 40 minutes; the server reconciles older sessions periodically as a fallback if a webhook is unavailable. Card details are entered on Stripe and are never stored by this app. A payment is marked paid only after Stripe confirms it.
+Checkout offers Card, MTN Mobile Money, Orange Money, and Crypto. Card payments use Stripe-hosted Checkout; set `STRIPE_SECRET_KEY` in `.env` to a Stripe test-mode secret key while developing. MTN Mobile Money, Orange Money, and Crypto are shown as coming soon and cannot be selected until their payment providers are integrated. The server creates each order from current database prices, applies the Buy 2 Get 1 Free offer or an eligible discount code, supports account-only loyalty redemptions (1 point per 100 FCFA spent; 100 points = 1,000 FCFA off; loyalty rewards cannot be combined with another discount), reserves stock during checkout, and records fulfillment, schedule, and payment details in SQLite. Reserved stock is deducted only after Stripe confirms payment, or released when Stripe reports an expired or failed session. Orders fully paid by loyalty points do not require a Stripe checkout. Checkout sessions expire after 40 minutes; the server reconciles older sessions periodically as a fallback if a webhook is unavailable. Card details are entered on Stripe and are never stored by this app. A payment is marked paid only after Stripe confirms it.
 
 For local webhook testing, configure Stripe CLI to forward events to `http://localhost:3001/api/stripe/webhook` and set the generated signing secret as `STRIPE_WEBHOOK_SECRET`. In production, register that endpoint in Stripe and subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, and `checkout.session.expired`. Set `FRONTEND_URL` to the storefront origin used for checkout return and cancellation. Webhooks update orders immediately if a customer closes Stripe Checkout without returning to the shop; periodic Stripe reconciliation is the fallback.
 
-Admins can set starting stock when adding a flavor and adjust its stock quantity from the flavor editor. Sold-out flavors are hidden from the storefront and direct flavor pages redirect to the catalog. Existing flavors are migrated with an initial stock of 100; admins can adjust those quantities to match physical inventory.
+Admins can set starting stock when adding a flavor and adjust its stock quantity from the flavor editor. In **Menu inventory**, admins can set stock, availability, low-stock thresholds, and dietary tags for each menu item. **Low-stock alerts** automatically lists unavailable items and items at or below their threshold. Sold-out flavors are hidden from the storefront and direct flavor pages redirect to the catalog; sold-out menu items cannot be added to an order. Existing flavors and menu items are initialized with stock of 100; admins should adjust these quantities to match physical inventory.
 
-The admin dashboard has separate **Orders**, **Delivered**, and **Payments** pages. Paid orders appear in Orders and can be marked delivered; delivered orders then appear in Delivered. Payments lists Stripe payment records. These views are protected by admin authentication. When checkout successfully creates an order and Stripe session, the server emails the configured admin accounts a new-order notification with customer/order details and a direct link to the Orders page. Configure SMTP as described below; notification email failures are logged and do not interrupt customer checkout.
+The storefront menu supports search, category, maximum-price, availability, and dietary filters. Admins manage categories (including display order) in **Categories**; a category cannot be deleted while it contains built-in or custom items. **Menu management** supports JPEG, PNG, WebP, and GIF uploads up to 5 MB. Uploaded images are stored under `server/uploads/` and served from `/uploads/`.
+
+Customers can create an account, save delivery details, view their order history and fulfillment progress at `/account/orders`, earn/redeem points, save favorites, reorder past purchases, and submit a review for a purchased item. Reviews are held for admin approval before appearing publicly. In **Customer accounts**, admins can view registered customers, ban or restore account access, and prepare individual promotion messages in WhatsApp. WhatsApp opens with a prefilled message; the admin must review and send it in WhatsApp. Guest checkout remains available. **Pickup and delivery** lets admins configure enabled locations, delivery fees, and non-overlapping time slots; pickup is enabled by default and delivery must be activated and priced by an admin before customers can select it. Checkout revalidates the location, mode, date, slot, stock, price, and discount on the server. Paid orders appear in **Orders** and admins can set accepted, preparing, ready, out-for-delivery, or delivered progress; delivered orders also appear in **Delivered**. Customers can submit custom-cake requests for a selected size, flavor, message, toppings, and pickup date; a request is not a confirmed order or price quote, and admins manage requests in **Cake requests**. **Payments** lists Stripe payment records, **Promotions** manages fixed or percentage discount codes, and **Reports** summarizes sales and inventory. These views and updates are protected by admin authentication.
+
+When checkout successfully creates an order and Stripe session, the server emails configured admin accounts a new-order notification. On payment confirmation, customers receive an email receipt; further fulfillment changes send email progress updates. Custom-cake requests are also emailed to admins and appear in the dashboard. These email features require SMTP; failures are logged and do not reverse successful orders, payments, or cake requests. SMS delivery is not configured.
+
+The site includes a web app manifest, installable icon, keyboard skip link, visible focus indicators, reduced-motion support, and a service worker that caches the application shell and static assets for offline browsing. API-backed checkout, account, and admin actions still require a connection.
 
 ## About and contact
 
-The `/about` page shares the shop story, and the `/contact` page submits visitor messages to SQLite. Admins can review new messages in the dashboard's **Contact notifications** inbox, mark them as read, and reply by email. To send replies and order notifications, configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, and `SMTP_FROM` in `.env`. Set `SMTP_USER` and `SMTP_PASSWORD` when the email provider requires authentication. Contact replies are sent only after the SMTP server accepts the message; the contact's email address is used as the recipient.
+The `/about` page shares the shop story, and the `/contact` page submits visitor messages to SQLite. Admins can review new messages in the dashboard's **Contact notifications** inbox, mark them as read, and reply by email. To send replies, admin order notifications, and customer order updates, configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, and `SMTP_FROM` in `.env`. Set `SMTP_USER` and `SMTP_PASSWORD` when the email provider requires authentication. Contact replies are sent only after the SMTP server accepts the message; the contact's email address is used as the recipient.
 
 ## Checks
 
