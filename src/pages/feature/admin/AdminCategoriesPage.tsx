@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { apiRequest } from '../../../api/api'
 import { useAdminAuth } from './AdminAuthContext'
 import { useLanguage } from '../../../language/LanguageContext'
@@ -6,12 +6,30 @@ import { useLanguage } from '../../../language/LanguageContext'
 const emptyCategory = { title: '', description: '', image: '', icon: '🍦', sortOrder: 0 }
 const fieldClass = 'mt-1.5 w-full rounded-xl border border-[#e7e3d9] bg-[#fbfaf5] px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40'
 
+interface MenuCategory {
+  id: number
+  title: string
+  description: string
+  image: string
+  icon: string
+  sortOrder: number
+  baseTitle?: string
+}
+
+interface CategoryForm {
+  title: string
+  description: string
+  image: string
+  icon: string
+  sortOrder: number | string
+}
+
 export function AdminCategoriesPage() {
   const { sessionToken } = useAdminAuth()
   const { t } = useLanguage()
-  const [categories, setCategories] = useState([])
-  const [form, setForm] = useState(emptyCategory)
-  const [editingId, setEditingId] = useState(null)
+  const [categories, setCategories] = useState<MenuCategory[]>([])
+  const [form, setForm] = useState<CategoryForm>(emptyCategory)
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
@@ -19,25 +37,25 @@ export function AdminCategoriesPage() {
   const customCount = categories.length - builtInCount
 
   async function refresh() {
-    const { categories: rows } = await apiRequest('/admin/menu-categories', { token: sessionToken })
+    const { categories: rows } = await apiRequest<{ categories: MenuCategory[] }>('/admin/menu-categories', { token: sessionToken })
     setCategories(rows)
   }
 
   useEffect(() => {
     let cancelled = false
-    apiRequest('/admin/menu-categories', { token: sessionToken })
+    apiRequest<{ categories: MenuCategory[] }>('/admin/menu-categories', { token: sessionToken })
       .then(({ categories: rows }) => { if (!cancelled) setCategories(rows) })
-      .catch((loadError) => { if (!cancelled) setError(loadError.message) })
+      .catch((loadError: unknown) => { if (!cancelled) setError(loadError instanceof Error ? loadError.message : 'Unable to load categories.') })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [sessionToken])
 
-  async function submit(event) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
     setMessage('')
     try {
-      const { category } = await apiRequest(
+      const { category } = await apiRequest<{ category: MenuCategory }>(
         editingId ? `/admin/menu-categories/${editingId}` : '/admin/menu-categories',
         { method: editingId ? 'PUT' : 'POST', token: sessionToken, body: { ...form, sortOrder: Number(form.sortOrder) } },
       )
@@ -48,11 +66,11 @@ export function AdminCategoriesPage() {
       setEditingId(null)
       setMessage(t('Menu category saved.'))
     } catch (saveError) {
-      setError(saveError.message)
+      setError(saveError instanceof Error ? saveError.message : 'Unable to save category.')
     }
   }
 
-  function edit(category) {
+  function edit(category: MenuCategory) {
     setEditingId(category.id)
     setForm({
       title: category.title,
@@ -65,7 +83,7 @@ export function AdminCategoriesPage() {
     setMessage('')
   }
 
-  async function remove(category) {
+  async function remove(category: MenuCategory) {
     if (!window.confirm(t('Delete category "{name}"?', { name: category.title }))) return
     setError('')
     try {
@@ -73,7 +91,7 @@ export function AdminCategoriesPage() {
       await refresh()
       setMessage(t('Menu category deleted.'))
     } catch (deleteError) {
-      setError(deleteError.message)
+      setError(deleteError instanceof Error ? deleteError.message : 'Unable to delete category.')
     }
   }
 

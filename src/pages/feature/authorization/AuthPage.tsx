@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Footer, Header } from '../../../components/Layout'
+import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Header } from '../../../components/Layout'
 import { PasswordField } from '../../../components/PasswordField'
 import { useAuth } from '../../../authcontext/AuthContext'
 import { useLanguage } from '../../../language/LanguageContext'
@@ -8,7 +8,7 @@ import { useLanguage } from '../../../language/LanguageContext'
 const PROFILE_IMAGE_DIMENSION = 256
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024
 
-async function resizeProfilePicture(file) {
+async function resizeProfilePicture(file: File): Promise<string> {
   if (!file.type.startsWith('image/')) {
     throw new Error('Choose an image file for the profile picture.')
   }
@@ -33,20 +33,25 @@ async function resizeProfilePicture(file) {
   return canvas.toDataURL('image/jpeg', 0.8)
 }
 
-export function AuthPage({ mode }) {
+export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const isSignup = mode === 'signup'
-  const { signup, login } = useAuth()
+  const { requestSignupCode, signup, login } = useAuth()
   const { t } = useLanguage()
   const navigate = useNavigate()
+  const location = useLocation()
+  const returnToCheckout = location.state?.from === '/checkout'
+  const checkoutNotice = typeof location.state?.notice === 'string' ? location.state.notice : ''
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [profilePicture, setProfilePicture] = useState('')
+  const [verificationCode, setVerificationCode] = useState('')
+  const [verificationSent, setVerificationSent] = useState(false)
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  async function handleProfilePictureChange(event) {
+  async function handleProfilePictureChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
 
@@ -56,11 +61,11 @@ export function AuthPage({ mode }) {
     } catch (imageError) {
       console.error('Unable to prepare customer profile picture.', imageError)
       setProfilePicture('')
-      setError(t(imageError.message || 'Could not load this profile picture.'))
+      setError(t(imageError instanceof Error ? imageError.message : 'Could not load this profile picture.'))
     }
   }
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
     if (isSignup && password !== confirmPassword) {
@@ -71,13 +76,50 @@ export function AuthPage({ mode }) {
     setIsSubmitting(true)
     try {
       if (isSignup) {
-        await signup({ name, email, password, profilePicture })
+        if (verificationSent) {
+          await signup({ email, code: verificationCode })
+        } else {
+          await requestSignupCode({ name, email, password, profilePicture })
+          setVerificationSent(true)
+        }
       } else {
-        await login({ email, password })
+        if (verificationSent) {
+          await signup({ email, code: verificationCode })
+        } else {
+          const result = await login({ email, password })
+          if (result.verificationRequired) {
+            setVerificationSent(true)
+            setError('')
+            return
+          }
+        }
       }
-      navigate('/', { replace: true })
+      if (!isSignup || verificationSent) {
+        navigate(returnToCheckout ? '/checkout' : '/', { replace: true })
+      }
     } catch (authError) {
-      setError(authError.message)
+      setError(authError instanceof Error ? authError.message : 'Unable to authenticate. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  async function handleResendCode() {
+    setError('')
+    setIsSubmitting(true)
+    try {
+      if (isSignup) {
+        await requestSignupCode({ name, email, password, profilePicture })
+      } else {
+        const result = await login({ email, password })
+        if (!result.verificationRequired) {
+          navigate(returnToCheckout ? '/checkout' : '/', { replace: true })
+          return
+        }
+      }
+      setVerificationCode('')
+    } catch (authError) {
+      setError(authError instanceof Error ? authError.message : 'Unable to send a verification code. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -124,9 +166,14 @@ export function AuthPage({ mode }) {
             <p className="mt-2 max-w-md text-sm leading-6 text-[#65748a]">
               {isSignup ? t('Create an account to keep your scoop club details together.') : t('Good to see you again. Enter your details below.')}
             </p>
+            {checkoutNotice && (
+              <p className="mt-4 rounded-xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-3 text-sm leading-6 text-[#624f00]" role="status">
+                {checkoutNotice}
+              </p>
+            )}
 
             <form className="mt-7 space-y-4" onSubmit={handleSubmit}>
-              {isSignup && (
+              {isSignup && !verificationSent && (
                 <label className="block text-xs font-extrabold text-[#52647b]">
                   {t('Name')}
                   <input
@@ -141,29 +188,33 @@ export function AuthPage({ mode }) {
                   />
                 </label>
               )}
-              <label className="block text-xs font-extrabold text-[#52647b]">
-                {t('Email address')}
-                <input
-                  autoComplete="email"
-                  className="mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#9aa3ad] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40"
-                  name="email"
-                  onChange={(event) => setEmail(event.target.value)}
-                  required
-                  type="email"
-                  value={email}
-                />
-              </label>
-              <PasswordField
-                autoComplete={isSignup ? 'new-password' : 'current-password'}
-                label={t('Password')}
-                maxLength={128}
-                minLength={8}
-                name="password"
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                value={password}
-              />
-              {isSignup && (
+              {!verificationSent && (
+                <>
+                  <label className="block text-xs font-extrabold text-[#52647b]">
+                    {t('Email address')}
+                    <input
+                      autoComplete="email"
+                      className="mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#9aa3ad] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40"
+                      name="email"
+                      onChange={(event) => setEmail(event.target.value)}
+                      required
+                      type="email"
+                      value={email}
+                    />
+                  </label>
+                  <PasswordField
+                    autoComplete={isSignup ? 'new-password' : 'current-password'}
+                    label={t('Password')}
+                    maxLength={128}
+                    minLength={8}
+                    name="password"
+                    onChange={(event) => setPassword(event.target.value)}
+                    required
+                    value={password}
+                  />
+                </>
+              )}
+              {isSignup && !verificationSent && (
                 <>
                   <PasswordField
                     autoComplete="new-password"
@@ -194,13 +245,46 @@ export function AuthPage({ mode }) {
                   )}
                 </>
               )}
+              {verificationSent && (
+                <>
+                  <p className="rounded-xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-3 text-sm leading-6 text-[#624f00]" role="status">
+                    {t('Enter the six-digit code sent to {email}.', { email })}
+                  </p>
+                  <label className="block text-xs font-extrabold text-[#52647b]">
+                    {t('Verification code')}
+                    <input
+                      autoComplete="one-time-code"
+                      className="mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-lg font-bold tracking-[0.3em] text-[#102c50] outline-none transition placeholder:text-[#9aa3ad] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40"
+                      inputMode="numeric"
+                      maxLength={6}
+                      name="verificationCode"
+                      onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                      pattern="\d{6}"
+                      required
+                      value={verificationCode}
+                    />
+                  </label>
+                  <button
+                    className="w-fit text-sm font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 disabled:opacity-60"
+                    disabled={isSubmitting}
+                    onClick={handleResendCode}
+                    type="button"
+                  >
+                    {t('Resend verification code')}
+                  </button>
+                </>
+              )}
               {error && <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm leading-5 text-red-700" role="alert">{error}</p>}
               <button
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
                 disabled={isSubmitting}
                 type="submit"
               >
-                {isSubmitting ? t('Please wait…') : isSignup ? t('Create account') : t('Log in')} {!isSubmitting && <span aria-hidden="true">→</span>}
+                {isSubmitting
+                  ? t(verificationSent ? 'Verifying…' : isSignup ? 'Sending verification code…' : 'Please wait…')
+                  : isSignup
+                    ? verificationSent ? t('Verify email and create account') : t('Send verification code')
+                    : verificationSent ? t('Verify email and sign in') : t('Log in')} {!isSubmitting && <span aria-hidden="true">→</span>}
               </button>
             </form>
 
@@ -208,6 +292,7 @@ export function AuthPage({ mode }) {
               {isSignup ? t('Already have an account?') : t("New to this website's shop?")}{' '}
               <Link
                 className="font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#806a00]"
+                state={location.state}
                 to={isSignup ? '/login' : '/signup'}
               >
                 {isSignup ? t('Log in') : t('Sign up')}
@@ -216,7 +301,6 @@ export function AuthPage({ mode }) {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   )
 }

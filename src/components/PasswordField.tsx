@@ -1,7 +1,11 @@
-import { useState } from 'react'
+import { useState, type InputHTMLAttributes } from 'react'
 import { useLanguage } from '../language/LanguageContext'
 
-export function PasswordField({ label, ...inputProps }) {
+type PasswordFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
+  label: string
+}
+
+export function PasswordField({ label, ...inputProps }: PasswordFieldProps) {
   const [isVisible, setIsVisible] = useState(false)
   const { t } = useLanguage()
 

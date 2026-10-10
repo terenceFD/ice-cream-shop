@@ -13,7 +13,7 @@ const inputClassName = 'mt-2 w-full rounded-xl border border-[#dce2ea] bg-[#fbfc
 export function CheckoutPage() {
   const navigate = useNavigate()
   const { cartItems } = useCart()
-  const { customer } = useAuth()
+  const { customer, isLoading } = useAuth()
   const { t } = useLanguage()
   const { currency, subtotal, freeScoops, discount, total } = getCartPricing(cartItems)
   const hasMenuItems = cartItems.some((item) => item.itemType === 'menu')
@@ -72,6 +72,17 @@ export function CheckoutPage() {
 
   function handleSubmit(event) {
     event.preventDefault()
+    if (isLoading) return
+    if (!customer) {
+      navigate('/signup', {
+        state: {
+          from: '/checkout',
+          notice: t('Please sign in to continue placing your order.'),
+        },
+      })
+      return
+    }
+
     const checkoutDetails = {
       ...Object.fromEntries(new FormData(event.currentTarget)),
       fulfillmentType,
@@ -138,6 +149,15 @@ export function CheckoutPage() {
               ? 'Menu items and FCFA prices are illustrative examples, not confirmed local menu items or prices. Orders are handled by this independent website.'
               : "Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
         </p>
+        {!customer && !isLoading && (
+          <p className="mb-7 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-4 text-sm leading-6 text-[#624f00] sm:px-5">
+            <span>{t('Please sign in to continue placing your order.')}</span>
+            <span className="flex items-center gap-3 font-bold">
+              <Link className="underline" state={{ from: '/checkout', notice: t('Please sign in to continue placing your order.') }} to="/login">{t('Log in')}</Link>
+              <Link className="rounded-full bg-[#ffdc32] px-4 py-2 text-[#102c50] no-underline" state={{ from: '/checkout', notice: t('Please sign in to continue placing your order.') }} to="/signup">{t('Sign up')}</Link>
+            </span>
+          </p>
+        )}
 
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_370px] lg:gap-8">
           <form className="space-y-0 overflow-hidden rounded-[28px] border border-[#e4e8ee] bg-white shadow-[0_12px_36px_rgba(18,44,80,0.07)]" key={customer?.id || 'guest'} onSubmit={handleSubmit}>
@@ -245,7 +265,7 @@ export function CheckoutPage() {
               {t('Your delivery details are stored with the order so we can prepare and deliver it.')}
             </div>
             <div className="border-t border-[#edf0f4] bg-[#fbfcfe] p-5 sm:px-8 sm:py-6">
-              <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#ffdc32] px-6 py-4 text-base font-extrabold text-[#102c50] shadow-[0_8px_18px_rgba(189,156,0,0.16)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" disabled={!selectedZone || !selectedSlot || !scheduledDate || Boolean(fulfillmentError)} type="submit">
+              <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#ffdc32] px-6 py-4 text-base font-extrabold text-[#102c50] shadow-[0_8px_18px_rgba(189,156,0,0.16)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" disabled={isLoading || !selectedZone || !selectedSlot || !scheduledDate || Boolean(fulfillmentError)} type="submit">
                 {t('Review order')} <span aria-hidden="true">→</span>
               </button>
               <p className="mt-3 text-center text-[11px] font-medium text-[#7b8796]">{t('You can review everything before confirming your order.')}</p>

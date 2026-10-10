@@ -1,11 +1,30 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { apiRequest, ADMIN_TOKEN_KEY } from '../../../api/api'
 
-const AdminAuthContext = createContext(null)
+export interface AdminAccount {
+  id: number;
+  name: string;
+  email: string;
+  profilePicture?: string;
+}
 
-export function AdminAuthProvider({ children }) {
-  const [currentAdmin, setCurrentAdmin] = useState(null)
-  const [admins, setAdmins] = useState([])
+interface AdminAuthContextValue {
+  admins: AdminAccount[];
+  currentAdmin: AdminAccount | null;
+  isAdmin: boolean;
+  isLoading: boolean;
+  sessionToken: string;
+  login: (email: string, password: string) => Promise<AdminAccount>;
+  refreshAdmins: () => Promise<AdminAccount[]>;
+  createAdmin: (details: { name: string; email: string; password: string; profilePicture: string }) => Promise<AdminAccount>;
+  logout: () => Promise<void>;
+}
+
+const AdminAuthContext = createContext<AdminAuthContextValue | null>(null)
+
+export function AdminAuthProvider({ children }: { children: ReactNode }) {
+  const [currentAdmin, setCurrentAdmin] = useState<AdminAccount | null>(null)
+  const [admins, setAdmins] = useState<AdminAccount[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [sessionToken, setSessionToken] = useState(() => sessionStorage.getItem(ADMIN_TOKEN_KEY) || '')
 
@@ -20,7 +39,7 @@ export function AdminAuthProvider({ children }) {
 
     setIsLoading(true)
     apiRequest('/admin/me', { token: sessionToken })
-      .then(({ admin }) => {
+      .then(({ admin }: { admin: AdminAccount }) => {
         if (!cancelled) setCurrentAdmin(admin)
       })
       .catch(() => {
@@ -43,8 +62,8 @@ export function AdminAuthProvider({ children }) {
     return () => window.removeEventListener('admin-session-expired', clearExpiredSession)
   }, [])
 
-  async function login(email, password) {
-    const result = await apiRequest('/admin/login', { method: 'POST', body: { email, password } })
+  async function login(email: string, password: string) {
+    const result = await apiRequest<{ token: string; admin: AdminAccount }>('/admin/login', { method: 'POST', body: { email, password } })
     sessionStorage.setItem(ADMIN_TOKEN_KEY, result.token)
     setCurrentAdmin(result.admin)
     setSessionToken(result.token)
@@ -52,13 +71,13 @@ export function AdminAuthProvider({ children }) {
   }
 
   const refreshAdmins = useCallback(async () => {
-    const result = await apiRequest('/admin/admins', { token: sessionToken })
+    const result = await apiRequest<{ admins: AdminAccount[] }>('/admin/admins', { token: sessionToken })
     setAdmins(result.admins)
     return result.admins
   }, [sessionToken])
 
-  async function createAdmin({ name, email, password, profilePicture }) {
-    const result = await apiRequest('/admin/admins', {
+  async function createAdmin({ name, email, password, profilePicture }: { name: string; email: string; password: string; profilePicture: string }) {
+    const result = await apiRequest<{ admin: AdminAccount }>('/admin/admins', {
       method: 'POST',
       token: sessionToken,
       body: { name, email, password, profilePicture },

@@ -1,6 +1,21 @@
 export { USD_TO_XAF } from "../shared/currency.js";
 
-export function getCartPricing(items) {
+export interface CartPricingItem {
+  itemType?: string
+  quantity: number
+  price: number
+}
+
+export interface CartPricing {
+  cartCount: number
+  currency: 'xaf'
+  subtotal: number
+  freeScoops: number
+  discount: number
+  total: number
+}
+
+export function getCartPricing(items: CartPricingItem[]): CartPricing {
   const currency = "xaf";
   const pricedItems = items.map((item) => ({
     itemType: item.itemType,
@@ -34,7 +49,7 @@ export function getCartPricing(items) {
   };
 }
 
-export function formatCartMoney(amount, _currency = "xaf", language = "en") {
+export function formatCartMoney(amount: number, _currency = "xaf", language = "en"): string {
   const formattedAmount = new Intl.NumberFormat(
     language === "fr" ? "fr-CM" : "en-CM",
   ).format(Math.round(amount));

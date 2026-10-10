@@ -5,10 +5,22 @@ import { useLanguage } from '../../../language/LanguageContext'
 
 const dietaryOptions = ['vegetarian', 'vegan', 'dairy-free', 'gluten-free', 'nut-free']
 
+interface InventoryItem {
+  id: string
+  name: string
+  categoryTitle: string
+  stock: number
+  reservedStock: number
+  availableQuantity: number
+  isAvailable: boolean
+  dietaryTags: string[]
+  lowStockThreshold?: number
+}
+
 export function AdminInventoryPage() {
   const { sessionToken } = useAdminAuth()
   const { t } = useLanguage()
-  const [items, setItems] = useState([])
+  const [items, setItems] = useState<InventoryItem[]>([])
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
@@ -16,14 +28,14 @@ export function AdminInventoryPage() {
 
   useEffect(() => {
     let cancelled = false
-    apiRequest('/menu')
+    apiRequest<{ categories: { title: string; items: InventoryItem[] }[] }>('/menu')
       .then(({ categories }) => {
         if (!cancelled) setItems(categories.flatMap((category) =>
           category.items.map((item) => ({ ...item, categoryTitle: category.title })),
         ))
       })
-      .catch((loadError) => {
-        if (!cancelled) setError(loadError.message)
+      .catch((loadError: unknown) => {
+        if (!cancelled) setError(loadError instanceof Error ? loadError.message : 'Unable to load menu inventory.')
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -31,16 +43,16 @@ export function AdminInventoryPage() {
     return () => { cancelled = true }
   }, [])
 
-  function updateItem(itemId, updates) {
+  function updateItem(itemId: string, updates: Partial<InventoryItem>) {
     setItems((current) => current.map((item) => item.id === itemId ? { ...item, ...updates } : item))
   }
 
-  async function saveItem(item) {
+  async function saveItem(item: InventoryItem) {
     setError('')
     setMessage('')
     setSavingId(item.id)
     try {
-      const updated = await apiRequest('/admin/menu-inventory', {
+      const updated = await apiRequest<InventoryItem>('/admin/menu-inventory', {
         method: 'PUT',
         token: sessionToken,
         body: {
@@ -58,7 +70,7 @@ export function AdminInventoryPage() {
       })
       setMessage(t('Inventory updated.'))
     } catch (saveError) {
-      setError(saveError.message)
+      setError(saveError instanceof Error ? saveError.message : 'Unable to update inventory.')
     } finally {
       setSavingId('')
     }

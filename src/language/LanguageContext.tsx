@@ -1,9 +1,17 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 
 const LANGUAGE_STORAGE_KEY = 'antixor-icy-language'
-const LanguageContext = createContext(null)
+type Language = 'en' | 'fr'
 
-const french = {
+interface LanguageContextValue {
+  language: Language
+  setLanguage: Dispatch<SetStateAction<Language>>
+  t: (key: string, variables?: Record<string, string | number>) => string
+}
+
+const LanguageContext = createContext<LanguageContextValue | null>(null)
+
+const french: Record<string, string> = {
   Home: 'Accueil',
   'Your next favorite': 'Votre prochain favori',
   'starts here.': 'commence ici.',
@@ -19,6 +27,8 @@ const french = {
   Account: 'Compte',
   'Log in': 'Connexion',
   'Sign up': 'Créer un compte',
+  'Please sign in to continue placing your order.': 'Veuillez vous connecter pour continuer votre commande.',
+  'Confirm payment for {amount}': 'Confirmer le paiement de {amount}',
   'Log out': 'Déconnexion',
   'Order now': 'Commander',
   'Shopping bag, {count} items': 'Panier, {count} article(s)',
@@ -34,6 +44,11 @@ const french = {
   'Say hello': 'Dites bonjour',
   'Fresh scoops, happy hearts.': 'Des glaces fraîches, des cœurs heureux.',
   'Admin portal': 'Espace administrateur',
+  'Administration workspace': 'Espace de gestion',
+  'Catalog': 'Catalogue',
+  'Customers': 'Clients',
+  'Workspace': 'Espace de travail',
+  'Signed in to admin': 'Connecté à l’administration',
   'View storefront': 'Voir la boutique',
   'Flavors': 'Parfums',
   'Admin accounts': 'Comptes administrateur',
@@ -72,6 +87,27 @@ const french = {
   'Saved delivery details': 'Coordonnées de livraison enregistrées',
   'Order history and status': 'Historique et statut des commandes',
   'Order #{id}': 'Commande nº {id}',
+  'Saved carts': 'Paniers enregistrés',
+  'Save cart': 'Enregistrer le panier',
+  'Saved for later': 'Enregistré pour plus tard',
+  'Saving…': 'Enregistrement…',
+  'Removing…': 'Suppression…',
+  'Add saved cart to bag': 'Ajouter le panier au panier',
+  'Current prices and stock are checked when you add a saved cart.': 'Les prix actuels et les stocks sont vérifiés lorsque vous ajoutez un panier enregistré.',
+  'No saved carts yet. Save a paid order to quickly rebuild its cart later.': 'Aucun panier enregistré. Enregistrez une commande payée pour reconstituer rapidement votre panier plus tard.',
+  'Saved {label} for later.': '{label} a été enregistré pour plus tard.',
+  'Added {added} of {requested} items. Some products are unavailable or limited by stock.': '{added} article(s) sur {requested} ajouté(s). Certains produits sont indisponibles ou limités par le stock.',
+  'View shopping bag': 'Voir le panier',
+  'Choose a valid order to save.': 'Choisissez une commande valide à enregistrer.',
+  'A paid order belonging to your account was not found.': 'Aucune commande payée de votre compte n’a été trouvée.',
+  'This order has no items to save.': 'Cette commande ne contient aucun article à enregistrer.',
+  'This order contains items that cannot be saved.': 'Cette commande contient des articles qui ne peuvent pas être enregistrés.',
+  'Saved cart ID is invalid.': 'L’identifiant du panier enregistré est invalide.',
+  'Saved cart not found.': 'Panier enregistré introuvable.',
+  'Live order tracking': 'Suivi de commande en direct',
+  Preparing: 'En préparation',
+  'Out for delivery': 'En cours de livraison',
+  'This timeline refreshes automatically. Email updates are sent when your order status changes.': 'Cette progression s’actualise automatiquement. Vous recevrez un e-mail à chaque changement de statut de votre commande.',
   'Awaiting payment': 'En attente de paiement',
   'Payment failed': 'Échec du paiement',
   Ready: 'Prête',
@@ -509,6 +545,14 @@ const french = {
   'Welcome back': 'Ravi de vous revoir',
   'Create an account': 'Créer un compte',
   'Create account': 'Créer mon compte',
+  'Send verification code': 'Envoyer le code de vérification',
+  'Sending verification code…': 'Envoi du code de vérification…',
+  'Verify email and create account': 'Vérifier l’e-mail et créer le compte',
+  'Verifying…': 'Vérification…',
+  'Verification code': 'Code de vérification',
+  'Enter the six-digit code sent to {email}.': 'Saisissez le code à six chiffres envoyé à {email}.',
+  'Resend verification code': 'Renvoyer le code de vérification',
+  'Verify email and sign in': 'Vérifier l’e-mail et se connecter',
   'Create an account to keep your scoop club details together.': 'Créez un compte pour retrouver vos informations.',
   'Good to see you again. Enter your details below.': 'Ravi de vous revoir. Saisissez vos informations ci-dessous.',
   'A little more joy in every visit.': 'Un peu plus de bonheur à chaque visite.',
@@ -532,6 +576,14 @@ const french = {
   'An unexpected server error occurred.': 'Une erreur inattendue du serveur est survenue.',
   'Provide a name, valid email, and password of 8 to 128 characters.': 'Saisissez un nom, une adresse e-mail valide et un mot de passe de 8 à 128 caractères.',
   'An account already uses that email address.': 'Un compte utilise déjà cette adresse e-mail.',
+  'A six-digit verification code has been sent to your email address.': 'Un code de vérification à six chiffres a été envoyé à votre adresse e-mail.',
+  'Enter the email address and six-digit code used for registration.': 'Saisissez l’adresse e-mail et le code à six chiffres utilisés pour l’inscription.',
+  'Request a new verification code to continue.': 'Demandez un nouveau code de vérification pour continuer.',
+  'This verification code has expired. Request a new one.': 'Ce code de vérification a expiré. Demandez-en un nouveau.',
+  'Too many incorrect codes. Request a new verification code.': 'Trop de codes incorrects. Demandez un nouveau code de vérification.',
+  'The verification code is incorrect.': 'Le code de vérification est incorrect.',
+  'Verify your email address to continue. Sign in again to receive a verification code.': 'Vérifiez votre adresse e-mail pour continuer. Reconnectez-vous pour recevoir un code de vérification.',
+  'This account can no longer be verified. Please sign in again or contact support.': 'Ce compte ne peut plus être vérifié. Reconnectez-vous ou contactez l’assistance.',
   'Enter a price greater than zero.': 'Saisissez un prix supérieur à zéro.',
   'Enter a whole-number stock quantity of zero or more.': 'Saisissez un nombre entier de stock supérieur ou égal à zéro.',
   'Flavor added to the shop and saved to the database.': 'Le parfum a été ajouté à la boutique et enregistré.',
@@ -539,9 +591,14 @@ const french = {
   '{name} was updated.': '{name} a été mis à jour.',
   'Only paid orders can be marked as delivered.': 'Seules les commandes payées peuvent être marquées comme livrées.',
   'Only failed, unpaid orders can be deleted.': 'Seules les commandes échouées et non payées peuvent être supprimées.',
+  'At least five delivered orders are required before clearing them.': 'Il faut au moins cinq commandes livrées pour pouvoir les supprimer.',
   'Delete failed order': 'Supprimer la commande échouée',
   'Deleting…': 'Suppression…',
   'Delete failed order #{id}? This will permanently remove the order and its payment record.': 'Supprimer la commande échouée nº {id} ? Cette action supprimera définitivement la commande et son paiement.',
+  'Delivered orders: {count}': 'Commandes livrées : {count}',
+  'Clear all delivered orders': 'Supprimer toutes les commandes livrées',
+  'Clearing…': 'Suppression…',
+  'Clear all {count} delivered orders? This permanently deletes their order, payment, loyalty, and review history.': 'Supprimer les {count} commandes livrées ? Cette action supprimera définitivement leur historique de commande, de paiement, de fidélité et d’avis.',
   'Stock cannot be lower than the quantity reserved for pending checkouts.': 'Le stock ne peut pas être inférieur à la quantité réservée aux paiements en cours.',
   'The flavor is no longer available.': 'Ce parfum n’est plus disponible.',
   'Reply sent': 'Réponse envoyée',
@@ -624,6 +681,11 @@ const french = {
   'Admin access': 'Accès administrateur',
   'Manage admin accounts': 'Gérer les comptes administrateur',
   'Create another admin login and add their profile picture.': 'Créez un autre compte administrateur et ajoutez sa photo de profil.',
+  'Review who has access to the admin portal.': 'Consultez les personnes ayant accès au portail administrateur.',
+  'Administrator': 'Administrateur',
+  'You': 'Vous',
+  'Loading administrators…': 'Chargement des administrateurs…',
+  'Only create administrator accounts for people you trust with store access.': 'Créez des comptes administrateur uniquement pour les personnes de confiance qui doivent accéder à la boutique.',
   'Add an admin': 'Ajouter un administrateur',
   'Optional. Image will be resized before saving (5 MB max).': 'Facultatif. L’image sera redimensionnée avant l’enregistrement (5 Mo maximum).',
   'New admin profile preview': 'Aperçu du nouveau profil administrateur',
@@ -918,8 +980,8 @@ const french = {
   'For the latest local announcements, check the brand’s public Cameroon social pages. We cannot guarantee every listing or post is current.': 'Pour les dernières actualités locales, consultez les pages sociales publiques de la marque au Cameroun. Nous ne pouvons garantir que chaque adresse ou publication soit à jour.',
 }
 
-export function LanguageProvider({ children }) {
-  const [language, setLanguage] = useState(() => {
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguage] = useState<Language>(() => {
     try {
       const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY)
       if (savedLanguage === 'en' || savedLanguage === 'fr') return savedLanguage
@@ -944,7 +1006,7 @@ export function LanguageProvider({ children }) {
   const value = useMemo(() => ({
     language,
     setLanguage,
-    t(key, variables = {}) {
+    t(key: string, variables: Record<string, string | number> = {}) {
       let result = language === 'fr' ? french[key] || key : key
       for (const [name, replacement] of Object.entries(variables)) {
         result = result.replaceAll(`{${name}}`, String(replacement))

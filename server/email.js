@@ -33,6 +33,21 @@ export async function sendContactReply({ to, recipientName, subject, reply, admi
   })
 }
 
+export async function sendSignupVerificationCode({ to, code }) {
+  const { transporter, from } = createTransporter()
+  await transporter.sendMail({
+    from,
+    to,
+    subject: 'Verify your email address',
+    text: [
+      `Your Cold Stone Cameroon verification code is ${code}.`,
+      '',
+      'Enter this six-digit code to finish creating your account.',
+      'This code expires in 10 minutes. If you did not request it, you can ignore this email.',
+    ].join('\n'),
+  })
+}
+
 export async function sendNewOrderNotification({ recipients, orderId, customerName, customerEmail, items, totalCents, currency, orderUrl }) {
   if (!recipients.length) {
     throw new Error('No admin email addresses are available for order notifications.')

@@ -1,4 +1,4 @@
-export function getCameroonDate(daysFromToday = 0) {
+export function getCameroonDate(daysFromToday: number = 0): string {
   if (!Number.isSafeInteger(daysFromToday)) {
     throw new Error("Date offset must be a whole number of days.");
   }
@@ -10,7 +10,7 @@ export function getCameroonDate(daysFromToday = 0) {
   }).formatToParts(new Date());
   const values = Object.fromEntries(
     parts.map(({ type, value }) => [type, value]),
-  );
+  ) as Record<string, string>
   const date = new Date(
     Date.UTC(
       Number(values.year),

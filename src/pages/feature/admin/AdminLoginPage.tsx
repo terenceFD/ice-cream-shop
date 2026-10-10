@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Footer, Header } from "../../../components/Layout";
+import { Header } from "../../../components/Layout";
 import { useAdminAuth } from "./AdminAuthContext";
 import { PasswordField } from "../../../components/PasswordField";
 import { useLanguage } from "../../../language/LanguageContext";
@@ -19,7 +19,7 @@ export function AdminLoginPage() {
     return <Navigate to="/admin" replace />;
   }
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setIsSubmitting(true);
@@ -125,7 +125,6 @@ export function AdminLoginPage() {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 }

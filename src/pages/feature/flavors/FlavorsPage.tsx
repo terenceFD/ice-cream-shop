@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCart } from "../../../CartContext";
-import { useFlavors } from "../../../flavor-context/FlavorContext";
+import { useFlavors, type Flavor } from "../../../flavor-context/FlavorContext";
 import { ArrowIcon, Footer, Header } from "../../../components/Layout";
 import { useLanguage } from "../../../language/LanguageContext";
 import { formatCartMoney } from "../../../cartPricing";
@@ -12,14 +12,14 @@ export function FlavorsPage() {
   const { flavors, loading, error } = useFlavors();
   const { t, language } = useLanguage();
   const availableFlavors = flavors.filter(
-    (flavor) => flavor.availableQuantity > 0,
+    (flavor: Flavor) => flavor.availableQuantity > 0,
   );
   const [search, setSearch] = useState("");
   const selectedTag = searchParams.get("tag") || "";
   const flavorTags = [
     ...new Set(availableFlavors.map((flavor) => flavor.tag).filter(Boolean)),
   ].sort((a, b) => a.localeCompare(b));
-  const filteredFlavors = availableFlavors.filter((flavor) => {
+  const filteredFlavors = availableFlavors.filter((flavor: Flavor) => {
     const searchText = search.trim().toLocaleLowerCase();
     const matchesSearch =
       !searchText ||

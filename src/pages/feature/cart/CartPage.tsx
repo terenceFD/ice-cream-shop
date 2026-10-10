@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Header, Footer, ArrowIcon } from '../../../components/Layout'
-import { useCart } from '../../../CartContext'
+import { useCart, type CartItem } from '../../../CartContext'
 import { formatCartMoney, getCartPricing } from '../../../cartPricing'
 import { useLanguage } from '../../../language/LanguageContext'
 
@@ -8,7 +8,7 @@ export function CartPage() {
   const { cartItems, removeFromCart, updateQuantity } = useCart()
   const { t } = useLanguage()
   const { cartCount, currency, subtotal, freeScoops, discount, total } = getCartPricing(cartItems)
-  const hasUnavailableItems = cartItems.some((item) => item.availableQuantity < item.quantity)
+  const hasUnavailableItems = cartItems.some((item: CartItem) => item.availableQuantity !== undefined && item.availableQuantity < item.quantity)
   const hasMenuItems = cartItems.some((item) => item.itemType === 'menu')
 
   return (

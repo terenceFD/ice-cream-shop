@@ -3,11 +3,30 @@ import { apiRequest } from '../../../api/api'
 import { useAdminAuth } from './AdminAuthContext'
 import { useLanguage } from '../../../language/LanguageContext'
 
-function formatXaf(value, language) {
+interface AdminReport {
+  summary: {
+    orderCount: number
+    sales: number
+    averageOrder: number
+    placedCount: number
+  }
+  popularItems: { name: string; quantity: number; sales: number }[]
+  lowStock: {
+    itemId: string
+    name?: string
+    stock: number
+    reservedStock: number
+    availableQuantity: number
+    isAvailable: boolean
+  }[]
+  recentSales: { date: string; orders: number; sales: number }[]
+}
+
+function formatXaf(value: number, language: string) {
   return `${new Intl.NumberFormat(language === 'fr' ? 'fr-CM' : 'en-CM').format(Number(value || 0))} FCFA`
 }
 
-function csvCell(value) {
+function csvCell(value: unknown) {
   if (typeof value === 'number' && Number.isFinite(value)) return String(value)
   const text = String(value ?? '')
   const safeText = /^[\s]*[=+\-@]/.test(text) ? `'${text}` : text
@@ -17,14 +36,14 @@ function csvCell(value) {
 export function AdminReportsPage() {
   const { sessionToken } = useAdminAuth()
   const { t, language } = useLanguage()
-  const [report, setReport] = useState(null)
+  const [report, setReport] = useState<AdminReport | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
     let cancelled = false
-    apiRequest('/admin/reports', { token: sessionToken })
+    apiRequest<AdminReport>('/admin/reports', { token: sessionToken })
       .then((result) => { if (!cancelled) setReport(result) })
-      .catch((loadError) => { if (!cancelled) setError(loadError.message) })
+      .catch((loadError: unknown) => { if (!cancelled) setError(loadError instanceof Error ? loadError.message : 'Unable to load reports.') })
     return () => { cancelled = true }
   }, [sessionToken])
 

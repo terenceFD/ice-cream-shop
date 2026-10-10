@@ -1,8 +1,17 @@
+type ApiOptions = Omit<RequestInit, 'body'> & {
+  body?: unknown
+  token?: string
+}
+
+type ApiError = {
+  error?: string
+}
+
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
 const ADMIN_TOKEN_KEY = 'antixor-icy-admin-token'
 const CUSTOMER_TOKEN_KEY = 'antixor-icy-customer-token'
 
-export async function apiRequest(path, { body, token, ...options } = {}) {
+export async function apiRequest<T = any>(path: string, { body, token, ...options }: ApiOptions = {}): Promise<T | null> {
   const headers = new Headers(options.headers)
   if (body !== undefined) headers.set('Content-Type', 'application/json')
   if (token) headers.set('Authorization', `Bearer ${token}`)
@@ -19,7 +28,7 @@ export async function apiRequest(path, { body, token, ...options } = {}) {
   }
 
   if (response.status === 204) return null
-  let result
+  let result: ApiError & Record<string, any>
   try {
     result = await response.json()
   } catch {
@@ -40,7 +49,7 @@ export async function apiRequest(path, { body, token, ...options } = {}) {
     const endpoint = new URL(`${API_BASE_URL}/api${path}`, window.location.origin).pathname
     throw new Error(`API request failed (${response.status}) for ${options.method || 'GET'} ${endpoint}.`)
   }
-  return result
+  return result as T
 }
 
 export { ADMIN_TOKEN_KEY, CUSTOMER_TOKEN_KEY }

@@ -8,7 +8,7 @@ export function ScrollRevealObserver() {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
     if (reducedMotion.matches || !('IntersectionObserver' in window)) return undefined
 
-    const revealedElements = new Set()
+    const revealedElements = new Set<HTMLElement>()
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue
@@ -21,7 +21,7 @@ export function ScrollRevealObserver() {
     })
 
     function observePageSections() {
-      const elements = document.querySelectorAll('main > *, main section, main article, main form, footer')
+      const elements = document.querySelectorAll<HTMLElement>('main > *, main section, main article, main form, footer')
       for (const element of elements) {
         if (element.dataset.scrollReveal === 'skip' || revealedElements.has(element)) continue
         const isMainChild = element.parentElement?.tagName === 'MAIN'

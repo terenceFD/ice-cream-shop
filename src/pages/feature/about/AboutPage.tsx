@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Footer, Header } from '../../../components/Layout'
 import { useLanguage } from '../../../language/LanguageContext'
 
-const experienceSteps = [
+const experienceSteps: { number: string; title: string; description: string; icon: string }[] = [
   {
     number: '01',
     title: 'Choose your favorite',

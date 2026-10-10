@@ -10,8 +10,12 @@ import {
 } from "../../../cartPricing";
 import { apiRequest, CUSTOMER_TOKEN_KEY } from "../../../api/api";
 import { useLanguage } from "../../../language/LanguageContext";
+import { useAuth } from "../../../authcontext/AuthContext";
 
 const CHECKOUT_DETAILS_KEY = "antixor-icy-checkout-details";
+const PAYMENT_PENDING_MESSAGE = "Stripe has not confirmed this payment yet.";
+const PAYMENT_CONFIRMATION_RETRIES = 8;
+const PAYMENT_CONFIRMATION_RETRY_DELAY_MS = 1500;
 const paymentMethods = [
   {
     id: "card",
@@ -50,10 +54,30 @@ function formatMoney(cents, currency = "xaf", language = "en") {
   return formatCartMoney(amountXaf, "xaf", language);
 }
 
+async function verifyStripePayment(sessionId, isCancelled) {
+  for (let attempt = 0; ; attempt += 1) {
+    if (isCancelled()) return null;
+    try {
+      return await apiRequest(`/payment/session/${encodeURIComponent(sessionId)}`);
+    } catch (error) {
+      if (
+        error.message !== PAYMENT_PENDING_MESSAGE ||
+        attempt >= PAYMENT_CONFIRMATION_RETRIES
+      ) {
+        throw error;
+      }
+      await new Promise((resolve) =>
+        window.setTimeout(resolve, PAYMENT_CONFIRMATION_RETRY_DELAY_MS),
+      );
+    }
+  }
+}
+
 export function PaymentPage() {
   const { cartItems, clearCart } = useCart();
   const { refreshFlavors } = useFlavors();
   const { t, language } = useLanguage();
+  const { customer, isLoading } = useAuth();
   const { currency, subtotal, freeScoops, discount, total } = getCartPricing(cartItems);
   const hasMenuItems = cartItems.some((item) => item.itemType === "menu");
   const hasUnavailableItems = cartItems.some(
@@ -91,13 +115,13 @@ export function PaymentPage() {
     let cancelledRequest = false;
     setPaymentStatus("checking");
     const verification = sessionId
-      ? apiRequest(`/payment/session/${encodeURIComponent(sessionId)}`)
+      ? verifyStripePayment(sessionId, () => cancelledRequest)
       : apiRequest(`/customer/orders/${encodeURIComponent(loyaltyOrderId)}`, {
           token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY),
         })
     verification
       .then(({ order: paidOrder }) => {
-        if (cancelledRequest) return;
+        if (cancelledRequest || !paidOrder) return;
         setOrder(paidOrder);
         setPaymentStatus("paid");
         window.scrollTo(0, 0);
@@ -117,6 +141,18 @@ export function PaymentPage() {
 
   if (!sessionId && !loyaltyOrderId && cartItems.length === 0 && !cancelled) {
     return <Navigate to="/cart" replace />;
+  }
+  if (!sessionId && !loyaltyOrderId && !cancelled && !isLoading && !customer) {
+    return (
+      <Navigate
+        to="/signup"
+        state={{
+          from: "/checkout",
+          notice: t("Please sign in to continue placing your order."),
+        }}
+        replace
+      />
+    );
   }
   if (!sessionId && !loyaltyOrderId && !checkoutDetails && !cancelled) {
     return <Navigate to="/checkout" replace />;
@@ -153,7 +189,7 @@ export function PaymentPage() {
 
       <main className="mx-auto max-w-[1240px] px-4 py-7 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
         {paymentStatus === "paid" ? (
-          <section aria-live="polite" className="mx-auto max-w-2xl overflow-hidden rounded-[28px] border border-[#dce9c8] bg-white text-center shadow-[0_18px_50px_rgba(18,44,80,0.1)]" role="status">
+          <section aria-live="polite" className="mx-auto max-w-2xl overflow-hidden rounded-[28px] border border-[#dce9c8] bg-white text-center shadow-[0_18px_50px_rgba(18,44,80,0.1)]" data-scroll-reveal="skip" role="status">
             <div className="h-2 bg-gradient-to-r from-[#a8df62] via-[#d8f29a] to-[#ffdc32]" />
             <div className="p-6 sm:p-10">
             <span
@@ -186,7 +222,7 @@ export function PaymentPage() {
             </div>
           </section>
         ) : paymentStatus === "checking" ? (
-          <section className="mx-auto max-w-2xl rounded-[28px] border border-[#e4e8ee] bg-white p-8 text-center shadow-[0_18px_50px_rgba(18,44,80,0.08)] sm:p-12" aria-live="polite" role="status">
+          <section className="mx-auto max-w-2xl rounded-[28px] border border-[#e4e8ee] bg-white p-8 text-center shadow-[0_18px_50px_rgba(18,44,80,0.08)] sm:p-12" aria-live="polite" data-scroll-reveal="skip" role="status">
             <span aria-hidden="true" className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#eaf2fb] text-2xl text-[#092a53]">↻</span>
             <p className="mt-5 font-display text-2xl font-extrabold text-[#092a53]">
               {t("Checking your payment…")}
@@ -196,7 +232,7 @@ export function PaymentPage() {
             </p>
           </section>
         ) : paymentStatus === "unverified" ? (
-          <section className="mx-auto max-w-2xl overflow-hidden rounded-[28px] border border-[#f0d0c8] bg-white shadow-[0_18px_50px_rgba(18,44,80,0.08)]">
+          <section className="mx-auto max-w-2xl overflow-hidden rounded-[28px] border border-[#f0d0c8] bg-white shadow-[0_18px_50px_rgba(18,44,80,0.08)]" data-scroll-reveal="skip">
             <div className="h-2 bg-[#d97362]" />
             <div className="p-6 sm:p-8">
             <p className="inline-flex rounded-full bg-red-50 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-red-800">
@@ -364,7 +400,7 @@ export function PaymentPage() {
                 >
                   {isStartingCheckout
                     ? t("Connecting to Stripe…")
-                    : t("Pay {amount} securely", {
+                    : t("Confirm payment for {amount}", {
                         amount: formatMoney(
                           finalTotal,
                           currency,

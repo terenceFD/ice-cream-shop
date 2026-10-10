@@ -3,7 +3,17 @@ import { apiRequest } from '../../../api/api'
 import { useAdminAuth } from './AdminAuthContext'
 import { useLanguage } from '../../../language/LanguageContext'
 
-function whatsappNumber(phone) {
+interface CustomerAccount {
+  id: number
+  name: string
+  email: string
+  phone?: string
+  deliveryCity?: string
+  isBanned: boolean
+  createdAt: string
+}
+
+function whatsappNumber(phone: string): string {
   let digits = phone.replace(/\D/g, '')
   if (digits.startsWith('00')) digits = digits.slice(2)
   if (!digits.startsWith('237')) {
@@ -16,25 +26,25 @@ function whatsappNumber(phone) {
 export function AdminCustomersPage() {
   const { sessionToken } = useAdminAuth()
   const { t, language } = useLanguage()
-  const [customers, setCustomers] = useState([])
+  const [customers, setCustomers] = useState<CustomerAccount[]>([])
   const [promotionMessage, setPromotionMessage] = useState('')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
-  const [savingId, setSavingId] = useState(null)
+  const [savingId, setSavingId] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
   useEffect(() => {
     let cancelled = false
-    apiRequest('/admin/customers', { token: sessionToken })
+    apiRequest<{ customers: CustomerAccount[] }>('/admin/customers', { token: sessionToken })
       .then((result) => {
         if (!cancelled) {
           setCustomers(result.customers)
           setError('')
         }
       })
-      .catch((loadError) => {
-        if (!cancelled) setError(loadError.message)
+      .catch((loadError: unknown) => {
+        if (!cancelled) setError(loadError instanceof Error ? loadError.message : 'Unable to load customer accounts.')
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -51,7 +61,7 @@ export function AdminCustomersPage() {
     )
   }, [customers, search])
 
-  async function toggleBan(customer) {
+  async function toggleBan(customer: CustomerAccount) {
     const isBanned = !customer.isBanned
     setError('')
     setMessage('')
@@ -67,13 +77,13 @@ export function AdminCustomersPage() {
       ))
       setMessage(t(isBanned ? 'Customer banned.' : 'Customer unbanned.'))
     } catch (updateError) {
-      setError(updateError.message)
+      setError(updateError instanceof Error ? updateError.message : 'Unable to update customer access.')
     } finally {
       setSavingId(null)
     }
   }
 
-  function whatsappLink(customer) {
+  function whatsappLink(customer: CustomerAccount): string | undefined {
     const text = promotionMessage.trim()
     const number = customer.phone ? whatsappNumber(customer.phone) : ''
     if (!number || !text) return undefined

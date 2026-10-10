@@ -1,4 +1,4 @@
-const CACHE_NAME = 'antixor-icy-shell-v1'
+const CACHE_NAME = 'antixor-icy-shell-v2'
 const SHELL_URLS = ['/', '/index.html', '/app-icon.svg', '/cold-stone-favicon.svg']
 
 self.addEventListener('install', (event) => {
@@ -32,7 +32,27 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  if (/\.(?:js|css|svg|png|jpe?g|webp|woff2?)$/i.test(url.pathname)) {
+  if (/\.(?:js|css)$/i.test(url.pathname)) {
+    event.respondWith(
+      (async () => {
+        const cached = await caches.match(request)
+        try {
+          const response = await fetch(request)
+          if (response.ok) {
+            const copy = response.clone()
+            event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)))
+          }
+          return response
+        } catch (error) {
+          if (cached) return cached
+          throw error
+        }
+      })(),
+    )
+    return
+  }
+
+  if (/\.(?:svg|png|jpe?g|webp|woff2?)$/i.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then((cached) => cached || fetch(request).then((response) => {
         if (response.ok) {

@@ -1,9 +1,21 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { apiRequest } from '../api/api'
 import { useAdminAuth } from '../pages/feature/admin/AdminAuthContext'
 import { useLanguage } from '../language/LanguageContext'
 
-function formatDate(value) {
+interface ContactMessage {
+  id: number
+  name: string
+  email: string
+  phone?: string
+  subject: string
+  message: string
+  createdAt: string
+  isRead: boolean
+  repliedAt?: string
+}
+
+function formatDate(value: string) {
   const date = new Date(`${value.replace(' ', 'T')}Z`)
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
 }
@@ -11,21 +23,21 @@ function formatDate(value) {
 export function AdminNotifications() {
   const { sessionToken } = useAdminAuth()
   const { t } = useLanguage()
-  const [messages, setMessages] = useState([])
+  const [messages, setMessages] = useState<ContactMessage[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [replyingTo, setReplyingTo] = useState(null)
+  const [replyingTo, setReplyingTo] = useState<number | null>(null)
   const [replyDraft, setReplyDraft] = useState('')
-  const [sendingId, setSendingId] = useState(null)
-  const [deletingId, setDeletingId] = useState(null)
-  const [replyErrors, setReplyErrors] = useState({})
-  const [replySent, setReplySent] = useState({})
+  const [sendingId, setSendingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [replyErrors, setReplyErrors] = useState<Record<number, string>>({})
+  const [replySent, setReplySent] = useState<Record<number, boolean>>({})
 
   const refresh = useCallback(async () => {
     setError('')
     try {
-      const result = await apiRequest('/admin/notifications', { token: sessionToken })
+      const result = await apiRequest<{ messages: ContactMessage[]; unreadCount: number }>('/admin/notifications', { token: sessionToken })
       setMessages(result.messages)
       setUnreadCount(result.unreadCount)
     } catch (loadError) {
@@ -39,7 +51,7 @@ export function AdminNotifications() {
     refresh()
   }, [refresh])
 
-  async function markRead(id) {
+  async function markRead(id: number) {
     setError('')
     try {
       await apiRequest(`/admin/notifications/${id}/read`, { method: 'PATCH', token: sessionToken })
@@ -52,12 +64,12 @@ export function AdminNotifications() {
     }
   }
 
-  async function sendReply(event, message) {
+  async function sendReply(event: FormEvent<HTMLFormElement>, message: ContactMessage) {
     event.preventDefault()
     setReplyErrors((current) => ({ ...current, [message.id]: '' }))
     setSendingId(message.id)
     try {
-      const result = await apiRequest(`/admin/notifications/${message.id}/reply`, {
+      const result = await apiRequest<{ repliedAt: string }>(`/admin/notifications/${message.id}/reply`, {
         method: 'POST',
         token: sessionToken,
         body: { reply: replyDraft },
@@ -78,7 +90,7 @@ export function AdminNotifications() {
     }
   }
 
-  async function deleteRepliedMessage(message) {
+  async function deleteRepliedMessage(message: ContactMessage) {
     if (!window.confirm(t('Delete replied notification from {name}? This cannot be undone.', { name: message.name }))) {
       return
     }

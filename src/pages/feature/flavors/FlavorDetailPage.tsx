@@ -1,7 +1,7 @@
 import { useParams, Link, Navigate, useNavigate } from "react-router-dom";
 import { Header, Footer, ArrowIcon } from "../../../components/Layout";
 import { useCart } from "../../../CartContext";
-import { useFlavors } from "../../../flavor-context/FlavorContext";
+import { useFlavors, type Flavor } from "../../../flavor-context/FlavorContext";
 import { useLanguage } from "../../../language/LanguageContext";
 import { formatCartMoney } from "../../../cartPricing";
 
@@ -12,7 +12,7 @@ export function FlavorDetailPage() {
   const { flavors, loading, error } = useFlavors();
   const { t, language } = useLanguage();
 
-  const flavor = flavors.find((f) => f.id === Number(id));
+  const flavor = flavors.find((item: Flavor) => item.id === Number(id));
 
   if (!flavor && loading) {
     return (
@@ -60,7 +60,7 @@ export function FlavorDetailPage() {
   }
 
   const relatedFlavors = flavors
-    .filter((f) => f.id !== flavor.id && f.availableQuantity > 0)
+    .filter((item: Flavor) => item.id !== flavor.id && item.availableQuantity > 0)
     .slice(0, 3);
 
   return (
@@ -143,7 +143,7 @@ export function FlavorDetailPage() {
                       {t("Contains")}
                     </h3>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {flavor.allergies.map((allergen) => (
+                      {(flavor.allergies || []).map((allergen) => (
                         <span
                           key={allergen}
                           className="inline-block rounded-full bg-[#fff1cf] px-3 py-1.5 text-sm font-medium text-[#65748a]"

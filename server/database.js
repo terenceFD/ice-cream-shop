@@ -34,6 +34,20 @@ database.exec(`
     phone TEXT NOT NULL DEFAULT '',
     delivery_city TEXT NOT NULL DEFAULT '',
     delivery_residence TEXT NOT NULL DEFAULT '',
+    email_verified INTEGER NOT NULL DEFAULT 0 CHECK (email_verified IN (0, 1)),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS pending_customer_registrations (
+    email TEXT PRIMARY KEY COLLATE NOCASE,
+    name TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    profile_picture TEXT NOT NULL DEFAULT '',
+    verification_code_hash TEXT NOT NULL,
+    expires_at INTEGER NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    mode TEXT NOT NULL DEFAULT 'signup',
+    customer_id INTEGER,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -252,6 +266,21 @@ addColumnIfMissing(
   "INTEGER NOT NULL DEFAULT 0 CHECK (is_banned IN (0, 1))",
 );
 addColumnIfMissing(
+  "customers",
+  "email_verified",
+  "INTEGER NOT NULL DEFAULT 0 CHECK (email_verified IN (0, 1))",
+);
+addColumnIfMissing(
+  "pending_customer_registrations",
+  "mode",
+  "TEXT NOT NULL DEFAULT 'signup'",
+);
+addColumnIfMissing(
+  "pending_customer_registrations",
+  "customer_id",
+  "INTEGER",
+);
+addColumnIfMissing(
   "orders",
   "customer_id",
   "INTEGER REFERENCES customers(id) ON DELETE SET NULL",
@@ -370,6 +399,16 @@ database.exec(`
     item_id TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(customer_id, item_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS customer_saved_carts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+    source_order_id INTEGER REFERENCES orders(id) ON DELETE SET NULL,
+    label TEXT NOT NULL,
+    items_json TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(customer_id, source_order_id)
   );
 
   CREATE TABLE IF NOT EXISTS menu_reviews (

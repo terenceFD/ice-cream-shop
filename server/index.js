@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import rateLimit from 'express-rate-limit'
 import Stripe from 'stripe'
-import { randomUUID } from 'node:crypto'
+import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'node:crypto'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -34,6 +34,7 @@ import {
   sendCakeRequestNotification,
   sendContactReply,
   sendNewOrderNotification,
+  sendSignupVerificationCode,
   sendOrderStatusUpdate,
 } from './email.js'
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
@@ -292,6 +293,20 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 })
 
+const signupCodeLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+})
+
+const signupVerificationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+})
+
 const contactLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 5,
@@ -317,6 +332,41 @@ function readBearerToken(request) {
   const authorization = request.get('authorization') || ''
   const [scheme, token] = authorization.split(' ')
   return scheme?.toLowerCase() === 'bearer' ? token : ''
+}
+
+function hashSignupVerificationCode(email, code) {
+  return createHmac('sha256', jwtSecret).update(`${email}:${code}`).digest()
+}
+
+async function sendCustomerVerificationCode(customer, mode) {
+  const code = String(randomInt(100000, 1000000))
+  const codeHash = hashSignupVerificationCode(customer.email, code).toString('hex')
+  await sendSignupVerificationCode({ to: customer.email, code })
+
+  database.prepare(`
+    INSERT INTO pending_customer_registrations
+      (email, name, password_hash, profile_picture, verification_code_hash, expires_at, attempts, mode, customer_id)
+    VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
+    ON CONFLICT(email) DO UPDATE SET
+      name = excluded.name,
+      password_hash = excluded.password_hash,
+      profile_picture = excluded.profile_picture,
+      verification_code_hash = excluded.verification_code_hash,
+      expires_at = excluded.expires_at,
+      attempts = 0,
+      mode = excluded.mode,
+      customer_id = excluded.customer_id,
+      created_at = CURRENT_TIMESTAMP
+  `).run(
+    customer.email,
+    customer.name,
+    customer.passwordHash,
+    customer.profilePicture || '',
+    codeHash,
+    Date.now() + 10 * 60 * 1000,
+    mode,
+    mode === 'login' ? customer.id : null,
+  )
 }
 
 function requireAdmin(request, response, next) {
@@ -359,11 +409,15 @@ function requireCustomer(request, response, next) {
     const customer = database.prepare(`
       SELECT id, name, email, profile_picture AS profilePicture, phone,
         delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
-        loyalty_points AS loyaltyPoints, is_banned AS isBanned
+        loyalty_points AS loyaltyPoints, is_banned AS isBanned, email_verified AS emailVerified
       FROM customers WHERE id = ?
     `).get(payload.sub)
     if (!customer || customer.isBanned) {
       response.status(401).json({ error: 'Customer session is no longer valid.' })
+      return
+    }
+    if (!customer.emailVerified) {
+      response.status(401).json({ error: 'Verify your email address to continue. Sign in again to receive a verification code.' })
       return
     }
     request.customer = customer
@@ -517,7 +571,7 @@ app.post('/api/discount-codes/validate', (request, response) => {
   response.json({ code: code.code, discountCents })
 })
 
-app.post('/api/checkout/session', checkoutLimiter, async (request, response) => {
+app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (request, response) => {
   const stripe = getStripe()
 
   const details = request.body.checkoutDetails
@@ -533,19 +587,7 @@ app.post('/api/checkout/session', checkoutLimiter, async (request, response) => 
   const discountCodeText = typeof request.body.discountCode === 'string'
     ? request.body.discountCode.trim().toUpperCase()
     : ''
-  let customer = null
-  const customerToken = readBearerToken(request)
-  if (customerToken) {
-    try {
-      const payload = jwt.verify(customerToken, jwtSecret)
-      if (payload.type !== 'customer') throw new Error('Customer token type is invalid.')
-      customer = database.prepare('SELECT id, loyalty_points AS loyaltyPoints FROM customers WHERE id = ?').get(payload.sub)
-      if (!customer) throw new Error('Customer session is no longer valid.')
-    } catch {
-      response.status(401).json({ error: 'Sign in again before placing this order.' })
-      return
-    }
-  }
+  const customer = request.customer
   const zone = database.prepare(`
     SELECT id, pickup_enabled AS pickupEnabled, delivery_enabled AS deliveryEnabled,
       delivery_fee AS deliveryFee
@@ -994,31 +1036,108 @@ app.post('/api/contact', contactLimiter, (request, response, next) => {
   }
 })
 
-app.post('/api/auth/register', loginLimiter, async (request, response, next) => {
+app.post('/api/auth/register/code', signupCodeLimiter, async (request, response, next) => {
   try {
     const name = typeof request.body.name === 'string' ? request.body.name.trim() : ''
     const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
     const password = typeof request.body.password === 'string' ? request.body.password : ''
     const profilePicture = typeof request.body.profilePicture === 'string' ? request.body.profilePicture.trim() : ''
-    if (!name || name.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    if (!name || name.length > 100 || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
       || password.length < 8 || password.length > 128
       || (profilePicture && (!profilePicture.startsWith('data:image/') || profilePicture.length > 1024 * 1024))) {
       response.status(400).json({ error: 'Provide your name, a valid email, and a password of 8 to 128 characters, with an optional valid profile image under 1 MB.' })
       return
     }
 
+    if (database.prepare('SELECT 1 FROM customers WHERE email = ? COLLATE NOCASE').get(email)) {
+      response.status(409).json({ error: 'An account already uses that email address.' })
+      return
+    }
+
     const passwordHash = await bcrypt.hash(password, 12)
-    const result = database.prepare(
-      'INSERT INTO customers (name, email, password_hash, profile_picture) VALUES (?, ?, ?, ?)'
-    ).run(name, email, passwordHash, profilePicture)
-    const customer = {
-      id: Number(result.lastInsertRowid),
-      name,
-      email,
-      phone: '',
-      deliveryCity: '',
-      deliveryResidence: '',
-      profilePicture,
+    database.prepare('DELETE FROM pending_customer_registrations WHERE expires_at <= ?').run(Date.now())
+    await sendCustomerVerificationCode({ email, name, passwordHash, profilePicture }, 'signup')
+
+    response.status(202).json({ message: 'A six-digit verification code has been sent to your email address.' })
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.post('/api/auth/register/verify', signupVerificationLimiter, async (request, response, next) => {
+  try {
+    const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
+    const code = typeof request.body.code === 'string' ? request.body.code.trim() : ''
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 || !/^\d{6}$/.test(code)) {
+      response.status(400).json({ error: 'Enter the email address and six-digit code used for registration.' })
+      return
+    }
+
+    const pending = database.prepare(`
+      SELECT name, password_hash AS passwordHash, profile_picture AS profilePicture,
+        verification_code_hash AS verificationCodeHash, expires_at AS expiresAt, attempts,
+        mode, customer_id AS customerId
+      FROM pending_customer_registrations WHERE email = ? COLLATE NOCASE
+    `).get(email)
+    if (!pending) {
+      response.status(400).json({ error: 'Request a new verification code to continue.' })
+      return
+    }
+    if (pending.expiresAt <= Date.now()) {
+      database.prepare('DELETE FROM pending_customer_registrations WHERE email = ? COLLATE NOCASE').run(email)
+      response.status(400).json({ error: 'This verification code has expired. Request a new one.' })
+      return
+    }
+    if (pending.attempts >= 5) {
+      database.prepare('DELETE FROM pending_customer_registrations WHERE email = ? COLLATE NOCASE').run(email)
+      response.status(429).json({ error: 'Too many incorrect codes. Request a new verification code.' })
+      return
+    }
+
+    const submittedHash = hashSignupVerificationCode(email, code)
+    const expectedHash = Buffer.from(pending.verificationCodeHash, 'hex')
+    if (submittedHash.length !== expectedHash.length || !timingSafeEqual(submittedHash, expectedHash)) {
+      database.prepare(`
+        UPDATE pending_customer_registrations SET attempts = attempts + 1
+        WHERE email = ? COLLATE NOCASE
+      `).run(email)
+      response.status(400).json({ error: 'The verification code is incorrect.' })
+      return
+    }
+
+    let customer
+    database.transaction(() => {
+      if (pending.mode === 'login' && pending.customerId) {
+        database.prepare(`
+          UPDATE customers SET email_verified = 1
+          WHERE id = ? AND email = ? COLLATE NOCASE AND is_banned = 0
+        `).run(pending.customerId, email)
+        customer = database.prepare(`
+          SELECT id, name, email, profile_picture AS profilePicture, phone,
+            delivery_city AS deliveryCity, delivery_residence AS deliveryResidence
+          FROM customers WHERE id = ? AND email_verified = 1 AND is_banned = 0
+        `).get(pending.customerId)
+      } else if (pending.mode === 'signup') {
+        const result = database.prepare(`
+          INSERT INTO customers (name, email, password_hash, profile_picture, email_verified)
+          VALUES (?, ?, ?, ?, 1)
+        `).run(pending.name, email, pending.passwordHash, pending.profilePicture)
+        customer = {
+          id: Number(result.lastInsertRowid),
+          name: pending.name,
+          email,
+          phone: '',
+          deliveryCity: '',
+          deliveryResidence: '',
+          profilePicture: pending.profilePicture,
+        }
+      }
+      database.prepare('DELETE FROM pending_customer_registrations WHERE email = ? COLLATE NOCASE').run(email)
+    })()
+
+    if (!customer) {
+      response.status(400).json({ error: 'This account can no longer be verified. Please sign in again or contact support.' })
+      return
     }
     const token = jwt.sign({ sub: customer.id, type: 'customer' }, jwtSecret, { expiresIn: '8h' })
     response.status(201).json({ token, customer })
@@ -1042,6 +1161,22 @@ app.post('/api/auth/login', loginLimiter, async (request, response, next) => {
     }
     if (customer.is_banned) {
       response.status(403).json({ error: 'This customer account has been banned. Contact the store for assistance.' })
+      return
+    }
+
+    if (!customer.email_verified) {
+      database.prepare('DELETE FROM pending_customer_registrations WHERE expires_at <= ?').run(Date.now())
+      await sendCustomerVerificationCode({
+        id: customer.id,
+        email: customer.email,
+        name: customer.name,
+        passwordHash: customer.password_hash,
+        profilePicture: customer.profile_picture || '',
+      }, 'login')
+      response.status(202).json({
+        verificationRequired: true,
+        message: 'A six-digit verification code has been sent to your email address.',
+      })
       return
     }
 
@@ -1078,11 +1213,15 @@ app.get('/api/auth/me', (request, response) => {
     const customer = database.prepare(`
       SELECT id, name, email, profile_picture AS profilePicture, phone,
         delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
-        loyalty_points AS loyaltyPoints, is_banned AS isBanned
+        loyalty_points AS loyaltyPoints, is_banned AS isBanned, email_verified AS emailVerified
       FROM customers WHERE id = ?
     `).get(payload.sub)
     if (!customer || customer.isBanned) {
       response.status(401).json({ error: 'Customer session is no longer valid.' })
+      return
+    }
+    if (!customer.emailVerified) {
+      response.status(401).json({ error: 'Verify your email address to continue. Sign in again to receive a verification code.' })
       return
     }
     response.json({ customer })
@@ -1243,6 +1382,86 @@ app.delete('/api/customer/favorites/:itemId', requireCustomer, (request, respons
   response.status(204).end()
 })
 
+app.get('/api/customer/saved-carts', requireCustomer, (request, response) => {
+  const savedCarts = database.prepare(`
+    SELECT id, source_order_id AS sourceOrderId, label,
+      items_json AS itemsJson, created_at AS createdAt
+    FROM customer_saved_carts WHERE customer_id = ?
+    ORDER BY id DESC
+  `).all(request.customer.id).map(({ itemsJson, ...savedCart }) => ({
+    ...savedCart,
+    items: JSON.parse(itemsJson),
+  }))
+  response.json({ savedCarts })
+})
+
+app.post('/api/customer/saved-carts', requireCustomer, (request, response) => {
+  const orderId = Number(request.body.orderId)
+  if (!Number.isSafeInteger(orderId) || orderId < 1) {
+    response.status(400).json({ error: 'Choose a valid order to save.' })
+    return
+  }
+  const order = database.prepare(`
+    SELECT id, status FROM orders
+    WHERE id = ? AND customer_id = ?
+  `).get(orderId, request.customer.id)
+  if (!order || !['processing', 'delivered'].includes(order.status)) {
+    response.status(404).json({ error: 'A paid order belonging to your account was not found.' })
+    return
+  }
+  const orderItems = database.prepare(`
+    SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity
+    FROM order_items WHERE order_id = ? ORDER BY id
+  `).all(orderId)
+  if (!orderItems.length) {
+    response.status(409).json({ error: 'This order has no items to save.' })
+    return
+  }
+  const items = orderItems.map((item) => ({
+    productId: item.menuItemId || (item.flavorId ? `flavor:${item.flavorId}` : ''),
+    quantity: item.quantity,
+  }))
+  if (items.some((item) => !item.productId || !Number.isSafeInteger(item.quantity) || item.quantity < 1)) {
+    response.status(409).json({ error: 'This order contains items that cannot be saved.' })
+    return
+  }
+
+  database.prepare(`
+    INSERT OR IGNORE INTO customer_saved_carts (customer_id, source_order_id, label, items_json)
+    VALUES (?, ?, ?, ?)
+  `).run(request.customer.id, orderId, `Order #${orderId}`, JSON.stringify(items))
+  const savedCart = database.prepare(`
+    SELECT id, source_order_id AS sourceOrderId, label,
+      items_json AS itemsJson, created_at AS createdAt
+    FROM customer_saved_carts WHERE customer_id = ? AND source_order_id = ?
+  `).get(request.customer.id, orderId)
+  response.status(201).json({
+    savedCart: {
+      id: savedCart.id,
+      sourceOrderId: savedCart.sourceOrderId,
+      label: savedCart.label,
+      items: JSON.parse(savedCart.itemsJson),
+      createdAt: savedCart.createdAt,
+    },
+  })
+})
+
+app.delete('/api/customer/saved-carts/:id', requireCustomer, (request, response) => {
+  const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Saved cart ID is invalid.' })
+    return
+  }
+  const result = database.prepare(
+    'DELETE FROM customer_saved_carts WHERE id = ? AND customer_id = ?',
+  ).run(id, request.customer.id)
+  if (!result.changes) {
+    response.status(404).json({ error: 'Saved cart not found.' })
+    return
+  }
+  response.status(204).end()
+})
+
 app.get('/api/menu/:itemId/reviews', (request, response) => {
   const itemId = request.params.itemId
   if (!resolveFavoriteItem(itemId)) {
@@ -1326,8 +1545,10 @@ app.post('/api/cake-requests', contactLimiter, async (request, response) => {
     try {
       const payload = jwt.verify(token, jwtSecret)
       if (payload.type !== 'customer') throw new Error('Customer session is invalid.')
-      const customer = database.prepare('SELECT id FROM customers WHERE id = ?').get(payload.sub)
-      if (!customer) throw new Error('Customer session is no longer valid.')
+      const customer = database.prepare(`
+        SELECT id, email_verified AS emailVerified FROM customers WHERE id = ?
+      `).get(payload.sub)
+      if (!customer || !customer.emailVerified) throw new Error('Customer session is no longer valid.')
       customerId = customer.id
     } catch {
       response.status(401).json({ error: 'Sign in again or submit the request without an expired account session.' })
@@ -1459,7 +1680,34 @@ app.get('/api/admin/orders', requireAdmin, (request, response) => {
     response.status(400).json({ error: 'The requested order status is not supported.' })
     return
   }
-  response.json({ orders: listOrders({ deliveredOnly }) })
+  const orders = listOrders({ deliveredOnly })
+  const count = deliveredOnly
+    ? database.prepare("SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'").get().count
+    : undefined
+  response.json({ orders, ...(deliveredOnly ? { count } : {}) })
+})
+
+app.delete('/api/admin/orders/delivered', requireAdmin, (_request, response) => {
+  const result = database.transaction(() => {
+    const { count } = database.prepare(
+      "SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'",
+    ).get()
+    if (count < 5) return { count, deleted: false }
+
+    const deletedCount = database.prepare(
+      "DELETE FROM orders WHERE status = 'delivered'",
+    ).run().changes
+    return { count: deletedCount, deleted: true }
+  })()
+
+  if (!result.deleted) {
+    response.status(409).json({
+      error: 'At least five delivered orders are required before clearing them.',
+      count: result.count,
+    })
+    return
+  }
+  response.json({ deleted: true, count: result.count })
 })
 
 app.delete('/api/admin/orders/:id', requireAdmin, (request, response) => {

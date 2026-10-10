@@ -1,39 +1,63 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { apiRequest } from '../../../api/api'
 import { useAdminAuth } from './AdminAuthContext'
 import { useLanguage } from '../../../language/LanguageContext'
 
-const freshForm = { code: '', discountType: 'percent', discountValue: '', minimumTotal: 0, maxUses: '', expiresAt: '', isActive: true }
+const freshForm: DiscountCodeForm = { code: '', discountType: 'percent', discountValue: '', minimumTotal: 0, maxUses: '', expiresAt: '', isActive: true }
 const fieldClass = 'mt-1 w-full rounded-xl border border-[#d9d6cc] bg-white px-3 py-2.5 text-sm'
+
+type DiscountType = 'percent' | 'fixed'
+
+interface DiscountCode {
+  id: number
+  code: string
+  discountType: DiscountType
+  discountValue: number
+  minimumTotal: number
+  maxUses: number | null
+  expiresAt: string | null
+  isActive: boolean
+  uses: number
+}
+
+interface DiscountCodeForm {
+  code: string
+  discountType: DiscountType
+  discountValue: string
+  minimumTotal: number | string
+  maxUses: string
+  expiresAt: string
+  isActive: boolean
+}
 
 export function AdminPromotionsPage() {
   const { sessionToken } = useAdminAuth()
   const { t } = useLanguage()
-  const [codes, setCodes] = useState([])
-  const [form, setForm] = useState(freshForm)
-  const [editingId, setEditingId] = useState(null)
-  const [deletingId, setDeletingId] = useState(null)
+  const [codes, setCodes] = useState<DiscountCode[]>([])
+  const [form, setForm] = useState<DiscountCodeForm>(freshForm)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
   async function refresh() {
-    const result = await apiRequest('/admin/discount-codes', { token: sessionToken })
+    const result = await apiRequest<{ discountCodes: DiscountCode[] }>('/admin/discount-codes', { token: sessionToken })
     setCodes(result.discountCodes)
   }
 
   useEffect(() => {
     let cancelled = false
-    apiRequest('/admin/discount-codes', { token: sessionToken })
+    apiRequest<{ discountCodes: DiscountCode[] }>('/admin/discount-codes', { token: sessionToken })
       .then((result) => { if (!cancelled) setCodes(result.discountCodes) })
-      .catch((loadError) => { if (!cancelled) setError(loadError.message) })
+      .catch((loadError: unknown) => { if (!cancelled) setError(loadError instanceof Error ? loadError.message : 'Unable to load discount codes.') })
     return () => { cancelled = true }
   }, [sessionToken])
 
-  function setField(name, value) {
+  function setField<K extends keyof DiscountCodeForm>(name: K, value: DiscountCodeForm[K]) {
     setForm((current) => ({ ...current, [name]: value }))
   }
 
-  async function submit(event) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
     setMessage('')
@@ -55,11 +79,11 @@ export function AdminPromotionsPage() {
       setEditingId(null)
       setMessage(t('Discount code saved.'))
     } catch (saveError) {
-      setError(saveError.message)
+      setError(saveError instanceof Error ? saveError.message : 'Unable to save discount code.')
     }
   }
 
-  function edit(code) {
+  function edit(code: DiscountCode) {
     setEditingId(code.id)
     setForm({
       ...code,
@@ -70,7 +94,7 @@ export function AdminPromotionsPage() {
     })
   }
 
-  async function remove(code) {
+  async function remove(code: DiscountCode) {
     if (!window.confirm(t('Delete discount code "{code}"?', { code: code.code }))) return
     setError('')
     setMessage('')
@@ -84,7 +108,7 @@ export function AdminPromotionsPage() {
       }
       setMessage(t('Discount code deleted.'))
     } catch (deleteError) {
-      setError(deleteError.message)
+      setError(deleteError instanceof Error ? deleteError.message : 'Unable to delete discount code.')
     } finally {
       setDeletingId(null)
     }
@@ -98,7 +122,7 @@ export function AdminPromotionsPage() {
         <form className="mt-5 space-y-3 rounded-2xl border border-[#d9d6cc] bg-white p-5" onSubmit={submit}>
           <label className="block text-sm font-semibold">{t('Code')}<input className={fieldClass} maxLength={30} onChange={(event) => setField('code', event.target.value.toUpperCase())} pattern="[A-Za-z0-9_\-]{3,30}" required value={form.code} /></label>
           <div className="grid grid-cols-2 gap-3">
-            <label className="block text-sm font-semibold">{t('Discount type')}<select className={fieldClass} onChange={(event) => setField('discountType', event.target.value)} value={form.discountType}><option value="percent">{t('Percent')}</option><option value="fixed">{t('Fixed FCFA')}</option></select></label>
+            <label className="block text-sm font-semibold">{t('Discount type')}<select className={fieldClass} onChange={(event) => setField('discountType', event.target.value === 'fixed' ? 'fixed' : 'percent')} value={form.discountType}><option value="percent">{t('Percent')}</option><option value="fixed">{t('Fixed FCFA')}</option></select></label>
             <label className="block text-sm font-semibold">{t('Discount value')}<input className={fieldClass} min="1" onChange={(event) => setField('discountValue', event.target.value)} required type="number" value={form.discountValue} /></label>
           </div>
           <label className="block text-sm font-semibold">{t('Minimum order (FCFA)')}<input className={fieldClass} min="0" onChange={(event) => setField('minimumTotal', event.target.value)} type="number" value={form.minimumTotal} /></label>

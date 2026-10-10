@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest } from '../../../api/api'
 import { useAdminAuth } from './AdminAuthContext'
@@ -15,29 +15,55 @@ const initialForm = {
   isAvailable: true,
 }
 
+interface MenuItem {
+  id: string
+  categoryTitle: string
+  name: string
+  detail: string
+  image: string
+  priceXaf: number
+  stock: number
+  availableQuantity: number
+  isAvailable: boolean
+}
+
+interface MenuCategory {
+  title: string
+}
+
+interface MenuItemForm {
+  categoryTitle: string
+  name: string
+  detail: string
+  image: string
+  priceXaf: string
+  stock: string
+  isAvailable: boolean
+}
+
 export function AdminMenuPage() {
   const { sessionToken } = useAdminAuth()
   const { t, language } = useLanguage()
   const [form, setForm] = useState(initialForm)
-  const [items, setItems] = useState([])
-  const [categories, setCategories] = useState([])
+  const [items, setItems] = useState<MenuItem[]>([])
+  const [categories, setCategories] = useState<MenuCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [deletingItemId, setDeletingItemId] = useState(null)
-  const [editingItemId, setEditingItemId] = useState(null)
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const availableCount = items.filter((item) => item.isAvailable && item.availableQuantity > 0).length
   const unavailableCount = items.length - availableCount
   const remainingUnits = items.reduce((total, item) => total + Math.max(0, item.availableQuantity || 0), 0)
-  const formatPrice = (price) => `${new Intl.NumberFormat(language === 'fr' ? 'fr-CM' : 'en-CM').format(price)} FCFA`
+  const formatPrice = (price: number) => `${new Intl.NumberFormat(language === 'fr' ? 'fr-CM' : 'en-CM').format(price)} FCFA`
 
   useEffect(() => {
     let cancelled = false
     Promise.all([
-      apiRequest('/menu'),
-      apiRequest('/admin/menu-categories', { token: sessionToken }),
+      apiRequest<{ categories: { title: string; items: MenuItem[] }[] }>('/menu'),
+      apiRequest<{ categories: MenuCategory[] }>('/admin/menu-categories', { token: sessionToken }),
     ])
       .then(([menuResult, categoryResult]) => {
         if (!cancelled) {
@@ -46,8 +72,8 @@ export function AdminMenuPage() {
           setForm((current) => ({ ...current, categoryTitle: current.categoryTitle || categoryResult.categories[0]?.title || '' }))
         }
       })
-      .catch((loadError) => {
-        if (!cancelled) setError(loadError.message)
+      .catch((loadError: unknown) => {
+        if (!cancelled) setError(loadError instanceof Error ? loadError.message : 'Unable to load menu items.')
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false)
@@ -57,12 +83,15 @@ export function AdminMenuPage() {
     }
   }, [sessionToken])
 
-  function handleChange(event) {
+  function handleChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, value } = event.target
-    setForm((current) => ({ ...current, [name]: name === 'isAvailable' ? event.target.checked : value }))
+    const nextValue = name === 'isAvailable' && event.target instanceof HTMLInputElement
+      ? event.target.checked
+      : value
+    setForm((current) => ({ ...current, [name]: nextValue }))
   }
 
-  async function handleImageUpload(event) {
+  async function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
     setError('')
@@ -73,27 +102,30 @@ export function AdminMenuPage() {
     }
     setIsUploading(true)
     try {
-      const dataUrl = await new Promise((resolve, reject) => {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader()
-        reader.onload = () => resolve(reader.result)
+        reader.onload = () => {
+          if (typeof reader.result === 'string') resolve(reader.result)
+          else reject(new Error('Could not read the selected image.'))
+        }
         reader.onerror = () => reject(new Error('Could not read the selected image.'))
         reader.readAsDataURL(file)
       })
-      const { image } = await apiRequest('/admin/uploads', {
+      const { image } = await apiRequest<{ image: string }>('/admin/uploads', {
         method: 'POST',
         token: sessionToken,
         body: { dataUrl },
       })
       setForm((current) => ({ ...current, image }))
     } catch (uploadError) {
-      setError(uploadError.message)
+      setError(uploadError instanceof Error ? uploadError.message : 'Unable to upload the selected image.')
     } finally {
       setIsUploading(false)
       event.target.value = ''
     }
   }
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
     setMessage('')
@@ -101,7 +133,7 @@ export function AdminMenuPage() {
     try {
       const isEditing = editingItemId !== null
       const itemId = isEditing ? editingItemId.split(':').at(-1) : null
-      const { item } = await apiRequest(
+      const { item } = await apiRequest<{ item: MenuItem }>(
         isEditing ? `/admin/menu-items/${itemId}` : '/admin/menu-items',
         {
         method: isEditing ? 'PUT' : 'POST',
@@ -116,13 +148,13 @@ export function AdminMenuPage() {
       setEditingItemId(null)
       setMessage(t(isEditing ? 'Menu item updated.' : 'Menu item added and is now available on the website.'))
     } catch (saveError) {
-      setError(saveError.message)
+      setError(saveError instanceof Error ? saveError.message : 'Unable to save menu item.')
     } finally {
       setIsSaving(false)
     }
   }
 
-  function handleEdit(item) {
+  function handleEdit(item: MenuItem) {
     setEditingItemId(item.id)
     setForm({
       categoryTitle: item.categoryTitle,
@@ -144,7 +176,7 @@ export function AdminMenuPage() {
     setMessage('')
   }
 
-  async function handleDelete(item) {
+  async function handleDelete(item: MenuItem) {
     if (!window.confirm(t('Delete menu item "{name}"?', { name: item.name }))) return
     setError('')
     setMessage('')
@@ -158,7 +190,7 @@ export function AdminMenuPage() {
       if (editingItemId === item.id) cancelEdit()
       setMessage(t('Menu item deleted.'))
     } catch (deleteError) {
-      setError(deleteError.message)
+      setError(deleteError instanceof Error ? deleteError.message : 'Unable to delete menu item.')
     } finally {
       setDeletingItemId(null)
     }
@@ -217,25 +249,25 @@ export function AdminMenuPage() {
             </label>
             <label className="block text-xs font-extrabold text-[#52647b]">
               {t('Menu item name')}
-              <input className={inputClassName} maxLength="120" name="name" onChange={handleChange} required value={form.name} />
+              <input className={inputClassName} maxLength={120} name="name" onChange={handleChange} required value={form.name} />
             </label>
             <label className="block text-xs font-extrabold text-[#52647b]">
               {t('Short description')}
-              <textarea className={`${inputClassName} min-h-24 resize-y`} maxLength="500" name="detail" onChange={handleChange} required value={form.detail} />
+              <textarea className={`${inputClassName} min-h-24 resize-y`} maxLength={500} name="detail" onChange={handleChange} required value={form.detail} />
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block text-xs font-extrabold text-[#52647b]">
                 {t('Price (FCFA)')}
-                <input className={inputClassName} min="1" name="priceXaf" onChange={handleChange} required step="1" type="number" value={form.priceXaf} />
+                <input className={inputClassName} min={1} name="priceXaf" onChange={handleChange} required step={1} type="number" value={form.priceXaf} />
               </label>
               <label className="block text-xs font-extrabold text-[#52647b]">
                 {t('Stock quantity')}
-                <input className={inputClassName} min="0" name="stock" onChange={handleChange} required step="1" type="number" value={form.stock} />
+                <input className={inputClassName} min={0} name="stock" onChange={handleChange} required step={1} type="number" value={form.stock} />
               </label>
             </div>
             <label className="block text-xs font-extrabold text-[#52647b]">
               {t('Image URL or path')}
-              <input className={inputClassName} maxLength="2000" name="image" onChange={handleChange} placeholder="/images/menu-item.webp" required value={form.image} />
+              <input className={inputClassName} maxLength={2000} name="image" onChange={handleChange} placeholder="/images/menu-item.webp" required value={form.image} />
               <span className="mt-1 block text-xs font-normal leading-5 text-[#65748a]">{t('Use a site image path or an HTTPS image URL.')}</span>
               <input accept="image/jpeg,image/png,image/webp,image/gif" className="mt-3 block w-full text-xs font-normal" disabled={isUploading} onChange={handleImageUpload} type="file" />
               <span className="mt-1 block text-xs font-normal text-[#65748a]">{isUploading ? t('Uploading image…') : t('Upload a JPEG, PNG, WebP, or GIF image (max 5 MB).')}</span>

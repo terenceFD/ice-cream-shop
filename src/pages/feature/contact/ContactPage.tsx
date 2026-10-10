@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Footer, Header } from '../../../components/Layout'
 import { apiRequest } from '../../../api/api'
@@ -6,20 +6,28 @@ import { useLanguage } from '../../../language/LanguageContext'
 
 const inputClassName = 'mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3.5 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#9aa4b1] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40'
 
+interface ContactFormData {
+  name: string
+  email: string
+  phone: string
+  subject: string
+  message: string
+}
+
 export function ContactPage() {
   const { t } = useLanguage()
-  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' })
+  const [form, setForm] = useState<ContactFormData>({ name: '', email: '', phone: '', subject: '', message: '' })
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleChange(event) {
+  function handleChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = event.target
-    setForm((currentForm) => ({ ...currentForm, [name]: value }))
+    setForm((currentForm) => ({ ...currentForm, [name as keyof ContactFormData]: value }))
     setSubmitted(false)
   }
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
     setSubmitted(false)
@@ -29,7 +37,7 @@ export function ContactPage() {
       setForm({ name: '', email: '', phone: '', subject: '', message: '' })
       setSubmitted(true)
     } catch (submitError) {
-      setError(t(submitError.message))
+      setError(t(submitError instanceof Error ? submitError.message : 'Unable to send your message.'))
     } finally {
       setIsSubmitting(false)
     }

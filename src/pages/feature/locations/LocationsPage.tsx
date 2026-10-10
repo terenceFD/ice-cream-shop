@@ -2,9 +2,12 @@ import { Footer, Header } from '../../../components/Layout'
 import { cameroonLocations } from '../../../data'
 import { useLanguage } from '../../../language/LanguageContext'
 
+type CameroonLocation = (typeof cameroonLocations)[number]
+
 export function LocationsPage() {
   const { t } = useLanguage()
-  const cityCount = new Set(cameroonLocations.map((location) => location.town)).size
+  const cityCount = new Set(cameroonLocations.map((location: CameroonLocation) => location.town)).size
+  const towns = [...new Set(cameroonLocations.map((location: CameroonLocation) => location.town))]
 
   return (
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
@@ -44,11 +47,11 @@ export function LocationsPage() {
                     <span aria-hidden="true" className="grid size-12 place-items-center rounded-2xl bg-[#ffdc32] text-xl text-[#092a53]">⌖</span>
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-3">
-                    {[...new Set(cameroonLocations.map((location) => location.town))].map((town) => (
+                    {towns.map((town) => (
                       <div className="rounded-2xl border border-white/10 bg-[#061f40]/40 p-4" key={town}>
                         <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/55">{t('City')}</p>
                         <p className="mt-1 font-display text-lg font-extrabold">{t(town)}</p>
-                        <p className="mt-1 text-xs text-white/65">{t('{count} listings', { count: cameroonLocations.filter((location) => location.town === town).length })}</p>
+                        <p className="mt-1 text-xs text-white/65">{t('{count} listings', { count: cameroonLocations.filter((location: CameroonLocation) => location.town === town).length })}</p>
                       </div>
                     ))}
                   </div>
@@ -74,7 +77,7 @@ export function LocationsPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            {cameroonLocations.map((location, index) => (
+            {cameroonLocations.map((location: CameroonLocation, index: number) => (
               <article className="group relative overflow-hidden rounded-[24px] border border-[#e7e3d9] bg-white shadow-[0_8px_28px_rgba(18,44,80,0.05)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(18,44,80,0.1)]" key={`${location.town}-${location.area}`}>
                 <div className="flex items-center justify-between gap-4 border-b border-[#eeeae1] bg-[#fffefa] px-5 py-4 sm:px-6">
                   <div className="flex items-center gap-3">

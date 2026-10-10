@@ -5,16 +5,70 @@ import {
   useEffect,
   useMemo,
   useState,
+  type ReactNode,
 } from "react";
-import { useFlavors } from "./flavor-context/FlavorContext";
+import { useFlavors, type Flavor } from "./flavor-context/FlavorContext";
 import { findMenuItem } from "./data";
 import { USD_TO_XAF } from "./cartPricing";
 
-const CartContext = createContext();
+export interface CartItem {
+  id: string | number;
+  name: string;
+  detail?: string;
+  description?: string;
+  image: string;
+  price: number;
+  priceXaf?: number;
+  currency?: string;
+  quantity: number;
+  itemType?: string;
+  categoryTitle?: string;
+  stock?: number;
+  reservedStock?: number;
+  availableQuantity?: number;
+  tag?: string;
+  origin?: string;
+  color?: string;
+  servings?: number;
+  allergies?: string[];
+}
+
+type CartProduct = Omit<CartItem, "quantity" | "price"> & {
+  price?: number;
+  quantity?: number;
+};
+
+interface CartContextValue {
+  cartItems: CartItem[];
+  addToCart: (product: CartProduct) => boolean;
+  addItemsToCart: (products: CartProduct[]) => number;
+  removeFromCart: (itemId: string | number) => void;
+  updateCartFlavor: (flavor: Flavor) => void;
+  updateQuantity: (itemId: string | number, quantity: number) => void;
+  clearCart: () => void;
+  cartCount: number;
+  cartTotal: number;
+}
+
+const CartContext = createContext<CartContextValue | null>(null);
 const CART_STORAGE_KEY = "antixor-icy-cart";
 
-function normalizeMenuCartItem(item) {
-  if (!item || typeof item.id !== "string") return null
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isCartProduct(item: Record<string, unknown>): item is Record<string, unknown> & CartProduct {
+  return (typeof item.id === "string" || typeof item.id === "number") &&
+    typeof item.name === "string" &&
+    typeof item.image === "string" &&
+    (item.price === undefined || typeof item.price === "number") &&
+    (item.priceXaf === undefined || typeof item.priceXaf === "number") &&
+    (item.quantity === undefined || typeof item.quantity === "number") &&
+    (item.itemType === undefined || typeof item.itemType === "string");
+}
+
+function normalizeMenuCartItem(item: CartProduct): Omit<CartItem, "quantity"> | null {
+  if (typeof item.id !== "string") return null
   const knownItem = findMenuItem(item.id)
   if (knownItem) {
     return {
@@ -22,7 +76,7 @@ function normalizeMenuCartItem(item) {
       ...item,
       itemType: "menu",
       currency: "xaf",
-      price: item.priceXaf ?? item.price ?? knownItem.priceXaf,
+      price: Number(item.priceXaf ?? item.price ?? knownItem.priceXaf),
       availableQuantity: Number.isSafeInteger(item.availableQuantity)
         ? item.availableQuantity
         : Number.isSafeInteger(item.stock)
@@ -48,42 +102,45 @@ function normalizeMenuCartItem(item) {
   }
 }
 
-function loadCart(flavors) {
+function loadCart(flavors: Flavor[]): CartItem[] {
   try {
     const savedCart = localStorage.getItem(CART_STORAGE_KEY);
     if (!savedCart) return [];
 
-    const parsedCart = JSON.parse(savedCart);
+    const parsedCart: unknown = JSON.parse(savedCart);
     if (!Array.isArray(parsedCart)) {
       throw new Error("Saved cart must be an array");
     }
 
-    return parsedCart.flatMap((item) => {
-      if (!item || typeof item !== "object") return [];
+    return parsedCart.flatMap((value): CartItem[] => {
+      if (!isRecord(value)) return [];
+      const item = value;
       if (item.itemType === "menu") {
+        if (!isCartProduct(item)) return [];
         const menuItem = normalizeMenuCartItem(item);
         return menuItem &&
           Number.isSafeInteger(item.quantity) &&
-          item.quantity > 0
-          ? [{ ...menuItem, quantity: item.quantity }]
+          (item.quantity as number) > 0
+          ? [{ ...menuItem, quantity: item.quantity as number }]
           : [];
       }
+      if (!isCartProduct(item) || typeof item.price !== "number" || !Number.isFinite(item.price) ||
+          !Number.isSafeInteger(item.quantity) || (item.quantity as number) <= 0) return [];
       const flavor = flavors.find((entry) => entry.id === item.id);
-      const savedFlavor =
-        typeof item.name === "string" && Number.isFinite(item.price)
-          ? {
-              ...item,
-              price: (item.currency || "usd") === "usd"
-                ? Math.round(item.price * USD_TO_XAF)
-                : item.price,
-              currency: "xaf",
-            }
-          : null;
-      return (flavor || savedFlavor) &&
-        Number.isSafeInteger(item.quantity) &&
-        item.quantity > 0
-        ? [{ ...(flavor || savedFlavor), quantity: item.quantity }]
-        : [];
+      const quantity = item.quantity as number;
+      const price = item.currency === "usd"
+        ? Math.round(item.price * USD_TO_XAF)
+        : item.price;
+      const savedFlavor: CartItem = {
+        ...item,
+        id: item.id,
+        name: item.name,
+        image: typeof item.image === "string" ? item.image : "",
+        price,
+        currency: "xaf",
+        quantity,
+      };
+      return [{ ...(flavor || savedFlavor), quantity }];
     });
   } catch (error) {
     console.error("Unable to load the saved shopping bag.", error);
@@ -91,9 +148,9 @@ function loadCart(flavors) {
   }
 }
 
-export function CartProvider({ children }) {
+export function CartProvider({ children }: { children: ReactNode }) {
   const { flavors, loading, error } = useFlavors();
-  const [savedItems, setSavedItems] = useState(() => loadCart([]));
+  const [savedItems, setSavedItems] = useState<CartItem[]>(() => loadCart([]));
   const cartItems = useMemo(() => {
     if (loading || error) return savedItems;
     return savedItems.flatMap((item) => {
@@ -125,9 +182,10 @@ export function CartProvider({ children }) {
     }
   }, [cartItems, error, loading, savedItems]);
 
-  const addToCart = (product) => {
+  const addToCart = (product: CartProduct) => {
     const item = product.itemType === "menu" ? normalizeMenuCartItem(product) : product;
-    if (!item) return false;
+    if (!item || typeof item.price !== "number") return false;
+    const cartItem: CartItem = { ...item, price: item.price, quantity: 1 };
     const availableQuantity =
       item.availableQuantity ?? item.stock ?? Number.MAX_SAFE_INTEGER;
     if (availableQuantity < 1) return false;
@@ -137,22 +195,23 @@ export function CartProvider({ children }) {
       setSavedItems((prev) =>
         prev.map((entry) =>
           entry.id === item.id
-            ? { ...item, quantity: entry.quantity + 1 }
+            ? { ...cartItem, quantity: entry.quantity + 1 }
             : entry,
         ),
       );
     } else {
-      setSavedItems((prev) => [...prev, { ...item, quantity: 1 }]);
+      setSavedItems((prev) => [...prev, cartItem]);
     }
     return true;
   };
 
-  const addItemsToCart = (products) => {
+  const addItemsToCart = (products: CartProduct[]) => {
     let addedCount = 0
     const updated = [...savedItems]
     for (const product of products) {
       const item = product.itemType === 'menu' ? normalizeMenuCartItem(product) : product
-      if (!item) continue
+      if (!item || typeof item.price !== "number") continue
+      const cartItem: CartItem = { ...item, price: item.price, quantity: 1 };
       const availableQuantity = item.availableQuantity ?? item.stock ?? Number.MAX_SAFE_INTEGER
       const currentIndex = updated.findIndex((entry) => entry.id === item.id)
       const current = currentIndex < 0 ? null : updated[currentIndex]
@@ -164,20 +223,20 @@ export function CartProvider({ children }) {
       if (quantity < 1) continue
       addedCount += quantity
       if (current) {
-        updated[currentIndex] = { ...current, ...item, quantity: currentQuantity + quantity }
+        updated[currentIndex] = { ...current, ...cartItem, quantity: currentQuantity + quantity }
       } else {
-        updated.push({ ...item, quantity })
+        updated.push({ ...cartItem, quantity })
       }
     }
     setSavedItems(updated)
     return addedCount
   }
 
-  const removeFromCart = (flavorId) => {
+  const removeFromCart = (flavorId: string | number) => {
     setSavedItems((prev) => prev.filter((item) => item.id !== flavorId));
   };
 
-  const updateCartFlavor = (flavor) => {
+  const updateCartFlavor = (flavor: Flavor) => {
     setSavedItems((prev) =>
       prev.map((item) =>
         item.id === flavor.id ? { ...item, ...flavor } : item,
@@ -185,7 +244,7 @@ export function CartProvider({ children }) {
     );
   };
 
-  const updateQuantity = (flavorId, quantity) => {
+  const updateQuantity = (flavorId: string | number, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(flavorId);
     } else {

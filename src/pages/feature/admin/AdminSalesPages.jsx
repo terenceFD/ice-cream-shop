@@ -53,11 +53,13 @@ function AdminSalesView({ view }) {
   const { sessionToken } = useAdminAuth();
   const { t, language } = useLanguage();
   const [orders, setOrders] = useState([]);
+  const [deliveredCount, setDeliveredCount] = useState(0);
   const [payments, setPayments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const [deletingOrderId, setDeletingOrderId] = useState(null);
+  const [isClearingDelivered, setIsClearingDelivered] = useState(false);
 
   const refresh = useCallback(async () => {
     setError("");
@@ -74,6 +76,9 @@ function AdminSalesView({ view }) {
             : "/admin/orders";
         const result = await apiRequest(path, { token: sessionToken });
         setOrders(result.orders);
+        if (view === "delivered") {
+          setDeliveredCount(result.count ?? result.orders.length);
+        }
       }
     } catch (loadError) {
       setError(loadError.message);
@@ -146,6 +151,28 @@ function AdminSalesView({ view }) {
     }
   }
 
+  async function clearDeliveredOrders() {
+    if (deliveredCount < 5 || isClearingDelivered) return;
+    if (!window.confirm(t(
+      "Clear all {count} delivered orders? This permanently deletes their order, payment, loyalty, and review history.",
+      { count: deliveredCount },
+    ))) return;
+
+    setError("");
+    setIsClearingDelivered(true);
+    try {
+      await apiRequest("/admin/orders/delivered", {
+        method: "DELETE",
+        token: sessionToken,
+      });
+      await refresh();
+    } catch (clearError) {
+      setError(t(clearError.message));
+    } finally {
+      setIsClearingDelivered(false);
+    }
+  }
+
   const isDeliveredView = view === "delivered";
   const isPaymentsView = view === "payments";
   const title = t(
@@ -175,14 +202,31 @@ function AdminSalesView({ view }) {
           </h1>
           <p className="mt-2 text-sm text-[#65748a]">{description}</p>
         </div>
-        <button
-          className="rounded-full border-2 border-[#65748a] px-4 py-2 text-sm font-bold transition hover:bg-[#f4f1e7] disabled:opacity-60"
-          disabled={isLoading}
-          onClick={refresh}
-          type="button"
-        >
-          {t("Refresh")}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {isDeliveredView && (
+            <>
+              <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-bold text-green-900" role="status">
+                {t("Delivered orders: {count}", { count: deliveredCount })}
+              </span>
+              <button
+                className="rounded-full border border-red-300 px-4 py-2 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isLoading || deliveredCount < 5 || isClearingDelivered}
+                onClick={clearDeliveredOrders}
+                type="button"
+              >
+                {isClearingDelivered ? t("Clearing…") : t("Clear all delivered orders")}
+              </button>
+            </>
+          )}
+          <button
+            className="rounded-full border-2 border-[#65748a] px-4 py-2 text-sm font-bold transition hover:bg-[#f4f1e7] disabled:opacity-60"
+            disabled={isLoading || isClearingDelivered}
+            onClick={refresh}
+            type="button"
+          >
+            {t("Refresh")}
+          </button>
+        </div>
       </div>
 
       {error && (

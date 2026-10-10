@@ -1,8 +1,9 @@
 import { Navigate, useLocation } from 'react-router-dom'
+import type { ReactNode } from 'react'
 import { useAdminAuth } from '../pages/feature/admin/AdminAuthContext'
 import { useLanguage } from '../language/LanguageContext'
 
-export function AdminRoute({ children }) {
+export function AdminRoute({ children }: { children: ReactNode }) {
   const { isAdmin, isLoading } = useAdminAuth()
   const { t } = useLanguage()
   const location = useLocation()

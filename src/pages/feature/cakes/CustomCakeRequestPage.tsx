@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest, CUSTOMER_TOKEN_KEY } from '../../../api/api'
 import { useAuth } from '../../../authcontext/AuthContext'
@@ -15,19 +15,19 @@ export function CustomCakeRequestPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [toppings, setToppings] = useState([])
+  const [toppings, setToppings] = useState<string[]>([])
   const [minPickupDate] = useState(() => getCameroonDate())
   const [maxPickupDate] = useState(() => getCameroonDate(90))
 
-  async function submitRequest(event) {
+  async function submitRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const formElement = event.currentTarget
     setError('')
     setSuccess('')
     setIsSubmitting(true)
-    const form = new FormData(event.currentTarget)
+    const form = new FormData(formElement)
     try {
-      const result = await apiRequest('/cake-requests', {
+      const result = await apiRequest<{ requestId: number }>('/cake-requests', {
         method: 'POST',
         token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY) || undefined,
         body: {
@@ -45,7 +45,7 @@ export function CustomCakeRequestPage() {
       formElement.reset()
       setToppings([])
     } catch (submitError) {
-      setError(submitError.message)
+      setError(submitError instanceof Error ? submitError.message : 'Unable to send cake request.')
     } finally {
       setIsSubmitting(false)
     }

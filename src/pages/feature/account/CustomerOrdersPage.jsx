@@ -42,6 +42,64 @@ function orderStatus(order, t) {
   return t(order.deliveryStage || order.fulfillmentStatus || (order.status === 'delivered' ? 'delivered' : 'preparing'))
 }
 
+function OrderProgress({ order, t }) {
+  const steps = [
+    { key: 'preparing', label: 'Preparing' },
+    { key: 'ready', label: 'Ready' },
+    ...(order.fulfillmentType === 'delivery'
+      ? [{ key: 'out_for_delivery', label: 'Out for delivery' }]
+      : []),
+    { key: 'delivered', label: 'Delivered' },
+  ]
+  const currentStage = order.status === 'delivered'
+    ? 'delivered'
+    : order.deliveryStage || order.fulfillmentStatus || 'preparing'
+  const currentIndex = Math.max(
+    0,
+    steps.findIndex((step) => step.key === currentStage || (currentStage === 'accepted' && step.key === 'preparing')),
+  )
+
+  return (
+    <section aria-label={t('Live order tracking')} aria-live="polite" aria-atomic="true" className="mt-4 rounded-2xl border border-[#e7e3d9] bg-[#fbfaf5] p-4 sm:p-5">
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+        <h4 className="text-sm font-extrabold text-[#102c50]">{t('Live order tracking')}</h4>
+        <p className="text-xs font-semibold text-[#65748a]">{t(orderStatus(order, t))}</p>
+      </div>
+      <ol className="grid items-start" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
+        {steps.map((step, index) => {
+          const isComplete = index < currentIndex
+          const isCurrent = index === currentIndex
+          return (
+            <li aria-current={isCurrent ? 'step' : undefined} className="relative min-w-0 text-center" key={step.key}>
+              {index < steps.length - 1 && (
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-1/2 top-4 h-0.5 w-full ${index < currentIndex ? 'bg-[#6c9c45]' : 'bg-[#d9d6cc]'}`}
+                />
+              )}
+              <span className={`relative mx-auto grid size-8 place-items-center rounded-full border-2 text-xs font-extrabold ${
+                isComplete
+                  ? 'border-[#6c9c45] bg-[#6c9c45] text-white'
+                  : isCurrent
+                    ? 'border-[#bd9c00] bg-[#ffdc32] text-[#102c50]'
+                    : 'border-[#d9d6cc] bg-white text-[#8b95a2]'
+              }`}>
+                {isComplete ? '✓' : index + 1}
+              </span>
+              <span className={`mt-2 block px-1 text-[10px] leading-4 sm:text-xs ${isCurrent || isComplete ? 'font-bold text-[#102c50]' : 'font-medium text-[#8b95a2]'}`}>
+                {t(step.label)}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+      <p className="mt-4 text-center text-[11px] leading-5 text-[#65748a]">
+        {t('This timeline refreshes automatically. Email updates are sent when your order status changes.')}
+      </p>
+    </section>
+  )
+}
+
 function CustomerProfileDetails({ customer, onSave, t }) {
   const [profile, setProfile] = useState(() => ({
     name: customer.name || '',
@@ -170,9 +228,14 @@ export function CustomerOrdersPage() {
   const { addItemsToCart } = useCart()
   const [orders, setOrders] = useState([])
   const [favorites, setFavorites] = useState([])
+  const [savedCarts, setSavedCarts] = useState([])
   const [loyalty, setLoyalty] = useState(null)
   const [accountError, setAccountError] = useState('')
+  const [accountNotice, setAccountNotice] = useState('')
+  const [showCartLink, setShowCartLink] = useState(false)
   const [reorderingId, setReorderingId] = useState(null)
+  const [savingOrderId, setSavingOrderId] = useState(null)
+  const [deletingSavedCartId, setDeletingSavedCartId] = useState(null)
   const [loadingOrders, setLoadingOrders] = useState(true)
   const [error, setError] = useState('')
 
@@ -188,10 +251,12 @@ export function CustomerOrdersPage() {
     const token = sessionStorage.getItem(CUSTOMER_TOKEN_KEY)
     Promise.all([
       apiRequest('/customer/favorites', { token }),
+      apiRequest('/customer/saved-carts', { token }),
       apiRequest('/customer/loyalty', { token }),
-    ]).then(([favoriteResult, loyaltyResult]) => {
+    ]).then(([favoriteResult, savedCartResult, loyaltyResult]) => {
       if (cancelled) return
       setFavorites(favoriteResult.favorites)
+      setSavedCarts(savedCartResult.savedCarts)
       setLoyalty(loyaltyResult)
     }).catch((loadError) => {
       if (!cancelled) setAccountError(loadError.message)
@@ -236,26 +301,73 @@ export function CustomerOrdersPage() {
     }
   }
 
-  async function reorder(order) {
-    setReorderingId(order.id)
+  async function reorderItems(items, actionId) {
+    setReorderingId(actionId)
     setAccountError('')
+    setAccountNotice('')
+    setShowCartLink(false)
     try {
       const [menuResult, flavorResult] = await Promise.all([apiRequest('/menu'), apiRequest('/flavors')])
       const catalog = new Map([
         ...menuResult.categories.flatMap((category) => category.items.map((item) => [item.id, item])),
         ...flavorResult.flavors.map((flavor) => [`flavor:${flavor.id}`, flavor]),
       ])
-      const products = order.items.flatMap((item) => {
+      const products = items.flatMap((item) => {
         const product = catalog.get(item.productId)
         return product ? [{ ...product, quantity: item.quantity }] : []
       })
       const added = addItemsToCart(products)
-      if (added > 0) navigate('/cart')
-      else setAccountError(t('The products in this order are currently unavailable.'))
+      const requested = items.reduce((count, item) => count + item.quantity, 0)
+      if (added > 0 && added === requested) navigate('/cart')
+      else if (added > 0) {
+        setAccountNotice(t('Added {added} of {requested} items. Some products are unavailable or limited by stock.', { added, requested }))
+        setShowCartLink(true)
+      } else setAccountError(t('The products in this order are currently unavailable.'))
     } catch (reorderError) {
       setAccountError(reorderError.message)
     } finally {
       setReorderingId(null)
+    }
+  }
+
+  async function saveOrder(order) {
+    setSavingOrderId(order.id)
+    setAccountError('')
+    setAccountNotice('')
+    setShowCartLink(false)
+    try {
+      const result = await apiRequest('/customer/saved-carts', {
+        method: 'POST',
+        token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY),
+        body: { orderId: order.id },
+      })
+      setSavedCarts((current) => [
+        result.savedCart,
+        ...current.filter((savedCart) => savedCart.id !== result.savedCart.id),
+      ])
+      setAccountNotice(t('Saved {label} for later.', { label: result.savedCart.label }))
+    } catch (saveError) {
+      setAccountError(saveError.message)
+    } finally {
+      setSavingOrderId(null)
+    }
+  }
+
+  async function removeSavedCart(savedCart) {
+    setDeletingSavedCartId(savedCart.id)
+    setAccountError('')
+    setAccountNotice('')
+    setShowCartLink(false)
+    try {
+      await apiRequest(`/customer/saved-carts/${savedCart.id}`, {
+        method: 'DELETE',
+        token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY),
+      })
+      setSavedCarts((current) => current.filter((item) => item.id !== savedCart.id))
+    } catch (deleteError) {
+      setAccountError(deleteError.message)
+    } finally {
+      setDeletingSavedCartId(null)
     }
   }
 
@@ -291,6 +403,12 @@ export function CustomerOrdersPage() {
         </section>
 
         {accountError && <p className="mt-5 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700" role="alert">{accountError}</p>}
+        {accountNotice && (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm text-green-900" role="status">
+            <span>{accountNotice}</span>
+            {showCartLink && <Link className="font-bold underline underline-offset-2" to="/cart">{t('View shopping bag')}</Link>}
+          </div>
+        )}
 
         <section aria-label={t('Account summary')} className="mt-5 grid gap-3 sm:grid-cols-3">
           <article className="flex items-center gap-4 rounded-[22px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)]">
@@ -343,7 +461,8 @@ export function CustomerOrdersPage() {
                     </div>
                     <div className="px-5 py-4 sm:px-6">
                       {order.scheduledFor && <p className="mb-3 inline-flex items-center gap-2 rounded-xl bg-[#f4f7fa] px-3 py-2 text-xs font-semibold text-[#52647b]"><span aria-hidden="true">◷</span>{t(order.fulfillmentType === 'pickup' ? 'Pickup scheduled' : 'Delivery scheduled')}: {new Date(order.scheduledFor).toLocaleString(language === 'fr' ? 'fr-CM' : 'en-CM')}</p>}
-                      <ul className="space-y-3">
+                    {order.status !== 'pending_payment' && order.status !== 'payment_failed' && <OrderProgress order={order} t={t} />}
+                    <ul className="space-y-3">
                         {order.items.map((item, index) => <li className="flex items-center justify-between gap-4 text-sm" key={`${order.id}-${index}`}><span className="min-w-0 font-semibold text-[#52647b]">{item.name} <span className="text-[#8b95a2]">× {item.quantity}</span></span><span className="shrink-0 font-bold text-[#102c50]">{formatPrice(item.lineTotalCents)}</span></li>)}
                       </ul>
                       <div className="mt-4 flex items-center justify-between border-t border-[#eeeae1] pt-4">
@@ -352,7 +471,10 @@ export function CustomerOrdersPage() {
                       </div>
                       <p className="mt-3 text-xs text-[#65748a]">{order.deliveryResidence}, {order.deliveryCity}</p>
                       {order.status !== 'pending_payment' && order.status !== 'payment_failed' && <div className="mt-4 flex flex-wrap justify-end gap-3 border-t border-[#eeeae1] pt-4">
-                        <button className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-50" disabled={reorderingId === order.id} onClick={() => reorder(order)} type="button">{reorderingId === order.id ? t('Adding…') : t('Reorder')} <span aria-hidden="true">→</span></button>
+                        <button className="inline-flex items-center gap-2 rounded-full border border-[#d9d6cc] px-4 py-2.5 text-xs font-extrabold text-[#52647b] transition hover:border-[#092a53] hover:text-[#092a53] disabled:cursor-wait disabled:opacity-50" disabled={savingOrderId === order.id || savedCarts.some((savedCart) => savedCart.sourceOrderId === order.id)} onClick={() => saveOrder(order)} type="button">
+                          {savingOrderId === order.id ? t('Saving…') : savedCarts.some((savedCart) => savedCart.sourceOrderId === order.id) ? t('Saved for later') : t('Save cart')}
+                        </button>
+                        <button className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-50" disabled={reorderingId === order.id} onClick={() => reorderItems(order.items, order.id)} type="button">{reorderingId === order.id ? t('Adding…') : t('Reorder')} <span aria-hidden="true">→</span></button>
                       </div>}
                       {order.status !== 'pending_payment' && order.status !== 'payment_failed' && <OrderReviewForm order={order} t={t} token={sessionStorage.getItem(CUSTOMER_TOKEN_KEY)} />}
                     </div>
@@ -370,6 +492,41 @@ export function CustomerOrdersPage() {
           </section>
 
           <aside className="space-y-5">
+            <section className="rounded-[24px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)] sm:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">{t('Your collection')}</p>
+                  <h2 className="mt-1 font-display text-xl font-extrabold">{t('Saved carts')}</h2>
+                  <p className="mt-2 text-xs leading-5 text-[#65748a]">{t('Current prices and stock are checked when you add a saved cart.')}</p>
+                </div>
+                <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fff3b8] text-lg text-[#806a00]">▤</span>
+              </div>
+              {savedCarts.length ? (
+                <ul className="mt-4 divide-y divide-[#eeeae1]">
+                  {savedCarts.map((savedCart) => (
+                    <li className="py-3 first:pt-0 last:pb-0" key={savedCart.id}>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-[#102c50]">{t(savedCart.label)}</p>
+                          <p className="mt-1 text-xs text-[#65748a]">
+                            {t('{count} items', { count: savedCart.items.reduce((count, item) => count + item.quantity, 0) })}
+                          </p>
+                        </div>
+                        <button className="text-xs font-bold text-[#a34d4d] transition hover:text-red-800 disabled:opacity-50" disabled={deletingSavedCartId === savedCart.id} onClick={() => removeSavedCart(savedCart)} type="button">
+                          {deletingSavedCartId === savedCart.id ? t('Removing…') : t('Remove')}
+                        </button>
+                      </div>
+                      <button className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#092a53] px-4 py-2 text-xs font-extrabold text-white transition hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-50" disabled={reorderingId === `saved-${savedCart.id}`} onClick={() => reorderItems(savedCart.items, `saved-${savedCart.id}`)} type="button">
+                        {reorderingId === `saved-${savedCart.id}` ? t('Adding…') : t('Add saved cart to bag')} <span aria-hidden="true">→</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-4 rounded-xl bg-[#fbfaf5] p-4 text-sm leading-6 text-[#65748a]">{t('No saved carts yet. Save a paid order to quickly rebuild its cart later.')}</p>
+              )}
+            </section>
+
             <section className="rounded-[24px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)] sm:p-6">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">{t('Account profile')}</p>
