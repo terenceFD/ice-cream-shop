@@ -13,6 +13,7 @@ const navItems = [
   { to: '/admin/promotions', label: 'Promotions', icon: '%' },
   { to: '/admin/reports', label: 'Reports', icon: '▥' },
   { to: '/admin/reviews', label: 'Customer reviews', icon: '★' },
+  { to: '/admin/cake-requests', label: 'Cake requests', icon: '🎂' },
   { to: '/admin/orders', label: 'Orders', icon: '▤' },
   { to: '/admin/delivered', label: 'Delivered', icon: '✓' },
   { to: '/admin/payments', label: 'Payments', icon: 'CFA' },
@@ -27,18 +28,20 @@ export function AdminLayout() {
   const navigate = useNavigate()
   const [logoutError, setLogoutError] = useState('')
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [navigationCounts, setNavigationCounts] = useState({ orderCount: 0, notificationCount: 0 })
+  const [navigationCounts, setNavigationCounts] = useState({ orderCount: 0, notificationCount: 0, cakeRequestCount: 0 })
   const [countsError, setCountsError] = useState('')
 
   const refreshNavigationCounts = useCallback(async () => {
     try {
-      const [ordersResult, notificationsResult] = await Promise.all([
+      const [ordersResult, notificationsResult, cakeRequestsResult] = await Promise.all([
         apiRequest('/admin/orders', { token: sessionToken }),
         apiRequest('/admin/notifications', { token: sessionToken }),
+        apiRequest('/admin/cake-requests', { token: sessionToken }),
       ])
       setNavigationCounts({
         orderCount: ordersResult.orders.length,
         notificationCount: notificationsResult.unreadCount,
+        cakeRequestCount: cakeRequestsResult.requests.filter((request) => request.status === 'new').length,
       })
       setCountsError('')
     } catch (error) {
@@ -102,13 +105,17 @@ export function AdminLayout() {
                   <span aria-hidden="true" className="text-base">{item.icon}</span>
                   <span className="min-w-0 break-words leading-tight">{t(item.label)}</span>
                 </span>
-                {(item.label === 'Orders' || item.label === 'Notifications') && (() => {
+                {(item.label === 'Orders' || item.label === 'Notifications' || item.label === 'Cake requests') && (() => {
                   const count = item.label === 'Orders'
                     ? navigationCounts.orderCount
-                    : navigationCounts.notificationCount
+                    : item.label === 'Notifications'
+                      ? navigationCounts.notificationCount
+                      : navigationCounts.cakeRequestCount
                   const countLabel = item.label === 'Orders'
                     ? t('{count} orders not delivered', { count })
-                    : t('{count} unread notifications', { count })
+                    : item.label === 'Notifications'
+                      ? t('{count} unread notifications', { count })
+                      : t('{count} new cake requests', { count })
                   return (
                     <span
                       aria-label={countLabel}

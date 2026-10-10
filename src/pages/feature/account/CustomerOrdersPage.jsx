@@ -84,26 +84,26 @@ function CustomerProfileDetails({ customer, onSave, t }) {
   }
 
   return (
-    <form className="mt-4 space-y-3" onSubmit={saveProfile}>
-      <div className="flex items-center gap-4 rounded-2xl border border-[#d9d6cc] bg-[#fffdf5] p-3">
+    <form className="mt-5 space-y-4" onSubmit={saveProfile}>
+      <div className="flex items-center gap-4 rounded-2xl border border-[#e8e4da] bg-[#fbfaf5] p-4">
         {profile.profilePicture ? (
-          <img alt={profile.name || 'Profile'} className="size-16 rounded-full object-cover" src={profile.profilePicture} />
+          <img alt={profile.name || 'Profile'} className="size-[68px] rounded-full border-2 border-white object-cover shadow-sm" src={profile.profilePicture} />
         ) : (
-          <div className="flex size-16 items-center justify-center rounded-full bg-[#ffeb9c] text-lg font-bold text-[#102c50]">{(profile.name || 'A').charAt(0).toUpperCase()}</div>
+          <div className="flex size-[68px] shrink-0 items-center justify-center rounded-full bg-[#ffeb9c] text-xl font-extrabold text-[#102c50]">{(profile.name || 'A').charAt(0).toUpperCase()}</div>
         )}
-        <label className="flex-1 text-sm font-semibold text-[#65748a]">
+        <label className="min-w-0 flex-1 text-sm font-bold text-[#102c50]">
           {t('Profile picture')}
-          <input accept="image/*" className={`${fieldClass} mt-1`} onChange={handleProfilePictureChange} type="file" />
-          <span className="mt-1 block text-xs font-normal text-[#65748a]">{t('Optional. Image will be resized before saving (5 MB max).')}</span>
+          <input accept="image/*" className={`${fieldClass} mt-2 cursor-pointer file:mr-3 file:rounded-full file:border-0 file:bg-[#092a53] file:px-3 file:py-2 file:text-xs file:font-bold file:text-white`} onChange={handleProfilePictureChange} type="file" />
+          <span className="mt-1.5 block text-xs font-normal leading-5 text-[#65748a]">{t('Optional. Image will be resized before saving (5 MB max).')}</span>
         </label>
       </div>
-      <label className="block text-sm font-semibold">{t('Full name')}<input className={fieldClass} maxLength={100} onChange={(event) => setProfile({ ...profile, name: event.target.value })} required value={profile.name} /></label>
-      <label className="block text-sm font-semibold">{t('Phone number')}<input className={fieldClass} maxLength={40} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} value={profile.phone} /></label>
-      <label className="block text-sm font-semibold">{t('City / Cold Stone location')}<select className={fieldClass} onChange={(event) => setProfile({ ...profile, deliveryCity: event.target.value })} value={profile.deliveryCity}><option value="">{t('Select a listed location')}</option>{cameroonDeliveryLocations.map((location) => <option key={location.value} value={location.value}>{t(location.town)} — {t(location.area)}</option>)}</select></label>
-      <label className="block text-sm font-semibold">{t('Your residence')}<input className={fieldClass} maxLength={150} onChange={(event) => setProfile({ ...profile, deliveryResidence: event.target.value })} value={profile.deliveryResidence} /></label>
-      {error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
-      {message && <p className="rounded-xl bg-green-50 p-3 text-sm text-green-800" role="status">{message}</p>}
-      <button className="rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-bold disabled:opacity-50" disabled={isSaving} type="submit">{isSaving ? t('Saving…') : t('Save delivery details')}</button>
+      <label className="block text-xs font-extrabold text-[#52647b]">{t('Full name')}<input className={`${fieldClass} mt-2 rounded-xl bg-[#fbfaf5] focus:border-[#bd9c00] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#ffdc32]/40`} maxLength={100} onChange={(event) => setProfile({ ...profile, name: event.target.value })} required value={profile.name} /></label>
+      <label className="block text-xs font-extrabold text-[#52647b]">{t('Phone number')}<input className={`${fieldClass} mt-2 rounded-xl bg-[#fbfaf5] focus:border-[#bd9c00] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#ffdc32]/40`} maxLength={40} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} value={profile.phone} /></label>
+      <label className="block text-xs font-extrabold text-[#52647b]">{t('City / Cold Stone location')}<select className={`${fieldClass} mt-2 rounded-xl bg-[#fbfaf5] focus:border-[#bd9c00] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#ffdc32]/40`} onChange={(event) => setProfile({ ...profile, deliveryCity: event.target.value })} value={profile.deliveryCity}><option value="">{t('Select a listed location')}</option>{cameroonDeliveryLocations.map((location) => <option key={location.value} value={location.value}>{t(location.town)} — {t(location.area)}</option>)}</select></label>
+      <label className="block text-xs font-extrabold text-[#52647b]">{t('Your residence')}<input className={`${fieldClass} mt-2 rounded-xl bg-[#fbfaf5] focus:border-[#bd9c00] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#ffdc32]/40`} maxLength={150} onChange={(event) => setProfile({ ...profile, deliveryResidence: event.target.value })} value={profile.deliveryResidence} /></label>
+      {error && <p className="rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
+      {message && <p className="rounded-xl border border-green-100 bg-green-50 p-3 text-sm text-green-800" role="status">{message}</p>}
+      <button className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#092a53] px-5 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 sm:w-auto" disabled={isSaving} type="submit">{isSaving ? t('Saving…') : t('Save delivery details')} {!isSaving && <span aria-hidden="true">→</span>}</button>
     </form>
   )
 }
@@ -262,62 +262,155 @@ export function CustomerOrdersPage() {
   return (
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
-      <main className="mx-auto max-w-[1100px] px-5 py-10 sm:px-8 sm:py-14">
-        <h1 className="font-display text-4xl font-bold">{t('My account')}</h1>
-        {accountError && <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert">{accountError}</p>}
-        <section className="mt-6 grid gap-4 sm:grid-cols-2">
-          <article className="rounded-2xl border border-[#d9d6cc] bg-white p-5">
-            <h2 className="font-display text-xl font-bold">{t('Loyalty rewards')}</h2>
-            <p className="mt-2 text-3xl font-bold">{loyalty?.points ?? customer.loyaltyPoints ?? 0} <span className="text-sm font-semibold">{t('points')}</span></p>
-            <p className="mt-1 text-sm text-[#65748a]">{t('Earn 1 point per 100 FCFA. Redeem 100 points for 1,000 FCFA off.')}</p>
+      <main className="mx-auto max-w-[1320px] px-4 py-7 sm:px-7 sm:py-10 lg:px-10 lg:py-12">
+        <section className="relative isolate overflow-hidden rounded-[30px] bg-[#092a53] px-6 py-8 text-white shadow-[0_18px_50px_rgba(9,42,83,0.16)] sm:px-9 sm:py-10 lg:px-12 lg:py-12">
+          <div aria-hidden="true" className="absolute -right-24 -top-32 -z-10 size-[25rem] rounded-full border-[54px] border-white/[0.05]" />
+          <div aria-hidden="true" className="absolute -bottom-36 right-[28%] -z-10 size-72 rounded-full bg-[#ffdc32]/[0.08] blur-2xl" />
+          <div className="relative flex flex-col justify-between gap-7 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+              {customer.profilePicture ? (
+                <img alt={customer.name || t('My account')} className="size-[72px] shrink-0 rounded-full border-2 border-white/30 object-cover shadow-lg sm:size-20" src={customer.profilePicture} />
+              ) : (
+                <span aria-hidden="true" className="grid size-[72px] shrink-0 place-items-center rounded-full border-2 border-white/25 bg-[#ffdc32] font-display text-3xl font-extrabold text-[#092a53] shadow-lg sm:size-20">{(customer.name || 'A').charAt(0).toUpperCase()}</span>
+              )}
+              <div className="min-w-0">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.17em] text-[#ffdc32]">{t('My account')}</p>
+                <h1 className="mt-1 break-words font-display text-3xl font-extrabold leading-tight sm:text-4xl">{customer.name}</h1>
+                <p className="mt-1 truncate text-sm text-white/70">{customer.email}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3 sm:justify-end">
+              <a className="inline-flex items-center justify-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]" href="#account-orders">
+                {t('Order history and status')} <span aria-hidden="true">↓</span>
+              </a>
+              <Link className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10" to="/menu">
+                {t('Browse the menu')} <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {accountError && <p className="mt-5 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700" role="alert">{accountError}</p>}
+
+        <section aria-label={t('Account summary')} className="mt-5 grid gap-3 sm:grid-cols-3">
+          <article className="flex items-center gap-4 rounded-[22px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)]">
+            <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff3b8] text-xl text-[#806a00]">✦</span>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[#65748a]">{t('Loyalty rewards')}</p>
+              <p className="mt-1 font-display text-2xl font-extrabold">{loyalty?.points ?? customer.loyaltyPoints ?? 0} <span className="text-sm font-bold">{t('points')}</span></p>
+            </div>
           </article>
-          <article className="rounded-2xl border border-[#d9d6cc] bg-white p-5">
-            <h2 className="font-display text-xl font-bold">{t('Saved favorites')}</h2>
-            {favorites.length ? <ul className="mt-3 space-y-2">{favorites.map((favorite) => (
-              <li className="flex items-center gap-3" key={favorite.itemId}>
-                <img alt="" className="size-12 rounded-lg object-cover" src={favorite.item.image} />
-                <Link className="min-w-0 flex-1 truncate text-sm font-semibold underline" to={favorite.item.itemType === 'menu' ? '/menu' : '/flavors'}>{favorite.item.name}</Link>
-                <button className="text-xs font-bold text-red-700 underline" onClick={() => removeFavorite(favorite.itemId)} type="button">{t('Remove')}</button>
-              </li>
-            ))}</ul> : <p className="mt-2 text-sm text-[#65748a]">{t('No saved favorites yet.')}</p>}
+          <article className="flex items-center gap-4 rounded-[22px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)]">
+            <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#edf3f9] text-xl text-[#092a53]">▤</span>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[#65748a]">{t('Orders')}</p>
+              <p className="mt-1 font-display text-2xl font-extrabold">{orders.length}</p>
+            </div>
+          </article>
+          <article className="flex items-center gap-4 rounded-[22px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)]">
+            <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff0ed] text-xl text-[#b44947]">♡</span>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[#65748a]">{t('Saved favorites')}</p>
+              <p className="mt-1 font-display text-2xl font-extrabold">{favorites.length}</p>
+            </div>
           </article>
         </section>
-        {loyalty?.entries?.length > 0 && <details className="mt-4 rounded-xl border border-[#d9d6cc] bg-white p-4">
-          <summary className="cursor-pointer text-sm font-bold">{t('Points history')}</summary>
-          <ul className="mt-3 space-y-2 text-sm">{loyalty.entries.map((entry) => <li className="flex justify-between gap-3" key={entry.id}><span>{t(entry.entryType)} · {t('Order #{id}', { id: entry.orderId })}</span><span className="font-bold">{entry.pointsDelta > 0 ? '+' : ''}{entry.pointsDelta}</span></li>)}</ul>
-        </details>}
-        <div className="mt-7 grid items-start gap-8 lg:grid-cols-[0.8fr_1.2fr]">
-          <section className="rounded-2xl border border-[#d9d6cc] bg-white p-5 sm:p-7">
-            <h2 className="font-display text-2xl font-bold">{t('Saved delivery details')}</h2>
-            <CustomerProfileDetails customer={customer} onSave={updateProfile} t={t} />
-          </section>
-          <section>
-            <h2 className="font-display text-2xl font-bold">{t('Order history and status')}</h2>
-            {error && <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
-            {loadingOrders ? <p className="mt-4 text-sm text-[#65748a]">{t('Loading orders…')}</p> : orders.length ? (
-              <div className="mt-4 space-y-4">
+
+        <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.75fr)]">
+          <section aria-labelledby="account-orders" className="min-w-0">
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">{t('My account')}</p>
+                <h2 className="mt-1 font-display text-2xl font-extrabold sm:text-3xl" id="account-orders">{t('Order history and status')}</h2>
+              </div>
+              <button className="inline-flex items-center gap-2 rounded-full border border-[#d9d6cc] bg-white px-4 py-2.5 text-xs font-bold text-[#52647b] transition hover:border-[#092a53] hover:text-[#092a53] disabled:opacity-50" disabled={loadingOrders} onClick={() => refreshOrders().catch((loadError) => setError(loadError.message))} type="button">
+                <span aria-hidden="true">↻</span> {t('Refresh order status')}
+              </button>
+            </div>
+            {error && <p className="mb-4 rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
+            {loadingOrders ? (
+              <div className="rounded-[24px] border border-[#e7e3d9] bg-white p-8 text-center text-sm text-[#65748a]">{t('Loading orders…')}</div>
+            ) : orders.length ? (
+              <div className="space-y-4">
                 {orders.map((order) => (
-                  <article className="rounded-2xl border border-[#d9d6cc] bg-white p-5" key={order.id}>
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div><h3 className="font-display text-xl font-bold">{t('Order #{id}', { id: order.id })}</h3><p className="mt-1 text-xs text-[#65748a]">{new Date(`${order.createdAt.replace(' ', 'T')}Z`).toLocaleString()}</p></div>
-                      <span className="rounded-full bg-[#fff0a8] px-3 py-1 text-xs font-bold">{orderStatus(order, t)}</span>
+                  <article className="overflow-hidden rounded-[24px] border border-[#e7e3d9] bg-white shadow-[0_8px_26px_rgba(18,44,80,0.04)]" key={order.id}>
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#eeeae1] bg-[#fffefa] px-5 py-4 sm:px-6">
+                      <div>
+                        <h3 className="font-display text-lg font-extrabold">{t('Order #{id}', { id: order.id })}</h3>
+                        <p className="mt-1 text-xs text-[#65748a]">{new Date(`${order.createdAt.replace(' ', 'T')}Z`).toLocaleString(language === 'fr' ? 'fr-CM' : 'en-CM')}</p>
+                      </div>
+                      <span className="rounded-full border border-[#eedb83] bg-[#fff5c7] px-3.5 py-1.5 text-xs font-extrabold text-[#715e00]">{orderStatus(order, t)}</span>
                     </div>
-                    {order.scheduledFor && <p className="mt-2 text-xs text-[#65748a]">{t(order.fulfillmentType === 'pickup' ? 'Pickup scheduled' : 'Delivery scheduled')}: {new Date(order.scheduledFor).toLocaleString(language === 'fr' ? 'fr-CM' : 'en-CM')}</p>}
-                    <ul className="mt-4 space-y-1 border-t border-[#d9d6cc] pt-3 text-sm">
-                      {order.items.map((item, index) => <li className="flex justify-between gap-3" key={`${order.id}-${index}`}><span>{item.name} × {item.quantity}</span><span>{formatPrice(item.lineTotalCents)}</span></li>)}
-                    </ul>
-                    <div className="mt-3 flex justify-between border-t border-[#d9d6cc] pt-3 font-bold"><span>{t('Total')}</span><span>{formatPrice(order.totalCents)}</span></div>
-                    <p className="mt-2 text-xs text-[#65748a]">{order.deliveryResidence}, {order.deliveryCity}</p>
-                    {order.status !== 'pending_payment' && order.status !== 'payment_failed' && <div className="mt-4 flex flex-wrap justify-between gap-3 border-t border-[#d9d6cc] pt-3">
-                      <button className="text-sm font-bold underline disabled:opacity-50" disabled={reorderingId === order.id} onClick={() => reorder(order)} type="button">{reorderingId === order.id ? t('Adding…') : t('Reorder')}</button>
-                    </div>}
-                    {order.status !== 'pending_payment' && order.status !== 'payment_failed' && <OrderReviewForm order={order} t={t} token={sessionStorage.getItem(CUSTOMER_TOKEN_KEY)} />}
+                    <div className="px-5 py-4 sm:px-6">
+                      {order.scheduledFor && <p className="mb-3 inline-flex items-center gap-2 rounded-xl bg-[#f4f7fa] px-3 py-2 text-xs font-semibold text-[#52647b]"><span aria-hidden="true">◷</span>{t(order.fulfillmentType === 'pickup' ? 'Pickup scheduled' : 'Delivery scheduled')}: {new Date(order.scheduledFor).toLocaleString(language === 'fr' ? 'fr-CM' : 'en-CM')}</p>}
+                      <ul className="space-y-3">
+                        {order.items.map((item, index) => <li className="flex items-center justify-between gap-4 text-sm" key={`${order.id}-${index}`}><span className="min-w-0 font-semibold text-[#52647b]">{item.name} <span className="text-[#8b95a2]">× {item.quantity}</span></span><span className="shrink-0 font-bold text-[#102c50]">{formatPrice(item.lineTotalCents)}</span></li>)}
+                      </ul>
+                      <div className="mt-4 flex items-center justify-between border-t border-[#eeeae1] pt-4">
+                        <span className="text-sm font-bold text-[#65748a]">{t('Total')}</span>
+                        <span className="font-display text-lg font-extrabold">{formatPrice(order.totalCents)}</span>
+                      </div>
+                      <p className="mt-3 text-xs text-[#65748a]">{order.deliveryResidence}, {order.deliveryCity}</p>
+                      {order.status !== 'pending_payment' && order.status !== 'payment_failed' && <div className="mt-4 flex flex-wrap justify-end gap-3 border-t border-[#eeeae1] pt-4">
+                        <button className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-50" disabled={reorderingId === order.id} onClick={() => reorder(order)} type="button">{reorderingId === order.id ? t('Adding…') : t('Reorder')} <span aria-hidden="true">→</span></button>
+                      </div>}
+                      {order.status !== 'pending_payment' && order.status !== 'payment_failed' && <OrderReviewForm order={order} t={t} token={sessionStorage.getItem(CUSTOMER_TOKEN_KEY)} />}
+                    </div>
                   </article>
                 ))}
               </div>
-            ) : <p className="mt-4 rounded-xl bg-white p-5 text-sm text-[#65748a]">{t('You have not placed any orders yet.')} <Link className="font-bold underline" to="/menu">{t('Browse the menu')}</Link></p>}
-            <button className="mt-4 text-sm font-bold text-[#65748a] underline" onClick={() => refreshOrders().catch((loadError) => setError(loadError.message))} type="button">{t('Refresh order status')}</button>
+            ) : (
+              <div className="rounded-[24px] border border-[#e7e3d9] bg-white px-6 py-10 text-center shadow-[0_8px_26px_rgba(18,44,80,0.04)]">
+                <span aria-hidden="true" className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#fff3b8] text-2xl text-[#806a00]">▤</span>
+                <h3 className="mt-4 font-display text-xl font-extrabold">{t('No orders yet')}</h3>
+                <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#65748a]">{t('You have not placed any orders yet.')}</p>
+                <Link className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]" to="/menu">{t('Browse the menu')} <span aria-hidden="true">→</span></Link>
+              </div>
+            )}
           </section>
+
+          <aside className="space-y-5">
+            <section className="rounded-[24px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)] sm:p-6">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">{t('Account profile')}</p>
+                <h2 className="mt-1 font-display text-2xl font-extrabold">{t('Saved delivery details')}</h2>
+                <p className="mt-2 text-sm leading-6 text-[#65748a]">{t('Keep your contact and delivery information up to date.')}</p>
+              </div>
+              <CustomerProfileDetails customer={customer} onSave={updateProfile} t={t} />
+            </section>
+
+            <section className="rounded-[24px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)] sm:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">{t('Your collection')}</p>
+                  <h2 className="mt-1 font-display text-xl font-extrabold">{t('Saved favorites')}</h2>
+                </div>
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fff0ed] text-lg text-[#b44947]" aria-hidden="true">♡</span>
+              </div>
+              {favorites.length ? <ul className="mt-4 divide-y divide-[#eeeae1]">{favorites.map((favorite) => (
+                <li className="flex items-center gap-3 py-3 first:pt-0 last:pb-0" key={favorite.itemId}>
+                  <img alt="" className="size-12 rounded-xl bg-[#f4f1e7] object-cover" src={favorite.item.image} />
+                  <Link className="min-w-0 flex-1 truncate text-sm font-bold text-[#102c50] transition hover:text-[#806a00]" to={favorite.item.itemType === 'menu' ? '/menu' : '/flavors'}>{favorite.item.name}</Link>
+                  <button className="shrink-0 text-xs font-bold text-[#a34d4d] transition hover:text-red-800" onClick={() => removeFavorite(favorite.itemId)} type="button">{t('Remove')}</button>
+                </li>
+              ))}</ul> : <p className="mt-4 rounded-xl bg-[#fbfaf5] p-4 text-sm leading-6 text-[#65748a]">{t('No saved favorites yet.')}</p>}
+            </section>
+
+            <section className="rounded-[24px] bg-[#092a53] p-5 text-white shadow-[0_10px_28px_rgba(9,42,83,0.12)] sm:p-6">
+              <div className="flex items-center gap-3">
+                <span aria-hidden="true" className="grid size-11 place-items-center rounded-2xl bg-[#ffdc32] text-xl text-[#092a53]">✦</span>
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#ffdc32]">{t('Loyalty rewards')}</p>
+                  <p className="mt-0.5 font-display text-2xl font-extrabold">{loyalty?.points ?? customer.loyaltyPoints ?? 0} <span className="text-sm">{t('points')}</span></p>
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-6 text-white/75">{t('Earn 1 point per 100 FCFA. Redeem 100 points for 1,000 FCFA off.')}</p>
+              {loyalty?.entries?.length > 0 && <details className="mt-5 border-t border-white/15 pt-4">
+                <summary className="cursor-pointer text-sm font-bold">{t('Points history')}</summary>
+                <ul className="mt-3 space-y-2 text-sm text-white/80">{loyalty.entries.map((entry) => <li className="flex justify-between gap-3" key={entry.id}><span>{t(entry.entryType)} · {t('Order #{id}', { id: entry.orderId })}</span><span className="font-bold text-white">{entry.pointsDelta > 0 ? '+' : ''}{entry.pointsDelta}</span></li>)}</ul>
+              </details>}
+            </section>
+          </aside>
         </div>
       </main>
       <Footer />

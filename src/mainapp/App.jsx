@@ -31,6 +31,7 @@ import { AdminLayout } from "../components/AdminLayout";
 import { AdminNotificationsPage } from "../pages/feature/admin/AdminNotificationsPage";
 import { CustomCakeRequestPage } from "../pages/feature/cakes/CustomCakeRequestPage";
 import {
+  AdminCakeRequestsPage,
   AdminReviewsPage,
 } from "../pages/feature/admin/AdminNewFeaturesPages";
 import {
@@ -102,6 +103,7 @@ function App() {
                     <Route path="/admin/promotions" element={<AdminPromotionsPage />} />
                     <Route path="/admin/reports" element={<AdminReportsPage />} />
                     <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+                    <Route path="/admin/cake-requests" element={<AdminCakeRequestsPage />} />
                     <Route path="/admin/orders" element={<AdminOrdersPage />} />
                     <Route
                       path="/admin/delivered"

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Footer, Header } from '../../../components/Layout'
+import { Footer, Header, InstagramSection } from '../../../components/Layout'
 import { coldStoneMenuCategories, getMenuItemId } from '../../../data'
 import { apiRequest, CUSTOMER_TOKEN_KEY } from '../../../api/api'
 import { useCart } from '../../../CartContext'
@@ -26,24 +26,37 @@ function MenuProductCard({ category, item, onSelect, t, formatPrice }) {
   const soldOut = item.isAvailable === false || item.availableQuantity < 1
   return (
     <button
-      className="group overflow-hidden rounded-[25px] bg-[#f4f2f2] text-left transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_35px_rgba(18,44,80,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4"
+      className="group flex h-full flex-col overflow-hidden rounded-[26px] border border-[#e7e3d9] bg-white text-left shadow-[0_10px_30px_rgba(18,44,80,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[#d9c76d] hover:shadow-[0_20px_44px_rgba(18,44,80,0.13)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4"
       onClick={() => onSelect(category, item)}
       type="button"
     >
-      <div className="aspect-[1.08] overflow-hidden p-3 sm:p-4">
+      <div className="relative aspect-[1.14] overflow-hidden bg-[#f4f1e7] p-2.5 sm:p-3">
         <MenuImage
           alt={t(item.name)}
-          className="h-full w-full rounded-[20px] object-cover transition duration-300 group-hover:scale-[1.03]"
+          className="h-full w-full rounded-[20px] object-cover transition duration-700 group-hover:scale-[1.06]"
           src={item.image}
         />
+        <span className="absolute left-5 top-5 max-w-[60%] truncate rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#52647b] shadow-sm backdrop-blur-sm">
+          {t(category.title)}
+        </span>
+        <span className={`absolute right-5 top-5 rounded-full px-3 py-1.5 text-[10px] font-bold shadow-sm ${soldOut ? 'bg-red-50 text-red-700' : 'bg-[#f0f8ed]/95 text-[#37632c]'}`}>
+          {soldOut ? t('Sold out') : t('Available')}
+        </span>
+        <span aria-hidden="true" className="absolute bottom-5 right-5 grid size-10 translate-y-1 place-items-center rounded-full bg-[#ffdc32] text-lg font-bold text-[#092a53] opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">↗</span>
       </div>
-      <div className="px-4 pb-5 pt-1 sm:px-5">
-        <h3 className="font-display text-lg font-bold leading-snug text-[#102c50]">{t(item.name)}</h3>
-        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#65748a]">{t(item.detail)}</p>
-        <div className="mt-4 flex items-center justify-between gap-2">
-          <span className="font-bold text-[#102c50]">{formatPrice(item.priceXaf)}</span>
-          <span className={`text-xs font-bold underline underline-offset-4 ${soldOut ? 'text-red-700 decoration-red-500' : 'text-[#806a00] decoration-[#bd9c00]'}`}>
-            {soldOut ? t('Sold out') : t('View details')}
+      <div className="flex flex-1 flex-col px-5 pb-5 pt-4 sm:px-5 sm:pb-6">
+        <h3 className="font-display text-xl font-bold leading-snug text-[#102c50]">{t(item.name)}</h3>
+        <p className="mt-2 line-clamp-2 min-h-12 text-sm leading-6 text-[#65748a]">{t(item.detail)}</p>
+        <div className="mt-auto pt-5">
+          <div className="mb-4 flex items-end justify-between gap-3 border-t border-[#eeeae1] pt-4">
+            <div>
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#8792a0]">{t('Illustrative price')}</p>
+              <span className="mt-1 block font-display text-base font-bold text-[#102c50]">{formatPrice(item.priceXaf)}</span>
+            </div>
+            <span aria-hidden="true" className="text-xl text-[#bd9c00]">✦</span>
+          </div>
+          <span className={`inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-extrabold transition group-hover:-translate-y-0.5 ${soldOut ? 'border border-red-200 bg-red-50 text-red-700' : 'bg-[#092a53] text-white group-hover:bg-[#163e6b]'}`}>
+            {soldOut ? t('Sold out') : t('View details')} <span aria-hidden="true">→</span>
           </span>
         </div>
       </div>
@@ -202,49 +215,75 @@ export function MenuPage() {
     : []
 
   return (
-    <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
+    <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
-      <main className="mx-auto max-w-[1320px] px-5 py-10 sm:px-8 sm:py-16 lg:px-12">
-        <div className="mb-9 max-w-3xl">
-          <p className="mb-2 inline-block rounded-full bg-[#ffeb9c] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em]">
-            {t('The Cold Stone experience')}
-          </p>
-          <h1 className="font-display text-4xl font-bold tracking-tight sm:text-6xl">{t('Menu & treats')}</h1>
-          <p className="mt-3 text-base leading-7 text-[#65748a]">
-            {t('The global Cold Stone menu features these treat categories. This is not a confirmed Cameroon branch menu; local selection and prices can vary.')}
-          </p>
-          <Link className="mt-4 inline-flex rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-bold text-[#102c50] transition hover:bg-[#ffe76c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]" to="/custom-cake">
-            {t('Request a custom cake')}
-          </Link>
-        </div>
-        {menuError && <p className="mb-6 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">{t('Some saved menu items may not be available right now.')}: {menuError}</p>}
+      <main>
+        <section className="px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+          <div className="relative mx-auto grid max-w-[1440px] items-center gap-8 overflow-hidden rounded-[28px] bg-[#092a53] px-6 py-8 text-white sm:px-10 sm:py-12 lg:grid-cols-[1fr_0.8fr] lg:px-14 lg:py-14">
+            <div aria-hidden="true" className="absolute -right-24 -top-36 size-[28rem] rounded-full border-[66px] border-white/[0.04]" />
+            <div className="relative z-10 max-w-2xl">
+              <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
+                {t('The Cold Stone experience')}
+              </p>
+              <h1 className="mt-4 font-display text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">{t('Menu & treats')}</h1>
+              <p className="mt-4 max-w-xl text-sm leading-6 text-white/75 sm:text-base sm:leading-7">
+                {t('The global Cold Stone menu features these treat categories. This is not a confirmed Cameroon branch menu; local selection and prices can vary.')}
+              </p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <a className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-bold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]" href="#menu-content">
+                  {t('Explore the menu')} <span aria-hidden="true">↓</span>
+                </a>
+                <Link className="inline-flex items-center rounded-full border border-white/30 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10" to="/custom-cake">
+                  {t('Request a custom cake')}
+                </Link>
+              </div>
+            </div>
+            <div className="relative mx-auto w-full max-w-[520px] pb-4 pr-4 sm:pb-6 sm:pr-6">
+              <div aria-hidden="true" className="absolute bottom-0 right-0 h-[70%] w-[72%] rounded-[28px] bg-[#ffdc32]" />
+              <MenuImage alt={t('Ice cream treats')} className="relative z-10 aspect-[1.25] w-full rounded-[24px] object-cover shadow-[0_24px_60px_rgba(0,0,0,0.25)] sm:rounded-[30px]" src="/ice-images/ice-4.webp" />
+              <div className="absolute -bottom-1 left-0 z-20 flex items-center gap-3 rounded-2xl border border-[#e7e3d9] bg-white p-3 text-[#102c50] shadow-lg sm:-left-4 sm:p-4">
+                <span aria-hidden="true" className="grid size-11 place-items-center rounded-xl bg-[#fff0a8] text-xl">✦</span>
+                <div>
+                  <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#806a00]">{t('Signature creations')}</p>
+                  <p className="mt-1 text-xs font-bold sm:text-sm">{t('A treat made your way')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        <section aria-label={t('Search and filter menu')} className="mb-8 grid gap-3 rounded-2xl border border-[#d9d6cc] bg-white p-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mx-auto max-w-[1320px] px-5 py-9 sm:px-8 sm:py-12 lg:px-12" id="menu-content">
+        <p className="mb-7 rounded-2xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-3.5 text-sm leading-6 text-[#624f00] sm:px-5">
+          {t('The global Cold Stone menu features these treat categories. This is not a confirmed Cameroon branch menu; local selection and prices can vary.')}
+        </p>
+        {menuError && <p className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">{t('Some saved menu items may not be available right now.')}: {menuError}</p>}
+
+        <section aria-label={t('Search and filter menu')} className="mb-9 grid gap-3 rounded-[22px] border border-[#e7e3d9] bg-white p-4 shadow-[0_8px_28px_rgba(18,44,80,0.05)] sm:grid-cols-2 sm:p-5 lg:grid-cols-5">
           <label className="text-xs font-bold text-[#52647b]">
             {t('Search menu')}
-            <input className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] px-3 py-2.5 text-sm font-normal" onChange={(event) => setSearch(event.target.value)} placeholder={t('Name or description')} value={search} />
+            <input className="mt-1.5 w-full rounded-xl border border-[#e7e3d9] bg-[#fbfaf5] px-3 py-3 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#8792a0] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40" onChange={(event) => setSearch(event.target.value)} placeholder={t('Name or description')} value={search} />
           </label>
           <label className="text-xs font-bold text-[#52647b]">
             {t('Category')}
-            <select className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-white px-3 py-2.5 text-sm font-normal" onChange={(event) => setCategoryFilter(event.target.value)} value={categoryFilter}>
+            <select className="mt-1.5 w-full rounded-xl border border-[#e7e3d9] bg-[#fbfaf5] px-3 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40" onChange={(event) => setCategoryFilter(event.target.value)} value={categoryFilter}>
               <option value="">{t('All categories')}</option>
               {categories.map((category) => <option key={category.title} value={category.title}>{t(category.title)}</option>)}
             </select>
           </label>
           <label className="text-xs font-bold text-[#52647b]">
             {t('Maximum price (FCFA)')}
-            <input className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] px-3 py-2.5 text-sm font-normal" min="0" onChange={(event) => setMaxPrice(event.target.value)} type="number" value={maxPrice} />
+            <input className="mt-1.5 w-full rounded-xl border border-[#e7e3d9] bg-[#fbfaf5] px-3 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40" min="0" onChange={(event) => setMaxPrice(event.target.value)} type="number" value={maxPrice} />
           </label>
           <label className="text-xs font-bold text-[#52647b]">
             {t('Dietary needs')}
-            <select className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-white px-3 py-2.5 text-sm font-normal" onChange={(event) => setDietaryFilter(event.target.value)} value={dietaryFilter}>
+            <select className="mt-1.5 w-full rounded-xl border border-[#e7e3d9] bg-[#fbfaf5] px-3 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40" onChange={(event) => setDietaryFilter(event.target.value)} value={dietaryFilter}>
               <option value="">{t('Any')}</option>
               {['vegetarian', 'vegan', 'dairy-free', 'gluten-free', 'nut-free'].map((tag) => <option key={tag} value={tag}>{t(tag)}</option>)}
             </select>
           </label>
           <label className="text-xs font-bold text-[#52647b]">
             {t('Availability')}
-            <select className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-white px-3 py-2.5 text-sm font-normal" onChange={(event) => setAvailabilityFilter(event.target.value)} value={availabilityFilter}>
+            <select className="mt-1.5 w-full rounded-xl border border-[#e7e3d9] bg-[#fbfaf5] px-3 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40" onChange={(event) => setAvailabilityFilter(event.target.value)} value={availabilityFilter}>
               <option value="">{t('Any')}</option>
               <option value="available">{t('Available')}</option>
               <option value="sold-out">{t('Sold out')}</option>
@@ -265,47 +304,63 @@ export function MenuPage() {
           </section>
         ) : selectedItem && activeCategory ? (
           <section aria-labelledby="menu-product-title">
-            <button
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#d8d2c5] px-4 py-2 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f2f2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
-              onClick={() => setSelectedItemState(null)}
-              type="button"
-            >
-              <span aria-hidden="true">←</span> {t('Back to category')}: {t(activeCategory.title)}
-            </button>
+            <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
+              <button
+                className="inline-flex items-center gap-2 rounded-full border border-[#d8d2c5] bg-white px-4 py-2.5 text-sm font-bold text-[#52647b] transition hover:border-[#092a53] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                onClick={() => setSelectedItemState(null)}
+                type="button"
+              >
+                <span aria-hidden="true">←</span> {t('Back to category')}: {t(activeCategory.title)}
+              </button>
+              <p className="text-xs font-medium text-[#7b8796]">{t(activeCategory.title)} <span aria-hidden="true">/</span> {t(selectedItem.name)}</p>
+            </div>
 
-            <div className="grid grid-cols-[0.8fr_1.2fr] items-start gap-3 rounded-[30px] bg-[#f4f2f2] p-3 sm:gap-8 sm:p-6 lg:grid-cols-[1fr_0.9fr] lg:gap-12 lg:p-8">
-              <div className="aspect-square min-w-0 overflow-hidden rounded-[18px] bg-white sm:rounded-[24px]">
-                <MenuImage
-                  alt={t(selectedItem.name)}
-                  className="h-full w-full object-cover"
-                  src={selectedItem.image}
-                />
-              </div>
-              <div className="flex min-w-0 flex-col justify-center py-1 sm:py-5">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#806a00] sm:text-xs sm:tracking-[0.15em]">{t(activeCategory.title)}</p>
-                <h2 className="mt-2 break-words font-display text-xl font-bold leading-tight tracking-tight sm:mt-3 sm:text-5xl" id="menu-product-title">
-                  {t(selectedItem.name)}
-                </h2>
-                <p className="mt-2 text-xs leading-5 text-[#52647b] sm:mt-4 sm:text-base sm:leading-7">{t(selectedItem.detail)}</p>
-                <div className="mt-3 rounded-xl bg-white px-3 py-2 sm:mt-7 sm:rounded-2xl sm:px-5 sm:py-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#65748a] sm:text-xs sm:tracking-[0.12em]">{t('Illustrative price')}</p>
-                <p className="mt-1 break-words font-display text-lg font-bold text-[#102c50] sm:text-3xl">{formatPrice(selectedItem.priceXaf)}</p>
+            <div className="overflow-hidden rounded-[30px] border border-[#e7e3d9] bg-white shadow-[0_18px_54px_rgba(18,44,80,0.09)]">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_0.95fr]">
+                <div className="relative min-h-[320px] overflow-hidden bg-[#f2efe5] p-3 sm:min-h-[460px] sm:p-5">
+                  <MenuImage
+                    alt={t(selectedItem.name)}
+                    className="absolute inset-3 size-[calc(100%-1.5rem)] rounded-[24px] object-cover sm:inset-5 sm:size-[calc(100%-2.5rem)] sm:rounded-[26px]"
+                    src={selectedItem.image}
+                  />
+                  <div aria-hidden="true" className="absolute inset-3 rounded-[24px] bg-gradient-to-t from-[#092a53]/55 via-transparent to-[#092a53]/10 sm:inset-5 sm:rounded-[26px]" />
+                  <div className="absolute left-7 top-7 flex flex-wrap gap-2 sm:left-9 sm:top-9">
+                    <span className="rounded-full border border-white/60 bg-white/90 px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#092a53] shadow-sm backdrop-blur-sm">{t(activeCategory.title)}</span>
+                    <span className={`rounded-full px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.08em] shadow-sm ${selectedItem.isAvailable === false || selectedItem.availableQuantity < 1 ? 'bg-red-50 text-red-700' : 'bg-[#eff8e9] text-[#37632c]'}`}>
+                      {selectedItem.isAvailable === false || selectedItem.availableQuantity < 1 ? t('Sold out') : t('Available')}
+                    </span>
+                  </div>
+                  <span aria-hidden="true" className="absolute bottom-8 right-8 grid size-12 place-items-center rounded-full bg-[#ffdc32] text-xl text-[#092a53] shadow-lg">✦</span>
                 </div>
-                {reviews.reviewCount > 0 && <p className="mt-3 text-sm font-semibold" aria-live="polite">★ {reviews.averageRating} · {reviews.reviewCount} {t('reviews')}</p>}
-                <p className="mt-2 text-[10px] leading-4 text-[#65748a] sm:mt-4 sm:text-xs sm:leading-5">{t('This is an example price for illustration only, not a verified Cameroon price or an item for sale on this website.')}</p>
-                {customer && <button className="mt-3 inline-flex w-fit items-center justify-center rounded-full border border-[#65748a] px-5 py-2.5 text-sm font-bold" onClick={saveFavorite} type="button">
-                  {favoriteIds.has(selectedItem.id || getMenuItemId(activeCategory.title, selectedItem.name)) ? t('Remove from favorites') : t('Save to favorites')}
-                </button>}
-                <button
-                  className="mt-4 inline-flex w-fit items-center justify-center rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-bold text-[#102c50] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500"
-                  onClick={orderSelectedItem}
-                  disabled={selectedItem.isAvailable === false || selectedItem.availableQuantity < 1}
-                  type="button"
-                >
-                  {selectedItem.isAvailable === false || selectedItem.availableQuantity < 1 ? t('Sold out') : t('Order now')}
-                </button>
-                {cartNotice && <p className="mt-3 text-xs leading-5 text-red-700" role="alert">{cartNotice}</p>}
-                {favoriteError && <p className="mt-3 text-xs leading-5 text-red-700" role="alert">{favoriteError}</p>}
+                <div className="flex min-w-0 flex-col justify-center p-6 sm:p-9 lg:p-12">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t('Menu category')}</p>
+                  <h2 className="mt-3 break-words font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-5xl" id="menu-product-title">
+                    {t(selectedItem.name)}
+                  </h2>
+                  {reviews.reviewCount > 0 && <p className="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-[#fff9dc] px-3.5 py-2 text-sm font-bold text-[#806a00]" aria-live="polite"><span aria-hidden="true">★</span> {reviews.averageRating} · {reviews.reviewCount} {t('reviews')}</p>}
+                  <p className="mt-5 text-sm leading-7 text-[#52647b] sm:text-base sm:leading-8">{t(selectedItem.detail)}</p>
+                  <div className="mt-7 rounded-2xl border border-[#ece8dd] bg-[#fbfaf5] p-5">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Illustrative price')}</p>
+                    <p className="mt-1 font-display text-3xl font-extrabold text-[#092a53]">{formatPrice(selectedItem.priceXaf)}</p>
+                    <p className="mt-2 text-xs leading-5 text-[#65748a]">{t('This is an example price for illustration only, not a verified Cameroon price or an item for sale on this website.')}</p>
+                  </div>
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <button
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500"
+                      onClick={orderSelectedItem}
+                      disabled={selectedItem.isAvailable === false || selectedItem.availableQuantity < 1}
+                      type="button"
+                    >
+                      {selectedItem.isAvailable === false || selectedItem.availableQuantity < 1 ? t('Sold out') : t('Order now')} {! (selectedItem.isAvailable === false || selectedItem.availableQuantity < 1) && <span aria-hidden="true">→</span>}
+                    </button>
+                    {customer && <button className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d8d2c5] px-5 py-3.5 text-sm font-bold text-[#52647b] transition hover:border-[#092a53] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]" onClick={saveFavorite} type="button">
+                      <span aria-hidden="true">{favoriteIds.has(selectedItem.id || getMenuItemId(activeCategory.title, selectedItem.name)) ? '♥' : '♡'}</span>
+                      {favoriteIds.has(selectedItem.id || getMenuItemId(activeCategory.title, selectedItem.name)) ? t('Remove from favorites') : t('Save to favorites')}
+                    </button>}
+                  </div>
+                  {cartNotice && <p className="mt-3 text-xs leading-5 text-red-700" role="alert">{cartNotice}</p>}
+                  {favoriteError && <p className="mt-3 text-xs leading-5 text-red-700" role="alert">{favoriteError}</p>}
+                </div>
               </div>
             </div>
             {reviews.reviews.length > 0 && <section className="mt-6 rounded-2xl border border-[#d9d6cc] bg-white p-5">
@@ -340,28 +395,61 @@ export function MenuPage() {
           </section>
         ) : activeCategory ? (
           <section aria-labelledby="menu-category-title">
-            <button
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#d8d2c5] px-4 py-2 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f2f2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
-              onClick={() => setSearchParams({})}
-              type="button"
-            >
-              <span aria-hidden="true">←</span> {t('Back to categories')}
-            </button>
+            <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
+              <button
+                className="inline-flex items-center gap-2 rounded-full border border-[#d8d2c5] bg-white px-4 py-2.5 text-sm font-bold text-[#52647b] transition hover:border-[#092a53] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                onClick={() => setSearchParams({})}
+                type="button"
+              >
+                <span aria-hidden="true">←</span> {t('Back to categories')}
+              </button>
+              <p className="text-xs font-medium text-[#7b8796]">{t('The Cold Stone experience')} <span aria-hidden="true">/</span> {t(activeCategory.title)}</p>
+            </div>
 
-            <div className="mb-8 grid overflow-hidden rounded-[28px] bg-[#f4f2f2] md:grid-cols-[1.1fr_0.9fr]">
-              <div className="flex flex-col justify-center p-6 sm:p-9 lg:p-12">
-                <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#806a00]">{t('Menu category')}</p>
-                <h2 className="mt-2 font-display text-4xl font-bold tracking-tight sm:text-5xl" id="menu-category-title">{t(activeCategory.title)}</h2>
-                <p className="mt-3 max-w-xl text-base leading-7 text-[#52647b]">{t(activeCategory.description)}</p>
-                <p className="mt-4 text-sm leading-6 text-[#65748a]">{t('Select a product to see its details, image, sample price, and similar treats.')}</p>
+            <div className="mb-10 grid overflow-hidden rounded-[28px] border border-[#e7e3d9] bg-white shadow-[0_14px_44px_rgba(18,44,80,0.09)] md:min-h-[390px] md:grid-cols-[1.05fr_0.95fr]">
+              <div
+                className="relative isolate flex flex-col justify-center overflow-hidden p-6 text-[#092a53] sm:p-9 lg:p-12"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.84)), url("${activeCategory.image}")`,
+                  backgroundPosition: 'center',
+                  backgroundSize: 'cover',
+                }}
+              >
+                <div aria-hidden="true" className="absolute -right-16 -top-20 -z-10 size-56 rounded-full border-[36px] border-[#c7772c]/10" />
+                <p className="inline-flex w-fit items-center gap-2 rounded-full border border-[#d9d6cc] bg-white/75 px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#806a00] sm:text-xs">
+                  <span aria-hidden="true" className="text-base">{activeCategory.icon}</span>
+                  {t('Menu category')}
+                </p>
+                <h2 className="mt-5 max-w-2xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl" id="menu-category-title">
+                  {t(activeCategory.title)}
+                </h2>
+                <p className="mt-4 max-w-xl text-base leading-7 text-[#52647b] sm:text-lg sm:leading-8">{t(activeCategory.description)}</p>
+                <div className="mt-7 flex flex-wrap items-center gap-3">
+                  <a className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b]" href="#menu-category-items">
+                    {t('Browse items')} <span aria-hidden="true">↓</span>
+                  </a>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-[#d9d6cc] bg-white/75 px-4 py-2.5 text-xs font-bold text-[#52647b]">
+                    {t('{count} items', { count: activeCategory.items.length })}
+                  </span>
+                </div>
               </div>
-              <div className="aspect-[1.35] min-h-56 overflow-hidden md:aspect-auto">
-                <MenuImage alt={t(activeCategory.title)} className="h-full w-full object-cover" src={activeCategory.image} />
+              <div className="relative min-h-64 overflow-hidden bg-[#f4f1e7] md:min-h-full">
+                <MenuImage alt={t(activeCategory.title)} className="absolute inset-0 size-full object-cover" src={activeCategory.image} />
+                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#092a53]/20 via-transparent to-white/10" />
+                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 sm:bottom-6 sm:left-6 sm:right-6">
+                  <span className="rounded-full border border-white/50 bg-white/90 px-4 py-2 text-xs font-bold text-[#092a53] shadow-sm">
+                    {t('Signature creations')}
+                  </span>
+                  <span aria-hidden="true" className="grid size-11 place-items-center rounded-full bg-[#ffdc32] text-xl text-[#092a53] shadow-md">{activeCategory.icon}</span>
+                </div>
               </div>
             </div>
 
-            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-              <h3 className="font-display text-2xl font-bold">{t('Menu items')}</h3>
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-3" id="menu-category-items">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t(activeCategory.title)}</p>
+                <h3 className="mt-1 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">{t('Menu items')}</h3>
+              </div>
               <p className="text-xs leading-5 text-[#65748a]">{t('Prices shown are illustrative estimates only.')}</p>
             </div>
             <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -379,46 +467,47 @@ export function MenuPage() {
           </section>
         ) : (
           <section aria-labelledby="menu-categories-title">
-            <h2 className="sr-only" id="menu-categories-title">{t('Menu categories')}</h2>
-            <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-4">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t('Browse the categories')}</p>
+                <h2 className="mt-1 font-display text-2xl font-extrabold tracking-tight sm:text-3xl" id="menu-categories-title">{t('Menu categories')}</h2>
+              </div>
+              <p className="text-sm text-[#65748a]">{t('{count} categories', { count: categories.length })}</p>
+            </div>
+            <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {categories.map((category) => (
                 <button
-                  className="group overflow-hidden rounded-[30px] bg-[#f4f2f2] text-left transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_35px_rgba(18,44,80,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4"
+                  className="group overflow-hidden rounded-[24px] border border-[#e7e3d9] bg-white text-left shadow-[0_8px_26px_rgba(18,44,80,0.05)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(18,44,80,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4"
                   key={category.title}
                   onClick={() => showCategory(category)}
                   type="button"
                 >
-                  <div className="aspect-[1.04] overflow-hidden p-3 sm:p-4">
+                  <div className="relative aspect-[1.12] overflow-hidden bg-[#f4f1e7] p-3 sm:p-4">
                     <MenuImage
                       alt={t(category.title)}
-                      className="h-full w-full rounded-[23px] object-cover transition duration-300 group-hover:scale-[1.03]"
+                      className="h-full w-full rounded-[18px] object-cover transition duration-500 group-hover:scale-[1.05]"
                       src={category.image}
                     />
+                    <span className="absolute bottom-5 right-5 grid size-10 place-items-center rounded-full bg-white/95 text-lg text-[#092a53] shadow-sm transition group-hover:bg-[#ffdc32]">
+                      <span aria-hidden="true">→</span>
+                    </span>
                   </div>
-                  <div className="min-h-[76px] px-4 pb-5 text-center sm:px-5">
-                    <h2 className="font-display text-xl font-bold uppercase tracking-[0.035em] text-[#806a56] sm:text-2xl">{t(category.title)}</h2>
+                  <div className="px-4 pb-5 pt-4 sm:px-5">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-display text-lg font-bold leading-tight text-[#102c50] sm:text-xl">{t(category.title)}</h3>
+                      <span className="shrink-0 rounded-full bg-[#fff8dd] px-2.5 py-1 text-[10px] font-bold text-[#806a00]">{t('{count} items', { count: category.items.length })}</span>
+                    </div>
+                    <p className="mt-2 line-clamp-2 min-h-10 text-xs leading-5 text-[#65748a]">{t(category.description)}</p>
                   </div>
                 </button>
               ))}
             </div>
           </section>
         )}
-
-        <section className="mt-12 rounded-[24px] bg-[#092a53] p-6 text-white sm:p-8">
-          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#ffdc32]">{t('How the signature mix-in works')}</p>
-          <h2 className="mt-2 font-display text-3xl font-bold">{t('Choose. Mix. Make it yours.')}</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-white/75">
-            {t('Cold Stone is known for mixing chosen ingredients into ice cream on a frozen granite stone. Ask your local branch which flavors, mix-ins and treats are available today.')}
-          </p>
-          <Link className="mt-6 inline-flex rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-bold text-[#102c50] transition hover:bg-[#ffe76c]" to="/locations">
-            {t('Available locations')}
-          </Link>
-        </section>
-
-        <p className="mt-7 text-xs leading-5 text-[#65748a]">
-          {t('Product categories are summarized from the global brand menu. Cameroon-specific stock, recipes and prices have not been independently confirmed.')}
-        </p>
+        </div>
       </main>
+
+      <InstagramSection />
       <Footer />
     </div>
   )

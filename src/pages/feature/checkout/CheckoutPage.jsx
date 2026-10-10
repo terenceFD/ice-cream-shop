@@ -8,7 +8,7 @@ import { apiRequest } from '../../../api/api'
 import { useAuth } from '../../../authcontext/AuthContext'
 import { getCameroonDate } from '../../../../shared/cameroonDate'
 
-const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-white px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40'
+const inputClassName = 'mt-2 w-full rounded-xl border border-[#dce2ea] bg-[#fbfcfe] px-4 py-3.5 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#9aa5b3] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/20'
 
 export function CheckoutPage() {
   const navigate = useNavigate()
@@ -112,55 +112,77 @@ export function CheckoutPage() {
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
 
-      <main className="mx-auto max-w-[1160px] px-5 py-10 sm:px-8 sm:py-14 lg:px-12">
-        <Link to="/cart" className="text-sm font-semibold text-[#65748a] transition hover:text-[#102c50]">
-          ← {t('Back to bag')}
+      <main className="mx-auto max-w-[1240px] px-4 py-7 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+        <Link to="/cart" className="inline-flex items-center gap-2 rounded-full border border-[#dce2ea] bg-white px-4 py-2.5 text-sm font-bold text-[#52647b] shadow-sm transition hover:border-[#092a53] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]">
+          <span aria-hidden="true">←</span> {t('Back to bag')}
         </Link>
-        <div className="mb-8 mt-6">
-          <p className="mb-2 inline-block rounded-full bg-[#ffeb9c] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em]">
-            {t('Almost there')}
-          </p>
-          <h1 className="font-display text-5xl font-bold tracking-tight sm:text-6xl">{t('Checkout')}</h1>
-          <p className="mt-2 text-sm text-[#65748a]">{t('Add your contact and delivery details to review your order.')}</p>
-          <p className="mt-3 rounded-xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-3 text-sm leading-6 text-[#624f00]">
+        <div className="mb-7 mt-6 rounded-[28px] bg-[#092a53] px-6 py-7 text-white shadow-[0_18px_45px_rgba(9,42,83,0.14)] sm:px-9 sm:py-9">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <p className="mb-2 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
+                <span aria-hidden="true" className="text-base">✦</span>{t('Almost there')}
+              </p>
+              <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{t('Checkout')}</h1>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-white/70">{t('Add your contact and delivery details to review your order.')}</p>
+            </div>
+            <div aria-label={t('Checkout progress')} className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.1em] text-white/65 sm:gap-3">
+              <span className="flex items-center gap-2 text-[#ffdc32]"><span className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-xs text-[#092a53]">1</span><span className="hidden sm:inline">{t('Your details')}</span></span>
+              <span aria-hidden="true" className="h-px w-5 bg-white/25 sm:w-8" />
+              <span className="flex items-center gap-2"><span className="grid size-7 place-items-center rounded-full border border-white/30 text-xs">2</span><span className="hidden sm:inline">{t('Review order')}</span></span>
+            </div>
+          </div>
+        </div>
+        <p className="mb-7 flex items-start gap-3 rounded-2xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-4 text-sm leading-6 text-[#624f00] sm:px-5">
+            <span aria-hidden="true" className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-xs font-extrabold">i</span>
             {t(hasMenuItems
               ? 'Menu items and FCFA prices are illustrative examples, not confirmed local menu items or prices. Orders are handled by this independent website.'
               : "Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
-          </p>
-        </div>
+        </p>
 
-        <div className="grid items-start gap-8 lg:grid-cols-[1fr_380px]">
-          <form className="space-y-6 rounded-[24px] border border-[#d9d6cc] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7" key={customer?.id || 'guest'} onSubmit={handleSubmit}>
-            <section>
-              <h2 className="font-display text-2xl font-bold">{t('Contact information')}</h2>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <label className="block text-sm font-semibold text-[#65748a] sm:col-span-2">
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_370px] lg:gap-8">
+          <form className="space-y-0 overflow-hidden rounded-[28px] border border-[#e4e8ee] bg-white shadow-[0_12px_36px_rgba(18,44,80,0.07)]" key={customer?.id || 'guest'} onSubmit={handleSubmit}>
+            <section className="p-5 sm:p-8">
+              <div className="mb-5 flex items-center gap-3">
+                <span aria-hidden="true" className="grid size-10 place-items-center rounded-xl bg-[#fff3b8] font-display text-lg font-bold text-[#806a00]">01</span>
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#8a7500]">{t('Step 1')}</p>
+                  <h2 className="font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">{t('Contact information')}</h2>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm font-bold text-[#52647b]">
                   {t('Full name')}
                   <input autoComplete="name" className={inputClassName} defaultValue={customer?.name || ''} name="name" required />
                 </label>
-                <label className="block text-sm font-semibold text-[#65748a] sm:col-span-2">
+                <label className="block text-sm font-bold text-[#52647b]">
                   {t('Email address')}
                   <input autoComplete="email" className={inputClassName} defaultValue={customer?.email || ''} name="email" required type="email" />
                 </label>
-                <label className="block text-sm font-semibold text-[#65748a] sm:col-span-2">
+                <label className="block text-sm font-bold text-[#52647b]">
                   {t('Phone number')}
                   <input autoComplete="tel" className={inputClassName} defaultValue={customer?.phone || ''} name="phone" required type="tel" />
                 </label>
               </div>
             </section>
 
-            {fulfillmentError && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert">{fulfillmentError}</p>}
-            <section className="border-t border-[#d9d6cc] pt-6">
-              <h2 className="font-display text-2xl font-bold">{t('Pickup or delivery')}</h2>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <label className="block text-sm font-semibold text-[#65748a] sm:col-span-2">
+            {fulfillmentError && <p className="mx-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 sm:mx-8" role="alert">{fulfillmentError}</p>}
+            <section className="border-t border-[#edf0f4] p-5 sm:p-8">
+              <div className="mb-5 flex items-center gap-3">
+                <span aria-hidden="true" className="grid size-10 place-items-center rounded-xl bg-[#eaf2fb] font-display text-lg font-bold text-[#092a53]">02</span>
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#65748a]">{t('Step 2')}</p>
+                  <h2 className="font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">{t('Pickup or delivery')}</h2>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm font-bold text-[#52647b]">
                   {t('Fulfillment type')}
                   <select className={inputClassName} onChange={(event) => setFulfillmentType(event.target.value)} value={fulfillmentType}>
                     <option disabled={!fulfillment.zones.some((zone) => zone.pickupEnabled)} value="pickup">{t('Pickup')}</option>
                     <option disabled={!fulfillment.zones.some((zone) => zone.deliveryEnabled)} value="delivery">{t('Delivery')}</option>
                   </select>
                 </label>
-                <label className="block text-sm font-semibold text-[#65748a] sm:col-span-2">
+                <label className="block text-sm font-bold text-[#52647b]">
                   {t('Location')}
                   <select autoComplete="address-level2" className={inputClassName} name="city" onChange={(event) => setSelectedCity(event.target.value)} required value={selectedZone?.location || ''}>
                     {!compatibleZones.length && <option value="">{t('No locations enabled for this fulfillment type')}</option>}
@@ -184,24 +206,24 @@ export function CheckoutPage() {
                   </select>
                 </label>
               </div>
-              <p className="mt-3 text-sm text-[#65748a]">{t('Delivery fee')}: {formatCartMoney(deliveryFee, currency)}</p>
+              <p className="mt-4 inline-flex rounded-full bg-[#f3f6f9] px-3.5 py-2 text-xs font-bold text-[#52647b]">{t('Delivery fee')}: {formatCartMoney(deliveryFee, currency)}</p>
             </section>
 
             {customer && (
               <p className="text-xs leading-5 text-[#65748a]">{t('Your contact and delivery details are saved to your account for future orders.')}</p>
             )}
-            <section className="border-t border-[#d9d6cc] pt-5">
-              <label className="block text-sm font-semibold text-[#65748a]">
+            <section className="border-t border-[#edf0f4] p-5 sm:px-8 sm:py-6">
+              <label className="block text-sm font-bold text-[#52647b]">
                 {t('Discount code')}
                 <input autoComplete="off" className={inputClassName} onChange={(event) => { setDiscountInput(event.target.value); setDiscountCode(''); setDiscountAmount(0); setDiscountMessage('') }} value={discountInput} />
               </label>
-              <button className="mt-3 rounded-full border border-[#d9d6cc] px-4 py-2 text-sm font-bold disabled:opacity-50" disabled={isCheckingCode || !discountInput.trim()} onClick={applyDiscountCode} type="button">
+              <button className="mt-3 rounded-full border border-[#dce2ea] bg-white px-4 py-2.5 text-sm font-bold text-[#092a53] transition hover:border-[#092a53] disabled:cursor-not-allowed disabled:opacity-50" disabled={isCheckingCode || !discountInput.trim()} onClick={applyDiscountCode} type="button">
                 {isCheckingCode ? t('Checking…') : t('Apply code')}
               </button>
               {discountMessage && <p className={`mt-2 text-sm ${discountCode ? 'text-[#163e35]' : 'text-red-700'}`} role="status">{discountMessage}</p>}
             </section>
             {customer && (
-              <label className="flex items-start gap-3 border-t border-[#d9d6cc] pt-5 text-sm">
+              <label className="mx-5 flex items-start gap-3 border-t border-[#edf0f4] py-5 text-sm sm:mx-8">
                 <input checked={redeemLoyalty} disabled={maxRedeemablePoints < 100 || Boolean(discountCode || discount)} onChange={(event) => {
                   const redeem = event.target.checked
                   setRedeemLoyalty(redeem)
@@ -218,20 +240,28 @@ export function CheckoutPage() {
                 })} · {t('Your balance')}: {customer.loyaltyPoints || 0}</span>
               </label>
             )}
-            <div className="rounded-xl border border-[#eadb8a] bg-[#fff9dc] p-4 text-sm leading-5 text-[#624f00]">
+            <div className="mx-5 mb-5 flex items-start gap-3 rounded-xl border border-[#eadb8a] bg-[#fff9dc] p-4 text-sm leading-5 text-[#624f00] sm:mx-8">
+              <span aria-hidden="true" className="mt-0.5">ⓘ</span>
               {t('Your delivery details are stored with the order so we can prepare and deliver it.')}
             </div>
-            <button className="w-full rounded-full bg-[#ffdc32] px-6 py-4 text-lg font-bold text-[#102c50] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] disabled:cursor-not-allowed disabled:opacity-50" disabled={!selectedZone || !selectedSlot || !scheduledDate || Boolean(fulfillmentError)} type="submit">
-              {t('Review order')}
-            </button>
+            <div className="border-t border-[#edf0f4] bg-[#fbfcfe] p-5 sm:px-8 sm:py-6">
+              <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#ffdc32] px-6 py-4 text-base font-extrabold text-[#102c50] shadow-[0_8px_18px_rgba(189,156,0,0.16)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" disabled={!selectedZone || !selectedSlot || !scheduledDate || Boolean(fulfillmentError)} type="submit">
+                {t('Review order')} <span aria-hidden="true">→</span>
+              </button>
+              <p className="mt-3 text-center text-[11px] font-medium text-[#7b8796]">{t('You can review everything before confirming your order.')}</p>
+            </div>
           </form>
 
-          <aside className="h-fit space-y-4 rounded-[28px] border border-[#d9d6cc] bg-white p-6 shadow-[0_8px_30px_rgba(18,44,80,0.06)]">
-            <h2 className="font-display text-2xl font-bold">{t('Order summary')}</h2>
-            <div className="space-y-4 border-t border-[#d9d6cc] pt-4">
+          <aside className="h-fit overflow-hidden rounded-[28px] border border-[#e4e8ee] bg-white shadow-[0_12px_36px_rgba(18,44,80,0.07)] lg:sticky lg:top-6">
+            <div className="bg-[#092a53] px-5 py-5 text-white sm:px-6">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#ffdc32]">{t('Almost there')}</p>
+              <h2 className="mt-1 font-display text-2xl font-extrabold">{t('Order summary')}</h2>
+            </div>
+            <div className="p-5 sm:p-6">
+              <div className="space-y-4">
               {cartItems.map((item) => (
                 <div className="flex items-center gap-3" key={item.id}>
-                  <img alt="" className="checkout-item-image rounded-xl bg-[#f4f1e7]" src={item.image} />
+                  <img alt="" className="checkout-item-image rounded-xl border border-[#edf0f4] bg-[#f4f1e7]" src={item.image} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold">{t(item.name)}</p>
                     <p className="text-xs text-[#65748a]">{t('Qty: {quantity}', { quantity: item.quantity })}</p>
@@ -239,41 +269,43 @@ export function CheckoutPage() {
                   <span className="shrink-0 whitespace-nowrap text-sm font-semibold">{formatCartMoney(item.price * item.quantity, currency)}</span>
                 </div>
               ))}
-            </div>
-            <div className="space-y-3 border-t border-[#d9d6cc] pt-4 text-sm">
-              <div className="flex justify-between">
+              </div>
+              <div className="mt-5 space-y-3 border-t border-dashed border-[#dce2ea] pt-4 text-sm">
+              <div className="flex justify-between gap-4">
                 <span className="text-[#65748a]">{t('Subtotal')}</span>
                 <span className="font-semibold">{formatCartMoney(subtotal, currency)}</span>
               </div>
               {discount > 0 && (
-                <div className="flex justify-between text-[#163e35]">
-                  <span className="font-semibold">{t('Buy 2 Get 1 Free ({count} free)', { count: freeScoops })}</span>
-                  <span className="font-bold">−{formatCartMoney(discount, currency)}</span>
+                <div className="flex justify-between gap-4 text-[#163e35]">
+                  <span className="min-w-0 font-semibold">{t('Buy 2 Get 1 Free ({count} free)', { count: freeScoops })}</span>
+                  <span className="shrink-0 font-bold">−{formatCartMoney(discount, currency)}</span>
                 </div>
               )}
               {discountCode && discountAmount > 0 && (
-                <div className="flex justify-between text-[#163e35]">
-                  <span className="font-semibold">{t('Discount code {code}', { code: discountCode })}</span>
-                  <span className="font-bold">−{formatCartMoney(discountAmount, currency)}</span>
+                <div className="flex justify-between gap-4 text-[#163e35]">
+                  <span className="min-w-0 font-semibold">{t('Discount code {code}', { code: discountCode })}</span>
+                  <span className="shrink-0 font-bold">−{formatCartMoney(discountAmount, currency)}</span>
                 </div>
               )}
               {loyaltyDiscount > 0 && (
-                <div className="flex justify-between text-[#163e35]">
-                  <span className="font-semibold">{t('Loyalty reward ({points} points)', { points: maxRedeemablePoints })}</span>
-                  <span className="font-bold">−{formatCartMoney(loyaltyDiscount, currency)}</span>
+                <div className="flex justify-between gap-4 text-[#163e35]">
+                  <span className="min-w-0 font-semibold">{t('Loyalty reward ({points} points)', { points: maxRedeemablePoints })}</span>
+                  <span className="shrink-0 font-bold">−{formatCartMoney(loyaltyDiscount, currency)}</span>
                 </div>
               )}
               {deliveryFee > 0 && (
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <span className="text-[#65748a]">{t('Delivery fee')}</span>
-                  <span className="font-semibold">{formatCartMoney(deliveryFee, currency)}</span>
+                  <span className="shrink-0 font-semibold">{formatCartMoney(deliveryFee, currency)}</span>
                 </div>
               )}
-              <div className="flex justify-between border-t border-[#d9d6cc] pt-3">
+              <div className="flex items-baseline justify-between gap-3 border-t border-[#dce2ea] pt-4">
                 <span className="font-display text-lg font-bold">{t('Total')}</span>
-                <span className="font-display text-2xl font-bold text-[#bd9c00]">{formatCartMoney(Math.max(0, total - discountAmount - loyaltyDiscount + deliveryFee), currency)}</span>
+                <span className="shrink-0 font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">{formatCartMoney(Math.max(0, total - discountAmount - loyaltyDiscount + deliveryFee), currency)}</span>
+              </div>
               </div>
             </div>
+            <p className="border-t border-[#edf0f4] bg-[#fbfcfe] px-5 py-3 text-center text-[10px] font-semibold text-[#7b8796] sm:px-6">{t('Your total includes the delivery fee shown above.')}</p>
           </aside>
         </div>
       </main>

@@ -151,55 +151,61 @@ export function PaymentPage() {
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
 
-      <main className="mx-auto max-w-[1160px] px-5 py-10 sm:px-8 sm:py-14 lg:px-12">
+      <main className="mx-auto max-w-[1240px] px-4 py-7 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
         {paymentStatus === "paid" ? (
-          <section aria-live="polite" className="mx-auto max-w-2xl rounded-[28px] border border-[#dce9c8] bg-white p-6 text-center shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-10" role="status">
+          <section aria-live="polite" className="mx-auto max-w-2xl overflow-hidden rounded-[28px] border border-[#dce9c8] bg-white text-center shadow-[0_18px_50px_rgba(18,44,80,0.1)]" role="status">
+            <div className="h-2 bg-gradient-to-r from-[#a8df62] via-[#d8f29a] to-[#ffdc32]" />
+            <div className="p-6 sm:p-10">
             <span
               aria-hidden="true"
-              className="mx-auto grid size-16 place-items-center rounded-full bg-[#d8f29a] text-3xl font-bold text-[#163e35]"
+              className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#e8f6d4] text-3xl font-bold text-[#163e35] shadow-sm"
             >
               ✓
             </span>
-            <p className="mt-5 inline-block rounded-full bg-[#d8f29a] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#163e35]">
+            <p className="mt-5 inline-flex rounded-full bg-[#e8f6d4] px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#163e35]">
               {t("Payment confirmed")}
             </p>
-            <h1 className="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">
+            <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-5xl">
               {t("Thank you, {name}!", { name: order?.customerName })}
             </h1>
-            <p className="mt-3 text-sm leading-6 text-[#65748a]">
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-[#65748a]">
               {t(
                 "Your payment was confirmed. Order #{id} is being prepared for {email}.",
                 { id: order?.id, email: order?.customerEmail },
               )}
             </p>
-            <p className="mt-2 font-display text-2xl font-bold">
+            <p className="mt-5 font-display text-3xl font-extrabold text-[#092a53]">
               {formatMoney(order?.totalCents || 0, order?.currency, language)}
             </p>
             <Link
-              className="mt-7 inline-flex rounded-full bg-[#ffdc32] px-6 py-3 font-bold transition hover:bg-[#ffe76c]"
+              className="mt-7 inline-flex rounded-xl bg-[#ffdc32] px-6 py-3.5 font-extrabold text-[#102c50] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#ffe76c]"
               to="/flavors"
             >
               {t("Continue shopping")}
             </Link>
+            </div>
           </section>
         ) : paymentStatus === "checking" ? (
-          <section className="mx-auto max-w-2xl rounded-[28px] border border-[#d9d6cc] bg-white p-8 text-center">
-            <p className="font-display text-2xl font-bold">
+          <section className="mx-auto max-w-2xl rounded-[28px] border border-[#e4e8ee] bg-white p-8 text-center shadow-[0_18px_50px_rgba(18,44,80,0.08)] sm:p-12" aria-live="polite" role="status">
+            <span aria-hidden="true" className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#eaf2fb] text-2xl text-[#092a53]">↻</span>
+            <p className="mt-5 font-display text-2xl font-extrabold text-[#092a53]">
               {t("Checking your payment…")}
             </p>
-            <p className="mt-2 text-sm text-[#65748a]">
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#65748a]">
               {t("Please wait while Stripe confirms the transaction.")}
             </p>
           </section>
         ) : paymentStatus === "unverified" ? (
-          <section className="mx-auto max-w-2xl rounded-[28px] border border-[#f0d0c8] bg-white p-6 sm:p-8">
-            <p className="inline-block rounded-full bg-red-100 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-red-800">
+          <section className="mx-auto max-w-2xl overflow-hidden rounded-[28px] border border-[#f0d0c8] bg-white shadow-[0_18px_50px_rgba(18,44,80,0.08)]">
+            <div className="h-2 bg-[#d97362]" />
+            <div className="p-6 sm:p-8">
+            <p className="inline-flex rounded-full bg-red-50 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-red-800">
               {t("Payment not confirmed")}
             </p>
-            <h1 className="mt-3 font-display text-3xl font-bold">
+            <h1 className="mt-3 font-display text-3xl font-extrabold text-[#092a53]">
               {t("We could not verify this payment")}
             </h1>
-            <p className="mt-2 text-sm leading-6 text-[#65748a]">{error}</p>
+            <p className="mt-3 rounded-xl bg-red-50/70 p-4 text-sm leading-6 text-red-800" role="alert">{error}</p>
             <p className="mt-3 text-sm leading-6 text-[#65748a]">
               {t(
                 "Your order has not been marked as paid. If your bank shows a charge, please contact us before trying again.",
@@ -211,74 +217,87 @@ export function PaymentPage() {
             >
               {t("Contact support")}
             </Link>
+            </div>
           </section>
         ) : (
           <>
             <Link
               to="/checkout"
               state={{ checkoutDetails }}
-              className="text-sm font-semibold text-[#65748a] transition hover:text-[#102c50]"
+              className="inline-flex items-center gap-2 rounded-full border border-[#dce2ea] bg-white px-4 py-2.5 text-sm font-bold text-[#52647b] shadow-sm transition hover:border-[#092a53] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
             >
-              ← {t("Back to delivery details")}
+              <span aria-hidden="true">←</span> {t("Back to delivery details")}
             </Link>
-            <div className="mb-8 mt-6">
-              <p className="mb-2 inline-block rounded-full bg-[#ffeb9c] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em]">
-                {t("Final step")}
-              </p>
-              <h1 className="font-display text-5xl font-bold tracking-tight sm:text-6xl">
-                {t("Payment")}
-              </h1>
-              <p className="mt-2 text-sm text-[#65748a]">
-                {t("Choose a payment method available for your location.")}
-              </p>
-              <p className="mt-3 rounded-xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-3 text-sm leading-6 text-[#624f00]">
+            <div className="mb-7 mt-6 rounded-[28px] bg-[#092a53] px-6 py-7 text-white shadow-[0_18px_45px_rgba(9,42,83,0.14)] sm:px-9 sm:py-9">
+              <div className="flex flex-wrap items-end justify-between gap-6">
+                <div>
+                  <p className="mb-2 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
+                    <span aria-hidden="true" className="text-base">✦</span>{t("Final step")}
+                  </p>
+                  <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+                    {t("Payment")}
+                  </h1>
+                  <p className="mt-2 max-w-xl text-sm leading-6 text-white/70">
+                    {t("Choose a payment method available for your location.")}
+                  </p>
+                </div>
+                <div aria-label={t("Checkout progress")} className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.1em] text-white/65 sm:gap-3">
+                  <span className="flex items-center gap-2"><span aria-hidden="true" className="grid size-7 place-items-center rounded-full bg-[#d8f29a] text-xs text-[#163e35]">✓</span><span className="hidden sm:inline">{t("Your details")}</span></span>
+                  <span aria-hidden="true" className="h-px w-5 bg-white/25 sm:w-8" />
+                  <span className="flex items-center gap-2 text-[#ffdc32]"><span className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-xs text-[#092a53]">2</span><span className="hidden sm:inline">{t("Payment")}</span></span>
+                </div>
+              </div>
+            </div>
+            <p className="mb-7 flex items-start gap-3 rounded-2xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-4 text-sm leading-6 text-[#624f00] sm:px-5">
+                <span aria-hidden="true" className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-xs font-extrabold">i</span>
                 {t(hasMenuItems
                   ? "Menu items and FCFA prices are illustrative examples, not confirmed local menu items or prices. Orders are handled by this independent website."
                   : "Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
-              </p>
-            </div>
+            </p>
 
             {cancelled && (
               <p
-                className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+                className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-900"
                 role="status"
               >
+                <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full bg-amber-200 font-bold">!</span>
                 {t(
                   "Checkout was cancelled. No payment was taken; you can try again when you are ready.",
                 )}
               </p>
             )}
 
-            <div className="grid items-start gap-8 lg:grid-cols-[1fr_380px]">
-              <section className="space-y-6 rounded-[24px] border border-[#d9d6cc] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,80,0.05)] sm:p-7">
-                <div className="border-b border-[#d9d6cc] pb-6">
-                  <h2 className="font-display text-2xl font-bold">
+            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_370px] lg:gap-8">
+              <section className="space-y-6 rounded-[28px] border border-[#e4e8ee] bg-white p-5 shadow-[0_12px_36px_rgba(18,44,80,0.07)] sm:p-8">
+                <div className="rounded-2xl border border-[#e4e8ee] bg-[#f7f9fc] p-4 sm:p-5">
+                  <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#8a7500]">{t("Delivery details")}</p>
+                  <h2 className="font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
                     {t(checkoutDetails?.fulfillmentType === 'pickup' ? 'Pickup at' : 'Delivering to')}
                   </h2>
-                  <p className="mt-2 text-sm font-semibold">
+                  <p className="mt-3 text-sm font-extrabold">
                     {checkoutDetails?.name}
                   </p>
-                  <p className="mt-1 text-sm text-[#65748a]">
+                  <p className="mt-1 text-sm leading-6 text-[#65748a]">
                     {checkoutDetails?.residence ? `${checkoutDetails.residence}, ` : ''}
                     {checkoutDetails?.city}
                   </p>
-                  {checkoutDetails?.scheduledDate && <p className="mt-1 text-sm text-[#65748a]">{t('Scheduled date')}: {checkoutDetails.scheduledDate} · {t(checkoutDetails.timeSlotLabel)}</p>}
-                  <p className="mt-1 text-sm text-[#65748a]">
+                  {checkoutDetails?.scheduledDate && <p className="mt-2 inline-flex rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#52647b]">{t('Scheduled date')}: {checkoutDetails.scheduledDate} · {t(checkoutDetails.timeSlotLabel)}</p>}
+                  <p className="mt-2 text-sm text-[#65748a]">
                     {checkoutDetails?.email}
                   </p>
                 </div>
 
                 <fieldset>
-                  <legend className="font-display text-2xl font-bold">
+                  <legend className="font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
                     {t("Choose payment method")}
                   </legend>
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     {paymentMethods.map((method) => (
                       <label
-                        className={`flex items-start gap-3 rounded-2xl border p-4 transition ${
+                        className={`flex min-h-[116px] items-start gap-3 rounded-2xl border p-4 transition ${
                           method.available
-                            ? "cursor-pointer border-[#d9d6cc] hover:border-[#bd9c00] has-[:checked]:border-[#bd9c00] has-[:checked]:bg-[#fff9dc]"
-                            : "cursor-not-allowed border-[#d9d6cc] bg-[#f8f7f2] opacity-75"
+                            ? "cursor-pointer border-[#dce2ea] bg-white hover:border-[#bd9c00] has-[:checked]:border-[#bd9c00] has-[:checked]:bg-[#fff9dc] has-[:checked]:shadow-[0_8px_20px_rgba(189,156,0,0.1)]"
+                            : "cursor-not-allowed border-[#e4e8ee] bg-[#f7f9fc] opacity-70"
                         }`}
                         key={method.id}
                       >
@@ -334,7 +353,7 @@ export function PaymentPage() {
                   </p>
                 )}
                 <button
-                  className="w-full rounded-full bg-[#ffdc32] px-6 py-4 text-lg font-bold text-[#102c50] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] disabled:cursor-wait disabled:opacity-60"
+                  className="w-full rounded-xl bg-[#ffdc32] px-6 py-4 text-base font-extrabold text-[#102c50] shadow-[0_8px_18px_rgba(189,156,0,0.16)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
                   disabled={
                     isStartingCheckout ||
                     cartItems.length === 0 ||
@@ -364,16 +383,20 @@ export function PaymentPage() {
                 )}
               </section>
 
-              <aside className="h-fit space-y-4 rounded-[28px] border border-[#d9d6cc] bg-white p-6 shadow-[0_8px_30px_rgba(18,44,80,0.06)]">
-                <h2 className="font-display text-2xl font-bold">
-                  {t("Order summary")}
-                </h2>
-                <div className="space-y-4 border-t border-[#d9d6cc] pt-4">
+              <aside className="h-fit overflow-hidden rounded-[28px] border border-[#e4e8ee] bg-white shadow-[0_12px_36px_rgba(18,44,80,0.07)] lg:sticky lg:top-6">
+                <div className="bg-[#092a53] px-5 py-5 text-white sm:px-6">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#ffdc32]">{t("Final step")}</p>
+                  <h2 className="mt-1 font-display text-2xl font-extrabold">
+                    {t("Order summary")}
+                  </h2>
+                </div>
+                <div className="p-5 sm:p-6">
+                  <div className="space-y-4">
                   {cartItems.map((item) => (
                     <div className="flex items-center gap-3" key={item.id}>
                       <img
                         alt=""
-                        className="checkout-item-image rounded-xl bg-[#f4f1e7]"
+                        className="checkout-item-image rounded-xl border border-[#edf0f4] bg-[#f4f1e7]"
                         src={item.image}
                       />
                       <div className="min-w-0 flex-1">
@@ -393,51 +416,53 @@ export function PaymentPage() {
                       </span>
                     </div>
                   ))}
-                </div>
-                <div className="space-y-3 border-t border-[#d9d6cc] pt-4 text-sm">
-                  <div className="flex justify-between">
+                  </div>
+                  <div className="mt-5 space-y-3 border-t border-dashed border-[#dce2ea] pt-4 text-sm">
+                  <div className="flex justify-between gap-4">
                     <span className="text-[#65748a]">{t("Subtotal")}</span>
                     <span className="font-semibold">
                       {formatMoney(Math.round(subtotal), currency, language)}
                     </span>
                   </div>
                   {discount > 0 && (
-                    <div className="flex justify-between text-[#163e35]">
-                      <span className="font-semibold">
+                    <div className="flex justify-between gap-4 text-[#163e35]">
+                      <span className="min-w-0 font-semibold">
                         {t("Buy 2 Get 1 Free ({count} free)", {
                           count: freeScoops,
                         })}
                       </span>
-                      <span className="font-bold">−{formatMoney(Math.round(discount), currency, language)}</span>
+                      <span className="shrink-0 font-bold">−{formatMoney(Math.round(discount), currency, language)}</span>
                     </div>
                   )}
                   {checkoutDetails?.discountCode && codeDiscount > 0 && (
-                    <div className="flex justify-between text-[#163e35]">
-                      <span className="font-semibold">{t("Discount code {code}", { code: checkoutDetails.discountCode })}</span>
-                      <span className="font-bold">−{formatMoney(codeDiscount, currency, language)}</span>
+                    <div className="flex justify-between gap-4 text-[#163e35]">
+                      <span className="min-w-0 font-semibold">{t("Discount code {code}", { code: checkoutDetails.discountCode })}</span>
+                      <span className="shrink-0 font-bold">−{formatMoney(codeDiscount, currency, language)}</span>
                     </div>
                   )}
                   {loyaltyDiscount > 0 && (
-                    <div className="flex justify-between text-[#163e35]">
-                      <span className="font-semibold">{t("Loyalty reward ({points} points)", { points: checkoutDetails?.loyaltyPointsToRedeem })}</span>
-                      <span className="font-bold">−{formatMoney(loyaltyDiscount, currency, language)}</span>
+                    <div className="flex justify-between gap-4 text-[#163e35]">
+                      <span className="min-w-0 font-semibold">{t("Loyalty reward ({points} points)", { points: checkoutDetails?.loyaltyPointsToRedeem })}</span>
+                      <span className="shrink-0 font-bold">−{formatMoney(loyaltyDiscount, currency, language)}</span>
                     </div>
                   )}
                   {deliveryFee > 0 && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between gap-4">
                       <span className="text-[#65748a]">{t("Delivery fee")}</span>
-                      <span className="font-semibold">{formatMoney(deliveryFee, currency, language)}</span>
+                      <span className="shrink-0 font-semibold">{formatMoney(deliveryFee, currency, language)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between border-t border-[#d9d6cc] pt-3">
+                  <div className="flex items-baseline justify-between gap-3 border-t border-[#dce2ea] pt-4">
                     <span className="font-display text-lg font-bold">
                       {t("Total")}
                     </span>
-                    <span className="font-display text-2xl font-bold text-[#bd9c00]">
+                    <span className="shrink-0 font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
                       {formatMoney(finalTotal, currency, language)}
                     </span>
                   </div>
+                  </div>
                 </div>
+                <p className="border-t border-[#edf0f4] bg-[#fbfcfe] px-5 py-3 text-center text-[10px] font-semibold text-[#7b8796] sm:px-6">{t("Your total includes the delivery fee shown above.")}</p>
               </aside>
             </div>
           </>

@@ -24,14 +24,14 @@
 
 html {
   scroll-behavior: smooth;
-  background: var(--brand-cream);
+  background: #fff;
 }
 
 body {
   min-width: 0;
   margin: 0;
   color: var(--brand-brown);
-  background: var(--brand-cream);
+  background: #fff;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }

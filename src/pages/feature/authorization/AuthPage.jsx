@@ -86,104 +86,134 @@ export function AuthPage({ mode }) {
   return (
     <div className="flex min-h-screen flex-col bg-[#f8f7f2] text-[#102c50]">
       <Header />
-      <main className="flex flex-1 items-center justify-center px-5 py-12 sm:px-8">
-        <section className="w-full max-w-md rounded-[28px] border border-[#d9d6cc] bg-white p-6 shadow-[0_12px_40px_rgba(18,44,80,0.08)] sm:p-9">
-          <p className="mb-2 inline-block rounded-full bg-[#ffeb9c] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#102c50]">
-            {isSignup ? t('Join the scoop club') : t('Welcome back')}
-          </p>
-          <h1 className="font-display text-4xl font-bold tracking-tight">{isSignup ? t('Create an account') : t('Log in')}</h1>
-          <p className="mt-2 text-sm leading-6 text-[#65748a]">
-            {isSignup ? t('Create an account to keep your scoop club details together.') : t('Good to see you again. Enter your details below.')}
-          </p>
+      <main className="flex flex-1 items-center justify-center px-4 py-8 sm:px-7 sm:py-12">
+        <section className="grid w-full max-w-[1080px] overflow-hidden rounded-[30px] border border-[#e7e3d9] bg-white shadow-[0_24px_70px_rgba(18,44,80,0.12)] lg:min-h-[640px] lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="relative isolate hidden min-h-full flex-col justify-between overflow-hidden bg-[#092a53] p-10 text-white lg:flex xl:p-12">
+            <img alt="" className="absolute inset-0 -z-20 size-full object-cover opacity-35" src="/ice-images/ice-4.webp" />
+            <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-br from-[#092a53]/95 via-[#092a53]/75 to-[#102c50]/70" />
+            <div aria-hidden="true" className="absolute -right-24 top-1/3 -z-10 size-80 rounded-full border-[52px] border-white/[0.07]" />
+            <Link aria-label={t('Back to home')} className="inline-flex w-fit items-center gap-3" to="/">
+              <span aria-hidden="true" className="grid size-12 place-items-center rounded-2xl bg-[#ffdc32] text-2xl text-[#092a53]">🍦</span>
+              <span className="font-display text-xl font-extrabold leading-tight">Cold Stone<br /><span className="text-[#ffdc32]">Cameroon</span></span>
+            </Link>
+            <div className="relative">
+              <p className="inline-flex rounded-full border border-white/25 bg-white/10 px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
+                {isSignup ? t('Join the scoop club') : t('Welcome back')}
+              </p>
+              <h2 className="mt-5 max-w-md font-display text-4xl font-extrabold leading-tight xl:text-5xl">
+                {isSignup ? t('A little more joy in every visit.') : t('Your next favorite scoop is waiting.')}
+              </h2>
+              <p className="mt-4 max-w-sm text-sm leading-7 text-white/75">
+                {isSignup ? t('Create an account to keep your scoop club details together.') : t('Good to see you again. Enter your details below.')}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 border-t border-white/15 pt-5 text-xs font-semibold text-white/70">
+              <span aria-hidden="true" className="grid size-9 place-items-center rounded-xl bg-white/10 text-[#ffdc32]">✦</span>
+              {t('Made for moments worth sharing')}
+            </div>
+          </div>
 
-          <form className="mt-7 space-y-4" onSubmit={handleSubmit}>
-            {isSignup && (
-              <label className="block text-sm font-semibold text-[#65748a]">
-                {t('Name')}
+          <div className="flex min-w-0 flex-col justify-center p-6 sm:p-10 lg:px-12 lg:py-12">
+            <Link aria-label={t('Back to home')} className="mb-8 inline-flex w-fit items-center gap-2 text-sm font-bold text-[#52647b] transition hover:text-[#092a53] lg:hidden" to="/">
+              <span aria-hidden="true">←</span> Cold Stone Cameroon
+            </Link>
+            <p className="mb-2 inline-flex w-fit items-center gap-2 rounded-full bg-[#fff4bd] px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#715e00]">
+              <span aria-hidden="true">✦</span>{isSignup ? t('Join the scoop club') : t('Welcome back')}
+            </p>
+            <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">{isSignup ? t('Create an account') : t('Log in')}</h1>
+            <p className="mt-2 max-w-md text-sm leading-6 text-[#65748a]">
+              {isSignup ? t('Create an account to keep your scoop club details together.') : t('Good to see you again. Enter your details below.')}
+            </p>
+
+            <form className="mt-7 space-y-4" onSubmit={handleSubmit}>
+              {isSignup && (
+                <label className="block text-xs font-extrabold text-[#52647b]">
+                  {t('Name')}
+                  <input
+                    autoComplete="name"
+                    className="mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#9aa3ad] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40"
+                    maxLength={100}
+                    name="name"
+                    onChange={(event) => setName(event.target.value)}
+                    required
+                    type="text"
+                    value={name}
+                  />
+                </label>
+              )}
+              <label className="block text-xs font-extrabold text-[#52647b]">
+                {t('Email address')}
                 <input
-                  autoComplete="name"
-                  className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#f8f7f2] px-4 py-3 font-normal outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
-                  maxLength={100}
-                  name="name"
-                  onChange={(event) => setName(event.target.value)}
+                  autoComplete="email"
+                  className="mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#9aa3ad] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40"
+                  name="email"
+                  onChange={(event) => setEmail(event.target.value)}
                   required
-                  type="text"
-                  value={name}
+                  type="email"
+                  value={email}
                 />
               </label>
-            )}
-            <label className="block text-sm font-semibold text-[#65748a]">
-              {t('Email address')}
-              <input
-                autoComplete="email"
-                className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#f8f7f2] px-4 py-3 font-normal outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
-                name="email"
-                onChange={(event) => setEmail(event.target.value)}
+              <PasswordField
+                autoComplete={isSignup ? 'new-password' : 'current-password'}
+                label={t('Password')}
+                maxLength={128}
+                minLength={8}
+                name="password"
+                onChange={(event) => setPassword(event.target.value)}
                 required
-                type="email"
-                value={email}
+                value={password}
               />
-            </label>
-            <PasswordField
-              autoComplete={isSignup ? 'new-password' : 'current-password'}
-              label={t('Password')}
-              maxLength={128}
-              minLength={8}
-              name="password"
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              value={password}
-            />
-            {isSignup && (
-              <>
-                <PasswordField
-                  autoComplete="new-password"
-                  label={t('Confirm password')}
-                  maxLength={128}
-                  minLength={8}
-                  name="confirmPassword"
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  required
-                  value={confirmPassword}
-                />
-
-                <label className="block text-sm font-semibold text-[#65748a]">
-                  {t('Profile picture')}
-                  <input
-                    accept="image/*"
-                    className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#f8f7f2] px-3 py-2.5 text-sm font-normal outline-none transition file:mr-3 file:rounded-full file:border-0 file:bg-[#ffeb9c] file:px-3 file:py-1.5 file:text-xs file:font-bold focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
-                    onChange={handleProfilePictureChange}
-                    type="file"
+              {isSignup && (
+                <>
+                  <PasswordField
+                    autoComplete="new-password"
+                    label={t('Confirm password')}
+                    maxLength={128}
+                    minLength={8}
+                    name="confirmPassword"
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    required
+                    value={confirmPassword}
                   />
-                  <span className="mt-1 block text-xs font-normal text-[#65748a]">{t('Optional. Image will be resized before saving (5 MB max).')}</span>
-                </label>
-                {profilePicture && (
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#d9d6cc] bg-[#fffdf5] p-3">
-                    <img alt={t('Profile preview')} className="size-16 rounded-full object-cover" src={profilePicture} />
-                    <p className="text-sm font-medium text-[#65748a]">{t('Profile picture ready')}</p>
-                  </div>
-                )}
-              </>
-            )}
-            {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm leading-5 text-red-700" role="alert">{error}</p>}
-            <button
-              className="w-full rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-bold text-[#102c50] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#102c50] disabled:cursor-wait disabled:opacity-60"
-              disabled={isSubmitting}
-              type="submit"
-            >
-              {isSubmitting ? t('Please wait…') : isSignup ? t('Create account') : t('Log in')}
-            </button>
-          </form>
 
-          <p className="mt-5 text-center text-sm text-[#65748a]">
-            {isSignup ? t('Already have an account?') : t("New to this website's shop?")}{' '}
-            <Link
-              className="font-bold text-[#102c50] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#bd9c00]"
-              to={isSignup ? '/login' : '/signup'}
-            >
-              {isSignup ? t('Log in') : t('Sign up')}
-            </Link>
-          </p>
+                  <label className="block text-xs font-extrabold text-[#52647b]">
+                    {t('Profile picture')}
+                    <input
+                      accept="image/*"
+                      className="mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-3 py-2.5 text-sm font-normal outline-none transition file:mr-3 file:rounded-full file:border-0 file:bg-[#ffeb9c] file:px-3 file:py-1.5 file:text-xs file:font-bold focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+                      onChange={handleProfilePictureChange}
+                      type="file"
+                    />
+                    <span className="mt-1.5 block text-xs font-normal leading-5 text-[#65748a]">{t('Optional. Image will be resized before saving (5 MB max).')}</span>
+                  </label>
+                  {profilePicture && (
+                    <div className="flex items-center gap-3 rounded-2xl border border-[#e7e3d9] bg-[#fbfaf5] p-3">
+                      <img alt={t('Profile preview')} className="size-12 rounded-full object-cover" src={profilePicture} />
+                      <p className="text-sm font-semibold text-[#52647b]">{t('Profile picture ready')}</p>
+                    </div>
+                  )}
+                </>
+              )}
+              {error && <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm leading-5 text-red-700" role="alert">{error}</p>}
+              <button
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+                disabled={isSubmitting}
+                type="submit"
+              >
+                {isSubmitting ? t('Please wait…') : isSignup ? t('Create account') : t('Log in')} {!isSubmitting && <span aria-hidden="true">→</span>}
+              </button>
+            </form>
+
+            <p className="mt-6 text-center text-sm text-[#65748a]">
+              {isSignup ? t('Already have an account?') : t("New to this website's shop?")}{' '}
+              <Link
+                className="font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#806a00]"
+                to={isSignup ? '/login' : '/signup'}
+              >
+                {isSignup ? t('Log in') : t('Sign up')}
+              </Link>
+            </p>
+          </div>
         </section>
       </main>
       <Footer />
