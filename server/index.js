@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken'
 import rateLimit from 'express-rate-limit'
 import Stripe from 'stripe'
 import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'node:crypto'
+import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -43,9 +44,12 @@ const app = express()
 const port = Number(process.env.PORT || 3001)
 const jwtSecret = process.env.JWT_SECRET
 let stripeClient
-const frontendOrigins = (process.env.FRONTEND_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173')
-  .split(',')
+const frontendOrigins = [
+  ...(process.env.FRONTEND_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173').split(','),
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+]
   .map((origin) => origin.trim())
+  .filter(Boolean)
 const uploadDirectory = fileURLToPath(new URL('./uploads/', import.meta.url))
 
 if (!jwtSecret || jwtSecret.length < 32 || jwtSecret.startsWith('replace-with-')) {
@@ -2500,6 +2504,19 @@ app.delete('/api/admin/flavors/:id', requireAdmin, (request, response) => {
   }
   response.status(204).end()
 })
+
+const frontendDirectory = fileURLToPath(new URL('../dist/', import.meta.url))
+const frontendEntry = fileURLToPath(new URL('../dist/index.html', import.meta.url))
+if (existsSync(frontendEntry)) {
+  app.use(express.static(frontendDirectory, { index: false }))
+  app.use((request, response, next) => {
+    if (request.method !== 'GET' || request.path === '/api' || request.path.startsWith('/api/')) {
+      next()
+      return
+    }
+    response.sendFile(frontendEntry)
+  })
+}
 
 app.use((error, _request, response, _next) => {
   if (error.type === 'entity.too.large') {

@@ -37,6 +37,19 @@ npm run dev
 
 The development command waits for the Express API health check on port 3001 before starting Vite, which proxies `/api` requests to the API. To run either process separately, use `npm run dev:server` for the API or `npm run dev:frontend` for Vite. SQLite creates `server/database.sqlite` automatically. Customer registrations and flavor changes are persisted in this database. Do not commit `.env` or the SQLite database.
 
+## Production
+
+Build the React frontend and run the Express server:
+
+```sh
+npm run build
+npm start
+```
+
+The production server serves the build from `dist/` and the API from the same origin, so `/api` requests do not need a separate proxy. Configure `PORT` and a unique `JWT_SECRET` of at least 32 characters in the hosting environment. Set `FRONTEND_URL` to the public storefront URL for checkout returns. Signup verification requires working SMTP settings; configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, and `SMTP_FROM`, plus `SMTP_USER` and `SMTP_PASSWORD` if required by the provider. Keep the server process running; `vite preview` alone only serves the frontend and does not provide the API.
+
+If the frontend and API must be hosted separately, set `VITE_API_URL` to the API origin before building the frontend and set `FRONTEND_ORIGINS` on the API server to include the exact public frontend origin.
+
 ## Payments and order management
 
 Checkout offers Card, MTN Mobile Money, Orange Money, and Crypto. Card payments use Stripe-hosted Checkout; set `STRIPE_SECRET_KEY` in `.env` to a Stripe test-mode secret key while developing. MTN Mobile Money, Orange Money, and Crypto are shown as coming soon and cannot be selected until their payment providers are integrated. The server creates each order from current database prices, applies the Buy 2 Get 1 Free offer or an eligible discount code, supports account-only loyalty redemptions (1 point per 100 FCFA spent; 100 points = 1,000 FCFA off; loyalty rewards cannot be combined with another discount), reserves stock during checkout, and records fulfillment, schedule, and payment details in SQLite. Reserved stock is deducted only after Stripe confirms payment, or released when Stripe reports an expired or failed session. Orders fully paid by loyalty points do not require a Stripe checkout. Checkout sessions expire after 40 minutes; the server reconciles older sessions periodically as a fallback if a webhook is unavailable. Card details are entered on Stripe and are never stored by this app. A payment is marked paid only after Stripe confirms it.
