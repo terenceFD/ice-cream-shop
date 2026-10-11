@@ -47,9 +47,12 @@ let stripeClient
 const frontendOrigins = [
   ...(process.env.FRONTEND_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173').split(','),
   ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ...(process.env.RENDER_EXTERNAL_URL ? [process.env.RENDER_EXTERNAL_URL] : []),
+  ...(process.env.RENDER_EXTERNAL_HOSTNAME ? [`https://${process.env.RENDER_EXTERNAL_HOSTNAME}`] : []),
 ]
   .map((origin) => origin.trim())
   .filter(Boolean)
+  .map((origin) => new URL(origin).origin)
 const uploadDirectory = fileURLToPath(new URL('./uploads/', import.meta.url))
 const contentSecurityDirectives = helmet.contentSecurityPolicy.getDefaultDirectives()
 contentSecurityDirectives['img-src'] = ["'self'", 'data:', 'https://images.unsplash.com']
@@ -2545,5 +2548,4 @@ function shutdown() {
 
 process.on('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)
-
 

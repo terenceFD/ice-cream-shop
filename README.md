@@ -46,7 +46,7 @@ npm run build
 npm start
 ```
 
-The production server serves the build from `dist/` and the API from the same origin, so `/api` requests do not need a separate proxy. Configure `PORT` and a unique `JWT_SECRET` of at least 32 characters in the hosting environment. Set `FRONTEND_URL` to the public storefront URL for checkout returns. Keep the server process running; `vite preview` alone only serves the frontend and does not provide the API.
+The production server serves the build from `dist/` and the API from the same origin, so `/api` requests do not need a separate proxy. Configure `PORT` and a unique `JWT_SECRET` of at least 32 characters in the hosting environment. Set `FRONTEND_URL` to the public storefront URL for checkout returns. On Render, the service origin is also allowed automatically from `RENDER_EXTERNAL_URL` or `RENDER_EXTERNAL_HOSTNAME`. Keep the server process running; `vite preview` alone only serves the frontend and does not provide the API.
 
 If the frontend and API must be hosted separately, set `VITE_API_URL` to the API origin before building the frontend and set `FRONTEND_ORIGINS` on the API server to include the exact public frontend origin.
 
