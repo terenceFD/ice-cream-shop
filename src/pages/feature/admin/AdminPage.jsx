@@ -1,13 +1,41 @@
 import { useState } from "react";
+import { useLanguage } from "../../../language/LanguageContext";
 import { Link } from "react-router-dom";
 import { useFlavors } from "../../../flavor-context/FlavorContext";
 import { useAdminAuth } from "./AdminAuthContext";
 import { useCart } from "../../../CartContext";
-import { useLanguage } from "../../../language/LanguageContext";
 import { formatCartMoney } from "../../../cartPricing";
 
 const inputClassName =
   "mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-white px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40";
+const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024;
+const PROFILE_IMAGE_DIMENSION = 256;
+
+async function resizeProfilePicture(file) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Choose an image file for the profile picture.");
+  }
+  if (file.size > MAX_PROFILE_IMAGE_SIZE) {
+    throw new Error("Choose an image smaller than 5 MB.");
+  }
+
+  const image = await createImageBitmap(file);
+  const scale = Math.min(
+    1,
+    PROFILE_IMAGE_DIMENSION / Math.max(image.width, image.height),
+  );
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) {
+    image.close();
+    throw new Error("Your browser could not prepare the profile picture.");
+  }
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  image.close();
+  return canvas.toDataURL("image/jpeg", 0.8);
+}
 
 const initialForm = {
   name: "",
@@ -29,7 +57,7 @@ export function AdminPage() {
     deleteFlavor,
     updateFlavor,
   } = useFlavors();
-  const { currentAdmin } = useAdminAuth();
+  const { currentAdmin, updateProfilePicture } = useAdminAuth();
   const { t } = useLanguage();
   const { removeFromCart, updateCartFlavor } = useCart();
   const [form, setForm] = useState(initialForm);
@@ -42,6 +70,10 @@ export function AdminPage() {
   const [flavorSearch, setFlavorSearch] = useState("");
   const [selectedFlavorTag, setSelectedFlavorTag] = useState("");
   const [stockFilter, setStockFilter] = useState("all");
+  const [profilePicture, setProfilePicture] = useState("");
+  const [profilePictureError, setProfilePictureError] = useState("");
+  const [profilePictureMessage, setProfilePictureMessage] = useState("");
+  const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false);
   const flavorTags = [
     ...new Set(flavors.map((flavor) => flavor.tag).filter(Boolean)),
   ].sort((a, b) => a.localeCompare(b));
@@ -64,6 +96,38 @@ export function AdminPage() {
       (stockFilter === "sold-out" && flavor.availableQuantity === 0);
     return matchesSearch && matchesTag && matchesStock;
   });
+
+  async function handleProfilePictureChange(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setProfilePictureError("");
+    setProfilePictureMessage("");
+    try {
+      setProfilePicture(await resizeProfilePicture(file));
+    } catch (imageError) {
+      console.error("Unable to prepare admin profile picture.", imageError);
+      setProfilePicture("");
+      setProfilePictureError(t(imageError instanceof Error ? imageError.message : "Could not load this profile picture."));
+    }
+  }
+
+  async function handleProfilePictureSave() {
+    if (!profilePicture) return;
+    setProfilePictureError("");
+    setProfilePictureMessage("");
+    setIsSavingProfilePicture(true);
+    try {
+      await updateProfilePicture(profilePicture);
+      setProfilePicture("");
+      setProfilePictureMessage(t("Profile picture updated."));
+    } catch (saveError) {
+      setProfilePictureError(t(saveError instanceof Error ? saveError.message : "Unable to update profile picture."));
+    } finally {
+      setIsSavingProfilePicture(false);
+    }
+  }
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -176,28 +240,50 @@ export function AdminPage() {
 
   return (
     <div className="min-w-0 space-y-6">
-      <section className="relative isolate overflow-hidden rounded-[24px] bg-[#092a53] p-5 text-white shadow-[0_14px_36px_rgba(9,42,83,0.16)] sm:p-7 lg:p-8">
-        <div aria-hidden="true" className="absolute -right-16 -top-28 size-72 rounded-full border-[54px] border-white/[0.04]" />
+      <section className="relative isolate overflow-hidden rounded-[28px] bg-gradient-to-br from-[#092a53] via-[#123b63] to-[#285777] p-5 text-white shadow-[0_18px_42px_rgba(9,42,83,0.16)] sm:p-7 lg:p-8">
+        <div aria-hidden="true" className="absolute -right-16 -top-28 size-72 rounded-full border-[54px] border-white/[0.05]" />
+        <div aria-hidden="true" className="absolute -bottom-20 left-1/3 size-48 rounded-full bg-[#ffdc32]/10 blur-3xl" />
         <div className="relative flex flex-wrap items-center justify-between gap-5">
           <div className="flex min-w-0 items-center gap-4">
             {currentAdmin?.profilePicture ? (
-              <img alt="" className="size-14 shrink-0 rounded-2xl border border-white/20 object-cover sm:size-16" src={currentAdmin.profilePicture} />
+              <img alt="" className="size-14 shrink-0 rounded-2xl border border-white/20 object-cover shadow-lg sm:size-16" src={currentAdmin.profilePicture} />
             ) : (
-              <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#ffdc32] font-display text-xl font-bold text-[#092a53] sm:size-16">
+              <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#ffdc32] font-display text-xl font-bold text-[#092a53] shadow-lg sm:size-16">
                 {currentAdmin?.name?.charAt(0).toUpperCase()}
               </span>
             )}
             <div className="min-w-0">
-              <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t("Store management")}</p>
-              <h1 className="truncate font-display text-2xl font-bold tracking-tight sm:text-3xl">
+              <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t("Flavor management")}</p>
+              <h1 className="truncate font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
                 {t("Welcome, {name}", { name: currentAdmin?.name || "Admin" })}
               </h1>
-              <p className="mt-1 text-sm text-white/70">{t("Add a flavor and manage the list of flavors available in your shop.")}</p>
+              <p className="mt-1 max-w-xl text-sm leading-6 text-white/70">{t("Add a flavor and manage the list of flavors available in your shop.")}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <label className="inline-flex min-h-9 cursor-pointer items-center rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-bold transition hover:bg-white/20">
+                  {t(currentAdmin?.profilePicture ? "Change profile picture" : "Add profile picture")}
+                  <input accept="image/*" className="sr-only" onChange={handleProfilePictureChange} type="file" />
+                </label>
+                {profilePicture && (
+                  <>
+                    <img alt={t("Profile picture preview")} className="size-9 rounded-lg object-cover ring-1 ring-white/30" src={profilePicture} />
+                    <button
+                      className="inline-flex min-h-9 items-center rounded-lg bg-[#ffdc32] px-3 py-2 text-xs font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] disabled:cursor-wait disabled:opacity-60"
+                      disabled={isSavingProfilePicture}
+                      onClick={handleProfilePictureSave}
+                      type="button"
+                    >
+                      {t(isSavingProfilePicture ? "Saving…" : "Save profile picture")}
+                    </button>
+                  </>
+                )}
+              </div>
+              {profilePictureError && <p className="mt-2 text-xs font-semibold text-red-200" role="alert">{profilePictureError}</p>}
+              {profilePictureMessage && <p className="mt-2 text-xs font-semibold text-emerald-200" role="status">{profilePictureMessage}</p>}
             </div>
           </div>
           <Link
             to="/flavors"
-            className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-bold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             {t("View customer shop")} <span aria-hidden="true">↗</span>
           </Link>
@@ -211,7 +297,7 @@ export function AdminPage() {
           { label: "Sold out", value: soldOutCount, icon: "!", accent: "bg-[#fff0ed] text-[#b34334]" },
           { label: "Units in stock", value: totalStock, icon: "▣", accent: "bg-[#e9f1fa] text-[#315982]" },
         ].map((metric) => (
-          <article className="rounded-[18px] border border-[#e7e3d9] bg-white p-4 shadow-[0_6px_20px_rgba(18,44,80,0.04)] sm:p-5" key={metric.label}>
+          <article className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 shadow-[0_8px_24px_rgba(18,44,80,0.045)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(18,44,80,0.08)] sm:p-5" key={metric.label}>
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs font-semibold leading-5 text-[#65748a]">{t(metric.label)}</p>
               <span aria-hidden="true" className={`grid size-9 place-items-center rounded-xl text-sm font-bold ${metric.accent}`}>{metric.icon}</span>
@@ -221,19 +307,22 @@ export function AdminPage() {
         ))}
       </section>
 
-      <div className="grid min-w-0 items-start gap-8 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-        <section className="min-w-0 rounded-[22px] border border-[#e7e3d9] bg-white p-5 shadow-[0_10px_32px_rgba(18,44,80,0.06)] sm:p-7">
-          <div className="mb-6 border-b border-[#e7e3d9] pb-5">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t("Catalog setup")}</p>
-            <h2 className="mt-1 font-display text-2xl font-bold">
+      <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(280px,0.82fr)_minmax(0,1.38fr)] 2xl:gap-8">
+        <section className="min-w-0 rounded-[24px] border border-[#e5ebf3] bg-white p-5 shadow-[0_12px_34px_rgba(18,44,80,0.055)] sm:p-6">
+          <div className="mb-5 flex items-start gap-3 border-b border-[#edf1f5] pb-5">
+            <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fff4c7] text-lg text-[#856d00]">+</span>
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t("Catalog setup")}</p>
+              <h2 className="mt-1 font-display text-2xl font-bold text-[#102c50]">
             {t("Add a flavor")}
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-[#65748a]">
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-[#65748a]">
             {t("New flavors are saved to the database and appear in the shop.")}
-            </p>
+              </p>
+            </div>
           </div>
 
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <label className="block text-sm font-semibold">
               {t("Flavor name")}
               <input
@@ -342,7 +431,7 @@ export function AdminPage() {
               </p>
             )}
             <button
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#092a53] px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#092a53] px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
               disabled={isSaving}
               type="submit"
             >
@@ -355,16 +444,16 @@ export function AdminPage() {
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t("Catalog overview")}</p>
-              <h2 className="font-display text-2xl font-bold">
+              <h2 className="mt-1 font-display text-2xl font-bold text-[#102c50]">
                 {t("Available flavors")}
               </h2>
-              <p className="mt-1 text-sm text-[#65748a]">
+              <p aria-live="polite" className="mt-1 text-sm text-[#65748a]">
                 {flavors.length}
                 {t(" flavors in the catalog, including sold-out flavors")}
               </p>
             </div>
           </div>
-          <div className="mb-4 grid gap-3 rounded-[18px] border border-[#e7e3d9] bg-white p-4 shadow-[0_6px_20px_rgba(18,44,80,0.04)] sm:grid-cols-2">
+          <div className="mb-4 grid gap-3 rounded-[20px] border border-[#e5ebf3] bg-white p-4 shadow-[0_8px_24px_rgba(18,44,80,0.045)] sm:grid-cols-2">
             <label className="block text-sm font-semibold text-[#65748a]">
               {t("Search flavors")}
               <input
@@ -420,60 +509,78 @@ export function AdminPage() {
             </p>
           )}
 
-          <div className="overflow-hidden rounded-[22px] border border-[#e7e3d9] bg-white shadow-[0_10px_32px_rgba(18,44,80,0.06)]">
-            <div className="divide-y divide-[#eeeae1]">
+          <div className="rounded-[22px] border border-[#e5ebf3] bg-white p-3 shadow-[0_10px_32px_rgba(18,44,80,0.05)] sm:p-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               {filteredFlavors.map((flavor) => (
                 <article
-                  className="flex items-center gap-3 p-4 transition-colors hover:bg-[#fbfaf5] sm:gap-4 sm:p-5"
+                  className="group overflow-hidden rounded-2xl border border-[#e7edf4] bg-white transition duration-200 hover:-translate-y-0.5 hover:border-[#cbd8e6] hover:shadow-[0_14px_30px_rgba(16,44,80,0.09)]"
                   key={flavor.id}
                 >
-                  <img
-                    alt=""
-                    className="size-16 shrink-0 rounded-2xl bg-[#f4f1e7] object-cover sm:size-20"
-                    src={flavor.image}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-display text-lg font-bold">
-                      {flavor.name}
-                    </h3>
-                    <p className="mt-0.5 truncate text-sm text-[#65748a]">
-                      {flavor.detail}
-                    </p>
-                    <p className="mt-1 text-xs font-semibold text-[#8b7400]">
-                      {flavor.tag}
-                    </p>
-                    <p
-                      className={`mt-1 text-xs font-bold ${flavor.availableQuantity > 0 ? "text-[#163e35]" : "text-red-700"}`}
-                    >
-                      {flavor.availableQuantity > 0
-                        ? `${flavor.availableQuantity} ${t("available")}${flavor.reservedStock ? ` · ${flavor.reservedStock} ${t("reserved")}` : ""}`
-                        : t("Sold out")}
-                    </p>
+                  <div className="relative h-36 overflow-hidden bg-[#f1f4f7] sm:h-40">
+                    <img
+                      alt={flavor.name}
+                      className="size-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                      loading="lazy"
+                      src={flavor.image}
+                    />
+                    <span className={`absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold shadow-sm ${
+                      flavor.availableQuantity > 0 ? "bg-white/95 text-[#246a46]" : "bg-white/95 text-[#a53f37]"
+                    }`}>
+                      <span aria-hidden="true" className={`size-1.5 rounded-full ${flavor.availableQuantity > 0 ? "bg-[#35a36b]" : "bg-[#d2544b]"}`} />
+                      {flavor.availableQuantity > 0 ? t("In stock") : t("Sold out")}
+                    </span>
+                    {flavor.tag && (
+                      <span className="absolute right-3 top-3 max-w-[55%] truncate rounded-full bg-[#ffdc32] px-2.5 py-1 text-[10px] font-extrabold text-[#092a53] shadow-sm">
+                        {t(flavor.tag)}
+                      </span>
+                    )}
                   </div>
-                  <div className="shrink-0 text-right">
-                    <p className="font-bold">{formatCartMoney(flavor.price, "xaf")}</p>
-                    <Link
-                      className="mt-1 inline-block text-xs font-semibold text-[#65748a] underline decoration-[#ffdc32] underline-offset-2 hover:text-[#102c50]"
-                      to={`/flavor/${flavor.id}`}
-                    >
-                      {t("View")}
-                    </Link>
-                    <button
-                      aria-label={`Edit ${flavor.name}`}
-                      className="mt-2 block rounded-full border border-[#d9d6cc] px-3 py-1 text-xs font-bold text-[#65748a] transition hover:bg-[#f4f1e7]"
-                      onClick={() => openEditForm(flavor)}
-                      type="button"
-                    >
-                      {t("Edit")}
-                    </button>
-                    <button
-                      aria-label={`Delete ${flavor.name}`}
-                      className="mt-2 block rounded-full border border-red-200 px-3 py-1 text-xs font-bold text-red-700 transition hover:bg-red-50"
-                      onClick={() => setFlavorToDelete(flavor)}
-                      type="button"
-                    >
-                      {t("Delete")}
-                    </button>
+                  <div className="flex min-h-[202px] flex-col p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate font-display text-lg font-extrabold text-[#123253]">
+                          {flavor.name}
+                        </h3>
+                        <p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-[#65748a]">
+                          {flavor.detail}
+                        </p>
+                      </div>
+                      <p className="shrink-0 text-right text-sm font-extrabold text-[#123253]">
+                        {formatCartMoney(flavor.price, "xaf")}
+                      </p>
+                    </div>
+                    <div className="mt-auto flex items-center justify-between gap-3 border-t border-[#edf1f5] pt-3">
+                      <p className={`text-xs font-bold ${flavor.availableQuantity > 0 ? "text-[#397355]" : "text-[#a53f37]"}`}>
+                        {flavor.availableQuantity > 0
+                          ? `${flavor.availableQuantity} ${t("available")}${flavor.reservedStock ? ` · ${flavor.reservedStock} ${t("reserved")}` : ""}`
+                          : t("Sold out")}
+                      </p>
+                      <Link
+                        aria-label={`${t("View")} ${flavor.name}`}
+                        className="shrink-0 text-xs font-bold text-[#526b86] underline decoration-[#ffdc32] decoration-2 underline-offset-4 transition hover:text-[#092a53]"
+                        to={`/flavor/${flavor.id}`}
+                      >
+                        {t("View")}
+                      </Link>
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                      <button
+                        aria-label={`Edit ${flavor.name}`}
+                        className="min-h-9 rounded-lg border border-[#dce5ef] bg-[#f8fafc] px-3 text-xs font-bold text-[#294867] transition hover:border-[#becddd] hover:bg-[#f0f5f9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+                        onClick={() => openEditForm(flavor)}
+                        type="button"
+                      >
+                        {t("Edit")}
+                      </button>
+                      <button
+                        aria-label={`Delete ${flavor.name}`}
+                        className="min-h-9 rounded-lg border border-[#f0d8d6] bg-white px-3 text-xs font-bold text-[#a3433b] transition hover:border-[#e9bebb] hover:bg-[#fff7f6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
+                        onClick={() => setFlavorToDelete(flavor)}
+                        type="button"
+                      >
+                        {t("Delete")}
+                      </button>
+                    </div>
                   </div>
                 </article>
               ))}

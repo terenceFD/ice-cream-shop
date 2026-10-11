@@ -210,6 +210,13 @@ export function PaymentPage() {
                 { id: order?.id, email: order?.customerEmail },
               )}
             </p>
+            {order?.storeName && (
+              <div className="mx-auto mt-5 max-w-md rounded-2xl border border-[#dce7f1] bg-[#f4f8fc] px-4 py-3 text-left">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8a7500]">{t("Assigned store")}</p>
+                <p className="mt-1 text-sm font-extrabold text-[#092a53]">{t(order.storeName)}</p>
+                {order.storeAddress && <p className="mt-1 text-xs leading-5 text-[#65748a]">{t(order.storeAddress)}</p>}
+              </div>
+            )}
             <p className="mt-5 font-display text-3xl font-extrabold text-[#092a53]">
               {formatMoney(order?.totalCents || 0, order?.currency, language)}
             </p>
@@ -313,6 +320,13 @@ export function PaymentPage() {
                   <p className="mt-3 text-sm font-extrabold">
                     {checkoutDetails?.name}
                   </p>
+                  {checkoutDetails?.storeName && (
+                    <div className="mt-3 rounded-xl border border-[#dce5ef] bg-white px-3.5 py-3">
+                      <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8a7500]">{t('Selected store')}</p>
+                      <p className="mt-1 text-sm font-bold text-[#092a53]">{t(checkoutDetails.storeName)}</p>
+                      {checkoutDetails.storeAddress && <p className="mt-1 text-xs leading-5 text-[#65748a]">{t(checkoutDetails.storeAddress)}</p>}
+                    </div>
+                  )}
                   <p className="mt-1 text-sm leading-6 text-[#65748a]">
                     {checkoutDetails?.residence ? `${checkoutDetails.residence}, ` : ''}
                     {checkoutDetails?.city}

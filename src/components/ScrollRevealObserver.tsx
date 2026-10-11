@@ -23,7 +23,7 @@ export function ScrollRevealObserver() {
     function observePageSections() {
       const elements = document.querySelectorAll<HTMLElement>('main > *, main section, main article, main form, footer')
       for (const element of elements) {
-        if (element.dataset.scrollReveal === 'skip' || revealedElements.has(element)) continue
+        if (element.closest('[data-scroll-reveal="skip"]') || revealedElements.has(element)) continue
         const isMainChild = element.parentElement?.tagName === 'MAIN'
         const containsAnimatedContent = element.matches('main > *')
           && !element.matches('section, article, form')

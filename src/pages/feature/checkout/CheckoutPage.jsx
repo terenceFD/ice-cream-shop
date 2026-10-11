@@ -85,6 +85,7 @@ export function CheckoutPage() {
 
     const checkoutDetails = {
       ...Object.fromEntries(new FormData(event.currentTarget)),
+      storeId: selectedZone?.storeId,
       fulfillmentType,
       scheduledDate,
       slotId: selectedSlot,
@@ -203,14 +204,36 @@ export function CheckoutPage() {
                   </select>
                 </label>
                 <label className="block text-sm font-bold text-[#52647b]">
-                  {t('Location')}
+                  {t('Store branch')}
                   <select autoComplete="address-level2" className={inputClassName} name="city" onChange={(event) => setSelectedCity(event.target.value)} required value={selectedZone?.location || ''}>
                     {!compatibleZones.length && <option value="">{t('No locations enabled for this fulfillment type')}</option>}
                     {compatibleZones.map((zone) => (
-                      <option key={zone.id} value={zone.location}>{t(zone.location)}</option>
+                      <option key={zone.id} value={zone.location}>{t(zone.storeName)} · {t(zone.storeTown)}</option>
                     ))}
                   </select>
                 </label>
+                {selectedZone && (
+                  <div className="rounded-2xl border border-[#dce5ef] bg-[#f7f9fc] p-4 sm:col-span-2 sm:flex sm:items-center sm:justify-between sm:gap-5">
+                    <div className="flex items-start gap-3">
+                      <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#e6eef8] text-lg text-[#092a53]">⌖</span>
+                      <div>
+                        <p className="text-sm font-extrabold text-[#092a53]">{t(selectedZone.storeName)}</p>
+                        <p className="mt-1 text-xs leading-5 text-[#65748a]">{t(selectedZone.storeAddress)} · {t(selectedZone.storeTown)}</p>
+                        {selectedZone.storePhone && <p className="mt-1 text-xs font-semibold text-[#52647b]">{selectedZone.storePhone}</p>}
+                      </div>
+                    </div>
+                    {selectedZone.storeMapQuery && (
+                      <a
+                        className="mt-3 inline-flex shrink-0 text-xs font-bold text-[#092a53] underline decoration-[#bd9c00] underline-offset-4 sm:mt-0"
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedZone.storeMapQuery)}`}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        {t('View map')}
+                      </a>
+                    )}
+                  </div>
+                )}
                 {fulfillmentType === 'delivery' && <label className="block text-sm font-semibold text-[#65748a] sm:col-span-2">
                   {t('Your residence')}
                   <input autoComplete="address-line2" className={inputClassName} defaultValue={customer?.deliveryResidence || ''} name="residence" placeholder={t('Neighborhood, building, or residence details')} required />

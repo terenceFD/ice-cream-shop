@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import rateLimit from 'express-rate-limit'
 import Stripe from 'stripe'
-import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -32,10 +32,10 @@ import {
   deleteCustomMenuItem,
 } from './database.js'
 import {
+  EmailConfigurationError,
   sendCakeRequestNotification,
   sendContactReply,
   sendNewOrderNotification,
-  sendSignupVerificationCode,
   sendOrderStatusUpdate,
 } from './email.js'
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
@@ -51,12 +51,35 @@ const frontendOrigins = [
   .map((origin) => origin.trim())
   .filter(Boolean)
 const uploadDirectory = fileURLToPath(new URL('./uploads/', import.meta.url))
+const contentSecurityDirectives = helmet.contentSecurityPolicy.getDefaultDirectives()
+contentSecurityDirectives['img-src'] = ["'self'", 'data:', 'https://images.unsplash.com']
+contentSecurityDirectives['style-src'] = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com']
+contentSecurityDirectives['font-src'] = ["'self'", 'data:', 'https://fonts.gstatic.com']
 
 if (!jwtSecret || jwtSecret.length < 32 || jwtSecret.startsWith('replace-with-')) {
   throw new Error('Set JWT_SECRET to a random value of at least 32 characters in your environment.')
 }
 
-app.use(helmet())
+class PasswordVerificationError extends Error {
+  constructor(cause) {
+    super('Unable to verify the stored password hash.', { cause })
+    this.name = 'PasswordVerificationError'
+  }
+}
+
+async function verifyPassword(password, passwordHash) {
+  try {
+    return await bcrypt.compare(password, passwordHash)
+  } catch (error) {
+    throw new PasswordVerificationError(error)
+  }
+}
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: contentSecurityDirectives,
+  },
+}))
 app.use(cors({
   origin(origin, callback) {
     if (!origin || frontendOrigins.includes(origin)) {
@@ -297,16 +320,9 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 })
 
-const signupCodeLimiter = rateLimit({
+const signupLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   limit: 5,
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
-})
-
-const signupVerificationLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
 })
@@ -336,41 +352,6 @@ function readBearerToken(request) {
   const authorization = request.get('authorization') || ''
   const [scheme, token] = authorization.split(' ')
   return scheme?.toLowerCase() === 'bearer' ? token : ''
-}
-
-function hashSignupVerificationCode(email, code) {
-  return createHmac('sha256', jwtSecret).update(`${email}:${code}`).digest()
-}
-
-async function sendCustomerVerificationCode(customer, mode) {
-  const code = String(randomInt(100000, 1000000))
-  const codeHash = hashSignupVerificationCode(customer.email, code).toString('hex')
-  await sendSignupVerificationCode({ to: customer.email, code })
-
-  database.prepare(`
-    INSERT INTO pending_customer_registrations
-      (email, name, password_hash, profile_picture, verification_code_hash, expires_at, attempts, mode, customer_id)
-    VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
-    ON CONFLICT(email) DO UPDATE SET
-      name = excluded.name,
-      password_hash = excluded.password_hash,
-      profile_picture = excluded.profile_picture,
-      verification_code_hash = excluded.verification_code_hash,
-      expires_at = excluded.expires_at,
-      attempts = 0,
-      mode = excluded.mode,
-      customer_id = excluded.customer_id,
-      created_at = CURRENT_TIMESTAMP
-  `).run(
-    customer.email,
-    customer.name,
-    customer.passwordHash,
-    customer.profilePicture || '',
-    codeHash,
-    Date.now() + 10 * 60 * 1000,
-    mode,
-    mode === 'login' ? customer.id : null,
-  )
 }
 
 function requireAdmin(request, response, next) {
@@ -413,15 +394,11 @@ function requireCustomer(request, response, next) {
     const customer = database.prepare(`
       SELECT id, name, email, profile_picture AS profilePicture, phone,
         delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
-        loyalty_points AS loyaltyPoints, is_banned AS isBanned, email_verified AS emailVerified
+        loyalty_points AS loyaltyPoints, is_banned AS isBanned
       FROM customers WHERE id = ?
     `).get(payload.sub)
     if (!customer || customer.isBanned) {
       response.status(401).json({ error: 'Customer session is no longer valid.' })
-      return
-    }
-    if (!customer.emailVerified) {
-      response.status(401).json({ error: 'Verify your email address to continue. Sign in again to receive a verification code.' })
       return
     }
     request.customer = customer
@@ -468,11 +445,19 @@ function normalizeFlavor(body, existing = {}) {
   }
 }
 
-function listOrders({ deliveredOnly = false } = {}) {
+function listOrders({ deliveredOnly = false, storeId = null } = {}) {
+  const conditions = [deliveredOnly ? "status = 'delivered'" : "status != 'delivered'"]
+  const parameters = []
+  if (storeId !== null) {
+    conditions.push("store_id = ?")
+    parameters.push(storeId)
+  }
   const orders = database.prepare(`
     SELECT id, customer_name AS customerName, customer_email AS customerEmail,
       customer_phone AS customerPhone,
       delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
+      store_id AS storeId, store_name AS storeName,
+      store_address AS storeAddress, store_phone AS storePhone,
       subtotal_cents AS subtotalCents, discount_cents AS discountCents,
       total_cents AS totalCents, currency, status, created_at AS createdAt,
       delivered_at AS deliveredAt, fulfillment_status AS fulfillmentStatus,
@@ -481,10 +466,10 @@ function listOrders({ deliveredOnly = false } = {}) {
       loyalty_points_redeemed AS loyaltyPointsRedeemed,
       discount_code AS discountCode
     FROM orders
-    WHERE ${deliveredOnly ? "status = 'delivered'" : "status != 'delivered'"}
+    WHERE ${conditions.join(" AND ")}
     ORDER BY id DESC
     LIMIT 500
-  `).all()
+  `).all(...parameters)
   if (orders.length === 0) return []
 
   const placeholders = orders.map(() => '?').join(', ')
@@ -542,9 +527,14 @@ app.get('/api/menu', (_request, response) => {
 
 app.get('/api/fulfillment/options', (_request, response) => {
   const zones = database.prepare(`
-    SELECT id, location, pickup_enabled AS pickupEnabled,
-      delivery_enabled AS deliveryEnabled, delivery_fee AS deliveryFee
-    FROM fulfillment_zones WHERE is_active = 1 ORDER BY location
+    SELECT z.id, z.location, z.pickup_enabled AS pickupEnabled,
+      z.delivery_enabled AS deliveryEnabled, z.delivery_fee AS deliveryFee,
+      s.id AS storeId, s.name AS storeName, s.town AS storeTown,
+      s.area AS storeArea, s.address AS storeAddress, s.phone AS storePhone,
+      s.map_query AS storeMapQuery
+    FROM fulfillment_zones z
+    JOIN stores s ON s.fulfillment_zone_id = z.id
+    WHERE z.is_active = 1 ORDER BY z.location
   `).all().map((zone) => ({
     ...zone,
     pickupEnabled: Boolean(zone.pickupEnabled),
@@ -555,6 +545,21 @@ app.get('/api/fulfillment/options', (_request, response) => {
     FROM fulfillment_slots WHERE is_active = 1 ORDER BY sort_order, id
   `).all()
   response.json({ zones, slots })
+})
+
+app.get('/api/promotions/active', (_request, response) => {
+  const promotion = database.prepare(`
+    SELECT code, discount_type AS discountType,
+      discount_value AS discountValue, minimum_total AS minimumTotal,
+      expires_at AS expiresAt
+    FROM discount_codes
+    WHERE is_active = 1 AND expires_at IS NOT NULL
+      AND datetime(expires_at) > CURRENT_TIMESTAMP
+      AND (max_uses IS NULL OR uses + reserved_uses < max_uses)
+    ORDER BY datetime(expires_at), id DESC
+    LIMIT 1
+  `).get() || null
+  response.json({ promotion })
 })
 
 app.post('/api/discount-codes/validate', (request, response) => {
@@ -583,6 +588,7 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
   const email = typeof details?.email === 'string' ? details.email.trim().toLowerCase() : ''
   const phone = typeof details?.phone === 'string' ? details.phone.trim() : ''
   const city = typeof details?.city === 'string' ? details.city.trim() : ''
+  const storeId = Number(details?.storeId)
   const residence = typeof details?.residence === 'string' ? details.residence.trim() : ''
   const fulfillmentType = details?.fulfillmentType
   const scheduledDate = typeof details?.scheduledDate === 'string' ? details.scheduledDate : ''
@@ -592,12 +598,16 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
     ? request.body.discountCode.trim().toUpperCase()
     : ''
   const customer = request.customer
-  const zone = database.prepare(`
-    SELECT id, pickup_enabled AS pickupEnabled, delivery_enabled AS deliveryEnabled,
-      delivery_fee AS deliveryFee
-    FROM fulfillment_zones
-    WHERE location = ? COLLATE NOCASE AND is_active = 1
-  `).get(city)
+  const store = Number.isSafeInteger(storeId) && storeId > 0
+    ? database.prepare(`
+      SELECT s.id, s.name, s.address, s.phone, z.id AS zoneId,
+        z.pickup_enabled AS pickupEnabled, z.delivery_enabled AS deliveryEnabled,
+        z.delivery_fee AS deliveryFee
+      FROM stores s JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
+      WHERE s.id = ? AND z.location = ? COLLATE NOCASE AND z.is_active = 1
+    `).get(storeId, city)
+    : null
+  const zone = store
   const slot = database.prepare(`
     SELECT id, start_time AS startTime
     FROM fulfillment_slots WHERE id = ? AND is_active = 1
@@ -615,7 +625,7 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
   if (!name || name.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254
     || !phone || phone.length > 40
     || !['pickup', 'delivery'].includes(fulfillmentType)
-    || !canUseZone || (fulfillmentType === 'delivery' && !residence) || residence.length > 150
+    || !store || !canUseZone || (fulfillmentType === 'delivery' && !residence) || residence.length > 150
     || !slot || !slotDate || slotDate <= new Date() || slotDate > new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
     || !Array.isArray(requestedItems) || requestedItems.length < 1 || requestedItems.length > 50) {
     response.status(400).json({ error: 'Provide valid contact, location, fulfillment type, future date, time slot, and cart details before payment.' })
@@ -769,11 +779,14 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
       const result = database.prepare(`
         INSERT INTO orders (
           customer_id, customer_name, customer_email, customer_phone, delivery_address, delivery_city,
+          store_id, store_name, store_address, store_phone,
           delivery_postal_code, delivery_residence, subtotal_cents, discount_cents, total_cents,
           currency, discount_code, discount_code_id, fulfillment_type, scheduled_for,
           delivery_fee, loyalty_points_redeemed
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(customer?.id ?? null, name, email, phone, '', city, '', residence,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(customer?.id ?? null, name, email, phone, '', city,
+        store.id, store.name, store.address, store.phone,
+        '', residence,
         subtotalCents, discountCents, totalCents, currency, discountCode?.code || '', discountCode?.id || null,
         fulfillmentType, scheduledFor, deliveryFee, pointsRedeemed)
       const newOrderId = Number(result.lastInsertRowid)
@@ -901,6 +914,8 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
         orderId,
         customerName: name,
         customerEmail: email,
+        storeName: store.name,
+        storeAddress: store.address,
         items: orderItems,
         totalCents,
         currency,
@@ -984,6 +999,8 @@ app.get('/api/payment/session/:sessionId', async (request, response) => {
     const order = database.prepare(`
       SELECT id, customer_name AS customerName, customer_email AS customerEmail,
         total_cents AS totalCents, currency, status, created_at AS createdAt,
+        delivery_city AS deliveryCity, store_name AS storeName,
+        store_address AS storeAddress, store_phone AS storePhone,
         delivery_stage AS deliveryStage, fulfillment_type AS fulfillmentType,
         scheduled_for AS scheduledFor, delivery_fee AS deliveryFee,
         loyalty_points_redeemed AS loyaltyPointsRedeemed
@@ -1040,7 +1057,7 @@ app.post('/api/contact', contactLimiter, (request, response, next) => {
   }
 })
 
-app.post('/api/auth/register/code', signupCodeLimiter, async (request, response, next) => {
+app.post('/api/auth/register', signupLimiter, async (request, response, next) => {
   try {
     const name = typeof request.body.name === 'string' ? request.body.name.trim() : ''
     const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
@@ -1053,95 +1070,19 @@ app.post('/api/auth/register/code', signupCodeLimiter, async (request, response,
       return
     }
 
-    if (database.prepare('SELECT 1 FROM customers WHERE email = ? COLLATE NOCASE').get(email)) {
-      response.status(409).json({ error: 'An account already uses that email address.' })
-      return
-    }
-
     const passwordHash = await bcrypt.hash(password, 12)
-    database.prepare('DELETE FROM pending_customer_registrations WHERE expires_at <= ?').run(Date.now())
-    await sendCustomerVerificationCode({ email, name, passwordHash, profilePicture }, 'signup')
-
-    response.status(202).json({ message: 'A six-digit verification code has been sent to your email address.' })
-  } catch (error) {
-    next(error)
-  }
-})
-
-app.post('/api/auth/register/verify', signupVerificationLimiter, async (request, response, next) => {
-  try {
-    const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
-    const code = typeof request.body.code === 'string' ? request.body.code.trim() : ''
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 || !/^\d{6}$/.test(code)) {
-      response.status(400).json({ error: 'Enter the email address and six-digit code used for registration.' })
-      return
-    }
-
-    const pending = database.prepare(`
-      SELECT name, password_hash AS passwordHash, profile_picture AS profilePicture,
-        verification_code_hash AS verificationCodeHash, expires_at AS expiresAt, attempts,
-        mode, customer_id AS customerId
-      FROM pending_customer_registrations WHERE email = ? COLLATE NOCASE
-    `).get(email)
-    if (!pending) {
-      response.status(400).json({ error: 'Request a new verification code to continue.' })
-      return
-    }
-    if (pending.expiresAt <= Date.now()) {
-      database.prepare('DELETE FROM pending_customer_registrations WHERE email = ? COLLATE NOCASE').run(email)
-      response.status(400).json({ error: 'This verification code has expired. Request a new one.' })
-      return
-    }
-    if (pending.attempts >= 5) {
-      database.prepare('DELETE FROM pending_customer_registrations WHERE email = ? COLLATE NOCASE').run(email)
-      response.status(429).json({ error: 'Too many incorrect codes. Request a new verification code.' })
-      return
-    }
-
-    const submittedHash = hashSignupVerificationCode(email, code)
-    const expectedHash = Buffer.from(pending.verificationCodeHash, 'hex')
-    if (submittedHash.length !== expectedHash.length || !timingSafeEqual(submittedHash, expectedHash)) {
-      database.prepare(`
-        UPDATE pending_customer_registrations SET attempts = attempts + 1
-        WHERE email = ? COLLATE NOCASE
-      `).run(email)
-      response.status(400).json({ error: 'The verification code is incorrect.' })
-      return
-    }
-
-    let customer
-    database.transaction(() => {
-      if (pending.mode === 'login' && pending.customerId) {
-        database.prepare(`
-          UPDATE customers SET email_verified = 1
-          WHERE id = ? AND email = ? COLLATE NOCASE AND is_banned = 0
-        `).run(pending.customerId, email)
-        customer = database.prepare(`
-          SELECT id, name, email, profile_picture AS profilePicture, phone,
-            delivery_city AS deliveryCity, delivery_residence AS deliveryResidence
-          FROM customers WHERE id = ? AND email_verified = 1 AND is_banned = 0
-        `).get(pending.customerId)
-      } else if (pending.mode === 'signup') {
-        const result = database.prepare(`
-          INSERT INTO customers (name, email, password_hash, profile_picture, email_verified)
-          VALUES (?, ?, ?, ?, 1)
-        `).run(pending.name, email, pending.passwordHash, pending.profilePicture)
-        customer = {
-          id: Number(result.lastInsertRowid),
-          name: pending.name,
-          email,
-          phone: '',
-          deliveryCity: '',
-          deliveryResidence: '',
-          profilePicture: pending.profilePicture,
-        }
-      }
-      database.prepare('DELETE FROM pending_customer_registrations WHERE email = ? COLLATE NOCASE').run(email)
-    })()
-
-    if (!customer) {
-      response.status(400).json({ error: 'This account can no longer be verified. Please sign in again or contact support.' })
-      return
+    const result = database.prepare(`
+      INSERT INTO customers (name, email, password_hash, profile_picture)
+      VALUES (?, ?, ?, ?)
+    `).run(name, email, passwordHash, profilePicture)
+    const customer = {
+      id: Number(result.lastInsertRowid),
+      name,
+      email,
+      phone: '',
+      deliveryCity: '',
+      deliveryResidence: '',
+      profilePicture,
     }
     const token = jwt.sign({ sub: customer.id, type: 'customer' }, jwtSecret, { expiresIn: '8h' })
     response.status(201).json({ token, customer })
@@ -1159,28 +1100,12 @@ app.post('/api/auth/login', loginLimiter, async (request, response, next) => {
     const email = typeof request.body.email === 'string' ? request.body.email.trim() : ''
     const password = typeof request.body.password === 'string' ? request.body.password : ''
     const customer = database.prepare('SELECT * FROM customers WHERE email = ? COLLATE NOCASE').get(email)
-    if (!customer || !await bcrypt.compare(password, customer.password_hash)) {
+    if (!customer || !await verifyPassword(password, customer.password_hash)) {
       response.status(401).json({ error: 'The email or password is incorrect.' })
       return
     }
     if (customer.is_banned) {
       response.status(403).json({ error: 'This customer account has been banned. Contact the store for assistance.' })
-      return
-    }
-
-    if (!customer.email_verified) {
-      database.prepare('DELETE FROM pending_customer_registrations WHERE expires_at <= ?').run(Date.now())
-      await sendCustomerVerificationCode({
-        id: customer.id,
-        email: customer.email,
-        name: customer.name,
-        passwordHash: customer.password_hash,
-        profilePicture: customer.profile_picture || '',
-      }, 'login')
-      response.status(202).json({
-        verificationRequired: true,
-        message: 'A six-digit verification code has been sent to your email address.',
-      })
       return
     }
 
@@ -1217,15 +1142,11 @@ app.get('/api/auth/me', (request, response) => {
     const customer = database.prepare(`
       SELECT id, name, email, profile_picture AS profilePicture, phone,
         delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
-        loyalty_points AS loyaltyPoints, is_banned AS isBanned, email_verified AS emailVerified
+        loyalty_points AS loyaltyPoints, is_banned AS isBanned
       FROM customers WHERE id = ?
     `).get(payload.sub)
     if (!customer || customer.isBanned) {
       response.status(401).json({ error: 'Customer session is no longer valid.' })
-      return
-    }
-    if (!customer.emailVerified) {
-      response.status(401).json({ error: 'Verify your email address to continue. Sign in again to receive a verification code.' })
       return
     }
     response.json({ customer })
@@ -1274,6 +1195,8 @@ app.get('/api/customer/orders', requireCustomer, (request, response) => {
       fulfillment_status AS fulfillmentStatus, created_at AS createdAt,
       delivered_at AS deliveredAt, delivery_city AS deliveryCity,
       delivery_residence AS deliveryResidence,
+      store_id AS storeId, store_name AS storeName,
+      store_address AS storeAddress, store_phone AS storePhone,
       fulfillment_type AS fulfillmentType, scheduled_for AS scheduledFor,
       delivery_fee AS deliveryFee, delivery_stage AS deliveryStage,
       loyalty_points_redeemed AS loyaltyPointsRedeemed
@@ -1315,6 +1238,8 @@ app.get('/api/customer/orders/:id', requireCustomer, (request, response) => {
     SELECT id, customer_name AS customerName, customer_email AS customerEmail,
       subtotal_cents AS subtotalCents, discount_cents AS discountCents,
       total_cents AS totalCents, currency, status, created_at AS createdAt,
+      delivery_city AS deliveryCity, store_name AS storeName,
+      store_address AS storeAddress, store_phone AS storePhone,
       delivery_stage AS deliveryStage, fulfillment_type AS fulfillmentType,
       scheduled_for AS scheduledFor, delivery_fee AS deliveryFee
     FROM orders WHERE id = ? AND customer_id = ? AND loyalty_points_redeemed > 0
@@ -1351,6 +1276,21 @@ function resolveFavoriteItem(itemId) {
   const menuItem = findOrderMenuItem(itemId)
   return menuItem ? { ...menuItem, itemId, itemType: 'menu' } : null
 }
+
+app.get('/api/reviews', (_request, response) => {
+  const reviews = database.prepare(`
+    SELECT r.rating, r.review, r.created_at AS createdAt,
+      c.name AS customerName, c.profile_picture AS profilePicture,
+      r.item_id AS itemId
+    FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
+    WHERE r.is_approved = 1
+    ORDER BY r.id DESC LIMIT 50
+  `).all().map((review) => ({
+    ...review,
+    itemName: resolveFavoriteItem(review.itemId)?.name || review.itemId,
+  }))
+  response.json({ reviews })
+})
 
 app.get('/api/customer/favorites', requireCustomer, (request, response) => {
   const favorites = database.prepare(`
@@ -1550,9 +1490,9 @@ app.post('/api/cake-requests', contactLimiter, async (request, response) => {
       const payload = jwt.verify(token, jwtSecret)
       if (payload.type !== 'customer') throw new Error('Customer session is invalid.')
       const customer = database.prepare(`
-        SELECT id, email_verified AS emailVerified FROM customers WHERE id = ?
+        SELECT id FROM customers WHERE id = ?
       `).get(payload.sub)
-      if (!customer || !customer.emailVerified) throw new Error('Customer session is no longer valid.')
+      if (!customer) throw new Error('Customer session is no longer valid.')
       customerId = customer.id
     } catch {
       response.status(401).json({ error: 'Sign in again or submit the request without an expired account session.' })
@@ -1619,7 +1559,7 @@ app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
     const email = typeof request.body.email === 'string' ? request.body.email.trim() : ''
     const password = typeof request.body.password === 'string' ? request.body.password : ''
     const admin = database.prepare('SELECT * FROM admins WHERE email = ? COLLATE NOCASE').get(email)
-    if (!admin || !await bcrypt.compare(password, admin.password_hash)) {
+    if (!admin || !await verifyPassword(password, admin.password_hash)) {
       response.status(401).json({ error: 'The admin email or password is incorrect.' })
       return
     }
@@ -1643,6 +1583,24 @@ app.get('/api/admin/me', requireAdmin, (request, response) => {
       profilePicture: request.admin.profile_picture,
     },
   })
+})
+
+app.put('/api/admin/profile-picture', requireAdmin, (request, response) => {
+  const profilePicture = typeof request.body.profilePicture === 'string'
+    ? request.body.profilePicture.trim()
+    : ''
+  if (!profilePicture.startsWith('data:image/') || profilePicture.length > 1024 * 1024) {
+    response.status(400).json({ error: 'Provide a valid profile image smaller than 1 MB.' })
+    return
+  }
+
+  database.prepare('UPDATE admins SET profile_picture = ? WHERE id = ?')
+    .run(profilePicture, request.admin.id)
+  const admin = database.prepare(`
+    SELECT id, name, email, profile_picture AS profilePicture
+    FROM admins WHERE id = ?
+  `).get(request.admin.id)
+  response.json({ admin })
 })
 
 app.get('/api/admin/admins', requireAdmin, (_request, response) => {
@@ -1684,11 +1642,33 @@ app.get('/api/admin/orders', requireAdmin, (request, response) => {
     response.status(400).json({ error: 'The requested order status is not supported.' })
     return
   }
-  const orders = listOrders({ deliveredOnly })
+  const requestedStoreId = request.query.storeId
+  const storeId = requestedStoreId === undefined
+    ? null
+    : typeof requestedStoreId === 'string' ? Number(requestedStoreId) : NaN
+  if (storeId !== null && (!Number.isSafeInteger(storeId) || storeId < 1
+    || !database.prepare('SELECT 1 FROM stores WHERE id = ?').get(storeId))) {
+    response.status(400).json({ error: 'Choose a valid store to filter orders.' })
+    return
+  }
+  const orders = listOrders({ deliveredOnly, storeId })
   const count = deliveredOnly
-    ? database.prepare("SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'").get().count
+    ? database.prepare(`
+      SELECT COUNT(*) AS count FROM orders
+      WHERE status = 'delivered' ${storeId === null ? '' : 'AND store_id = ?'}
+    `).get(...(storeId === null ? [] : [storeId])).count
     : undefined
   response.json({ orders, ...(deliveredOnly ? { count } : {}) })
+})
+
+app.get('/api/admin/stores', requireAdmin, (_request, response) => {
+  const stores = database.prepare(`
+    SELECT s.id, s.name, s.town, s.area, s.address,
+      z.location, z.is_active AS isActive
+    FROM stores s JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
+    ORDER BY s.town, s.area
+  `).all().map((store) => ({ ...store, isActive: Boolean(store.isActive) }))
+  response.json({ stores })
 })
 
 app.delete('/api/admin/orders/delivered', requireAdmin, (_request, response) => {
@@ -1941,10 +1921,12 @@ app.post('/api/admin/logout', requireAdmin, (_request, response) => {
 
 app.get('/api/admin/fulfillment-settings', requireAdmin, (_request, response) => {
   const zones = database.prepare(`
-    SELECT id, location, pickup_enabled AS pickupEnabled,
-      delivery_enabled AS deliveryEnabled, delivery_fee AS deliveryFee,
-      is_active AS isActive
-    FROM fulfillment_zones ORDER BY location
+    SELECT z.id, z.location, z.pickup_enabled AS pickupEnabled,
+      z.delivery_enabled AS deliveryEnabled, z.delivery_fee AS deliveryFee,
+      z.is_active AS isActive, s.id AS storeId, s.name AS storeName,
+      s.address AS storeAddress, s.phone AS storePhone
+    FROM fulfillment_zones z JOIN stores s ON s.fulfillment_zone_id = z.id
+    ORDER BY z.location
   `).all().map((zone) => ({
     ...zone,
     pickupEnabled: Boolean(zone.pickupEnabled),
@@ -2523,8 +2505,23 @@ app.use((error, _request, response, _next) => {
     response.status(413).json({ error: 'The uploaded request is too large. Images must be smaller than 5 MB.' })
     return
   }
+  if (error instanceof EmailConfigurationError) {
+    response.status(503).json({ error: 'Email delivery is not configured. Contact the store owner to finish setting up email delivery.' })
+    return
+  }
+  if (error instanceof PasswordVerificationError) {
+    console.error(error)
+    response.status(500).json({ error: 'Sign-in could not verify the account password. Contact the store owner to check or reset the account.' })
+    return
+  }
   console.error(error)
-  if (!response.headersSent) response.status(500).json({ error: 'An unexpected server error occurred.' })
+  const debugMessage = error instanceof Error && error.message && (
+    error.message.startsWith('Email delivery is not configured')
+    || error.message.startsWith('Email delivery requires')
+  )
+    ? error.message
+    : 'An unexpected server error occurred.'
+  if (!response.headersSent) response.status(500).json({ error: debugMessage })
 })
 
 const server = app.listen(port, () => {

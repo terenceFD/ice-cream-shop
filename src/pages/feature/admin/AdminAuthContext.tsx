@@ -17,6 +17,7 @@ interface AdminAuthContextValue {
   login: (email: string, password: string) => Promise<AdminAccount>;
   refreshAdmins: () => Promise<AdminAccount[]>;
   createAdmin: (details: { name: string; email: string; password: string; profilePicture: string }) => Promise<AdminAccount>;
+  updateProfilePicture: (profilePicture: string) => Promise<AdminAccount>;
   logout: () => Promise<void>;
 }
 
@@ -86,6 +87,19 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     return result.admin
   }
 
+  async function updateProfilePicture(profilePicture: string) {
+    const result = await apiRequest<{ admin: AdminAccount }>('/admin/profile-picture', {
+      method: 'PUT',
+      token: sessionToken,
+      body: { profilePicture },
+    })
+    setCurrentAdmin(result.admin)
+    setAdmins((currentAdmins) => currentAdmins.map((admin) =>
+      admin.id === result.admin.id ? result.admin : admin,
+    ))
+    return result.admin
+  }
+
   async function logout() {
     try {
       if (sessionToken) await apiRequest('/admin/logout', { method: 'POST', token: sessionToken })
@@ -107,6 +121,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       login,
       refreshAdmins,
       createAdmin,
+      updateProfilePicture,
       logout,
     }}>
       {children}

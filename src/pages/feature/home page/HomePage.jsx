@@ -36,29 +36,22 @@ export function HomePage() {
     apiRequest('/menu')
       .then(({ categories }) => {
         if (!cancelled) {
-          const items = getPopularFlavors(categories)
-          setPopularFlavors(items)
+          setPopularFlavors(getPopularFlavors(categories))
           setMenuError('')
-          return Promise.all(items.map(async (item) => {
-            const itemId = item.id || getMenuItemId('Ice Cream', item.name)
-            const result = await apiRequest(`/menu/${encodeURIComponent(itemId)}/reviews`)
-            return result.reviews.map((review) => ({ ...review, itemName: item.name }))
-          }))
-            .then((itemReviews) => {
-              if (!cancelled) {
-                setReviews(itemReviews.flat().sort((first, second) => (
-                  new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
-                )).slice(0, 3))
-                setReviewsError('')
-              }
-            })
-            .catch((error) => {
-              if (!cancelled) setReviewsError(error.message)
-            })
         }
       })
       .catch((error) => {
         if (!cancelled) setMenuError(error.message)
+      })
+    apiRequest('/reviews')
+      .then(({ reviews: approvedReviews }) => {
+        if (!cancelled) {
+          setReviews(approvedReviews.slice(0, 3))
+          setReviewsError('')
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) setReviewsError(error.message)
       })
     return () => {
       cancelled = true
@@ -79,7 +72,7 @@ export function HomePage() {
     `${new Intl.NumberFormat(language === 'fr' ? 'fr-CM' : 'en-CM').format(price)} FCFA`
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#fbfaf5] text-[#102c50]">
+    <div className="min-h-screen overflow-clip bg-[#fbfaf5] text-[#102c50]">
       <Header />
       <main>
         <section id="home" className="relative isolate w-full overflow-hidden bg-[#092a53] px-5 pb-20 pt-8 text-white sm:px-8 sm:pb-24 sm:pt-12 lg:px-12 lg:pt-14">

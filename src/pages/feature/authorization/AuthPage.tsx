@@ -35,7 +35,7 @@ async function resizeProfilePicture(file: File): Promise<string> {
 
 export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const isSignup = mode === 'signup'
-  const { requestSignupCode, signup, login } = useAuth()
+  const { signup, login } = useAuth()
   const { t } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
@@ -46,8 +46,6 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [profilePicture, setProfilePicture] = useState('')
-  const [verificationCode, setVerificationCode] = useState('')
-  const [verificationSent, setVerificationSent] = useState(false)
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -76,50 +74,13 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     setIsSubmitting(true)
     try {
       if (isSignup) {
-        if (verificationSent) {
-          await signup({ email, code: verificationCode })
-        } else {
-          await requestSignupCode({ name, email, password, profilePicture })
-          setVerificationSent(true)
-        }
+        await signup({ name, email, password, profilePicture })
       } else {
-        if (verificationSent) {
-          await signup({ email, code: verificationCode })
-        } else {
-          const result = await login({ email, password })
-          if (result.verificationRequired) {
-            setVerificationSent(true)
-            setError('')
-            return
-          }
-        }
+        await login({ email, password })
       }
-      if (!isSignup || verificationSent) {
-        navigate(returnToCheckout ? '/checkout' : '/', { replace: true })
-      }
+      navigate(returnToCheckout ? '/checkout' : '/', { replace: true })
     } catch (authError) {
       setError(authError instanceof Error ? authError.message : 'Unable to authenticate. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  async function handleResendCode() {
-    setError('')
-    setIsSubmitting(true)
-    try {
-      if (isSignup) {
-        await requestSignupCode({ name, email, password, profilePicture })
-      } else {
-        const result = await login({ email, password })
-        if (!result.verificationRequired) {
-          navigate(returnToCheckout ? '/checkout' : '/', { replace: true })
-          return
-        }
-      }
-      setVerificationCode('')
-    } catch (authError) {
-      setError(authError instanceof Error ? authError.message : 'Unable to send a verification code. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -173,7 +134,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             )}
 
             <form className="mt-7 space-y-4" onSubmit={handleSubmit}>
-              {isSignup && !verificationSent && (
+              {isSignup && (
                 <label className="block text-xs font-extrabold text-[#52647b]">
                   {t('Name')}
                   <input
@@ -188,33 +149,29 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                   />
                 </label>
               )}
-              {!verificationSent && (
-                <>
-                  <label className="block text-xs font-extrabold text-[#52647b]">
-                    {t('Email address')}
-                    <input
-                      autoComplete="email"
-                      className="mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#9aa3ad] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40"
-                      name="email"
-                      onChange={(event) => setEmail(event.target.value)}
-                      required
-                      type="email"
-                      value={email}
-                    />
-                  </label>
-                  <PasswordField
-                    autoComplete={isSignup ? 'new-password' : 'current-password'}
-                    label={t('Password')}
-                    maxLength={128}
-                    minLength={8}
-                    name="password"
-                    onChange={(event) => setPassword(event.target.value)}
-                    required
-                    value={password}
-                  />
-                </>
-              )}
-              {isSignup && !verificationSent && (
+              <label className="block text-xs font-extrabold text-[#52647b]">
+                {t('Email address')}
+                <input
+                  autoComplete="email"
+                  className="mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#9aa3ad] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40"
+                  name="email"
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                  type="email"
+                  value={email}
+                />
+              </label>
+              <PasswordField
+                autoComplete={isSignup ? 'new-password' : 'current-password'}
+                label={t('Password')}
+                maxLength={128}
+                minLength={8}
+                name="password"
+                onChange={(event) => setPassword(event.target.value)}
+                required
+                value={password}
+              />
+              {isSignup && (
                 <>
                   <PasswordField
                     autoComplete="new-password"
@@ -245,35 +202,6 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                   )}
                 </>
               )}
-              {verificationSent && (
-                <>
-                  <p className="rounded-xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-3 text-sm leading-6 text-[#624f00]" role="status">
-                    {t('Enter the six-digit code sent to {email}.', { email })}
-                  </p>
-                  <label className="block text-xs font-extrabold text-[#52647b]">
-                    {t('Verification code')}
-                    <input
-                      autoComplete="one-time-code"
-                      className="mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-lg font-bold tracking-[0.3em] text-[#102c50] outline-none transition placeholder:text-[#9aa3ad] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40"
-                      inputMode="numeric"
-                      maxLength={6}
-                      name="verificationCode"
-                      onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
-                      pattern="\d{6}"
-                      required
-                      value={verificationCode}
-                    />
-                  </label>
-                  <button
-                    className="w-fit text-sm font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 disabled:opacity-60"
-                    disabled={isSubmitting}
-                    onClick={handleResendCode}
-                    type="button"
-                  >
-                    {t('Resend verification code')}
-                  </button>
-                </>
-              )}
               {error && <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm leading-5 text-red-700" role="alert">{error}</p>}
               <button
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
@@ -281,10 +209,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 type="submit"
               >
                 {isSubmitting
-                  ? t(verificationSent ? 'Verifying…' : isSignup ? 'Sending verification code…' : 'Please wait…')
-                  : isSignup
-                    ? verificationSent ? t('Verify email and create account') : t('Send verification code')
-                    : verificationSent ? t('Verify email and sign in') : t('Log in')} {!isSubmitting && <span aria-hidden="true">→</span>}
+                  ? t(isSignup ? 'Creating account…' : 'Please wait…')
+                  : isSignup ? t('Create account') : t('Log in')} {!isSubmitting && <span aria-hidden="true">→</span>}
               </button>
             </form>
 

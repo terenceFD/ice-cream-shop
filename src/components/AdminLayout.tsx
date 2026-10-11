@@ -44,6 +44,7 @@ interface NavigationCounts {
   orderCount: number
   notificationCount: number
   cakeRequestCount: number
+  reviewCount: number
 }
 
 export function AdminLayout() {
@@ -53,20 +54,22 @@ export function AdminLayout() {
   const location = useLocation()
   const [logoutError, setLogoutError] = useState('')
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [navigationCounts, setNavigationCounts] = useState<NavigationCounts>({ orderCount: 0, notificationCount: 0, cakeRequestCount: 0 })
+  const [navigationCounts, setNavigationCounts] = useState<NavigationCounts>({ orderCount: 0, notificationCount: 0, cakeRequestCount: 0, reviewCount: 0 })
   const [countsError, setCountsError] = useState('')
 
   const refreshNavigationCounts = useCallback(async () => {
     try {
-      const [ordersResult, notificationsResult, cakeRequestsResult] = await Promise.all([
+      const [ordersResult, notificationsResult, cakeRequestsResult, reviewsResult] = await Promise.all([
         apiRequest<{ orders: unknown[] }>('/admin/orders', { token: sessionToken }),
         apiRequest<{ unreadCount: number }>('/admin/notifications', { token: sessionToken }),
         apiRequest<{ requests: { status: string }[] }>('/admin/cake-requests', { token: sessionToken }),
+        apiRequest<{ pendingCount: number }>('/admin/reviews?countOnly=true', { token: sessionToken }),
       ])
       setNavigationCounts({
         orderCount: ordersResult.orders.length,
         notificationCount: notificationsResult.unreadCount,
         cakeRequestCount: cakeRequestsResult.requests.filter((request) => request.status === 'new').length,
+        reviewCount: reviewsResult.pendingCount,
       })
       setCountsError('')
     } catch (error) {
@@ -172,6 +175,8 @@ export function AdminLayout() {
                   {navItems.filter((item) => item.group === group).map((item) => {
                     const count = item.label === 'Orders'
                       ? navigationCounts.orderCount
+                      : item.label === 'Customer reviews'
+                        ? navigationCounts.reviewCount
                       : item.label === 'Notifications'
                         ? navigationCounts.notificationCount
                         : item.label === 'Cake requests'
@@ -179,6 +184,8 @@ export function AdminLayout() {
                           : null
                     const countLabel = item.label === 'Orders'
                       ? t('{count} orders not delivered', { count: count || 0 })
+                      : item.label === 'Customer reviews'
+                        ? t('{count} pending customer reviews', { count: count || 0 })
                       : item.label === 'Notifications'
                         ? t('{count} unread notifications', { count: count || 0 })
                         : t('{count} new cake requests', { count: count || 0 })

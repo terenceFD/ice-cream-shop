@@ -2,6 +2,7 @@ import Database from "better-sqlite3";
 import { fileURLToPath } from "node:url";
 import { USD_TO_XAF } from "../shared/currency.js";
 import {
+  cameroonLocations,
   cameroonDeliveryLocations,
   coldStoneMenuCategories,
   getMenuItemId,
@@ -34,20 +35,6 @@ database.exec(`
     phone TEXT NOT NULL DEFAULT '',
     delivery_city TEXT NOT NULL DEFAULT '',
     delivery_residence TEXT NOT NULL DEFAULT '',
-    email_verified INTEGER NOT NULL DEFAULT 0 CHECK (email_verified IN (0, 1)),
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE IF NOT EXISTS pending_customer_registrations (
-    email TEXT PRIMARY KEY COLLATE NOCASE,
-    name TEXT NOT NULL,
-    password_hash TEXT NOT NULL,
-    profile_picture TEXT NOT NULL DEFAULT '',
-    verification_code_hash TEXT NOT NULL,
-    expires_at INTEGER NOT NULL,
-    attempts INTEGER NOT NULL DEFAULT 0,
-    mode TEXT NOT NULL DEFAULT 'signup',
-    customer_id INTEGER,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -266,26 +253,19 @@ addColumnIfMissing(
   "INTEGER NOT NULL DEFAULT 0 CHECK (is_banned IN (0, 1))",
 );
 addColumnIfMissing(
-  "customers",
-  "email_verified",
-  "INTEGER NOT NULL DEFAULT 0 CHECK (email_verified IN (0, 1))",
-);
-addColumnIfMissing(
-  "pending_customer_registrations",
-  "mode",
-  "TEXT NOT NULL DEFAULT 'signup'",
-);
-addColumnIfMissing(
-  "pending_customer_registrations",
-  "customer_id",
-  "INTEGER",
-);
-addColumnIfMissing(
   "orders",
   "customer_id",
   "INTEGER REFERENCES customers(id) ON DELETE SET NULL",
 );
 addColumnIfMissing("orders", "discount_code", "TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing(
+  "orders",
+  "store_id",
+  "INTEGER REFERENCES stores(id) ON DELETE SET NULL",
+);
+addColumnIfMissing("orders", "store_name", "TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("orders", "store_address", "TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("orders", "store_phone", "TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing(
   "orders",
   "discount_code_id",
@@ -373,6 +353,17 @@ database.exec(`
     delivery_enabled INTEGER NOT NULL DEFAULT 0 CHECK (delivery_enabled IN (0, 1)),
     delivery_fee INTEGER NOT NULL DEFAULT 0 CHECK (delivery_fee >= 0),
     is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))
+  );
+
+  CREATE TABLE IF NOT EXISTS stores (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    fulfillment_zone_id INTEGER NOT NULL UNIQUE REFERENCES fulfillment_zones(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    town TEXT NOT NULL,
+    area TEXT NOT NULL,
+    address TEXT NOT NULL DEFAULT '',
+    phone TEXT NOT NULL DEFAULT '',
+    map_query TEXT NOT NULL DEFAULT ''
   );
 
   CREATE TABLE IF NOT EXISTS fulfillment_slots (
@@ -482,6 +473,49 @@ const seedZone = database.prepare(`
   VALUES (?, 1)
 `);
 for (const location of cameroonDeliveryLocations) seedZone.run(location.value);
+const seedStore = database.prepare(`
+  INSERT OR IGNORE INTO stores (
+    fulfillment_zone_id, name, town, area, address, phone, map_query
+  )
+  SELECT id, ?, ?, ?, ?, ?, ?
+  FROM fulfillment_zones
+  WHERE location = ? COLLATE NOCASE
+`);
+for (const location of cameroonLocations) {
+  seedStore.run(
+    `${location.area} Branch`,
+    location.town,
+    location.area,
+    location.address,
+    location.phone || "",
+    location.mapQuery,
+    `${location.town} — ${location.area}`,
+  );
+}
+database.prepare(`
+  UPDATE orders
+  SET store_id = (
+        SELECT s.id FROM stores s
+        JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
+        WHERE z.location = orders.delivery_city COLLATE NOCASE
+      ),
+      store_name = COALESCE((
+        SELECT s.name FROM stores s
+        JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
+        WHERE z.location = orders.delivery_city COLLATE NOCASE
+      ), store_name),
+      store_address = COALESCE((
+        SELECT s.address FROM stores s
+        JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
+        WHERE z.location = orders.delivery_city COLLATE NOCASE
+      ), store_address),
+      store_phone = COALESCE((
+        SELECT s.phone FROM stores s
+        JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
+        WHERE z.location = orders.delivery_city COLLATE NOCASE
+      ), store_phone)
+  WHERE store_id IS NULL AND delivery_city != ''
+`).run();
 if (
   database.prepare("SELECT COUNT(*) AS count FROM fulfillment_slots").get()
     .count === 0

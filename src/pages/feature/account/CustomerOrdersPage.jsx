@@ -469,7 +469,12 @@ export function CustomerOrdersPage() {
                         <span className="text-sm font-bold text-[#65748a]">{t('Total')}</span>
                         <span className="font-display text-lg font-extrabold">{formatPrice(order.totalCents)}</span>
                       </div>
-                      <p className="mt-3 text-xs text-[#65748a]">{order.deliveryResidence}, {order.deliveryCity}</p>
+                      <div className="mt-4 rounded-xl border border-[#e6ebf1] bg-[#f7f9fc] px-3.5 py-3">
+                        <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8a7500]">{t('Assigned store')}</p>
+                        <p className="mt-1 text-sm font-bold text-[#092a53]">{t(order.storeName || 'Store not recorded')}</p>
+                        {order.storeAddress && <p className="mt-0.5 text-xs leading-5 text-[#65748a]">{t(order.storeAddress)}</p>}
+                      </div>
+                      <p className="mt-3 text-xs text-[#65748a]">{order.deliveryResidence ? `${order.deliveryResidence}, ` : ''}{order.deliveryCity}</p>
                       {order.status !== 'pending_payment' && order.status !== 'payment_failed' && <div className="mt-4 flex flex-wrap justify-end gap-3 border-t border-[#eeeae1] pt-4">
                         <button className="inline-flex items-center gap-2 rounded-full border border-[#d9d6cc] px-4 py-2.5 text-xs font-extrabold text-[#52647b] transition hover:border-[#092a53] hover:text-[#092a53] disabled:cursor-wait disabled:opacity-50" disabled={savingOrderId === order.id || savedCarts.some((savedCart) => savedCart.sourceOrderId === order.id)} onClick={() => saveOrder(order)} type="button">
                           {savingOrderId === order.id ? t('Saving…') : savedCarts.some((savedCart) => savedCart.sourceOrderId === order.id) ? t('Saved for later') : t('Save cart')}

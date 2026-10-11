@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { apiRequest } from "../api/api";
 import { useCart } from "../CartContext";
 import { useAuth } from "../authcontext/AuthContext";
 import { useFlavors } from "../flavor-context/FlavorContext";
@@ -310,7 +311,8 @@ export function Header() {
   }
 
   return (
-    <div className="relative z-20 bg-[#092a53]">
+    <>
+    <div className={`${isHome ? "sticky top-0 z-50" : "relative z-20"} bg-[#092a53]`}>
       <header className="relative z-10 mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-y-3 px-4 py-4 text-white sm:px-8 lg:px-12">
       <Link
         className="flex items-center gap-2.5"
@@ -506,6 +508,98 @@ export function Header() {
         <path d="M0 0H1440V10C1280 27 1130 32 960 20C780 7 650 8 480 22C300 36 160 33 0 17V0Z" fill="#092a53" />
       </svg>
     </div>
+    {!isAdminPage && <PromotionCountdown />}
+    </>
+  );
+}
+
+function PromotionCountdown() {
+  const { language, t } = useLanguage();
+  const [promotion, setPromotion] = useState(null);
+  const [now, setNow] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadPromotion = async () => {
+      try {
+        const result = await apiRequest("/promotions/active");
+        if (!cancelled) {
+          setNow(Date.now());
+          setPromotion(result?.promotion || null);
+        }
+      } catch (error) {
+        if (!cancelled) console.error("Unable to load the active promotion.", error);
+      }
+    };
+
+    loadPromotion();
+    const refreshInterval = window.setInterval(loadPromotion, 60_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(refreshInterval);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!promotion) return undefined;
+    const ticker = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(ticker);
+  }, [promotion]);
+
+  if (!promotion || now === null) return null;
+  const remaining = Date.parse(promotion.expiresAt) - now;
+  if (!Number.isFinite(remaining) || remaining <= 0) return null;
+
+  const days = Math.floor(remaining / 86_400_000);
+  const hours = Math.floor((remaining % 86_400_000) / 3_600_000);
+  const minutes = Math.floor((remaining % 3_600_000) / 60_000);
+  const seconds = Math.floor((remaining % 60_000) / 1000);
+  const discount = promotion.discountType === "percent"
+    ? `${promotion.discountValue}% ${t("off")}`
+    : `${new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US").format(promotion.discountValue)} FCFA ${t("off")}`;
+
+  return (
+    <aside
+      aria-label={t("Limited-time promotion")}
+      className="relative z-10 border-b border-[#092a53]/10 bg-gradient-to-r from-[#fff8d9] via-[#fffdf4] to-[#fff3bd] px-4 py-3 text-[#092a53] shadow-[0_8px_24px_rgba(9,42,83,0.08)] sm:px-8"
+    >
+      <div className="mx-auto flex max-w-[1320px] flex-col items-center justify-between gap-3 sm:flex-row">
+        <div className="flex min-w-0 items-center gap-3">
+          <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[#ffdc32] text-xl">%</span>
+          <div className="min-w-0 text-center sm:text-left">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#816b00]">{t("Limited-time offer")}</p>
+            <p className="mt-0.5 text-sm font-extrabold sm:text-base">
+              {discount}
+              <span className="ml-2 text-xs font-semibold text-[#53647a]">{t("Use code")} <span className="rounded-md border border-[#d9ce9c] bg-white/80 px-1.5 py-0.5 font-mono font-bold tracking-wider text-[#092a53]">{promotion.code}</span></span>
+            </p>
+            {promotion.minimumTotal > 0 && (
+              <p className="mt-1 text-[11px] font-medium text-[#65748a]">
+                {t("Minimum order: {amount}", { amount: `${new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US").format(promotion.minimumTotal)} FCFA` })}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="hidden text-[10px] font-bold uppercase tracking-[0.12em] text-[#65748a] sm:inline">{t("Ends in")}</span>
+          <div aria-label={t("Offer countdown")} className="flex items-center gap-1.5" role="timer">
+            {[
+              [days, "Days"],
+              [hours, "Hours"],
+              [minutes, "Minutes"],
+              [seconds, "Seconds"],
+            ].map(([value, label]) => (
+              <div className="min-w-[42px] rounded-lg bg-[#092a53] px-1.5 py-1 text-center text-white" key={label}>
+                <span className="block font-mono text-sm font-bold tabular-nums">{String(value).padStart(2, "0")}</span>
+                <span className="block text-[8px] font-semibold uppercase tracking-wide text-white/70">{t(label)}</span>
+              </div>
+            ))}
+          </div>
+          <Link className="hidden rounded-full bg-[#092a53] px-4 py-2 text-xs font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 sm:inline-flex" to="/flavors">
+            {t("Shop offer")}
+          </Link>
+        </div>
+      </div>
+    </aside>
   );
 }
 

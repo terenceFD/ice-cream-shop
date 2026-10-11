@@ -41,6 +41,7 @@ import {
 } from "../pages/feature/admin/AdminSalesPages";
 import { LanguageProvider } from "../language/LanguageContext";
 import { ScrollRevealObserver } from "../components/ScrollRevealObserver";
+import { WebsiteLoader } from "../components/WebsiteLoader";
 
 function SkipToMainContent() {
   const location = useLocation();
@@ -70,6 +71,7 @@ function App() {
         <CartProvider>
           <BrowserRouter>
             <ScrollRevealObserver />
+            <WebsiteLoader />
             <SkipToMainContent />
             <AuthProvider>
               <AdminAuthProvider>
