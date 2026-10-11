@@ -1,4 +1,4 @@
-const CACHE_NAME = 'antixor-icy-shell-v2'
+const CACHE_NAME = 'antixor-icy-shell-v3'
 const SHELL_URLS = ['/', '/index.html', '/app-icon.svg', '/cold-stone-favicon.svg']
 
 self.addEventListener('install', (event) => {
@@ -8,7 +8,14 @@ self.addEventListener('install', (event) => {
     const html = await (await cache.match('/index.html')).text()
     const assets = [...html.matchAll(/(?:src|href)="(\/assets\/[^"]+\.(?:js|css))"/g)]
       .map((match) => match[1])
-    if (assets.length) await cache.addAll(assets)
+    await Promise.all(assets.map(async (asset) => {
+      try {
+        const response = await fetch(asset)
+        if (response.ok) await cache.put(asset, response)
+      } catch (error) {
+        console.warn(`Unable to cache app asset ${asset}:`, error)
+      }
+    }))
   })())
   self.skipWaiting()
 })
@@ -41,7 +48,9 @@ self.addEventListener('fetch', (event) => {
           if (response.ok) {
             const copy = response.clone()
             event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)))
+            return response
           }
+          if (cached) return cached
           return response
         } catch (error) {
           if (cached) return cached
