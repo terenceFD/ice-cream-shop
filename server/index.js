@@ -41,6 +41,7 @@ import {
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
 
 const app = express()
+app.set('trust proxy', 1)
 const port = Number(process.env.PORT || 3001)
 const jwtSecret = process.env.JWT_SECRET
 let stripeClient
@@ -2548,4 +2549,3 @@ function shutdown() {
 
 process.on('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)
-
