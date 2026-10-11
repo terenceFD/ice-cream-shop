@@ -2525,7 +2525,7 @@ app.use((error, _request, response, _next) => {
 })
 
 const server = app.listen(port, () => {
-  console.log(`Antixor Icy API listening on http://localhost:${port}`)
+  console.log(`cold stone API listening on http://localhost:${port}`)
   reconcileStaleCheckouts().catch((error) => {
     console.error('Unable to reconcile expired checkouts:', error.message)
   })
@@ -2545,3 +2545,5 @@ function shutdown() {
 
 process.on('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)
+
+
