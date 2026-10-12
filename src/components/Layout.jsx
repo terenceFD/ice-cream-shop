@@ -605,30 +605,36 @@ function PromotionCountdown() {
 
 export function InstagramSection() {
   const { t } = useLanguage();
+  const instagramImages = [
+    { alt: "Ice cream treats", src: "/ice-images/ice-1.jpg" },
+    { alt: "Celebration cake", src: "/cake-images/cake-1.webp" },
+    { alt: "Creamy dessert", src: "/cream/cream%201.webp" },
+  ];
 
   return (
     <section
       aria-labelledby="instagram-heading"
-      className="relative isolate overflow-hidden bg-[#f4f2e9] px-5 py-14 sm:px-8 sm:py-16 lg:px-10 lg:py-20"
+      className="relative isolate overflow-hidden bg-[#fbfaf5] px-4 py-10 sm:px-8 sm:py-12 lg:px-10 lg:py-14"
     >
-      <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-28 size-80 rounded-full border-[44px] border-[#ffdc32]/20 sm:size-[430px]" />
-      <div aria-hidden="true" className="pointer-events-none absolute bottom-0 left-0 h-1.5 w-full bg-gradient-to-r from-[#ffdc32] via-[#ffdc32]/50 to-transparent" />
-      <div className="relative z-10 mx-auto grid max-w-[1160px] items-center gap-8 rounded-[28px] border border-[#e5e1d7] bg-white p-5 shadow-[0_18px_50px_rgba(9,42,83,0.08)] sm:gap-10 sm:p-8 md:grid-cols-[0.85fr_1.15fr] lg:p-10">
-        <div className="relative z-10">
-          <span aria-hidden="true" className="mb-5 grid size-12 place-items-center rounded-2xl bg-[#fff3b8] text-2xl text-[#806a00]">
-            ◎
-          </span>
-          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7500]">
+      <div aria-hidden="true" className="pointer-events-none absolute -left-24 top-10 size-72 rounded-full border-[42px] border-[#ffdc32]/20 sm:size-96" />
+      <div className="relative z-10 mx-auto grid max-w-[1320px] overflow-hidden rounded-[28px] bg-[#092a53] shadow-[0_22px_60px_rgba(9,42,83,0.18)] md:min-h-[360px] md:grid-cols-[0.82fr_1.18fr] lg:rounded-[36px]">
+        <div className="relative isolate flex flex-col items-start justify-center overflow-hidden p-5 text-white sm:p-7 lg:p-9">
+          <div aria-hidden="true" className="absolute -bottom-20 -left-16 -z-10 size-56 rounded-full border-[32px] border-white/[0.06]" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.07] px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#ffdc32]">
+            <span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-[#ffdc32] text-sm leading-none text-[#092a53]">◎</span>
             {t("Follow the fun.")}
+          </div>
+          <p className="mt-5 text-[10px] font-extrabold uppercase tracking-[0.17em] text-white/60">
+            {t("Sweet moments, shared.")}
           </p>
-          <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl" id="instagram-heading">
-            {t("Follow us on Instagram")}
+          <h2 className="mt-2 max-w-md font-display text-3xl font-extrabold leading-[1.08] tracking-tight sm:text-4xl lg:text-5xl" id="instagram-heading">
+            {t("A little more joy in your feed.")}
           </h2>
-          <p className="mt-3 max-w-md text-sm leading-6 text-[#65748a]">
+          <p className="mt-3 max-w-md text-sm leading-6 text-white/75">
             {t("Get a glimpse of our latest creations and sweet moments.")}
           </p>
           <a
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#092a53] px-5 py-3 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+            className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#ffdc32] px-5 py-2.5 text-sm font-extrabold text-[#092a53] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#ffe665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
             href="https://www.instagram.com/coldstonecameroon/"
             rel="noreferrer"
             target="_blank"
@@ -636,11 +642,37 @@ export function InstagramSection() {
             {t("Visit Instagram")}
             <ArrowIcon diagonal />
           </a>
+          <p className="mt-3 text-xs font-semibold text-white/55">
+            {t("Follow")} <span className="text-white/90">@coldstonecameroon</span>
+          </p>
         </div>
-        <div className="grid grid-cols-3 items-center gap-2.5 sm:gap-4">
-          <img alt={t("Ice cream treats")} className="aspect-[0.78] w-full rotate-[-3deg] rounded-2xl object-cover shadow-[0_12px_24px_rgba(9,42,83,0.16)] sm:rounded-[20px]" loading="lazy" src="/ice-images/ice-1.jpg" />
-          <img alt={t("Celebration cake")} className="aspect-[0.78] w-full translate-y-3 rounded-2xl object-cover shadow-[0_12px_24px_rgba(9,42,83,0.16)] sm:rounded-[20px]" loading="lazy" src="/cake-images/cake-1.webp" />
-          <img alt={t("Creamy dessert")} className="aspect-[0.78] w-full rotate-[3deg] rounded-2xl object-cover shadow-[0_12px_24px_rgba(9,42,83,0.16)] sm:rounded-[20px]" loading="lazy" src="/cream/cream%201.webp" />
+        <div className="relative grid min-h-[220px] grid-cols-2 grid-rows-2 gap-2.5 p-3 sm:min-h-[280px] sm:gap-4 sm:p-4 md:min-h-0 md:grid-cols-[1.15fr_0.85fr] md:grid-rows-2 md:p-5 lg:gap-5 lg:p-6">
+          {instagramImages.map((image, index) => (
+            <a
+              aria-label={`${t(image.alt)} — ${t("Visit Instagram")}`}
+              className={`group relative min-h-0 overflow-hidden rounded-2xl bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] sm:rounded-[22px] ${
+                index === 0
+                  ? "row-span-2"
+                  : "aspect-[1.55] md:aspect-auto"
+              }`}
+              href="https://www.instagram.com/coldstonecameroon/"
+              key={image.src}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <img
+                alt={t(image.alt)}
+                className="size-full object-cover transition duration-700 group-hover:scale-105"
+                loading="lazy"
+                src={image.src}
+              />
+              <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#092a53]/60 via-transparent to-transparent opacity-70 transition group-hover:opacity-100" />
+              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-[#092a53]/60 px-2.5 py-1.5 text-[9px] font-bold text-white opacity-0 backdrop-blur-sm transition group-hover:opacity-100 sm:bottom-4 sm:left-4 sm:text-[10px]">
+                <span aria-hidden="true">◎</span>
+                @coldstonecameroon
+              </span>
+            </a>
+          ))}
         </div>
       </div>
     </section>

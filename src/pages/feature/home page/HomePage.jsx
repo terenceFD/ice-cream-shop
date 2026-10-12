@@ -25,6 +25,38 @@ const popularFlavorColors = [
   "#fff5c8",
   "#ffeadc",
 ];
+const homeSlides = [
+  {
+    eyebrow: "A little happiness in every scoop",
+    title: "Your next favorite",
+    accent: "starts here.",
+    description:
+      "Browse signature creations, explore the online catalog, and discover publicly listed locations across Cameroon.",
+    image: "/ice-images/ice-5.webp",
+    alt: "Colorful ice cream creations ready to enjoy",
+    caption: "The signature experience",
+  },
+  {
+    eyebrow: "Make room for something sweet",
+    title: "Make every moment",
+    accent: "a little sweeter.",
+    description:
+      "Find a treat for today, a new flavor to love, or something special to share.",
+    image: "/ice-images/ice-4.webp",
+    alt: "A delicious ice cream treat",
+    caption: "A treat worth sharing",
+  },
+  {
+    eyebrow: "Find your new favorite",
+    title: "A world of flavor",
+    accent: "is waiting.",
+    description:
+      "Explore the menu, discover signature combinations, and find a scoop that feels just right.",
+    image: "/ice-images/ice-3.webp",
+    alt: "A colorful ice cream creation",
+    caption: "Choose. Mix. Make it yours.",
+  },
+];
 
 function getPopularFlavors(categories) {
   const iceCream = categories.find(
@@ -45,6 +77,17 @@ export function HomePage() {
   const [cartNotice, setCartNotice] = useState("");
   const [reviews, setReviews] = useState([]);
   const [reviewsError, setReviewsError] = useState("");
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const intervalId = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % homeSlides.length);
+    }, 6000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -100,7 +143,7 @@ export function HomePage() {
         >
           <div
             aria-hidden="true"
-            className="absolute -right-20 top-16 size-44 rounded-full bg-[#ffdc32]/20 sm:size-64"
+            className="absolute -right-20 top-16 size-44 rounded-full bg-[#ffdc32]/15 sm:size-64"
           />
           <div
             aria-hidden="true"
@@ -109,98 +152,157 @@ export function HomePage() {
           <div className="relative mx-auto w-full max-w-[1320px]">
             <div className="relative grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-10">
               <div className="relative z-10 max-w-[590px]">
-                <p className="mb-5 inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[#ffdc32]">
-                  <span aria-hidden="true" className="text-lg text-[#bd9c00]">
-                    ♡
+                <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#ffdc32] shadow-sm sm:text-xs">
+                  <span aria-hidden="true" className="text-lg text-[#ffdc32]">
+                    ✦
                   </span>
-                  {t("Independent Cameroon guide")}
-                  <span aria-hidden="true" className="text-lg text-[#bd9c00]">
-                    ♡
+                  {t(homeSlides[activeSlide].eyebrow)}
+                  <span aria-hidden="true" className="text-lg text-[#ffdc32]">
+                    ✦
                   </span>
                 </p>
-                <h1 className="font-display text-[clamp(2.6rem,6.4vw,5rem)] font-extrabold leading-[0.88] tracking-[-0.065em] text-white">
-                  {t("Your next favorite")}
-                  <span className="mt-2 block font-display font-bold italic tracking-[-0.045em] text-[#ffdc32]">
-                    {t("starts here.")}
+                <h1 className="font-display text-[clamp(2.75rem,6.4vw,5.5rem)] font-extrabold leading-[0.96] tracking-[-0.065em] text-white">
+                  {t(homeSlides[activeSlide].title)}
+                  <span className="mt-1 block font-display font-bold italic tracking-[-0.045em] text-[#ffdc32]">
+                    {t(homeSlides[activeSlide].accent)}
                   </span>
                 </h1>
-                <p className="mt-6 max-w-md text-sm leading-6 text-white/80 sm:text-base sm:leading-7">
-                  {t(
-                    "Browse signature creations, explore the online catalog, and discover publicly listed locations across Cameroon.",
-                  )}
+                <p className="mt-6 max-w-md text-sm leading-6 text-white/75 sm:text-base sm:leading-7">
+                  {t(homeSlides[activeSlide].description)}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#ffdc32] px-5 py-3 text-sm font-bold text-[#102c50] shadow-lg shadow-[#102c50]/15 transition hover:-translate-y-0.5 hover:bg-[#ffe665]"
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#ffdc32] px-5 py-3 text-sm font-bold text-[#102c50] shadow-lg shadow-[#102c50]/15 transition hover:-translate-y-0.5 hover:bg-[#ffe665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
                     to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
                   >
                     {t("Order now")} <ArrowIcon />
                   </Link>
                   <Link
-                    className="inline-flex items-center gap-2 rounded-xl border-2 border-white bg-white px-5 py-3 text-sm font-bold text-[#092a53] transition hover:bg-white/90"
+                    className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/[0.08] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#ffdc32] hover:bg-white/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
                     to="/flavors"
                   >
                     {t("Explore flavors")} <ArrowIcon diagonal />
                   </Link>
                 </div>
-                <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-white/90">
+                <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-white/85">
                   <span className="inline-flex items-center gap-2">
-                    <span aria-hidden="true" className="text-lg text-[#bd9c00]">
+                    <span aria-hidden="true" className="text-lg text-[#ffdc32]">
                       ✧
                     </span>
                     {t("Signature creations")}
                   </span>
                   <span className="inline-flex items-center gap-2">
-                    <span aria-hidden="true" className="text-lg text-[#bd9c00]">
+                    <span aria-hidden="true" className="text-lg text-[#ffdc32]">
                       ♡
                     </span>
                     {t("A flavor for every mood")}
                   </span>
                   <span className="inline-flex items-center gap-2">
-                    <span aria-hidden="true" className="text-lg text-[#bd9c00]">
+                    <span aria-hidden="true" className="text-lg text-[#ffdc32]">
                       ⌖
                     </span>
                     {t("Cameroon locations")}
                   </span>
                 </div>
-                <p className="mt-6 max-w-lg text-[11px] leading-5 text-white/65">
+                <p className="mt-6 max-w-lg text-[11px] leading-5 text-white/60">
                   {t(
                     "Independent information guide — not an official Cold Stone Creamery website.",
                   )}
                 </p>
               </div>
-              <div className="relative mx-auto w-full max-w-[650px] lg:pr-3">
+              <div
+                aria-label={t("Featured treats")}
+                aria-roledescription={t("carousel")}
+                className="relative mx-auto w-full max-w-[650px] lg:pr-3"
+                role="region"
+              >
                 <div
                   aria-hidden="true"
                   className="absolute -right-4 top-6 size-20 rounded-full border-2 border-[#ffdc32] sm:-right-2 sm:size-28"
                 />
-                <div className="relative aspect-[1.18] overflow-hidden rounded-[32px] bg-[#ffdc32]/20 sm:rounded-[42px]">
-                  <img
-                    alt={t("Ice cream treats ready to share")}
-                    className="h-full w-full object-cover object-center"
-                    fetchPriority="high"
-                    src="/ice-images/ice-5.webp"
-                  />
-                </div>
-                <div className="absolute -bottom-4 left-3 flex items-center gap-3 rounded-2xl border border-[#d9d6cc] bg-white px-4 py-3 shadow-[0_12px_35px_rgba(9,42,83,0.14)] sm:bottom-5 sm:-left-7 sm:px-5">
-                  <span
-                    aria-hidden="true"
-                    className="grid size-10 place-items-center rounded-full bg-[#ffdc32] text-xl text-[#102c50]"
-                  >
-                    ✦
-                  </span>
-                  <div>
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#68809d]">
-                      {t("The signature experience")}
-                    </p>
-                    <p className="mt-0.5 font-display text-base font-bold text-[#102c50] sm:text-lg">
-                      {t("Choose. Mix. Make it yours.")}
-                    </p>
+                <div
+                  aria-label={`${activeSlide + 1} / ${homeSlides.length}`}
+                  aria-roledescription={t("slide")}
+                  className="relative aspect-[1.08] overflow-hidden rounded-[32px] bg-[#ffdc32]/20 shadow-[0_28px_70px_rgba(9,42,83,0.18)] sm:aspect-[1.18] sm:rounded-[42px]"
+                  role="group"
+                >
+                  {homeSlides.map((slide, index) => {
+                    const isActive = activeSlide === index;
+                    return (
+                      <img
+                        alt={isActive ? t(slide.alt) : ""}
+                        aria-hidden={!isActive}
+                        className={`home-slide-image absolute inset-0 size-full object-cover object-center ${
+                          isActive
+                            ? "scale-100 opacity-100"
+                            : "scale-[1.025] opacity-0"
+                        }`}
+                        fetchPriority={index === 0 ? "high" : "auto"}
+                        key={slide.image}
+                        loading={index === 0 ? "eager" : "lazy"}
+                        src={slide.image}
+                      />
+                    );
+                  })}
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 bg-gradient-to-t from-[#092a53]/85 via-[#092a53]/35 to-transparent px-4 pb-4 pt-16 sm:px-6 sm:pb-6">
+                    <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+                      <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-lg text-[#102c50] sm:size-10">
+                        ✦
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-[9px] font-extrabold uppercase tracking-[0.12em] text-white/75 sm:text-[10px]">
+                          {t("Featured")}
+                        </p>
+                        <p className="truncate font-display text-sm font-bold text-white sm:text-base">
+                          {t(homeSlides[activeSlide].caption)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span aria-live="polite" className="mr-1 text-[10px] font-bold tabular-nums text-white/85 sm:text-xs">
+                        {String(activeSlide + 1).padStart(2, "0")} / {String(homeSlides.length).padStart(2, "0")}
+                      </span>
+                      <button
+                        aria-label={t("Previous slide")}
+                        className="grid size-9 place-items-center rounded-full border border-white/40 bg-white/10 text-lg text-white backdrop-blur transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] sm:size-10"
+                        onClick={() => setActiveSlide((activeSlide + homeSlides.length - 1) % homeSlides.length)}
+                        type="button"
+                      >
+                        <span aria-hidden="true">←</span>
+                      </button>
+                      <button
+                        aria-label={t("Next slide")}
+                        className="grid size-9 place-items-center rounded-full bg-[#ffdc32] text-lg text-[#102c50] shadow-md transition hover:scale-105 hover:bg-[#ffe665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:size-10"
+                        onClick={() => setActiveSlide((activeSlide + 1) % homeSlides.length)}
+                        type="button"
+                      >
+                        <span aria-hidden="true">→</span>
+                      </button>
+                    </div>
                   </div>
+                </div>
+                <div aria-label={t("Choose a featured slide")} className="mt-4 flex items-center justify-center gap-2 lg:justify-start" role="group">
+                  {homeSlides.map((slide, index) => (
+                    <button
+                      aria-current={activeSlide === index ? "true" : undefined}
+                      aria-label={t("Show slide {number}", { number: index + 1 })}
+                      className={`h-2.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 ${
+                        activeSlide === index
+                          ? "w-8 bg-[#ffdc32]"
+                          : "w-2.5 bg-white/35 hover:bg-white/65"
+                      }`}
+                      key={slide.image}
+                      onClick={() => setActiveSlide(index)}
+                      type="button"
+                    />
+                  ))}
+                  <span className="ml-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white/65">
+                    {t("Explore the collection")}
+                  </span>
                 </div>
               </div>
             </div>
-            <div className="relative mt-12 grid overflow-hidden rounded-2xl border border-[#d9d6cc] bg-white shadow-[0_12px_35px_rgba(9,42,83,0.08)] sm:grid-cols-2 lg:mt-16 lg:grid-cols-4">
+            <div className="relative mt-12 grid gap-3 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4">
               {[
                 {
                   icon: "⌖",
@@ -228,13 +330,13 @@ export function HomePage() {
                 },
               ].map((feature) => (
                 <Link
-                  className="flex items-center gap-3 border-b border-[#d9d6cc] p-4 transition hover:bg-[#fff9dc] sm:p-5 lg:border-b-0 lg:border-r last:border-0"
+                  className="group flex min-h-[94px] items-center gap-3 rounded-2xl border border-[#e7e3d9] bg-white p-4 shadow-[0_8px_24px_rgba(9,42,83,0.045)] transition duration-300 hover:-translate-y-1 hover:border-[#e8d77b] hover:shadow-[0_15px_34px_rgba(9,42,83,0.1)] sm:p-5"
                   key={feature.title}
                   to={feature.to}
                 >
                   <span
                     aria-hidden="true"
-                    className="grid size-10 shrink-0 place-items-center rounded-full bg-[#ffdc32]/50 text-xl text-[#102c50]"
+                    className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#fff3b8] text-xl text-[#102c50] transition group-hover:bg-[#ffdc32]"
                   >
                     {feature.icon}
                   </span>
@@ -245,6 +347,9 @@ export function HomePage() {
                     <span className="mt-1 block text-[11px] leading-4 text-[#65748a]">
                       {t(feature.detail)}
                     </span>
+                  </span>
+                  <span aria-hidden="true" className="ml-auto shrink-0 text-lg text-[#bd9c00] transition-transform group-hover:translate-x-1">
+                    →
                   </span>
                 </Link>
               ))}
@@ -269,7 +374,7 @@ export function HomePage() {
 
         <section
           aria-labelledby="popular-flavors-heading"
-          className="relative isolate overflow-hidden bg-[#fbfaf5] px-5 pb-20 pt-12 sm:px-8 sm:pb-24 sm:pt-16"
+          className="relative isolate overflow-hidden bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-10"
         >
           <div
             aria-hidden="true"
@@ -278,14 +383,14 @@ export function HomePage() {
           <div className="relative z-10 mx-auto max-w-[1240px]">
             <div className="mb-7 flex flex-wrap items-end justify-between gap-4 sm:mb-9">
               <div>
-                <p className="mb-2 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">
+                <p className="mb-3 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7500]">
                   <span aria-hidden="true" className="text-base">
                     ✦
                   </span>
                   {t("Our favorites")}
                 </p>
                 <h2
-                  className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl"
+                  className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl lg:text-5xl"
                   id="popular-flavors-heading"
                 >
                   {t("Popular Flavors")}
@@ -312,16 +417,16 @@ export function HomePage() {
                   item.isAvailable === false || item.availableQuantity < 1;
                 return (
                   <article
-                    className="group overflow-hidden rounded-[24px] border border-[#e7e3d9] bg-white shadow-[0_9px_30px_rgba(18,44,80,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(18,44,80,0.12)]"
+                    className="group overflow-hidden rounded-[26px] border border-[#ece9e1] bg-[#fbfaf5] shadow-[0_8px_26px_rgba(18,44,80,0.045)] transition duration-300 hover:-translate-y-1.5 hover:border-[#e7d77f] hover:shadow-[0_20px_44px_rgba(18,44,80,0.12)]"
                     key={item.id || item.name}
                   >
                     <div
-                      className="relative aspect-[1.08] overflow-hidden p-2.5 sm:p-3"
+                      className="relative aspect-[1.08] overflow-hidden"
                       style={{ backgroundColor: popularFlavorColors[index] }}
                     >
                       <img
                         alt={t(item.name)}
-                        className="h-full w-full rounded-[19px] object-cover transition duration-700 group-hover:scale-[1.05]"
+                        className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.07]"
                         loading="lazy"
                         onError={(event) => {
                           event.currentTarget.onerror = null;
@@ -331,25 +436,25 @@ export function HomePage() {
                         src={item.image}
                       />
                       <span
-                        className={`absolute left-5 top-5 rounded-full border border-white/70 px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-[0.1em] shadow-sm backdrop-blur-sm ${soldOut ? "bg-red-50/95 text-red-700" : "bg-white/95 text-[#37632c]"}`}
+                        className={`absolute left-4 top-4 rounded-full border border-white/70 px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-[0.1em] shadow-sm backdrop-blur-sm ${soldOut ? "bg-red-50/95 text-red-700" : "bg-white/95 text-[#37632c]"}`}
                       >
                         {soldOut ? t("Sold out") : t("Popular pick")}
                       </span>
                       <span
                         aria-hidden="true"
-                        className="absolute bottom-5 right-5 grid size-9 translate-y-1 place-items-center rounded-full bg-[#ffdc32] text-lg font-bold text-[#092a53] opacity-0 shadow-md transition duration-300 group-hover:translate-y-0 group-hover:opacity-100"
+                        className="absolute bottom-4 right-4 grid size-10 translate-y-1 place-items-center rounded-full bg-[#ffdc32] text-lg font-bold text-[#092a53] opacity-0 shadow-md transition duration-300 group-hover:translate-y-0 group-hover:opacity-100"
                       >
                         ↗
                       </span>
                     </div>
-                    <div className="p-4 sm:p-4.5">
+                    <div className="p-4 sm:p-5">
                       <h3 className="min-h-12 font-display text-base font-extrabold leading-snug text-[#102c50] sm:text-lg">
                         {t(item.name)}
                       </h3>
                       <p className="mt-1 line-clamp-2 min-h-10 text-xs leading-5 text-[#65748a]">
                         {t(item.detail)}
                       </p>
-                      <div className="mt-4 flex items-end justify-between gap-2 border-t border-[#eeeae1] pt-3">
+                      <div className="mt-4 flex items-end justify-between gap-2 border-t border-[#e7e3d9] pt-3">
                         <div>
                           <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#8792a0]">
                             {t("Illustrative price")}
@@ -366,7 +471,7 @@ export function HomePage() {
                                   name: t(item.name),
                                 })
                           }
-                          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-[#092a53] px-4 text-xs font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#d9d6cc] disabled:text-[#65748a]"
+                          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#092a53] px-4 text-xs font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#d9d6cc] disabled:text-[#65748a]"
                           disabled={soldOut}
                           onClick={() => handleAddToCart(item)}
                           type="button"
@@ -419,7 +524,7 @@ export function HomePage() {
 
         <section
           aria-labelledby="why-choose-us-heading"
-          className="relative isolate w-full overflow-hidden bg-[#f4f2e9] px-5 py-14 sm:px-8 sm:py-18 lg:px-10 lg:py-20"
+          className="relative isolate w-full overflow-hidden bg-[#f4f2e9] px-5 py-16 sm:px-8 sm:py-20 lg:px-10"
           data-scroll-reveal="skip"
         >
           <div
@@ -430,22 +535,27 @@ export function HomePage() {
             aria-hidden="true"
             className="pointer-events-none absolute -bottom-24 -left-20 size-64 rounded-full border-[38px] border-[#092a53]/[0.04]"
           />
-          <div className="relative z-10 mx-auto w-full max-w-[1160px]">
-            <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
-              <p className="mb-3 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7500]">
-                <span aria-hidden="true" className="text-base">
-                  ✦
-                </span>
-                {t("Why choose us")}
+          <div className="relative z-10 mx-auto w-full max-w-[1240px]">
+            <div className="mb-8 flex flex-col justify-between gap-4 sm:mb-10 sm:flex-row sm:items-end">
+              <div className="max-w-2xl">
+                <p className="mb-3 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7500]">
+                  <span aria-hidden="true" className="text-base">
+                    ✦
+                  </span>
+                  {t("Why choose us")}
+                </p>
+                <h2
+                  className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl lg:text-5xl"
+                  id="why-choose-us-heading"
+                >
+                  {t("More scoops. More smiles.")}
+                </h2>
+              </div>
+              <p className="max-w-sm text-sm leading-6 text-[#65748a]">
+                {t("A flavor for every mood")}
               </p>
-              <h2
-                className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl"
-                id="why-choose-us-heading"
-              >
-                {t("More scoops. More smiles.")}
-              </h2>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid overflow-hidden rounded-[26px] border border-[#e5e1d7] bg-white sm:grid-cols-2 lg:grid-cols-4">
               {[
                 {
                   icon: "✿",
@@ -473,12 +583,12 @@ export function HomePage() {
                 },
               ].map((benefit) => (
                 <article
-                  className="group rounded-[22px] border border-[#e5e1d7] bg-white p-5 shadow-[0_8px_26px_rgba(9,42,83,0.05)] transition duration-300 hover:-translate-y-1 hover:border-[#d9c76d] hover:shadow-[0_16px_34px_rgba(9,42,83,0.1)] sm:p-6"
+                  className="group relative border-b border-[#eeeae1] p-5 transition-colors duration-300 hover:bg-[#fffbea] sm:p-6 lg:border-b-0 lg:border-r last:border-0"
                   key={benefit.title}
                 >
                   <span
                     aria-hidden="true"
-                    className="grid size-12 place-items-center rounded-2xl text-xl font-bold text-[#102c50] shadow-sm transition duration-300 group-hover:rotate-[-4deg] group-hover:scale-105"
+                    className="grid size-12 place-items-center rounded-2xl text-xl font-bold text-[#102c50] shadow-sm transition duration-300 group-hover:rotate-[-4deg] group-hover:scale-105 sm:size-14"
                     style={{ backgroundColor: benefit.color }}
                   >
                     {benefit.icon}
@@ -492,23 +602,16 @@ export function HomePage() {
                 </article>
               ))}
             </div>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center font-display text-lg font-extrabold sm:mt-9 sm:text-xl">
-              <span className="text-[#092a53]">{t("Small Scoops")}</span>
-              <span aria-hidden="true" className="text-[#a48700]">
-                ·
-              </span>
-              <span className="text-[#8a7500]">{t("Big Smiles")}</span>
-            </div>
           </div>
         </section>
 
-        <section className="relative isolate overflow-hidden bg-[#f4f2e9] px-4 py-12 sm:px-7 sm:py-16 lg:px-10 lg:py-20">
+        <section className="relative isolate overflow-hidden bg-white px-4 py-16 sm:px-7 sm:py-20 lg:px-10">
           <div
             aria-hidden="true"
             className="absolute -left-24 top-16 -z-10 size-72 rounded-full border-[48px] border-[#ffdc32]/20"
           />
           <div className="mx-auto max-w-[1320px]">
-            <div className="mb-8 flex flex-wrap items-end justify-between gap-4 sm:mb-9">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-4 sm:mb-10">
               <div>
                 <p className="mb-3 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">
                   <span aria-hidden="true" className="text-base">
@@ -533,29 +636,30 @@ export function HomePage() {
               </Link>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {coldStoneMenuCategories.map((category, index) => (
+              {coldStoneMenuCategories.map((category) => (
                 <Link
                   aria-label={`${t(category.title)} — ${t("Browse the categories")}`}
-                  className="group relative isolate flex min-h-[230px] flex-col overflow-hidden rounded-[24px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_28px_rgba(18,44,80,0.05)] transition duration-300 hover:-translate-y-1 hover:border-[#d9c76d] hover:shadow-[0_18px_40px_rgba(18,44,80,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4 sm:p-6"
+                  className="group flex min-h-[340px] flex-col overflow-hidden rounded-[24px] border border-[#e7e3d9] bg-white shadow-[0_8px_28px_rgba(18,44,80,0.05)] transition duration-300 hover:-translate-y-1 hover:border-[#d9c76d] hover:shadow-[0_18px_40px_rgba(18,44,80,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4"
                   key={category.title}
                   to={`/menu?category=${encodeURIComponent(category.title)}`}
                 >
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-x-0 top-0 -z-10 h-1.5 bg-gradient-to-r from-[#ffdc32] via-[#f0c925] to-transparent opacity-70 transition group-hover:opacity-100"
-                  />
-                  <div className="flex items-start justify-between gap-4">
-                    <span
+                  <div className="relative h-44 shrink-0 overflow-hidden bg-[#fff3b8]">
+                    <img
+                      alt=""
                       aria-hidden="true"
-                      className="grid size-14 place-items-center rounded-2xl bg-[#fff3b8] text-2xl shadow-sm transition duration-300 group-hover:rotate-[-4deg] group-hover:scale-105"
-                    >
+                      className="size-full object-cover transition duration-700 group-hover:scale-[1.05]"
+                      loading="lazy"
+                      src={category.image}
+                    />
+                    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#092a53]/20 to-transparent" />
+                    <span aria-hidden="true" className="absolute left-4 top-4 grid size-11 place-items-center rounded-2xl bg-white/95 text-2xl shadow-sm backdrop-blur-sm">
                       {category.icon}
                     </span>
-                    <span className="rounded-full bg-[#f4f6f8] px-3 py-1.5 text-[10px] font-extrabold text-[#65748a]">
+                    <span className="absolute right-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-extrabold text-[#52647b] shadow-sm backdrop-blur-sm">
                       {t("{count} items", { count: category.items.length })}
                     </span>
                   </div>
-                  <div className="mt-auto pt-7">
+                  <div className="flex flex-1 flex-col p-5 sm:p-6">
                     <div className="flex items-end justify-between gap-3">
                       <div className="min-w-0">
                         <p className="mb-1 text-[9px] font-extrabold uppercase tracking-[0.13em] text-[#a48700]">
@@ -567,7 +671,7 @@ export function HomePage() {
                       </div>
                       <span
                         aria-hidden="true"
-                        className="grid size-10 shrink-0 translate-x-1 place-items-center rounded-full border border-[#e7e3d9] text-[#092a53] transition duration-300 group-hover:translate-x-0 group-hover:border-[#092a53] group-hover:bg-[#092a53] group-hover:text-white"
+                        className="grid size-10 shrink-0 translate-x-1 place-items-center rounded-xl border border-[#e7e3d9] text-[#092a53] transition duration-300 group-hover:translate-x-0 group-hover:border-[#092a53] group-hover:bg-[#092a53] group-hover:text-white"
                       >
                         <ArrowIcon />
                       </span>
@@ -576,12 +680,6 @@ export function HomePage() {
                       {t(category.description)}
                     </p>
                   </div>
-                  <span
-                    aria-hidden="true"
-                    className="absolute right-6 top-14 text-[9px] font-extrabold tracking-[0.14em] text-[#c2c8cf]"
-                  >
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
                 </Link>
               ))}
             </div>
@@ -590,15 +688,15 @@ export function HomePage() {
 
         <section
           aria-labelledby="home-about-heading"
-          className="relative isolate overflow-hidden bg-[#fbfaf5] px-4 py-10 sm:px-7 sm:py-14 lg:px-10 lg:py-16"
+          className="relative isolate overflow-hidden bg-[#fbfaf5] px-4 py-16 sm:px-7 sm:py-20 lg:px-10"
           data-scroll-reveal="skip"
         >
           <div
             aria-hidden="true"
             className="absolute -right-28 top-10 -z-10 size-72 rounded-full border-[44px] border-[#dff0ed]/70"
           />
-          <div className="mx-auto grid max-w-[1320px] gap-5 lg:grid-cols-[1.05fr_0.95fr]">
-            <article className="relative isolate flex min-h-[340px] overflow-hidden rounded-[28px] bg-[#ffdc32] text-[#092a53] shadow-[0_16px_42px_rgba(121,99,0,0.13)] sm:min-h-[390px]">
+          <div className="mx-auto grid max-w-[1320px] gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+            <article className="relative isolate flex min-h-[360px] overflow-hidden rounded-[28px] bg-[#ffdc32] text-[#092a53] shadow-[0_18px_46px_rgba(121,99,0,0.15)] sm:min-h-[410px]">
               <div
                 aria-hidden="true"
                 className="absolute inset-0 -z-10 bg-gradient-to-br from-[#ffe76c] via-[#ffdc32] to-[#f2c900]"
@@ -607,17 +705,17 @@ export function HomePage() {
                 aria-hidden="true"
                 className="absolute -left-20 -top-28 -z-10 size-64 rounded-full border-[40px] border-white/20"
               />
-              <div className="relative z-10 flex w-[58%] flex-col items-start justify-center p-6 sm:w-[56%] sm:p-9 lg:p-11">
+              <div className="relative z-10 flex w-[64%] flex-col items-start justify-center p-6 sm:w-[60%] sm:p-9 lg:p-11">
                 <p className="inline-flex items-center gap-2 rounded-full border border-[#092a53]/10 bg-white/75 px-3.5 py-2 text-[9px] font-extrabold uppercase tracking-[0.15em]">
                   <span aria-hidden="true">✦</span>
-                  {t("Sweet deals!")}
+                  {t("Explore the menu")}
                 </p>
                 <h2 className="mt-5 font-display text-3xl font-extrabold leading-[1.05] tracking-tight sm:text-4xl lg:text-5xl">
-                  {t("Buy 2 Scoops")}
-                  <span className="mt-1 block">{t("Get 1 Free")}</span>
+                  {t("A little joy")}
+                  <span className="mt-1 block">{t("in every scoop.")}</span>
                 </h2>
                 <p className="mt-3 max-w-[260px] text-xs leading-5 text-[#092a53]/75 sm:text-sm sm:leading-6">
-                  {t("More scoops. More smiles. Everybody wins.")}
+                  {t("Browse signature creations and treats.")}
                 </p>
                 <Link
                   className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#092a53] px-5 py-3 text-xs font-extrabold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#163e6b] sm:text-sm"
@@ -628,18 +726,18 @@ export function HomePage() {
               </div>
               <div
                 aria-hidden="true"
-                className="absolute bottom-0 right-0 top-0 w-[50%] sm:w-[48%]"
+                className="absolute bottom-0 right-0 top-0 w-[46%] sm:w-[48%]"
               >
                 <div className="absolute bottom-[-12%] right-[-9%] size-[115%] rounded-full border-[28px] border-white/20 sm:border-[38px]" />
                 <img
                   alt={t("Ice cream cone")}
-                  className="absolute bottom-[7%] right-[3%] h-[76%] w-[59%] rounded-[48%_48%_20%_20%] border-[5px] border-[#ffdc32] object-cover object-center shadow-2xl transition duration-500 hover:-translate-y-1"
+                  className="absolute bottom-[7%] right-[3%] h-[76%] w-[66%] rounded-[48%_48%_20%_20%] border-[5px] border-[#ffdc32] object-cover object-center shadow-2xl transition duration-500 hover:-translate-y-1"
                   loading="lazy"
                   src="/ice-images/ice-4.webp"
                 />
                 <img
                   alt={t("Ice cream sundae")}
-                  className="absolute bottom-[7%] left-[-7%] h-[48%] w-[46%] rounded-[45%_45%_20%_20%] border-4 border-[#ffdc32] object-cover object-center shadow-xl sm:border-[5px]"
+                  className="absolute bottom-[7%] left-[-7%] h-[42%] w-[46%] rounded-[45%_45%_20%_20%] border-4 border-[#ffdc32] object-cover object-center shadow-xl sm:border-[5px]"
                   loading="lazy"
                   src="/ice-images/ice-1.jpg"
                 />
@@ -716,7 +814,7 @@ export function HomePage() {
 
         <section
           aria-labelledby="real-reviews-heading"
-          className="relative isolate overflow-hidden bg-[#092a53] px-5 py-12 text-white sm:px-8 sm:py-16 lg:px-10 lg:py-20"
+          className="relative isolate overflow-hidden bg-[#092a53] px-5 py-16 text-white sm:px-8 sm:py-20 lg:px-10"
         >
           <div
             aria-hidden="true"
@@ -726,8 +824,8 @@ export function HomePage() {
             aria-hidden="true"
             className="pointer-events-none absolute bottom-0 left-0 h-1.5 w-full bg-gradient-to-r from-[#ffdc32] via-[#ffdc32]/50 to-transparent"
           />
-          <div className="relative z-10 mx-auto max-w-[1160px]">
-            <div className="mb-7 flex flex-wrap items-end justify-between gap-5 sm:mb-9">
+          <div className="relative z-10 mx-auto max-w-[1240px]">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-5 sm:mb-10">
               <div>
                 <p className="mb-2 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
                   <span aria-hidden="true" className="text-base">
@@ -736,7 +834,7 @@ export function HomePage() {
                   {t("What our customers are saying")}
                 </p>
                 <h2
-                  className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
+                  className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
                   id="real-reviews-heading"
                 >
                   {t("Real Reviews")}
@@ -762,7 +860,7 @@ export function HomePage() {
                   const customerName = review.customerName || t("Customer");
                   return (
                     <article
-                      className="flex min-h-[260px] flex-col rounded-[24px] border border-white/70 bg-[#fffefa] p-5 text-[#102c50] shadow-[0_18px_40px_rgba(0,0,0,0.16)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(0,0,0,0.22)] sm:p-6"
+                      className="flex min-h-[260px] flex-col rounded-[24px] border border-white/70 bg-[#fffefa] p-5 text-[#102c50] shadow-[0_12px_34px_rgba(0,0,0,0.13)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_rgba(0,0,0,0.2)] sm:p-6"
                       key={`${review.createdAt}-${review.itemName}-${index}`}
                     >
                       <div className="mb-4 flex items-center justify-between gap-3">
@@ -834,13 +932,13 @@ export function HomePage() {
 
         <section
           aria-labelledby="home-faq-heading"
-          className="relative isolate overflow-hidden bg-[#f4f2e9] px-5 py-14 sm:px-8 sm:py-18 lg:px-10 lg:py-20"
+          className="relative isolate overflow-hidden bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-10"
         >
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -left-24 top-12 size-64 rounded-full border-[38px] border-[#ffdc32]/20 sm:size-80"
           />
-          <div className="relative z-10 mx-auto grid max-w-[1160px] gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-14">
+          <div className="relative z-10 mx-auto grid max-w-[1240px] gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
             <div className="lg:sticky lg:top-28 lg:h-fit">
               <p className="mb-3 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7500]">
                 <span aria-hidden="true" className="text-base">
@@ -849,7 +947,7 @@ export function HomePage() {
                 {t("Here to help")}
               </p>
               <h2
-                className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl"
+                className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl lg:text-5xl"
                 id="home-faq-heading"
               >
                 {t("Frequently Asked Questions")}
@@ -902,7 +1000,7 @@ export function HomePage() {
                 },
               ].map(({ question, answer }) => (
                 <details
-                  className="group rounded-2xl border border-[#e5e1d7] bg-white px-5 py-4 shadow-[0_8px_24px_rgba(18,44,80,0.045)] transition duration-200 open:border-[#d9c76d] open:shadow-[0_14px_34px_rgba(18,44,80,0.09)] sm:px-6 sm:py-5"
+                  className="group rounded-2xl border border-[#e5e1d7] bg-[#fbfaf5] px-5 py-4 transition duration-200 hover:border-[#d9c76d] open:border-[#d9c76d] open:bg-white open:shadow-[0_14px_34px_rgba(18,44,80,0.08)] sm:px-6 sm:py-5"
                   key={question}
                 >
                   <summary className="flex cursor-pointer list-none items-center gap-4 text-sm font-extrabold leading-6 text-[#092a53] marker:content-none sm:text-base">
