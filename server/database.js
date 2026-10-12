@@ -38,6 +38,8 @@ if (configuredDatabaseBackend === "postgres") {
       email TEXT NOT NULL UNIQUE COLLATE NOCASE,
       password_hash TEXT NOT NULL,
       profile_picture TEXT NOT NULL DEFAULT '',
+      role TEXT NOT NULL DEFAULT 'owner',
+      store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -432,6 +434,7 @@ if (configuredDatabaseBackend === "postgres") {
     CREATE TABLE IF NOT EXISTS cake_requests (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+      store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL,
       customer_name TEXT NOT NULL,
       customer_email TEXT NOT NULL,
       customer_phone TEXT NOT NULL,
@@ -456,6 +459,17 @@ if (configuredDatabaseBackend === "postgres") {
   `);
 
   addColumnIfMissing("customers", "profile_picture", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing("admins", "role", "TEXT NOT NULL DEFAULT 'owner'");
+  addColumnIfMissing(
+    "admins",
+    "store_id",
+    "INTEGER REFERENCES stores(id) ON DELETE SET NULL",
+  );
+  addColumnIfMissing(
+    "cake_requests",
+    "store_id",
+    "INTEGER REFERENCES stores(id) ON DELETE SET NULL",
+  );
   addColumnIfMissing(
     "custom_menu_items",
     "low_stock_threshold",
@@ -587,7 +601,7 @@ export async function verifyDatabaseSchema() {
     "stores",
   ];
   const result = await database.prepare(`
-    SELECT table_name AS tableName
+    SELECT table_name AS "tableName"
     FROM information_schema.tables
     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
       AND table_name = ANY(?)
@@ -600,6 +614,16 @@ export async function verifyDatabaseSchema() {
       "Migrate the SQLite schema and data into this database before starting the app.",
     );
   }
+
+  await database.prepare(`
+    ALTER TABLE admins ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'owner'
+  `).run();
+  await database.prepare(`
+    ALTER TABLE admins ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
+  `).run();
+  await database.prepare(`
+    ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
+  `).run();
 }
 
 export function toFlavor(row) {
@@ -1665,28 +1689,30 @@ export async function clearDeliveredOrders() {
   })
 }
 
-export async function createAdminAccount({ name, email, passwordHash, profilePicture = '' }) {
+export async function createAdminAccount({ name, email, passwordHash, profilePicture = '', storeId }) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const result = await database.prepare(`
-        INSERT INTO admins (name, email, password_hash, profile_picture)
-        VALUES (?, ?, ?, ?)
-      `).run(name, email, passwordHash, profilePicture);
+        INSERT INTO admins (name, email, password_hash, profile_picture, role, store_id)
+        VALUES (?, ?, ?, ?, 'store_admin', ?)
+      `).run(name, email, passwordHash, profilePicture, storeId);
       return database.prepare(`
-        SELECT id, name, email, profile_picture AS profilePicture
-        FROM admins WHERE id = ?
+        SELECT a.id, a.name, a.email, a.profile_picture AS profilePicture,
+          a.role, a.store_id AS storeId, s.name AS storeName
+        FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
       `).get(Number(result.lastInsertRowid));
     });
   }
 
   return database.transaction(() => {
     const result = database.prepare(`
-      INSERT INTO admins (name, email, password_hash, profile_picture)
-      VALUES (?, ?, ?, ?)
-    `).run(name, email, passwordHash, profilePicture)
+      INSERT INTO admins (name, email, password_hash, profile_picture, role, store_id)
+      VALUES (?, ?, ?, ?, 'store_admin', ?)
+    `).run(name, email, passwordHash, profilePicture, storeId)
     return database.prepare(`
-      SELECT id, name, email, profile_picture AS profilePicture
-      FROM admins WHERE id = ?
+      SELECT a.id, a.name, a.email, a.profile_picture AS profilePicture,
+        a.role, a.store_id AS storeId, s.name AS storeName
+      FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(Number(result.lastInsertRowid))
   })
 }

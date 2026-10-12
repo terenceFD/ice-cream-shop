@@ -3,6 +3,7 @@ import Database from 'better-sqlite3'
 import pg from 'pg'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { postgresSslConfig } from '../server/postgres-ssl.js'
 import { orderTablesByForeignKeys, postgresTableDefinition, quoteIdentifier } from './sqlite-postgres-schema.js'
 
 const { Client } = pg
@@ -22,7 +23,7 @@ if (!['postgres:', 'postgresql:'].includes(new URL(connectionString).protocol)) 
 const sqlite = new Database(sourcePath, { readonly: true })
 const client = new Client({
   connectionString,
-  ssl: process.env.DATABASE_SSL === 'disable' ? false : { rejectUnauthorized: false },
+  ssl: postgresSslConfig(),
   application_name: 'ice-cream-site-sqlite-migration',
 })
 
@@ -79,7 +80,8 @@ async function migrate() {
       }
       totalRows += rowCount
 
-      if (columns.some(({ name, pk }) => name === 'id' && pk > 0)) {
+      const idColumn = columns.find(({ name, pk }) => name === 'id' && pk > 0)
+      if (idColumn?.type.toUpperCase() === 'INTEGER') {
         await client.query(`
           SELECT setval(
             pg_get_serial_sequence($1, 'id'),

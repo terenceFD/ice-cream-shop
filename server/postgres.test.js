@@ -1,8 +1,33 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 process.env.DATABASE_URL ||= 'postgres://test:test@127.0.0.1:5432/test'
 const { translateSql } = await import('./postgres.js')
+const { postgresSslConfig } = await import('./postgres-ssl.js')
+
+test('uses strict certificate validation and supports a custom CA file', () => {
+  assert.deepEqual(postgresSslConfig({}), { rejectUnauthorized: true })
+
+  const directory = mkdtempSync(join(tmpdir(), 'postgres-ca-'))
+  const caFile = join(directory, 'ca.crt')
+  const ca = 'test certificate authority'
+  try {
+    writeFileSync(caFile, ca)
+    assert.deepEqual(
+      postgresSslConfig({ DATABASE_SSL_CA_FILE: caFile }),
+      { rejectUnauthorized: true, ca: readFileSync(caFile, 'utf8') },
+    )
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
+})
+
+test('allows explicitly disabling PostgreSQL TLS', () => {
+  assert.equal(postgresSslConfig({ DATABASE_SSL: 'disable' }), false)
+})
 
 test('converts positional and named SQLite parameters to PostgreSQL placeholders', () => {
   assert.deepEqual(

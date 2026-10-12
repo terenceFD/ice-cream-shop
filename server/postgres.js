@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import pg from 'pg'
+import { postgresSslConfig } from './postgres-ssl.js'
 
 const { Pool } = pg
 const connectionString = process.env.DATABASE_URL
@@ -31,7 +32,7 @@ if (!connectionString) {
 const pool = new Pool({
   connectionString,
   max: Number(process.env.DATABASE_POOL_SIZE || 5),
-  ssl: process.env.DATABASE_SSL === 'disable' ? false : { rejectUnauthorized: true },
+  ssl: postgresSslConfig(),
   application_name: 'ice-cream-site',
 })
 

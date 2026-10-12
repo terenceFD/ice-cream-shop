@@ -60,6 +60,8 @@ npm run migrate:supabase
 
 The script defaults to `server/database.sqlite`; use `--source=path/to/database.sqlite` to choose a different SQLite source. It creates PostgreSQL tables and copies their data in dependency order, preserving IDs and resetting sequences. It stops if it finds existing application tables in Supabase. Back up the source database first, and decide which SQLite database is authoritative before copying; this does not merge local and Render data. Do not run this against a project containing data you need to keep.
 
+By default, both the migration and application verify the PostgreSQL server certificate. If your environment does not trust Supabase's certificate chain, download the CA certificate from your Supabase project's database settings and set `DATABASE_SSL_CA_FILE` to its local file path. Do not disable certificate verification.
+
 The runtime still defaults to SQLite. PostgreSQL-specific transaction handling has been added for checkout stock reservations, payment completion/failure, checkout rollback, and several admin updates. When PostgreSQL is selected, startup now verifies that all required application tables exist and fails with a list of missing tables rather than starting in a broken state. This is not a substitute for integration testing: do not set `DATABASE_URL` on the live Render service or point the deployed app at Supabase until the remaining backend conversion, tests against a separate Supabase staging project, and a verified data-migration/rollback plan are complete. Set `DATABASE_BACKEND=postgres` explicitly when staging; setting `DATABASE_BACKEND=sqlite` keeps SQLite selected even if a `DATABASE_URL` is present.
 
 ## Payments and order management
