@@ -77,9 +77,14 @@ export function AdminPage() {
   const flavorTags = [
     ...new Set(flavors.map((flavor) => flavor.tag).filter(Boolean)),
   ].sort((a, b) => a.localeCompare(b));
-  const inStockCount = flavors.filter((flavor) => flavor.availableQuantity > 0).length;
+  const inStockCount = flavors.filter(
+    (flavor) => flavor.availableQuantity > 0,
+  ).length;
   const soldOutCount = flavors.length - inStockCount;
-  const totalStock = flavors.reduce((sum, flavor) => sum + flavor.availableQuantity, 0);
+  const totalStock = flavors.reduce(
+    (sum, flavor) => sum + flavor.availableQuantity,
+    0,
+  );
   const filteredFlavors = flavors.filter((flavor) => {
     const searchText = flavorSearch.trim().toLocaleLowerCase();
     const matchesSearch =
@@ -109,7 +114,13 @@ export function AdminPage() {
     } catch (imageError) {
       console.error("Unable to prepare admin profile picture.", imageError);
       setProfilePicture("");
-      setProfilePictureError(t(imageError instanceof Error ? imageError.message : "Could not load this profile picture."));
+      setProfilePictureError(
+        t(
+          imageError instanceof Error
+            ? imageError.message
+            : "Could not load this profile picture.",
+        ),
+      );
     }
   }
 
@@ -123,7 +134,13 @@ export function AdminPage() {
       setProfilePicture("");
       setProfilePictureMessage(t("Profile picture updated."));
     } catch (saveError) {
-      setProfilePictureError(t(saveError instanceof Error ? saveError.message : "Unable to update profile picture."));
+      setProfilePictureError(
+        t(
+          saveError instanceof Error
+            ? saveError.message
+            : "Unable to update profile picture.",
+        ),
+      );
     } finally {
       setIsSavingProfilePicture(false);
     }
@@ -241,44 +258,94 @@ export function AdminPage() {
   return (
     <div className="min-w-0 space-y-6">
       <section className="relative isolate overflow-hidden rounded-[28px] bg-gradient-to-br from-[#092a53] via-[#123b63] to-[#285777] p-5 text-white shadow-[0_18px_42px_rgba(9,42,83,0.16)] sm:p-7 lg:p-8">
-        <div aria-hidden="true" className="absolute -right-16 -top-28 size-72 rounded-full border-[54px] border-white/[0.05]" />
-        <div aria-hidden="true" className="absolute -bottom-20 left-1/3 size-48 rounded-full bg-[#ffdc32]/10 blur-3xl" />
+        <div
+          aria-hidden="true"
+          className="absolute -right-16 -top-28 size-72 rounded-full border-[54px] border-white/[0.05]"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute -bottom-20 left-1/3 size-48 rounded-full bg-[#ffdc32]/10 blur-3xl"
+        />
         <div className="relative flex flex-wrap items-center justify-between gap-5">
           <div className="flex min-w-0 items-center gap-4">
             {currentAdmin?.profilePicture ? (
-              <img alt="" className="size-14 shrink-0 rounded-2xl border border-white/20 object-cover shadow-lg sm:size-16" src={currentAdmin.profilePicture} />
+              <img
+                alt=""
+                className="size-14 shrink-0 rounded-2xl border border-white/20 object-cover shadow-lg sm:size-16"
+                src={currentAdmin.profilePicture}
+              />
             ) : (
-              <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#ffdc32] font-display text-xl font-bold text-[#092a53] shadow-lg sm:size-16">
+              <span
+                aria-hidden="true"
+                className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#ffdc32] font-display text-xl font-bold text-[#092a53] shadow-lg sm:size-16"
+              >
                 {currentAdmin?.name?.charAt(0).toUpperCase()}
               </span>
             )}
             <div className="min-w-0">
-              <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t("Flavor management")}</p>
+              <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
+                {t("Flavor management")}
+              </p>
               <h1 className="truncate font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
                 {t("Welcome, {name}", { name: currentAdmin?.name || "Admin" })}
               </h1>
-              <p className="mt-1 max-w-xl text-sm leading-6 text-white/70">{t("Add a flavor and manage the list of flavors available in your shop.")}</p>
+              <p className="mt-1 max-w-xl text-sm leading-6 text-white/70">
+                {t(
+                  "Add a flavor and manage the list of flavors available in your shop.",
+                )}
+              </p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <label className="inline-flex min-h-9 cursor-pointer items-center rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-bold transition hover:bg-white/20">
-                  {t(currentAdmin?.profilePicture ? "Change profile picture" : "Add profile picture")}
-                  <input accept="image/*" className="sr-only" onChange={handleProfilePictureChange} type="file" />
+                  {t(
+                    currentAdmin?.profilePicture
+                      ? "Change profile picture"
+                      : "Add profile picture",
+                  )}
+                  <input
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={handleProfilePictureChange}
+                    type="file"
+                  />
                 </label>
                 {profilePicture && (
                   <>
-                    <img alt={t("Profile picture preview")} className="size-9 rounded-lg object-cover ring-1 ring-white/30" src={profilePicture} />
+                    <img
+                      alt={t("Profile picture preview")}
+                      className="size-9 rounded-lg object-cover ring-1 ring-white/30"
+                      src={profilePicture}
+                    />
                     <button
                       className="inline-flex min-h-9 items-center rounded-lg bg-[#ffdc32] px-3 py-2 text-xs font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] disabled:cursor-wait disabled:opacity-60"
                       disabled={isSavingProfilePicture}
                       onClick={handleProfilePictureSave}
                       type="button"
                     >
-                      {t(isSavingProfilePicture ? "Saving…" : "Save profile picture")}
+                      {t(
+                        isSavingProfilePicture
+                          ? "Saving…"
+                          : "Save profile picture",
+                      )}
                     </button>
                   </>
                 )}
               </div>
-              {profilePictureError && <p className="mt-2 text-xs font-semibold text-red-200" role="alert">{profilePictureError}</p>}
-              {profilePictureMessage && <p className="mt-2 text-xs font-semibold text-emerald-200" role="status">{profilePictureMessage}</p>}
+              {profilePictureError && (
+                <p
+                  className="mt-2 text-xs font-semibold text-red-200"
+                  role="alert"
+                >
+                  {profilePictureError}
+                </p>
+              )}
+              {profilePictureMessage && (
+                <p
+                  className="mt-2 text-xs font-semibold text-emerald-200"
+                  role="status"
+                >
+                  {profilePictureMessage}
+                </p>
+              )}
             </div>
           </div>
           <Link
@@ -290,19 +357,54 @@ export function AdminPage() {
         </div>
       </section>
 
-      <section aria-label={t("Flavor inventory overview")} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section
+        aria-label={t("Flavor inventory overview")}
+        className="grid grid-cols-2 gap-3 xl:grid-cols-4"
+      >
         {[
-          { label: "Total flavors", value: flavors.length, icon: "🍨", accent: "bg-[#fff0a8] text-[#806a00]" },
-          { label: "In stock", value: inStockCount, icon: "✓", accent: "bg-[#e5f3d8] text-[#37632c]" },
-          { label: "Sold out", value: soldOutCount, icon: "!", accent: "bg-[#fff0ed] text-[#b34334]" },
-          { label: "Units in stock", value: totalStock, icon: "▣", accent: "bg-[#e9f1fa] text-[#315982]" },
+          {
+            label: "Total flavors",
+            value: flavors.length,
+            icon: "🍨",
+            accent: "bg-[#fff0a8] text-[#806a00]",
+          },
+          {
+            label: "In stock",
+            value: inStockCount,
+            icon: "✓",
+            accent: "bg-[#e5f3d8] text-[#37632c]",
+          },
+          {
+            label: "Sold out",
+            value: soldOutCount,
+            icon: "!",
+            accent: "bg-[#fff0ed] text-[#b34334]",
+          },
+          {
+            label: "Units in stock",
+            value: totalStock,
+            icon: "▣",
+            accent: "bg-[#e9f1fa] text-[#315982]",
+          },
         ].map((metric) => (
-          <article className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 shadow-[0_8px_24px_rgba(18,44,80,0.045)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(18,44,80,0.08)] sm:p-5" key={metric.label}>
+          <article
+            className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 shadow-[0_8px_24px_rgba(18,44,80,0.045)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(18,44,80,0.08)] sm:p-5"
+            key={metric.label}
+          >
             <div className="flex items-center justify-between gap-2">
-              <p className="text-xs font-semibold leading-5 text-[#65748a]">{t(metric.label)}</p>
-              <span aria-hidden="true" className={`grid size-9 place-items-center rounded-xl text-sm font-bold ${metric.accent}`}>{metric.icon}</span>
+              <p className="text-xs font-semibold leading-5 text-[#65748a]">
+                {t(metric.label)}
+              </p>
+              <span
+                aria-hidden="true"
+                className={`grid size-9 place-items-center rounded-xl text-sm font-bold ${metric.accent}`}
+              >
+                {metric.icon}
+              </span>
             </div>
-            <p className="mt-3 font-display text-2xl font-extrabold tracking-tight text-[#102c50] sm:text-3xl">{metric.value.toLocaleString()}</p>
+            <p className="mt-3 font-display text-2xl font-extrabold tracking-tight text-[#102c50] sm:text-3xl">
+              {metric.value.toLocaleString()}
+            </p>
           </article>
         ))}
       </section>
@@ -310,14 +412,23 @@ export function AdminPage() {
       <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(280px,0.82fr)_minmax(0,1.38fr)] 2xl:gap-8">
         <section className="min-w-0 rounded-[24px] border border-[#e5ebf3] bg-white p-5 shadow-[0_12px_34px_rgba(18,44,80,0.055)] sm:p-6">
           <div className="mb-5 flex items-start gap-3 border-b border-[#edf1f5] pb-5">
-            <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fff4c7] text-lg text-[#856d00]">+</span>
+            <span
+              aria-hidden="true"
+              className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fff4c7] text-lg text-[#856d00]"
+            >
+              +
+            </span>
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t("Catalog setup")}</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">
+                {t("Catalog setup")}
+              </p>
               <h2 className="mt-1 font-display text-2xl font-bold text-[#102c50]">
-            {t("Add a flavor")}
+                {t("Add a flavor")}
               </h2>
               <p className="mt-1 text-sm leading-6 text-[#65748a]">
-            {t("New flavors are saved to the database and appear in the shop.")}
+                {t(
+                  "New flavors are saved to the database and appear in the shop.",
+                )}
               </p>
             </div>
           </div>
@@ -431,7 +542,7 @@ export function AdminPage() {
               </p>
             )}
             <button
-            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#092a53] px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#092a53] px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
               disabled={isSaving}
               type="submit"
             >
@@ -443,7 +554,9 @@ export function AdminPage() {
         <section className="min-w-0">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t("Catalog overview")}</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">
+                {t("Catalog overview")}
+              </p>
               <h2 className="mt-1 font-display text-2xl font-bold text-[#102c50]">
                 {t("Available flavors")}
               </h2>
@@ -523,11 +636,20 @@ export function AdminPage() {
                       loading="lazy"
                       src={flavor.image}
                     />
-                    <span className={`absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold shadow-sm ${
-                      flavor.availableQuantity > 0 ? "bg-white/95 text-[#246a46]" : "bg-white/95 text-[#a53f37]"
-                    }`}>
-                      <span aria-hidden="true" className={`size-1.5 rounded-full ${flavor.availableQuantity > 0 ? "bg-[#35a36b]" : "bg-[#d2544b]"}`} />
-                      {flavor.availableQuantity > 0 ? t("In stock") : t("Sold out")}
+                    <span
+                      className={`absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold shadow-sm ${
+                        flavor.availableQuantity > 0
+                          ? "bg-white/95 text-[#246a46]"
+                          : "bg-white/95 text-[#a53f37]"
+                      }`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`size-1.5 rounded-full ${flavor.availableQuantity > 0 ? "bg-[#35a36b]" : "bg-[#d2544b]"}`}
+                      />
+                      {flavor.availableQuantity > 0
+                        ? t("In stock")
+                        : t("Sold out")}
                     </span>
                     {flavor.tag && (
                       <span className="absolute right-3 top-3 max-w-[55%] truncate rounded-full bg-[#ffdc32] px-2.5 py-1 text-[10px] font-extrabold text-[#092a53] shadow-sm">
@@ -550,7 +672,9 @@ export function AdminPage() {
                       </p>
                     </div>
                     <div className="mt-auto flex items-center justify-between gap-3 border-t border-[#edf1f5] pt-3">
-                      <p className={`text-xs font-bold ${flavor.availableQuantity > 0 ? "text-[#397355]" : "text-[#a53f37]"}`}>
+                      <p
+                        className={`text-xs font-bold ${flavor.availableQuantity > 0 ? "text-[#397355]" : "text-[#a53f37]"}`}
+                      >
                         {flavor.availableQuantity > 0
                           ? `${flavor.availableQuantity} ${t("available")}${flavor.reservedStock ? ` · ${flavor.reservedStock} ${t("reserved")}` : ""}`
                           : t("Sold out")}

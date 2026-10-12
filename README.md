@@ -50,6 +50,18 @@ The production server serves the build from `dist/` and the API from the same or
 
 If the frontend and API must be hosted separately, set `VITE_API_URL` to the API origin before building the frontend and set `FRONTEND_ORIGINS` on the API server to include the exact public frontend origin.
 
+### Supabase migration (in progress)
+
+The application runtime still uses SQLite. To copy a selected SQLite database into a **new, empty** Supabase project, set `DATABASE_URL` to the Supabase PostgreSQL session-pooler URI in your local environment and run:
+
+```sh
+npm run migrate:supabase
+```
+
+The script defaults to `server/database.sqlite`; use `--source=path/to/database.sqlite` to choose a different SQLite source. It creates PostgreSQL tables and copies their data in dependency order, preserving IDs and resetting sequences. It stops if it finds existing application tables in Supabase. Back up the source database first, and decide which SQLite database is authoritative before copying; this does not merge local and Render data. Do not run this against a project containing data you need to keep.
+
+The runtime still defaults to SQLite. PostgreSQL-specific transaction handling has been added for checkout stock reservations, payment completion/failure, checkout rollback, and several admin updates. When PostgreSQL is selected, startup now verifies that all required application tables exist and fails with a list of missing tables rather than starting in a broken state. This is not a substitute for integration testing: do not set `DATABASE_URL` on the live Render service or point the deployed app at Supabase until the remaining backend conversion, tests against a separate Supabase staging project, and a verified data-migration/rollback plan are complete. Set `DATABASE_BACKEND=postgres` explicitly when staging; setting `DATABASE_BACKEND=sqlite` keeps SQLite selected even if a `DATABASE_URL` is present.
+
 ## Payments and order management
 
 Checkout offers Card, MTN Mobile Money, Orange Money, and Crypto. Card payments use Stripe-hosted Checkout; set `STRIPE_SECRET_KEY` in `.env` to a Stripe test-mode secret key while developing. MTN Mobile Money, Orange Money, and Crypto are shown as coming soon and cannot be selected until their payment providers are integrated. The server creates each order from current database prices, applies the Buy 2 Get 1 Free offer or an eligible discount code, supports account-only loyalty redemptions (1 point per 100 FCFA spent; 100 points = 1,000 FCFA off; loyalty rewards cannot be combined with another discount), reserves stock during checkout, and records fulfillment, schedule, and payment details in SQLite. Reserved stock is deducted only after Stripe confirms payment, or released when Stripe reports an expired or failed session. Orders fully paid by loyalty points do not require a Stripe checkout. Checkout sessions expire after 40 minutes; the server reconciles older sessions periodically as a fallback if a webhook is unavailable. Card details are entered on Stripe and are never stored by this app. A payment is marked paid only after Stripe confirms it.

@@ -12,9 +12,25 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+  addCustomerFavorite,
+  createAdminAccount,
+  createAdminActivity,
+  createCakeRequest,
+  createCheckoutOrder,
+  createContactMessage,
+  createPaymentRecord,
+  clearDeliveredOrders,
   database,
+  verifyDatabaseSchema,
+  markStripeCheckoutPaymentFailed,
   deleteDiscountCode,
+  deleteFailedOrder,
+  deleteFlavor,
   deleteMenuCategory,
+  deleteRepliedContactMessage,
+  deleteSavedCart,
+  finalizePaidCheckout,
+  finalizeZeroAmountCheckout,
   findCustomMenuItem,
   findFlavor,
   getValidDiscountCode,
@@ -23,12 +39,27 @@ import {
   listMenuInventory,
   listCustomMenuItems,
   listFlavors,
+  markContactMessageRead,
+  markContactMessageReplied,
+  createMenuReview,
+  registerCustomer,
+  removeCustomerFavorite,
+  rollbackCheckoutOrder,
+  saveCustomerCart,
   saveDiscountCode,
+  updateCustomerProfile,
   saveMenuCategory,
   saveCustomMenuItem,
   saveFlavor,
+  setCakeRequestStatus,
+  setCustomerBanStatus,
+  setReviewApproval,
+  updateAdminProfilePicture,
+  updateFulfillmentSlots,
+  updateFulfillmentZones,
   updateMenuInventory,
   updateCustomMenuItem,
+  updateOrderFulfillmentStatus,
   deleteCustomMenuItem,
 } from './database.js'
 import {
@@ -95,6 +126,14 @@ app.use(cors({
 }))
 app.use('/uploads', express.static(uploadDirectory, { fallthrough: false, index: false }))
 
+function isUniqueConstraintError(error) {
+  return error && (
+    error.code === 'SQLITE_CONSTRAINT_UNIQUE'
+    || error.code === '23505'
+    || (typeof error.message === 'string' && /unique constraint/i.test(error.message))
+  )
+}
+
 function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY?.trim()
   if (!secretKey) return null
@@ -102,13 +141,13 @@ function getStripe() {
   return stripeClient
 }
 
-function recordPaidCheckout(session) {
+async function recordPaidCheckout(session) {
   if (session.payment_status !== 'paid') return false
   const orderId = Number(session.metadata?.orderId)
   if (!Number.isSafeInteger(orderId) || orderId < 1) {
     throw new Error('Stripe checkout session has no valid order reference.')
   }
-  const payment = database.prepare(`
+  const payment = await database.prepare(`
     SELECT order_id, status FROM payments
     WHERE order_id = ? AND stripe_checkout_session_id = ?
   `).get(orderId, session.id)
@@ -116,140 +155,43 @@ function recordPaidCheckout(session) {
   if (payment.status === 'paid') return true
   if (payment.status !== 'pending') throw new Error('Payment is no longer pending for this order.')
 
-  const updatePayment = database.prepare(`
-    UPDATE payments
-    SET status = 'paid', stripe_payment_intent_id = ?, updated_at = CURRENT_TIMESTAMP
-    WHERE order_id = ? AND stripe_checkout_session_id = ? AND status = 'pending'
-  `)
-  const updateOrder = database.prepare(`
-    UPDATE orders SET status = CASE WHEN status = 'pending_payment' THEN 'processing' ELSE status END
-    WHERE id = ?
-  `)
-  let paymentRecorded = false
-  let earnedPoints = 0
-  database.transaction(() => {
-    const result = updatePayment.run(
-      typeof session.payment_intent === 'string' ? session.payment_intent : null,
-      orderId,
-      session.id,
-    )
-    if (result.changes === 0) return
-    paymentRecorded = true
-    const items = database.prepare('SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity FROM order_items WHERE order_id = ?').all(orderId)
-    const decrementStock = database.prepare(`
-      UPDATE flavors
-      SET stock = stock - ?, reserved_stock = reserved_stock - ?
-      WHERE id = ? AND stock >= ? AND reserved_stock >= ?
-    `)
-    for (const item of items) {
-      if (item.flavorId !== null) {
-        const stockResult = decrementStock.run(item.quantity, item.quantity, item.flavorId, item.quantity, item.quantity)
-        if (stockResult.changes === 0) throw new Error('Reserved flavor inventory is no longer available.')
-      } else if (item.menuItemId) {
-        const stockResult = database.prepare(`
-          UPDATE menu_inventory
-          SET stock = stock - ?, reserved_stock = reserved_stock - ?
-          WHERE item_id = ? AND stock >= ? AND reserved_stock >= ?
-        `).run(item.quantity, item.quantity, item.menuItemId, item.quantity, item.quantity)
-        if (stockResult.changes === 0) throw new Error('Reserved menu inventory is no longer available.')
-      }
-    }
-    database.prepare(`
-      UPDATE discount_codes SET uses = uses + 1, reserved_uses = MAX(0, reserved_uses - 1)
-      WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
-    `).run(orderId)
-    const order = database.prepare(`
-      SELECT customer_id AS customerId, subtotal_cents AS subtotalCents,
-        discount_cents AS discountCents
-      FROM orders WHERE id = ?
-    `).get(orderId)
-    if (order.customerId) {
-      earnedPoints = Math.floor(Math.max(0, order.subtotalCents - order.discountCents) / 100)
-      if (earnedPoints > 0) {
-        database.prepare('UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?')
-          .run(earnedPoints, order.customerId)
-        database.prepare(`
-          INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
-          VALUES (?, ?, ?, 'earned')
-        `).run(order.customerId, orderId, earnedPoints)
-      }
-    }
-    updateOrder.run(orderId)
-  })()
-  if (paymentRecorded) {
-    const order = database.prepare(`
-      SELECT customer_email AS customerEmail, customer_name AS customerName,
-        total_cents AS totalCents, currency, fulfillment_type AS fulfillmentType,
-        scheduled_for AS scheduledFor, delivery_fee AS deliveryFee
-      FROM orders WHERE id = ?
-    `).get(orderId)
-    const items = database.prepare(`
-      SELECT flavor_name AS flavorName, quantity, line_total_cents AS lineTotalCents
-      FROM order_items WHERE order_id = ? ORDER BY id
-    `).all(orderId)
-    sendOrderStatusUpdate({
-      to: order.customerEmail,
-      recipientName: order.customerName,
-      orderId,
-      status: 'preparing',
-      totalCents: order.totalCents,
-      currency: order.currency,
-      items,
-      earnedPoints,
-      fulfillmentType: order.fulfillmentType,
-      scheduledFor: order.scheduledFor,
-      deliveryFee: order.deliveryFee,
-    }).catch((error) => {
-      console.error(`Unable to send payment confirmation for order #${orderId}:`, error.message)
-    })
-  }
+  const { paymentRecorded, earnedPoints } = await finalizePaidCheckout(orderId, session)
+  if (!paymentRecorded) return false
+
+  const order = await database.prepare(`
+    SELECT customer_email AS customerEmail, customer_name AS customerName,
+      total_cents AS totalCents, currency, fulfillment_type AS fulfillmentType,
+      scheduled_for AS scheduledFor, delivery_fee AS deliveryFee
+    FROM orders WHERE id = ?
+  `).get(orderId)
+  const items = await database.prepare(`
+    SELECT flavor_name AS flavorName, quantity, line_total_cents AS lineTotalCents
+    FROM order_items WHERE order_id = ? ORDER BY id
+  `).all(orderId)
+
+  sendOrderStatusUpdate({
+    to: order.customerEmail,
+    recipientName: order.customerName,
+    orderId,
+    status: 'preparing',
+    totalCents: order.totalCents,
+    currency: order.currency,
+    items,
+    earnedPoints,
+    fulfillmentType: order.fulfillmentType,
+    scheduledFor: order.scheduledFor,
+    deliveryFee: order.deliveryFee,
+  }).catch((error) => {
+    console.error(`Unable to send payment confirmation for order #${orderId}:`, error.message)
+  })
+
   return true
 }
 
-function recordFailedCheckout(session) {
+async function recordFailedCheckout(session) {
   const orderId = Number(session.metadata?.orderId)
   if (!Number.isSafeInteger(orderId) || orderId < 1) return
-  database.transaction(() => {
-    const result = database.prepare(`
-      UPDATE payments SET status = 'failed', updated_at = CURRENT_TIMESTAMP
-      WHERE order_id = ? AND stripe_checkout_session_id = ? AND status = 'pending'
-    `).run(orderId, session.id)
-    if (result.changes === 0) return
-    const items = database.prepare('SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity FROM order_items WHERE order_id = ?').all(orderId)
-    for (const item of items) {
-      if (item.flavorId !== null) {
-        database.prepare(`
-          UPDATE flavors SET reserved_stock = MAX(0, reserved_stock - ?)
-          WHERE id = ?
-        `).run(item.quantity, item.flavorId)
-      } else if (item.menuItemId) {
-        database.prepare(`
-          UPDATE menu_inventory SET reserved_stock = MAX(0, reserved_stock - ?)
-          WHERE item_id = ?
-        `).run(item.quantity, item.menuItemId)
-      }
-    }
-    database.prepare(`
-      UPDATE discount_codes SET reserved_uses = MAX(0, reserved_uses - 1)
-      WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
-    `).run(orderId)
-    database.prepare(`
-      UPDATE orders SET status = 'payment_failed'
-      WHERE id = ? AND status = 'pending_payment'
-    `).run(orderId)
-    const order = database.prepare(`
-      SELECT customer_id AS customerId, loyalty_points_redeemed AS pointsRedeemed
-      FROM orders WHERE id = ?
-    `).get(orderId)
-    if (order?.customerId && order.pointsRedeemed > 0) {
-      database.prepare('UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?')
-        .run(order.pointsRedeemed, order.customerId)
-      database.prepare(`
-        INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
-        VALUES (?, ?, ?, 'refunded')
-      `).run(order.customerId, orderId, order.pointsRedeemed)
-    }
-  })()
+  await markStripeCheckoutPaymentFailed(orderId, session.id)
 }
 
 let isReconcilingCheckouts = false
@@ -259,7 +201,7 @@ async function reconcileStaleCheckouts() {
   if (!stripe || isReconcilingCheckouts) return
   isReconcilingCheckouts = true
   try {
-    const sessions = database.prepare(`
+    const sessions = await database.prepare(`
       SELECT p.stripe_checkout_session_id AS sessionId
       FROM payments p JOIN orders o ON o.id = p.order_id
       WHERE p.status = 'pending' AND o.status = 'pending_payment'
@@ -273,9 +215,9 @@ async function reconcileStaleCheckouts() {
           session = await stripe.checkout.sessions.expire(sessionId)
         }
         if (session.status === 'expired') {
-          recordFailedCheckout(session)
+          await recordFailedCheckout(session)
         } else if (session.status === 'complete' && session.payment_status === 'paid') {
-          recordPaidCheckout(session)
+          await recordPaidCheckout(session)
         }
       } catch (error) {
         console.error(`Unable to reconcile Stripe checkout ${sessionId}:`, error.message)
@@ -286,7 +228,7 @@ async function reconcileStaleCheckouts() {
   }
 }
 
-app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (request, response) => {
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (request, response) => {
   const stripe = getStripe()
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim()
   if (!stripe || !webhookSecret) {
@@ -304,9 +246,9 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (requ
 
   try {
     if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
-      recordPaidCheckout(event.data.object)
+      await recordPaidCheckout(event.data.object)
     } else if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
-      recordFailedCheckout(event.data.object)
+      await recordFailedCheckout(event.data.object)
     }
     response.json({ received: true })
   } catch (error) {
@@ -358,65 +300,69 @@ function readBearerToken(request) {
   return scheme?.toLowerCase() === 'bearer' ? token : ''
 }
 
-function requireAdmin(request, response, next) {
+async function requireAdmin(request, response, next) {
   const token = readBearerToken(request)
   if (!token) {
     response.status(401).json({ error: 'Admin sign-in is required.' })
     return
   }
 
+  let payload
   try {
-    const payload = jwt.verify(token, jwtSecret)
-    if (payload.type !== 'admin') {
-      response.status(401).json({ error: 'Admin session is invalid.' })
-      return
-    }
-    const admin = database.prepare('SELECT id, name, email, profile_picture FROM admins WHERE id = ?').get(payload.sub)
-    if (!admin) {
-      response.status(401).json({ error: 'Admin session is no longer valid.' })
-      return
-    }
-    request.admin = admin
-    next()
+    payload = jwt.verify(token, jwtSecret)
   } catch {
     response.status(401).json({ error: 'Admin session is invalid or expired.' })
+    return
   }
+  if (payload.type !== 'admin') {
+    response.status(401).json({ error: 'Admin session is invalid.' })
+    return
+  }
+  const admin = await database.prepare('SELECT id, name, email, profile_picture FROM admins WHERE id = ?').get(payload.sub)
+  if (!admin) {
+    response.status(401).json({ error: 'Admin session is no longer valid.' })
+    return
+  }
+  request.admin = admin
+  next()
 }
 
-function requireCustomer(request, response, next) {
+async function requireCustomer(request, response, next) {
   const token = readBearerToken(request)
   if (!token) {
     response.status(401).json({ error: 'Customer sign-in is required.' })
     return
   }
+  let payload
   try {
-    const payload = jwt.verify(token, jwtSecret)
-    if (payload.type !== 'customer') {
-      response.status(401).json({ error: 'Customer session is invalid.' })
-      return
-    }
-    const customer = database.prepare(`
-      SELECT id, name, email, profile_picture AS profilePicture, phone,
-        delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
-        loyalty_points AS loyaltyPoints, is_banned AS isBanned
-      FROM customers WHERE id = ?
-    `).get(payload.sub)
-    if (!customer || customer.isBanned) {
-      response.status(401).json({ error: 'Customer session is no longer valid.' })
-      return
-    }
-    request.customer = customer
-    next()
+    payload = jwt.verify(token, jwtSecret)
   } catch {
     response.status(401).json({ error: 'Customer session is invalid or expired.' })
+    return
   }
+  if (payload.type !== 'customer') {
+    response.status(401).json({ error: 'Customer session is invalid.' })
+    return
+  }
+  const customer = await database.prepare(`
+    SELECT id, name, email, profile_picture AS profilePicture, phone,
+      delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
+      loyalty_points AS loyaltyPoints, is_banned AS isBanned
+    FROM customers WHERE id = ?
+  `).get(payload.sub)
+  if (!customer || customer.isBanned) {
+    response.status(401).json({ error: 'Customer session is no longer valid.' })
+    return
+  }
+  request.customer = customer
+  next()
 }
 
-function findOrderMenuItem(id) {
+async function findOrderMenuItem(id) {
   const existingItem = findMenuItem(id)
   if (existingItem) return existingItem
   const customItemMatch = /^menu:custom:(\d+)$/.exec(id)
-  return customItemMatch ? findCustomMenuItem(Number(customItemMatch[1])) : null
+  return customItemMatch ? await findCustomMenuItem(Number(customItemMatch[1])) : null
 }
 
 function normalizeFlavor(body, existing = {}) {
@@ -449,14 +395,14 @@ function normalizeFlavor(body, existing = {}) {
   }
 }
 
-function listOrders({ deliveredOnly = false, storeId = null } = {}) {
+async function listOrders({ deliveredOnly = false, storeId = null } = {}) {
   const conditions = [deliveredOnly ? "status = 'delivered'" : "status != 'delivered'"]
   const parameters = []
   if (storeId !== null) {
     conditions.push("store_id = ?")
     parameters.push(storeId)
   }
-  const orders = database.prepare(`
+  const orders = await database.prepare(`
     SELECT id, customer_name AS customerName, customer_email AS customerEmail,
       customer_phone AS customerPhone,
       delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
@@ -477,7 +423,7 @@ function listOrders({ deliveredOnly = false, storeId = null } = {}) {
   if (orders.length === 0) return []
 
   const placeholders = orders.map(() => '?').join(', ')
-  const items = database.prepare(`
+  const items = await database.prepare(`
     SELECT order_id AS orderId, flavor_id AS flavorId, menu_item_id AS menuItemId, flavor_name AS flavorName,
       unit_price_cents AS unitPriceCents, quantity, line_total_cents AS lineTotalCents
     FROM order_items WHERE order_id IN (${placeholders}) ORDER BY id
@@ -495,10 +441,14 @@ app.get('/api/health', (_request, response) => {
   response.json({ status: 'ok' })
 })
 
-app.get('/api/menu', (_request, response) => {
-  const inventory = new Map(listMenuInventory().map((entry) => [entry.itemId, entry]))
-  const customItems = listCustomMenuItems()
-  const categories = listMenuCategories().map((category) => {
+app.get('/api/menu', async (_request, response) => {
+  const [inventoryRows, customItems, menuCategories] = await Promise.all([
+    listMenuInventory(),
+    listCustomMenuItems(),
+    listMenuCategories(),
+  ])
+  const inventory = new Map(inventoryRows.map((entry) => [entry.itemId, entry]))
+  const categories = menuCategories.map((category) => {
     const baseCategory = category.baseTitle
       ? coldStoneMenuCategories.find((entry) => entry.title === category.baseTitle)
       : null
@@ -529,8 +479,8 @@ app.get('/api/menu', (_request, response) => {
   response.json({ categories })
 })
 
-app.get('/api/fulfillment/options', (_request, response) => {
-  const zones = database.prepare(`
+app.get('/api/fulfillment/options', async (_request, response) => {
+  const zones = (await database.prepare(`
     SELECT z.id, z.location, z.pickup_enabled AS pickupEnabled,
       z.delivery_enabled AS deliveryEnabled, z.delivery_fee AS deliveryFee,
       s.id AS storeId, s.name AS storeName, s.town AS storeTown,
@@ -539,20 +489,20 @@ app.get('/api/fulfillment/options', (_request, response) => {
     FROM fulfillment_zones z
     JOIN stores s ON s.fulfillment_zone_id = z.id
     WHERE z.is_active = 1 ORDER BY z.location
-  `).all().map((zone) => ({
+  `).all()).map((zone) => ({
     ...zone,
     pickupEnabled: Boolean(zone.pickupEnabled),
     deliveryEnabled: Boolean(zone.deliveryEnabled),
   }))
-  const slots = database.prepare(`
+  const slots = await database.prepare(`
     SELECT id, label, start_time AS startTime, end_time AS endTime
     FROM fulfillment_slots WHERE is_active = 1 ORDER BY sort_order, id
   `).all()
   response.json({ zones, slots })
 })
 
-app.get('/api/promotions/active', (_request, response) => {
-  const promotion = database.prepare(`
+app.get('/api/promotions/active', async (_request, response) => {
+  const promotion = await database.prepare(`
     SELECT code, discount_type AS discountType,
       discount_value AS discountValue, minimum_total AS minimumTotal,
       expires_at AS expiresAt
@@ -566,14 +516,14 @@ app.get('/api/promotions/active', (_request, response) => {
   response.json({ promotion })
 })
 
-app.post('/api/discount-codes/validate', (request, response) => {
+app.post('/api/discount-codes/validate', async (request, response) => {
   const codeText = typeof request.body.code === 'string' ? request.body.code.trim() : ''
   const subtotal = Number(request.body.subtotal)
   if (!codeText || !Number.isSafeInteger(subtotal) || subtotal < 0) {
     response.status(400).json({ error: 'Enter a discount code and a valid order subtotal.' })
     return
   }
-  const code = getValidDiscountCode(codeText, subtotal)
+  const code = await getValidDiscountCode(codeText, subtotal)
   if (!code) {
     response.status(400).json({ error: 'That discount code is invalid, expired, inactive, or does not meet its minimum order total.' })
     return
@@ -603,7 +553,7 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
     : ''
   const customer = request.customer
   const store = Number.isSafeInteger(storeId) && storeId > 0
-    ? database.prepare(`
+    ? await database.prepare(`
       SELECT s.id, s.name, s.address, s.phone, z.id AS zoneId,
         z.pickup_enabled AS pickupEnabled, z.delivery_enabled AS deliveryEnabled,
         z.delivery_fee AS deliveryFee
@@ -612,7 +562,7 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
     `).get(storeId, city)
     : null
   const zone = store
-  const slot = database.prepare(`
+  const slot = await database.prepare(`
     SELECT id, start_time AS startTime
     FROM fulfillment_slots WHERE id = ? AND is_active = 1
   `).get(slotId)
@@ -659,8 +609,8 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
   const currency = 'xaf'
   const orderItems = []
   for (const [id, quantity] of mergedItems) {
-    const menuItem = typeof id === 'string' ? findOrderMenuItem(id) : null
-    const flavor = typeof id === 'number' ? findFlavor(id) : null
+    const menuItem = typeof id === 'string' ? await findOrderMenuItem(id) : null
+    const flavor = typeof id === 'number' ? await findFlavor(id) : null
     if (!menuItem && !flavor) {
       response.status(400).json({ error: 'An item in this cart is no longer available. Refresh your bag and try again.' })
       return
@@ -697,7 +647,7 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
   let discountCode = null
   let codeDiscountCents = 0
   if (discountCodeText) {
-    discountCode = getValidDiscountCode(discountCodeText, subtotalCents)
+    discountCode = await getValidDiscountCode(discountCodeText, subtotalCents)
     if (!discountCode) {
       response.status(400).json({ error: 'That discount code is invalid, expired, inactive, or does not meet its minimum order total.' })
       return
@@ -737,113 +687,33 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
 
   let orderId
   try {
-    const createOrder = database.transaction(() => {
-      const reserveStock = database.prepare(`
-        UPDATE flavors SET reserved_stock = reserved_stock + ?
-        WHERE id = ? AND stock - reserved_stock >= ?
-      `)
-      const reserveMenuStock = database.prepare(`
-        UPDATE menu_inventory SET reserved_stock = reserved_stock + ?
-        WHERE item_id = ? AND is_available = 1 AND stock - reserved_stock >= ?
-      `)
-      for (const item of orderItems) {
-        const result = item.flavorId !== null
-          ? reserveStock.run(item.quantity, item.flavorId, item.quantity)
-          : reserveMenuStock.run(item.quantity, item.menuItemId, item.quantity)
-        if (result.changes === 0) {
-          const error = new Error(`Not enough ${item.flavorName} in stock. Refresh your bag and try again.`)
-          error.code = 'INSUFFICIENT_STOCK'
-          throw error
-        }
-      }
-      if (discountCode) {
-        const reservation = database.prepare(`
-          UPDATE discount_codes SET reserved_uses = reserved_uses + 1
-          WHERE id = ? AND is_active = 1
-            AND (expires_at IS NULL OR datetime(expires_at) > CURRENT_TIMESTAMP)
-            AND (max_uses IS NULL OR uses + reserved_uses < max_uses)
-        `).run(discountCode.id)
-        if (!reservation.changes) {
-          const error = new Error('That discount code has just reached its usage limit. Try another code.')
-          error.code = 'DISCOUNT_CODE_UNAVAILABLE'
-          throw error
-        }
-      }
-      if (pointsRedeemed > 0) {
-        const points = database.prepare(`
-          UPDATE customers SET loyalty_points = loyalty_points - ?
-          WHERE id = ? AND loyalty_points >= ?
-        `).run(pointsRedeemed, customer.id, pointsRedeemed)
-        if (!points.changes) {
-          const error = new Error('Your loyalty balance changed. Refresh checkout and try again.')
-          error.code = 'LOYALTY_BALANCE_CHANGED'
-          throw error
-        }
-      }
-      const result = database.prepare(`
-        INSERT INTO orders (
-          customer_id, customer_name, customer_email, customer_phone, delivery_address, delivery_city,
-          store_id, store_name, store_address, store_phone,
-          delivery_postal_code, delivery_residence, subtotal_cents, discount_cents, total_cents,
-          currency, discount_code, discount_code_id, fulfillment_type, scheduled_for,
-          delivery_fee, loyalty_points_redeemed
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(customer?.id ?? null, name, email, phone, '', city,
-        store.id, store.name, store.address, store.phone,
-        '', residence,
-        subtotalCents, discountCents, totalCents, currency, discountCode?.code || '', discountCode?.id || null,
-        fulfillmentType, scheduledFor, deliveryFee, pointsRedeemed)
-      const newOrderId = Number(result.lastInsertRowid)
-      if (pointsRedeemed > 0) {
-        database.prepare(`
-          INSERT INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
-          VALUES (?, ?, ?, 'redeemed')
-        `).run(customer.id, newOrderId, -pointsRedeemed)
-      }
-      const insertItem = database.prepare(`
-        INSERT INTO order_items (
-          order_id, flavor_id, menu_item_id, flavor_name, unit_price_cents, quantity, line_total_cents
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      `)
-      for (const item of orderItems) {
-        insertItem.run(newOrderId, item.flavorId, item.menuItemId, item.flavorName, item.unitPriceCents, item.quantity, item.lineTotalCents)
-      }
-      if (customer) {
-        database.prepare(`
-          UPDATE customers SET name = ?, phone = ?, delivery_city = ?, delivery_residence = ? WHERE id = ?
-        `).run(name, phone, city, residence, customer.id)
-      }
-      return newOrderId
+    orderId = await createCheckoutOrder({
+      customer,
+      name,
+      email,
+      phone,
+      city,
+      store,
+      residence,
+      fulfillmentType,
+      scheduledFor,
+      deliveryFee,
+      orderItems,
+      subtotalCents,
+      discountCents,
+      totalCents,
+      currency,
+      discountCode,
+      pointsRedeemed,
     })
-    orderId = createOrder()
 
     const frontendUrl = new URL(process.env.FRONTEND_URL || frontendOrigins[0])
     if (!['http:', 'https:'].includes(frontendUrl.protocol)) {
       throw new Error('FRONTEND_URL must use HTTP or HTTPS.')
     }
     if (totalCents === 0) {
-      database.transaction(() => {
-        for (const item of orderItems) {
-          if (item.flavorId !== null) {
-            const result = database.prepare(`
-              UPDATE flavors SET stock = stock - ?, reserved_stock = reserved_stock - ?
-              WHERE id = ? AND stock >= ? AND reserved_stock >= ?
-            `).run(item.quantity, item.quantity, item.flavorId, item.quantity, item.quantity)
-            if (!result.changes) throw new Error('Reserved flavor inventory is no longer available.')
-          } else if (item.menuItemId) {
-            const result = database.prepare(`
-              UPDATE menu_inventory SET stock = stock - ?, reserved_stock = reserved_stock - ?
-              WHERE item_id = ? AND stock >= ? AND reserved_stock >= ?
-            `).run(item.quantity, item.quantity, item.menuItemId, item.quantity, item.quantity)
-            if (!result.changes) throw new Error('Reserved menu inventory is no longer available.')
-          }
-        }
-        database.prepare(`
-          UPDATE orders SET status = 'processing', fulfillment_status = 'preparing'
-          WHERE id = ?
-        `).run(orderId)
-      })()
-      const receiptOrder = database.prepare(`
+      await finalizeZeroAmountCheckout(orderId, orderItems)
+      const receiptOrder = await database.prepare(`
         SELECT customer_email AS customerEmail, customer_name AS customerName,
           total_cents AS totalCents, currency, fulfillment_type AS fulfillmentType,
           scheduled_for AS scheduledFor, delivery_fee AS deliveryFee
@@ -907,11 +777,13 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
       cancel_url: `${frontendUrl.origin}/payment?cancelled=1`,
     })
     if (!session.url) throw new Error('Stripe did not return a checkout URL.')
-    database.prepare(`
-      INSERT INTO payments (order_id, stripe_checkout_session_id, amount_cents, currency)
-      VALUES (?, ?, ?, ?)
-    `).run(orderId, session.id, totalCents, currency)
-    const admins = database.prepare('SELECT email FROM admins ORDER BY id').all()
+    await createPaymentRecord({
+      orderId,
+      stripeCheckoutSessionId: session.id,
+      amountCents: totalCents,
+      currency,
+    })
+    const admins = await database.prepare('SELECT email FROM admins ORDER BY id').all()
     try {
       await sendNewOrderNotification({
         recipients: admins.map((admin) => admin.email),
@@ -931,43 +803,7 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
     response.status(201).json({ url: session.url })
   } catch (error) {
     if (orderId) {
-      database.transaction(() => {
-        const result = database.prepare(`
-          UPDATE orders SET status = 'payment_failed'
-          WHERE id = ? AND status = 'pending_payment'
-        `).run(orderId)
-        if (result.changes === 0) return
-        const items = database.prepare('SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity FROM order_items WHERE order_id = ?').all(orderId)
-        for (const item of items) {
-          if (item.flavorId !== null) {
-            database.prepare(`
-              UPDATE flavors SET reserved_stock = MAX(0, reserved_stock - ?)
-              WHERE id = ?
-            `).run(item.quantity, item.flavorId)
-          } else if (item.menuItemId) {
-            database.prepare(`
-              UPDATE menu_inventory SET reserved_stock = MAX(0, reserved_stock - ?)
-              WHERE item_id = ?
-            `).run(item.quantity, item.menuItemId)
-          }
-        }
-        database.prepare(`
-          UPDATE discount_codes SET reserved_uses = MAX(0, reserved_uses - 1)
-          WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
-        `).run(orderId)
-        const order = database.prepare(`
-          SELECT customer_id AS customerId, loyalty_points_redeemed AS pointsRedeemed
-          FROM orders WHERE id = ?
-        `).get(orderId)
-        if (order?.customerId && order.pointsRedeemed > 0) {
-          database.prepare('UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?')
-            .run(order.pointsRedeemed, order.customerId)
-          database.prepare(`
-            INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
-            VALUES (?, ?, ?, 'refunded')
-          `).run(order.customerId, orderId, order.pointsRedeemed)
-        }
-      })()
+      await rollbackCheckoutOrder(orderId)
     }
     if (error.code === 'INSUFFICIENT_STOCK') {
       response.status(409).json({ error: error.message })
@@ -998,9 +834,9 @@ app.get('/api/payment/session/:sessionId', async (request, response) => {
       response.status(409).json({ error: 'Stripe has not confirmed this payment yet.' })
       return
     }
-    recordPaidCheckout(session)
+    await recordPaidCheckout(session)
     const orderId = Number(session.metadata?.orderId)
-    const order = database.prepare(`
+    const order = await database.prepare(`
       SELECT id, customer_name AS customerName, customer_email AS customerEmail,
         total_cents AS totalCents, currency, status, created_at AS createdAt,
         delivery_city AS deliveryCity, store_name AS storeName,
@@ -1025,20 +861,28 @@ app.get('/api/payment/session/:sessionId', async (request, response) => {
   }
 })
 
-app.get('/api/flavors', (_request, response) => {
-  response.json({ flavors: listFlavors() })
-})
-
-app.get('/api/flavors/:id', (request, response) => {
-  const flavor = findFlavor(Number(request.params.id))
-  if (!flavor) {
-    response.status(404).json({ error: 'Flavor not found.' })
-    return
+app.get('/api/flavors', async (_request, response, next) => {
+  try {
+    response.json({ flavors: await listFlavors() })
+  } catch (error) {
+    next(error)
   }
-  response.json({ flavor })
 })
 
-app.post('/api/contact', contactLimiter, (request, response, next) => {
+app.get('/api/flavors/:id', async (request, response, next) => {
+  try {
+    const flavor = await findFlavor(Number(request.params.id))
+    if (!flavor) {
+      response.status(404).json({ error: 'Flavor not found.' })
+      return
+    }
+    response.json({ flavor })
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.post('/api/contact', contactLimiter, async (request, response, next) => {
   try {
     const name = typeof request.body.name === 'string' ? request.body.name.trim() : ''
     const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
@@ -1051,11 +895,8 @@ app.post('/api/contact', contactLimiter, (request, response, next) => {
       return
     }
 
-    const result = database.prepare(`
-      INSERT INTO contact_messages (name, email, phone, subject, message)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(name, email, phone, subject, message)
-    response.status(201).json({ messageId: Number(result.lastInsertRowid) })
+    const { messageId } = await createContactMessage({ name, email, phone, subject, message })
+    response.status(201).json({ messageId })
   } catch (error) {
     next(error)
   }
@@ -1075,23 +916,27 @@ app.post('/api/auth/register', signupLimiter, async (request, response, next) =>
     }
 
     const passwordHash = await bcrypt.hash(password, 12)
-    const result = database.prepare(`
-      INSERT INTO customers (name, email, password_hash, profile_picture)
-      VALUES (?, ?, ?, ?)
-    `).run(name, email, passwordHash, profilePicture)
-    const customer = {
-      id: Number(result.lastInsertRowid),
+    const customer = await registerCustomer({
       name,
       email,
-      phone: '',
-      deliveryCity: '',
-      deliveryResidence: '',
+      passwordHash,
       profilePicture,
-    }
+    })
     const token = jwt.sign({ sub: customer.id, type: 'customer' }, jwtSecret, { expiresIn: '8h' })
-    response.status(201).json({ token, customer })
+    response.status(201).json({
+      token,
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone || '',
+        deliveryCity: customer.deliveryCity || '',
+        deliveryResidence: customer.deliveryResidence || '',
+        profilePicture: customer.profilePicture || '',
+      },
+    })
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'An account already uses that email address.' })
       return
     }
@@ -1103,7 +948,7 @@ app.post('/api/auth/login', loginLimiter, async (request, response, next) => {
   try {
     const email = typeof request.body.email === 'string' ? request.body.email.trim() : ''
     const password = typeof request.body.password === 'string' ? request.body.password : ''
-    const customer = database.prepare('SELECT * FROM customers WHERE email = ? COLLATE NOCASE').get(email)
+    const customer = await database.prepare('SELECT * FROM customers WHERE email = ? COLLATE NOCASE').get(email)
     if (!customer || !await verifyPassword(password, customer.password_hash)) {
       response.status(401).json({ error: 'The email or password is incorrect.' })
       return
@@ -1131,35 +976,37 @@ app.post('/api/auth/login', loginLimiter, async (request, response, next) => {
   }
 })
 
-app.get('/api/auth/me', (request, response) => {
+app.get('/api/auth/me', async (request, response) => {
   const token = readBearerToken(request)
   if (!token) {
     response.status(401).json({ error: 'Sign-in is required.' })
     return
   }
+  let payload
   try {
-    const payload = jwt.verify(token, jwtSecret)
-    if (payload.type !== 'customer') {
-      response.status(401).json({ error: 'Customer session is invalid.' })
-      return
-    }
-    const customer = database.prepare(`
-      SELECT id, name, email, profile_picture AS profilePicture, phone,
-        delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
-        loyalty_points AS loyaltyPoints, is_banned AS isBanned
-      FROM customers WHERE id = ?
-    `).get(payload.sub)
-    if (!customer || customer.isBanned) {
-      response.status(401).json({ error: 'Customer session is no longer valid.' })
-      return
-    }
-    response.json({ customer })
+    payload = jwt.verify(token, jwtSecret)
   } catch {
     response.status(401).json({ error: 'Customer session is invalid or expired.' })
+    return
   }
+  if (payload.type !== 'customer') {
+    response.status(401).json({ error: 'Customer session is invalid.' })
+    return
+  }
+  const customer = await database.prepare(`
+    SELECT id, name, email, profile_picture AS profilePicture, phone,
+      delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
+      loyalty_points AS loyaltyPoints, is_banned AS isBanned
+    FROM customers WHERE id = ?
+  `).get(payload.sub)
+  if (!customer || customer.isBanned) {
+    response.status(401).json({ error: 'Customer session is no longer valid.' })
+    return
+  }
+  response.json({ customer })
 })
 
-app.put('/api/auth/profile', requireCustomer, (request, response) => {
+app.put('/api/auth/profile', requireCustomer, async (request, response) => {
   const name = typeof request.body.name === 'string' ? request.body.name.trim() : ''
   const phone = typeof request.body.phone === 'string' ? request.body.phone.trim() : ''
   const deliveryCity = typeof request.body.deliveryCity === 'string' ? request.body.deliveryCity.trim() : ''
@@ -1175,25 +1022,35 @@ app.put('/api/auth/profile', requireCustomer, (request, response) => {
   }
 
   const resolvedProfilePicture = hasProfilePicture ? profilePicture : request.customer.profilePicture || ''
-  database.prepare(`
-    UPDATE customers
-    SET name = ?, phone = ?, delivery_city = ?, delivery_residence = ?, profile_picture = ?
-    WHERE id = ?
-  `).run(name, phone, deliveryCity, deliveryResidence, resolvedProfilePicture, request.customer.id)
+  const customer = await updateCustomerProfile({
+    customerId: request.customer.id,
+    name,
+    phone,
+    deliveryCity,
+    deliveryResidence,
+    profilePicture: resolvedProfilePicture,
+  })
+  if (!customer) {
+    response.status(404).json({ error: 'Customer account not found.' })
+    return
+  }
   response.json({
     customer: {
-      ...request.customer,
-      name,
-      phone,
-      deliveryCity,
-      deliveryResidence,
-      profilePicture: resolvedProfilePicture,
+      id: customer.id,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone || '',
+      deliveryCity: customer.deliveryCity || '',
+      deliveryResidence: customer.deliveryResidence || '',
+      profilePicture: customer.profilePicture || '',
+      loyaltyPoints: customer.loyaltyPoints,
+      isBanned: Boolean(customer.isBanned),
     },
   })
 })
 
-app.get('/api/customer/orders', requireCustomer, (request, response) => {
-  const orders = database.prepare(`
+app.get('/api/customer/orders', requireCustomer, async (request, response) => {
+  const orders = await database.prepare(`
     SELECT id, subtotal_cents AS subtotalCents, discount_cents AS discountCents,
       total_cents AS totalCents, currency, discount_code AS discountCode, status,
       fulfillment_status AS fulfillmentStatus, created_at AS createdAt,
@@ -1211,7 +1068,7 @@ app.get('/api/customer/orders', requireCustomer, (request, response) => {
     return
   }
   const placeholders = orders.map(() => '?').join(', ')
-  const items = database.prepare(`
+  const items = await database.prepare(`
     SELECT order_id AS orderId, flavor_id AS flavorId, menu_item_id AS menuItemId,
       flavor_name AS name, unit_price_cents AS unitPriceCents, quantity,
       line_total_cents AS lineTotalCents
@@ -1232,13 +1089,13 @@ app.get('/api/customer/orders', requireCustomer, (request, response) => {
   })) })
 })
 
-app.get('/api/customer/orders/:id', requireCustomer, (request, response) => {
+app.get('/api/customer/orders/:id', requireCustomer, async (request, response) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
     response.status(400).json({ error: 'Order ID is invalid.' })
     return
   }
-  const order = database.prepare(`
+  const order = await database.prepare(`
     SELECT id, customer_name AS customerName, customer_email AS customerEmail,
       subtotal_cents AS subtotalCents, discount_cents AS discountCents,
       total_cents AS totalCents, currency, status, created_at AS createdAt,
@@ -1252,7 +1109,7 @@ app.get('/api/customer/orders/:id', requireCustomer, (request, response) => {
     response.status(404).json({ error: 'Paid loyalty order not found.' })
     return
   }
-  const items = database.prepare(`
+  const items = await database.prepare(`
     SELECT flavor_id AS flavorId, menu_item_id AS menuItemId,
       flavor_name AS name, unit_price_cents AS unitPriceCents, quantity,
       line_total_cents AS lineTotalCents
@@ -1261,8 +1118,8 @@ app.get('/api/customer/orders/:id', requireCustomer, (request, response) => {
   response.json({ order: { ...order, items } })
 })
 
-app.get('/api/customer/loyalty', requireCustomer, (request, response) => {
-  const entries = database.prepare(`
+app.get('/api/customer/loyalty', requireCustomer, async (request, response) => {
+  const entries = await database.prepare(`
     SELECT id, order_id AS orderId, points_delta AS pointsDelta,
       entry_type AS entryType, created_at AS createdAt
     FROM loyalty_ledger WHERE customer_id = ? ORDER BY id DESC LIMIT 100
@@ -1270,86 +1127,84 @@ app.get('/api/customer/loyalty', requireCustomer, (request, response) => {
   response.json({ points: request.customer.loyaltyPoints, entries })
 })
 
-function resolveFavoriteItem(itemId) {
+async function resolveFavoriteItem(itemId) {
   if (typeof itemId !== 'string') return null
   const flavorMatch = /^flavor:(\d+)$/.exec(itemId)
   if (flavorMatch) {
-    const flavor = findFlavor(Number(flavorMatch[1]))
+    const flavor = await findFlavor(Number(flavorMatch[1]))
     return flavor ? { ...flavor, itemId, itemType: 'flavor' } : null
   }
-  const menuItem = findOrderMenuItem(itemId)
+  const menuItem = await findOrderMenuItem(itemId)
   return menuItem ? { ...menuItem, itemId, itemType: 'menu' } : null
 }
 
-app.get('/api/reviews', (_request, response) => {
-  const reviews = database.prepare(`
+app.get('/api/reviews', async (_request, response) => {
+  const reviews = await database.prepare(`
     SELECT r.rating, r.review, r.created_at AS createdAt,
       c.name AS customerName, c.profile_picture AS profilePicture,
       r.item_id AS itemId
     FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
     WHERE r.is_approved = 1
     ORDER BY r.id DESC LIMIT 50
-  `).all().map((review) => ({
+  `).all()
+  const reviewsWithItems = await Promise.all(reviews.map(async (review) => ({
     ...review,
-    itemName: resolveFavoriteItem(review.itemId)?.name || review.itemId,
-  }))
-  response.json({ reviews })
+    itemName: (await resolveFavoriteItem(review.itemId))?.name || review.itemId,
+  })))
+  response.json({ reviews: reviewsWithItems })
 })
 
-app.get('/api/customer/favorites', requireCustomer, (request, response) => {
-  const favorites = database.prepare(`
+app.get('/api/customer/favorites', requireCustomer, async (request, response) => {
+  const favorites = await database.prepare(`
     SELECT item_id AS itemId, created_at AS createdAt FROM customer_favorites
     WHERE customer_id = ? ORDER BY created_at DESC
   `).all(request.customer.id)
-  response.json({
-    favorites: favorites.flatMap((favorite) => {
-      const item = resolveFavoriteItem(favorite.itemId)
-      return item ? [{ ...favorite, item }] : []
-    }),
-  })
+  const resolvedFavorites = await Promise.all(favorites.map(async (favorite) => {
+    const item = await resolveFavoriteItem(favorite.itemId)
+    return item ? { ...favorite, item } : null
+  }))
+  response.json({ favorites: resolvedFavorites.filter(Boolean) })
 })
 
-app.post('/api/customer/favorites', requireCustomer, (request, response) => {
+app.post('/api/customer/favorites', requireCustomer, async (request, response) => {
   const itemId = typeof request.body.itemId === 'string' ? request.body.itemId : ''
-  if (!resolveFavoriteItem(itemId)) {
+  if (!await resolveFavoriteItem(itemId)) {
     response.status(400).json({ error: 'Choose a current menu or shop item to save.' })
     return
   }
-  database.prepare('INSERT OR IGNORE INTO customer_favorites (customer_id, item_id) VALUES (?, ?)')
-    .run(request.customer.id, itemId)
+  await addCustomerFavorite(request.customer.id, itemId)
   response.status(201).json({ itemId })
 })
 
-app.delete('/api/customer/favorites/:itemId', requireCustomer, (request, response) => {
-  const result = database.prepare('DELETE FROM customer_favorites WHERE customer_id = ? AND item_id = ?')
-    .run(request.customer.id, request.params.itemId)
-  if (!result.changes) {
+app.delete('/api/customer/favorites/:itemId', requireCustomer, async (request, response) => {
+  const removed = await removeCustomerFavorite(request.customer.id, request.params.itemId)
+  if (!removed) {
     response.status(404).json({ error: 'Saved favorite not found.' })
     return
   }
   response.status(204).end()
 })
 
-app.get('/api/customer/saved-carts', requireCustomer, (request, response) => {
-  const savedCarts = database.prepare(`
+app.get('/api/customer/saved-carts', requireCustomer, async (request, response) => {
+  const savedCarts = (await database.prepare(`
     SELECT id, source_order_id AS sourceOrderId, label,
       items_json AS itemsJson, created_at AS createdAt
     FROM customer_saved_carts WHERE customer_id = ?
     ORDER BY id DESC
-  `).all(request.customer.id).map(({ itemsJson, ...savedCart }) => ({
+  `).all(request.customer.id)).map(({ itemsJson, ...savedCart }) => ({
     ...savedCart,
     items: JSON.parse(itemsJson),
   }))
   response.json({ savedCarts })
 })
 
-app.post('/api/customer/saved-carts', requireCustomer, (request, response) => {
+app.post('/api/customer/saved-carts', requireCustomer, async (request, response) => {
   const orderId = Number(request.body.orderId)
   if (!Number.isSafeInteger(orderId) || orderId < 1) {
     response.status(400).json({ error: 'Choose a valid order to save.' })
     return
   }
-  const order = database.prepare(`
+  const order = await database.prepare(`
     SELECT id, status FROM orders
     WHERE id = ? AND customer_id = ?
   `).get(orderId, request.customer.id)
@@ -1357,7 +1212,7 @@ app.post('/api/customer/saved-carts', requireCustomer, (request, response) => {
     response.status(404).json({ error: 'A paid order belonging to your account was not found.' })
     return
   }
-  const orderItems = database.prepare(`
+  const orderItems = await database.prepare(`
     SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity
     FROM order_items WHERE order_id = ? ORDER BY id
   `).all(orderId)
@@ -1374,53 +1229,44 @@ app.post('/api/customer/saved-carts', requireCustomer, (request, response) => {
     return
   }
 
-  database.prepare(`
-    INSERT OR IGNORE INTO customer_saved_carts (customer_id, source_order_id, label, items_json)
-    VALUES (?, ?, ?, ?)
-  `).run(request.customer.id, orderId, `Order #${orderId}`, JSON.stringify(items))
-  const savedCart = database.prepare(`
-    SELECT id, source_order_id AS sourceOrderId, label,
-      items_json AS itemsJson, created_at AS createdAt
-    FROM customer_saved_carts WHERE customer_id = ? AND source_order_id = ?
-  `).get(request.customer.id, orderId)
-  response.status(201).json({
-    savedCart: {
-      id: savedCart.id,
-      sourceOrderId: savedCart.sourceOrderId,
-      label: savedCart.label,
-      items: JSON.parse(savedCart.itemsJson),
-      createdAt: savedCart.createdAt,
-    },
+  const savedCart = await saveCustomerCart({
+    customerId: request.customer.id,
+    orderId,
+    label: `Order #${orderId}`,
+    items,
   })
+  if (!savedCart) {
+    response.status(409).json({ error: 'This order is already saved to your cart list.' })
+    return
+  }
+  response.status(201).json({ savedCart })
 })
 
-app.delete('/api/customer/saved-carts/:id', requireCustomer, (request, response) => {
+app.delete('/api/customer/saved-carts/:id', requireCustomer, async (request, response) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
     response.status(400).json({ error: 'Saved cart ID is invalid.' })
     return
   }
-  const result = database.prepare(
-    'DELETE FROM customer_saved_carts WHERE id = ? AND customer_id = ?',
-  ).run(id, request.customer.id)
-  if (!result.changes) {
+  const removed = await deleteSavedCart({ customerId: request.customer.id, id })
+  if (!removed) {
     response.status(404).json({ error: 'Saved cart not found.' })
     return
   }
   response.status(204).end()
 })
 
-app.get('/api/menu/:itemId/reviews', (request, response) => {
+app.get('/api/menu/:itemId/reviews', async (request, response) => {
   const itemId = request.params.itemId
-  if (!resolveFavoriteItem(itemId)) {
+  if (!await resolveFavoriteItem(itemId)) {
     response.status(404).json({ error: 'Menu item not found.' })
     return
   }
-  const summary = database.prepare(`
+  const summary = await database.prepare(`
     SELECT COUNT(*) AS reviewCount, ROUND(AVG(rating), 1) AS averageRating
     FROM menu_reviews WHERE item_id = ? AND is_approved = 1
   `).get(itemId)
-  const reviews = database.prepare(`
+  const reviews = await database.prepare(`
     SELECT r.rating, r.review, r.created_at AS createdAt,
       c.name AS customerName, c.profile_picture AS profilePicture
     FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
@@ -1429,19 +1275,19 @@ app.get('/api/menu/:itemId/reviews', (request, response) => {
   response.json({ ...summary, reviews })
 })
 
-app.post('/api/customer/reviews', requireCustomer, (request, response) => {
+app.post('/api/customer/reviews', requireCustomer, async (request, response) => {
   const orderId = Number(request.body.orderId)
   const itemId = typeof request.body.itemId === 'string' ? request.body.itemId : ''
   const rating = Number(request.body.rating)
   const review = typeof request.body.review === 'string' ? request.body.review.trim() : ''
   const flavorIdMatch = /^flavor:(\d+)$/.exec(itemId)
   const flavorId = flavorIdMatch ? Number(flavorIdMatch[1]) : 0
-  if (!Number.isSafeInteger(orderId) || orderId < 1 || !resolveFavoriteItem(itemId)
+  if (!Number.isSafeInteger(orderId) || orderId < 1 || !await resolveFavoriteItem(itemId)
     || !Number.isSafeInteger(rating) || rating < 1 || rating > 5 || review.length > 1000) {
     response.status(400).json({ error: 'Provide a purchased item, a 1–5 star rating, and a review under 1,000 characters.' })
     return
   }
-  const purchase = database.prepare(`
+  const purchase = await database.prepare(`
     SELECT o.id FROM orders o JOIN order_items i ON i.order_id = o.id
     WHERE o.id = ? AND o.customer_id = ? AND o.status IN ('processing', 'delivered')
       AND (i.menu_item_id = ? OR (? LIKE 'flavor:%' AND i.flavor_id = ?))
@@ -1451,13 +1297,16 @@ app.post('/api/customer/reviews', requireCustomer, (request, response) => {
     return
   }
   try {
-    const result = database.prepare(`
-      INSERT INTO menu_reviews (customer_id, order_id, item_id, rating, review)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(request.customer.id, orderId, itemId, rating, review)
-    response.status(201).json({ reviewId: Number(result.lastInsertRowid), pendingApproval: true })
+    const result = await createMenuReview({
+      customerId: request.customer.id,
+      orderId,
+      itemId,
+      rating,
+      review,
+    })
+    response.status(201).json(result)
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'You have already reviewed this item for this order.' })
       return
     }
@@ -1493,7 +1342,7 @@ app.post('/api/cake-requests', contactLimiter, async (request, response) => {
     try {
       const payload = jwt.verify(token, jwtSecret)
       if (payload.type !== 'customer') throw new Error('Customer session is invalid.')
-      const customer = database.prepare(`
+      const customer = await database.prepare(`
         SELECT id FROM customers WHERE id = ?
       `).get(payload.sub)
       if (!customer) throw new Error('Customer session is no longer valid.')
@@ -1503,12 +1352,18 @@ app.post('/api/cake-requests', contactLimiter, async (request, response) => {
       return
     }
   }
-  const result = database.prepare(`
-    INSERT INTO cake_requests (customer_id, customer_name, customer_email, customer_phone, size, flavor, message, toppings, pickup_date)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(customerId, customerName, customerEmail, customerPhone, size, flavor, message, JSON.stringify(toppings), pickupDate)
-  const requestId = Number(result.lastInsertRowid)
-  const admins = database.prepare('SELECT email FROM admins ORDER BY id').all()
+  const { id: requestId } = await createCakeRequest({
+    customerId,
+    customerName,
+    customerEmail,
+    customerPhone,
+    size,
+    flavor,
+    message,
+    toppings,
+    pickupDate,
+  })
+  const admins = await database.prepare('SELECT email FROM admins ORDER BY id').all()
   try {
     await sendCakeRequestNotification({
       recipients: admins.map((admin) => admin.email),
@@ -1524,7 +1379,7 @@ app.post('/api/auth/logout', (_request, response) => {
   response.status(204).end()
 })
 
-app.use('/api/admin', (request, response, next) => {
+app.use('/api/admin', async (request, response, next) => {
   if (request.method === 'GET' || request.method === 'HEAD') {
     next()
     return
@@ -1536,18 +1391,21 @@ app.use('/api/admin', (request, response, next) => {
       next()
       return
     }
-    const admin = database.prepare('SELECT id, name FROM admins WHERE id = ?').get(payload.sub)
+    const admin = await database.prepare('SELECT id, name FROM admins WHERE id = ?').get(payload.sub)
     if (!admin) {
       next()
       return
     }
-    response.on('finish', () => {
+    response.on('finish', async () => {
       if (response.statusCode < 200 || response.statusCode >= 300) return
       try {
-        database.prepare(`
-          INSERT INTO admin_activity (admin_id, admin_name, action, method, path)
-          VALUES (?, ?, ?, ?, ?)
-        `).run(admin.id, admin.name, `${request.method} ${request.path}`, request.method, request.path)
+        await createAdminActivity({
+          adminId: admin.id,
+          adminName: admin.name,
+          action: `${request.method} ${request.path}`,
+          method: request.method,
+          path: request.path,
+        })
       } catch (error) {
         console.error('Unable to save admin activity:', error.message)
       }
@@ -1562,7 +1420,7 @@ app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
   try {
     const email = typeof request.body.email === 'string' ? request.body.email.trim() : ''
     const password = typeof request.body.password === 'string' ? request.body.password : ''
-    const admin = database.prepare('SELECT * FROM admins WHERE email = ? COLLATE NOCASE').get(email)
+    const admin = await database.prepare('SELECT * FROM admins WHERE email = ? COLLATE NOCASE').get(email)
     if (!admin || !await verifyPassword(password, admin.password_hash)) {
       response.status(401).json({ error: 'The admin email or password is incorrect.' })
       return
@@ -1589,7 +1447,7 @@ app.get('/api/admin/me', requireAdmin, (request, response) => {
   })
 })
 
-app.put('/api/admin/profile-picture', requireAdmin, (request, response) => {
+app.put('/api/admin/profile-picture', requireAdmin, async (request, response) => {
   const profilePicture = typeof request.body.profilePicture === 'string'
     ? request.body.profilePicture.trim()
     : ''
@@ -1598,49 +1456,43 @@ app.put('/api/admin/profile-picture', requireAdmin, (request, response) => {
     return
   }
 
-  database.prepare('UPDATE admins SET profile_picture = ? WHERE id = ?')
-    .run(profilePicture, request.admin.id)
-  const admin = database.prepare(`
-    SELECT id, name, email, profile_picture AS profilePicture
-    FROM admins WHERE id = ?
-  `).get(request.admin.id)
+  const admin = await updateAdminProfilePicture(request.admin.id, profilePicture)
   response.json({ admin })
 })
 
-app.get('/api/admin/admins', requireAdmin, (_request, response) => {
-  const admins = database.prepare(`
+app.get('/api/admin/admins', requireAdmin, async (_request, response) => {
+  const admins = await database.prepare(`
     SELECT id, name, email, profile_picture AS profilePicture, created_at AS createdAt
     FROM admins ORDER BY id
   `).all()
   response.json({ admins })
 })
 
-app.get('/api/admin/customers', requireAdmin, (_request, response) => {
-  const customers = database.prepare(`
+app.get('/api/admin/customers', requireAdmin, async (_request, response) => {
+  const customers = (await database.prepare(`
     SELECT id, name, email, phone, delivery_city AS deliveryCity,
       created_at AS createdAt, is_banned AS isBanned
     FROM customers ORDER BY id DESC
-  `).all().map((customer) => ({ ...customer, isBanned: Boolean(customer.isBanned) }))
+  `).all()).map((customer) => ({ ...customer, isBanned: Boolean(customer.isBanned) }))
   response.json({ customers })
 })
 
-app.patch('/api/admin/customers/:id/ban', requireAdmin, (request, response) => {
+app.patch('/api/admin/customers/:id/ban', requireAdmin, async (request, response) => {
   const id = Number(request.params.id)
   const isBanned = request.body.isBanned
   if (!Number.isSafeInteger(id) || id < 1 || typeof isBanned !== 'boolean') {
     response.status(400).json({ error: 'Provide a valid customer and ban status.' })
     return
   }
-  const result = database.prepare('UPDATE customers SET is_banned = ? WHERE id = ?')
-    .run(isBanned ? 1 : 0, id)
-  if (!result.changes) {
+  const result = await setCustomerBanStatus(id, isBanned)
+  if (!result) {
     response.status(404).json({ error: 'Customer account not found.' })
     return
   }
   response.json({ id, isBanned })
 })
 
-app.get('/api/admin/orders', requireAdmin, (request, response) => {
+app.get('/api/admin/orders', requireAdmin, async (request, response) => {
   const deliveredOnly = request.query.status === 'delivered'
   if (request.query.status && !deliveredOnly) {
     response.status(400).json({ error: 'The requested order status is not supported.' })
@@ -1650,43 +1502,36 @@ app.get('/api/admin/orders', requireAdmin, (request, response) => {
   const storeId = requestedStoreId === undefined
     ? null
     : typeof requestedStoreId === 'string' ? Number(requestedStoreId) : NaN
-  if (storeId !== null && (!Number.isSafeInteger(storeId) || storeId < 1
-    || !database.prepare('SELECT 1 FROM stores WHERE id = ?').get(storeId))) {
+  const storeExists = storeId === null
+    ? true
+    : Number.isSafeInteger(storeId) && storeId > 0
+      && Boolean(await database.prepare('SELECT 1 FROM stores WHERE id = ?').get(storeId))
+  if (!storeExists) {
     response.status(400).json({ error: 'Choose a valid store to filter orders.' })
     return
   }
-  const orders = listOrders({ deliveredOnly, storeId })
+  const orders = await listOrders({ deliveredOnly, storeId })
   const count = deliveredOnly
-    ? database.prepare(`
+    ? (await database.prepare(`
       SELECT COUNT(*) AS count FROM orders
       WHERE status = 'delivered' ${storeId === null ? '' : 'AND store_id = ?'}
-    `).get(...(storeId === null ? [] : [storeId])).count
+    `).get(...(storeId === null ? [] : [storeId]))).count
     : undefined
   response.json({ orders, ...(deliveredOnly ? { count } : {}) })
 })
 
-app.get('/api/admin/stores', requireAdmin, (_request, response) => {
-  const stores = database.prepare(`
+app.get('/api/admin/stores', requireAdmin, async (_request, response) => {
+  const stores = (await database.prepare(`
     SELECT s.id, s.name, s.town, s.area, s.address,
       z.location, z.is_active AS isActive
     FROM stores s JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
     ORDER BY s.town, s.area
-  `).all().map((store) => ({ ...store, isActive: Boolean(store.isActive) }))
+  `).all()).map((store) => ({ ...store, isActive: Boolean(store.isActive) }))
   response.json({ stores })
 })
 
-app.delete('/api/admin/orders/delivered', requireAdmin, (_request, response) => {
-  const result = database.transaction(() => {
-    const { count } = database.prepare(
-      "SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'",
-    ).get()
-    if (count < 5) return { count, deleted: false }
-
-    const deletedCount = database.prepare(
-      "DELETE FROM orders WHERE status = 'delivered'",
-    ).run().changes
-    return { count: deletedCount, deleted: true }
-  })()
+app.delete('/api/admin/orders/delivered', requireAdmin, async (_request, response) => {
+  const result = await clearDeliveredOrders()
 
   if (!result.deleted) {
     response.status(409).json({
@@ -1698,33 +1543,19 @@ app.delete('/api/admin/orders/delivered', requireAdmin, (_request, response) => 
   response.json({ deleted: true, count: result.count })
 })
 
-app.delete('/api/admin/orders/:id', requireAdmin, (request, response) => {
+app.delete('/api/admin/orders/:id', requireAdmin, async (request, response) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
     response.status(400).json({ error: 'Order ID is invalid.' })
     return
   }
 
-  const deleteFailedOrder = database.transaction(() => {
-    const order = database.prepare(`
-      SELECT o.status AS orderStatus, p.status AS paymentStatus
-      FROM orders o LEFT JOIN payments p ON p.order_id = o.id
-      WHERE o.id = ?
-    `).get(id)
-    if (!order) return 'not_found'
-    if (order.orderStatus !== 'payment_failed' || (order.paymentStatus && order.paymentStatus !== 'failed')) {
-      return 'not_failed'
-    }
-
-    database.prepare('DELETE FROM orders WHERE id = ?').run(id)
-    return 'deleted'
-  })()
-
-  if (deleteFailedOrder === 'not_found') {
+  const deleteResult = await deleteFailedOrder(id)
+  if (deleteResult === 'not_found') {
     response.status(404).json({ error: 'Order not found.' })
     return
   }
-  if (deleteFailedOrder === 'not_failed') {
+  if (deleteResult === 'not_failed') {
     response.status(409).json({ error: 'Only failed, unpaid orders can be deleted.' })
     return
   }
@@ -1732,28 +1563,17 @@ app.delete('/api/admin/orders/:id', requireAdmin, (request, response) => {
 })
 
 async function updateOrderFulfillment(id, fulfillmentStatus, response) {
-  const status = fulfillmentStatus === 'delivered' ? 'delivered' : 'processing'
-  const legacyStatus = fulfillmentStatus === 'delivered'
-    ? 'delivered'
-    : fulfillmentStatus === 'ready'
-      ? 'ready'
-      : 'preparing'
-  const result = database.prepare(`
-    UPDATE orders
-    SET fulfillment_status = ?, delivery_stage = ?, status = ?,
-      delivered_at = CASE WHEN ? = 'delivered' THEN CURRENT_TIMESTAMP ELSE delivered_at END
-    WHERE id = ? AND status = 'processing'
-  `).run(legacyStatus, fulfillmentStatus, status, fulfillmentStatus, id)
-  if (result.changes === 0) {
-    const order = database.prepare('SELECT status FROM orders WHERE id = ?').get(id)
-    if (!order) {
+  const result = await updateOrderFulfillmentStatus(id, fulfillmentStatus)
+  if (!result.changed) {
+    if (result.notFound) {
       response.status(404).json({ error: 'Order not found.' })
       return
     }
     response.status(409).json({ error: 'Only paid, undelivered orders can be updated.' })
     return
   }
-  const order = database.prepare(`
+
+  const order = await database.prepare(`
     SELECT customer_email AS customerEmail, customer_name AS customerName
     FROM orders WHERE id = ?
   `).get(id)
@@ -1767,7 +1587,7 @@ async function updateOrderFulfillment(id, fulfillmentStatus, response) {
   } catch (error) {
     console.error(`Unable to send fulfillment update for order #${id}:`, error.message)
   }
-  response.json({ fulfillmentStatus: legacyStatus, deliveryStage: fulfillmentStatus })
+  response.json({ fulfillmentStatus: result.fulfillmentStatus, deliveryStage: result.deliveryStage })
 }
 
 app.patch('/api/admin/orders/:id/status', requireAdmin, async (request, response) => {
@@ -1793,8 +1613,8 @@ app.patch('/api/admin/orders/:id/delivered', requireAdmin, async (request, respo
   await updateOrderFulfillment(id, 'delivered', response)
 })
 
-app.get('/api/admin/payments', requireAdmin, (_request, response) => {
-  const payments = database.prepare(`
+app.get('/api/admin/payments', requireAdmin, async (_request, response) => {
+  const payments = await database.prepare(`
     SELECT p.id, p.order_id AS orderId, p.stripe_payment_intent_id AS paymentIntentId,
       p.amount_cents AS amountCents, p.currency, p.status, p.created_at AS createdAt,
       o.customer_name AS customerName, o.customer_email AS customerEmail
@@ -1804,40 +1624,42 @@ app.get('/api/admin/payments', requireAdmin, (_request, response) => {
   response.json({ payments })
 })
 
-app.get('/api/admin/notifications', requireAdmin, (_request, response) => {
-  const messages = database.prepare(`
+app.get('/api/admin/notifications', requireAdmin, async (_request, response) => {
+  const messages = (await database.prepare(`
     SELECT id, name, email, phone, subject, message, is_read AS isRead,
       created_at AS createdAt, replied_at AS repliedAt
     FROM contact_messages ORDER BY id DESC LIMIT 100
-  `).all().map((item) => ({ ...item, isRead: Boolean(item.isRead) }))
+  `).all()).map((item) => ({ ...item, isRead: Boolean(item.isRead) }))
   response.json({
     messages,
     unreadCount: messages.filter((item) => !item.isRead).length,
   })
 })
 
-app.patch('/api/admin/notifications/:id/read', requireAdmin, (request, response) => {
-  const result = database.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ?')
-    .run(Number(request.params.id))
-  if (result.changes === 0) {
+app.patch('/api/admin/notifications/:id/read', requireAdmin, async (request, response) => {
+  const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Notification ID is invalid.' })
+    return
+  }
+  const updated = await markContactMessageRead(id)
+  if (!updated) {
     response.status(404).json({ error: 'Notification not found.' })
     return
   }
   response.status(204).end()
 })
 
-app.delete('/api/admin/notifications/:id', requireAdmin, (request, response) => {
+app.delete('/api/admin/notifications/:id', requireAdmin, async (request, response) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
     response.status(400).json({ error: 'Notification ID is invalid.' })
     return
   }
 
-  const result = database.prepare(`
-    DELETE FROM contact_messages WHERE id = ? AND replied_at IS NOT NULL
-  `).run(id)
-  if (result.changes === 0) {
-    const message = database.prepare('SELECT replied_at AS repliedAt FROM contact_messages WHERE id = ?').get(id)
+  const deleted = await deleteRepliedContactMessage(id)
+  if (!deleted) {
+    const message = await database.prepare('SELECT replied_at AS repliedAt FROM contact_messages WHERE id = ?').get(id)
     if (!message) {
       response.status(404).json({ error: 'Notification not found.' })
       return
@@ -1856,7 +1678,7 @@ app.post('/api/admin/notifications/:id/reply', requireAdmin, contactReplyLimiter
     return
   }
 
-  const contact = database.prepare(`
+  const contact = await database.prepare(`
     SELECT id, name, email, subject FROM contact_messages WHERE id = ?
   `).get(id)
   if (!contact) {
@@ -1872,8 +1694,7 @@ app.post('/api/admin/notifications/:id/reply', requireAdmin, contactReplyLimiter
       reply,
       adminName: request.admin.name,
     })
-    database.prepare('UPDATE contact_messages SET is_read = 1, replied_at = CURRENT_TIMESTAMP WHERE id = ?').run(id)
-    const { repliedAt } = database.prepare('SELECT replied_at AS repliedAt FROM contact_messages WHERE id = ?').get(id)
+    const { repliedAt } = await markContactMessageReplied(id)
     response.json({ sent: true, repliedAt })
   } catch (error) {
     if (error.message.startsWith('Email delivery is not configured')
@@ -1901,17 +1722,15 @@ app.post('/api/admin/admins', requireAdmin, async (request, response, next) => {
       return
     }
     const passwordHash = await bcrypt.hash(password, 12)
-    const result = database.prepare(`
-      INSERT INTO admins (name, email, password_hash, profile_picture)
-      VALUES (?, ?, ?, ?)
-    `).run(name.trim(), email.trim().toLowerCase(), passwordHash, profilePicture)
-    const admin = database.prepare(`
-      SELECT id, name, email, profile_picture AS profilePicture
-      FROM admins WHERE id = ?
-    `).get(Number(result.lastInsertRowid))
+    const admin = await createAdminAccount({
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      passwordHash,
+      profilePicture,
+    })
     response.status(201).json({ admin })
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'An admin account already uses that email address.' })
       return
     }
@@ -1923,35 +1742,35 @@ app.post('/api/admin/logout', requireAdmin, (_request, response) => {
   response.status(204).end()
 })
 
-app.get('/api/admin/fulfillment-settings', requireAdmin, (_request, response) => {
-  const zones = database.prepare(`
+app.get('/api/admin/fulfillment-settings', requireAdmin, async (_request, response) => {
+  const zones = (await database.prepare(`
     SELECT z.id, z.location, z.pickup_enabled AS pickupEnabled,
       z.delivery_enabled AS deliveryEnabled, z.delivery_fee AS deliveryFee,
       z.is_active AS isActive, s.id AS storeId, s.name AS storeName,
       s.address AS storeAddress, s.phone AS storePhone
     FROM fulfillment_zones z JOIN stores s ON s.fulfillment_zone_id = z.id
     ORDER BY z.location
-  `).all().map((zone) => ({
+  `).all()).map((zone) => ({
     ...zone,
     pickupEnabled: Boolean(zone.pickupEnabled),
     deliveryEnabled: Boolean(zone.deliveryEnabled),
     isActive: Boolean(zone.isActive),
   }))
-  const slots = database.prepare(`
+  const slots = (await database.prepare(`
     SELECT id, label, start_time AS startTime, end_time AS endTime,
       is_active AS isActive, sort_order AS sortOrder
     FROM fulfillment_slots ORDER BY sort_order, id
-  `).all().map((slot) => ({ ...slot, isActive: Boolean(slot.isActive) }))
+  `).all()).map((slot) => ({ ...slot, isActive: Boolean(slot.isActive) }))
   response.json({ zones, slots })
 })
 
-app.put('/api/admin/fulfillment-zones', requireAdmin, (request, response) => {
+app.put('/api/admin/fulfillment-zones', requireAdmin, async (request, response) => {
   const zones = request.body.zones
   if (!Array.isArray(zones) || zones.length > 50) {
     response.status(400).json({ error: 'Provide a valid list of delivery zones.' })
     return
   }
-  const validZones = new Map(database.prepare('SELECT id, location FROM fulfillment_zones').all().map((zone) => [zone.id, zone]))
+  const validZones = new Map((await database.prepare('SELECT id, location FROM fulfillment_zones').all()).map((zone) => [zone.id, zone]))
   const seen = new Set()
   for (const zone of zones) {
     const id = Number(zone.id)
@@ -1964,20 +1783,11 @@ app.put('/api/admin/fulfillment-zones', requireAdmin, (request, response) => {
     }
     seen.add(id)
   }
-  const update = database.prepare(`
-    UPDATE fulfillment_zones SET pickup_enabled = ?, delivery_enabled = ?,
-      delivery_fee = ?, is_active = ? WHERE id = ?
-  `)
-  database.transaction(() => {
-    for (const zone of zones) {
-      update.run(zone.pickupEnabled ? 1 : 0, zone.deliveryEnabled ? 1 : 0,
-        Number(zone.deliveryFee), zone.isActive ? 1 : 0, Number(zone.id))
-    }
-  })()
-  response.json({ zones: zones.length })
+  const updated = await updateFulfillmentZones(zones)
+  response.json({ zones: updated })
 })
 
-app.put('/api/admin/fulfillment-slots', requireAdmin, (request, response) => {
+app.put('/api/admin/fulfillment-slots', requireAdmin, async (request, response) => {
   const slots = request.body.slots
   const timeMinutes = (value) => {
     const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value || '')
@@ -1995,38 +1805,29 @@ app.put('/api/admin/fulfillment-slots', requireAdmin, (request, response) => {
     response.status(400).json({ error: 'Fulfillment time slots cannot overlap.' })
     return
   }
-  database.transaction(() => {
-    database.prepare('DELETE FROM fulfillment_slots').run()
-    const insert = database.prepare(`
-      INSERT INTO fulfillment_slots (label, start_time, end_time, is_active, sort_order)
-      VALUES (?, ?, ?, ?, ?)
-    `)
-    slots.forEach((slot, index) => insert.run(
-      slot.label.trim(), slot.startTime, slot.endTime, slot.isActive ? 1 : 0, index,
-    ))
-  })()
-  response.json({ slots: slots.length })
+  const updated = await updateFulfillmentSlots(slots)
+  response.json({ slots: updated })
 })
 
-app.get('/api/admin/activity', requireAdmin, (_request, response) => {
-  const activity = database.prepare(`
+app.get('/api/admin/activity', requireAdmin, async (_request, response) => {
+  const activity = await database.prepare(`
     SELECT id, admin_name AS adminName, action, method, path, created_at AS createdAt
     FROM admin_activity ORDER BY id DESC LIMIT 200
   `).all()
   response.json({ activity })
 })
 
-app.get('/api/admin/cake-requests', requireAdmin, (_request, response) => {
-  const requests = database.prepare(`
+app.get('/api/admin/cake-requests', requireAdmin, async (_request, response) => {
+  const requests = (await database.prepare(`
     SELECT id, customer_name AS customerName, customer_email AS customerEmail,
       customer_phone AS customerPhone, size, flavor, message, toppings,
       pickup_date AS pickupDate, status, created_at AS createdAt
     FROM cake_requests ORDER BY id DESC LIMIT 200
-  `).all().map((item) => ({ ...item, toppings: JSON.parse(item.toppings) }))
+  `).all()).map((item) => ({ ...item, toppings: JSON.parse(item.toppings) }))
   response.json({ requests })
 })
 
-app.patch('/api/admin/cake-requests/:id/status', requireAdmin, (request, response) => {
+app.patch('/api/admin/cake-requests/:id/status', requireAdmin, async (request, response) => {
   const id = Number(request.params.id)
   const status = request.body.status
   if (!Number.isSafeInteger(id) || id < 1
@@ -2034,52 +1835,56 @@ app.patch('/api/admin/cake-requests/:id/status', requireAdmin, (request, respons
     response.status(400).json({ error: 'Choose a valid cake request and status.' })
     return
   }
-  const result = database.prepare('UPDATE cake_requests SET status = ? WHERE id = ?').run(status, id)
-  if (!result.changes) {
+  const result = await setCakeRequestStatus(id, status)
+  if (!result) {
     response.status(404).json({ error: 'Custom cake request not found.' })
     return
   }
   response.json({ id, status })
 })
 
-app.get('/api/admin/reviews', requireAdmin, (request, response) => {
+app.get('/api/admin/reviews', requireAdmin, async (request, response) => {
   if (request.query.countOnly === 'true') {
-    const { count } = database.prepare('SELECT COUNT(*) AS count FROM menu_reviews WHERE is_approved = 0').get()
+    const { count } = await database.prepare('SELECT COUNT(*) AS count FROM menu_reviews WHERE is_approved = 0').get()
     response.json({ pendingCount: count })
     return
   }
   const status = request.query.status === 'approved' ? 1 : 0
-  const reviews = database.prepare(`
+  const reviews = await database.prepare(`
     SELECT r.id, r.order_id AS orderId, r.item_id AS itemId, r.rating,
       r.review, r.is_approved AS isApproved, r.created_at AS createdAt,
       c.name AS customerName, c.email AS customerEmail
     FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
     WHERE r.is_approved = ? ORDER BY r.id DESC LIMIT 200
-  `).all(status).map((review) => ({
+  `).all(status)
+  const resolvedReviews = await Promise.all(reviews.map(async (review) => ({
     ...review,
     isApproved: Boolean(review.isApproved),
-    itemName: resolveFavoriteItem(review.itemId)?.name || review.itemId,
-  }))
-  response.json({ reviews })
+    itemName: (await resolveFavoriteItem(review.itemId))?.name || review.itemId,
+  })))
+  response.json({ reviews: resolvedReviews })
 })
 
-app.patch('/api/admin/reviews/:id/approval', requireAdmin, (request, response) => {
+app.patch('/api/admin/reviews/:id/approval', requireAdmin, async (request, response) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1 || typeof request.body.isApproved !== 'boolean') {
     response.status(400).json({ error: 'Provide a valid review and approval status.' })
     return
   }
-  const result = database.prepare('UPDATE menu_reviews SET is_approved = ? WHERE id = ?')
-    .run(request.body.isApproved ? 1 : 0, id)
-  if (!result.changes) {
+  const result = await setReviewApproval(id, request.body.isApproved)
+  if (!result) {
     response.status(404).json({ error: 'Review not found.' })
     return
   }
   response.json({ id, isApproved: request.body.isApproved })
 })
 
-app.get('/api/admin/stock-alerts', requireAdmin, (_request, response) => {
-  const inventory = new Map(listMenuInventory().map((entry) => [entry.itemId, entry]))
+app.get('/api/admin/stock-alerts', requireAdmin, async (_request, response) => {
+  const [inventoryRows, customItems] = await Promise.all([
+    listMenuInventory(),
+    listCustomMenuItems(),
+  ])
+  const inventory = new Map(inventoryRows.map((entry) => [entry.itemId, entry]))
   const items = []
   for (const category of coldStoneMenuCategories) {
     for (const item of category.items) {
@@ -2090,7 +1895,7 @@ app.get('/api/admin/stock-alerts', requireAdmin, (_request, response) => {
       }
     }
   }
-  for (const item of listCustomMenuItems()) {
+  for (const item of customItems) {
     if (item.availableQuantity <= item.lowStockThreshold || !item.isAvailable) {
       items.push({ itemId: item.id, name: item.name, category: item.categoryTitle, ...item })
     }
@@ -2098,26 +1903,26 @@ app.get('/api/admin/stock-alerts', requireAdmin, (_request, response) => {
   response.json({ items })
 })
 
-app.post('/api/admin/flavors', requireAdmin, (request, response, next) => {
+app.post('/api/admin/flavors', requireAdmin, async (request, response, next) => {
   try {
     const flavor = normalizeFlavor(request.body)
     if (!flavor) {
       response.status(400).json({ error: 'Provide a name, descriptions, image, and a price greater than zero.' })
       return
     }
-    response.status(201).json({ flavor: saveFlavor(flavor) })
+    response.status(201).json({ flavor: await saveFlavor(flavor) })
   } catch (error) {
     next(error)
   }
 })
 
-function normalizeCustomMenuItem(body) {
+async function normalizeCustomMenuItem(body) {
   const categoryTitle = typeof body.categoryTitle === 'string' ? body.categoryTitle.trim() : ''
   const name = typeof body.name === 'string' ? body.name.trim() : ''
   const detail = typeof body.detail === 'string' ? body.detail.trim() : ''
   const image = typeof body.image === 'string' ? body.image.trim() : ''
   const priceXaf = Number(body.priceXaf)
-  const categoryExists = listMenuCategories().some((category) => category.title === categoryTitle)
+  const categoryExists = (await listMenuCategories()).some((category) => category.title === categoryTitle)
   const stock = Number(body.stock ?? 100)
   const isAvailable = body.isAvailable !== false
   const validImage = image.length <= 2000 && (
@@ -2132,16 +1937,17 @@ function normalizeCustomMenuItem(body) {
   return { categoryTitle, name, detail, image, priceXaf, stock, isAvailable }
 }
 
-app.get('/api/admin/menu-categories', requireAdmin, (_request, response) => {
-  response.json({ categories: listMenuCategories() })
+app.get('/api/admin/menu-categories', requireAdmin, async (_request, response) => {
+  response.json({ categories: await listMenuCategories() })
 })
 
-function normalizeMenuCategory(body, existing = null) {
+async function normalizeMenuCategory(body, existing = null) {
   const title = typeof body.title === 'string' ? body.title.trim() : ''
   const description = typeof body.description === 'string' ? body.description.trim() : ''
   const image = typeof body.image === 'string' ? body.image.trim() : ''
   const icon = typeof body.icon === 'string' && body.icon.trim() ? body.icon.trim().slice(0, 12) : '🍦'
-  const sortOrder = Number(body.sortOrder ?? existing?.sortOrder ?? listMenuCategories().length)
+  const categories = await listMenuCategories()
+  const sortOrder = Number(body.sortOrder ?? existing?.sortOrder ?? categories.length)
   const validImage = !image || ((image.startsWith('/') && !image.startsWith('//')) || /^https:\/\/[^\s]+$/i.test(image))
   if (!title || title.length > 80 || description.length > 300 || !validImage
     || !Number.isSafeInteger(sortOrder) || sortOrder < 0 || sortOrder > 10000) return null
@@ -2155,16 +1961,16 @@ function normalizeMenuCategory(body, existing = null) {
   }
 }
 
-app.post('/api/admin/menu-categories', requireAdmin, (request, response, next) => {
-  const category = normalizeMenuCategory(request.body)
+app.post('/api/admin/menu-categories', requireAdmin, async (request, response, next) => {
+  const category = await normalizeMenuCategory(request.body)
   if (!category) {
     response.status(400).json({ error: 'Provide a category name, valid image path, and non-negative order.' })
     return
   }
   try {
-    response.status(201).json({ category: saveMenuCategory(category) })
+    response.status(201).json({ category: await saveMenuCategory(category) })
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'A category with that name already exists.' })
       return
     }
@@ -2172,22 +1978,22 @@ app.post('/api/admin/menu-categories', requireAdmin, (request, response, next) =
   }
 })
 
-app.put('/api/admin/menu-categories/:id', requireAdmin, (request, response, next) => {
+app.put('/api/admin/menu-categories/:id', requireAdmin, async (request, response, next) => {
   const id = Number(request.params.id)
-  const existing = listMenuCategories().find((category) => category.id === id)
+  const existing = (await listMenuCategories()).find((category) => category.id === id)
   if (!existing) {
     response.status(404).json({ error: 'Menu category not found.' })
     return
   }
-  const category = normalizeMenuCategory(request.body, existing)
+  const category = await normalizeMenuCategory(request.body, existing)
   if (!category) {
     response.status(400).json({ error: 'Provide a category name, valid image path, and non-negative order.' })
     return
   }
   try {
-    response.json({ category: saveMenuCategory(category) })
+    response.json({ category: await saveMenuCategory(category) })
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'A category with that name already exists.' })
       return
     }
@@ -2195,13 +2001,13 @@ app.put('/api/admin/menu-categories/:id', requireAdmin, (request, response, next
   }
 })
 
-app.delete('/api/admin/menu-categories/:id', requireAdmin, (request, response) => {
+app.delete('/api/admin/menu-categories/:id', requireAdmin, async (request, response) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
     response.status(400).json({ error: 'Menu category ID is invalid.' })
     return
   }
-  const result = deleteMenuCategory(id)
+  const result = await deleteMenuCategory(id)
   if (result === 'not_found') {
     response.status(404).json({ error: 'Menu category not found.' })
     return
@@ -2213,7 +2019,7 @@ app.delete('/api/admin/menu-categories/:id', requireAdmin, (request, response) =
   response.status(204).end()
 })
 
-app.put('/api/admin/menu-inventory', requireAdmin, (request, response) => {
+app.put('/api/admin/menu-inventory', requireAdmin, async (request, response) => {
   const itemId = typeof request.body.itemId === 'string' ? request.body.itemId : ''
   const stock = Number(request.body.stock)
   const lowStockThreshold = Number(request.body.lowStockThreshold)
@@ -2222,7 +2028,7 @@ app.put('/api/admin/menu-inventory', requireAdmin, (request, response) => {
   const dietaryTags = Array.isArray(request.body.dietaryTags)
     ? [...new Set(request.body.dietaryTags)]
     : []
-  const row = database.prepare('SELECT reserved_stock AS reservedStock FROM menu_inventory WHERE item_id = ?').get(itemId)
+  const row = await database.prepare('SELECT reserved_stock AS reservedStock FROM menu_inventory WHERE item_id = ?').get(itemId)
   if (!row || !Number.isSafeInteger(stock) || stock < row.reservedStock
     || !Number.isSafeInteger(lowStockThreshold) || lowStockThreshold < 0 || lowStockThreshold > 100000) {
     response.status(400).json({ error: 'Provide a valid menu item, stock no lower than quantities reserved, and a low-stock threshold from zero to 100,000.' })
@@ -2232,7 +2038,7 @@ app.put('/api/admin/menu-inventory', requireAdmin, (request, response) => {
     response.status(400).json({ error: 'One or more dietary tags are not supported.' })
     return
   }
-  const updated = updateMenuInventory(itemId, { stock, isAvailable, dietaryTags, lowStockThreshold })
+  const updated = await updateMenuInventory(itemId, { stock, isAvailable, dietaryTags, lowStockThreshold })
   if (!updated) {
     response.status(409).json({ error: 'Stock cannot be lower than the quantity reserved for pending checkouts.' })
     return
@@ -2269,8 +2075,8 @@ app.post('/api/admin/uploads', requireAdmin, async (request, response) => {
   response.status(201).json({ image: `/uploads/${filename}` })
 })
 
-app.get('/api/admin/discount-codes', requireAdmin, (_request, response) => {
-  response.json({ discountCodes: listDiscountCodes() })
+app.get('/api/admin/discount-codes', requireAdmin, async (_request, response) => {
+  response.json({ discountCodes: await listDiscountCodes() })
 })
 
 function normalizeDiscountCode(body, existing = null) {
@@ -2300,16 +2106,16 @@ function normalizeDiscountCode(body, existing = null) {
   }
 }
 
-app.post('/api/admin/discount-codes', requireAdmin, (request, response, next) => {
+app.post('/api/admin/discount-codes', requireAdmin, async (request, response, next) => {
   const code = normalizeDiscountCode(request.body)
   if (!code) {
     response.status(400).json({ error: 'Provide a unique code, valid discount amount, minimum total, and optional expiry.' })
     return
   }
   try {
-    response.status(201).json({ discountCode: saveDiscountCode(code) })
+    response.status(201).json({ discountCode: await saveDiscountCode(code) })
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'That discount code already exists.' })
       return
     }
@@ -2317,9 +2123,9 @@ app.post('/api/admin/discount-codes', requireAdmin, (request, response, next) =>
   }
 })
 
-app.put('/api/admin/discount-codes/:id', requireAdmin, (request, response, next) => {
+app.put('/api/admin/discount-codes/:id', requireAdmin, async (request, response, next) => {
   const id = Number(request.params.id)
-  const existing = listDiscountCodes().find((code) => code.id === id)
+  const existing = (await listDiscountCodes()).find((code) => code.id === id)
   if (!existing) {
     response.status(404).json({ error: 'Discount code not found.' })
     return
@@ -2330,9 +2136,9 @@ app.put('/api/admin/discount-codes/:id', requireAdmin, (request, response, next)
     return
   }
   try {
-    response.json({ discountCode: saveDiscountCode(code) })
+    response.json({ discountCode: await saveDiscountCode(code) })
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'That discount code already exists.' })
       return
     }
@@ -2340,29 +2146,29 @@ app.put('/api/admin/discount-codes/:id', requireAdmin, (request, response, next)
   }
 })
 
-app.delete('/api/admin/discount-codes/:id', requireAdmin, (request, response) => {
-  if (!deleteDiscountCode(Number(request.params.id))) {
+app.delete('/api/admin/discount-codes/:id', requireAdmin, async (request, response) => {
+  if (!(await deleteDiscountCode(Number(request.params.id)))) {
     response.status(404).json({ error: 'Discount code not found.' })
     return
   }
   response.status(204).end()
 })
 
-app.get('/api/admin/reports', requireAdmin, (_request, response) => {
-  const summary = database.prepare(`
+app.get('/api/admin/reports', requireAdmin, async (_request, response) => {
+  const summary = await database.prepare(`
     SELECT COUNT(*) AS orderCount,
       COALESCE(SUM(CASE WHEN status IN ('processing', 'delivered') THEN total_cents ELSE 0 END), 0) AS sales,
       COALESCE(AVG(CASE WHEN status IN ('processing', 'delivered') THEN total_cents END), 0) AS averageOrder,
       COALESCE(SUM(CASE WHEN status NOT IN ('payment_failed') THEN 1 ELSE 0 END), 0) AS placedCount
     FROM orders
   `).get()
-  const popularItems = database.prepare(`
+  const popularItems = await database.prepare(`
     SELECT flavor_name AS name, SUM(quantity) AS quantity, SUM(line_total_cents) AS sales
     FROM order_items oi JOIN orders o ON o.id = oi.order_id
     WHERE o.status IN ('processing', 'delivered')
     GROUP BY flavor_name ORDER BY quantity DESC LIMIT 10
   `).all()
-  const lowStock = database.prepare(`
+  const lowStock = await database.prepare(`
     SELECT itemId, name, stock, reservedStock, isAvailable, availableQuantity FROM (
       SELECT item_id AS itemId, item_id AS name, stock,
         reserved_stock AS reservedStock, is_available AS isAvailable,
@@ -2375,7 +2181,7 @@ app.get('/api/admin/reports', requireAdmin, (_request, response) => {
       FROM flavors WHERE stock - reserved_stock <= 5
     ) ORDER BY availableQuantity, itemId LIMIT 30
   `).all()
-  const recentSales = database.prepare(`
+  const recentSales = await database.prepare(`
     SELECT date(created_at) AS date, SUM(total_cents) AS sales, COUNT(*) AS orders
     FROM orders WHERE status IN ('processing', 'delivered')
       AND created_at >= datetime('now', '-30 days')
@@ -2384,17 +2190,17 @@ app.get('/api/admin/reports', requireAdmin, (_request, response) => {
   response.json({ summary, popularItems, lowStock, recentSales })
 })
 
-app.post('/api/admin/menu-items', requireAdmin, (request, response, next) => {
-  const itemDetails = normalizeCustomMenuItem(request.body)
+app.post('/api/admin/menu-items', requireAdmin, async (request, response, next) => {
+  const itemDetails = await normalizeCustomMenuItem(request.body)
   if (!itemDetails) {
     response.status(400).json({ error: 'Choose a category and provide a name, description, valid image path, and whole-number price greater than zero.' })
     return
   }
   try {
-    const item = saveCustomMenuItem(itemDetails)
+    const item = await saveCustomMenuItem(itemDetails)
     response.status(201).json({ item })
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'A menu item with that name already exists in this category.' })
       return
     }
@@ -2402,34 +2208,34 @@ app.post('/api/admin/menu-items', requireAdmin, (request, response, next) => {
   }
 })
 
-app.put('/api/admin/menu-items/:id', requireAdmin, (request, response, next) => {
+app.put('/api/admin/menu-items/:id', requireAdmin, async (request, response, next) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
     response.status(400).json({ error: 'Menu item ID is invalid.' })
     return
   }
-  if (!findCustomMenuItem(id)) {
+  if (!await findCustomMenuItem(id)) {
     response.status(404).json({ error: 'Menu item not found.' })
     return
   }
-  const itemDetails = normalizeCustomMenuItem(request.body)
+  const itemDetails = await normalizeCustomMenuItem(request.body)
   if (!itemDetails) {
     response.status(400).json({ error: 'Choose a category and provide a name, description, valid image path, and whole-number price greater than zero.' })
     return
   }
-  const existingItem = findCustomMenuItem(id)
+  const existingItem = await findCustomMenuItem(id)
   if (itemDetails.stock < existingItem.reservedStock) {
     response.status(409).json({ error: 'Stock cannot be lower than the quantity reserved for pending checkouts.' })
     return
   }
   try {
-    response.json({ item: updateCustomMenuItem(id, itemDetails) })
+    response.json({ item: await updateCustomMenuItem(id, itemDetails) })
   } catch (error) {
     if (error.code === 'STOCK_RESERVED') {
       response.status(409).json({ error: error.message })
       return
     }
-    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'A menu item with that name already exists in this category.' })
       return
     }
@@ -2437,27 +2243,31 @@ app.put('/api/admin/menu-items/:id', requireAdmin, (request, response, next) => 
   }
 })
 
-app.delete('/api/admin/menu-items/:id', requireAdmin, (request, response) => {
+app.delete('/api/admin/menu-items/:id', requireAdmin, async (request, response, next) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
     response.status(400).json({ error: 'Menu item ID is invalid.' })
     return
   }
-  const result = deleteCustomMenuItem(id)
-  if (result === 'not_found') {
-    response.status(404).json({ error: 'Menu item not found.' })
-    return
+  try {
+    const result = await deleteCustomMenuItem(id)
+    if (result === 'not_found') {
+      response.status(404).json({ error: 'Menu item not found.' })
+      return
+    }
+    if (result === 'reserved') {
+      response.status(409).json({ error: 'This item has stock reserved for pending checkouts and cannot be deleted yet.' })
+      return
+    }
+    response.status(204).end()
+  } catch (error) {
+    next(error)
   }
-  if (result === 'reserved') {
-    response.status(409).json({ error: 'This item has stock reserved for pending checkouts and cannot be deleted yet.' })
-    return
-  }
-  response.status(204).end()
 })
 
-app.put('/api/admin/flavors/:id', requireAdmin, (request, response, next) => {
+app.put('/api/admin/flavors/:id', requireAdmin, async (request, response, next) => {
   try {
-    const existing = findFlavor(Number(request.params.id))
+    const existing = await findFlavor(Number(request.params.id))
     if (!existing) {
       response.status(404).json({ error: 'Flavor not found.' })
       return
@@ -2471,24 +2281,28 @@ app.put('/api/admin/flavors/:id', requireAdmin, (request, response, next) => {
       response.status(409).json({ error: 'Stock cannot be lower than the quantity reserved for pending checkouts.' })
       return
     }
-    response.json({ flavor: saveFlavor({ ...flavor, id: existing.id }) })
+    response.json({ flavor: await saveFlavor({ ...flavor, id: existing.id }) })
   } catch (error) {
     next(error)
   }
 })
 
-app.delete('/api/admin/flavors/:id', requireAdmin, (request, response) => {
-  const flavor = findFlavor(Number(request.params.id))
-  if (flavor?.reservedStock > 0) {
-    response.status(409).json({ error: 'This flavor has inventory reserved for a pending checkout and cannot be deleted yet.' })
-    return
+app.delete('/api/admin/flavors/:id', requireAdmin, async (request, response, next) => {
+  try {
+    const flavor = await findFlavor(Number(request.params.id))
+    if (flavor?.reservedStock > 0) {
+      response.status(409).json({ error: 'This flavor has inventory reserved for a pending checkout and cannot be deleted yet.' })
+      return
+    }
+    const deleted = await deleteFlavor(Number(request.params.id))
+    if (!deleted) {
+      response.status(404).json({ error: 'Flavor not found.' })
+      return
+    }
+    response.status(204).end()
+  } catch (error) {
+    next(error)
   }
-  const result = database.prepare('DELETE FROM flavors WHERE id = ?').run(Number(request.params.id))
-  if (result.changes === 0) {
-    response.status(404).json({ error: 'Flavor not found.' })
-    return
-  }
-  response.status(204).end()
 })
 
 const frontendDirectory = fileURLToPath(new URL('../dist/', import.meta.url))
@@ -2502,6 +2316,14 @@ if (existsSync(frontendEntry)) {
     }
     response.sendFile(frontendEntry)
   })
+}
+
+try {
+  await verifyDatabaseSchema()
+} catch (error) {
+  console.error('Database schema verification failed:', error)
+  await database.close()
+  throw error
 }
 
 app.use((error, _request, response, _next) => {
@@ -2541,9 +2363,14 @@ const server = app.listen(port, () => {
 })
 
 function shutdown() {
-  server.close(() => {
-    database.close()
-    process.exit(0)
+  server.close(async () => {
+    try {
+      await database.close()
+      process.exit(0)
+    } catch (error) {
+      console.error('Unable to close database connections:', error)
+      process.exit(1)
+    }
   })
 }
 

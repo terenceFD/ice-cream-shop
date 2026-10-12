@@ -11,8 +11,10 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "lint": "oxlint",
+    "test:migration": "node --test scripts/sqlite-postgres-schema.test.js server/postgres.test.js",
     "preview": "vite preview",
-    "seed:admin": "node server/seedAdmin.js"
+    "seed:admin": "node server/seedAdmin.js",
+    "migrate:supabase": "node scripts/migrate-sqlite-to-supabase.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -24,6 +26,7 @@
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^10.0.16",
+    "pg": "^8.23.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4",
