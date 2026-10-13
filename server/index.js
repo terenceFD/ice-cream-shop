@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import rateLimit from 'express-rate-limit'
 import Stripe from 'stripe'
-import { randomUUID, timingSafeEqual } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -149,58 +149,20 @@ function getStripe() {
   return stripeClient
 }
 
-function isFlutterwaveMobileMoneyEnabled() {
-  return process.env.FLUTTERWAVE_MOBILE_MONEY_ENABLED === 'true'
-    && Boolean(process.env.FLUTTERWAVE_SECRET_KEY?.trim())
-    && Boolean(process.env.FLUTTERWAVE_SECRET_HASH?.trim())
-}
-
-async function requestFlutterwave(path, options = {}) {
-  const secretKey = process.env.FLUTTERWAVE_SECRET_KEY?.trim()
-  if (!secretKey) throw new Error('Flutterwave is not configured.')
-  let response
-  try {
-    response = await fetch(`https://api.flutterwave.com/v3${path}`, {
-      ...options,
-      headers: {
-        Authorization: `Bearer ${secretKey}`,
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    })
-  } catch (error) {
-    throw new Error('Unable to reach Flutterwave.', { cause: error })
+function normalizeCameroonPhone(phone) {
+  const digits = phone.replace(/\D/g, '')
+  const localNumber = digits.startsWith('237') ? digits.slice(3) : digits
+  if (!/^[26]\d{8}$/.test(localNumber)) {
+    throw new Error('Enter a valid Cameroon mobile number for CamPay.')
   }
-  let result
-  try {
-    result = await response.json()
-  } catch (error) {
-    throw new Error(`Flutterwave returned an invalid response (${response.status}).`, { cause: error })
-  }
-  if (!response.ok || result.status !== 'success') {
-    throw new Error(`Flutterwave request failed (${response.status}).`)
-  }
-  return result.data
-}
-
-async function verifyFlutterwaveTransaction(transactionId) {
-  if (!/^\d{1,30}$/.test(String(transactionId))) {
-    throw new Error('Flutterwave transaction ID is invalid.')
-  }
-  return requestFlutterwave(`/transactions/${encodeURIComponent(transactionId)}/verify`)
+  return `237${localNumber}`
 }
 
 async function recordPaidCheckout(session, provider = 'stripe') {
-  const reference = provider === 'stripe'
-    ? session.id
-    : provider === 'campay'
-      ? session.external_reference
-      : session.tx_ref
+  const reference = provider === 'stripe' ? session.id : session.external_reference
   const paymentIsPaid = provider === 'stripe'
     ? session.payment_status === 'paid'
-    : provider === 'campay'
-      ? session.status === 'SUCCESSFUL'
-      : session.status === 'successful'
+    : session.status === 'SUCCESSFUL'
   if (!paymentIsPaid || typeof reference !== 'string') return false
   const payment = await database.prepare(`
     SELECT p.order_id AS "orderId", p.status, p.amount_cents AS "amountCents",
@@ -213,10 +175,10 @@ async function recordPaidCheckout(session, provider = 'stripe') {
   if (provider === 'stripe' && Number(session.metadata?.orderId) !== orderId) {
     throw new Error('Stripe checkout session order reference did not match.')
   }
-  if (provider === 'flutterwave' || provider === 'campay') {
+  if (provider === 'campay') {
     if (String(session.currency).toLowerCase() !== payment.currency.toLowerCase()
       || Number(session.amount) !== payment.amountCents) {
-      throw new Error('Flutterwave transaction amount or currency did not match the order.')
+      throw new Error('CamPay transaction amount or currency did not match the order.')
     }
   }
   if (!Number.isSafeInteger(orderId) || orderId < 1) {
@@ -227,10 +189,7 @@ async function recordPaidCheckout(session, provider = 'stripe') {
 
   const paymentDetails = provider === 'stripe'
     ? session
-    : {
-      id: reference,
-      transactionId: provider === 'campay' ? session.reference : session.id,
-    }
+    : { id: reference, transactionId: session.reference }
   const { paymentRecorded, earnedPoints } = await finalizePaidCheckout(orderId, paymentDetails, provider)
   if (!paymentRecorded) return false
 
@@ -279,7 +238,7 @@ async function reconcileCamPayCheckouts() {
   isReconcilingCamPayCheckouts = true
   try {
     const payments = await database.prepare(`
-      SELECT p.provider_reference AS "externalReference",
+      SELECT p.provider_reference AS "externalReference", p.order_id AS "orderId",
         p.stripe_checkout_session_id AS "camPayReference"
       FROM payments p JOIN orders o ON o.id = p.order_id
       WHERE p.payment_provider = 'campay' AND p.status = 'pending'
@@ -296,13 +255,7 @@ async function reconcileCamPayCheckouts() {
         if (transaction.status === 'SUCCESSFUL') {
           await recordPaidCheckout(transaction, 'campay')
         } else if (transaction.status === 'FAILED') {
-          const order = await database.prepare(`
-            SELECT order_id AS "orderId" FROM payments
-            WHERE provider_reference = ? AND payment_provider = 'campay' AND status = 'pending'
-          `).get(payment.externalReference)
-          if (order) {
-            await markCheckoutPaymentFailed(order.orderId, payment.externalReference, 'campay')
-          }
+          await markCheckoutPaymentFailed(payment.orderId, payment.externalReference, 'campay')
         }
       } catch (error) {
         console.error(`Unable to reconcile CamPay checkout ${payment.externalReference}:`, error.message)
@@ -383,49 +336,8 @@ app.get('/api/payment/methods', (_request, response) => {
     methods: {
       card: Boolean(getStripe()),
       campayMobileMoney: isCamPayMobileMoneyEnabled(),
-      flutterwaveMobileMoney: isFlutterwaveMobileMoneyEnabled(),
     },
   })
-})
-
-app.post('/api/flutterwave/webhook', async (request, response) => {
-  const secretHash = process.env.FLUTTERWAVE_SECRET_HASH?.trim()
-  const receivedHash = request.get('verif-hash')
-  if (!secretHash || typeof receivedHash !== 'string') {
-    response.status(401).end()
-    return
-  }
-  const expectedBuffer = Buffer.from(secretHash)
-  const receivedBuffer = Buffer.from(receivedHash)
-  if (expectedBuffer.length !== receivedBuffer.length
-    || !timingSafeEqual(expectedBuffer, receivedBuffer)) {
-    response.status(401).end()
-    return
-  }
-
-  const transactionId = request.body?.data?.id
-  if (request.body?.event !== 'charge.completed' || !transactionId) {
-    response.status(200).end()
-    return
-  }
-  try {
-    const transaction = await verifyFlutterwaveTransaction(transactionId)
-    if (transaction.status === 'successful') {
-      await recordPaidCheckout(transaction, 'flutterwave')
-    } else if (transaction.status === 'failed' && typeof transaction.tx_ref === 'string') {
-      const payment = await database.prepare(`
-        SELECT order_id AS "orderId" FROM payments
-        WHERE provider_reference = ? AND payment_provider = 'flutterwave' AND status = 'pending'
-      `).get(transaction.tx_ref)
-      if (payment) {
-        await markCheckoutPaymentFailed(payment.orderId, transaction.tx_ref, 'flutterwave')
-      }
-    }
-    response.status(200).end()
-  } catch (error) {
-    console.error('Unable to verify Flutterwave webhook transaction:', error.message)
-    response.status(500).json({ error: 'Flutterwave payment event could not be verified.' })
-  }
 })
 
 const loginLimiter = rateLimit({
@@ -726,7 +638,7 @@ app.post('/api/discount-codes/validate', async (request, response) => {
 app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (request, response) => {
   const stripe = getStripe()
   const paymentMethod = request.body.paymentMethod || 'card'
-  if (!['card', 'flutterwave', 'campay'].includes(paymentMethod)) {
+  if (!['card', 'campay'].includes(paymentMethod)) {
     response.status(400).json({ error: 'Choose a supported payment method.' })
     return
   }
@@ -734,19 +646,19 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
     response.status(503).json({ error: 'CamPay Mobile Money is not configured for this store.' })
     return
   }
-  if (paymentMethod === 'flutterwave' && !isFlutterwaveMobileMoneyEnabled()) {
-    response.status(503).json({ error: 'Flutterwave Mobile Money is not configured for this store.' })
-    return
-  }
 
   const details = request.body.checkoutDetails
   const name = typeof details?.name === 'string' ? details.name.trim() : ''
   const email = typeof details?.email === 'string' ? details.email.trim().toLowerCase() : ''
   const phone = typeof details?.phone === 'string' ? details.phone.trim() : ''
-  const phoneDigits = phone.replace(/\D/g, '')
-  const camPayPhone = phoneDigits.startsWith('237')
-    ? phoneDigits
-    : phoneDigits.length === 9 ? `237${phoneDigits}` : ''
+  if (paymentMethod === 'campay') {
+    try {
+      normalizeCameroonPhone(phone)
+    } catch (error) {
+      response.status(400).json({ error: error.message })
+      return
+    }
+  }
   const city = typeof details?.city === 'string' ? details.city.trim() : ''
   const storeId = Number(details?.storeId)
   const residence = typeof details?.residence === 'string' ? details.residence.trim() : ''
@@ -789,10 +701,6 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
     || !slot || !slotDate || slotDate <= new Date() || slotDate > new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
     || !Array.isArray(requestedItems) || requestedItems.length < 1 || requestedItems.length > 50) {
     response.status(400).json({ error: 'Provide valid contact, location, fulfillment type, future date, time slot, and cart details before payment.' })
-    return
-  }
-  if (paymentMethod === 'campay' && !/^237\d{9}$/.test(camPayPhone)) {
-    response.status(400).json({ error: 'Enter a valid Cameroon mobile number for CamPay Mobile Money.' })
     return
   }
   const scheduledFor = `${scheduledDate}T${slot.startTime}:00+01:00`
@@ -949,15 +857,12 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
     let checkoutUrl
     if (paymentMethod === 'campay') {
       const externalReference = `icy-${orderId}-${randomUUID()}`
-      const returnUrl = new URL('/payment', frontendUrl)
-      returnUrl.searchParams.set('provider', 'campay')
-      returnUrl.searchParams.set('reference', externalReference)
       const checkout = await createCamPayPaymentLink({
         amount: totalCents,
         externalReference,
-        redirectUrl: returnUrl.toString(),
-        failureRedirectUrl: `${returnUrl.toString()}&status=failed`,
-        phone: camPayPhone,
+        redirectUrl: `${frontendUrl.origin}/payment?provider=campay&reference=${encodeURIComponent(externalReference)}`,
+        failureRedirectUrl: `${frontendUrl.origin}/payment?provider=campay&reference=${encodeURIComponent(externalReference)}&status=failed`,
+        phone: normalizeCameroonPhone(phone),
         name,
         email,
       })
@@ -970,38 +875,6 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
         currency,
       })
       checkoutUrl = checkout.url
-    } else if (paymentMethod === 'flutterwave') {
-      const txRef = `icy-${orderId}-${randomUUID()}`
-      const checkout = await requestFlutterwave('/payments', {
-        method: 'POST',
-        body: JSON.stringify({
-          tx_ref: txRef,
-          amount: String(totalCents),
-          currency: 'XAF',
-          redirect_url: `${frontendUrl.origin}/payment?provider=flutterwave`,
-          customer: { email, name, phonenumber: phone },
-          session_duration: 40,
-          max_retry_attempt: 3,
-          meta: { orderId: String(orderId) },
-          customizations: {
-            title: 'Ice Cream Shop',
-            description: `Order #${orderId}`,
-          },
-        }),
-      })
-      const providerUrl = typeof checkout?.link === 'string' ? new URL(checkout.link) : null
-      if (!providerUrl || providerUrl.protocol !== 'https:' || providerUrl.hostname !== 'checkout.flutterwave.com') {
-        throw new Error('Flutterwave did not return a valid hosted checkout URL.')
-      }
-      await createPaymentRecord({
-        orderId,
-        stripeCheckoutSessionId: txRef,
-        providerReference: txRef,
-        provider: 'flutterwave',
-        amountCents: totalCents,
-        currency,
-      })
-      checkoutUrl = providerUrl.toString()
     } else {
       let coupon
       if (discountCents > 0) {
@@ -1132,66 +1005,13 @@ app.get('/api/payment/session/:sessionId', async (request, response) => {
   }
 })
 
-app.get('/api/payment/flutterwave/:transactionId', requireCustomer, async (request, response) => {
-  if (!isFlutterwaveMobileMoneyEnabled()) {
-    response.status(503).json({ error: 'Flutterwave Mobile Money is not configured.' })
-    return
-  }
-  try {
-    const transaction = await verifyFlutterwaveTransaction(request.params.transactionId)
-    const payment = await database.prepare(`
-      SELECT p.provider_reference AS "providerReference",
-        p.amount_cents AS "amountCents", p.currency,
-        o.id AS "orderId", o.customer_id AS "customerId"
-      FROM payments p JOIN orders o ON o.id = p.order_id
-      WHERE p.payment_provider = 'flutterwave' AND p.provider_reference = ?
-    `).get(transaction.tx_ref)
-    if (!payment || payment.customerId !== request.customer.id) {
-      response.status(404).json({ error: 'The payment for this customer was not found.' })
-      return
-    }
-    if (transaction.currency?.toLowerCase() !== payment.currency.toLowerCase()
-      || Number(transaction.amount) !== payment.amountCents) {
-      response.status(409).json({ error: 'Flutterwave transaction amount or currency did not match the order.' })
-      return
-    }
-    if (transaction.status === 'failed') {
-      await markCheckoutPaymentFailed(payment.orderId, payment.providerReference, 'flutterwave')
-      response.status(409).json({ error: 'Flutterwave has confirmed that this payment failed.' })
-      return
-    }
-    if (transaction.status !== 'successful') {
-      response.status(409).json({ error: 'Flutterwave has not confirmed this payment yet.' })
-      return
-    }
-    await recordPaidCheckout(transaction, 'flutterwave')
-    const order = await database.prepare(`
-      SELECT id, customer_name AS "customerName", customer_email AS "customerEmail",
-        total_cents AS "totalCents", currency, status, created_at AS "createdAt",
-        delivery_city AS "deliveryCity", store_name AS "storeName",
-        store_address AS "storeAddress", store_phone AS "storePhone",
-        delivery_stage AS "deliveryStage", fulfillment_type AS "fulfillmentType",
-        scheduled_for AS "scheduledFor", delivery_fee AS "deliveryFee",
-        loyalty_points_redeemed AS "loyaltyPointsRedeemed"
-      FROM orders WHERE id = ?
-    `).get(payment.orderId)
-    response.json({ order })
-  } catch (error) {
-    if (error.message === 'Flutterwave transaction ID is invalid.') {
-      response.status(400).json({ error: error.message })
-      return
-    }
-    console.error('Unable to verify Flutterwave payment:', error.message)
-    response.status(502).json({ error: 'Unable to verify payment. Please refresh or contact support.' })
-  }
-})
-
 app.get('/api/payment/campay/:externalReference', requireCustomer, async (request, response) => {
   if (!isCamPayMobileMoneyEnabled()) {
     response.status(503).json({ error: 'CamPay Mobile Money is not configured.' })
     return
   }
   try {
+    const externalReference = request.params.externalReference
     const payment = await database.prepare(`
       SELECT p.provider_reference AS "providerReference",
         p.stripe_checkout_session_id AS "camPayReference",
@@ -1199,17 +1019,19 @@ app.get('/api/payment/campay/:externalReference', requireCustomer, async (reques
         o.id AS "orderId", o.customer_id AS "customerId"
       FROM payments p JOIN orders o ON o.id = p.order_id
       WHERE p.payment_provider = 'campay' AND p.provider_reference = ?
-    `).get(request.params.externalReference)
+    `).get(externalReference)
     if (!payment || payment.customerId !== request.customer.id) {
       response.status(404).json({ error: 'The payment for this customer was not found.' })
       return
     }
-
     const transaction = await getCamPayTransaction(payment.camPayReference)
-    if (transaction.external_reference !== payment.providerReference
-      || transaction.currency?.toLowerCase() !== payment.currency.toLowerCase()
+    if (transaction.external_reference !== payment.providerReference) {
+      response.status(409).json({ error: 'CamPay transaction reference did not match this order.' })
+      return
+    }
+    if (transaction.currency?.toLowerCase() !== payment.currency.toLowerCase()
       || Number(transaction.amount) !== payment.amountCents) {
-      response.status(409).json({ error: 'CamPay transaction details did not match the order.' })
+      response.status(409).json({ error: 'CamPay transaction amount or currency did not match the order.' })
       return
     }
     if (transaction.status === 'FAILED') {
@@ -1221,7 +1043,6 @@ app.get('/api/payment/campay/:externalReference', requireCustomer, async (reques
       response.status(409).json({ error: 'CamPay has not confirmed this payment yet.' })
       return
     }
-
     await recordPaidCheckout(transaction, 'campay')
     const order = await database.prepare(`
       SELECT id, customer_name AS "customerName", customer_email AS "customerEmail",
@@ -2993,15 +2814,12 @@ const server = app.listen(port, () => {
   reconcileStaleCheckouts().catch((error) => {
     console.error('Unable to reconcile expired checkouts:', error.message)
   })
-  reconcileCamPayCheckouts().catch((error) => {
-    console.error('Unable to reconcile CamPay checkouts:', error.message)
-  })
   setInterval(() => {
     reconcileStaleCheckouts().catch((error) => {
       console.error('Unable to reconcile expired checkouts:', error.message)
     })
     reconcileCamPayCheckouts().catch((error) => {
-      console.error('Unable to reconcile CamPay checkouts:', error.message)
+      console.error('Unable to reconcile pending CamPay payments:', error.message)
     })
   }, 5 * 60 * 1000)
 })

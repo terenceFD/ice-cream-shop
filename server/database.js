@@ -1373,9 +1373,7 @@ export async function finalizePaidCheckout(orderId, session, provider = "stripe"
           WHERE order_id = ? AND provider_reference = ? AND payment_provider = ? AND status = 'pending'
         `).run(
           provider === "stripe" && typeof session.payment_intent === "string" ? session.payment_intent : null,
-          provider === "flutterwave" || provider === "campay"
-            ? String(session.transactionId)
-            : null,
+          provider === "campay" ? String(session.transactionId) : null,
         orderId,
         session.id,
         provider,
@@ -1446,9 +1444,7 @@ export async function finalizePaidCheckout(orderId, session, provider = "stripe"
 
     const result = updatePayment.run(
       provider === 'stripe' && typeof session.payment_intent === 'string' ? session.payment_intent : null,
-      provider === 'flutterwave' || provider === 'campay'
-        ? String(session.transactionId)
-        : null,
+      provider === 'campay' ? String(session.transactionId) : null,
       orderId,
       session.id,
       provider,

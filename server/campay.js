@@ -1,12 +1,13 @@
-const apiHost = () => {
-  const environment = (process.env.CAMPAY_ENVIRONMENT || 'DEV').trim().toUpperCase()
+const environment = (process.env.CAMPAY_ENVIRONMENT || 'DEV').trim().toUpperCase()
+
+function apiHost() {
   if (environment === 'DEV') return 'https://demo.campay.net'
   if (environment === 'PROD') return 'https://www.campay.net'
   throw new Error('CAMPAY_ENVIRONMENT must be either DEV or PROD.')
 }
 
 export function isCamPayMobileMoneyEnabled() {
-  return process.env.CAMPAY_MOBILE_MONEY_ENABLED === 'true'
+  return process.env.CAMPAY_MOBILE_MONEY_ENABLED?.trim().toLowerCase() === 'true'
     && Boolean(process.env.CAMPAY_APP_USERNAME?.trim())
     && Boolean(process.env.CAMPAY_APP_PASSWORD?.trim())
 }
@@ -90,6 +91,7 @@ export async function createCamPayPaymentLink({
     'www.campay.com',
     'campay.net',
     'www.campay.net',
+    'demo.campay.net',
   ].includes(url.hostname)) {
     throw new Error('CamPay did not return a valid hosted payment URL.')
   }
@@ -104,5 +106,7 @@ export async function getCamPayTransaction(reference) {
     throw new Error('CamPay transaction reference is invalid.')
   }
   const token = await getCamPayToken()
-  return requestCamPay(`/api/transaction/${encodeURIComponent(reference)}/`, { body: { token } })
+  return requestCamPay(`/api/transaction/${encodeURIComponent(reference)}/`, {
+    body: { token },
+  })
 }

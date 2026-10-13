@@ -14,7 +14,6 @@ import { useAuth } from "../../../authcontext/AuthContext";
 
 const CHECKOUT_DETAILS_KEY = "antixor-icy-checkout-details";
 const PAYMENT_PENDING_MESSAGE = "Stripe has not confirmed this payment yet.";
-const FLUTTERWAVE_PENDING_MESSAGE = "Flutterwave has not confirmed this payment yet.";
 const CAMPAY_PENDING_MESSAGE = "CamPay has not confirmed this payment yet.";
 const PAYMENT_CONFIRMATION_RETRIES = 8;
 const PAYMENT_CONFIRMATION_RETRY_DELAY_MS = 1500;
@@ -29,14 +28,7 @@ const paymentMethods = [
   {
     id: "campay",
     label: "MTN / Orange Mobile Money",
-    detail: "Pay with MTN MoMo or Orange Money through CamPay.",
-    available: false,
-    icon: "📱",
-  },
-  {
-    id: "flutterwave",
-    label: "MTN / Orange Mobile Money",
-    detail: "Pay through Flutterwave Mobile Money checkout. Available operators depend on your location.",
+    detail: "Pay through CamPay Mobile Money checkout using MTN or Orange Money.",
     available: false,
     icon: "📱",
   },
@@ -75,34 +67,12 @@ async function verifyStripePayment(sessionId, isCancelled) {
   }
 }
 
-async function verifyFlutterwavePayment(transactionId, isCancelled) {
+async function verifyCamPayPayment(externalReference, isCancelled) {
   for (let attempt = 0; ; attempt += 1) {
     if (isCancelled()) return null;
     try {
       return await apiRequest(
-        `/payment/flutterwave/${encodeURIComponent(transactionId)}`,
-        { token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY) },
-      );
-    } catch (error) {
-      if (
-        error.message !== FLUTTERWAVE_PENDING_MESSAGE ||
-        attempt >= PAYMENT_CONFIRMATION_RETRIES
-      ) {
-        throw error;
-      }
-      await new Promise((resolve) =>
-        window.setTimeout(resolve, PAYMENT_CONFIRMATION_RETRY_DELAY_MS),
-      );
-    }
-  }
-}
-
-async function verifyCamPayPayment(reference, isCancelled) {
-  for (let attempt = 0; ; attempt += 1) {
-    if (isCancelled()) return null;
-    try {
-      return await apiRequest(
-        `/payment/campay/${encodeURIComponent(reference)}`,
+        `/payment/campay/${encodeURIComponent(externalReference)}`,
         { token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY) },
       );
     } catch (error) {
@@ -132,14 +102,11 @@ export function PaymentPage() {
   const { state } = useLocation();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  const flutterwaveTransactionId = searchParams.get("transaction_id");
-  const flutterwaveReturn = searchParams.get("provider") === "flutterwave";
-  const campayReference = searchParams.get("provider") === "campay"
-    ? searchParams.get("reference")
-    : null;
+  const camPayReference = searchParams.get("reference");
+  const camPayReturn = searchParams.get("provider") === "campay";
   const loyaltyOrderId = searchParams.get("loyalty_order_id");
   const cancelled = searchParams.get("cancelled") === "1"
-    || ((flutterwaveReturn || campayReference) && ["failed", "cancelled"].includes(searchParams.get("status")));
+    || (camPayReturn && ["failed", "cancelled"].includes(searchParams.get("status")));
   const [checkoutDetails] = useState(() => {
     if (state?.checkoutDetails) return state.checkoutDetails;
     try {
@@ -159,30 +126,23 @@ export function PaymentPage() {
   const [availableMethods, setAvailableMethods] = useState({
     card: false,
     campayMobileMoney: false,
-    flutterwaveMobileMoney: false,
   });
   const [paymentStatus, setPaymentStatus] = useState(
-    sessionId || flutterwaveTransactionId || campayReference ? "checking" : "ready",
+    sessionId || camPayReference ? "checking" : "ready",
   );
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
-  const displayedPaymentMethods = paymentMethods
-    .filter((method) => !(method.id === "flutterwave" && availableMethods.campayMobileMoney))
-    .map((method) => ({
+  const displayedPaymentMethods = paymentMethods.map((method) => ({
     ...method,
     available: method.id === "card"
       ? availableMethods.card || finalTotal === 0
       : method.id === "campay"
         ? availableMethods.campayMobileMoney
-        : method.id === "flutterwave"
-        ? availableMethods.flutterwaveMobileMoney
         : false,
-    }));
+  }));
   const selectedMethodAvailable = selectedPaymentMethod === "card"
     ? availableMethods.card || finalTotal === 0
-    : selectedPaymentMethod === "campay"
-      ? availableMethods.campayMobileMoney
-      : selectedPaymentMethod === "flutterwave" && availableMethods.flutterwaveMobileMoney;
+    : selectedPaymentMethod === "campay" && availableMethods.campayMobileMoney;
 
   useEffect(() => {
     let cancelledRequest = false;
@@ -192,8 +152,6 @@ export function PaymentPage() {
         setAvailableMethods(methods);
         if (!methods.card && methods.campayMobileMoney) {
           setSelectedPaymentMethod("campay");
-        } else if (!methods.card && methods.flutterwaveMobileMoney) {
-          setSelectedPaymentMethod("flutterwave");
         }
       })
       .catch((methodsError) => {
@@ -205,16 +163,14 @@ export function PaymentPage() {
   }, []);
 
   useEffect(() => {
-    if (!sessionId && !flutterwaveTransactionId && !campayReference && !loyaltyOrderId) return undefined;
+    if (!sessionId && !camPayReference && !loyaltyOrderId) return undefined;
     let cancelledRequest = false;
     setPaymentStatus("checking");
     const verification = sessionId
       ? verifyStripePayment(sessionId, () => cancelledRequest)
-      : flutterwaveTransactionId
-        ? verifyFlutterwavePayment(flutterwaveTransactionId, () => cancelledRequest)
-        : campayReference
-          ? verifyCamPayPayment(campayReference, () => cancelledRequest)
-          : apiRequest(`/customer/orders/${encodeURIComponent(loyaltyOrderId)}`, {
+      : camPayReference
+        ? verifyCamPayPayment(camPayReference, () => cancelledRequest)
+        : apiRequest(`/customer/orders/${encodeURIComponent(loyaltyOrderId)}`, {
             token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY),
           })
     verification
@@ -235,7 +191,7 @@ export function PaymentPage() {
     return () => {
       cancelledRequest = true;
     };
-  }, [campayReference, clearCart, flutterwaveTransactionId, loyaltyOrderId, refreshFlavors, sessionId]);
+  }, [clearCart, camPayReference, loyaltyOrderId, refreshFlavors, sessionId]);
 
   if (!sessionId && !loyaltyOrderId && cartItems.length === 0 && !cancelled) {
     return <Navigate to="/cart" replace />;
@@ -334,7 +290,7 @@ export function PaymentPage() {
               {t("Checking your payment…")}
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#65748a]">
-              {t("Please wait while Stripe confirms the transaction.")}
+              {t("Please wait while your provider confirms the transaction.")}
             </p>
           </section>
         ) : paymentStatus === "unverified" ? (
@@ -475,7 +431,11 @@ export function PaymentPage() {
                               }`}
                             >
                               {t(
-                                method.available ? "Available" : "Coming soon",
+                                method.available
+                                  ? "Available"
+                                  : method.id === "campay"
+                                    ? "Setup required"
+                                    : "Coming soon",
                               )}
                             </span>
                           </span>
@@ -489,8 +449,6 @@ export function PaymentPage() {
                   <p className="mt-3 text-xs leading-5 text-[#65748a]">
                     {t(selectedPaymentMethod === "campay"
                       ? "Mobile Money is completed on CamPay’s secure checkout. This website never asks for your payment PIN."
-                      : selectedPaymentMethod === "flutterwave"
-                        ? "Mobile Money is completed on Flutterwave’s secure checkout. This website never asks for your payment PIN."
                       : "Card details are entered on Stripe’s secure checkout and are never stored by this website.")}
                   </p>
                 </fieldset>
@@ -517,9 +475,7 @@ export function PaymentPage() {
                   {isStartingCheckout
                     ? t(selectedPaymentMethod === "campay"
                       ? "Connecting to CamPay…"
-                      : selectedPaymentMethod === "flutterwave"
-                        ? "Connecting to Flutterwave…"
-                        : "Connecting to Stripe…")
+                      : "Connecting to Stripe…")
                     : t("Confirm payment for {amount}", {
                         amount: formatMoney(
                           finalTotal,

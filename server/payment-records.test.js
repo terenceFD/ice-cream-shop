@@ -28,12 +28,12 @@ after(() => {
   else process.env.DATABASE_PATH = originalPath
 })
 
-async function createPendingPayment(reference, provider = 'flutterwave', providerReference = reference) {
-  database.prepare(`
+async function createPendingPayment(reference, provider = 'campay', providerReference = reference) {
+  const flavorInsert = database.prepare(`
     INSERT INTO flavors (name, detail, description, price, image, stock)
     VALUES (?, 'Test flavor', 'Payment test flavor', 500, '/test-flavor.jpg', 100)
   `).run(`Payment ${reference}`)
-  const flavor = (await listFlavors()).find((item) => item.availableQuantity > 0)
+  const flavor = (await listFlavors()).find((item) => item.id === Number(flavorInsert.lastInsertRowid))
   const store = database.prepare('SELECT id, name, address, phone FROM stores ORDER BY id LIMIT 1').get()
   assert.ok(flavor)
   assert.ok(store)
@@ -79,66 +79,12 @@ async function createPendingPayment(reference, provider = 'flutterwave', provide
   return { flavor, orderId, reference }
 }
 
-test('Flutterwave payment confirmation finalizes an order and records its transaction id once', async () => {
-  const payment = await createPendingPayment('flw-test-paid-reference')
+test('CamPay payment confirmation finalizes an order and records its transaction id once', async () => {
+  const payment = await createPendingPayment('campay-test-paid-reference')
 
   const result = await finalizePaidCheckout(
     payment.orderId,
     { id: payment.reference, transactionId: '50123' },
-    'flutterwave',
-  )
-
-  assert.equal(result.paymentRecorded, true)
-  assert.equal(database.prepare('SELECT status FROM orders WHERE id = ?').get(payment.orderId).status, 'processing')
-  assert.deepEqual(
-    database.prepare(`
-      SELECT payment_provider AS provider, provider_reference AS reference,
-        provider_transaction_id AS transactionId, status
-      FROM payments WHERE order_id = ?
-    `).get(payment.orderId),
-    {
-      provider: 'flutterwave',
-      reference: payment.reference,
-      transactionId: '50123',
-      status: 'paid',
-    },
-  )
-  assert.equal(
-    (await finalizePaidCheckout(
-      payment.orderId,
-      { id: payment.reference, transactionId: '50123' },
-      'flutterwave',
-    )).paymentRecorded,
-    false,
-  )
-})
-
-test('a failed Flutterwave payment releases its inventory reservation exactly once', async () => {
-  const payment = await createPendingPayment('flw-test-failed-reference')
-
-  assert.equal(await markCheckoutPaymentFailed(payment.orderId, payment.reference, 'flutterwave'), true)
-  assert.equal(await markCheckoutPaymentFailed(payment.orderId, payment.reference, 'flutterwave'), false)
-  assert.equal(database.prepare('SELECT status FROM orders WHERE id = ?').get(payment.orderId).status, 'payment_failed')
-  assert.equal(
-    database.prepare('SELECT status FROM payments WHERE order_id = ?').get(payment.orderId).status,
-    'failed',
-  )
-  assert.equal(
-    database.prepare('SELECT reserved_stock AS reservedStock FROM flavors WHERE id = ?').get(payment.flavor.id).reservedStock,
-    payment.flavor.reservedStock,
-  )
-})
-
-test('CamPay confirmation finalizes an order and records its provider reference once', async () => {
-  const payment = await createPendingPayment(
-    'campay-provider-reference',
-    'campay',
-    'icy-order-test-reference',
-  )
-
-  const result = await finalizePaidCheckout(
-    payment.orderId,
-    { id: 'icy-order-test-reference', transactionId: payment.reference },
     'campay',
   )
 
@@ -152,22 +98,26 @@ test('CamPay confirmation finalizes an order and records its provider reference 
     `).get(payment.orderId),
     {
       provider: 'campay',
-      reference: 'icy-order-test-reference',
-      transactionId: 'campay-provider-reference',
+      reference: payment.reference,
+      transactionId: '50123',
       status: 'paid',
     },
+  )
+  assert.equal(
+    (await finalizePaidCheckout(
+      payment.orderId,
+      { id: payment.reference, transactionId: '50123' },
+      'campay',
+    )).paymentRecorded,
+    false,
   )
 })
 
 test('a failed CamPay payment releases its inventory reservation exactly once', async () => {
-  const payment = await createPendingPayment(
-    'campay-failed-provider-reference',
-    'campay',
-    'icy-order-failed-reference',
-  )
+  const payment = await createPendingPayment('campay-test-failed-reference')
 
-  assert.equal(await markCheckoutPaymentFailed(payment.orderId, 'icy-order-failed-reference', 'campay'), true)
-  assert.equal(await markCheckoutPaymentFailed(payment.orderId, 'icy-order-failed-reference', 'campay'), false)
+  assert.equal(await markCheckoutPaymentFailed(payment.orderId, payment.reference, 'campay'), true)
+  assert.equal(await markCheckoutPaymentFailed(payment.orderId, payment.reference, 'campay'), false)
   assert.equal(database.prepare('SELECT status FROM orders WHERE id = ?').get(payment.orderId).status, 'payment_failed')
   assert.equal(
     database.prepare('SELECT status FROM payments WHERE order_id = ?').get(payment.orderId).status,

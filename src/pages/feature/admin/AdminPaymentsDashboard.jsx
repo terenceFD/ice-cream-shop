@@ -99,7 +99,7 @@ export function AdminPaymentsDashboard() {
             </span>
             <h1 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-4xl">{t("Payments")}</h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-white/70">
-              {t("Payment records confirmed by Stripe, CamPay, and Flutterwave for customer orders.")}
+              {t("Payment records confirmed by Stripe and CamPay for customer orders.")}
             </p>
           </div>
           <button

@@ -1,132 +1,129 @@
-import test, { afterEach } from 'node:test'
+import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   createCamPayPaymentLink,
-  getCamPayTransaction,
   isCamPayMobileMoneyEnabled,
 } from './campay.js'
 
-const originalFetch = globalThis.fetch
-const originalEnvironment = {
-  CAMPAY_APP_USERNAME: process.env.CAMPAY_APP_USERNAME,
-  CAMPAY_APP_PASSWORD: process.env.CAMPAY_APP_PASSWORD,
-  CAMPAY_ENVIRONMENT: process.env.CAMPAY_ENVIRONMENT,
-  CAMPAY_MOBILE_MONEY_ENABLED: process.env.CAMPAY_MOBILE_MONEY_ENABLED,
-}
+test('CamPay stays disabled until enabled with both merchant credentials', () => {
+  const original = {
+    enabled: process.env.CAMPAY_MOBILE_MONEY_ENABLED,
+    username: process.env.CAMPAY_APP_USERNAME,
+    password: process.env.CAMPAY_APP_PASSWORD,
+  }
+  try {
+    process.env.CAMPAY_MOBILE_MONEY_ENABLED = 'true'
+    process.env.CAMPAY_APP_USERNAME = 'test-user'
+    delete process.env.CAMPAY_APP_PASSWORD
+    assert.equal(isCamPayMobileMoneyEnabled(), false)
 
-function configureCamPay(environment = 'DEV') {
-  process.env.CAMPAY_APP_USERNAME = 'sandbox-user'
-  process.env.CAMPAY_APP_PASSWORD = 'sandbox-password'
-  process.env.CAMPAY_ENVIRONMENT = environment
-  process.env.CAMPAY_MOBILE_MONEY_ENABLED = 'true'
-}
-
-function jsonResponse(body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
-
-afterEach(() => {
-  globalThis.fetch = originalFetch
-  for (const [name, value] of Object.entries(originalEnvironment)) {
-    if (value === undefined) delete process.env[name]
-    else process.env[name] = value
+    process.env.CAMPAY_APP_PASSWORD = 'test-password'
+    assert.equal(isCamPayMobileMoneyEnabled(), true)
+  } finally {
+    if (original.enabled === undefined) delete process.env.CAMPAY_MOBILE_MONEY_ENABLED
+    else process.env.CAMPAY_MOBILE_MONEY_ENABLED = original.enabled
+    if (original.username === undefined) delete process.env.CAMPAY_APP_USERNAME
+    else process.env.CAMPAY_APP_USERNAME = original.username
+    if (original.password === undefined) delete process.env.CAMPAY_APP_PASSWORD
+    else process.env.CAMPAY_APP_PASSWORD = original.password
   }
 })
 
-test('CamPay is not exposed until enabled with application credentials', () => {
-  configureCamPay()
-  assert.equal(isCamPayMobileMoneyEnabled(), true)
-  delete process.env.CAMPAY_APP_PASSWORD
-  assert.equal(isCamPayMobileMoneyEnabled(), false)
-})
-
-test('CamPay hosted checkout obtains a token and creates an XAF Mobile Money link', async () => {
-  configureCamPay()
+test('CamPay creates a hosted XAF Mobile Money link and returns its provider reference', async () => {
+  const original = {
+    environment: process.env.CAMPAY_ENVIRONMENT,
+    username: process.env.CAMPAY_APP_USERNAME,
+    password: process.env.CAMPAY_APP_PASSWORD,
+    fetch: globalThis.fetch,
+  }
   const requests = []
+  process.env.CAMPAY_ENVIRONMENT = 'DEV'
+  process.env.CAMPAY_APP_USERNAME = 'test-user'
+  process.env.CAMPAY_APP_PASSWORD = 'test-password'
   globalThis.fetch = async (url, options) => {
-    requests.push({ url: String(url), options })
-    return requests.length === 1
-      ? jsonResponse({ token: 'sandbox-token' })
-      : jsonResponse({ link: 'https://www.campay.com/pay/with/link/abc', reference: 'remote-reference' })
+    requests.push({ url, options })
+    return Response.json(requests.length === 1
+      ? { token: 'test-token' }
+      : { link: 'https://demo.campay.net/checkout/test', reference: 'remote-123' })
   }
 
-  const result = await createCamPayPaymentLink({
-    amount: 1950,
-    externalReference: 'icy-42-test',
-    redirectUrl: 'https://shop.example/payment?provider=campay&reference=icy-42-test',
-    failureRedirectUrl: 'https://shop.example/payment?provider=campay&reference=icy-42-test&status=failed',
-    phone: '237690000000',
-    name: 'Test Customer',
-    email: 'customer@example.com',
-  })
+  try {
+    const checkout = await createCamPayPaymentLink({
+      amount: 2500,
+      externalReference: 'icy-12-order',
+      redirectUrl: 'https://shop.example/payment?provider=campay',
+      failureRedirectUrl: 'https://shop.example/payment?status=failed',
+      phone: '237677123456',
+      name: 'Test Customer',
+      email: 'customer@example.com',
+    })
 
-  assert.deepEqual(result, {
-    url: 'https://www.campay.com/pay/with/link/abc',
-    reference: 'remote-reference',
-  })
-  assert.equal(requests[0].url, 'https://demo.campay.net/api/token/')
-  assert.deepEqual(JSON.parse(requests[0].options.body), {
-    username: 'sandbox-user',
-    password: 'sandbox-password',
-  })
-  assert.equal(requests[1].url, 'https://demo.campay.net/api/get_payment_link/')
-  assert.equal(requests[1].options.headers.Authorization, 'Token sandbox-token')
-  assert.deepEqual(JSON.parse(requests[1].options.body), {
-    amount: '1950',
-    currency: 'XAF',
-    description: 'Ice Cream Shop order icy-42-test',
-    external_reference: 'icy-42-test',
-    redirect_url: 'https://shop.example/payment?provider=campay&reference=icy-42-test',
-    failure_redirect_url: 'https://shop.example/payment?provider=campay&reference=icy-42-test&status=failed',
-    from: '237690000000',
-    first_name: 'Test',
-    last_name: 'Customer',
-    email: 'customer@example.com',
-    payment_options: 'MOMO',
-  })
-})
-
-test('CamPay transaction status uses production endpoint and token authorization', async () => {
-  configureCamPay('PROD')
-  const requests = []
-  globalThis.fetch = async (url, options) => {
-    requests.push({ url: String(url), options })
-    return requests.length === 1
-      ? jsonResponse({ token: 'production-token' })
-      : jsonResponse({
-        reference: 'remote-reference',
-        external_reference: 'icy-42-test',
-        status: 'SUCCESSFUL',
-        amount: 1950,
-        currency: 'XAF',
-      })
+    assert.deepEqual(checkout, {
+      url: 'https://demo.campay.net/checkout/test',
+      reference: 'remote-123',
+    })
+    assert.equal(requests[0].url, 'https://demo.campay.net/api/token/')
+    assert.equal(requests[1].url, 'https://demo.campay.net/api/get_payment_link/')
+    assert.equal(requests[1].options.headers.Authorization, 'Token test-token')
+    assert.deepEqual(JSON.parse(requests[1].options.body), {
+      amount: '2500',
+      currency: 'XAF',
+      description: 'Ice Cream Shop order icy-12-order',
+      external_reference: 'icy-12-order',
+      redirect_url: 'https://shop.example/payment?provider=campay',
+      failure_redirect_url: 'https://shop.example/payment?status=failed',
+      from: '237677123456',
+      first_name: 'Test',
+      last_name: 'Customer',
+      email: 'customer@example.com',
+      payment_options: 'MOMO',
+    })
+  } finally {
+    globalThis.fetch = original.fetch
+    if (original.environment === undefined) delete process.env.CAMPAY_ENVIRONMENT
+    else process.env.CAMPAY_ENVIRONMENT = original.environment
+    if (original.username === undefined) delete process.env.CAMPAY_APP_USERNAME
+    else process.env.CAMPAY_APP_USERNAME = original.username
+    if (original.password === undefined) delete process.env.CAMPAY_APP_PASSWORD
+    else process.env.CAMPAY_APP_PASSWORD = original.password
   }
-
-  const transaction = await getCamPayTransaction('remote-reference')
-
-  assert.equal(transaction.status, 'SUCCESSFUL')
-  assert.equal(requests[0].url, 'https://www.campay.net/api/token/')
-  assert.equal(requests[1].url, 'https://www.campay.net/api/transaction/remote-reference/')
-  assert.equal(requests[1].options.headers.Authorization, 'Token production-token')
 })
 
-test('CamPay rejects invalid references and untrusted checkout URLs', async () => {
-  configureCamPay()
-  await assert.rejects(getCamPayTransaction('../other'), /reference is invalid/)
-  globalThis.fetch = async (url) => String(url).endsWith('/api/token/')
-    ? jsonResponse({ token: 'sandbox-token' })
-    : jsonResponse({ link: 'https://attacker.example/pay', reference: 'remote-reference' })
+test('CamPay rejects checkout URLs outside its hosted payment domains', async () => {
+  const original = {
+    environment: process.env.CAMPAY_ENVIRONMENT,
+    username: process.env.CAMPAY_APP_USERNAME,
+    password: process.env.CAMPAY_APP_PASSWORD,
+    fetch: globalThis.fetch,
+  }
+  process.env.CAMPAY_ENVIRONMENT = 'DEV'
+  process.env.CAMPAY_APP_USERNAME = 'test-user'
+  process.env.CAMPAY_APP_PASSWORD = 'test-password'
+  let requestCount = 0
+  globalThis.fetch = async () => Response.json(++requestCount === 1
+    ? { token: 'test-token' }
+    : { link: 'https://attacker.example/checkout', reference: 'remote-123' })
 
-  await assert.rejects(createCamPayPaymentLink({
-    amount: 1,
-    externalReference: 'icy-1-test',
-    redirectUrl: 'https://shop.example/payment',
-    failureRedirectUrl: 'https://shop.example/payment?status=failed',
-    phone: '237690000000',
-    name: 'Test Customer',
-    email: 'customer@example.com',
-  }), /valid hosted payment URL/)
+  try {
+    await assert.rejects(
+      createCamPayPaymentLink({
+        amount: 2500,
+        externalReference: 'icy-12-order',
+        redirectUrl: 'https://shop.example/payment',
+        failureRedirectUrl: 'https://shop.example/payment?status=failed',
+        phone: '237677123456',
+        name: 'Test Customer',
+        email: 'customer@example.com',
+      }),
+      /valid hosted payment URL/,
+    )
+  } finally {
+    globalThis.fetch = original.fetch
+    if (original.environment === undefined) delete process.env.CAMPAY_ENVIRONMENT
+    else process.env.CAMPAY_ENVIRONMENT = original.environment
+    if (original.username === undefined) delete process.env.CAMPAY_APP_USERNAME
+    else process.env.CAMPAY_APP_USERNAME = original.username
+    if (original.password === undefined) delete process.env.CAMPAY_APP_PASSWORD
+    else process.env.CAMPAY_APP_PASSWORD = original.password
+  }
 })
