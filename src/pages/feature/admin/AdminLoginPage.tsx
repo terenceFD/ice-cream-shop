@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Header } from "../../../components/Layout";
-import { useAdminAuth } from "./AdminAuthContext";
+import { useAdminAuth } from "./useAdminAuth";
 import { PasswordField } from "../../../components/PasswordField";
-import { useLanguage } from "../../../language/LanguageContext";
+import { useLanguage } from "../../../language/useLanguage";
 
 export function AdminLoginPage() {
   const { isAdmin, login } = useAdminAuth();

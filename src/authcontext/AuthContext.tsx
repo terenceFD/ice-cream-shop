@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { AuthContext } from "./useAuth";
 import { apiRequest, CUSTOMER_TOKEN_KEY } from "../api/api";
 
 interface Customer {
@@ -24,7 +25,7 @@ interface AuthResponse {
   customer: Customer;
 }
 
-interface AuthContextValue {
+export interface AuthContextValue {
   customer: Customer | null;
   isLoading: boolean;
   sessionError: string;
@@ -34,7 +35,6 @@ interface AuthContextValue {
   updateProfile: (profile: CustomerProfile) => Promise<Customer>;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -145,10 +145,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within AuthProvider");
-  return context;
 }

@@ -1,5 +1,5 @@
 import { AdminNotifications } from "../../../components/AdminNotifications";
-import { useLanguage } from "../../../language/LanguageContext";
+import { useLanguage } from "../../../language/useLanguage";
 
 export function AdminNotificationsPage() {
   const { t } = useLanguage();

@@ -825,7 +825,12 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
       pointsRedeemed,
     })
 
-    const frontendUrl = new URL(process.env.FRONTEND_URL || frontendOrigins[0])
+    const frontendUrl = new URL(
+      process.env.FRONTEND_URL?.trim()
+      || process.env.RENDER_EXTERNAL_URL?.trim()
+      || (process.env.RENDER_EXTERNAL_HOSTNAME ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME.trim()}` : '')
+      || frontendOrigins[0],
+    )
     if (!['http:', 'https:'].includes(frontendUrl.protocol)) {
       throw new Error('FRONTEND_URL must use HTTP or HTTPS.')
     }

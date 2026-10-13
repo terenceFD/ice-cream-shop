@@ -1,15 +1,15 @@
-import { createContext, useContext, useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
+import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
+import { LanguageContext } from './useLanguage'
 
 const LANGUAGE_STORAGE_KEY = 'antixor-icy-language'
 type Language = 'en' | 'fr'
 
-interface LanguageContextValue {
+export interface LanguageContextValue {
   language: Language
   setLanguage: Dispatch<SetStateAction<Language>>
   t: (key: string, variables?: Record<string, string | number>) => string
 }
 
-const LanguageContext = createContext<LanguageContextValue | null>(null)
 
 const french: Record<string, string> = {
   Home: 'Accueil',
@@ -1254,10 +1254,4 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }), [language])
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
-}
-
-export function useLanguage() {
-  const context = useContext(LanguageContext)
-  if (!context) throw new Error('useLanguage must be used within LanguageProvider')
-  return context
 }

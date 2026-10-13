@@ -2,7 +2,7 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Footer, Header } from '../../../components/Layout'
 import { apiRequest } from '../../../api/api'
-import { useLanguage } from '../../../language/LanguageContext'
+import { useLanguage } from '../../../language/useLanguage'
 
 const inputClassName = 'mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3.5 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#9aa4b1] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40'
 

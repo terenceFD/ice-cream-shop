@@ -1,8 +1,9 @@
 import { useParams, Link, Navigate, useNavigate } from "react-router-dom";
 import { Header, Footer, ArrowIcon } from "../../../components/Layout";
-import { useCart } from "../../../CartContext";
-import { useFlavors, type Flavor } from "../../../flavor-context/FlavorContext";
-import { useLanguage } from "../../../language/LanguageContext";
+import { useCart } from "../../../useCart";
+import { type Flavor } from "../../../flavor-context/FlavorContext";
+import { useFlavors } from "../../../flavor-context/useFlavors";
+import { useLanguage } from "../../../language/useLanguage";
 import { formatCartMoney } from "../../../cartPricing";
 
 export function FlavorDetailPage() {

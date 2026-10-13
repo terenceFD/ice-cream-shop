@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { apiRequest, CUSTOMER_TOKEN_KEY } from "../../../api/api";
 import { Footer, Header } from "../../../components/Layout";
-import { useCart } from "../../../CartContext";
-import { useAuth } from "../../../authcontext/AuthContext";
+import { useCart } from "../../../useCart";
+import { useAuth } from "../../../authcontext/useAuth";
 import { cameroonDeliveryLocations } from "../../../data";
-import { useLanguage } from "../../../language/LanguageContext";
+import { useLanguage } from "../../../language/useLanguage";
 
 const fieldClass =
   "mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-white px-4 py-3 text-sm";

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "../../../api/api";
-import { useAdminAuth } from "./AdminAuthContext";
-import { useLanguage } from "../../../language/LanguageContext";
+import { useAdminAuth } from "./useAdminAuth";
+import { useLanguage } from "../../../language/useLanguage";
 import { formatCartMoney, USD_TO_XAF } from "../../../cartPricing";
 import { AdminPaymentsDashboard } from "./AdminPaymentsDashboard";
 

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Footer, Header } from '../../../components/Layout'
-import { useLanguage } from '../../../language/LanguageContext'
+import { useLanguage } from '../../../language/useLanguage'
 
 const experienceSteps: { number: string; title: string; description: string; icon: string }[] = [
   {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useLanguage } from '../language/LanguageContext'
+import { useLanguage } from '../language/useLanguage'
 
 export function WebsiteLoader() {
   const { t } = useLanguage()

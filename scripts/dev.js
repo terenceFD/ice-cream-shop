@@ -35,7 +35,7 @@ process.once('SIGINT', () => stopChildren('SIGINT'))
 process.once('SIGTERM', () => stopChildren('SIGTERM'))
 
 async function waitForApi() {
-  const deadline = Date.now() + 20_000
+  const deadline = Date.now() + 60_000
   let lastError
   while (Date.now() < deadline) {
     if (backend.exitCode !== null || shuttingDown) {
@@ -50,7 +50,7 @@ async function waitForApi() {
     }
     await delay(300)
   }
-  throw new Error(`The development API did not become ready within 20 seconds.${lastError ? ` ${lastError.message}` : ''}`)
+  throw new Error(`The development API did not become ready within 60 seconds.${lastError ? ` ${lastError.message}` : ''}`)
 }
 
 try {

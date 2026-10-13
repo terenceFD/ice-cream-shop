@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { apiRequest } from '../../../api/api'
-import { useAdminAuth } from './AdminAuthContext'
-import { useLanguage } from '../../../language/LanguageContext'
+import { useAdminAuth } from './useAdminAuth'
+import { useLanguage } from '../../../language/useLanguage'
 
 const emptyCategory = { title: '', description: '', image: '', icon: '🍦', sortOrder: 0 }
 const fieldClass = 'mt-1.5 w-full rounded-xl border border-[#e7e3d9] bg-[#fbfaf5] px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40'

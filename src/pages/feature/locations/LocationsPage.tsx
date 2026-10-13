@@ -1,6 +1,6 @@
 import { Footer, Header } from '../../../components/Layout'
 import { cameroonLocations } from '../../../data'
-import { useLanguage } from '../../../language/LanguageContext'
+import { useLanguage } from '../../../language/useLanguage'
 
 type CameroonLocation = (typeof cameroonLocations)[number]
 

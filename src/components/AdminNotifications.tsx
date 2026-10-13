@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { apiRequest } from '../api/api'
-import { useAdminAuth } from '../pages/feature/admin/AdminAuthContext'
-import { useLanguage } from '../language/LanguageContext'
+import { useAdminAuth } from '../pages/feature/admin/useAdminAuth'
+import { useLanguage } from '../language/useLanguage'
 
 interface ContactMessage {
   id: number
@@ -70,7 +70,7 @@ export function AdminNotifications() {
     } finally {
       setIsLoading(false)
     }
-  }, [sessionToken])
+  }, [sessionToken, t])
 
   useEffect(() => {
     refresh()

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { useAdminAuth } from '../pages/feature/admin/AdminAuthContext'
+import { useAdminAuth } from '../pages/feature/admin/useAdminAuth'
 import { apiRequest } from '../api/api'
-import { useLanguage } from '../language/LanguageContext'
+import { useLanguage } from '../language/useLanguage'
 
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024
 const PROFILE_IMAGE_DIMENSION = 256

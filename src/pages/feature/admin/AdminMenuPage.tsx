@@ -1,8 +1,8 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest } from '../../../api/api'
-import { useAdminAuth } from './AdminAuthContext'
-import { useLanguage } from '../../../language/LanguageContext'
+import { useAdminAuth } from './useAdminAuth'
+import { useLanguage } from '../../../language/useLanguage'
 
 const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-white px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40'
 const initialForm = {
@@ -29,16 +29,6 @@ interface MenuItem {
 
 interface MenuCategory {
   title: string
-}
-
-interface MenuItemForm {
-  categoryTitle: string
-  name: string
-  detail: string
-  image: string
-  priceXaf: string
-  stock: string
-  isAvailable: boolean
 }
 
 export function AdminMenuPage() {

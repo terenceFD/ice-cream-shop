@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { FlavorContext } from './useFlavors'
 import { ADMIN_TOKEN_KEY, apiRequest } from '../api/api'
 
 export interface Flavor {
@@ -22,7 +23,7 @@ export interface Flavor {
 
 type FlavorInput = Omit<Flavor, 'id' | 'availableQuantity'>
 
-interface FlavorContextValue {
+export interface FlavorContextValue {
   flavors: Flavor[];
   loading: boolean;
   error: string;
@@ -32,7 +33,6 @@ interface FlavorContextValue {
   updateFlavor: (flavorId: number, updates: Partial<Flavor>) => Promise<Flavor>;
 }
 
-const FlavorContext = createContext<FlavorContextValue | null>(null)
 
 export function FlavorProvider({ children }: { children: ReactNode }) {
   const [flavors, setFlavors] = useState<Flavor[]>([])
@@ -98,12 +98,4 @@ export function FlavorProvider({ children }: { children: ReactNode }) {
       {children}
     </FlavorContext.Provider>
   )
-}
-
-export function useFlavors() {
-  const context = useContext(FlavorContext)
-  if (!context) {
-    throw new Error('useFlavors must be used within FlavorProvider')
-  }
-  return context
 }

@@ -2,8 +2,8 @@ import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Header } from '../../../components/Layout'
 import { PasswordField } from '../../../components/PasswordField'
-import { useAuth } from '../../../authcontext/AuthContext'
-import { useLanguage } from '../../../language/LanguageContext'
+import { useAuth } from '../../../authcontext/useAuth'
+import { useLanguage } from '../../../language/useLanguage'
 
 const PROFILE_IMAGE_DIMENSION = 256
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024

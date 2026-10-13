@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { apiRequest } from '../../../api/api'
-import { useLanguage } from '../../../language/LanguageContext'
-import { useAdminAuth } from './AdminAuthContext'
+import { useLanguage } from '../../../language/useLanguage'
+import { useAdminAuth } from './useAdminAuth'
 
 function useAdminRequest() {
   const { sessionToken } = useAdminAuth()

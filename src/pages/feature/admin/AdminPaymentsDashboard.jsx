@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiRequest } from "../../../api/api";
 import { formatCartMoney, USD_TO_XAF } from "../../../cartPricing";
-import { useLanguage } from "../../../language/LanguageContext";
-import { useAdminAuth } from "./AdminAuthContext";
+import { useLanguage } from "../../../language/useLanguage";
+import { useAdminAuth } from "./useAdminAuth";
 
 function formatMoney(amount, currency, language) {
   const amountXaf = currency.toLowerCase() === "usd"

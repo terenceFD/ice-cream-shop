@@ -1,9 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest, CUSTOMER_TOKEN_KEY } from '../../../api/api'
-import { useAuth } from '../../../authcontext/AuthContext'
+import { useAuth } from '../../../authcontext/useAuth'
 import { Footer, Header } from '../../../components/Layout'
-import { useLanguage } from '../../../language/LanguageContext'
+import { useLanguage } from '../../../language/useLanguage'
 import { getCameroonDate } from '../../../../shared/cameroonDate'
 
 const inputClass = 'mt-2 w-full rounded-xl border border-[#e2e3e4] bg-[#fcfcfb] px-4 py-3.5 text-sm text-[#102c50] shadow-sm transition placeholder:text-[#9aa3ae] hover:border-[#bdc5cf] focus:border-[#bd9c00] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#ffdc32]/20'

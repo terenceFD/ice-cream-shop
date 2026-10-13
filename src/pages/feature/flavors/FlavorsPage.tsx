@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { useCart } from "../../../CartContext";
-import { useFlavors, type Flavor } from "../../../flavor-context/FlavorContext";
+import { useCart } from "../../../useCart";
+import { type Flavor } from "../../../flavor-context/FlavorContext";
+import { useFlavors } from "../../../flavor-context/useFlavors";
 import { ArrowIcon, Footer, Header } from "../../../components/Layout";
-import { useLanguage } from "../../../language/LanguageContext";
+import { useLanguage } from "../../../language/useLanguage";
 import { formatCartMoney } from "../../../cartPricing";
 
 export function FlavorsPage() {

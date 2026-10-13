@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Header, Footer, ArrowIcon } from '../../../components/Layout'
-import { useCart, type CartItem } from '../../../CartContext'
+import { type CartItem } from '../../../CartContext'
+import { useCart } from '../../../useCart'
 import { formatCartMoney, getCartPricing } from '../../../cartPricing'
-import { useLanguage } from '../../../language/LanguageContext'
+import { useLanguage } from '../../../language/useLanguage'
 
 export function CartPage() {
   const { cartItems, removeFromCart, updateQuantity } = useCart()

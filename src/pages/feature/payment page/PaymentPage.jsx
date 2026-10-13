@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Footer, Header } from "../../../components/Layout";
-import { useCart } from "../../../CartContext";
-import { useFlavors } from "../../../flavor-context/FlavorContext";
+import { useCart } from "../../../useCart";
+import { useFlavors } from "../../../flavor-context/useFlavors";
 import {
   formatCartMoney,
   getCartPricing,
   USD_TO_XAF,
 } from "../../../cartPricing";
 import { apiRequest, CUSTOMER_TOKEN_KEY } from "../../../api/api";
-import { useLanguage } from "../../../language/LanguageContext";
-import { useAuth } from "../../../authcontext/AuthContext";
+import { useLanguage } from "../../../language/useLanguage";
+import { useAuth } from "../../../authcontext/useAuth";
 
 const CHECKOUT_DETAILS_KEY = "antixor-icy-checkout-details";
 const PAYMENT_PENDING_MESSAGE = "Stripe has not confirmed this payment yet.";

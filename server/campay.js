@@ -35,7 +35,8 @@ async function requestCamPay(path, { method = 'GET', body } = {}) {
     throw new Error(`CamPay returned an invalid response (${response.status}).`, { cause: error })
   }
   if (!response.ok) {
-    throw new Error(`CamPay request failed (${response.status}).`)
+    const detail = typeof result?.message === 'string' ? `: ${result.message}` : ''
+    throw new Error(`CamPay request failed (${response.status})${detail}.`)
   }
   return result
 }

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { apiRequest } from "../api/api";
-import { useCart } from "../CartContext";
-import { useAuth } from "../authcontext/AuthContext";
-import { useFlavors } from "../flavor-context/FlavorContext";
-import { useLanguage } from "../language/LanguageContext";
+import { useCart } from "../useCart";
+import { useAuth } from "../authcontext/useAuth";
+import { useFlavors } from "../flavor-context/useFlavors";
+import { useLanguage } from "../language/useLanguage";
 import { coldStoneMenuCategories } from "../data";
 
 function ArrowIcon({ diagonal = false }) {

@@ -3,9 +3,9 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Footer, Header, InstagramSection } from "../../../components/Layout";
 import { coldStoneMenuCategories, getMenuItemId } from "../../../data";
 import { apiRequest, CUSTOMER_TOKEN_KEY } from "../../../api/api";
-import { useCart } from "../../../CartContext";
-import { useLanguage } from "../../../language/LanguageContext";
-import { useAuth } from "../../../authcontext/AuthContext";
+import { useCart } from "../../../useCart";
+import { useLanguage } from "../../../language/useLanguage";
+import { useAuth } from "../../../authcontext/useAuth";
 
 function MenuImage({ alt, className = "", src }) {
   return (

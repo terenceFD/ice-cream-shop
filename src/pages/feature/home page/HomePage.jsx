@@ -6,10 +6,10 @@ import {
   ArrowIcon,
   InstagramSection,
 } from "../../../components/Layout";
-import { useCart } from "../../../CartContext";
+import { useCart } from "../../../useCart";
 import { apiRequest } from "../../../api/api";
 import { coldStoneMenuCategories, getMenuItemId } from "../../../data";
-import { useLanguage } from "../../../language/LanguageContext";
+import { useLanguage } from "../../../language/useLanguage";
 
 const popularFlavorNames = [
   "Cookie Crunch Cone",

@@ -1,5 +1,5 @@
 import { useState, type InputHTMLAttributes } from 'react'
-import { useLanguage } from '../language/LanguageContext'
+import { useLanguage } from '../language/useLanguage'
 
 type PasswordFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
   label: string

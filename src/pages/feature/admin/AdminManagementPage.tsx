@@ -1,7 +1,7 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { PasswordField } from "../../../components/PasswordField";
-import { useAdminAuth } from "./AdminAuthContext";
-import { useLanguage } from "../../../language/LanguageContext";
+import { useAdminAuth } from "./useAdminAuth";
+import { useLanguage } from "../../../language/useLanguage";
 import { apiRequest } from "../../../api/api";
 
 const inputClassName =

@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { apiRequest } from '../../../api/api'
-import { useAdminAuth } from './AdminAuthContext'
-import { useLanguage } from '../../../language/LanguageContext'
+import { useAdminAuth } from './useAdminAuth'
+import { useLanguage } from '../../../language/useLanguage'
 
 const freshForm: DiscountCodeForm = { code: '', discountType: 'percent', discountValue: '', minimumTotal: 0, maxUses: '', expiresAt: '', isActive: true }
 const fieldClass = 'mt-1.5 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 py-3 text-sm text-[#102c50] outline-none transition placeholder:text-[#93a1b1] hover:border-[#b8c9dc] focus:border-[#bd9c00] focus:ring-4 focus:ring-[#ffdc32]/20'

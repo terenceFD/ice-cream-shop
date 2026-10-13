@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useLanguage } from "../../../language/LanguageContext";
+import { useLanguage } from "../../../language/useLanguage";
 import { Link } from "react-router-dom";
-import { useFlavors } from "../../../flavor-context/FlavorContext";
-import { useAdminAuth } from "./AdminAuthContext";
-import { useCart } from "../../../CartContext";
+import { useFlavors } from "../../../flavor-context/useFlavors";
+import { useAdminAuth } from "./useAdminAuth";
+import { useCart } from "../../../useCart";
 import { formatCartMoney } from "../../../cartPricing";
 
 const inputClassName =

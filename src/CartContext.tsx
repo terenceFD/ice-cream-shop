@@ -1,13 +1,13 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
-import { useFlavors, type Flavor } from "./flavor-context/FlavorContext";
+import { CartContext } from "./useCart";
+import { type Flavor } from "./flavor-context/FlavorContext";
+import { useFlavors } from "./flavor-context/useFlavors";
 import { findMenuItem } from "./data";
 import { USD_TO_XAF } from "./cartPricing";
 
@@ -38,7 +38,7 @@ type CartProduct = Omit<CartItem, "quantity" | "price"> & {
   quantity?: number;
 };
 
-interface CartContextValue {
+export interface CartContextValue {
   cartItems: CartItem[];
   addToCart: (product: CartProduct) => boolean;
   addItemsToCart: (products: CartProduct[]) => number;
@@ -50,7 +50,6 @@ interface CartContextValue {
   cartTotal: number;
 }
 
-const CartContext = createContext<CartContextValue | null>(null);
 const CART_STORAGE_KEY = "antixor-icy-cart";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -291,12 +290,4 @@ export function CartProvider({ children }: { children: ReactNode }) {
       {children}
     </CartContext.Provider>
   );
-}
-
-export function useCart() {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used within CartProvider");
-  }
-  return context;
 }
