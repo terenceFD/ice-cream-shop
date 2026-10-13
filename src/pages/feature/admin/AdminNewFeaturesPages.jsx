@@ -13,6 +13,20 @@ function ErrorMessage({ children }) {
   return children ? <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert">{children}</p> : null
 }
 
+function formatAdminDate(value, language, includeTime = false) {
+  if (!value) return null
+  const date = value instanceof Date
+    ? value
+    : new Date(/[zZ]|[+-]\d{2}:?\d{2}$/.test(String(value))
+      ? String(value)
+      : `${String(value).replace(' ', 'T')}Z`)
+  if (Number.isNaN(date.getTime())) return null
+  return new Intl.DateTimeFormat(language === 'fr' ? 'fr-CM' : 'en-CM', {
+    dateStyle: 'medium',
+    ...(includeTime ? { timeStyle: 'short' } : {}),
+  }).format(date)
+}
+
 export function AdminFulfillmentPage() {
   const request = useAdminRequest()
   const { t } = useLanguage()
@@ -550,7 +564,9 @@ export function AdminReviewsPage() {
               <span className="sr-only">{t('Loading reviews…')}</span>
               {[0, 1, 2].map((row) => <div aria-hidden="true" className="h-36 animate-pulse rounded-xl bg-[#f3f6fa]" key={row} />)}
             </div>
-          ) : visibleReviews.length ? visibleReviews.map((review) => (
+          ) : visibleReviews.length ? visibleReviews.map((review) => {
+            const createdAtLabel = formatAdminDate(review.createdAt, language)
+            return (
             <article className="p-4 transition-colors hover:bg-[#fbfcfe] sm:p-6" key={review.id}>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex min-w-0 items-start gap-3.5">
@@ -574,7 +590,7 @@ export function AdminReviewsPage() {
                     <p className="mt-1 text-sm leading-6 text-[#52647b]">{review.review || t('No written comment.')}</p>
                     <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#8190a1]">
                       <span>{t('Order #{id}', { id: review.orderId })}</span>
-                      {review.createdAt && <span>{new Intl.DateTimeFormat(language === 'fr' ? 'fr-CM' : 'en-CM', { dateStyle: 'medium' }).format(new Date(`${review.createdAt.replace(' ', 'T')}Z`))}</span>}
+                      {createdAtLabel && <span>{createdAtLabel}</span>}
                     </div>
                   </div>
                 </div>
@@ -594,7 +610,7 @@ export function AdminReviewsPage() {
                 </div>
               </div>
             </article>
-          )) : (
+          )}) : (
             <div className="px-5 py-12 text-center">
               <span aria-hidden="true" className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f3f6fa] text-[#52708e]">
                 <svg className="size-5" fill="none" viewBox="0 0 20 20">
@@ -701,10 +717,15 @@ export function AdminActivityPage() {
       <p className="mt-2 text-sm text-[#65748a]">{t('Recent successful admin changes, up to the latest 200 entries.')}</p>
       <ErrorMessage>{error}</ErrorMessage>
       <div className="mt-5 space-y-2">{activity.map((item) => (
-        <article className="grid gap-2 rounded-xl border border-[#d9d6cc] bg-white p-4 sm:grid-cols-[minmax(140px,0.6fr)_1fr_auto]" key={item.id}>
-          <p className="text-sm font-bold">{item.adminName}</p><p className="break-all text-sm">{item.action}</p>
-          <time className="text-xs text-[#65748a]" dateTime={item.createdAt}>{new Date(`${item.createdAt.replace(' ', 'T')}Z`).toLocaleString(language === 'fr' ? 'fr-CM' : 'en-CM')}</time>
-        </article>
+        (() => {
+          const createdAtLabel = formatAdminDate(item.createdAt, language, true)
+          return (
+            <article className="grid gap-2 rounded-xl border border-[#d9d6cc] bg-white p-4 sm:grid-cols-[minmax(140px,0.6fr)_1fr_auto]" key={item.id}>
+              <p className="text-sm font-bold">{item.adminName}</p><p className="break-all text-sm">{item.action}</p>
+              {createdAtLabel && <time className="text-xs text-[#65748a]" dateTime={item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt}>{createdAtLabel}</time>}
+            </article>
+          )
+        })()
       ))}{!activity.length && <p className="text-sm text-[#65748a]">{t('No admin changes have been recorded yet.')}</p>}</div>
     </div>
   )
