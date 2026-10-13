@@ -98,7 +98,7 @@ export function FlavorDetailPage() {
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <div className="mb-4 inline-block rounded-full bg-[#ffeb9c] px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-[0.12em] text-[#102c50]">
                 {t(flavor.tag)}
               </div>
@@ -156,23 +156,23 @@ export function FlavorDetailPage() {
                 </div>
               </div>
 
-              <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
+              <div className="mt-10 space-y-4">
+                <div className="rounded-2xl border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_24px_rgba(18,44,80,0.04)] sm:p-6">
                   <p className="text-sm font-medium text-[#65748a]">
                     {t("Price per scoop")}
                   </p>
-                  <p className="font-display text-5xl font-bold text-[#ffdc32]">
+                  <p className="mt-1 break-words font-display text-4xl font-extrabold leading-tight text-[#092a53] sm:text-5xl">
                     {formatCartMoney(flavor.price, "xaf", language)}
                   </p>
-                  <p className="mt-1 max-w-sm text-xs leading-5 text-[#65748a]">
+                  <p className="mt-2 max-w-xl text-xs leading-5 text-[#65748a]">
                     {t("Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2">
                   <button
                     onClick={() => addToCart(flavor)}
-                    className="flex items-center justify-center gap-2 rounded-full bg-[#ffdc32] px-8 py-4 text-lg font-bold text-[#102c50] shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#102c50]"
+                    className="flex min-w-0 items-center justify-center gap-2 rounded-full bg-[#ffdc32] px-5 py-4 text-base font-bold text-[#102c50] shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#102c50] sm:text-lg"
                   >
                     <span>{t("Add to bag")}</span>
                     <svg className="size-5" viewBox="0 0 24 24" fill="none">
@@ -192,7 +192,7 @@ export function FlavorDetailPage() {
                   </button>
                   <Link
                     to="/cart"
-                    className="flex items-center justify-center gap-2 rounded-full border-2 border-[#65748a] px-8 py-4 text-lg font-bold text-[#102c50] transition hover:bg-[#f4f1e7]"
+                    className="flex min-w-0 items-center justify-center gap-2 rounded-full border-2 border-[#65748a] px-5 py-4 text-base font-bold text-[#102c50] transition hover:bg-[#f4f1e7] sm:text-lg"
                   >
                     <span>{t("View cart")}</span>
                     <ArrowIcon diagonal />
