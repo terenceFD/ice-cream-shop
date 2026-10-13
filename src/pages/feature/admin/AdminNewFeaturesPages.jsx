@@ -716,17 +716,18 @@ export function AdminActivityPage() {
       <h1 className="font-display text-3xl font-bold">{t('Admin activity history')}</h1>
       <p className="mt-2 text-sm text-[#65748a]">{t('Recent successful admin changes, up to the latest 200 entries.')}</p>
       <ErrorMessage>{error}</ErrorMessage>
-      <div className="mt-5 space-y-2">{activity.map((item) => (
-        (() => {
-          const createdAtLabel = formatAdminDate(item.createdAt, language, true)
-          return (
-            <article className="grid gap-2 rounded-xl border border-[#d9d6cc] bg-white p-4 sm:grid-cols-[minmax(140px,0.6fr)_1fr_auto]" key={item.id}>
-              <p className="text-sm font-bold">{item.adminName}</p><p className="break-all text-sm">{item.action}</p>
-              {createdAtLabel && <time className="text-xs text-[#65748a]" dateTime={item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt}>{createdAtLabel}</time>}
-            </article>
-          )
-        })()
-      ))}{!activity.length && <p className="text-sm text-[#65748a]">{t('No admin changes have been recorded yet.')}</p>}</div>
+      <div className="mt-5 space-y-2">{activity.map((item) => {
+        const createdAtLabel = formatAdminDate(item.createdAt, language, true)
+        const dateTime = item.createdAt instanceof Date
+          ? Number.isFinite(item.createdAt.getTime()) ? item.createdAt.toISOString() : undefined
+          : item.createdAt
+        return (
+          <article className="grid gap-2 rounded-xl border border-[#d9d6cc] bg-white p-4 sm:grid-cols-[minmax(140px,0.6fr)_1fr_auto]" key={item.id}>
+            <p className="text-sm font-bold">{item.adminName}</p><p className="break-all text-sm">{item.action}</p>
+            {createdAtLabel && <time className="text-xs text-[#65748a]" dateTime={dateTime}>{createdAtLabel}</time>}
+          </article>
+        )
+      })}{!activity.length && <p className="text-sm text-[#65748a]">{t('No admin changes have been recorded yet.')}</p>}</div>
     </div>
   )
 }
