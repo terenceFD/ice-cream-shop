@@ -1153,9 +1153,9 @@ export async function listDiscountCodes() {
   return (await database
     .prepare(
       `
-    SELECT id, code, discount_type AS discountType, discount_value AS discountValue,
-      minimum_total AS minimumTotal, max_uses AS maxUses, uses, is_active AS isActive,
-      reserved_uses AS reservedUses, expires_at AS expiresAt
+    SELECT id, code, discount_type AS "discountType", discount_value AS "discountValue",
+      minimum_total AS "minimumTotal", max_uses AS "maxUses", uses, is_active AS "isActive",
+      reserved_uses AS "reservedUses", expires_at AS "expiresAt"
     FROM discount_codes ORDER BY id DESC
   `,
     )
@@ -1217,8 +1217,8 @@ export async function getValidDiscountCode(code, subtotal) {
   const discount = await database
     .prepare(
       `
-    SELECT id, code, discount_type AS discountType, discount_value AS discountValue,
-      minimum_total AS minimumTotal, max_uses AS maxUses, uses, expires_at AS expiresAt
+    SELECT id, code, discount_type AS "discountType", discount_value AS "discountValue",
+      minimum_total AS "minimumTotal", max_uses AS "maxUses", uses, expires_at AS "expiresAt"
     FROM discount_codes
     WHERE code = ? COLLATE NOCASE AND is_active = 1
       AND (expires_at IS NULL OR datetime(expires_at) > CURRENT_TIMESTAMP)

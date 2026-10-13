@@ -60,6 +60,28 @@ test('preserves quoted camelCase report aliases in PostgreSQL ordering', () => {
   )
 })
 
+test('preserves camelCase discount-code fields in PostgreSQL query results', () => {
+  assert.deepEqual(
+    translateSql(`
+      SELECT id, discount_type AS "discountType", discount_value AS "discountValue",
+        minimum_total AS "minimumTotal", max_uses AS "maxUses",
+        is_active AS "isActive", reserved_uses AS "reservedUses",
+        expires_at AS "expiresAt"
+      FROM discount_codes
+    `),
+    {
+      sql: `
+      SELECT id, discount_type AS "discountType", discount_value AS "discountValue",
+        minimum_total AS "minimumTotal", max_uses AS "maxUses",
+        is_active AS "isActive", reserved_uses AS "reservedUses",
+        expires_at AS "expiresAt"
+      FROM discount_codes
+    `,
+      values: [],
+    },
+  )
+})
+
 test('preserves the checkout session alias used by Stripe reconciliation', () => {
   assert.deepEqual(
     translateSql('SELECT p.stripe_checkout_session_id AS "sessionId" FROM payments p'),

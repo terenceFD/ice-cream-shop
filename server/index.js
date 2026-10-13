@@ -527,9 +527,9 @@ app.get('/api/fulfillment/options', async (_request, response) => {
 
 app.get('/api/promotions/active', async (_request, response) => {
   const promotion = await database.prepare(`
-    SELECT code, discount_type AS discountType,
-      discount_value AS discountValue, minimum_total AS minimumTotal,
-      expires_at AS expiresAt
+    SELECT code, discount_type AS "discountType",
+      discount_value AS "discountValue", minimum_total AS "minimumTotal",
+      expires_at AS "expiresAt"
     FROM discount_codes
     WHERE is_active = 1 AND expires_at IS NOT NULL
       AND datetime(expires_at) > CURRENT_TIMESTAMP
