@@ -50,6 +50,16 @@ test('preserves quoted camelCase aliases used by PostgreSQL-backed menu queries'
   )
 })
 
+test('preserves quoted camelCase report aliases in PostgreSQL ordering', () => {
+  assert.deepEqual(
+    translateSql('SELECT "availableQuantity", "itemId" FROM inventory ORDER BY "availableQuantity", "itemId" LIMIT 30'),
+    {
+      sql: 'SELECT "availableQuantity", "itemId" FROM inventory ORDER BY "availableQuantity", "itemId" LIMIT 30',
+      values: [],
+    },
+  )
+})
+
 test('preserves the checkout session alias used by Stripe reconciliation', () => {
   assert.deepEqual(
     translateSql('SELECT p.stripe_checkout_session_id AS "sessionId" FROM payments p'),

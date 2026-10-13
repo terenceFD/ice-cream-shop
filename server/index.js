@@ -2465,7 +2465,7 @@ app.get('/api/admin/reports', requireAdmin, async (request, response) => {
       reserved_stock AS "reservedStock", 1 AS "isAvailable",
       stock - reserved_stock AS "availableQuantity"
       FROM flavors WHERE stock - reserved_stock <= 5
-    ) ORDER BY availableQuantity, itemId LIMIT 30
+    ) ORDER BY "availableQuantity", "itemId" LIMIT 30
   `).all() : []
   const recentSales = await database.prepare(`
     SELECT date(created_at) AS date, SUM(total_cents) AS sales, COUNT(*) AS orders
