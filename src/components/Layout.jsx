@@ -574,7 +574,7 @@ function PromotionCountdown() {
             </p>
             {promotion.minimumTotal > 0 && (
               <p className="mt-1 text-[11px] font-medium text-[#65748a]">
-                {t("Minimum order: {amount}", { amount: `${new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US").format(promotion.minimumTotal)} FCFA` })}
+                {t("Minimum order: {amount}", { amount: new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US").format(promotion.minimumTotal) })}
               </p>
             )}
           </div>
