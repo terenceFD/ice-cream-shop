@@ -36,6 +36,7 @@ import {
   findFlavor,
   getValidDiscountCode,
   listDiscountCodes,
+  listCakeRequests,
   listMenuCategories,
   listMenuInventory,
   listCustomMenuItems,
@@ -1414,7 +1415,7 @@ app.post('/api/cake-requests', contactLimiter, async (request, response) => {
     pickupDate,
   })
   const admins = await database.prepare(`
-    SELECT email FROM admins WHERE role = 'owner' OR store_id = ? ORDER BY id
+    SELECT email FROM admins WHERE role = 'store_admin' AND store_id = ? ORDER BY id
   `).all(store.id)
   try {
     await sendCakeRequestNotification({
@@ -1853,7 +1854,7 @@ app.get('/api/admin/payments', requireAdmin, async (request, response) => {
 
 app.get('/api/admin/notifications', requireAdmin, async (_request, response) => {
   const isOwner = _request.admin.role === 'owner'
-  const storeFilter = isOwner ? 'WHERE cm.store_id IS NULL' : 'WHERE cm.store_id = ?'
+  const storeFilter = isOwner ? '' : 'WHERE cm.store_id = ?'
   const parameters = isOwner ? [] : [_request.admin.storeId]
   const messages = (await database.prepare(`
     SELECT cm.id, cm.name, cm.email, cm.phone, cm.subject, cm.message,
@@ -1876,7 +1877,7 @@ app.patch('/api/admin/notifications/:id/read', requireAdmin, async (request, res
   }
   const isOwner = request.admin.role === 'owner'
   const storeId = isOwner ? null : request.admin.storeId
-  const updated = await markContactMessageRead(id, storeId, isOwner)
+  const updated = await markContactMessageRead(id, storeId)
   if (!updated) {
     response.status(404).json({ error: 'Notification not found.' })
     return
@@ -1887,7 +1888,7 @@ app.patch('/api/admin/notifications/:id/read', requireAdmin, async (request, res
 app.delete('/api/admin/notifications', requireAdmin, async (request, response) => {
   const isOwner = request.admin.role === 'owner'
   const storeId = isOwner ? null : request.admin.storeId
-  const deletedCount = await deleteContactMessages(storeId, isOwner)
+  const deletedCount = await deleteContactMessages(storeId)
   response.json({ deletedCount })
 })
 
@@ -1900,9 +1901,9 @@ app.delete('/api/admin/notifications/:id', requireAdmin, async (request, respons
 
   const isOwner = request.admin.role === 'owner'
   const storeId = isOwner ? null : request.admin.storeId
-  const deleted = await deleteContactMessage(id, storeId, isOwner)
+  const deleted = await deleteContactMessage(id, storeId)
   if (!deleted) {
-    const storeFilter = isOwner ? ' AND store_id IS NULL' : ' AND store_id = ?'
+    const storeFilter = isOwner ? '' : ' AND store_id = ?'
     const parameters = isOwner ? [id] : [id, storeId]
     const message = await database.prepare(`SELECT id FROM contact_messages WHERE id = ?${storeFilter}`).get(...parameters)
     if (!message) {
@@ -1923,7 +1924,7 @@ app.post('/api/admin/notifications/:id/reply', requireAdmin, contactReplyLimiter
 
   const isOwner = request.admin.role === 'owner'
   const storeId = isOwner ? null : request.admin.storeId
-  const storeFilter = isOwner ? ' AND store_id IS NULL' : ' AND store_id = ?'
+  const storeFilter = isOwner ? '' : ' AND store_id = ?'
   const parameters = isOwner ? [id] : [id, storeId]
   const contact = await database.prepare(`
     SELECT id, name, email, subject FROM contact_messages WHERE id = ?${storeFilter}
@@ -1941,7 +1942,7 @@ app.post('/api/admin/notifications/:id/reply', requireAdmin, contactReplyLimiter
       reply,
       adminName: request.admin.name,
     })
-    const result = await markContactMessageReplied(id, storeId, isOwner)
+    const result = await markContactMessageReplied(id, storeId)
     if (!result) {
       response.status(404).json({ error: 'Contact message not found.' })
       return
@@ -2075,14 +2076,8 @@ app.get('/api/admin/activity', requireAdmin, async (_request, response) => {
 })
 
 app.get('/api/admin/cake-requests', requireAdmin, async (request, response) => {
-  const storeFilter = request.admin.role === 'owner' ? '' : 'WHERE store_id = ?'
-  const requests = await database.prepare(`
-    SELECT id, customer_name AS "customerName", customer_email AS "customerEmail",
-      customer_phone AS "customerPhone", size, flavor, message, toppings,
-      pickup_date AS "pickupDate", status, store_id AS "storeId", created_at AS "createdAt"
-    FROM cake_requests ${storeFilter} ORDER BY id DESC LIMIT 200
-  `).all(...(request.admin.role === 'owner' ? [] : [request.admin.storeId]))
-  response.json({ requests: requests.map((item) => ({ ...item, toppings: JSON.parse(item.toppings) })) })
+  const storeId = request.admin.role === 'owner' ? null : request.admin.storeId
+  response.json({ requests: await listCakeRequests(storeId) })
 })
 
 app.patch('/api/admin/cake-requests/:id/status', requireAdmin, async (request, response) => {
@@ -2093,16 +2088,8 @@ app.patch('/api/admin/cake-requests/:id/status', requireAdmin, async (request, r
     response.status(400).json({ error: 'Choose a valid cake request and status.' })
     return
   }
-  if (request.admin.role !== 'owner') {
-    const assigned = await database.prepare(
-      'SELECT 1 FROM cake_requests WHERE id = ? AND store_id = ?',
-    ).get(id, request.admin.storeId)
-    if (!assigned) {
-      response.status(404).json({ error: 'Custom cake request not found.' })
-      return
-    }
-  }
-  const result = await setCakeRequestStatus(id, status)
+  const storeId = request.admin.role === 'owner' ? null : request.admin.storeId
+  const result = await setCakeRequestStatus(id, status, storeId)
   if (!result) {
     response.status(404).json({ error: 'Custom cake request not found.' })
     return

@@ -308,6 +308,7 @@ export function AdminCakeRequestsPage() {
                       <div className="min-w-0">
                         <h2 className="truncate font-display text-lg font-extrabold leading-tight text-[#102c50]">{item.size} {t('Cake')}</h2>
                         <p className="mt-1 text-[11px] font-semibold text-[#8390a0]">{t('Cake request #{id}', { id: item.id })}</p>
+                        {item.storeName && <p className="mt-1 text-[10px] font-bold text-[#806a00]">{t('Selected store')}: {t(item.storeName)}</p>}
                       </div>
                     </div>
                     <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-extrabold capitalize ${statusStyle}`}>

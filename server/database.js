@@ -1804,21 +1804,39 @@ export async function updateFulfillmentSlots(slots) {
   })
 }
 
-export async function setCakeRequestStatus(id, status) {
+export async function listCakeRequests(storeId = null) {
+  const storeFilter = storeId === null ? '' : 'WHERE r.store_id = ?'
+  const requests = await database.prepare(`
+    SELECT r.id, r.customer_name AS "customerName", r.customer_email AS "customerEmail",
+      r.customer_phone AS "customerPhone", r.size, r.flavor, r.message, r.toppings,
+      r.pickup_date AS "pickupDate", r.status, r.store_id AS "storeId",
+      s.name AS "storeName", r.created_at AS "createdAt"
+    FROM cake_requests r LEFT JOIN stores s ON s.id = r.store_id
+    ${storeFilter} ORDER BY r.id DESC LIMIT 200
+  `).all(...(storeId === null ? [] : [storeId]))
+  return requests.map((request) => ({ ...request, toppings: JSON.parse(request.toppings) }))
+}
+
+export async function setCakeRequestStatus(id, status, storeId = null) {
+  const storeFilter = storeId === null ? '' : ' AND store_id = ?'
+  const parameters = storeId === null ? [status, id] : [status, id, storeId]
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const result = await database.prepare("UPDATE cake_requests SET status = ? WHERE id = ?")
-        .run(status, id);
+      const result = await database.prepare(
+        `UPDATE cake_requests SET status = ? WHERE id = ?${storeFilter}`,
+      ).run(...parameters);
       if (!result.changes) return null;
       return { id, status };
     });
   }
 
   return database.transaction(() => {
-    const result = database.prepare('UPDATE cake_requests SET status = ? WHERE id = ?').run(status, id)
+    const result = database.prepare(
+      `UPDATE cake_requests SET status = ? WHERE id = ?${storeFilter}`,
+    ).run(...parameters)
     if (!result.changes) return null
     return { id, status }
-  })
+  })()
 }
 
 export async function setReviewApproval(id, isApproved) {
