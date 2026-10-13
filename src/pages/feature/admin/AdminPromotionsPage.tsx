@@ -241,7 +241,7 @@ export function AdminPromotionsPage() {
             </div>
 
             <label className="block text-xs font-bold text-[#344d69]">
-              {t('Minimum order (FCFA)')}
+              {t('Minimum order')}
               <input className={fieldClass} min="0" onChange={(event) => setField('minimumTotal', event.target.value)} type="number" value={form.minimumTotal} />
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -328,7 +328,7 @@ export function AdminPromotionsPage() {
                     </div>
                     <div>
                       <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-[#8796a8]">{t('Minimum order')}</p>
-                      <p className="mt-1 text-xs font-bold text-[#344d69]">{new Intl.NumberFormat(language === 'fr' ? 'fr-CM' : 'en-CM').format(code.minimumTotal)} FCFA</p>
+                      <p className="mt-1 text-xs font-bold text-[#344d69]">{new Intl.NumberFormat(language === 'fr' ? 'fr-CM' : 'en-CM').format(code.minimumTotal)}</p>
                     </div>
                     <div className="col-span-2 sm:col-span-1">
                       <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-[#8796a8]">{t('Expires at')}</p>

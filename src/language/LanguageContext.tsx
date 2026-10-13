@@ -416,7 +416,7 @@ const french: Record<string, string> = {
   Percent: 'Pourcentage',
   'Fixed FCFA': 'Montant fixe en FCFA',
   'Discount value': 'Valeur de la réduction',
-  'Minimum order (FCFA)': 'Commande minimum (FCFA)',
+  'Minimum order': 'Commande minimum',
   'Maximum uses': 'Nombre maximal d’utilisations',
   'Expires at': 'Date d’expiration',
   Active: 'Actif',
