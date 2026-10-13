@@ -166,7 +166,7 @@ function LanguageDropdown({ language, setLanguage, t }) {
 function AccountDropdown({ customer, customerName, location, handleLogout, t, mobile = false, onNavigate }) {
   const accountActive = ["/account/orders", "/login", "/signup"].includes(location.pathname);
   const options = customer
-    ? [{ label: t("My orders"), to: "/account/orders" }]
+    ? [{ label: t("My account"), to: "/account/orders" }]
     : [
         { label: t("Log in"), to: "/login" },
         { label: t("Sign up"), to: "/signup" },

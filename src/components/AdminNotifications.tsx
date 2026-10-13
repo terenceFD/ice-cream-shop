@@ -12,11 +12,27 @@ interface ContactMessage {
   message: string
   createdAt: string
   isRead: boolean
-  repliedAt?: string
+  storeName?: string | null
+  repliedAt?: string | null
 }
 
-function formatDate(value: string) {
-  const date = new Date(`${value.replace(' ', 'T')}Z`)
+type ContactMessageResponse = Omit<ContactMessage, 'createdAt' | 'isRead' | 'repliedAt'> & {
+  createdAt?: string | null
+  createdat?: string | null
+  created_at?: string | null
+  isRead?: boolean
+  isread?: boolean
+  is_read?: boolean
+  repliedAt?: string | null
+  repliedat?: string | null
+  replied_at?: string | null
+}
+
+function formatDate(value: string | null | undefined, t: (key: string) => string) {
+  if (typeof value !== 'string' || !value.trim()) return t('Date unavailable')
+  const normalizedValue = value.includes('T') ? value : value.replace(' ', 'T')
+  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalizedValue)
+  const date = new Date(hasTimezone ? normalizedValue : `${normalizedValue}Z`)
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
 }
 
@@ -31,14 +47,23 @@ export function AdminNotifications() {
   const [replyDraft, setReplyDraft] = useState('')
   const [sendingId, setSendingId] = useState<number | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [isClearingAll, setIsClearingAll] = useState(false)
   const [replyErrors, setReplyErrors] = useState<Record<number, string>>({})
   const [replySent, setReplySent] = useState<Record<number, boolean>>({})
 
   const refresh = useCallback(async () => {
     setError('')
     try {
-      const result = await apiRequest<{ messages: ContactMessage[]; unreadCount: number }>('/admin/notifications', { token: sessionToken })
-      setMessages(result.messages)
+      const result = await apiRequest<{ messages: ContactMessageResponse[]; unreadCount: number }>('/admin/notifications', { token: sessionToken })
+      if (!result || !Array.isArray(result.messages)) {
+        throw new Error(t('The notification service returned an invalid response.'))
+      }
+      setMessages(result.messages.map((message) => ({
+        ...message,
+        createdAt: message.createdAt ?? message.createdat ?? message.created_at ?? '',
+        isRead: Boolean(message.isRead ?? message.isread ?? message.is_read),
+        repliedAt: message.repliedAt ?? message.repliedat ?? message.replied_at ?? undefined,
+      })))
       setUnreadCount(result.unreadCount)
     } catch (loadError) {
       setError(loadError.message)
@@ -90,8 +115,8 @@ export function AdminNotifications() {
     }
   }
 
-  async function deleteRepliedMessage(message: ContactMessage) {
-    if (!window.confirm(t('Delete replied notification from {name}? This cannot be undone.', { name: message.name }))) {
+  async function deleteMessage(message: ContactMessage) {
+    if (!window.confirm(t('Delete notification from {name}? This cannot be undone.', { name: message.name }))) {
       return
     }
 
@@ -111,10 +136,39 @@ export function AdminNotifications() {
         delete updated[message.id]
         return updated
       })
+      if (replyingTo === message.id) {
+        setReplyingTo(null)
+        setReplyDraft('')
+      }
     } catch (deleteError) {
       setError(t(deleteError.message))
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  async function clearAllMessages() {
+    if (!window.confirm(t('Clear all {count} contact notifications? This cannot be undone.', { count: messages.length }))) {
+      return
+    }
+
+    setError('')
+    setIsClearingAll(true)
+    try {
+      await apiRequest('/admin/notifications', {
+        method: 'DELETE',
+        token: sessionToken,
+      })
+      setMessages([])
+      setUnreadCount(0)
+      setReplySent({})
+      setReplyErrors({})
+      setReplyingTo(null)
+      setReplyDraft('')
+    } catch (clearError) {
+      setError(t(clearError.message))
+    } finally {
+      setIsClearingAll(false)
     }
   }
 
@@ -132,9 +186,21 @@ export function AdminNotifications() {
           </h2>
           <p className="mt-1 text-sm text-[#65748a]">{t('Messages submitted through the website contact form.')}</p>
         </div>
-        <button className="rounded-full border border-[#d7e0eb] bg-[#f7f9fb] px-4 py-2.5 text-sm font-bold text-[#123253] transition hover:border-[#c6d5e8] hover:bg-white disabled:opacity-60" disabled={isLoading} onClick={refresh} type="button">
-          {t('Refresh')}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {messages.length > 3 && (
+            <button
+              className="rounded-full border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
+              disabled={isLoading || isClearingAll || deletingId !== null}
+              onClick={clearAllMessages}
+              type="button"
+            >
+              {isClearingAll ? t('Clearing notifications…') : t('Clear all')}
+            </button>
+          )}
+          <button className="rounded-full border border-[#d7e0eb] bg-[#f7f9fb] px-4 py-2.5 text-sm font-bold text-[#123253] transition hover:border-[#c6d5e8] hover:bg-white disabled:opacity-60" disabled={isLoading || isClearingAll} onClick={refresh} type="button">
+            {t('Refresh')}
+          </button>
+        </div>
       </div>
 
       {error && <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p>}
@@ -158,7 +224,8 @@ export function AdminNotifications() {
                     <h3 className="font-display text-xl font-bold text-[#102c50]">{message.subject}</h3>
                     {!message.isRead && <span className="rounded-full bg-[#ffdc32] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#1a2f4b]">{t('New')}</span>}
                   </div>
-                  <p className="mt-1 text-xs font-medium uppercase tracking-[0.08em] text-[#65748a]">{formatDate(message.createdAt)}</p>
+                  <p className="mt-1 text-xs font-medium uppercase tracking-[0.08em] text-[#65748a]">{formatDate(message.createdAt, t)}</p>
+                  {message.storeName && <p className="mt-1 text-xs font-semibold text-[#365775]">{t('Assigned store: {store}', { store: t(message.storeName) })}</p>}
                 </div>
                 {!message.isRead && (
                   <button className="shrink-0 rounded-full border border-[#d8deea] bg-white px-3 py-1.5 text-xs font-bold text-[#123253] transition hover:border-[#b9c9df] hover:bg-[#f7f9fb]" onClick={() => markRead(message.id)} type="button">
@@ -206,19 +273,15 @@ export function AdminNotifications() {
                       {t('Reply')}
                     </button>
                     {replySent[message.id] && <p className="text-sm font-semibold text-[#163e35]" role="status">{t('Reply email sent to {email}.', { email: message.email })}</p>}
-                    {message.repliedAt && (
-                      <>
-                        <p className="text-sm font-semibold text-[#163e35]">{t('Reply sent')}</p>
-                        <button
-                          className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
-                          disabled={deletingId === message.id}
-                          onClick={() => deleteRepliedMessage(message)}
-                          type="button"
-                        >
-                          {deletingId === message.id ? t('Deleting…') : t('Delete notification')}
-                        </button>
-                      </>
-                    )}
+                    {message.repliedAt && <p className="text-sm font-semibold text-[#163e35]">{t('Reply sent')}</p>}
+                    <button
+                      className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
+                      disabled={deletingId === message.id || isClearingAll}
+                      onClick={() => deleteMessage(message)}
+                      type="button"
+                    >
+                      {deletingId === message.id ? t('Deleting…') : t('Delete')}
+                    </button>
                   </div>
                 )}
               </div>

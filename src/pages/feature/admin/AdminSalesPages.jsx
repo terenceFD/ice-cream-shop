@@ -14,8 +14,18 @@ function formatMoney(cents, currency = "xaf", language = "en") {
 
 function formatDate(value) {
   if (!value) return "—";
-  const date = new Date(`${value.replace(" ", "T")}Z`);
+  const normalizedValue = String(value).replace(" ", "T");
+  const date = new Date(/[zZ]|[+-]\d{2}:?\d{2}$/.test(normalizedValue) ? normalizedValue : `${normalizedValue}Z`);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+function isAtLeastThreeMinutesOld(value, now) {
+  if (!value) return false;
+  const normalizedValue = String(value).replace(" ", "T");
+  const createdAt = new Date(
+    /[zZ]|[+-]\d{2}:?\d{2}$/.test(normalizedValue) ? normalizedValue : `${normalizedValue}Z`,
+  ).getTime();
+  return Number.isFinite(createdAt) && now - createdAt >= 3 * 60 * 1000;
 }
 
 function StatusBadge({ status, t }) {
@@ -51,7 +61,8 @@ function StatusBadge({ status, t }) {
 }
 
 function AdminSalesView({ view }) {
-  const { sessionToken } = useAdminAuth();
+  const { sessionToken, currentAdmin } = useAdminAuth();
+  const isOwner = currentAdmin?.role === 'owner';
   const { t, language } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [deliveredCount, setDeliveredCount] = useState(0);
@@ -62,6 +73,7 @@ function AdminSalesView({ view }) {
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const [deletingOrderId, setDeletingOrderId] = useState(null);
   const [isClearingDelivered, setIsClearingDelivered] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
   const [orderSearch, setOrderSearch] = useState("");
   const [orderFilter, setOrderFilter] = useState("all");
   const [storeFilter, setStoreFilter] = useState("all");
@@ -88,6 +100,7 @@ function AdminSalesView({ view }) {
           setDeliveredCount(result.count ?? result.orders.length);
         }
       }
+      setCurrentTime(Date.now());
     } catch (loadError) {
       setError(loadError.message);
     } finally {
@@ -98,6 +111,11 @@ function AdminSalesView({ view }) {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(Date.now()), 15_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   async function markDelivered(orderId) {
     setError("");
@@ -159,8 +177,29 @@ function AdminSalesView({ view }) {
     }
   }
 
+  async function deleteStalePaymentOrder(order) {
+    if (!window.confirm(t(
+      "Delete order #{id}? Stripe will first confirm the checkout is unpaid and expire it. This permanently removes the order.",
+      { id: order.id },
+    ))) return;
+
+    setError("");
+    setDeletingOrderId(order.id);
+    try {
+      await apiRequest(`/admin/orders/${order.id}/stale-payment`, {
+        method: "DELETE",
+        token: sessionToken,
+      });
+      await refresh();
+    } catch (deleteError) {
+      setError(t(deleteError.message));
+    } finally {
+      setDeletingOrderId(null);
+    }
+  }
+
   async function clearDeliveredOrders() {
-    if (deliveredCount < 5 || isClearingDelivered) return;
+    if (deliveredCount <= 3 || isClearingDelivered) return;
     if (!window.confirm(t(
       "Clear all {count} delivered orders? This permanently deletes their order, payment, loyalty, and review history.",
       { count: deliveredCount },
@@ -169,7 +208,9 @@ function AdminSalesView({ view }) {
     setError("");
     setIsClearingDelivered(true);
     try {
-      await apiRequest("/admin/orders/delivered", {
+      const query = new URLSearchParams();
+      if (isOwner && storeFilter !== "all") query.set("storeId", storeFilter);
+      await apiRequest(`/admin/orders/delivered${query.size ? `?${query}` : ""}`, {
         method: "DELETE",
         token: sessionToken,
       });
@@ -293,14 +334,14 @@ function AdminSalesView({ view }) {
               <div className="rounded-full border border-emerald-200/20 bg-emerald-300/15 px-4 py-2 text-sm font-bold text-emerald-100">
                 {t("Delivered orders: {count}", { count: deliveredCount })}
               </div>
-              <button
+              {deliveredCount > 3 && <button
                 className="rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32] disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={isLoading || deliveredCount < 5 || isClearingDelivered}
+                disabled={isLoading || deliveredCount <= 3 || isClearingDelivered}
                 onClick={clearDeliveredOrders}
                 type="button"
               >
                 {isClearingDelivered ? t("Clearing…") : t("Clear all delivered orders")}
-              </button>
+              </button>}
               <button
                 className="inline-flex items-center gap-2 rounded-xl bg-[#ffdc32] px-4 py-2.5 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-60"
                 disabled={isLoading || isClearingDelivered}
@@ -396,7 +437,7 @@ function AdminSalesView({ view }) {
               ))}
             </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:flex lg:items-center">
-              <label className="min-w-0">
+              {isOwner && <label className="min-w-0">
                 <span className="sr-only">{t("Filter orders by store")}</span>
                 <select
                   className="min-h-10 w-full rounded-xl border border-[#e2e8f0] bg-white px-3 text-sm font-semibold text-[#52647b] outline-none transition focus:border-[#6c8bab] focus:ring-2 focus:ring-[#dce8f4] lg:min-w-52"
@@ -410,7 +451,7 @@ function AdminSalesView({ view }) {
                     </option>
                   ))}
                 </select>
-              </label>
+              </label>}
               <label className="relative min-w-0 lg:w-72">
                 <span className="sr-only">{t("Search orders")}</span>
                 <svg aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8291a3]" fill="none" viewBox="0 0 20 20">
@@ -677,6 +718,20 @@ function AdminSalesView({ view }) {
                     {deletingOrderId === order.id
                       ? t("Deleting…")
                       : t("Delete failed order")}
+                  </button>
+                </div>
+              )}
+              {order.status === "pending_payment" && isAtLeastThreeMinutesOld(order.createdAt, currentTime) && (
+                <div className="mt-4 flex justify-end border-t border-[#d9d6cc] pt-4">
+                  <button
+                    className="rounded-full border border-red-300 px-5 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-wait disabled:opacity-60"
+                    disabled={deletingOrderId === order.id}
+                    onClick={() => deleteStalePaymentOrder(order)}
+                    type="button"
+                  >
+                    {deletingOrderId === order.id
+                      ? t("Deleting…")
+                      : t("Delete unpaid order")}
                   </button>
                 </div>
               )}

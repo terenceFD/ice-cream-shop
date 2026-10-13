@@ -1,8 +1,34 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../pages/feature/admin/AdminAuthContext'
 import { apiRequest } from '../api/api'
 import { useLanguage } from '../language/LanguageContext'
+
+const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024
+const PROFILE_IMAGE_DIMENSION = 256
+
+async function resizeProfilePicture(file: File): Promise<string> {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('Choose an image file for the profile picture.')
+  }
+  if (file.size > MAX_PROFILE_IMAGE_SIZE) {
+    throw new Error('Choose an image smaller than 5 MB.')
+  }
+
+  const image = await createImageBitmap(file)
+  const scale = Math.min(1, PROFILE_IMAGE_DIMENSION / Math.max(image.width, image.height))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.max(1, Math.round(image.width * scale))
+  canvas.height = Math.max(1, Math.round(image.height * scale))
+  const context = canvas.getContext('2d')
+  if (!context) {
+    image.close()
+    throw new Error('Your browser could not prepare the profile picture.')
+  }
+  context.drawImage(image, 0, 0, canvas.width, canvas.height)
+  image.close()
+  return canvas.toDataURL('image/jpeg', 0.8)
+}
 
 const navItems = [
   { to: '/admin', label: 'Flavors', group: 'Catalog', icon: 'icecream', end: true },
@@ -10,6 +36,7 @@ const navItems = [
   { to: '/admin/inventory', label: 'Menu inventory', group: 'Catalog', icon: 'inventory' },
   { to: '/admin/categories', label: 'Categories', group: 'Catalog', icon: 'categories' },
   { to: '/admin/orders', label: 'Orders', group: 'Sales', icon: 'orders' },
+  { to: '/admin/notifications', label: 'Notifications', group: 'Sales', icon: 'notifications' },
   { to: '/admin/delivered', label: 'Delivered', group: 'Sales', icon: 'delivered' },
   { to: '/admin/payments', label: 'Payments', group: 'Sales', icon: 'payments' },
   { to: '/admin/promotions', label: 'Promotions', group: 'Sales', icon: 'promotions' },
@@ -17,7 +44,6 @@ const navItems = [
   { to: '/admin/customers', label: 'Customer accounts', group: 'Customers', icon: 'customers' },
   { to: '/admin/reviews', label: 'Customer reviews', group: 'Customers', icon: 'reviews' },
   { to: '/admin/cake-requests', label: 'Cake requests', group: 'Customers', icon: 'cakes' },
-  { to: '/admin/notifications', label: 'Notifications', group: 'Customers', icon: 'notifications' },
   { to: '/admin/admins', label: 'Admin accounts', group: 'Workspace', icon: 'admins' },
 ]
 
@@ -47,34 +73,72 @@ interface NavigationCounts {
   reviewCount: number
 }
 
+async function refreshNavigationCount<T>(
+  label: string,
+  request: Promise<T>,
+  update: (result: T) => void,
+): Promise<string> {
+  try {
+    update(await request)
+    return ''
+  } catch (error) {
+    return `${label}: ${error instanceof Error ? error.message : 'Unable to load count.'}`
+  }
+}
+
 export function AdminLayout() {
-  const { currentAdmin, logout, sessionToken } = useAdminAuth()
+  const { currentAdmin, logout, sessionToken, updateProfilePicture } = useAdminAuth()
   const { t, language, setLanguage } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
+  const isOwner = currentAdmin?.role === 'owner'
+  const profilePictureInput = useRef<HTMLInputElement>(null)
+  const storeNavItems = navItems.filter((item) => [
+    '/admin/orders',
+    '/admin/delivered',
+    '/admin/payments',
+    '/admin/reports',
+    '/admin/notifications',
+    '/admin/customers',
+    '/admin/reviews',
+    '/admin/cake-requests',
+  ].includes(item.to))
+  const visibleNavItems = isOwner ? navItems : storeNavItems
   const [logoutError, setLogoutError] = useState('')
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [navigationCounts, setNavigationCounts] = useState<NavigationCounts>({ orderCount: 0, notificationCount: 0, cakeRequestCount: 0, reviewCount: 0 })
   const [countsError, setCountsError] = useState('')
+  const [profilePictureError, setProfilePictureError] = useState('')
+  const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false)
+  const [profilePictureSaved, setProfilePictureSaved] = useState(false)
 
   const refreshNavigationCounts = useCallback(async () => {
-    try {
-      const [ordersResult, notificationsResult, cakeRequestsResult, reviewsResult] = await Promise.all([
+    const failures = await Promise.all([
+      refreshNavigationCount(
+        'Orders',
         apiRequest<{ orders: unknown[] }>('/admin/orders', { token: sessionToken }),
-        apiRequest<{ unreadCount: number }>('/admin/notifications', { token: sessionToken }),
+        (result) => setNavigationCounts((counts) => ({ ...counts, orderCount: result.orders.length })),
+      ),
+      refreshNavigationCount(
+        'Cake requests',
         apiRequest<{ requests: { status: string }[] }>('/admin/cake-requests', { token: sessionToken }),
+        (result) => setNavigationCounts((counts) => ({
+          ...counts,
+          cakeRequestCount: result.requests.filter((request) => request.status === 'new').length,
+        })),
+      ),
+      refreshNavigationCount(
+        'Customer reviews',
         apiRequest<{ pendingCount: number }>('/admin/reviews?countOnly=true', { token: sessionToken }),
-      ])
-      setNavigationCounts({
-        orderCount: ordersResult.orders.length,
-        notificationCount: notificationsResult.unreadCount,
-        cakeRequestCount: cakeRequestsResult.requests.filter((request) => request.status === 'new').length,
-        reviewCount: reviewsResult.pendingCount,
-      })
-      setCountsError('')
-    } catch (error) {
-      setCountsError(error instanceof Error ? error.message : 'Unable to refresh navigation counts.')
-    }
+        (result) => setNavigationCounts((counts) => ({ ...counts, reviewCount: result.pendingCount })),
+      ),
+      refreshNavigationCount(
+        'Notifications',
+        apiRequest<{ unreadCount: number }>('/admin/notifications', { token: sessionToken }),
+        (result) => setNavigationCounts((counts) => ({ ...counts, notificationCount: result.unreadCount })),
+      ),
+    ])
+    setCountsError(failures.filter(Boolean).join(' · '))
   }, [sessionToken])
 
   useEffect(() => {
@@ -100,6 +164,30 @@ export function AdminLayout() {
     }
   }
 
+  async function handleProfilePictureChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    setProfilePictureError('')
+    setProfilePictureSaved(false)
+    setIsSavingProfilePicture(true)
+    try {
+      const profilePicture = await resizeProfilePicture(file)
+      await updateProfilePicture(profilePicture)
+      setProfilePictureSaved(true)
+    } catch (error) {
+      console.error('Unable to update admin profile picture.', error)
+      setProfilePictureError(t(error instanceof Error ? error.message : 'Could not load this profile picture.'))
+    } finally {
+      setIsSavingProfilePicture(false)
+    }
+  }
+
+  if (!isOwner && !storeNavItems.some((item) => item.to === location.pathname)) {
+    return <Navigate replace to="/admin/orders" />
+  }
+
   return (
     <div className="min-h-screen bg-[#f3f6fa] text-[#102c50]">
       <header className="sticky top-0 z-40 border-b border-[#e6ebf1] bg-white/95 shadow-[0_3px_16px_rgba(16,44,80,0.04)] backdrop-blur">
@@ -108,7 +196,11 @@ export function AdminLayout() {
             <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#092a53] text-xl text-[#ffdc32] shadow-sm">🍦</span>
             <span className="min-w-0">
               <span className="block truncate font-display text-base font-extrabold leading-tight text-[#092a53] sm:text-lg">Cold Stone <span className="text-[#bd9c00]">Cameroon</span></span>
-              <span className="mt-0.5 hidden text-[10px] font-bold uppercase tracking-[0.15em] text-[#7b899a] sm:block">{t('Administration workspace')}</span>
+              <span className="mt-0.5 block max-w-48 truncate text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#9a7d00] sm:max-w-64">
+                {isOwner
+                  ? t('Administration workspace')
+                  : t('Store: {store}', { store: currentAdmin?.storeName || t('Store admin') })}
+              </span>
             </span>
           </Link>
           <div className="flex shrink-0 items-center gap-2 sm:gap-4">
@@ -136,7 +228,7 @@ export function AdminLayout() {
             )}
             <span className="hidden min-w-0 sm:block">
               <span className="block max-w-40 truncate text-xs font-bold text-[#173654]">{currentAdmin?.name}</span>
-              <span className="mt-0.5 block text-[10px] text-[#8190a1]">{t('Administrator')}</span>
+              <span className="mt-0.5 block max-w-40 truncate text-[10px] text-[#8190a1]">{isOwner ? t('Owner · all stores') : t(currentAdmin?.storeName || 'Store admin')}</span>
             </span>
             <Link className="ml-1 inline-flex min-h-9 items-center gap-2 rounded-lg border border-[#dce5ef] px-3 text-xs font-bold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]" to="/flavors">
               <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 20 20">
@@ -161,6 +253,34 @@ export function AdminLayout() {
                 <p className="mt-0.5 truncate text-[11px] text-white/65">{currentAdmin?.email}</p>
               </div>
             </div>
+            {!isOwner && (
+              <div className="mt-3">
+                <input
+                  accept="image/*"
+                  className="sr-only"
+                  disabled={isSavingProfilePicture}
+                  onChange={handleProfilePictureChange}
+                  ref={profilePictureInput}
+                  type="file"
+                />
+                <button
+                  className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/[0.06] px-3 py-2 text-xs font-semibold text-white/85 transition hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32] disabled:cursor-wait disabled:opacity-60"
+                  disabled={isSavingProfilePicture}
+                  onClick={() => profilePictureInput.current?.click()}
+                  type="button"
+                >
+                  {isSavingProfilePicture
+                    ? t('Saving profile picture…')
+                    : t(currentAdmin?.profilePicture ? 'Change profile picture' : 'Add profile picture')}
+                </button>
+                {profilePictureError && (
+                  <p className="mt-2 text-xs leading-5 text-red-200" role="alert">{profilePictureError}</p>
+                )}
+                {profilePictureSaved && (
+                  <p className="mt-2 text-xs text-[#b9f3c8]" role="status">{t('Profile picture saved.')}</p>
+                )}
+              </div>
+            )}
             <div className="mt-4 flex items-center gap-2 border-t border-white/15 pt-3 text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
               <span aria-hidden="true" className="size-1.5 rounded-full bg-[#9ee6b1] shadow-[0_0_0_3px_rgba(158,230,177,0.13)]" />
               {t('Signed in to admin')}
@@ -168,11 +288,11 @@ export function AdminLayout() {
           </div>
 
           <nav aria-label={t('Admin dashboard')} className="grid min-w-0 grid-cols-2 gap-x-2 gap-y-4 p-3 sm:grid-cols-3 lg:min-h-0 lg:flex-1 lg:grid-cols-1 lg:gap-0 lg:overflow-y-auto lg:p-3">
-            {navGroups.map((group) => (
+            {navGroups.filter((group) => visibleNavItems.some((item) => item.group === group)).map((group) => (
               <section className="contents lg:block" key={group}>
                 <h2 className="hidden px-3 pb-1 pt-4 text-[9px] font-extrabold uppercase tracking-[0.16em] text-white/45 first:pt-1 lg:block">{t(group)}</h2>
                 <div className="contents lg:block">
-                  {navItems.filter((item) => item.group === group).map((item) => {
+                  {visibleNavItems.filter((item) => item.group === group).map((item) => {
                     const count = item.label === 'Orders'
                       ? navigationCounts.orderCount
                       : item.label === 'Customer reviews'

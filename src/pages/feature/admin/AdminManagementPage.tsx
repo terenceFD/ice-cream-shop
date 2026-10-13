@@ -2,6 +2,7 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { PasswordField } from "../../../components/PasswordField";
 import { useAdminAuth } from "./AdminAuthContext";
 import { useLanguage } from "../../../language/LanguageContext";
+import { apiRequest } from "../../../api/api";
 
 const inputClassName =
   "mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-white px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40";
@@ -36,7 +37,9 @@ async function resizeProfilePicture(file: File): Promise<string> {
 
 export function AdminManagementPage() {
   const { t } = useLanguage();
-  const { admins, currentAdmin, createAdmin, refreshAdmins } = useAdminAuth();
+  const { admins, currentAdmin, createAdmin, removeAdmin, refreshAdmins, sessionToken } = useAdminAuth();
+  const [stores, setStores] = useState<{ id: number; name: string; town: string; area: string }[]>([]);
+  const [storeId, setStoreId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,12 +49,19 @@ export function AdminManagementPage() {
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingAdmins, setIsLoadingAdmins] = useState(true);
+  const [removingAdminId, setRemovingAdminId] = useState<number | null>(null);
 
   useEffect(() => {
-    refreshAdmins().catch((loadError: unknown) => {
+    Promise.all([
+      refreshAdmins(),
+      apiRequest<{ stores: typeof stores }>("/admin/stores", { token: sessionToken }),
+    ]).then(([, result]) => {
+      setStores(result.stores);
+      setStoreId(String(result.stores[0]?.id || ""));
+    }).catch((loadError: unknown) => {
       setError(t(loadError instanceof Error ? loadError.message : "Unable to load admin accounts."));
     }).finally(() => setIsLoadingAdmins(false));
-  }, [refreshAdmins, t]);
+  }, [refreshAdmins, sessionToken, t]);
 
   async function handleProfilePictureChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -79,13 +89,14 @@ export function AdminManagementPage() {
 
     setIsSaving(true);
     try {
-      await createAdmin({ name, email, password, profilePicture });
+      await createAdmin({ name, email, password, profilePicture, storeId: Number(storeId) });
 
       setName("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
       setProfilePicture("");
+      setStoreId(String(stores[0]?.id || ""));
       formElement.reset();
       setMessage(
         t(
@@ -96,6 +107,25 @@ export function AdminManagementPage() {
       setError(t(creationError instanceof Error ? creationError.message : "Unable to create admin account."));
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleRemoveAdmin(admin: (typeof admins)[number]) {
+    if (!window.confirm(t(
+      "Remove admin {name} ({email})? They will immediately lose access, and this cannot be undone.",
+      { name: admin.name, email: admin.email },
+    ))) return;
+
+    setError("");
+    setMessage("");
+    setRemovingAdminId(admin.id);
+    try {
+      await removeAdmin(admin.id);
+      setMessage(t("Admin account removed."));
+    } catch (removalError) {
+      setError(t(removalError instanceof Error ? removalError.message : "Unable to remove admin account."));
+    } finally {
+      setRemovingAdminId(null);
     }
   }
 
@@ -117,7 +147,7 @@ export function AdminManagementPage() {
               {t("Manage admin accounts")}
             </h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-white/75">
-              {t("Create another admin login and add their profile picture.")}
+              {t("Create a store-specific admin login and choose which branch it can access.")}
             </p>
           </div>
           <div className="flex min-w-[170px] items-center gap-4 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
@@ -146,7 +176,7 @@ export function AdminManagementPage() {
             </div>
             <span className="inline-flex items-center gap-2 rounded-full bg-[#f1f5f9] px-3 py-1.5 text-xs font-bold text-[#52647b]">
               <span aria-hidden="true" className="size-2 rounded-full bg-emerald-500" />
-              {t("{count} admin account(s) can access this portal.", { count: admins.length })}
+              {t("{count} admin account(s) have access to the dashboard.", { count: admins.length })}
             </span>
           </div>
           <div className="space-y-3 p-4 sm:p-5">
@@ -154,6 +184,7 @@ export function AdminManagementPage() {
               <p className="rounded-xl bg-[#f4f7fa] px-4 py-5 text-sm text-[#65748a]" role="status">{t("Loading administrators…")}</p>
             ) : admins.map((admin) => {
               const isCurrentAdmin = admin.email === currentAdmin?.email
+              const isOwnerAccount = admin.role === "owner"
               return (
                 <article className={`flex min-w-0 items-center gap-4 rounded-2xl border p-4 transition ${isCurrentAdmin ? "border-[#d8c56b] bg-[#fffdf3]" : "border-[#e9edf2] bg-white hover:border-[#cbd5e1] hover:bg-[#fbfcfe]"}`} key={admin.id}>
                   {admin.profilePicture ? (
@@ -166,10 +197,19 @@ export function AdminManagementPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold text-[#102c50]">{admin.name}</p>
                     <p className="mt-0.5 truncate text-xs text-[#65748a]">{admin.email}</p>
+                    <p className="mt-1 truncate text-xs font-semibold text-[#365775]">{t("Assigned store: {store}", { store: admin.storeName || t("No store assigned") })}</p>
                   </div>
                   <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide ${isCurrentAdmin ? "bg-[#fff0a8] text-[#705b00]" : "bg-[#edf3f8] text-[#365775]"}`}>
-                    {t(isCurrentAdmin ? "You" : "Administrator")}
+                    {t(isCurrentAdmin ? "You" : isOwnerAccount ? "Owner" : "Store admin")}
                   </span>
+                  {!isOwnerAccount && <button
+                    className="shrink-0 rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700 transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-wait disabled:opacity-50"
+                    disabled={isCurrentAdmin || removingAdminId === admin.id}
+                    onClick={() => handleRemoveAdmin(admin)}
+                    type="button"
+                  >
+                    {removingAdminId === admin.id ? t("Removing…") : t("Remove")}
+                  </button>}
                 </article>
               )
             })}
@@ -180,7 +220,7 @@ export function AdminManagementPage() {
                     <path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20m17 0v-1.5a4 4 0 0 0-3-3.87M14 3.2a4 4 0 0 1 0 7.6M9.5 10.8a3.8 3.8 0 1 0 0-7.6 3.8 3.8 0 0 0 0 7.6Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" />
                   </svg>
                 </span>
-                <p className="mt-3 text-sm font-bold text-[#102c50]">{t("No admins found.")}</p>
+                <p className="mt-3 text-sm font-bold text-[#102c50]">{t("No shop admins assigned yet.")}</p>
               </div>
             )}
           </div>
@@ -195,10 +235,16 @@ export function AdminManagementPage() {
             </span>
             <div>
               <h2 className="font-display text-xl font-bold tracking-tight">{t("Add an admin")}</h2>
-              <p className="mt-1 text-sm text-[#65748a]">{t("Create another admin login and add their profile picture.")}</p>
+              <p className="mt-1 text-sm text-[#65748a]">{t("Assign this login to one store. It can only access that store’s operational data.")}</p>
             </div>
           </div>
           <form className="space-y-4 p-5 sm:p-6" onSubmit={handleSubmit}>
+            <label className="block text-xs font-extrabold text-[#52647b]">
+              {t("Assigned store")}
+              <select className={inputClassName} onChange={(event) => setStoreId(event.target.value)} required value={storeId}>
+                {stores.map((store) => <option key={store.id} value={store.id}>{t(store.name)} · {t(store.town)}</option>)}
+              </select>
+            </label>
             <label className="block text-xs font-extrabold text-[#52647b]">
               {t("Full name")}
               <input autoComplete="name" className={inputClassName} onChange={(event) => setName(event.target.value)} required value={name} />

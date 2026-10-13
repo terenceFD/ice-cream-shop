@@ -40,6 +40,26 @@ test('converts positional and named SQLite parameters to PostgreSQL placeholders
   )
 })
 
+test('preserves quoted camelCase aliases used by PostgreSQL-backed menu queries', () => {
+  assert.deepEqual(
+    translateSql('SELECT item_id AS "itemId", low_stock_threshold AS "lowStockThreshold", flavor_id AS "flavorId", menu_item_id AS "menuItemId" FROM menu_inventory'),
+    {
+      sql: 'SELECT item_id AS "itemId", low_stock_threshold AS "lowStockThreshold", flavor_id AS "flavorId", menu_item_id AS "menuItemId" FROM menu_inventory',
+      values: [],
+    },
+  )
+})
+
+test('preserves the checkout session alias used by Stripe reconciliation', () => {
+  assert.deepEqual(
+    translateSql('SELECT p.stripe_checkout_session_id AS "sessionId" FROM payments p'),
+    {
+      sql: 'SELECT p.stripe_checkout_session_id AS "sessionId" FROM payments p',
+      values: [],
+    },
+  )
+})
+
 test('preserves array parameters for PostgreSQL ANY queries', () => {
   assert.deepEqual(
     translateSql(

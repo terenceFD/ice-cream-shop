@@ -50,6 +50,16 @@ function orderStatus(order, t) {
   );
 }
 
+function formatOrderDate(value, language, t) {
+  if (typeof value !== "string" || !value.trim()) return t("Date unavailable");
+  const normalizedValue = value.includes("T") ? value : value.replace(" ", "T");
+  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalizedValue);
+  const date = new Date(hasTimezone ? normalizedValue : `${normalizedValue}Z`);
+  return Number.isNaN(date.getTime())
+    ? t("Date unavailable")
+    : date.toLocaleString(language === "fr" ? "fr-CM" : "en-CM");
+}
+
 function OrderProgress({ order, t }) {
   const steps = [
     { key: "preparing", label: "Preparing" },
@@ -458,7 +468,7 @@ export function CustomerOrdersPage() {
 
   if (isLoading)
     return <p className="p-8 text-center">{t("Loading account…")}</p>;
-  if (!customer) return <Navigate replace to="/login" />;
+  if (!customer) return <Navigate replace state={{ from: "/account/orders" }} to="/login" />;
 
   const formatPrice = (amount) =>
     `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-CM").format(amount)} FCFA`;
@@ -756,11 +766,7 @@ export function CustomerOrdersPage() {
                           {t("Order #{id}", { id: order.id })}
                         </h3>
                         <p className="mt-1 text-xs text-[#65748a]">
-                          {new Date(
-                            `${order.createdAt.replace(" ", "T")}Z`,
-                          ).toLocaleString(
-                            language === "fr" ? "fr-CM" : "en-CM",
-                          )}
+                          {formatOrderDate(order.createdAt, language, t)}
                         </p>
                       </div>
                       <span className="rounded-full border border-[#eedb83] bg-[#fff5c7] px-3.5 py-1.5 text-xs font-extrabold text-[#715e00]">

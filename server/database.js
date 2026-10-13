@@ -86,6 +86,7 @@ if (configuredDatabaseBackend === "postgres") {
 
     CREATE TABLE IF NOT EXISTS contact_messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL,
       name TEXT NOT NULL,
       email TEXT NOT NULL,
       phone TEXT NOT NULL DEFAULT '',
@@ -253,6 +254,11 @@ if (configuredDatabaseBackend === "postgres") {
   }
 
   addColumnIfMissing("customers", "phone", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing(
+    "contact_messages",
+    "store_id",
+    "INTEGER REFERENCES stores(id) ON DELETE SET NULL",
+  );
   addColumnIfMissing("customers", "delivery_city", "TEXT NOT NULL DEFAULT ''");
   addColumnIfMissing(
     "customers",
@@ -624,6 +630,9 @@ export async function verifyDatabaseSchema() {
   await database.prepare(`
     ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
   `).run();
+  await database.prepare(`
+    ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
+  `).run();
 }
 
 export function toFlavor(row) {
@@ -715,7 +724,7 @@ export async function listCustomMenuItems() {
     SELECT c.id, c.category_title, c.name, c.detail, c.image, c.price_xaf,
       COALESCE(i.stock, c.stock) AS stock,
       COALESCE(i.is_available, c.is_available) AS is_available,
-      i.reserved_stock, i.dietary_tags, i.low_stock_threshold AS lowStockThreshold
+      i.reserved_stock, i.dietary_tags, i.low_stock_threshold AS "lowStockThreshold"
     FROM custom_menu_items c
     LEFT JOIN menu_inventory i ON i.item_id = 'menu:custom:' || c.id
     ORDER BY c.id
@@ -732,7 +741,7 @@ export async function findCustomMenuItem(id) {
     SELECT c.id, c.category_title, c.name, c.detail, c.image, c.price_xaf,
       COALESCE(i.stock, c.stock) AS stock,
       COALESCE(i.is_available, c.is_available) AS is_available,
-      i.reserved_stock, i.dietary_tags, i.low_stock_threshold AS lowStockThreshold
+      i.reserved_stock, i.dietary_tags, i.low_stock_threshold AS "lowStockThreshold"
     FROM custom_menu_items c
     LEFT JOIN menu_inventory i ON i.item_id = 'menu:custom:' || c.id
     WHERE c.id = ?
@@ -892,7 +901,7 @@ export async function listMenuCategories() {
   return (await database
     .prepare(
       `
-    SELECT id, title, description, image, icon, base_title AS baseTitle, sort_order AS sortOrder
+    SELECT id, title, description, image, icon, base_title AS "baseTitle", sort_order AS "sortOrder"
     FROM menu_categories ORDER BY sort_order, id
   `,
     )
@@ -927,7 +936,7 @@ export async function saveMenuCategory(category) {
         return database
           .prepare(
             `
-          SELECT id, title, description, image, icon, base_title AS baseTitle, sort_order AS sortOrder
+          SELECT id, title, description, image, icon, base_title AS "baseTitle", sort_order AS "sortOrder"
           FROM menu_categories WHERE id = ?
         `,
           )
@@ -950,7 +959,7 @@ export async function saveMenuCategory(category) {
       return database
         .prepare(
           `
-        SELECT id, title, description, image, icon, base_title AS baseTitle, sort_order AS sortOrder
+        SELECT id, title, description, image, icon, base_title AS "baseTitle", sort_order AS "sortOrder"
         FROM menu_categories WHERE id = ?
       `,
         )
@@ -984,7 +993,7 @@ export async function saveMenuCategory(category) {
       return database
         .prepare(
           `
-        SELECT id, title, description, image, icon, base_title AS baseTitle, sort_order AS sortOrder
+        SELECT id, title, description, image, icon, base_title AS "baseTitle", sort_order AS "sortOrder"
         FROM menu_categories WHERE id = ?
       `,
         )
@@ -1007,7 +1016,7 @@ export async function saveMenuCategory(category) {
     return database
       .prepare(
         `
-      SELECT id, title, description, image, icon, base_title AS baseTitle, sort_order AS sortOrder
+      SELECT id, title, description, image, icon, base_title AS "baseTitle", sort_order AS "sortOrder"
       FROM menu_categories WHERE id = ?
     `,
       )
@@ -1124,9 +1133,9 @@ export async function listMenuInventory() {
   return (await database
     .prepare(
       `
-    SELECT item_id AS itemId, stock, reserved_stock AS reservedStock,
-      is_available AS isAvailable, dietary_tags AS dietaryTags,
-      low_stock_threshold AS lowStockThreshold
+    SELECT item_id AS "itemId", stock, reserved_stock AS "reservedStock",
+      is_available AS "isAvailable", dietary_tags AS "dietaryTags",
+      low_stock_threshold AS "lowStockThreshold"
     FROM menu_inventory
   `,
     )
@@ -1231,7 +1240,7 @@ export async function rollbackCheckoutOrder(orderId) {
       if (result.changes === 0) return false;
 
       const items = await database.prepare(
-        "SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity FROM order_items WHERE order_id = ?",
+        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
       ).all(orderId);
       for (const item of items) {
         if (item.flavorId !== null) {
@@ -1253,7 +1262,7 @@ export async function rollbackCheckoutOrder(orderId) {
       `).run(orderId);
 
       const order = await database.prepare(`
-        SELECT customer_id AS customerId, loyalty_points_redeemed AS pointsRedeemed
+        SELECT customer_id AS "customerId", loyalty_points_redeemed AS "pointsRedeemed"
         FROM orders WHERE id = ?
       `).get(orderId);
       if (order?.customerId && order.pointsRedeemed > 0) {
@@ -1277,7 +1286,7 @@ export async function rollbackCheckoutOrder(orderId) {
     if (result.changes === 0) return false
 
     const items = database.prepare(
-      'SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity FROM order_items WHERE order_id = ?',
+      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
     ).all(orderId)
 
     for (const item of items) {
@@ -1300,7 +1309,7 @@ export async function rollbackCheckoutOrder(orderId) {
     `).run(orderId)
 
     const order = database.prepare(`
-      SELECT customer_id AS customerId, loyalty_points_redeemed AS pointsRedeemed
+      SELECT customer_id AS "customerId", loyalty_points_redeemed AS "pointsRedeemed"
       FROM orders WHERE id = ?
     `).get(orderId)
     if (order?.customerId && order.pointsRedeemed > 0) {
@@ -1331,7 +1340,7 @@ export async function finalizePaidCheckout(orderId, session) {
       if (result.changes === 0) return { paymentRecorded: false, earnedPoints: 0 };
 
       const items = await database.prepare(
-        "SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity FROM order_items WHERE order_id = ?",
+        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
       ).all(orderId);
       for (const item of items) {
         const stockResult = item.flavorId !== null
@@ -1355,8 +1364,8 @@ export async function finalizePaidCheckout(orderId, session) {
         WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
       `).run(orderId);
       const order = await database.prepare(`
-        SELECT customer_id AS customerId, subtotal_cents AS subtotalCents,
-          discount_cents AS discountCents
+        SELECT customer_id AS "customerId", subtotal_cents AS "subtotalCents",
+          discount_cents AS "discountCents"
         FROM orders WHERE id = ?
       `).get(orderId);
       let earnedPoints = 0;
@@ -1399,7 +1408,7 @@ export async function finalizePaidCheckout(orderId, session) {
     if (result.changes === 0) return { paymentRecorded: false, earnedPoints: 0 }
 
     const items = database.prepare(
-      'SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity FROM order_items WHERE order_id = ?',
+      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
     ).all(orderId)
 
     const decrementStock = database.prepare(`
@@ -1428,8 +1437,8 @@ export async function finalizePaidCheckout(orderId, session) {
     `).run(orderId)
 
     const order = database.prepare(`
-      SELECT customer_id AS customerId, subtotal_cents AS subtotalCents,
-        discount_cents AS discountCents
+      SELECT customer_id AS "customerId", subtotal_cents AS "subtotalCents",
+        discount_cents AS "discountCents"
       FROM orders WHERE id = ?
     `).get(orderId)
 
@@ -1529,7 +1538,7 @@ export async function markStripeCheckoutPaymentFailed(orderId, sessionId) {
       if (result.changes === 0) return false;
 
       const items = await database.prepare(
-        "SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity FROM order_items WHERE order_id = ?",
+        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
       ).all(orderId);
       for (const item of items) {
         if (item.flavorId !== null) {
@@ -1554,7 +1563,7 @@ export async function markStripeCheckoutPaymentFailed(orderId, sessionId) {
       `).run(orderId);
 
       const order = await database.prepare(`
-        SELECT customer_id AS customerId, loyalty_points_redeemed AS pointsRedeemed
+        SELECT customer_id AS "customerId", loyalty_points_redeemed AS "pointsRedeemed"
         FROM orders WHERE id = ?
       `).get(orderId);
       if (order?.customerId && order.pointsRedeemed > 0) {
@@ -1578,7 +1587,7 @@ export async function markStripeCheckoutPaymentFailed(orderId, sessionId) {
     if (result.changes === 0) return false
 
     const items = database.prepare(
-      'SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity FROM order_items WHERE order_id = ?',
+      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
     ).all(orderId)
 
     for (const item of items) {
@@ -1606,7 +1615,7 @@ export async function markStripeCheckoutPaymentFailed(orderId, sessionId) {
     `).run(orderId)
 
     const order = database.prepare(`
-      SELECT customer_id AS customerId, loyalty_points_redeemed AS pointsRedeemed
+      SELECT customer_id AS "customerId", loyalty_points_redeemed AS "pointsRedeemed"
       FROM orders WHERE id = ?
     `).get(orderId)
 
@@ -1629,8 +1638,9 @@ export async function updateAdminProfilePicture(adminId, profilePicture) {
       await database.prepare("UPDATE admins SET profile_picture = ? WHERE id = ?")
         .run(profilePicture, adminId);
       return database.prepare(`
-        SELECT id, name, email, profile_picture AS profilePicture
-        FROM admins WHERE id = ?
+        SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
+          a.role, a.store_id AS "storeId", s.name AS "storeName"
+        FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
       `).get(adminId);
     });
   }
@@ -1638,8 +1648,9 @@ export async function updateAdminProfilePicture(adminId, profilePicture) {
   return database.transaction(() => {
     database.prepare('UPDATE admins SET profile_picture = ? WHERE id = ?').run(profilePicture, adminId)
     return database.prepare(`
-      SELECT id, name, email, profile_picture AS profilePicture
-      FROM admins WHERE id = ?
+      SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
+        a.role, a.store_id AS "storeId", s.name AS "storeName"
+      FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(adminId)
   })
 }
@@ -1662,29 +1673,31 @@ export async function setCustomerBanStatus(id, isBanned) {
   })
 }
 
-export async function clearDeliveredOrders() {
+export async function clearDeliveredOrders(storeId = null) {
+  const storeFilter = storeId === null ? '' : ' AND store_id = ?'
+  const parameters = storeId === null ? [] : [storeId]
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const count = Number((await database.prepare(
-        "SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'",
-      ).get()).count);
-      if (count < 5) return { count, deleted: false };
+        `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
+      ).get(...parameters)).count);
+      if (count <= 3) return { count, deleted: false };
       const deletedCount = (await database.prepare(
-        "DELETE FROM orders WHERE status = 'delivered'",
-      ).run()).changes;
+        `DELETE FROM orders WHERE status = 'delivered'${storeFilter}`,
+      ).run(...parameters)).changes;
       return { count: deletedCount, deleted: true };
     });
   }
 
   return database.transaction(() => {
     const { count } = database.prepare(
-      "SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'",
-    ).get()
-    if (count < 5) return { count, deleted: false }
+      `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
+    ).get(...parameters)
+    if (count <= 3) return { count, deleted: false }
 
     const deletedCount = database.prepare(
-      "DELETE FROM orders WHERE status = 'delivered'",
-    ).run().changes
+      `DELETE FROM orders WHERE status = 'delivered'${storeFilter}`,
+    ).run(...parameters).changes
     return { count: deletedCount, deleted: true }
   })
 }
@@ -1697,8 +1710,8 @@ export async function createAdminAccount({ name, email, passwordHash, profilePic
         VALUES (?, ?, ?, ?, 'store_admin', ?)
       `).run(name, email, passwordHash, profilePicture, storeId);
       return database.prepare(`
-        SELECT a.id, a.name, a.email, a.profile_picture AS profilePicture,
-          a.role, a.store_id AS storeId, s.name AS storeName
+        SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
+          a.role, a.store_id AS "storeId", s.name AS "storeName"
         FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
       `).get(Number(result.lastInsertRowid));
     });
@@ -1710,8 +1723,8 @@ export async function createAdminAccount({ name, email, passwordHash, profilePic
       VALUES (?, ?, ?, ?, 'store_admin', ?)
     `).run(name, email, passwordHash, profilePicture, storeId)
     return database.prepare(`
-      SELECT a.id, a.name, a.email, a.profile_picture AS profilePicture,
-        a.role, a.store_id AS storeId, s.name AS storeName
+      SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
+        a.role, a.store_id AS "storeId", s.name AS "storeName"
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(Number(result.lastInsertRowid))
   })
@@ -1846,8 +1859,8 @@ export async function registerCustomer({ name, email, passwordHash, profilePictu
     VALUES (?, ?, ?, ?)
   `).run(name, email, passwordHash, profilePicture)
   const customer = await database.prepare(`
-    SELECT id, name, email, phone, delivery_city AS deliveryCity,
-      delivery_residence AS deliveryResidence, profile_picture AS profilePicture
+    SELECT id, name, email, phone, delivery_city AS "deliveryCity",
+      delivery_residence AS "deliveryResidence", profile_picture AS "profilePicture"
     FROM customers WHERE id = ?
   `).get(Number(result.lastInsertRowid))
   return customer
@@ -1861,9 +1874,9 @@ export async function updateCustomerProfile({ customerId, name, phone, deliveryC
   `).run(name, phone, deliveryCity, deliveryResidence, profilePicture, customerId)
   if (!result.changes) return null
   return database.prepare(`
-    SELECT id, name, email, phone, delivery_city AS deliveryCity,
-      delivery_residence AS deliveryResidence, profile_picture AS profilePicture,
-      loyalty_points AS loyaltyPoints, is_banned AS isBanned
+    SELECT id, name, email, phone, delivery_city AS "deliveryCity",
+      delivery_residence AS "deliveryResidence", profile_picture AS "profilePicture",
+      loyalty_points AS "loyaltyPoints", is_banned AS "isBanned"
     FROM customers WHERE id = ?
   `).get(customerId)
 }
@@ -1912,6 +1925,7 @@ export async function createMenuReview({ customerId, orderId, itemId, rating, re
 
 export async function createCakeRequest({
   customerId,
+  storeId,
   customerName,
   customerEmail,
   customerPhone,
@@ -1923,11 +1937,12 @@ export async function createCakeRequest({
 }) {
   const result = await database.prepare(`
     INSERT INTO cake_requests (
-      customer_id, customer_name, customer_email, customer_phone,
+      customer_id, store_id, customer_name, customer_email, customer_phone,
       size, flavor, message, toppings, pickup_date
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     customerId,
+    storeId,
     customerName,
     customerEmail,
     customerPhone,
@@ -1940,34 +1955,50 @@ export async function createCakeRequest({
   return { id: Number(result.lastInsertRowid) }
 }
 
-export async function createContactMessage({ name, email, phone, subject, message }) {
+export async function createContactMessage({ name, email, phone, subject, message, storeId }) {
   const result = await database.prepare(`
-    INSERT INTO contact_messages (name, email, phone, subject, message)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(name, email, phone, subject, message)
+    INSERT INTO contact_messages (store_id, name, email, phone, subject, message)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(storeId, name, email, phone, subject, message)
   return { messageId: Number(result.lastInsertRowid) }
 }
 
-export async function markContactMessageRead(id) {
-  const result = await database.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ?').run(id)
+export async function markContactMessageRead(id, storeId = null, unassignedOnly = false) {
+  const result = storeId !== null
+    ? await database.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ? AND store_id = ?').run(id, storeId)
+    : unassignedOnly
+      ? await database.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ? AND store_id IS NULL').run(id)
+      : await database.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ?').run(id)
   return result.changes > 0
 }
 
-export async function deleteRepliedContactMessage(id) {
+export async function deleteContactMessage(id, storeId = null, unassignedOnly = false) {
+  const storeFilter = storeId !== null ? ' AND store_id = ?' : unassignedOnly ? ' AND store_id IS NULL' : ''
+  const parameters = storeId !== null ? [id, storeId] : [id]
   const result = await database.prepare(`
-    DELETE FROM contact_messages WHERE id = ? AND replied_at IS NOT NULL
-  `).run(id)
+    DELETE FROM contact_messages WHERE id = ?
+    ${storeFilter}
+  `).run(...parameters)
   return result.changes > 0
 }
 
-export async function markContactMessageReplied(id) {
+export async function deleteContactMessages(storeId = null, unassignedOnly = false) {
+  const storeFilter = storeId !== null ? ' WHERE store_id = ?' : unassignedOnly ? ' WHERE store_id IS NULL' : ''
+  const parameters = storeId !== null ? [storeId] : []
+  const result = await database.prepare(`DELETE FROM contact_messages${storeFilter}`).run(...parameters)
+  return result.changes
+}
+
+export async function markContactMessageReplied(id, storeId = null, unassignedOnly = false) {
+  const storeFilter = storeId !== null ? ' AND store_id = ?' : unassignedOnly ? ' AND store_id IS NULL' : ''
+  const parameters = storeId !== null ? [id, storeId] : [id]
   const result = await database.prepare(
-    'UPDATE contact_messages SET is_read = 1, replied_at = CURRENT_TIMESTAMP WHERE id = ?',
-  ).run(id)
+    `UPDATE contact_messages SET is_read = 1, replied_at = CURRENT_TIMESTAMP WHERE id = ?${storeFilter}`,
+  ).run(...parameters)
   if (!result.changes) return null
   const { repliedAt } = await database.prepare(
-    'SELECT replied_at AS repliedAt FROM contact_messages WHERE id = ?',
-  ).get(id)
+    `SELECT replied_at AS "repliedAt" FROM contact_messages WHERE id = ?${storeFilter}`,
+  ).get(...parameters)
   return { repliedAt }
 }
 

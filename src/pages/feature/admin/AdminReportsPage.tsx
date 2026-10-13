@@ -11,7 +11,7 @@ interface AdminReport {
     placedCount: number
   }
   popularItems: { name: string; quantity: number; sales: number }[]
-  lowStock: {
+  lowStock?: {
     itemId: string
     name?: string
     stock: number
@@ -80,6 +80,7 @@ export function AdminReportsPage() {
       ...report.popularItems.map((item) => [item.name, item.quantity, item.sales, 'FCFA']),
       ...(report.popularItems.length ? [] : [[t('No paid orders yet.')]]),
       [],
+      ...(report.lowStock ? [
       [t('Low stock')],
       [t('Item'), t('Stock'), t('Reserved'), t('Available'), t('Status')],
       ...report.lowStock.map((item) => [
@@ -90,6 +91,7 @@ export function AdminReportsPage() {
         item.isAvailable ? t('Available') : t('Unavailable'),
       ]),
       ...(report.lowStock.length ? [] : [[t('No items are low in stock.')]]),
+      ] : []),
       [],
       [t('Daily sales — last 30 days')],
       [t('Date'), t('Orders'), t('Sales'), t('Currency')],
@@ -172,7 +174,7 @@ export function AdminReportsPage() {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-[#e5ebf4] bg-white p-5 shadow-[0_14px_30px_rgba(10,30,60,0.04)] sm:p-6">
+        {report.lowStock && <section className="rounded-[28px] border border-[#e5ebf4] bg-white p-5 shadow-[0_14px_30px_rgba(10,30,60,0.04)] sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-display text-2xl font-bold text-[#102c4f]">{t('Low stock')}</h2>
             <span className="rounded-full bg-[#fff1f1] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#bf3b3b]">{t('Alert')}</span>
@@ -199,7 +201,7 @@ export function AdminReportsPage() {
             })}
             {!report.lowStock.length && <p className="rounded-2xl bg-[#f7f8fa] p-4 text-sm text-[#65748a]">{t('No items are low in stock.')}</p>}
           </div>
-        </section>
+        </section>}
       </div>
 
       <section className="rounded-[28px] border border-[#e5ebf4] bg-white p-5 shadow-[0_14px_30px_rgba(10,30,60,0.04)] sm:p-6">

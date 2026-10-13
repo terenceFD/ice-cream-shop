@@ -40,6 +40,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const navigate = useNavigate()
   const location = useLocation()
   const returnToCheckout = location.state?.from === '/checkout'
+  const returnToAccount = location.state?.from === '/account/orders'
   const checkoutNotice = typeof location.state?.notice === 'string' ? location.state.notice : ''
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -78,7 +79,10 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
       } else {
         await login({ email, password })
       }
-      navigate(returnToCheckout ? '/checkout' : '/', { replace: true })
+      navigate(
+        returnToCheckout ? '/checkout' : returnToAccount ? '/account/orders' : isSignup ? '/' : '/account/orders',
+        { replace: true },
+      )
     } catch (authError) {
       setError(authError instanceof Error ? authError.message : 'Unable to authenticate. Please try again.')
     } finally {

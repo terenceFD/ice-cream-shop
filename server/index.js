@@ -27,7 +27,8 @@ import {
   deleteFailedOrder,
   deleteFlavor,
   deleteMenuCategory,
-  deleteRepliedContactMessage,
+  deleteContactMessage,
+  deleteContactMessages,
   deleteSavedCart,
   finalizePaidCheckout,
   finalizeZeroAmountCheckout,
@@ -70,6 +71,7 @@ import {
   sendOrderStatusUpdate,
 } from './email.js'
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
+import { storeAdminCanAccess } from './admin-access.js'
 
 const app = express()
 app.set('trust proxy', 1)
@@ -159,31 +161,33 @@ async function recordPaidCheckout(session) {
   if (!paymentRecorded) return false
 
   const order = await database.prepare(`
-    SELECT customer_email AS customerEmail, customer_name AS customerName,
-      total_cents AS totalCents, currency, fulfillment_type AS fulfillmentType,
-      scheduled_for AS scheduledFor, delivery_fee AS deliveryFee
+    SELECT customer_email AS "customerEmail", customer_name AS "customerName",
+      total_cents AS "totalCents", currency, fulfillment_type AS "fulfillmentType",
+      scheduled_for AS "scheduledFor", delivery_fee AS "deliveryFee"
     FROM orders WHERE id = ?
   `).get(orderId)
   const items = await database.prepare(`
-    SELECT flavor_name AS flavorName, quantity, line_total_cents AS lineTotalCents
+    SELECT flavor_name AS "flavorName", quantity, line_total_cents AS "lineTotalCents"
     FROM order_items WHERE order_id = ? ORDER BY id
   `).all(orderId)
 
-  sendOrderStatusUpdate({
-    to: order.customerEmail,
-    recipientName: order.customerName,
-    orderId,
-    status: 'preparing',
-    totalCents: order.totalCents,
-    currency: order.currency,
-    items,
-    earnedPoints,
-    fulfillmentType: order.fulfillmentType,
-    scheduledFor: order.scheduledFor,
-    deliveryFee: order.deliveryFee,
-  }).catch((error) => {
-    console.error(`Unable to send payment confirmation for order #${orderId}:`, error.message)
-  })
+  if (process.env.PAYMENT_CONFIRMATION_EMAILS_ENABLED === 'true') {
+    sendOrderStatusUpdate({
+      to: order.customerEmail,
+      recipientName: order.customerName,
+      orderId,
+      status: 'preparing',
+      totalCents: order.totalCents,
+      currency: order.currency,
+      items,
+      earnedPoints,
+      fulfillmentType: order.fulfillmentType,
+      scheduledFor: order.scheduledFor,
+      deliveryFee: order.deliveryFee,
+    }).catch((error) => {
+      console.error(`Unable to send payment confirmation for order #${orderId}:`, error.message)
+    })
+  }
 
   return true
 }
@@ -202,7 +206,7 @@ async function reconcileStaleCheckouts() {
   isReconcilingCheckouts = true
   try {
     const sessions = await database.prepare(`
-      SELECT p.stripe_checkout_session_id AS sessionId
+      SELECT p.stripe_checkout_session_id AS "sessionId"
       FROM payments p JOIN orders o ON o.id = p.order_id
       WHERE p.status = 'pending' AND o.status = 'pending_payment'
         AND o.created_at <= datetime('now', '-41 minutes')
@@ -300,7 +304,17 @@ function readBearerToken(request) {
   return scheme?.toLowerCase() === 'bearer' ? token : ''
 }
 
+function requireOwner(request, response) {
+  if (request.admin?.role === 'owner') return true
+  response.status(403).json({ error: 'Only the owner account can access this area.' })
+  return false
+}
+
 async function requireAdmin(request, response, next) {
+  if (request.admin) {
+    next()
+    return
+  }
   const token = readBearerToken(request)
   if (!token) {
     response.status(401).json({ error: 'Admin sign-in is required.' })
@@ -318,11 +332,20 @@ async function requireAdmin(request, response, next) {
     response.status(401).json({ error: 'Admin session is invalid.' })
     return
   }
-  const admin = await database.prepare('SELECT id, name, email, profile_picture FROM admins WHERE id = ?').get(payload.sub)
+  const admin = await database.prepare(`
+    SELECT a.id, a.name, a.email, a.profile_picture, a.role,
+      a.store_id AS "storeId", s.name AS "storeName"
+    FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
+  `).get(payload.sub)
   if (!admin) {
     response.status(401).json({ error: 'Admin session is no longer valid.' })
     return
   }
+  if (admin.role !== 'owner' && (!Number.isSafeInteger(admin.storeId) || !admin.storeName)) {
+    response.status(403).json({ error: 'This store admin account is not assigned to an active store.' })
+    return
+  }
+
   request.admin = admin
   next()
 }
@@ -345,9 +368,9 @@ async function requireCustomer(request, response, next) {
     return
   }
   const customer = await database.prepare(`
-    SELECT id, name, email, profile_picture AS profilePicture, phone,
-      delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
-      loyalty_points AS loyaltyPoints, is_banned AS isBanned
+    SELECT id, name, email, profile_picture AS "profilePicture", phone,
+      delivery_city AS "deliveryCity", delivery_residence AS "deliveryResidence",
+      loyalty_points AS "loyaltyPoints", is_banned AS "isBanned"
     FROM customers WHERE id = ?
   `).get(payload.sub)
   if (!customer || customer.isBanned) {
@@ -403,18 +426,18 @@ async function listOrders({ deliveredOnly = false, storeId = null } = {}) {
     parameters.push(storeId)
   }
   const orders = await database.prepare(`
-    SELECT id, customer_name AS customerName, customer_email AS customerEmail,
-      customer_phone AS customerPhone,
-      delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
-      store_id AS storeId, store_name AS storeName,
-      store_address AS storeAddress, store_phone AS storePhone,
-      subtotal_cents AS subtotalCents, discount_cents AS discountCents,
-      total_cents AS totalCents, currency, status, created_at AS createdAt,
-      delivered_at AS deliveredAt, fulfillment_status AS fulfillmentStatus,
-      delivery_stage AS deliveryStage, fulfillment_type AS fulfillmentType,
-      scheduled_for AS scheduledFor, delivery_fee AS deliveryFee,
-      loyalty_points_redeemed AS loyaltyPointsRedeemed,
-      discount_code AS discountCode
+    SELECT id, customer_name AS "customerName", customer_email AS "customerEmail",
+      customer_phone AS "customerPhone",
+      delivery_city AS "deliveryCity", delivery_residence AS "deliveryResidence",
+      store_id AS "storeId", store_name AS "storeName",
+      store_address AS "storeAddress", store_phone AS "storePhone",
+      subtotal_cents AS "subtotalCents", discount_cents AS "discountCents",
+      total_cents AS "totalCents", currency, status, created_at AS "createdAt",
+      delivered_at AS "deliveredAt", fulfillment_status AS "fulfillmentStatus",
+      delivery_stage AS "deliveryStage", fulfillment_type AS "fulfillmentType",
+      scheduled_for AS "scheduledFor", delivery_fee AS "deliveryFee",
+      loyalty_points_redeemed AS "loyaltyPointsRedeemed",
+      discount_code AS "discountCode"
     FROM orders
     WHERE ${conditions.join(" AND ")}
     ORDER BY id DESC
@@ -424,8 +447,9 @@ async function listOrders({ deliveredOnly = false, storeId = null } = {}) {
 
   const placeholders = orders.map(() => '?').join(', ')
   const items = await database.prepare(`
-    SELECT order_id AS orderId, flavor_id AS flavorId, menu_item_id AS menuItemId, flavor_name AS flavorName,
-      unit_price_cents AS unitPriceCents, quantity, line_total_cents AS lineTotalCents
+    SELECT order_id AS "orderId", flavor_id AS "flavorId", menu_item_id AS "menuItemId",
+      flavor_name AS "flavorName", unit_price_cents AS "unitPriceCents", quantity,
+      line_total_cents AS "lineTotalCents"
     FROM order_items WHERE order_id IN (${placeholders}) ORDER BY id
   `).all(...orders.map((order) => order.id))
   const itemsByOrder = new Map()
@@ -481,11 +505,11 @@ app.get('/api/menu', async (_request, response) => {
 
 app.get('/api/fulfillment/options', async (_request, response) => {
   const zones = (await database.prepare(`
-    SELECT z.id, z.location, z.pickup_enabled AS pickupEnabled,
-      z.delivery_enabled AS deliveryEnabled, z.delivery_fee AS deliveryFee,
-      s.id AS storeId, s.name AS storeName, s.town AS storeTown,
-      s.area AS storeArea, s.address AS storeAddress, s.phone AS storePhone,
-      s.map_query AS storeMapQuery
+    SELECT z.id, z.location, z.pickup_enabled AS "pickupEnabled",
+      z.delivery_enabled AS "deliveryEnabled", z.delivery_fee AS "deliveryFee",
+      s.id AS "storeId", s.name AS "storeName", s.town AS "storeTown",
+      s.area AS "storeArea", s.address AS "storeAddress", s.phone AS "storePhone",
+      s.map_query AS "storeMapQuery"
     FROM fulfillment_zones z
     JOIN stores s ON s.fulfillment_zone_id = z.id
     WHERE z.is_active = 1 ORDER BY z.location
@@ -495,7 +519,7 @@ app.get('/api/fulfillment/options', async (_request, response) => {
     deliveryEnabled: Boolean(zone.deliveryEnabled),
   }))
   const slots = await database.prepare(`
-    SELECT id, label, start_time AS startTime, end_time AS endTime
+    SELECT id, label, start_time AS "startTime", end_time AS "endTime"
     FROM fulfillment_slots WHERE is_active = 1 ORDER BY sort_order, id
   `).all()
   response.json({ zones, slots })
@@ -554,16 +578,16 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
   const customer = request.customer
   const store = Number.isSafeInteger(storeId) && storeId > 0
     ? await database.prepare(`
-      SELECT s.id, s.name, s.address, s.phone, z.id AS zoneId,
-        z.pickup_enabled AS pickupEnabled, z.delivery_enabled AS deliveryEnabled,
-        z.delivery_fee AS deliveryFee
+      SELECT s.id, s.name, s.address, s.phone, z.id AS "zoneId",
+        z.pickup_enabled AS "pickupEnabled", z.delivery_enabled AS "deliveryEnabled",
+        z.delivery_fee AS "deliveryFee"
       FROM stores s JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
       WHERE s.id = ? AND z.location = ? COLLATE NOCASE AND z.is_active = 1
     `).get(storeId, city)
     : null
   const zone = store
   const slot = await database.prepare(`
-    SELECT id, start_time AS startTime
+    SELECT id, start_time AS "startTime"
     FROM fulfillment_slots WHERE id = ? AND is_active = 1
   `).get(slotId)
   const canUseZone = zone && (fulfillmentType === 'pickup' ? zone.pickupEnabled : zone.deliveryEnabled)
@@ -783,7 +807,9 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
       amountCents: totalCents,
       currency,
     })
-    const admins = await database.prepare('SELECT email FROM admins ORDER BY id').all()
+    const admins = await database.prepare(`
+      SELECT email FROM admins WHERE role = 'owner' OR store_id = ? ORDER BY id
+    `).all(store.id)
     try {
       await sendNewOrderNotification({
         recipients: admins.map((admin) => admin.email),
@@ -837,13 +863,13 @@ app.get('/api/payment/session/:sessionId', async (request, response) => {
     await recordPaidCheckout(session)
     const orderId = Number(session.metadata?.orderId)
     const order = await database.prepare(`
-      SELECT id, customer_name AS customerName, customer_email AS customerEmail,
-        total_cents AS totalCents, currency, status, created_at AS createdAt,
-        delivery_city AS deliveryCity, store_name AS storeName,
-        store_address AS storeAddress, store_phone AS storePhone,
-        delivery_stage AS deliveryStage, fulfillment_type AS fulfillmentType,
-        scheduled_for AS scheduledFor, delivery_fee AS deliveryFee,
-        loyalty_points_redeemed AS loyaltyPointsRedeemed
+      SELECT id, customer_name AS "customerName", customer_email AS "customerEmail",
+        total_cents AS "totalCents", currency, status, created_at AS "createdAt",
+        delivery_city AS "deliveryCity", store_name AS "storeName",
+        store_address AS "storeAddress", store_phone AS "storePhone",
+        delivery_stage AS "deliveryStage", fulfillment_type AS "fulfillmentType",
+        scheduled_for AS "scheduledFor", delivery_fee AS "deliveryFee",
+        loyalty_points_redeemed AS "loyaltyPointsRedeemed"
       FROM orders WHERE id = ?
     `).get(orderId)
     if (!order) {
@@ -889,13 +915,25 @@ app.post('/api/contact', contactLimiter, async (request, response, next) => {
     const phone = typeof request.body.phone === 'string' ? request.body.phone.trim() : ''
     const subject = typeof request.body.subject === 'string' ? request.body.subject.trim() : ''
     const message = typeof request.body.message === 'string' ? request.body.message.trim() : ''
+    const storeId = Number(request.body.storeId)
     if (!name || name.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254
-      || phone.length > 40 || !subject || subject.length > 150 || !message || message.length > 5000) {
-      response.status(400).json({ error: 'Provide a name, valid email, subject, and message. Please check the field lengths.' })
+      || phone.length > 40 || !subject || subject.length > 150 || !message || message.length > 5000
+      || !Number.isSafeInteger(storeId) || storeId < 1) {
+      response.status(400).json({ error: 'Provide a name, valid email, subject, message, and store. Please check the field lengths.' })
+      return
+    }
+    const store = await database.prepare(`
+      SELECT s.id FROM stores s
+      JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
+      WHERE s.id = ? AND z.is_active = 1
+        AND (z.pickup_enabled = 1 OR z.delivery_enabled = 1)
+    `).get(storeId)
+    if (!store) {
+      response.status(400).json({ error: 'Choose an active store for your message.' })
       return
     }
 
-    const { messageId } = await createContactMessage({ name, email, phone, subject, message })
+    const { messageId } = await createContactMessage({ name, email, phone, subject, message, storeId })
     response.status(201).json({ messageId })
   } catch (error) {
     next(error)
@@ -994,9 +1032,9 @@ app.get('/api/auth/me', async (request, response) => {
     return
   }
   const customer = await database.prepare(`
-    SELECT id, name, email, profile_picture AS profilePicture, phone,
-      delivery_city AS deliveryCity, delivery_residence AS deliveryResidence,
-      loyalty_points AS loyaltyPoints, is_banned AS isBanned
+    SELECT id, name, email, profile_picture AS "profilePicture", phone,
+      delivery_city AS "deliveryCity", delivery_residence AS "deliveryResidence",
+      loyalty_points AS "loyaltyPoints", is_banned AS "isBanned"
     FROM customers WHERE id = ?
   `).get(payload.sub)
   if (!customer || customer.isBanned) {
@@ -1051,16 +1089,16 @@ app.put('/api/auth/profile', requireCustomer, async (request, response) => {
 
 app.get('/api/customer/orders', requireCustomer, async (request, response) => {
   const orders = await database.prepare(`
-    SELECT id, subtotal_cents AS subtotalCents, discount_cents AS discountCents,
-      total_cents AS totalCents, currency, discount_code AS discountCode, status,
-      fulfillment_status AS fulfillmentStatus, created_at AS createdAt,
-      delivered_at AS deliveredAt, delivery_city AS deliveryCity,
-      delivery_residence AS deliveryResidence,
-      store_id AS storeId, store_name AS storeName,
-      store_address AS storeAddress, store_phone AS storePhone,
-      fulfillment_type AS fulfillmentType, scheduled_for AS scheduledFor,
-      delivery_fee AS deliveryFee, delivery_stage AS deliveryStage,
-      loyalty_points_redeemed AS loyaltyPointsRedeemed
+    SELECT id, subtotal_cents AS "subtotalCents", discount_cents AS "discountCents",
+      total_cents AS "totalCents", currency, discount_code AS "discountCode", status,
+      fulfillment_status AS "fulfillmentStatus", created_at AS "createdAt",
+      delivered_at AS "deliveredAt", delivery_city AS "deliveryCity",
+      delivery_residence AS "deliveryResidence",
+      store_id AS "storeId", store_name AS "storeName",
+      store_address AS "storeAddress", store_phone AS "storePhone",
+      fulfillment_type AS "fulfillmentType", scheduled_for AS "scheduledFor",
+      delivery_fee AS "deliveryFee", delivery_stage AS "deliveryStage",
+      loyalty_points_redeemed AS "loyaltyPointsRedeemed"
     FROM orders WHERE customer_id = ? ORDER BY id DESC LIMIT 100
   `).all(request.customer.id)
   if (!orders.length) {
@@ -1069,9 +1107,9 @@ app.get('/api/customer/orders', requireCustomer, async (request, response) => {
   }
   const placeholders = orders.map(() => '?').join(', ')
   const items = await database.prepare(`
-    SELECT order_id AS orderId, flavor_id AS flavorId, menu_item_id AS menuItemId,
-      flavor_name AS name, unit_price_cents AS unitPriceCents, quantity,
-      line_total_cents AS lineTotalCents
+    SELECT order_id AS "orderId", flavor_id AS "flavorId", menu_item_id AS "menuItemId",
+      flavor_name AS name, unit_price_cents AS "unitPriceCents", quantity,
+      line_total_cents AS "lineTotalCents"
     FROM order_items WHERE order_id IN (${placeholders}) ORDER BY id
   `).all(...orders.map((order) => order.id))
   const itemsByOrder = new Map()
@@ -1096,13 +1134,13 @@ app.get('/api/customer/orders/:id', requireCustomer, async (request, response) =
     return
   }
   const order = await database.prepare(`
-    SELECT id, customer_name AS customerName, customer_email AS customerEmail,
-      subtotal_cents AS subtotalCents, discount_cents AS discountCents,
-      total_cents AS totalCents, currency, status, created_at AS createdAt,
-      delivery_city AS deliveryCity, store_name AS storeName,
-      store_address AS storeAddress, store_phone AS storePhone,
-      delivery_stage AS deliveryStage, fulfillment_type AS fulfillmentType,
-      scheduled_for AS scheduledFor, delivery_fee AS deliveryFee
+    SELECT id, customer_name AS "customerName", customer_email AS "customerEmail",
+      subtotal_cents AS "subtotalCents", discount_cents AS "discountCents",
+      total_cents AS "totalCents", currency, status, created_at AS "createdAt",
+      delivery_city AS "deliveryCity", store_name AS "storeName",
+      store_address AS "storeAddress", store_phone AS "storePhone",
+      delivery_stage AS "deliveryStage", fulfillment_type AS "fulfillmentType",
+      scheduled_for AS "scheduledFor", delivery_fee AS "deliveryFee"
     FROM orders WHERE id = ? AND customer_id = ? AND loyalty_points_redeemed > 0
   `).get(id, request.customer.id)
   if (!order || order.status !== 'processing') {
@@ -1110,9 +1148,9 @@ app.get('/api/customer/orders/:id', requireCustomer, async (request, response) =
     return
   }
   const items = await database.prepare(`
-    SELECT flavor_id AS flavorId, menu_item_id AS menuItemId,
-      flavor_name AS name, unit_price_cents AS unitPriceCents, quantity,
-      line_total_cents AS lineTotalCents
+    SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId",
+      flavor_name AS name, unit_price_cents AS "unitPriceCents", quantity,
+      line_total_cents AS "lineTotalCents"
     FROM order_items WHERE order_id = ? ORDER BY id
   `).all(id)
   response.json({ order: { ...order, items } })
@@ -1120,8 +1158,8 @@ app.get('/api/customer/orders/:id', requireCustomer, async (request, response) =
 
 app.get('/api/customer/loyalty', requireCustomer, async (request, response) => {
   const entries = await database.prepare(`
-    SELECT id, order_id AS orderId, points_delta AS pointsDelta,
-      entry_type AS entryType, created_at AS createdAt
+    SELECT id, order_id AS "orderId", points_delta AS "pointsDelta",
+      entry_type AS "entryType", created_at AS "createdAt"
     FROM loyalty_ledger WHERE customer_id = ? ORDER BY id DESC LIMIT 100
   `).all(request.customer.id)
   response.json({ points: request.customer.loyaltyPoints, entries })
@@ -1156,7 +1194,7 @@ app.get('/api/reviews', async (_request, response) => {
 
 app.get('/api/customer/favorites', requireCustomer, async (request, response) => {
   const favorites = await database.prepare(`
-    SELECT item_id AS itemId, created_at AS createdAt FROM customer_favorites
+    SELECT item_id AS "itemId", created_at AS "createdAt" FROM customer_favorites
     WHERE customer_id = ? ORDER BY created_at DESC
   `).all(request.customer.id)
   const resolvedFavorites = await Promise.all(favorites.map(async (favorite) => {
@@ -1187,8 +1225,8 @@ app.delete('/api/customer/favorites/:itemId', requireCustomer, async (request, r
 
 app.get('/api/customer/saved-carts', requireCustomer, async (request, response) => {
   const savedCarts = (await database.prepare(`
-    SELECT id, source_order_id AS sourceOrderId, label,
-      items_json AS itemsJson, created_at AS createdAt
+    SELECT id, source_order_id AS "sourceOrderId", label,
+      items_json AS "itemsJson", created_at AS "createdAt"
     FROM customer_saved_carts WHERE customer_id = ?
     ORDER BY id DESC
   `).all(request.customer.id)).map(({ itemsJson, ...savedCart }) => ({
@@ -1324,6 +1362,7 @@ app.post('/api/cake-requests', contactLimiter, async (request, response) => {
   const message = typeof body.message === 'string' ? body.message.trim() : ''
   const toppings = Array.isArray(body.toppings) ? [...new Set(body.toppings.filter((value) => typeof value === 'string'))] : []
   const pickupDate = typeof body.pickupDate === 'string' ? body.pickupDate : ''
+  const storeId = Number(body.storeId)
   const allowedSizes = new Set(['Small', 'Medium', 'Large'])
   const allowedToppings = new Set(['Sprinkles', 'Chocolate chips', 'Fresh fruit', 'Cookie pieces', 'Whipped cream'])
   const pickupTimestamp = /^\d{4}-\d{2}-\d{2}$/.test(pickupDate) ? Date.parse(`${pickupDate}T23:59:59+01:00`) : NaN
@@ -1331,9 +1370,19 @@ app.post('/api/cake-requests', contactLimiter, async (request, response) => {
     || customerEmail.length > 254 || !customerPhone || customerPhone.length > 40
     || !allowedSizes.has(size) || !flavor || flavor.length > 80 || message.length > 200
     || toppings.length > allowedToppings.size || toppings.some((value) => !allowedToppings.has(value))
+    || !Number.isSafeInteger(storeId) || storeId < 1
     || !Number.isFinite(pickupTimestamp) || pickupTimestamp < Date.now()
     || pickupTimestamp > Date.now() + 90 * 24 * 60 * 60 * 1000) {
     response.status(400).json({ error: 'Provide valid contact details and cake options with a pickup date within the next 90 days.' })
+    return
+  }
+  const store = await database.prepare(`
+    SELECT s.id, s.name FROM stores s
+    JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
+    WHERE s.id = ? AND z.is_active = 1 AND z.pickup_enabled = 1
+  `).get(storeId)
+  if (!store) {
+    response.status(400).json({ error: 'Choose an active store that accepts pickup requests.' })
     return
   }
   let customerId = null
@@ -1354,6 +1403,7 @@ app.post('/api/cake-requests', contactLimiter, async (request, response) => {
   }
   const { id: requestId } = await createCakeRequest({
     customerId,
+    storeId,
     customerName,
     customerEmail,
     customerPhone,
@@ -1363,7 +1413,9 @@ app.post('/api/cake-requests', contactLimiter, async (request, response) => {
     toppings,
     pickupDate,
   })
-  const admins = await database.prepare('SELECT email FROM admins ORDER BY id').all()
+  const admins = await database.prepare(`
+    SELECT email FROM admins WHERE role = 'owner' OR store_id = ? ORDER BY id
+  `).all(store.id)
   try {
     await sendCakeRequestNotification({
       recipients: admins.map((admin) => admin.email),
@@ -1380,40 +1432,67 @@ app.post('/api/auth/logout', (_request, response) => {
 })
 
 app.use('/api/admin', async (request, response, next) => {
-  if (request.method === 'GET' || request.method === 'HEAD') {
+  if (request.path === '/login') {
     next()
     return
   }
   const token = readBearerToken(request)
-  try {
-    const payload = jwt.verify(token, jwtSecret)
-    if (payload.type !== 'admin') {
-      next()
-      return
-    }
-    const admin = await database.prepare('SELECT id, name FROM admins WHERE id = ?').get(payload.sub)
-    if (!admin) {
-      next()
-      return
-    }
-    response.on('finish', async () => {
-      if (response.statusCode < 200 || response.statusCode >= 300) return
-      try {
-        await createAdminActivity({
-          adminId: admin.id,
-          adminName: admin.name,
-          action: `${request.method} ${request.path}`,
-          method: request.method,
-          path: request.path,
-        })
-      } catch (error) {
-        console.error('Unable to save admin activity:', error.message)
-      }
-    })
-  } catch {
-    // The route-level authentication middleware returns the appropriate error.
+  if (!token) {
+    response.status(401).json({ error: 'Admin sign-in is required.' })
+    return
   }
-  next()
+  let payload
+  try {
+    payload = jwt.verify(token, jwtSecret)
+  } catch {
+    response.status(401).json({ error: 'Admin session is invalid or expired.' })
+    return
+  }
+  if (payload.type !== 'admin') {
+    response.status(401).json({ error: 'Admin session is invalid.' })
+    return
+  }
+  try {
+    const admin = await database.prepare(`
+      SELECT a.id, a.name, a.email, a.profile_picture, a.role,
+        a.store_id AS "storeId", s.name AS "storeName"
+      FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
+    `).get(payload.sub)
+    if (!admin) {
+      response.status(401).json({ error: 'Admin session is no longer valid.' })
+      return
+    }
+    if (admin.role !== 'owner' && (!Number.isSafeInteger(admin.storeId) || !admin.storeName)) {
+      response.status(403).json({ error: 'This store admin account is not assigned to an active store.' })
+      return
+    }
+    request.admin = admin
+    if (admin.role !== 'owner' && !storeAdminCanAccess(request.method, request.path)) {
+      response.status(403).json({
+        error: `Store-admin access denied for ${request.method} ${request.path}.`,
+      })
+      return
+    }
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      response.on('finish', async () => {
+        if (response.statusCode < 200 || response.statusCode >= 300) return
+        try {
+          await createAdminActivity({
+            adminId: admin.id,
+            adminName: admin.name,
+            action: `${request.method} ${request.path}`,
+            method: request.method,
+            path: request.path,
+          })
+        } catch (error) {
+          console.error('Unable to save admin activity:', error.message)
+        }
+      })
+    }
+    next()
+  } catch (error) {
+    next(error)
+  }
 })
 
 app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
@@ -1427,9 +1506,14 @@ app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
     }
 
     const token = jwt.sign({ sub: admin.id, type: 'admin' }, jwtSecret, { expiresIn: '8h' })
+    const identity = await database.prepare(`
+      SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture", a.role,
+        a.store_id AS "storeId", s.name AS "storeName"
+      FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
+    `).get(admin.id)
     response.json({
       token,
-      admin: { id: admin.id, name: admin.name, email: admin.email, profilePicture: admin.profile_picture },
+      admin: identity,
     })
   } catch (error) {
     next(error)
@@ -1443,6 +1527,9 @@ app.get('/api/admin/me', requireAdmin, (request, response) => {
       name: request.admin.name,
       email: request.admin.email,
       profilePicture: request.admin.profile_picture,
+      role: request.admin.role,
+      storeId: request.admin.storeId,
+      storeName: request.admin.storeName,
     },
   })
 })
@@ -1460,20 +1547,52 @@ app.put('/api/admin/profile-picture', requireAdmin, async (request, response) =>
   response.json({ admin })
 })
 
-app.get('/api/admin/admins', requireAdmin, async (_request, response) => {
+app.get('/api/admin/admins', requireAdmin, async (request, response) => {
+  if (!requireOwner(request, response)) return
   const admins = await database.prepare(`
-    SELECT id, name, email, profile_picture AS profilePicture, created_at AS createdAt
-    FROM admins ORDER BY id
+    SELECT a.id, a.name, a.email, a.role, a.store_id AS "storeId",
+      s.name AS "storeName", a.profile_picture AS "profilePicture", a.created_at AS "createdAt"
+    FROM admins a LEFT JOIN stores s ON s.id = a.store_id ORDER BY a.id
   `).all()
   response.json({ admins })
 })
 
+app.delete('/api/admin/admins/:id', requireAdmin, async (request, response) => {
+  if (!requireOwner(request, response)) return
+  const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Admin ID is invalid.' })
+    return
+  }
+  if (id === request.admin.id) {
+    response.status(409).json({ error: 'You cannot remove your own admin account.' })
+    return
+  }
+
+  const result = await database.prepare(`
+    DELETE FROM admins WHERE id = ? AND role = 'store_admin'
+  `).run(id)
+  if (!result.changes) {
+    const admin = await database.prepare('SELECT role FROM admins WHERE id = ?').get(id)
+    if (!admin) {
+      response.status(404).json({ error: 'Admin account not found.' })
+      return
+    }
+    response.status(409).json({ error: 'Owner accounts cannot be removed here.' })
+    return
+  }
+  response.json({ deleted: true })
+})
+
 app.get('/api/admin/customers', requireAdmin, async (_request, response) => {
+  const admin = _request.admin
+  const storeFilter = admin.role === 'owner' ? '' : 'JOIN orders o ON o.customer_id = c.id WHERE o.store_id = ?'
+  const parameters = admin.role === 'owner' ? [] : [admin.storeId]
   const customers = (await database.prepare(`
-    SELECT id, name, email, phone, delivery_city AS deliveryCity,
-      created_at AS createdAt, is_banned AS isBanned
-    FROM customers ORDER BY id DESC
-  `).all()).map((customer) => ({ ...customer, isBanned: Boolean(customer.isBanned) }))
+    SELECT DISTINCT c.id, c.name, c.email, c.phone, c.delivery_city AS "deliveryCity",
+      c.created_at AS "createdAt", c.is_banned AS "isBanned"
+    FROM customers c ${storeFilter} ORDER BY c.id DESC
+  `).all(...parameters)).map((customer) => ({ ...customer, isBanned: Boolean(customer.isBanned) }))
   response.json({ customers })
 })
 
@@ -1499,9 +1618,10 @@ app.get('/api/admin/orders', requireAdmin, async (request, response) => {
     return
   }
   const requestedStoreId = request.query.storeId
-  const storeId = requestedStoreId === undefined
+  let storeId = requestedStoreId === undefined
     ? null
     : typeof requestedStoreId === 'string' ? Number(requestedStoreId) : NaN
+  if (request.admin.role !== 'owner') storeId = request.admin.storeId
   const storeExists = storeId === null
     ? true
     : Number.isSafeInteger(storeId) && storeId > 0
@@ -1520,27 +1640,118 @@ app.get('/api/admin/orders', requireAdmin, async (request, response) => {
   response.json({ orders, ...(deliveredOnly ? { count } : {}) })
 })
 
-app.get('/api/admin/stores', requireAdmin, async (_request, response) => {
+app.get('/api/admin/stores', requireAdmin, async (request, response) => {
+  const storeFilter = request.admin.role === 'owner' ? '' : 'WHERE s.id = ?'
   const stores = (await database.prepare(`
     SELECT s.id, s.name, s.town, s.area, s.address,
-      z.location, z.is_active AS isActive
+      z.location, z.is_active AS "isActive"
     FROM stores s JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
+    ${storeFilter}
     ORDER BY s.town, s.area
-  `).all()).map((store) => ({ ...store, isActive: Boolean(store.isActive) }))
+  `).all(...(request.admin.role === 'owner' ? [] : [request.admin.storeId]))).map((store) => ({ ...store, isActive: Boolean(store.isActive) }))
   response.json({ stores })
 })
 
-app.delete('/api/admin/orders/delivered', requireAdmin, async (_request, response) => {
-  const result = await clearDeliveredOrders()
+app.delete('/api/admin/orders/delivered', requireAdmin, async (request, response) => {
+  const requestedStoreId = request.query.storeId
+  const storeId = request.admin.role === 'owner'
+    ? requestedStoreId === undefined
+      ? null
+      : typeof requestedStoreId === 'string' ? Number(requestedStoreId) : NaN
+    : request.admin.storeId
+  if (
+    storeId !== null
+    && (!Number.isSafeInteger(storeId) || storeId < 1
+      || !await database.prepare('SELECT 1 FROM stores WHERE id = ?').get(storeId))
+  ) {
+    response.status(400).json({ error: 'Choose a valid store to clear delivered orders.' })
+    return
+  }
+  const result = await clearDeliveredOrders(storeId)
 
   if (!result.deleted) {
     response.status(409).json({
-      error: 'At least five delivered orders are required before clearing them.',
+      error: 'More than three delivered orders are required before clearing them.',
       count: result.count,
     })
     return
   }
   response.json({ deleted: true, count: result.count })
+})
+
+app.delete('/api/admin/orders/:id/stale-payment', requireAdmin, async (request, response) => {
+  const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Order ID is invalid.' })
+    return
+  }
+
+  const order = await database.prepare(`
+    SELECT o.status, o.created_at AS "createdAt", o.store_id AS "storeId",
+      p.status AS "paymentStatus", p.stripe_checkout_session_id AS "sessionId"
+    FROM orders o LEFT JOIN payments p ON p.order_id = o.id
+    WHERE o.id = ?
+  `).get(id)
+  if (!order || (request.admin.role !== 'owner' && order.storeId !== request.admin.storeId)) {
+    response.status(404).json({ error: 'Order not found.' })
+    return
+  }
+  const createdAt = order.createdAt instanceof Date
+    ? order.createdAt.getTime()
+    : Date.parse(String(order.createdAt).replace(' ', 'T').replace(/(?<!Z)(?<![+-]\\d{2}:?\\d{2})$/, 'Z'))
+  if (
+    order.status !== 'pending_payment'
+    || order.paymentStatus !== 'pending'
+    || !order.sessionId
+    || !Number.isFinite(createdAt)
+    || Date.now() - createdAt < 3 * 60 * 1000
+  ) {
+    response.status(409).json({ error: 'Only unpaid orders waiting for at least three minutes can be deleted.' })
+    return
+  }
+
+  const stripe = getStripe()
+  if (!stripe) {
+    response.status(503).json({ error: 'Stripe is not configured; this order cannot be safely verified for deletion.' })
+    return
+  }
+
+  let session
+  try {
+    session = await stripe.checkout.sessions.retrieve(order.sessionId)
+    if (
+      session.metadata?.orderId !== String(id)
+      || session.payment_status === 'paid'
+      || session.status === 'complete'
+    ) {
+      response.status(409).json({ error: 'This checkout is complete or paid and cannot be deleted.' })
+      return
+    }
+    if (session.status === 'open') {
+      session = await stripe.checkout.sessions.expire(order.sessionId)
+    }
+  } catch (error) {
+    console.error(`Unable to verify Stripe checkout ${order.sessionId} before deleting order #${id}:`, error.message)
+    response.status(502).json({ error: 'Unable to verify this payment with Stripe. The order was not deleted.' })
+    return
+  }
+
+  if (session.status !== 'expired' || session.payment_status === 'paid') {
+    response.status(409).json({ error: 'Stripe has not confirmed that this checkout is unpaid and expired.' })
+    return
+  }
+
+  const paymentFailed = await markStripeCheckoutPaymentFailed(id, session.id)
+  if (!paymentFailed) {
+    response.status(409).json({ error: 'The payment status changed and the order was not deleted.' })
+    return
+  }
+  const deleteResult = await deleteFailedOrder(id)
+  if (deleteResult !== 'deleted') {
+    response.status(409).json({ error: 'The expired order could not be deleted. Its payment reservation has been released.' })
+    return
+  }
+  response.json({ deleted: true })
 })
 
 app.delete('/api/admin/orders/:id', requireAdmin, async (request, response) => {
@@ -1550,6 +1761,13 @@ app.delete('/api/admin/orders/:id', requireAdmin, async (request, response) => {
     return
   }
 
+  if (request.admin.role !== 'owner') {
+    const order = await database.prepare('SELECT store_id AS "storeId" FROM orders WHERE id = ?').get(id)
+    if (!order || order.storeId !== request.admin.storeId) {
+      response.status(404).json({ error: 'Order not found.' })
+      return
+    }
+  }
   const deleteResult = await deleteFailedOrder(id)
   if (deleteResult === 'not_found') {
     response.status(404).json({ error: 'Order not found.' })
@@ -1562,7 +1780,14 @@ app.delete('/api/admin/orders/:id', requireAdmin, async (request, response) => {
   response.json({ deleted: true })
 })
 
-async function updateOrderFulfillment(id, fulfillmentStatus, response) {
+async function updateOrderFulfillment(id, fulfillmentStatus, response, admin) {
+  if (admin.role !== 'owner') {
+    const order = await database.prepare('SELECT store_id AS "storeId" FROM orders WHERE id = ?').get(id)
+    if (!order || order.storeId !== admin.storeId) {
+      response.status(404).json({ error: 'Order not found.' })
+      return
+    }
+  }
   const result = await updateOrderFulfillmentStatus(id, fulfillmentStatus)
   if (!result.changed) {
     if (result.notFound) {
@@ -1601,7 +1826,7 @@ app.patch('/api/admin/orders/:id/status', requireAdmin, async (request, response
     response.status(400).json({ error: 'Choose an accepted, preparing, ready, out-for-delivery, or delivered fulfillment status.' })
     return
   }
-  await updateOrderFulfillment(id, fulfillmentStatus, response)
+  await updateOrderFulfillment(id, fulfillmentStatus, response, request.admin)
 })
 
 app.patch('/api/admin/orders/:id/delivered', requireAdmin, async (request, response) => {
@@ -1610,26 +1835,33 @@ app.patch('/api/admin/orders/:id/delivered', requireAdmin, async (request, respo
     response.status(400).json({ error: 'Order ID is invalid.' })
     return
   }
-  await updateOrderFulfillment(id, 'delivered', response)
+  await updateOrderFulfillment(id, 'delivered', response, request.admin)
 })
 
-app.get('/api/admin/payments', requireAdmin, async (_request, response) => {
+app.get('/api/admin/payments', requireAdmin, async (request, response) => {
+  const storeFilter = request.admin.role === 'owner' ? '' : 'WHERE o.store_id = ?'
   const payments = await database.prepare(`
-    SELECT p.id, p.order_id AS orderId, p.stripe_payment_intent_id AS paymentIntentId,
-      p.amount_cents AS amountCents, p.currency, p.status, p.created_at AS createdAt,
-      o.customer_name AS customerName, o.customer_email AS customerEmail
+    SELECT p.id, p.order_id AS "orderId", p.stripe_payment_intent_id AS "paymentIntentId",
+      p.amount_cents AS "amountCents", p.currency, p.status, p.created_at AS "createdAt",
+      o.customer_name AS "customerName", o.customer_email AS "customerEmail"
     FROM payments p JOIN orders o ON o.id = p.order_id
+    ${storeFilter}
     ORDER BY p.id DESC LIMIT 500
-  `).all()
+  `).all(...(request.admin.role === 'owner' ? [] : [request.admin.storeId]))
   response.json({ payments })
 })
 
 app.get('/api/admin/notifications', requireAdmin, async (_request, response) => {
+  const isOwner = _request.admin.role === 'owner'
+  const storeFilter = isOwner ? 'WHERE cm.store_id IS NULL' : 'WHERE cm.store_id = ?'
+  const parameters = isOwner ? [] : [_request.admin.storeId]
   const messages = (await database.prepare(`
-    SELECT id, name, email, phone, subject, message, is_read AS isRead,
-      created_at AS createdAt, replied_at AS repliedAt
-    FROM contact_messages ORDER BY id DESC LIMIT 100
-  `).all()).map((item) => ({ ...item, isRead: Boolean(item.isRead) }))
+    SELECT cm.id, cm.name, cm.email, cm.phone, cm.subject, cm.message,
+      cm.is_read AS "isRead", cm.created_at AS "createdAt",
+      cm.replied_at AS "repliedAt", cm.store_id AS "storeId", s.name AS "storeName"
+    FROM contact_messages cm LEFT JOIN stores s ON s.id = cm.store_id
+    ${storeFilter} ORDER BY cm.id DESC LIMIT 100
+  `).all(...parameters)).map((item) => ({ ...item, isRead: Boolean(item.isRead) }))
   response.json({
     messages,
     unreadCount: messages.filter((item) => !item.isRead).length,
@@ -1642,12 +1874,21 @@ app.patch('/api/admin/notifications/:id/read', requireAdmin, async (request, res
     response.status(400).json({ error: 'Notification ID is invalid.' })
     return
   }
-  const updated = await markContactMessageRead(id)
+  const isOwner = request.admin.role === 'owner'
+  const storeId = isOwner ? null : request.admin.storeId
+  const updated = await markContactMessageRead(id, storeId, isOwner)
   if (!updated) {
     response.status(404).json({ error: 'Notification not found.' })
     return
   }
   response.status(204).end()
+})
+
+app.delete('/api/admin/notifications', requireAdmin, async (request, response) => {
+  const isOwner = request.admin.role === 'owner'
+  const storeId = isOwner ? null : request.admin.storeId
+  const deletedCount = await deleteContactMessages(storeId, isOwner)
+  response.json({ deletedCount })
 })
 
 app.delete('/api/admin/notifications/:id', requireAdmin, async (request, response) => {
@@ -1657,15 +1898,17 @@ app.delete('/api/admin/notifications/:id', requireAdmin, async (request, respons
     return
   }
 
-  const deleted = await deleteRepliedContactMessage(id)
+  const isOwner = request.admin.role === 'owner'
+  const storeId = isOwner ? null : request.admin.storeId
+  const deleted = await deleteContactMessage(id, storeId, isOwner)
   if (!deleted) {
-    const message = await database.prepare('SELECT replied_at AS repliedAt FROM contact_messages WHERE id = ?').get(id)
+    const storeFilter = isOwner ? ' AND store_id IS NULL' : ' AND store_id = ?'
+    const parameters = isOwner ? [id] : [id, storeId]
+    const message = await database.prepare(`SELECT id FROM contact_messages WHERE id = ?${storeFilter}`).get(...parameters)
     if (!message) {
       response.status(404).json({ error: 'Notification not found.' })
       return
     }
-    response.status(409).json({ error: 'Only replied notifications can be deleted.' })
-    return
   }
   response.status(204).end()
 })
@@ -1678,9 +1921,13 @@ app.post('/api/admin/notifications/:id/reply', requireAdmin, contactReplyLimiter
     return
   }
 
+  const isOwner = request.admin.role === 'owner'
+  const storeId = isOwner ? null : request.admin.storeId
+  const storeFilter = isOwner ? ' AND store_id IS NULL' : ' AND store_id = ?'
+  const parameters = isOwner ? [id] : [id, storeId]
   const contact = await database.prepare(`
-    SELECT id, name, email, subject FROM contact_messages WHERE id = ?
-  `).get(id)
+    SELECT id, name, email, subject FROM contact_messages WHERE id = ?${storeFilter}
+  `).get(...parameters)
   if (!contact) {
     response.status(404).json({ error: 'Contact message not found.' })
     return
@@ -1694,7 +1941,12 @@ app.post('/api/admin/notifications/:id/reply', requireAdmin, contactReplyLimiter
       reply,
       adminName: request.admin.name,
     })
-    const { repliedAt } = await markContactMessageReplied(id)
+    const result = await markContactMessageReplied(id, storeId, isOwner)
+    if (!result) {
+      response.status(404).json({ error: 'Contact message not found.' })
+      return
+    }
+    const { repliedAt } = result
     response.json({ sent: true, repliedAt })
   } catch (error) {
     if (error.message.startsWith('Email delivery is not configured')
@@ -1708,12 +1960,16 @@ app.post('/api/admin/notifications/:id/reply', requireAdmin, contactReplyLimiter
 })
 
 app.post('/api/admin/admins', requireAdmin, async (request, response, next) => {
+  if (!requireOwner(request, response)) return
   try {
     const { name, email, password, profilePicture = '' } = request.body
+    const storeId = Number(request.body.storeId)
     if (typeof name !== 'string' || !name.trim() || typeof email !== 'string'
       || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-      || typeof password !== 'string' || password.length < 8 || password.length > 128) {
-      response.status(400).json({ error: 'Provide a name, valid email, and password of 8 to 128 characters.' })
+      || typeof password !== 'string' || password.length < 8 || password.length > 128
+      || !Number.isSafeInteger(storeId) || storeId < 1
+      || !await database.prepare('SELECT 1 FROM stores WHERE id = ?').get(storeId)) {
+      response.status(400).json({ error: 'Provide a name, valid email, password of 8 to 128 characters, and a valid store.' })
       return
     }
     if (typeof profilePicture !== 'string' || (profilePicture
@@ -1727,6 +1983,7 @@ app.post('/api/admin/admins', requireAdmin, async (request, response, next) => {
       email: email.trim().toLowerCase(),
       passwordHash,
       profilePicture,
+      storeId,
     })
     response.status(201).json({ admin })
   } catch (error) {
@@ -1746,8 +2003,8 @@ app.get('/api/admin/fulfillment-settings', requireAdmin, async (_request, respon
   const zones = (await database.prepare(`
     SELECT z.id, z.location, z.pickup_enabled AS pickupEnabled,
       z.delivery_enabled AS deliveryEnabled, z.delivery_fee AS deliveryFee,
-      z.is_active AS isActive, s.id AS storeId, s.name AS storeName,
-      s.address AS storeAddress, s.phone AS storePhone
+      z.is_active AS "isActive", s.id AS "storeId", s.name AS "storeName",
+      s.address AS "storeAddress", s.phone AS "storePhone"
     FROM fulfillment_zones z JOIN stores s ON s.fulfillment_zone_id = z.id
     ORDER BY z.location
   `).all()).map((zone) => ({
@@ -1758,7 +2015,7 @@ app.get('/api/admin/fulfillment-settings', requireAdmin, async (_request, respon
   }))
   const slots = (await database.prepare(`
     SELECT id, label, start_time AS startTime, end_time AS endTime,
-      is_active AS isActive, sort_order AS sortOrder
+      is_active AS "isActive", sort_order AS "sortOrder"
     FROM fulfillment_slots ORDER BY sort_order, id
   `).all()).map((slot) => ({ ...slot, isActive: Boolean(slot.isActive) }))
   response.json({ zones, slots })
@@ -1817,14 +2074,15 @@ app.get('/api/admin/activity', requireAdmin, async (_request, response) => {
   response.json({ activity })
 })
 
-app.get('/api/admin/cake-requests', requireAdmin, async (_request, response) => {
-  const requests = (await database.prepare(`
+app.get('/api/admin/cake-requests', requireAdmin, async (request, response) => {
+  const storeFilter = request.admin.role === 'owner' ? '' : 'WHERE store_id = ?'
+  const requests = await database.prepare(`
     SELECT id, customer_name AS customerName, customer_email AS customerEmail,
-      customer_phone AS customerPhone, size, flavor, message, toppings,
-      pickup_date AS pickupDate, status, created_at AS createdAt
-    FROM cake_requests ORDER BY id DESC LIMIT 200
-  `).all()).map((item) => ({ ...item, toppings: JSON.parse(item.toppings) }))
-  response.json({ requests })
+      customer_phone AS "customerPhone", size, flavor, message, toppings,
+      pickup_date AS "pickupDate", status, store_id AS "storeId", created_at AS "createdAt"
+    FROM cake_requests ${storeFilter} ORDER BY id DESC LIMIT 200
+  `).all(...(request.admin.role === 'owner' ? [] : [request.admin.storeId]))
+  response.json({ requests: requests.map((item) => ({ ...item, toppings: JSON.parse(item.toppings) })) })
 })
 
 app.patch('/api/admin/cake-requests/:id/status', requireAdmin, async (request, response) => {
@@ -1835,6 +2093,15 @@ app.patch('/api/admin/cake-requests/:id/status', requireAdmin, async (request, r
     response.status(400).json({ error: 'Choose a valid cake request and status.' })
     return
   }
+  if (request.admin.role !== 'owner') {
+    const assigned = await database.prepare(
+      'SELECT 1 FROM cake_requests WHERE id = ? AND store_id = ?',
+    ).get(id, request.admin.storeId)
+    if (!assigned) {
+      response.status(404).json({ error: 'Custom cake request not found.' })
+      return
+    }
+  }
   const result = await setCakeRequestStatus(id, status)
   if (!result) {
     response.status(404).json({ error: 'Custom cake request not found.' })
@@ -1844,19 +2111,25 @@ app.patch('/api/admin/cake-requests/:id/status', requireAdmin, async (request, r
 })
 
 app.get('/api/admin/reviews', requireAdmin, async (request, response) => {
+  const storeJoin = request.admin.role === 'owner' ? '' : 'JOIN orders o ON o.id = r.order_id'
+  const storeFilter = request.admin.role === 'owner' ? '' : 'AND o.store_id = ?'
+  const storeParameters = request.admin.role === 'owner' ? [] : [request.admin.storeId]
   if (request.query.countOnly === 'true') {
-    const { count } = await database.prepare('SELECT COUNT(*) AS count FROM menu_reviews WHERE is_approved = 0').get()
+    const { count } = await database.prepare(`
+      SELECT COUNT(*) AS count FROM menu_reviews r ${storeJoin}
+      WHERE r.is_approved = 0 ${storeFilter}
+    `).get(...storeParameters)
     response.json({ pendingCount: count })
     return
   }
   const status = request.query.status === 'approved' ? 1 : 0
   const reviews = await database.prepare(`
-    SELECT r.id, r.order_id AS orderId, r.item_id AS itemId, r.rating,
-      r.review, r.is_approved AS isApproved, r.created_at AS createdAt,
-      c.name AS customerName, c.email AS customerEmail
-    FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
-    WHERE r.is_approved = ? ORDER BY r.id DESC LIMIT 200
-  `).all(status)
+    SELECT r.id, r.order_id AS "orderId", r.item_id AS "itemId", r.rating,
+      r.review, r.is_approved AS "isApproved", r.created_at AS "createdAt",
+      c.name AS "customerName", c.email AS "customerEmail"
+    FROM menu_reviews r JOIN customers c ON c.id = r.customer_id ${storeJoin}
+    WHERE r.is_approved = ? ${storeFilter} ORDER BY r.id DESC LIMIT 200
+  `).all(status, ...storeParameters)
   const resolvedReviews = await Promise.all(reviews.map(async (review) => ({
     ...review,
     isApproved: Boolean(review.isApproved),
@@ -1870,6 +2143,16 @@ app.patch('/api/admin/reviews/:id/approval', requireAdmin, async (request, respo
   if (!Number.isSafeInteger(id) || id < 1 || typeof request.body.isApproved !== 'boolean') {
     response.status(400).json({ error: 'Provide a valid review and approval status.' })
     return
+  }
+  if (request.admin.role !== 'owner') {
+    const assigned = await database.prepare(`
+      SELECT 1 FROM menu_reviews r JOIN orders o ON o.id = r.order_id
+      WHERE r.id = ? AND o.store_id = ?
+    `).get(id, request.admin.storeId)
+    if (!assigned) {
+      response.status(404).json({ error: 'Review not found.' })
+      return
+    }
   }
   const result = await setReviewApproval(id, request.body.isApproved)
   if (!result) {
@@ -2154,40 +2437,49 @@ app.delete('/api/admin/discount-codes/:id', requireAdmin, async (request, respon
   response.status(204).end()
 })
 
-app.get('/api/admin/reports', requireAdmin, async (_request, response) => {
+app.get('/api/admin/reports', requireAdmin, async (request, response) => {
+  const storeFilter = request.admin.role === 'owner' ? '' : 'WHERE store_id = ?'
+  const storeParameters = request.admin.role === 'owner' ? [] : [request.admin.storeId]
   const summary = await database.prepare(`
-    SELECT COUNT(*) AS orderCount,
+    SELECT COUNT(*) AS "orderCount",
       COALESCE(SUM(CASE WHEN status IN ('processing', 'delivered') THEN total_cents ELSE 0 END), 0) AS sales,
-      COALESCE(AVG(CASE WHEN status IN ('processing', 'delivered') THEN total_cents END), 0) AS averageOrder,
-      COALESCE(SUM(CASE WHEN status NOT IN ('payment_failed') THEN 1 ELSE 0 END), 0) AS placedCount
-    FROM orders
-  `).get()
+      COALESCE(AVG(CASE WHEN status IN ('processing', 'delivered') THEN total_cents END), 0) AS "averageOrder",
+      COALESCE(SUM(CASE WHEN status NOT IN ('payment_failed') THEN 1 ELSE 0 END), 0) AS "placedCount"
+    FROM orders ${storeFilter}
+  `).get(...storeParameters)
   const popularItems = await database.prepare(`
     SELECT flavor_name AS name, SUM(quantity) AS quantity, SUM(line_total_cents) AS sales
     FROM order_items oi JOIN orders o ON o.id = oi.order_id
     WHERE o.status IN ('processing', 'delivered')
+      ${request.admin.role === 'owner' ? '' : 'AND o.store_id = ?'}
     GROUP BY flavor_name ORDER BY quantity DESC LIMIT 10
-  `).all()
-  const lowStock = await database.prepare(`
-    SELECT itemId, name, stock, reservedStock, isAvailable, availableQuantity FROM (
-      SELECT item_id AS itemId, item_id AS name, stock,
-        reserved_stock AS reservedStock, is_available AS isAvailable,
-        stock - reserved_stock AS availableQuantity
+  `).all(...storeParameters)
+  const lowStock = request.admin.role === 'owner' ? await database.prepare(`
+    SELECT "itemId", name, stock, "reservedStock", "isAvailable", "availableQuantity" FROM (
+    SELECT item_id AS "itemId", item_id AS name, stock,
+      reserved_stock AS "reservedStock", is_available AS "isAvailable",
+      stock - reserved_stock AS "availableQuantity"
       FROM menu_inventory WHERE stock - reserved_stock <= 5
       UNION ALL
-      SELECT 'flavor:' || id AS itemId, name, stock,
-        reserved_stock AS reservedStock, 1 AS isAvailable,
-        stock - reserved_stock AS availableQuantity
+    SELECT 'flavor:' || id AS "itemId", name, stock,
+      reserved_stock AS "reservedStock", 1 AS "isAvailable",
+      stock - reserved_stock AS "availableQuantity"
       FROM flavors WHERE stock - reserved_stock <= 5
     ) ORDER BY availableQuantity, itemId LIMIT 30
-  `).all()
+  `).all() : []
   const recentSales = await database.prepare(`
     SELECT date(created_at) AS date, SUM(total_cents) AS sales, COUNT(*) AS orders
     FROM orders WHERE status IN ('processing', 'delivered')
+      ${request.admin.role === 'owner' ? '' : 'AND store_id = ?'}
       AND created_at >= datetime('now', '-30 days')
     GROUP BY date(created_at) ORDER BY date
-  `).all()
-  response.json({ summary, popularItems, lowStock, recentSales })
+  `).all(...storeParameters)
+  response.json({
+    summary,
+    popularItems,
+    ...(request.admin.role === 'owner' ? { lowStock } : {}),
+    recentSales,
+  })
 })
 
 app.post('/api/admin/menu-items', requireAdmin, async (request, response, next) => {

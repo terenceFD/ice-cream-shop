@@ -6,6 +6,9 @@ export interface AdminAccount {
   name: string;
   email: string;
   profilePicture?: string;
+  role: 'owner' | 'store_admin';
+  storeId: number | null;
+  storeName: string | null;
 }
 
 interface AdminAuthContextValue {
@@ -16,7 +19,8 @@ interface AdminAuthContextValue {
   sessionToken: string;
   login: (email: string, password: string) => Promise<AdminAccount>;
   refreshAdmins: () => Promise<AdminAccount[]>;
-  createAdmin: (details: { name: string; email: string; password: string; profilePicture: string }) => Promise<AdminAccount>;
+  createAdmin: (details: { name: string; email: string; password: string; profilePicture: string; storeId: number }) => Promise<AdminAccount>;
+  removeAdmin: (id: number) => Promise<void>;
   updateProfilePicture: (profilePicture: string) => Promise<AdminAccount>;
   logout: () => Promise<void>;
 }
@@ -77,14 +81,22 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     return result.admins
   }, [sessionToken])
 
-  async function createAdmin({ name, email, password, profilePicture }: { name: string; email: string; password: string; profilePicture: string }) {
+  async function createAdmin({ name, email, password, profilePicture, storeId }: { name: string; email: string; password: string; profilePicture: string; storeId: number }) {
     const result = await apiRequest<{ admin: AdminAccount }>('/admin/admins', {
       method: 'POST',
       token: sessionToken,
-      body: { name, email, password, profilePicture },
+      body: { name, email, password, profilePicture, storeId },
     })
     setAdmins((currentAdmins) => [...currentAdmins, result.admin])
     return result.admin
+  }
+
+  async function removeAdmin(id: number) {
+    await apiRequest(`/admin/admins/${id}`, {
+      method: 'DELETE',
+      token: sessionToken,
+    })
+    setAdmins((currentAdmins) => currentAdmins.filter((admin) => admin.id !== id))
   }
 
   async function updateProfilePicture(profilePicture: string) {
@@ -121,6 +133,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       login,
       refreshAdmins,
       createAdmin,
+      removeAdmin,
       updateProfilePicture,
       logout,
     }}>

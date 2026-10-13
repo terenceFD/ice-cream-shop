@@ -24,6 +24,8 @@ function whatsappNumber(phone: string): string {
 }
 
 export function AdminCustomersPage() {
+  const { currentAdmin } = useAdminAuth()
+  const isOwner = currentAdmin?.role === 'owner'
   const { sessionToken } = useAdminAuth()
   const { t, language } = useLanguage()
   const [customers, setCustomers] = useState<CustomerAccount[]>([])
@@ -216,14 +218,14 @@ export function AdminCustomersPage() {
             />
           </label>
           <div className="space-y-3">
-            <button
+            {isOwner && <button
               className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#16733f] px-4 py-3 text-sm font-extrabold text-white transition hover:bg-[#125f34] disabled:cursor-not-allowed disabled:opacity-50"
               disabled={loading || !promotionMessage.trim() || promotionCampaign !== null}
               onClick={sendPromotionToAll}
               type="button"
             >
               {t('Send to all')}
-            </button>
+            </button>}
             <p className="text-[11px] leading-5 text-[#718196]">
               {t('Opens WhatsApp chats one at a time for active customers with valid phone numbers. You review and send each message.')}
             </p>
@@ -360,14 +362,14 @@ export function AdminCustomersPage() {
                         {t('Message on WhatsApp')}
                       </button>
                     )}
-                    <button
+                    {isOwner && <button
                       className={`min-h-10 rounded-lg px-3.5 text-xs font-bold transition disabled:cursor-wait disabled:opacity-50 ${customer.isBanned ? 'border border-[#dce5ef] text-[#50657d] hover:bg-[#f6f9fc]' : 'border border-red-200 text-red-700 hover:bg-red-50'}`}
                       disabled={savingId === customer.id}
                       onClick={() => toggleBan(customer)}
                       type="button"
                     >
                       {savingId === customer.id ? t('Saving…') : t(customer.isBanned ? 'Unban customer' : 'Ban customer')}
-                    </button>
+                    </button>}
                   </div>
                 </article>
               )

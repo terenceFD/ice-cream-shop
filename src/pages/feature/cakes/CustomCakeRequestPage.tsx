@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest, CUSTOMER_TOKEN_KEY } from '../../../api/api'
 import { useAuth } from '../../../authcontext/AuthContext'
@@ -16,8 +16,26 @@ export function CustomCakeRequestPage() {
   const [success, setSuccess] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [toppings, setToppings] = useState<string[]>([])
+  const [stores, setStores] = useState<{ storeId: number; storeName: string; storeAddress: string; location: string; pickupEnabled: boolean }[]>([])
+  const [selectedStoreId, setSelectedStoreId] = useState('')
+  const [storeError, setStoreError] = useState('')
   const [minPickupDate] = useState(() => getCameroonDate())
   const [maxPickupDate] = useState(() => getCameroonDate(90))
+
+  useEffect(() => {
+    let cancelled = false
+    apiRequest<{ zones: typeof stores }>('/fulfillment/options')
+      .then(({ zones }) => {
+        if (cancelled) return
+        const pickupStores = zones.filter((zone) => zone.pickupEnabled)
+        setStores(pickupStores)
+        setSelectedStoreId(String(pickupStores[0]?.storeId || ''))
+      })
+      .catch((loadError: unknown) => {
+        if (!cancelled) setStoreError(loadError instanceof Error ? loadError.message : 'Unable to load available stores.')
+      })
+    return () => { cancelled = true }
+  }, [])
 
   async function submitRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -34,6 +52,7 @@ export function CustomCakeRequestPage() {
           name: form.get('name'),
           email: form.get('email'),
           phone: form.get('phone'),
+          storeId: Number(form.get('storeId')),
           size: form.get('size'),
           flavor: form.get('flavor'),
           message: form.get('message'),
@@ -65,6 +84,11 @@ export function CustomCakeRequestPage() {
             <label className="text-sm font-semibold">{t('Email address')}<input autoComplete="email" className={inputClass} defaultValue={customer?.email || ''} maxLength={254} name="email" required type="email" /></label>
             <label className="text-sm font-semibold">{t('Phone number')}<input autoComplete="tel" className={inputClass} defaultValue={customer?.phone || ''} maxLength={40} name="phone" required type="tel" /></label>
             <label className="text-sm font-semibold">{t('Pickup date')}<input className={inputClass} max={maxPickupDate} min={minPickupDate} name="pickupDate" required type="date" /></label>
+            <label className="text-sm font-semibold">{t('Selected store')}
+              <select className={inputClass} name="storeId" onChange={(event) => setSelectedStoreId(event.target.value)} required value={selectedStoreId}>
+                {stores.map((store) => <option key={store.storeId} value={store.storeId}>{t(store.storeName)}{store.storeAddress ? ` · ${t(store.storeAddress)}` : ` · ${t(store.location)}`}</option>)}
+              </select>
+            </label>
             <label className="text-sm font-semibold">{t('Cake size')}
               <select className={inputClass} name="size"><option>{t('Small')}</option><option>{t('Medium')}</option><option>{t('Large')}</option></select>
             </label>
@@ -82,9 +106,9 @@ export function CustomCakeRequestPage() {
             </div>
           </fieldset>
           <label className="block text-sm font-semibold">{t('Message on cake or special instructions')}<textarea className={inputClass} maxLength={200} name="message" rows={3} /></label>
-          {error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
+          {(error || storeError) && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert">{error || storeError}</p>}
           {success && <p className="rounded-xl bg-green-50 p-3 text-sm text-green-800" role="status">{success}</p>}
-          <button className="rounded-full bg-[#ffdc32] px-6 py-3 font-bold disabled:opacity-50" disabled={isSubmitting} type="submit">{isSubmitting ? t('Sending…') : t('Send cake request')}</button>
+          <button className="rounded-full bg-[#ffdc32] px-6 py-3 font-bold disabled:opacity-50" disabled={isSubmitting || !stores.length || Boolean(storeError)} type="submit">{isSubmitting ? t('Sending…') : t('Send cake request')}</button>
         </form>
       </main>
       <Footer />
