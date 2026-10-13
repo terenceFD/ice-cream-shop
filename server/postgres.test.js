@@ -82,6 +82,26 @@ test('preserves camelCase discount-code fields in PostgreSQL query results', () 
   )
 })
 
+test('preserves public review customer name and profile-picture aliases', () => {
+  assert.deepEqual(
+    translateSql(`
+      SELECT r.rating, r.review, r.created_at AS "createdAt",
+        c.name AS "customerName", c.profile_picture AS "profilePicture",
+        r.item_id AS "itemId"
+      FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
+    `),
+    {
+      sql: `
+      SELECT r.rating, r.review, r.created_at AS "createdAt",
+        c.name AS "customerName", c.profile_picture AS "profilePicture",
+        r.item_id AS "itemId"
+      FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
+    `,
+      values: [],
+    },
+  )
+})
+
 test('preserves the checkout session alias used by Stripe reconciliation', () => {
   assert.deepEqual(
     translateSql('SELECT p.stripe_checkout_session_id AS "sessionId" FROM payments p'),
