@@ -738,9 +738,9 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
     if (totalCents === 0) {
       await finalizeZeroAmountCheckout(orderId, orderItems)
       const receiptOrder = await database.prepare(`
-        SELECT customer_email AS customerEmail, customer_name AS customerName,
-          total_cents AS totalCents, currency, fulfillment_type AS fulfillmentType,
-          scheduled_for AS scheduledFor, delivery_fee AS deliveryFee
+        SELECT customer_email AS "customerEmail", customer_name AS "customerName",
+          total_cents AS "totalCents", currency, fulfillment_type AS "fulfillmentType",
+          scheduled_for AS "scheduledFor", delivery_fee AS "deliveryFee"
         FROM orders WHERE id = ?
       `).get(orderId)
       sendOrderStatusUpdate({
@@ -1251,7 +1251,7 @@ app.post('/api/customer/saved-carts', requireCustomer, async (request, response)
     return
   }
   const orderItems = await database.prepare(`
-    SELECT flavor_id AS flavorId, menu_item_id AS menuItemId, quantity
+    SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity
     FROM order_items WHERE order_id = ? ORDER BY id
   `).all(orderId)
   if (!orderItems.length) {
@@ -1301,7 +1301,7 @@ app.get('/api/menu/:itemId/reviews', async (request, response) => {
     return
   }
   const summary = await database.prepare(`
-    SELECT COUNT(*) AS reviewCount, ROUND(AVG(rating), 1) AS averageRating
+    SELECT COUNT(*) AS "reviewCount", ROUND(AVG(rating), 1) AS "averageRating"
     FROM menu_reviews WHERE item_id = ? AND is_approved = 1
   `).get(itemId)
   const reviews = await database.prepare(`
@@ -1799,7 +1799,7 @@ async function updateOrderFulfillment(id, fulfillmentStatus, response, admin) {
   }
 
   const order = await database.prepare(`
-    SELECT customer_email AS customerEmail, customer_name AS customerName
+    SELECT customer_email AS "customerEmail", customer_name AS "customerName"
     FROM orders WHERE id = ?
   `).get(id)
   try {
@@ -2001,8 +2001,8 @@ app.post('/api/admin/logout', requireAdmin, (_request, response) => {
 
 app.get('/api/admin/fulfillment-settings', requireAdmin, async (_request, response) => {
   const zones = (await database.prepare(`
-    SELECT z.id, z.location, z.pickup_enabled AS pickupEnabled,
-      z.delivery_enabled AS deliveryEnabled, z.delivery_fee AS deliveryFee,
+    SELECT z.id, z.location, z.pickup_enabled AS "pickupEnabled",
+      z.delivery_enabled AS "deliveryEnabled", z.delivery_fee AS "deliveryFee",
       z.is_active AS "isActive", s.id AS "storeId", s.name AS "storeName",
       s.address AS "storeAddress", s.phone AS "storePhone"
     FROM fulfillment_zones z JOIN stores s ON s.fulfillment_zone_id = z.id
@@ -2014,7 +2014,7 @@ app.get('/api/admin/fulfillment-settings', requireAdmin, async (_request, respon
     isActive: Boolean(zone.isActive),
   }))
   const slots = (await database.prepare(`
-    SELECT id, label, start_time AS startTime, end_time AS endTime,
+    SELECT id, label, start_time AS "startTime", end_time AS "endTime",
       is_active AS "isActive", sort_order AS "sortOrder"
     FROM fulfillment_slots ORDER BY sort_order, id
   `).all()).map((slot) => ({ ...slot, isActive: Boolean(slot.isActive) }))
@@ -2068,7 +2068,7 @@ app.put('/api/admin/fulfillment-slots', requireAdmin, async (request, response) 
 
 app.get('/api/admin/activity', requireAdmin, async (_request, response) => {
   const activity = await database.prepare(`
-    SELECT id, admin_name AS adminName, action, method, path, created_at AS createdAt
+    SELECT id, admin_name AS "adminName", action, method, path, created_at AS "createdAt"
     FROM admin_activity ORDER BY id DESC LIMIT 200
   `).all()
   response.json({ activity })
@@ -2077,7 +2077,7 @@ app.get('/api/admin/activity', requireAdmin, async (_request, response) => {
 app.get('/api/admin/cake-requests', requireAdmin, async (request, response) => {
   const storeFilter = request.admin.role === 'owner' ? '' : 'WHERE store_id = ?'
   const requests = await database.prepare(`
-    SELECT id, customer_name AS customerName, customer_email AS customerEmail,
+    SELECT id, customer_name AS "customerName", customer_email AS "customerEmail",
       customer_phone AS "customerPhone", size, flavor, message, toppings,
       pickup_date AS "pickupDate", status, store_id AS "storeId", created_at AS "createdAt"
     FROM cake_requests ${storeFilter} ORDER BY id DESC LIMIT 200
@@ -2311,7 +2311,7 @@ app.put('/api/admin/menu-inventory', requireAdmin, async (request, response) => 
   const dietaryTags = Array.isArray(request.body.dietaryTags)
     ? [...new Set(request.body.dietaryTags)]
     : []
-  const row = await database.prepare('SELECT reserved_stock AS reservedStock FROM menu_inventory WHERE item_id = ?').get(itemId)
+  const row = await database.prepare('SELECT reserved_stock AS "reservedStock" FROM menu_inventory WHERE item_id = ?').get(itemId)
   if (!row || !Number.isSafeInteger(stock) || stock < row.reservedStock
     || !Number.isSafeInteger(lowStockThreshold) || lowStockThreshold < 0 || lowStockThreshold > 100000) {
     response.status(400).json({ error: 'Provide a valid menu item, stock no lower than quantities reserved, and a low-stock threshold from zero to 100,000.' })

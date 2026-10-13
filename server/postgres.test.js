@@ -102,6 +102,33 @@ test('preserves public review customer name and profile-picture aliases', () => 
   )
 })
 
+test('preserves camelCase aliases in shared PostgreSQL query shapes', () => {
+  const sql = `
+    SELECT customer_email AS "customerEmail", customer_name AS "customerName",
+      total_cents AS "totalCents", fulfillment_type AS "fulfillmentType",
+      scheduled_for AS "scheduledFor", delivery_fee AS "deliveryFee",
+      flavor_id AS "flavorId", menu_item_id AS "menuItemId",
+      COUNT(*) AS "reviewCount", ROUND(AVG(rating), 1) AS "averageRating",
+      pickup_enabled AS "pickupEnabled", delivery_enabled AS "deliveryEnabled",
+      start_time AS "startTime", end_time AS "endTime",
+      admin_name AS "adminName", created_at AS "createdAt",
+      source_order_id AS "sourceOrderId", items_json AS "itemsJson",
+      o.status AS "orderStatus", p.status AS "paymentStatus",
+      reserved_stock AS "reservedStock"
+    FROM query_shapes
+  `
+  assert.deepEqual(translateSql(sql), { sql, values: [] })
+})
+
+test('server SQL does not contain unquoted camelCase aliases', () => {
+  for (const file of ['index.js', 'database.js']) {
+    const source = readFileSync(new URL(`./${file}`, import.meta.url), 'utf8')
+    const aliases = [...source.matchAll(/\bAS\s+([a-z][A-Za-z0-9_]*[A-Z][A-Za-z0-9_]*)\b/g)]
+      .map((match) => match[1])
+    assert.deepEqual(aliases, [], `${file} contains an unquoted camelCase SQL alias`)
+  }
+})
+
 test('preserves the checkout session alias used by Stripe reconciliation', () => {
   assert.deepEqual(
     translateSql('SELECT p.stripe_checkout_session_id AS "sessionId" FROM payments p'),

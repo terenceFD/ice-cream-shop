@@ -1890,8 +1890,8 @@ export async function saveCustomerCart({ customerId, orderId, label, items }) {
     return null
   }
   const savedCart = await database.prepare(`
-    SELECT id, source_order_id AS sourceOrderId, label,
-      items_json AS itemsJson, created_at AS createdAt
+    SELECT id, source_order_id AS "sourceOrderId", label,
+      items_json AS "itemsJson", created_at AS "createdAt"
     FROM customer_saved_carts WHERE customer_id = ? AND source_order_id = ?
   `).get(customerId, orderId)
   return {
@@ -2074,7 +2074,7 @@ export async function deleteFailedOrder(id) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const order = await database.prepare(`
-        SELECT o.status AS orderStatus, p.status AS paymentStatus
+        SELECT o.status AS "orderStatus", p.status AS "paymentStatus"
         FROM orders o LEFT JOIN payments p ON p.order_id = o.id
         WHERE o.id = ?
       `).get(id);
@@ -2089,7 +2089,7 @@ export async function deleteFailedOrder(id) {
 
   return database.transaction(() => {
     const order = database.prepare(`
-      SELECT o.status AS orderStatus, p.status AS paymentStatus
+      SELECT o.status AS "orderStatus", p.status AS "paymentStatus"
       FROM orders o LEFT JOIN payments p ON p.order_id = o.id
       WHERE o.id = ?
     `).get(id)
