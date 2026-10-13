@@ -80,7 +80,8 @@ export function AdminPaymentsDashboard() {
       payment.orderId,
       payment.customerName,
       payment.customerEmail,
-      payment.paymentIntentId,
+      payment.provider,
+      payment.transactionId,
     ].join(" ").toLowerCase();
     return matchesFilter && searchableDetails.includes(normalizedQuery);
   });
@@ -94,11 +95,11 @@ export function AdminPaymentsDashboard() {
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/80">
               <span aria-hidden="true" className="size-1.5 rounded-full bg-[#9ee6b1]" />
-              {t("Stripe payments")}
+              {t("Multiple payment providers")}
             </span>
             <h1 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-4xl">{t("Payments")}</h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-white/70">
-              {t("Payment records confirmed by Stripe for customer orders.")}
+              {t("Payment records confirmed by Stripe, CamPay, and Flutterwave for customer orders.")}
             </p>
           </div>
           <button
@@ -124,7 +125,7 @@ export function AdminPaymentsDashboard() {
             <svg aria-hidden="true" className="size-4 text-[#9ee6b1]" fill="none" viewBox="0 0 20 20">
               <path d="m4 10 4 4 8-8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
             </svg>
-            {t("Payments securely processed by Stripe")}
+            {t("Payments securely processed by payment providers")}
           </p>
         </div>
       </section>
@@ -168,7 +169,7 @@ export function AdminPaymentsDashboard() {
               <input
                 className="min-h-10 w-full rounded-xl border border-[#dce5ef] bg-[#f8fafc] pl-9 pr-3 text-sm text-[#102c50] placeholder:text-[#91a0b1] focus:border-[#8ca8c3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#dbe8f4]"
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder={t("Order, name, email, or Stripe ID")}
+                placeholder={t("Order, name, email, provider, or transaction ID")}
                 type="search"
                 value={searchQuery}
               />
@@ -250,16 +251,19 @@ export function AdminPaymentsDashboard() {
                       <p className="font-display text-xl font-bold text-[#102c50]">{formatMoney(payment.amountCents, payment.currency, language)}</p>
                       <p className="mt-1 text-[11px] text-[#7c8a9b]">{formatDate(payment.createdAt, language)}</p>
                     </div>
-                    {payment.paymentIntentId && (
-                      <span className="hidden max-w-36 truncate rounded-lg bg-[#f3f6fa] px-2.5 py-1.5 font-mono text-[10px] text-[#65748a] lg:block" title={payment.paymentIntentId}>
-                        {payment.paymentIntentId}
+                    <span className="rounded-lg bg-[#f3f6fa] px-2.5 py-1.5 text-[10px] font-bold uppercase text-[#65748a]">
+                      {payment.provider}
+                    </span>
+                    {payment.transactionId && (
+                      <span className="hidden max-w-36 truncate rounded-lg bg-[#f3f6fa] px-2.5 py-1.5 font-mono text-[10px] text-[#65748a] lg:block" title={payment.transactionId}>
+                        {payment.transactionId}
                       </span>
                     )}
                   </div>
                 </div>
-                {payment.paymentIntentId && (
+                {payment.transactionId && (
                   <p className="mt-3 break-all border-t border-[#edf0f4] pt-3 font-mono text-[10px] text-[#7c8a9b] lg:hidden">
-                    {t("Stripe payment: {id}", { id: payment.paymentIntentId })}
+                    {t("{provider} transaction: {id}", { provider: payment.provider, id: payment.transactionId })}
                   </p>
                 )}
               </article>

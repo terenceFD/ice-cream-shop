@@ -169,6 +169,9 @@ if (configuredDatabaseBackend === "postgres") {
       order_id INTEGER NOT NULL UNIQUE REFERENCES orders(id) ON DELETE CASCADE,
       stripe_checkout_session_id TEXT NOT NULL UNIQUE,
       stripe_payment_intent_id TEXT,
+      payment_provider TEXT NOT NULL DEFAULT 'stripe',
+      provider_reference TEXT,
+      provider_transaction_id TEXT,
       amount_cents INTEGER NOT NULL CHECK (amount_cents >= 0),
       currency TEXT NOT NULL DEFAULT 'xaf',
       status TEXT NOT NULL DEFAULT 'pending'
@@ -481,6 +484,22 @@ if (configuredDatabaseBackend === "postgres") {
     "low_stock_threshold",
     "INTEGER NOT NULL DEFAULT 5",
   );
+  addColumnIfMissing(
+    "payments",
+    "payment_provider",
+    "TEXT NOT NULL DEFAULT 'stripe'",
+  );
+  addColumnIfMissing("payments", "provider_reference", "TEXT");
+  addColumnIfMissing("payments", "provider_transaction_id", "TEXT");
+  sqliteDatabase.exec(`
+    UPDATE payments
+    SET provider_reference = stripe_checkout_session_id
+    WHERE provider_reference IS NULL
+  `);
+  sqliteDatabase.exec(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_provider_reference
+    ON payments(provider_reference)
+  `);
 
   const seedCategory = sqliteDatabase.prepare(`
     INSERT OR IGNORE INTO menu_categories (title, description, image, icon, base_title, sort_order)
@@ -576,6 +595,8 @@ if (configuredDatabaseBackend === "postgres") {
     CREATE INDEX IF NOT EXISTS idx_menu_reviews_item_approved ON menu_reviews(item_id, is_approved);
     CREATE INDEX IF NOT EXISTS idx_cake_requests_status ON cake_requests(status, id);
     CREATE INDEX IF NOT EXISTS idx_admin_activity_created ON admin_activity(created_at DESC);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_provider_reference
+      ON payments(provider_reference);
   `);
 
   database = sqliteDatabase;
@@ -632,6 +653,23 @@ export async function verifyDatabaseSchema() {
   `).run();
   await database.prepare(`
     ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
+  `).run();
+  await database.prepare(`
+    ALTER TABLE payments ADD COLUMN IF NOT EXISTS payment_provider TEXT NOT NULL DEFAULT 'stripe'
+  `).run();
+  await database.prepare(`
+    ALTER TABLE payments ADD COLUMN IF NOT EXISTS provider_reference TEXT
+  `).run();
+  await database.prepare(`
+    ALTER TABLE payments ADD COLUMN IF NOT EXISTS provider_transaction_id TEXT
+  `).run();
+  await database.prepare(`
+    UPDATE payments SET provider_reference = stripe_checkout_session_id
+    WHERE provider_reference IS NULL
+  `).run();
+  await database.prepare(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_provider_reference
+    ON payments(provider_reference)
   `).run();
 }
 
@@ -1322,20 +1360,25 @@ export async function rollbackCheckoutOrder(orderId) {
     }
 
     return true
-  })
+  })()
 }
 
-export async function finalizePaidCheckout(orderId, session) {
+export async function finalizePaidCheckout(orderId, session, provider = "stripe") {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const result = await database.prepare(`
         UPDATE payments
-        SET status = 'paid', stripe_payment_intent_id = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE order_id = ? AND stripe_checkout_session_id = ? AND status = 'pending'
-      `).run(
-        typeof session.payment_intent === "string" ? session.payment_intent : null,
+        SET status = 'paid',
+            stripe_payment_intent_id = ?, provider_transaction_id = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE order_id = ? AND provider_reference = ? AND payment_provider = ? AND status = 'pending'
+        `).run(
+          provider === "stripe" && typeof session.payment_intent === "string" ? session.payment_intent : null,
+          provider === "flutterwave" || provider === "campay"
+            ? String(session.transactionId)
+            : null,
         orderId,
         session.id,
+        provider,
       );
       if (result.changes === 0) return { paymentRecorded: false, earnedPoints: 0 };
 
@@ -1392,8 +1435,9 @@ export async function finalizePaidCheckout(orderId, session) {
   return database.transaction(() => {
     const updatePayment = database.prepare(`
       UPDATE payments
-      SET status = 'paid', stripe_payment_intent_id = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE order_id = ? AND stripe_checkout_session_id = ? AND status = 'pending'
+      SET status = 'paid',
+        stripe_payment_intent_id = ?, provider_transaction_id = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE order_id = ? AND provider_reference = ? AND payment_provider = ? AND status = 'pending'
     `)
     const updateOrder = database.prepare(`
       UPDATE orders SET status = CASE WHEN status = 'pending_payment' THEN 'processing' ELSE status END
@@ -1401,9 +1445,13 @@ export async function finalizePaidCheckout(orderId, session) {
     `)
 
     const result = updatePayment.run(
-      typeof session.payment_intent === 'string' ? session.payment_intent : null,
+      provider === 'stripe' && typeof session.payment_intent === 'string' ? session.payment_intent : null,
+      provider === 'flutterwave' || provider === 'campay'
+        ? String(session.transactionId)
+        : null,
       orderId,
       session.id,
+      provider,
     )
     if (result.changes === 0) return { paymentRecorded: false, earnedPoints: 0 }
 
@@ -1457,7 +1505,7 @@ export async function finalizePaidCheckout(orderId, session) {
 
     updateOrder.run(orderId)
     return { paymentRecorded: true, earnedPoints }
-  })
+  })()
 }
 
 export async function finalizeZeroAmountCheckout(orderId, orderItems) {
@@ -1511,30 +1559,41 @@ export async function finalizeZeroAmountCheckout(orderId, orderItems) {
       WHERE id = ?
     `).run(orderId)
     return result.changes > 0
-  })
+  })()
 }
 
-export async function createPaymentRecord({ orderId, stripeCheckoutSessionId, amountCents, currency }) {
+export async function createPaymentRecord({
+  orderId,
+  stripeCheckoutSessionId,
+  providerReference = stripeCheckoutSessionId,
+  provider = "stripe",
+  amountCents,
+  currency,
+}) {
   const result = await database.prepare(`
-    INSERT INTO payments (order_id, stripe_checkout_session_id, amount_cents, currency)
-    VALUES (?, ?, ?, ?)
-  `).run(orderId, stripeCheckoutSessionId, amountCents, currency)
+    INSERT INTO payments (
+      order_id, stripe_checkout_session_id, payment_provider, provider_reference, amount_cents, currency
+    )
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(orderId, stripeCheckoutSessionId, provider, providerReference, amountCents, currency)
   return {
     id: Number(result.lastInsertRowid),
     orderId,
     stripeCheckoutSessionId,
+    provider,
+    providerReference,
     amountCents,
     currency,
   }
 }
 
-export async function markStripeCheckoutPaymentFailed(orderId, sessionId) {
+export async function markCheckoutPaymentFailed(orderId, sessionId, provider = "stripe") {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const result = await database.prepare(`
         UPDATE payments SET status = 'failed', updated_at = CURRENT_TIMESTAMP
-        WHERE order_id = ? AND stripe_checkout_session_id = ? AND status = 'pending'
-      `).run(orderId, sessionId);
+        WHERE order_id = ? AND provider_reference = ? AND payment_provider = ? AND status = 'pending'
+      `).run(orderId, sessionId, provider);
       if (result.changes === 0) return false;
 
       const items = await database.prepare(
@@ -1582,8 +1641,8 @@ export async function markStripeCheckoutPaymentFailed(orderId, sessionId) {
   return database.transaction(() => {
     const result = database.prepare(`
       UPDATE payments SET status = 'failed', updated_at = CURRENT_TIMESTAMP
-      WHERE order_id = ? AND stripe_checkout_session_id = ? AND status = 'pending'
-    `).run(orderId, sessionId)
+      WHERE order_id = ? AND provider_reference = ? AND payment_provider = ? AND status = 'pending'
+    `).run(orderId, sessionId, provider)
     if (result.changes === 0) return false
 
     const items = database.prepare(
@@ -1629,7 +1688,7 @@ export async function markStripeCheckoutPaymentFailed(orderId, sessionId) {
     }
 
     return true
-  })
+  })()
 }
 
 export async function updateAdminProfilePicture(adminId, profilePicture) {
@@ -2363,5 +2422,5 @@ export async function createCheckoutOrder({
     }
 
     return newOrderId
-  })
+  })()
 }

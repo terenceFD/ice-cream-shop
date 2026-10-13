@@ -539,9 +539,9 @@ function AdminSalesView({ view }) {
                     </span>
                   </div>
                 </div>
-                {payment.paymentIntentId && (
+                {payment.transactionId && (
                   <p className="mt-3 break-all border-t border-[#d9d6cc] pt-3 text-xs text-[#65748a]">
-                    {t("Stripe payment: {id}", { id: payment.paymentIntentId })}
+                    {t("{provider} transaction: {id}", { provider: payment.provider, id: payment.transactionId })}
                   </p>
                 )}
               </article>
