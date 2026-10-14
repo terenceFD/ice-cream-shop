@@ -14,6 +14,8 @@ const {
   isPushConfigured,
   normalizeNotificationMessage,
   normalizePushSubscription,
+  publicKeyForPrivateKey,
+  pushStatus,
   sendToAllCustomers,
 } = await import('./push.js')
 
@@ -86,7 +88,7 @@ test('sends to every device of non-banned customers and removes devices that are
       delivered.push([subscription.endpoint, JSON.parse(payload).title])
     },
   })
-  assert.deepEqual(result, { sent: 2, removed: 1, failed: 0, skipped: false })
+  assert.deepEqual(result, { devices: 3, sent: 2, removed: 1, failed: 0, skipped: false, errors: [] })
   assert.deepEqual(delivered.map(([endpoint]) => endpoint).sort(), ['https://push.example/ada-laptop', 'https://push.example/ada-phone'])
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM push_subscriptions WHERE endpoint LIKE '%ben-gone'").get().n, 0)
   assert.equal(await countCustomerSubscriptions(db), 2)
@@ -99,5 +101,26 @@ test('a temporary push-service error keeps the device for next time', async () =
   })
   assert.equal(result.failed, 3)
   assert.equal(result.removed, 0)
+  assert.deepEqual(result.errors, ['The push service returned HTTP 503.'])
   assert.equal(await countCustomerSubscriptions(db), 3)
+})
+
+test('explains a key rejection so the owner knows what to fix', async () => {
+  const db = memoryDatabase()
+  const result = await sendToAllCustomers(db, { title: 't', body: 'b' }, {
+    send: async () => { throw Object.assign(new Error('Forbidden'), { statusCode: 403 }) },
+  })
+  assert.equal(result.sent, 0)
+  assert.equal(result.errors.length, 1)
+  assert.match(result.errors[0], /rejected the site's keys/)
+})
+
+test('reports the set-up as ready when the keys are a matching pair', () => {
+  assert.equal(publicKeyForPrivateKey(keys.privateKey), keys.publicKey)
+  assert.deepEqual(pushStatus(), { configured: true, problem: '' })
+})
+
+test('detects a public and private key that do not belong together', () => {
+  const other = webpush.generateVAPIDKeys()
+  assert.notEqual(publicKeyForPrivateKey(other.privateKey), keys.publicKey)
 })

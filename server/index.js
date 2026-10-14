@@ -82,8 +82,28 @@ import {
   normalizeNotificationMessage,
   normalizePushSubscription,
   pushConfiguration,
+  pushStatus,
   sendToAllCustomers,
 } from './push.js'
+
+// Sends a promotion alert and waits briefly, so the owner sees whether it was delivered.
+async function sendPromotionAlert(code, message) {
+  const status = pushStatus()
+  if (!status.configured) return { requested: false, devices: 0, problem: status.problem }
+  const devices = await countCustomerSubscriptions(database)
+  if (devices === 0) return { requested: true, devices: 0, sent: 0, failed: 0, removed: 0, errors: [] }
+  const sending = sendToAllCustomers(database, buildPromotionNotification(code, message))
+    .then((result) => {
+      console.log(`Promotion ${code.code} alert: ${result.sent} sent, ${result.removed} expired devices removed, ${result.failed} failed.`)
+      return result
+    })
+  const timedOut = new Promise((resolve) => setTimeout(() => resolve(null), 15_000))
+  const result = await Promise.race([sending, timedOut]).catch((error) => {
+    console.error(`Unable to send promotion alert for ${code.code}:`, error.message)
+    return { devices, sent: 0, failed: devices, removed: 0, errors: [error.message] }
+  })
+  return result ? { requested: true, ...result } : { requested: true, devices, pending: true }
+}
 import { createSeo } from './seo.js'
 import {
   adminLockRemainingMs,
@@ -2953,16 +2973,9 @@ app.post('/api/admin/discount-codes', requireAdmin, ownerOnly, async (request, r
   try {
     const discountCode = await saveDiscountCode(code)
     // Promotion alerts go out for new, active codes unless the owner unticks "Notify customers".
-    let notification = { requested: false, devices: 0 }
-    if (code.isActive && request.body.notifyCustomers !== false && isPushConfigured()) {
-      const devices = await countCustomerSubscriptions(database)
-      notification = { requested: true, devices }
-      if (devices > 0) {
-        sendToAllCustomers(database, buildPromotionNotification({ ...code, ...discountCode }, notificationMessage))
-          .then((result) => console.log(`Promotion ${code.code} alert: ${result.sent} sent, ${result.removed} expired devices removed, ${result.failed} failed.`))
-          .catch((error) => console.error(`Unable to send promotion alert for ${code.code}:`, error.message))
-      }
-    }
+    const notification = code.isActive && request.body.notifyCustomers !== false
+      ? await sendPromotionAlert({ ...code, ...discountCode }, notificationMessage)
+      : { requested: false, devices: 0, skipped: true }
     response.status(201).json({ discountCode, notification })
   } catch (error) {
     if (isUniqueConstraintError(error)) {
@@ -2971,6 +2984,31 @@ app.post('/api/admin/discount-codes', requireAdmin, ownerOnly, async (request, r
     }
     next(error)
   }
+})
+
+app.get('/api/admin/push/status', requireAdmin, ownerOnly, async (_request, response) => {
+  const status = pushStatus()
+  response.json({ ...status, devices: status.configured ? await countCustomerSubscriptions(database) : 0 })
+})
+
+// Sends (or resends) the alert for an existing promotion.
+app.post('/api/admin/discount-codes/:id/notify', requireAdmin, ownerOnly, async (request, response) => {
+  const id = Number(request.params.id)
+  const code = (await listDiscountCodes()).find((entry) => entry.id === id)
+  if (!code) {
+    response.status(404).json({ error: 'Discount code not found.' })
+    return
+  }
+  if (!code.isActive) {
+    response.status(400).json({ error: 'Turn this code on before notifying customers about it.' })
+    return
+  }
+  const notificationMessage = normalizeNotificationMessage(request.body?.notificationMessage)
+  if (notificationMessage.length > MAX_NOTIFICATION_MESSAGE_LENGTH) {
+    response.status(400).json({ error: `Keep the notification message under ${MAX_NOTIFICATION_MESSAGE_LENGTH} characters.` })
+    return
+  }
+  response.json({ notification: await sendPromotionAlert(code, notificationMessage) })
 })
 
 app.put('/api/admin/discount-codes/:id', requireAdmin, ownerOnly, async (request, response, next) => {

@@ -12,6 +12,19 @@ export interface LanguageContextValue {
 
 
 const french: Record<string, string> = {
+  'No notification was sent: {problem}': 'Aucune notification n\'a été envoyée : {problem}',
+  'promotion alerts are not set up on the server.': 'les alertes promotions ne sont pas configurées sur le serveur.',
+  'No customers have turned on promotion alerts yet, so nobody was notified.': 'Aucun client n\'a encore activé les alertes promotions : personne n\'a été prévenu.',
+  'The notification is still being sent to {count} devices.': 'La notification est en cours d\'envoi à {count} appareils.',
+  'Notification delivered to {sent} of {count} customer devices.': 'Notification remise à {sent} appareils clients sur {count}.',
+  'Notification reached {sent} of {count} devices. {failed} failed: {reason}': 'Notification remise à {sent} appareils sur {count}. {failed} échecs : {reason}',
+  'unknown error': 'erreur inconnue',
+  'The notification could not be sent.': 'La notification n\'a pas pu être envoyée.',
+  'Promotion alerts are ready. {count} customer devices have them turned on.': 'Les alertes promotions sont prêtes. {count} appareils clients les ont activées.',
+  'Promotion alerts are not working: {problem}': 'Les alertes promotions ne fonctionnent pas : {problem}',
+  'Notify customers about {code}': 'Prévenir les clients pour {code}',
+  'Sends a notification to the {count} customer devices that have promotion alerts turned on.': 'Envoie une notification aux {count} appareils clients ayant activé les alertes promotions.',
+  'Send notification': 'Envoyer la notification',
   'Verified purchases only': 'Achats vérifiés uniquement',
   'Write a review': 'Laisser un avis',
   'This browser refused promotion alerts. They don\'t work in private or incognito windows. Try a normal window or the installed app.': 'Ce navigateur a refusé les alertes promotions. Elles ne fonctionnent pas en navigation privée. Essayez une fenêtre normale ou l\'application installée.',

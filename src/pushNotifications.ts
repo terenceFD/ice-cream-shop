@@ -74,16 +74,26 @@ export async function getPromotionAlertState(): Promise<PromotionAlertState> {
   return subscription ? "on" : "off";
 }
 
-/** Makes sure this device's alerts are linked to the customer who is signed in now. */
+/**
+ * Makes sure this device's alerts are linked to the customer who is signed in now, and that the
+ * device is subscribed with the server's current key. If the site's keys were replaced, the old
+ * subscription no longer works, so it is renewed here without asking again (permission is kept).
+ */
 export async function syncPromotionAlerts(token: string) {
   if (!isPushSupported() || Notification.permission !== "granted") return;
-  const { enabled } = await getServerKey();
-  if (!enabled) return;
+  const { enabled, publicKey } = await getServerKey();
+  if (!enabled || !publicKey) return;
   const registration = await getWorkerRegistration();
-  const subscription = await registration.pushManager.getSubscription();
-  if (subscription) {
-    await apiRequest("/customer/push-subscription", { method: "POST", token, body: subscription.toJSON() });
+  let subscription = await registration.pushManager.getSubscription();
+  if (!subscription) return;
+  if (!sameKey(subscription, publicKey)) {
+    await subscription.unsubscribe();
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: base64UrlToBytes(publicKey),
+    });
   }
+  await apiRequest("/customer/push-subscription", { method: "POST", token, body: subscription.toJSON() });
 }
 
 /** Must be called straight from a tap or click, because browsers only show the permission prompt then. */

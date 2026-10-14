@@ -8,6 +8,46 @@ const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8
 const labelClassName = 'block text-xs font-bold text-[#4f6379]'
 const MAX_NOTIFICATION_MESSAGE = 180
 
+interface NotificationResult {
+  requested: boolean
+  devices: number
+  sent?: number
+  failed?: number
+  removed?: number
+  pending?: boolean
+  skipped?: boolean
+  problem?: string
+  errors?: string[]
+}
+
+interface PushStatus {
+  configured: boolean
+  problem: string
+  devices: number
+}
+
+type Translate = (key: string, variables?: Record<string, string | number>) => string
+
+// Plain-language outcome of a send, so the owner knows whether customers were actually reached.
+function describeNotification(result: NotificationResult | undefined, t: Translate): { ok: boolean; text: string } {
+  if (!result || result.skipped) return { ok: true, text: '' }
+  if (!result.requested) return { ok: false, text: t('No notification was sent: {problem}', { problem: result.problem || t('promotion alerts are not set up on the server.') }) }
+  if (result.devices === 0) return { ok: true, text: t('No customers have turned on promotion alerts yet, so nobody was notified.') }
+  if (result.pending) return { ok: true, text: t('The notification is still being sent to {count} devices.', { count: result.devices }) }
+  const sent = result.sent ?? 0
+  const failed = result.failed ?? 0
+  if (failed === 0) return { ok: true, text: t('Notification delivered to {sent} of {count} customer devices.', { sent, count: result.devices }) }
+  return {
+    ok: sent > 0,
+    text: t('Notification reached {sent} of {count} devices. {failed} failed: {reason}', {
+      sent,
+      count: result.devices,
+      failed,
+      reason: result.errors?.[0] || t('unknown error'),
+    }),
+  }
+}
+
 // Mirrors the server's wording so the preview matches what customers receive.
 function previewNotification(form: { code: string; discountType: string; discountValue: string; minimumTotal: string | number; expiresAt: string }, message: string) {
   const amountValue = Number(form.discountValue) || 0
@@ -60,6 +100,7 @@ const icons = {
   edit: 'M4 20h4L19 9l-4-4L4 16v4Zm9-13 4 4',
   trash: 'M4 7h16M10 11v6m4-6v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
   copy: 'M9 9h10v10H9V9Zm-4 6V5h10',
+  bell: 'M6 9a6 6 0 1 1 12 0c0 4.5 1.5 6.5 2.5 7.5h-17C4.5 15.5 6 13.5 6 9Zm4 10.5a2.2 2.2 0 0 0 4 0',
   alert: 'M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
   spark: 'M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5m7 7L18 18m0-12-2.5 2.5m-7 7L6 18',
   clock: 'M12 7v5l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
@@ -130,7 +171,46 @@ export function AdminPromotionsPage() {
   const [copiedId, setCopiedId] = useState<number | null>(null)
   const [notifyCustomers, setNotifyCustomers] = useState(true)
   const [notificationMessage, setNotificationMessage] = useState('')
-  const isOverlayOpen = isEditorOpen || Boolean(codeToDelete)
+  const [pushStatus, setPushStatus] = useState<PushStatus | null>(null)
+  const [codeToNotify, setCodeToNotify] = useState<DiscountCode | null>(null)
+  const [resendMessage, setResendMessage] = useState('')
+  const [isNotifying, setIsNotifying] = useState(false)
+  const [notifyError, setNotifyError] = useState('')
+  const isOverlayOpen = isEditorOpen || Boolean(codeToDelete) || Boolean(codeToNotify)
+
+  async function refreshPushStatus() {
+    try {
+      setPushStatus(await apiRequest<PushStatus>('/admin/push/status', { token: sessionToken }))
+    } catch {
+      setPushStatus(null)
+    }
+  }
+
+  async function sendResend() {
+    if (!codeToNotify) return
+    setIsNotifying(true)
+    setNotifyError('')
+    try {
+      const result = await apiRequest<{ notification: NotificationResult }>(`/admin/discount-codes/${codeToNotify.id}/notify`, {
+        method: 'POST',
+        token: sessionToken,
+        body: { notificationMessage: resendMessage.trim() },
+      })
+      const outcome = describeNotification(result?.notification, t)
+      if (outcome.ok) {
+        setCodeToNotify(null)
+        setResendMessage('')
+        setMessage(outcome.text)
+      } else {
+        setNotifyError(outcome.text)
+      }
+      refreshPushStatus()
+    } catch (sendError) {
+      setNotifyError(sendError instanceof Error ? sendError.message : t('The notification could not be sent.'))
+    } finally {
+      setIsNotifying(false)
+    }
+  }
 
   async function refresh() {
     const result = await apiRequest<{ discountCodes: DiscountCode[] }>('/admin/discount-codes', { token: sessionToken })
@@ -147,8 +227,17 @@ export function AdminPromotionsPage() {
   }, [sessionToken])
 
   useEffect(() => {
+    let cancelled = false
+    apiRequest<PushStatus>('/admin/push/status', { token: sessionToken })
+      .then((status) => { if (!cancelled) setPushStatus(status) })
+      .catch(() => { if (!cancelled) setPushStatus(null) })
+    return () => { cancelled = true }
+  }, [sessionToken])
+
+  useEffect(() => {
     if (!message) return undefined
-    const timer = window.setTimeout(() => setMessage(''), 4000)
+    // Notification results carry details worth reading, so they stay longer.
+    const timer = window.setTimeout(() => setMessage(''), message.length > 60 ? 12000 : 4000)
     return () => window.clearTimeout(timer)
   }, [message])
 
@@ -206,14 +295,13 @@ export function AdminPromotionsPage() {
       setEditingId(null)
       setIsEditorOpen(false)
       setNotificationMessage('')
-      const notification = result?.notification
-      setMessage(!wantedAlert
-        ? t('Discount code saved.')
-        : !notification?.requested
-          ? t('Discount code saved. Promotion alerts are not set up on the server yet, so no notification was sent.')
-          : notification.devices > 0
-            ? t('Discount code saved. Sending the notification to {count} customer devices.', { count: notification.devices })
-            : t('Discount code saved. No customers have turned on promotion alerts yet.'))
+      const outcome = wantedAlert ? describeNotification(result?.notification as NotificationResult | undefined, t) : { ok: true, text: '' }
+      if (outcome.ok) setMessage(outcome.text ? `${t('Discount code saved.')} ${outcome.text}` : t('Discount code saved.'))
+      else {
+        setMessage(t('Discount code saved.'))
+        setError(outcome.text)
+      }
+      refreshPushStatus()
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Unable to save discount code.')
     } finally {
@@ -327,6 +415,16 @@ export function AdminPromotionsPage() {
         </button>
       </header>
 
+      {pushStatus && (
+        <p className={`flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold ring-1 ${pushStatus.configured ? 'bg-[#f4f7fb] text-[#33475e] ring-[#e3e9f1]' : 'bg-amber-50 text-amber-800 ring-amber-200'}`} role="status">
+          <Icon className="mt-0.5 size-4 shrink-0" path={pushStatus.configured ? icons.bell : icons.alert} />
+          <span>
+            {pushStatus.configured
+              ? t('Promotion alerts are ready. {count} customer devices have them turned on.', { count: pushStatus.devices })
+              : t('Promotion alerts are not working: {problem}', { problem: pushStatus.problem })}
+          </span>
+        </p>
+      )}
       {message && (
         <div className="flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
           <span className="flex items-center gap-2"><Icon path={icons.check} />{message}</span>
@@ -474,6 +572,11 @@ export function AdminPromotionsPage() {
                       )}
                     </div>
                     <div className="mt-auto flex justify-end gap-1 pt-3">
+                      {code.isActive && (
+                        <button aria-label={`${t('Notify customers')} ${code.code}`} className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#fff6d6] hover:text-[#8a6d00]" onClick={() => { setNotifyError(''); setResendMessage(''); setCodeToNotify(code) }} title={t('Notify customers')} type="button">
+                          <Icon path={icons.bell} />
+                        </button>
+                      )}
                       <button aria-label={`${t('Edit')} ${code.code}`} className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53]" onClick={() => edit(code)} title={t('Edit')} type="button">
                         <Icon path={icons.edit} />
                       </button>
@@ -695,6 +798,63 @@ export function AdminPromotionsPage() {
           </section>
         </div>
       )}
+
+      {codeToNotify && (() => {
+        const preview = previewNotification({
+          code: codeToNotify.code,
+          discountType: codeToNotify.discountType,
+          discountValue: String(codeToNotify.discountValue),
+          minimumTotal: codeToNotify.minimumTotal,
+          expiresAt: codeToNotify.expiresAt || '',
+        }, resendMessage)
+        return (
+          <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
+            <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setCodeToNotify(null)} tabIndex={-1} type="button" />
+            <section aria-labelledby="notify-code-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
+              <span className="grid size-12 place-items-center rounded-2xl bg-[#fff6d6] text-[#8a6d00]"><Icon className="size-6" path={icons.bell} /></span>
+              <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="notify-code-title">{t('Notify customers about {code}', { code: codeToNotify.code })}</h2>
+              <p className="mt-1 text-sm leading-6 text-[#65748a]">
+                {pushStatus?.configured
+                  ? t('Sends a notification to the {count} customer devices that have promotion alerts turned on.', { count: pushStatus.devices })
+                  : t('Promotion alerts are not working: {problem}', { problem: pushStatus?.problem || '' })}
+              </p>
+              <label className={`${labelClassName} mt-4`}>
+                <span className="flex items-baseline justify-between gap-3">
+                  <span>{t('Notification message')}</span>
+                  <span className="font-semibold tabular-nums text-[#9aa5b3]">{resendMessage.length}/{MAX_NOTIFICATION_MESSAGE}</span>
+                </span>
+                <textarea
+                  className={`${inputClassName} min-h-20 resize-y leading-6`}
+                  maxLength={MAX_NOTIFICATION_MESSAGE}
+                  onChange={(event) => setResendMessage(event.target.value)}
+                  placeholder={t('Example: Weekend treat! 20% off every sundae until Sunday.')}
+                  value={resendMessage}
+                />
+              </label>
+              <div className="mt-3 flex gap-3 rounded-2xl bg-[#202124] p-3.5 text-white">
+                <img alt="" className="size-10 shrink-0 rounded-full" height={40} src="/icons/icon-192.png" width={40} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{preview.title}</p>
+                  <p className="mt-0.5 line-clamp-3 break-words text-[13px] leading-5 text-white/80">{preview.body}</p>
+                </div>
+              </div>
+              {notifyError && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{notifyError}</p>}
+              <div className="mt-6 flex justify-end gap-2.5">
+                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6]" onClick={() => setCodeToNotify(null)} type="button">{t('Cancel')}</button>
+                <button
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-60"
+                  disabled={isNotifying || !pushStatus?.configured}
+                  onClick={sendResend}
+                  type="button"
+                >
+                  <Icon path={icons.bell} />
+                  {isNotifying ? t('Sending…') : t('Send notification')}
+                </button>
+              </div>
+            </section>
+          </div>
+        )
+      })()}
 
       {codeToDelete && (
         <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
