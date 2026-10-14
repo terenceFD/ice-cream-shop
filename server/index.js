@@ -73,7 +73,7 @@ import {
 } from './email.js'
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
 import { storeAdminCanAccess } from './admin-access.js'
-import { ImageStorageConfigurationError, imageStorageOrigin, saveUploadedImage } from './storage.js'
+import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, saveUploadedImage } from './storage.js'
 import { createSeo } from './seo.js'
 import {
   adminLockRemainingMs,
@@ -3174,6 +3174,7 @@ app.use((error, _request, response, _next) => {
 
 const server = app.listen(port, () => {
   console.log(`cold stone API listening on http://localhost:${port}`)
+  console.log(`Image uploads are stored in: ${imageStorageStatus()}`)
   reconcileStaleCheckouts().catch((error) => {
     console.error('Unable to reconcile expired checkouts:', error.message)
   })

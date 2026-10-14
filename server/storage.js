@@ -12,20 +12,58 @@ export class ImageStorageConfigurationError extends Error {
   }
 }
 
-function supabaseStorageConfig(environment = process.env) {
-  const url = environment.SUPABASE_URL?.trim().replace(/\/+$/, '')
-  const serviceKey = environment.SUPABASE_SERVICE_ROLE_KEY?.trim()
-  const bucket = environment.SUPABASE_STORAGE_BUCKET?.trim() || 'menu-images'
-  if (!url || !serviceKey) return null
-  const parsed = new URL(url)
-  if (parsed.protocol !== 'https:') {
-    throw new ImageStorageConfigurationError('SUPABASE_URL must use HTTPS.')
+function stripQuotes(value) {
+  return value?.trim().replace(/^(['"])(.*)\1$/, '$2').trim() || ''
+}
+
+/**
+ * Accepts the Supabase Project URL in the forms people usually paste: with or without
+ * "https://", with a trailing slash, or with an API path such as "/rest/v1" on the end.
+ * Returns the bare https origin, or null when the value cannot be a Supabase project address.
+ */
+export function normalizeSupabaseUrl(value) {
+  let text = stripQuotes(value)
+  if (!text) return null
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) text = `https://${text}`
+  let parsed
+  try {
+    parsed = new URL(text)
+  } catch {
+    return null
   }
-  return { url, origin: parsed.origin, serviceKey, bucket }
+  if (!['https:', 'http:'].includes(parsed.protocol) || !parsed.hostname.includes('.')) return null
+  return `https://${parsed.host}`
+}
+
+let reportedBadUrl = false
+
+function supabaseStorageConfig(environment = process.env) {
+  const rawUrl = stripQuotes(environment.SUPABASE_URL)
+  const serviceKey = stripQuotes(environment.SUPABASE_SERVICE_ROLE_KEY)
+  const bucket = stripQuotes(environment.SUPABASE_STORAGE_BUCKET) || 'menu-images'
+  if (!rawUrl || !serviceKey) return null
+  const url = normalizeSupabaseUrl(rawUrl)
+  if (!url) {
+    // Never stop the whole site over this setting; uploads report the problem instead.
+    if (!reportedBadUrl) {
+      console.error('SUPABASE_URL is not a valid Supabase Project URL, such as https://abcd1234.supabase.co. Image uploads are disabled.')
+      reportedBadUrl = true
+    }
+    return { invalid: true }
+  }
+  return { url, origin: url, serviceKey, bucket }
 }
 
 export function imageStorageOrigin(environment = process.env) {
-  return supabaseStorageConfig(environment)?.origin || null
+  const config = supabaseStorageConfig(environment)
+  return config && !config.invalid ? config.origin : null
+}
+
+/** A safe summary for logs and health checks; never includes the key. */
+export function imageStorageStatus(environment = process.env) {
+  const config = supabaseStorageConfig(environment)
+  if (!config) return 'local-disk'
+  return config.invalid ? 'invalid-supabase-url' : 'supabase'
 }
 
 let bucketReady = false
@@ -59,6 +97,11 @@ async function ensurePublicBucket({ url, serviceKey, bucket }) {
  */
 export async function saveUploadedImage({ buffer, filename, contentType, uploadDirectory, isProduction }) {
   const config = supabaseStorageConfig()
+  if (config?.invalid) {
+    throw new ImageStorageConfigurationError(
+      'SUPABASE_URL on the server is not a valid Supabase Project URL. Use the address shown in Supabase under Project Settings > API, such as https://abcd1234.supabase.co.',
+    )
+  }
   if (!config) {
     if (isProduction) {
       throw new ImageStorageConfigurationError(

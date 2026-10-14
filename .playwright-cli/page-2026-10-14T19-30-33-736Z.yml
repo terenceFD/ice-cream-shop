@@ -1,0 +1,409 @@
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e16] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e115]:
+    - banner [ref=e116]:
+      - generic [ref=e118]:
+        - link "Admin portal" [ref=e119] [cursor=pointer]:
+          - /url: /admin
+          - generic [ref=e121]:
+            - generic [ref=e122]: Cold Stone Creamery
+            - generic [ref=e123]: Administration workspace
+        - navigation "Breadcrumb" [ref=e125]:
+          - generic [ref=e129]: Catalog
+          - generic [ref=e132]: Flavors
+        - generic [ref=e133]:
+          - group "Select language" [ref=e134]:
+            - button "EN" [pressed] [ref=e135]
+            - button "FR" [ref=e136]
+          - link "View storefront" [ref=e137] [cursor=pointer]:
+            - /url: /flavors
+          - link "Notifications" [ref=e680] [cursor=pointer]:
+            - /url: /admin/notifications
+          - button "Upload Test Owner · all stores" [ref=e146]:
+            - generic [aria-hidden] [ref=e148]: U
+            - generic [ref=e150]:
+              - generic [ref=e151]: Upload Test
+              - generic [ref=e152]: Owner · all stores
+    - generic [ref=e167]:
+      - complementary "Admin dashboard" [ref=e168]:
+        - button "Choose File" [ref=e169]
+        - generic [ref=e170]:
+          - button "Add profile picture" [ref=e171]:
+            - generic [ref=e172]: U
+          - generic [ref=e177]:
+            - paragraph [ref=e178]: Upload Test
+            - paragraph [ref=e179]:
+              - generic [ref=e180]: Owner
+              - generic [ref=e181]: All stores
+          - button "Collapse sidebar" [expanded] [ref=e182]
+        - generic [ref=e185]:
+          - generic [ref=e186]:
+            - generic [ref=e187]: Jump to a page
+            - searchbox "Jump to a page" [ref=e188]
+          - navigation "Admin dashboard" [ref=e189]:
+            - generic [ref=e190]:
+              - heading "Overview" [level=2] [ref=e191]
+              - list [ref=e194]:
+                - listitem [ref=e195]:
+                  - link "Store overview" [ref=e196] [cursor=pointer]:
+                    - /url: /admin/overview
+            - generic [ref=e201]:
+              - heading "Catalog" [level=2] [ref=e202]
+              - list [ref=e205]:
+                - listitem [ref=e206]:
+                  - link "Flavors" [ref=e207] [cursor=pointer]:
+                    - /url: /admin
+                - listitem [ref=e213]:
+                  - link "Menu management" [ref=e214] [cursor=pointer]:
+                    - /url: /admin/menu
+                - listitem [ref=e219]:
+                  - link "Menu inventory" [ref=e220] [cursor=pointer]:
+                    - /url: /admin/inventory
+                - listitem [ref=e225]:
+                  - link "Categories" [ref=e226] [cursor=pointer]:
+                    - /url: /admin/categories
+                - listitem [ref=e231]:
+                  - link "Low-stock alerts" [ref=e232] [cursor=pointer]:
+                    - /url: /admin/stock-alerts
+            - generic [ref=e237]:
+              - heading "Sales" [level=2] [ref=e238]
+              - list [ref=e241]:
+                - listitem [ref=e242]:
+                  - link "Orders 0 orders not delivered" [ref=e243] [cursor=pointer]:
+                    - /url: /admin/orders
+                    - generic [ref=e247]: Orders
+                    - generic "0 orders not delivered" [ref=e248]: "0"
+                - listitem [ref=e249]:
+                  - link "Notifications 0 unread notifications" [ref=e681] [cursor=pointer]:
+                    - /url: /admin/notifications
+                    - generic [ref=e254]: Notifications
+                    - generic "0 unread notifications" [ref=e682]: "0"
+                - listitem [ref=e256]:
+                  - link "Delivered" [ref=e257] [cursor=pointer]:
+                    - /url: /admin/delivered
+                - listitem [ref=e262]:
+                  - link "Payments" [ref=e263] [cursor=pointer]:
+                    - /url: /admin/payments
+                - listitem [ref=e268]:
+                  - link "Promotions" [ref=e269] [cursor=pointer]:
+                    - /url: /admin/promotions
+                - listitem [ref=e274]:
+                  - link "Reports" [ref=e275] [cursor=pointer]:
+                    - /url: /admin/reports
+            - generic [ref=e280]:
+              - heading "Customers" [level=2] [ref=e281]
+              - list [ref=e284]:
+                - listitem [ref=e285]:
+                  - link "Customer accounts" [ref=e286] [cursor=pointer]:
+                    - /url: /admin/customers
+                - listitem [ref=e291]:
+                  - link "Customer reviews 0 pending customer reviews" [ref=e292] [cursor=pointer]:
+                    - /url: /admin/reviews
+                    - generic [ref=e296]: Customer reviews
+                    - generic "0 pending customer reviews" [ref=e297]: "0"
+                - listitem [ref=e298]:
+                  - link "Cake requests 0 new cake requests" [ref=e299] [cursor=pointer]:
+                    - /url: /admin/cake-requests
+                    - generic [ref=e303]: Cake requests
+                    - generic "0 new cake requests" [ref=e304]: "0"
+            - generic [ref=e305]:
+              - heading "Workspace" [level=2] [ref=e306]
+              - list [ref=e309]:
+                - listitem [ref=e310]:
+                  - link "Pickup & delivery" [ref=e311] [cursor=pointer]:
+                    - /url: /admin/fulfillment
+                - listitem [ref=e316]:
+                  - link "Admin accounts" [ref=e317] [cursor=pointer]:
+                    - /url: /admin/admins
+                - listitem [ref=e322]:
+                  - link "Activity log" [ref=e323] [cursor=pointer]:
+                    - /url: /admin/activity
+          - generic [ref=e328]:
+            - link "View storefront" [ref=e329] [cursor=pointer]:
+              - /url: /flavors
+            - button "Log out" [ref=e334]
+      - main [ref=e339]:
+        - generic [ref=e340]:
+          - generic [ref=e341]:
+            - generic [ref=e342]:
+              - generic [ref=e343]:
+                - generic [aria-hidden] [ref=e344]: U
+                - generic "Add profile picture" [ref=e345] [cursor=pointer]:
+                  - button "Add profile picture" [ref=e349]
+              - generic [ref=e350]:
+                - navigation "Breadcrumb" [ref=e351]: Catalog /Flavors
+                - heading "Welcome, Upload Test" [level=1] [ref=e352]
+                - paragraph [ref=e353]: Add a flavor and manage the list of flavors available in your shop.
+            - generic [ref=e354]:
+              - link "View customer shop" [ref=e355] [cursor=pointer]:
+                - /url: /flavors
+              - button "Add a flavor" [active] [ref=e358]
+          - region "Flavor inventory overview" [ref=e361]:
+            - button [ref=e362]:
+              - paragraph [ref=e367]: "8"
+              - paragraph [ref=e368]: Total flavors
+            - button "Filter 7 In stock" [ref=e369]:
+              - generic [ref=e370]: Filter
+              - paragraph [ref=e375]: "7"
+              - paragraph [ref=e376]: In stock
+            - button "Filter 0 Low stock" [ref=e377]:
+              - generic [ref=e378]: Filter
+              - paragraph [ref=e383]: "0"
+              - paragraph [ref=e384]: Low stock
+            - button "Filter 1 Sold out" [ref=e385]:
+              - generic [ref=e386]: Filter
+              - paragraph [ref=e391]: "1"
+              - paragraph [ref=e392]: Sold out
+          - generic [ref=e393]:
+            - generic [ref=e394]: 677 Units in stock
+            - generic [ref=e400]: Low stock = 10 or fewer available
+          - region [ref=e401]:
+            - generic [ref=e402]:
+              - generic [ref=e403]:
+                - generic [ref=e404]:
+                  - heading "Available flavors" [level=2] [ref=e405]
+                  - paragraph [ref=e406]: Showing 8 of 8 flavors
+                - group "View" [ref=e407]:
+                  - button "Table view" [pressed] [ref=e408]
+                  - button "Grid view" [ref=e411]
+              - generic [ref=e414]:
+                - generic [ref=e415]:
+                  - generic [ref=e416]: Search flavors
+                  - searchbox "Search flavors" [ref=e417]
+                - generic [ref=e418]:
+                  - generic [ref=e419]: Flavor tag
+                  - combobox "Flavor tag" [ref=e420]:
+                    - option "All tags" [selected]
+                    - option "A little sunshine"
+                    - option "Berry lovely"
+                    - option "chocolate"
+                    - option "Crunch time"
+                    - option "fan favorite"
+                    - option "Tropical goodness"
+                    - option "USA flavor"
+                - generic [ref=e421]:
+                  - generic [ref=e422]: Sort by
+                  - combobox "Sort by" [ref=e423]:
+                    - 'option "Sort: Name (A–Z)" [selected]'
+                    - 'option "Sort: Price, low to high"'
+                    - 'option "Sort: Price, high to low"'
+                    - 'option "Sort: Lowest stock first"'
+                - group "Stock status" [ref=e424]:
+                  - button "All" [pressed] [ref=e425]
+                  - button "In stock" [ref=e426]
+                  - button "Low stock" [ref=e427]
+                  - button "Sold out" [ref=e428]
+            - table [ref=e430]:
+              - rowgroup [ref=e431]:
+                - row [ref=e432]:
+                  - columnheader "Flavor" [ref=e433]
+                  - columnheader "Badge" [ref=e434]
+                  - columnheader "Price" [ref=e435]
+                  - columnheader "Stock" [ref=e436]
+                  - columnheader "Status" [ref=e437]
+                  - columnheader "Actions" [ref=e438]
+              - rowgroup [ref=e440]:
+                - row [ref=e441]:
+                  - cell [ref=e442]:
+                    - generic [ref=e444]:
+                      - paragraph [ref=e445]: buger cream
+                      - paragraph [ref=e446]: Real berries, real sweet
+                  - cell "fan favorite" [ref=e447]
+                  - cell "162,000 FCFA" [ref=e449]
+                  - cell "98 / 98" [ref=e450]:
+                    - generic [ref=e452]:
+                      - generic [ref=e453]: "98"
+                      - generic [ref=e454]: / 98
+                  - cell "In stock" [ref=e457]
+                  - cell [ref=e460]:
+                    - generic [ref=e461]:
+                      - link "View buger cream" [ref=e462] [cursor=pointer]:
+                        - /url: /flavor/6
+                      - button "Edit buger cream" [ref=e465]
+                      - button "Delete buger cream" [ref=e468]
+                - row [ref=e471]:
+                  - cell [ref=e472]:
+                    - generic [ref=e474]:
+                      - paragraph [ref=e475]: camcream
+                      - paragraph [ref=e476]: this is an italian cream
+                  - cell "chocolate" [ref=e477]
+                  - cell "108,000 FCFA" [ref=e479]
+                  - cell "99 / 99" [ref=e480]:
+                    - generic [ref=e482]:
+                      - generic [ref=e483]: "99"
+                      - generic [ref=e484]: / 99
+                  - cell "In stock" [ref=e487]
+                  - cell [ref=e490]:
+                    - generic [ref=e491]:
+                      - link "View camcream" [ref=e492] [cursor=pointer]:
+                        - /url: /flavor/8
+                      - button "Edit camcream" [ref=e495]
+                      - button "Delete camcream" [ref=e498]
+                - row [ref=e501]:
+                  - cell [ref=e502]:
+                    - generic [ref=e504]:
+                      - paragraph [ref=e505]: Cookies & Cream
+                      - paragraph [ref=e506]: Cookie chunks, creamy swirls
+                  - cell "Crunch time" [ref=e507]
+                  - cell "2,965 FCFA" [ref=e509]
+                  - cell "97 / 97" [ref=e510]:
+                    - generic [ref=e512]:
+                      - generic [ref=e513]: "97"
+                      - generic [ref=e514]: / 97
+                  - cell "In stock" [ref=e517]
+                  - cell [ref=e520]:
+                    - generic [ref=e521]:
+                      - link "View Cookies & Cream" [ref=e522] [cursor=pointer]:
+                        - /url: /flavor/5
+                      - button "Edit Cookies & Cream" [ref=e525]
+                      - button "Delete Cookies & Cream" [ref=e528]
+                - row [ref=e531]:
+                  - cell [ref=e532]:
+                    - generic [ref=e534]:
+                      - paragraph [ref=e535]: Mango Magic
+                      - paragraph [ref=e536]: Sun-ripened Alphonso mango
+                  - cell "Tropical goodness" [ref=e537]
+                  - cell "2,965 FCFA" [ref=e539]
+                  - cell "97 / 97" [ref=e540]:
+                    - generic [ref=e542]:
+                      - generic [ref=e543]: "97"
+                      - generic [ref=e544]: / 97
+                  - cell "In stock" [ref=e547]
+                  - cell [ref=e550]:
+                    - generic [ref=e551]:
+                      - link "View Mango Magic" [ref=e552] [cursor=pointer]:
+                        - /url: /flavor/4
+                      - button "Edit Mango Magic" [ref=e555]
+                      - button "Delete Mango Magic" [ref=e558]
+                - row [ref=e561]:
+                  - cell [ref=e562]:
+                    - generic [ref=e564]:
+                      - paragraph [ref=e565]: Strawberry Delight
+                      - paragraph [ref=e566]: Real berries, real sweet
+                  - cell "Berry lovely" [ref=e567]
+                  - cell "2,965 FCFA" [ref=e569]
+                  - cell "95 / 95" [ref=e570]:
+                    - generic [ref=e572]:
+                      - generic [ref=e573]: "95"
+                      - generic [ref=e574]: / 95
+                  - cell "In stock" [ref=e577]
+                  - cell [ref=e580]:
+                    - generic [ref=e581]:
+                      - link "View Strawberry Delight" [ref=e582] [cursor=pointer]:
+                        - /url: /flavor/3
+                      - button "Edit Strawberry Delight" [ref=e585]
+                      - button "Delete Strawberry Delight" [ref=e588]
+                - row [ref=e591]:
+                  - cell [ref=e592]:
+                    - generic [ref=e594]:
+                      - paragraph [ref=e595]: svilana
+                      - paragraph [ref=e596]: this is an italian cream
+                  - cell "Berry lovely" [ref=e597]
+                  - cell "54,000 FCFA" [ref=e599]
+                  - cell "98 / 98" [ref=e600]:
+                    - generic [ref=e602]:
+                      - generic [ref=e603]: "98"
+                      - generic [ref=e604]: / 98
+                  - cell "In stock" [ref=e607]
+                  - cell [ref=e610]:
+                    - generic [ref=e611]:
+                      - link "View svilana" [ref=e612] [cursor=pointer]:
+                        - /url: /flavor/7
+                      - button "Edit svilana" [ref=e615]
+                      - button "Delete svilana" [ref=e618]
+                - row [ref=e621]:
+                  - cell [ref=e622]:
+                    - generic [ref=e624]:
+                      - paragraph [ref=e625]: usa cream
+                      - paragraph [ref=e626]: this is a USA cream
+                  - cell "USA flavor" [ref=e627]
+                  - cell "270,000 FCFA" [ref=e629]
+                  - cell "0 / 0" [ref=e630]:
+                    - generic [ref=e632]:
+                      - generic [ref=e633]: "0"
+                      - generic [ref=e634]: / 0
+                  - cell "Sold out" [ref=e636]
+                  - cell [ref=e639]:
+                    - generic [ref=e640]:
+                      - link "View usa cream" [ref=e641] [cursor=pointer]:
+                        - /url: /flavor/9
+                      - button "Edit usa cream" [ref=e644]
+                      - button "Delete usa cream" [ref=e647]
+                - row [ref=e650]:
+                  - cell [ref=e651]:
+                    - generic [ref=e653]:
+                      - paragraph [ref=e654]: Vanilla Dream
+                      - paragraph [ref=e655]: Madagascar vanilla bean
+                  - cell "A little sunshine" [ref=e656]
+                  - cell "2,695 FCFA" [ref=e658]
+                  - cell "93 / 93" [ref=e659]:
+                    - generic [ref=e661]:
+                      - generic [ref=e662]: "93"
+                      - generic [ref=e663]: / 93
+                  - cell "In stock" [ref=e666]
+                  - cell [ref=e669]:
+                    - generic [ref=e670]:
+                      - link "View Vanilla Dream" [ref=e671] [cursor=pointer]:
+                        - /url: /flavor/1
+                      - button "Edit Vanilla Dream" [ref=e674]
+                      - button "Delete Vanilla Dream" [ref=e677]
+          - button "Close" [ref=e683]
+          - dialog [ref=e684]:
+            - generic [ref=e685]:
+              - generic [ref=e686]:
+                - paragraph [ref=e687]: Catalog setup
+                - heading "Add a flavor" [level=2] [ref=e688]
+                - paragraph [ref=e689]: New flavors are saved to the database and appear in the shop.
+              - button "Close" [ref=e690]
+            - generic [ref=e693]:
+              - generic [ref=e694]:
+                - generic [ref=e699]:
+                  - paragraph [ref=e700]: Live preview
+                  - paragraph [ref=e701]: Flavor name
+                  - paragraph [ref=e702]: Short description
+                  - generic [ref=e703]: — FCFA
+                - group "Basics" [ref=e705]:
+                  - generic [ref=e707]:
+                    - text: Flavor name
+                    - textbox "Flavor name" [ref=e708]
+                  - generic [ref=e709]:
+                    - text: Short description
+                    - textbox "Short description" [ref=e710]
+                  - generic [ref=e711]:
+                    - text: Full description
+                    - textbox "Full description" [ref=e712]
+                - group "Pricing & stock" [ref=e713]:
+                  - generic [ref=e715]:
+                    - generic [ref=e716]:
+                      - text: Price per scoop (FCFA)
+                      - generic [ref=e717]:
+                        - spinbutton "Price per scoop (FCFA) FCFA" [ref=e718]
+                        - generic: FCFA
+                    - generic [ref=e719]:
+                      - text: Starting stock
+                      - spinbutton "Starting stock" [ref=e720]: "100"
+                - group "Presentation" [ref=e721]:
+                  - generic [ref=e723]:
+                    - text: Flavor image
+                    - generic [ref=e728]:
+                      - generic [ref=e729] [cursor=pointer]:
+                        - text: Upload from device
+                        - button "Upload from device" [ref=e732]
+                      - paragraph [ref=e733]: Choose a photo or drag it here. JPEG, PNG, WebP, or GIF. Large photos are resized automatically.
+                  - generic [ref=e734]:
+                    - text: Or paste an image URL or path
+                    - textbox "Or paste an image URL or path" [ref=e735]:
+                      - /placeholder: /images/flavor.jpg
+                  - generic [ref=e736]:
+                    - generic [ref=e737]:
+                      - text: Flavor badge
+                      - textbox "Flavor badge" [ref=e738]:
+                        - /placeholder: Fan favorite
+                    - generic [ref=e739]:
+                      - text: Origin
+                      - textbox "Origin" [ref=e740]:
+                        - /placeholder: Local dairy
+              - generic [ref=e741]:
+                - button "Cancel" [ref=e742]
+                - button "Add flavor to shop" [ref=e743]

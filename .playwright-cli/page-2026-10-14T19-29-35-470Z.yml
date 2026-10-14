@@ -1,0 +1,79 @@
+- generic [ref=e2]:
+  - status "Loading your sweet moments" [ref=e3]:
+    - generic [ref=e6]:
+      - paragraph [aria-hidden] [ref=e11]:
+        - text: Cold Stone
+        - generic [ref=e12]: Creamery
+      - paragraph [ref=e13]: A little sweetness is on its way
+  - link "Skip to main content" [ref=e16] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e17]:
+    - complementary [ref=e18]:
+      - link "Return to the shop" [ref=e23] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e25]:
+          - generic [ref=e26]: Cold Stone Creamery
+          - generic [ref=e27]: Admin portal
+      - generic [ref=e28]:
+        - paragraph [ref=e29]: Staff only
+        - heading "Every scoop, order and store — in one place." [level=2] [ref=e30]
+        - list [ref=e31]:
+          - listitem [ref=e32]:
+            - generic [ref=e36]:
+              - generic [ref=e37]: Live order queue
+              - generic [ref=e38]: Follow every order from payment to delivery.
+          - listitem [ref=e39]:
+            - generic [ref=e43]:
+              - generic [ref=e44]: Store-level access
+              - generic [ref=e45]: Each store admin only sees their own branch.
+          - listitem [ref=e46]:
+            - generic [ref=e50]:
+              - generic [ref=e51]: Sales and reports
+              - generic [ref=e52]: Revenue, best sellers and stock at a glance.
+      - generic [aria-hidden] [ref=e53]:
+        - generic [ref=e54]:
+          - generic [ref=e55]:
+            - generic [ref=e56]: Kitchen pipeline
+            - generic [ref=e57]: Live
+          - generic [ref=e59]:
+            - generic [ref=e60]:
+              - paragraph [ref=e61]: Accepted
+              - paragraph [ref=e62]: "3"
+            - generic [ref=e63]:
+              - paragraph [ref=e64]: Being prepared
+              - paragraph [ref=e65]: "5"
+            - generic [ref=e66]:
+              - paragraph [ref=e67]: Ready
+              - paragraph [ref=e68]: "2"
+            - generic [ref=e69]:
+              - paragraph [ref=e70]: Out for delivery
+              - paragraph [ref=e71]: "4"
+        - generic [ref=e76]:
+          - generic [ref=e77]: "Order #128"
+          - generic [ref=e78]: Delivered
+    - main [ref=e79]:
+      - generic [ref=e80]:
+        - link "Return to the shop" [ref=e81] [cursor=pointer]:
+          - /url: /
+        - group "Select language" [ref=e84]:
+          - button "EN" [pressed] [ref=e85]
+          - button "FR" [ref=e86]
+      - generic [ref=e88]:
+        - heading "Welcome back" [level=1] [ref=e90]
+        - paragraph [ref=e91]: Sign in to the admin portal to manage your store.
+        - generic [ref=e92]:
+          - generic [ref=e93]:
+            - text: Admin email
+            - textbox "Admin email" [active] [ref=e95]:
+              - /placeholder: you@coldstone.cm
+          - generic [ref=e96]:
+            - text: Password
+            - generic [ref=e97]:
+              - textbox "Password Show password" [ref=e98]:
+                - /placeholder: ••••••••
+              - button "Show password" [ref=e99]
+          - button "Sign in to dashboard" [ref=e103]
+        - paragraph [ref=e110]:
+          - generic [ref=e111]: Protected area
+          - text: Admin credentials are created by the store owner using the server’s secure bootstrap process.
+      - paragraph [ref=e112]: Secure sign-in · Cold Stone Creamery
