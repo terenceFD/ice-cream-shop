@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fredoka:wght@400;500;600;700&display=swap');
+/* Fonts load from <link> tags in index.html, which start downloading sooner than a CSS @import. */
 @import 'tailwindcss';
 
 @theme {

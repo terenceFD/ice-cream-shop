@@ -494,6 +494,7 @@ const french: Record<string, string> = {
   'View orders': 'Voir les commandes',
   'No active orders for this store.': 'Aucune commande active pour cette boutique.',
   'Order #{id}': 'Commande nº {id}',
+  'Order #{id} is not in the active orders list. It may already be delivered or belong to another store.': 'La commande nº {id} ne figure pas parmi les commandes actives. Elle a peut-être déjà été livrée ou appartient à une autre boutique.',
   New: 'Nouveau',
   'Mark as read': 'Marquer comme lu',
   Reply: 'Répondre',

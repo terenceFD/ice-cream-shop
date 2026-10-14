@@ -75,6 +75,7 @@ import {
 } from './email.js'
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
 import { storeAdminCanAccess } from './admin-access.js'
+import { createSeo } from './seo.js'
 import {
   adminLockRemainingMs,
   clearAdminSignInFailures,
@@ -947,8 +948,39 @@ app.post('/api/checkout/session', requireCustomer, checkoutLimiter, async (reque
     if (!['http:', 'https:'].includes(frontendUrl.protocol)) {
       throw new Error('FRONTEND_URL must use HTTP or HTTPS.')
     }
+    // Emails the owner and the assigned store's admins a direct link to this order.
+    const notifyAdmins = async (paymentStatus) => {
+      try {
+        const admins = await database.prepare(`
+          SELECT email FROM admins WHERE role = 'owner' OR store_id = ? ORDER BY id
+        `).all(store.id)
+        const orderUrl = new URL('/admin/orders', frontendUrl)
+        orderUrl.searchParams.set('order', String(orderId))
+        // The dashboard link is for staff only, so never send it to the address that placed the order.
+        const recipients = admins
+          .map((admin) => admin.email)
+          .filter((adminEmail) => adminEmail.trim().toLowerCase() !== email)
+        if (!recipients.length) return
+        await sendNewOrderNotification({
+          recipients,
+          orderId,
+          customerName: name,
+          customerEmail: email,
+          storeName: store.name,
+          storeAddress: store.address,
+          items: orderItems,
+          totalCents,
+          currency,
+          orderUrl: orderUrl.toString(),
+          paymentStatus,
+        })
+      } catch (emailError) {
+        console.error(`Unable to send order notification for order #${orderId}:`, emailError.message)
+      }
+    }
     if (totalCents === 0) {
       await finalizeZeroAmountCheckout(orderId, orderItems)
+      await notifyAdmins('Paid with loyalty points')
       const receiptOrder = await database.prepare(`
         SELECT customer_email AS "customerEmail", customer_name AS "customerName",
           total_cents AS "totalCents", currency, fulfillment_type AS "fulfillmentType",
@@ -1043,25 +1075,7 @@ app.post('/api/checkout/session', requireCustomer, checkoutLimiter, async (reque
       })
       checkoutUrl = session.url
     }
-    const admins = await database.prepare(`
-      SELECT email FROM admins WHERE role = 'owner' OR store_id = ? ORDER BY id
-    `).all(store.id)
-    try {
-      await sendNewOrderNotification({
-        recipients: admins.map((admin) => admin.email),
-        orderId,
-        customerName: name,
-        customerEmail: email,
-        storeName: store.name,
-        storeAddress: store.address,
-        items: orderItems,
-        totalCents,
-        currency,
-        orderUrl: new URL('/admin/orders', frontendUrl).toString(),
-      })
-    } catch (emailError) {
-      console.error(`Unable to send order notification for order #${orderId}:`, emailError.message)
-    }
+    await notifyAdmins()
     response.status(201).json({ url: checkoutUrl })
   } catch (error) {
     if (orderId) {
@@ -3086,14 +3100,19 @@ app.delete('/api/admin/flavors/:id', requireAdmin, ownerOnly, async (request, re
 
 const frontendDirectory = fileURLToPath(new URL('../dist/', import.meta.url))
 const frontendEntry = fileURLToPath(new URL('../dist/index.html', import.meta.url))
+const seo = createSeo({ templatePath: frontendEntry, listFlavors, siteUrl: process.env.SITE_URL })
+app.get('/robots.txt', seo.robots)
+app.get('/sitemap.xml', seo.sitemap)
 if (existsSync(frontendEntry)) {
   app.use(express.static(frontendDirectory, { index: false }))
+  // Every app page gets its own title, description and link-preview tags in the HTML itself,
+  // and addresses the app does not have answer 404 so search engines drop them.
   app.use((request, response, next) => {
-    if (request.method !== 'GET' || request.path === '/api' || request.path.startsWith('/api/')) {
+    if (!['GET', 'HEAD'].includes(request.method) || request.path === '/api' || request.path.startsWith('/api/')) {
       next()
       return
     }
-    response.sendFile(frontendEntry)
+    seo.sendPage(request, response, next)
   })
 }
 

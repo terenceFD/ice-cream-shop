@@ -6,6 +6,8 @@ import { type Flavor } from "../../../flavor-context/FlavorContext";
 import { useFlavors } from "../../../flavor-context/useFlavors";
 import { useLanguage } from "../../../language/useLanguage";
 import { formatCartMoney } from "../../../cartPricing";
+import { metaForFlavor, metaForPath } from "../../../seo/pageMeta.js";
+import { useDocumentMeta } from "../../../seo/useDocumentMeta";
 
 function BagIcon({ className = "size-4" }: { className?: string }) {
   return (
@@ -46,6 +48,13 @@ export function FlavorDetailPage() {
   const addedTimer = useRef<number | undefined>(undefined);
 
   const flavor = flavors.find((item: Flavor) => item.id === Number(id));
+  useDocumentMeta(
+    flavor
+      ? { ...metaForFlavor(flavor), index: flavor.availableQuantity > 0 }
+      : loading
+        ? null
+        : { ...metaForPath("/flavor-not-found"), path: `/flavor/${id}` },
+  );
 
   useEffect(() => {
     setQuantity(1);

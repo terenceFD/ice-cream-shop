@@ -48,6 +48,7 @@ import { ScrollRevealObserver } from "../components/ScrollRevealObserver";
 import { ScrollProgress } from "../components/ScrollProgress";
 import { WebsiteLoader } from "../components/WebsiteLoader";
 import { InstallAppPrompt } from "../components/InstallAppPrompt";
+import { RouteMeta } from "../seo/RouteMeta";
 
 function SkipToMainContent() {
   const location = useLocation();
@@ -142,6 +143,7 @@ function App() {
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
                 <InstallAppPrompt />
+                <RouteMeta />
               </AdminAuthProvider>
             </AuthProvider>
           </BrowserRouter>

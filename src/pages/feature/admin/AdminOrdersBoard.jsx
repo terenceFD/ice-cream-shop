@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { apiRequest } from "../../../api/api";
 import { useAdminAuth } from "./useAdminAuth";
 import { useLanguage } from "../../../language/useLanguage";
@@ -141,6 +142,9 @@ export function AdminOrdersBoard() {
   const [sortBy, setSortBy] = useState("newest");
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [orderToDelete, setOrderToDelete] = useState(null);
+  // Order notification emails link here as /admin/orders?order=<id>.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const linkedOrderId = searchParams.get("order");
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -175,6 +179,22 @@ export function AdminOrdersBoard() {
     const timer = window.setInterval(() => setNow(Date.now()), 15_000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!linkedOrderId || isLoading) return;
+    const linkedOrder = orders.find((order) => String(order.id) === linkedOrderId);
+    if (linkedOrder) {
+      setError("");
+      setSelectedOrderId(linkedOrder.id);
+    } else {
+      setError(t("Order #{id} is not in the active orders list. It may already be delivered or belong to another store.", { id: linkedOrderId }));
+    }
+    setSearchParams((params) => {
+      const next = new URLSearchParams(params);
+      next.delete("order");
+      return next;
+    }, { replace: true });
+  }, [isLoading, linkedOrderId, orders, setSearchParams, t]);
 
   const selectedOrder = orders.find((order) => order.id === selectedOrderId) || null;
   const isOverlayOpen = Boolean(selectedOrder) || Boolean(orderToDelete);

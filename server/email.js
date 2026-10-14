@@ -56,7 +56,7 @@ export async function sendContactReply({ to, recipientName, subject, reply, admi
   })
 }
 
-export async function sendNewOrderNotification({ recipients, orderId, customerName, customerEmail, storeName, storeAddress, items, totalCents, currency, orderUrl }) {
+export async function sendNewOrderNotification({ recipients, orderId, customerName, customerEmail, storeName, storeAddress, items, totalCents, currency, orderUrl, paymentStatus = 'Awaiting payment' }) {
   if (!recipients.length) {
     throw new Error('No admin email addresses are available for order notifications.')
   }
@@ -77,7 +77,7 @@ export async function sendNewOrderNotification({ recipients, orderId, customerNa
       'A new order has been placed at Cold Stone Creamery.',
       '',
       `Order: #${orderId}`,
-      'Payment status: Awaiting payment',
+      `Payment status: ${paymentStatus}`,
       `Customer: ${customerName}`,
       `Customer email: ${customerEmail}`,
       `Assigned store: ${storeName}${storeAddress ? ` · ${storeAddress}` : ''}`,
@@ -87,7 +87,8 @@ export async function sendNewOrderNotification({ recipients, orderId, customerNa
       '',
       `Order total: ${formatAmount(totalCents)}`,
       '',
-      `View this order in the admin dashboard: ${orderUrl}`,
+      'Open this order in the admin dashboard:',
+      orderUrl,
     ].join('\n'),
   })
 }

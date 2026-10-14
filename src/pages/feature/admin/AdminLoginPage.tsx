@@ -64,7 +64,8 @@ export function AdminLoginPage() {
     setIsSubmitting(true);
     try {
       await login(email, password);
-      const destination = location.state?.from?.pathname || "/admin";
+      const from = location.state?.from;
+      const destination = from?.pathname ? `${from.pathname}${from.search || ""}${from.hash || ""}` : "/admin";
       navigate(destination, { replace: true });
     } catch (loginError) {
       setError(t(loginError instanceof Error ? loginError.message : "Unable to sign in."));
