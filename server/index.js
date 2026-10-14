@@ -2,11 +2,13 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
-import bcrypt from 'bcryptjs'
+// Native bcrypt hashes on background threads, so a rush of sign-ins does not freeze the API.
+// It reads the hashes bcryptjs created, so existing accounts keep working.
+import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import rateLimit from 'express-rate-limit'
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 import Stripe from 'stripe'
-import { randomUUID } from 'node:crypto'
+import { createHmac, randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -74,6 +76,13 @@ import {
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
 import { storeAdminCanAccess } from './admin-access.js'
 import {
+  adminLockRemainingMs,
+  clearAdminSignInFailures,
+  recordAdminSignInFailure,
+  spendPasswordCheckTime,
+  weakPasswordReason,
+} from './security.js'
+import {
   createCamPayPaymentLink,
   getCamPayTransaction,
   isCamPayMobileMoneyEnabled,
@@ -99,6 +108,9 @@ contentSecurityDirectives['img-src'] = ["'self'", 'data:', 'https://images.unspl
 contentSecurityDirectives['style-src'] = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com']
 contentSecurityDirectives['font-src'] = ["'self'", 'data:', 'https://fonts.gstatic.com']
 
+// Tokens are only ever signed with HS256; refuse any other algorithm a forged token might claim.
+const JWT_VERIFY_OPTIONS = { algorithms: ['HS256'] }
+
 if (!jwtSecret || jwtSecret.length < 32 || jwtSecret.startsWith('replace-with-')) {
   throw new Error('Set JWT_SECRET to a random value of at least 32 characters in your environment.')
 }
@@ -108,6 +120,20 @@ class PasswordVerificationError extends Error {
     super('Unable to verify the stored password hash.', { cause })
     this.name = 'PasswordVerificationError'
   }
+}
+
+// Admin tokens carry a stamp of the password they were issued under, so changing the password
+// signs out every other session. Tokens issued before stamps existed have none and stay valid until they expire.
+function adminPasswordStamp(passwordHash) {
+  return createHmac('sha256', jwtSecret).update(passwordHash).digest('base64url').slice(0, 22)
+}
+
+function signAdminToken(adminId, passwordHash) {
+  return jwt.sign({ sub: adminId, type: 'admin', pwd: adminPasswordStamp(passwordHash) }, jwtSecret, { expiresIn: '8h' })
+}
+
+function adminSessionMatchesPassword(payload, passwordHash) {
+  return !payload.pwd || payload.pwd === adminPasswordStamp(passwordHash)
 }
 
 async function verifyPassword(password, passwordHash) {
@@ -123,13 +149,39 @@ app.use(helmet({
     directives: contentSecurityDirectives,
   },
 }))
+// The site never needs these browser features, so embedded or injected content cannot ask for them.
+app.use((_request, response, next) => {
+  response.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), usb=(), payment=(), interest-cohort=()')
+  next()
+})
+const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER)
+
+class CorsOriginError extends Error {
+  constructor(origin) {
+    super(`Origin ${origin} is not allowed by CORS`)
+    this.name = 'CorsOriginError'
+  }
+}
+
+// Vite moves to 5174, 5175, … when 5173 is busy, so local development accepts
+// any loopback port instead of only the configured FRONTEND_ORIGINS.
+function isLocalDevelopmentOrigin(origin) {
+  if (isProduction) return false
+  try {
+    const { protocol, hostname } = new URL(origin)
+    return protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(hostname)
+  } catch {
+    return false
+  }
+}
+
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || frontendOrigins.includes(origin)) {
+    if (!origin || frontendOrigins.includes(origin) || isLocalDevelopmentOrigin(origin)) {
       callback(null, true)
       return
     }
-    callback(new Error('Origin is not allowed by CORS'))
+    callback(new CorsOriginError(origin))
   },
 }))
 app.use('/uploads', express.static(uploadDirectory, { fallthrough: false, index: false }))
@@ -340,25 +392,55 @@ app.get('/api/payment/methods', (_request, response) => {
   })
 })
 
+// Many customers in Cameroon share one public IP through their mobile carrier, so per-IP limits
+// alone would lock out whole groups of real shoppers at busy times. Sign-in counts only failed
+// attempts per IP and email, which still stops password guessing against an account.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
+  skipSuccessfulRequests: true,
+  keyGenerator: (request) => {
+    const email = typeof request.body?.email === 'string' ? request.body.email.trim().toLowerCase() : ''
+    return `${ipKeyGenerator(request.ip)}:${email}`
+  },
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  message: { error: 'Too many failed sign-in attempts for this account. Wait 15 minutes and try again.' },
+})
+
+// Shared by the owner password and email changes; only failed attempts count toward the limit.
+const passwordChangeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  skipSuccessfulRequests: true,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many password change attempts. Wait 15 minutes and try again.' },
+})
+
+const securityPinLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  skipSuccessfulRequests: true,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many incorrect PIN attempts. Wait 15 minutes and try again.' },
 })
 
 const signupLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  limit: 5,
+  limit: 30,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  message: { error: 'Too many accounts were created from this network. Try again in an hour.' },
 })
 
 const contactLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 5,
+  limit: 20,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  message: { error: 'Too many requests were sent from this network. Wait a few minutes and try again.' },
 })
 
 const contactReplyLimiter = rateLimit({
@@ -368,11 +450,14 @@ const contactReplyLimiter = rateLimit({
   legacyHeaders: false,
 })
 
+// Checkout requires sign-in, so it is limited per customer rather than per shared IP.
 const checkoutLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
+  keyGenerator: (request) => `customer:${request.customer.id}`,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  message: { error: 'Too many checkout attempts. Wait a few minutes and try again.' },
 })
 
 function readBearerToken(request) {
@@ -381,10 +466,24 @@ function readBearerToken(request) {
   return scheme?.toLowerCase() === 'bearer' ? token : ''
 }
 
+function formatReportDate(value) {
+  if (value instanceof Date) {
+    return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`
+  }
+  return String(value).slice(0, 10)
+}
+
 function requireOwner(request, response) {
   if (request.admin?.role === 'owner') return true
   response.status(403).json({ error: 'Only the owner account can access this area.' })
   return false
+}
+
+// Route middleware for owner-only areas. Store admins only manage their own branch's
+// orders, payments, messages, reviews and cake requests; the shared catalog, promotions,
+// fulfillment settings, customer bans and activity log belong to the owner.
+function ownerOnly(request, response, next) {
+  if (requireOwner(request, response)) next()
 }
 
 async function requireAdmin(request, response, next) {
@@ -400,7 +499,7 @@ async function requireAdmin(request, response, next) {
 
   let payload
   try {
-    payload = jwt.verify(token, jwtSecret)
+    payload = jwt.verify(token, jwtSecret, JWT_VERIFY_OPTIONS)
   } catch {
     response.status(401).json({ error: 'Admin session is invalid or expired.' })
     return
@@ -409,13 +508,18 @@ async function requireAdmin(request, response, next) {
     response.status(401).json({ error: 'Admin session is invalid.' })
     return
   }
-  const admin = await database.prepare(`
-    SELECT a.id, a.name, a.email, a.profile_picture, a.role,
+  const account = await database.prepare(`
+    SELECT a.id, a.name, a.email, a.profile_picture, a.role, a.password_hash AS "passwordHash",
       a.store_id AS "storeId", s.name AS "storeName"
     FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
   `).get(payload.sub)
-  if (!admin) {
+  if (!account) {
     response.status(401).json({ error: 'Admin session is no longer valid.' })
+    return
+  }
+  const { passwordHash, ...admin } = account
+  if (!adminSessionMatchesPassword(payload, passwordHash)) {
+    response.status(401).json({ error: 'Your password was changed. Sign in again with the new password.' })
     return
   }
   if (admin.role !== 'owner' && (!Number.isSafeInteger(admin.storeId) || !admin.storeName)) {
@@ -435,7 +539,7 @@ async function requireCustomer(request, response, next) {
   }
   let payload
   try {
-    payload = jwt.verify(token, jwtSecret)
+    payload = jwt.verify(token, jwtSecret, JWT_VERIFY_OPTIONS)
   } catch {
     response.status(401).json({ error: 'Customer session is invalid or expired.' })
     return
@@ -488,7 +592,7 @@ function normalizeFlavor(body, existing = {}) {
     allergies: Array.isArray(body.allergies)
       ? body.allergies.filter((item) => typeof item === 'string')
       : existing.allergies || [],
-    origin: typeof body.origin === 'string' && body.origin.trim() ? body.origin.trim() : 'Antixor Icy',
+    origin: typeof body.origin === 'string' && body.origin.trim() ? body.origin.trim() : 'Cold Stone Creamery',
     stock: Number.isSafeInteger(Number(body.stock)) && Number(body.stock) >= 0
       ? Number(body.stock)
       : existing.stock ?? 100,
@@ -635,7 +739,7 @@ app.post('/api/discount-codes/validate', async (request, response) => {
   response.json({ code: code.code, discountCents })
 })
 
-app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (request, response) => {
+app.post('/api/checkout/session', requireCustomer, checkoutLimiter, async (request, response) => {
   const stripe = getStripe()
   const paymentMethod = request.body.paymentMethod || 'card'
   if (!['card', 'campay'].includes(paymentMethod)) {
@@ -748,6 +852,15 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
       lineTotalCents: unitPrice * quantity,
     })
   }
+
+  // Reserve stock rows in one fixed order (flavors by id, then menu items by id). Two simultaneous
+  // checkouts with the same items in different bag order would otherwise lock rows in opposite
+  // order and deadlock. Order items are stored in this order, so later stock updates follow it too.
+  orderItems.sort((a, b) => {
+    if ((a.flavorId === null) !== (b.flavorId === null)) return a.flavorId === null ? 1 : -1
+    if (a.flavorId !== null) return a.flavorId - b.flavorId
+    return a.menuItemId < b.menuItemId ? -1 : a.menuItemId > b.menuItemId ? 1 : 0
+  })
 
   const subtotalCents = orderItems.reduce((total, item) => total + item.lineTotalCents, 0)
   let freeScoops = Math.floor(
@@ -966,6 +1079,13 @@ app.post('/api/checkout/session', checkoutLimiter, requireCustomer, async (reque
       response.status(409).json({ error: error.message })
       return
     }
+    if (error.code === '40P01' || error.code === '40001' || error.code === '53300'
+      || /timeout exceeded when trying to connect/i.test(error.message || '')) {
+      console.warn(`Database busy during checkout (${error.code || error.message}).`)
+      response.set('Retry-After', '3')
+      response.status(503).json({ error: 'The store is very busy right now. Your card was not charged. Please wait a moment and try again.' })
+      return
+    }
     console.error(`Unable to create ${paymentMethod} checkout session:`, error.message)
     response.status(502).json({ error: 'Unable to start secure checkout. Please try again.' })
   }
@@ -1135,6 +1255,11 @@ app.post('/api/auth/register', signupLimiter, async (request, response, next) =>
       response.status(400).json({ error: 'Provide your name, a valid email, and a password of 8 to 128 characters, with an optional valid profile image under 1 MB.' })
       return
     }
+    const weakReason = weakPasswordReason(password, { email, name })
+    if (weakReason) {
+      response.status(400).json({ error: weakReason })
+      return
+    }
 
     const passwordHash = await bcrypt.hash(password, 12)
     const customer = await registerCustomer({
@@ -1170,7 +1295,10 @@ app.post('/api/auth/login', loginLimiter, async (request, response, next) => {
     const email = typeof request.body.email === 'string' ? request.body.email.trim() : ''
     const password = typeof request.body.password === 'string' ? request.body.password : ''
     const customer = await database.prepare('SELECT * FROM customers WHERE email = ? COLLATE NOCASE').get(email)
-    if (!customer || !await verifyPassword(password, customer.password_hash)) {
+    const passwordMatches = customer
+      ? await verifyPassword(password, customer.password_hash)
+      : (await spendPasswordCheckTime(password), false)
+    if (!passwordMatches) {
       response.status(401).json({ error: 'The email or password is incorrect.' })
       return
     }
@@ -1205,7 +1333,7 @@ app.get('/api/auth/me', async (request, response) => {
   }
   let payload
   try {
-    payload = jwt.verify(token, jwtSecret)
+    payload = jwt.verify(token, jwtSecret, JWT_VERIFY_OPTIONS)
   } catch {
     response.status(401).json({ error: 'Customer session is invalid or expired.' })
     return
@@ -1572,7 +1700,7 @@ app.post('/api/cake-requests', contactLimiter, async (request, response) => {
   const token = readBearerToken(request)
   if (token) {
     try {
-      const payload = jwt.verify(token, jwtSecret)
+      const payload = jwt.verify(token, jwtSecret, JWT_VERIFY_OPTIONS)
       if (payload.type !== 'customer') throw new Error('Customer session is invalid.')
       const customer = await database.prepare(`
         SELECT id FROM customers WHERE id = ?
@@ -1626,7 +1754,7 @@ app.use('/api/admin', async (request, response, next) => {
   }
   let payload
   try {
-    payload = jwt.verify(token, jwtSecret)
+    payload = jwt.verify(token, jwtSecret, JWT_VERIFY_OPTIONS)
   } catch {
     response.status(401).json({ error: 'Admin session is invalid or expired.' })
     return
@@ -1636,13 +1764,18 @@ app.use('/api/admin', async (request, response, next) => {
     return
   }
   try {
-    const admin = await database.prepare(`
-      SELECT a.id, a.name, a.email, a.profile_picture, a.role,
+    const account = await database.prepare(`
+      SELECT a.id, a.name, a.email, a.profile_picture, a.role, a.password_hash AS "passwordHash",
         a.store_id AS "storeId", s.name AS "storeName"
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(payload.sub)
-    if (!admin) {
+    if (!account) {
       response.status(401).json({ error: 'Admin session is no longer valid.' })
+      return
+    }
+    const { passwordHash, ...admin } = account
+    if (!adminSessionMatchesPassword(payload, passwordHash)) {
+      response.status(401).json({ error: 'Your password was changed. Sign in again with the new password.' })
       return
     }
     if (admin.role !== 'owner' && (!Number.isSafeInteger(admin.storeId) || !admin.storeName)) {
@@ -1678,17 +1811,38 @@ app.use('/api/admin', async (request, response, next) => {
   }
 })
 
+function lockedAdminMessage(remainingMs) {
+  const minutes = Math.max(1, Math.ceil(remainingMs / 60000))
+  return `This admin account is locked for ${minutes} minute${minutes === 1 ? '' : 's'} after too many incorrect passwords. Try again later.`
+}
+
 app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
   try {
     const email = typeof request.body.email === 'string' ? request.body.email.trim() : ''
     const password = typeof request.body.password === 'string' ? request.body.password : ''
+    const lockedMs = adminLockRemainingMs(email)
+    if (lockedMs) {
+      response.status(429).json({ error: lockedAdminMessage(lockedMs) })
+      return
+    }
     const admin = await database.prepare('SELECT * FROM admins WHERE email = ? COLLATE NOCASE').get(email)
-    if (!admin || !await verifyPassword(password, admin.password_hash)) {
+    const passwordMatches = admin
+      ? await verifyPassword(password, admin.password_hash)
+      : (await spendPasswordCheckTime(password), false)
+    if (!passwordMatches) {
+      // Unknown emails count too, so a lockout does not reveal which emails are admin accounts.
+      const newLockMs = recordAdminSignInFailure(email)
+      if (newLockMs) {
+        console.warn(`Admin sign-in locked for ${email} after repeated failed attempts from ${request.ip}.`)
+        response.status(429).json({ error: lockedAdminMessage(newLockMs) })
+        return
+      }
       response.status(401).json({ error: 'The admin email or password is incorrect.' })
       return
     }
+    clearAdminSignInFailures(email)
 
-    const token = jwt.sign({ sub: admin.id, type: 'admin' }, jwtSecret, { expiresIn: '8h' })
+    const token = signAdminToken(admin.id, admin.password_hash)
     const identity = await database.prepare(`
       SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture", a.role,
         a.store_id AS "storeId", s.name AS "storeName"
@@ -1728,6 +1882,160 @@ app.put('/api/admin/profile-picture', requireAdmin, async (request, response) =>
 
   const admin = await updateAdminProfilePicture(request.admin.id, profilePicture)
   response.json({ admin })
+})
+
+// Owners confirm a 6-digit security PIN before changing their sign-in credentials. A correct PIN
+// earns a short-lived token that the password and email endpoints require.
+const SECURITY_PIN_PATTERN = /^\d{6}$/
+const CREDENTIALS_TOKEN_TTL_SECONDS = 10 * 60
+
+function isEasilyGuessedPin(pin) {
+  const digits = [...pin].map(Number)
+  const steps = new Set(digits.slice(1).map((digit, index) => digit - digits[index]))
+  return steps.size === 1 && [0, 1, -1].includes([...steps][0])
+}
+
+function hasValidCredentialsToken(request) {
+  const pinToken = typeof request.body.pinToken === 'string' ? request.body.pinToken : ''
+  try {
+    const payload = jwt.verify(pinToken, jwtSecret, JWT_VERIFY_OPTIONS)
+    return payload.type === 'admin-credentials' && payload.sub === request.admin.id
+  } catch {
+    return false
+  }
+}
+
+function requireCredentialsToken(request, response) {
+  if (hasValidCredentialsToken(request)) return true
+  response.status(403).json({ error: 'Confirm your security PIN to continue.', code: 'PIN_REQUIRED' })
+  return false
+}
+
+app.get('/api/admin/security-pin', requireAdmin, async (request, response) => {
+  if (!requireOwner(request, response)) return
+  const account = await database.prepare('SELECT security_pin_hash FROM admins WHERE id = ?').get(request.admin.id)
+  response.json({ hasPin: Boolean(account?.security_pin_hash) })
+})
+
+app.post('/api/admin/security-pin', requireAdmin, async (request, response, next) => {
+  if (!requireOwner(request, response)) return
+  try {
+    const pin = typeof request.body.pin === 'string' ? request.body.pin : ''
+    if (!SECURITY_PIN_PATTERN.test(pin)) {
+      response.status(400).json({ error: 'Your PIN must be exactly 6 digits.' })
+      return
+    }
+    if (isEasilyGuessedPin(pin)) {
+      response.status(400).json({ error: 'Avoid repeated or sequential digits such as 111111 or 123456.' })
+      return
+    }
+    const account = await database.prepare('SELECT security_pin_hash FROM admins WHERE id = ?').get(request.admin.id)
+    if (account?.security_pin_hash) {
+      response.status(409).json({ error: 'A security PIN is already set for this account.' })
+      return
+    }
+    await database.prepare('UPDATE admins SET security_pin_hash = ? WHERE id = ?')
+      .run(await bcrypt.hash(pin, 12), request.admin.id)
+    response.status(201).json({ hasPin: true })
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.post('/api/admin/security-pin/verify', securityPinLimiter, requireAdmin, async (request, response, next) => {
+  if (!requireOwner(request, response)) return
+  try {
+    const pin = typeof request.body.pin === 'string' ? request.body.pin : ''
+    const account = await database.prepare('SELECT security_pin_hash FROM admins WHERE id = ?').get(request.admin.id)
+    if (!account?.security_pin_hash) {
+      response.status(409).json({ error: 'Create a security PIN first.', code: 'PIN_NOT_SET' })
+      return
+    }
+    if (!SECURITY_PIN_PATTERN.test(pin) || !await verifyPassword(pin, account.security_pin_hash)) {
+      response.status(400).json({ error: 'That PIN is incorrect.' })
+      return
+    }
+    const pinToken = jwt.sign({ sub: request.admin.id, type: 'admin-credentials' }, jwtSecret, { expiresIn: CREDENTIALS_TOKEN_TTL_SECONDS })
+    response.json({ pinToken, expiresIn: CREDENTIALS_TOKEN_TTL_SECONDS })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Owners change their own password. Wrong-password replies use 400, not 401, so the
+// dashboard keeps the current session; the new token keeps this session signed in while others end.
+app.put('/api/admin/password', passwordChangeLimiter, requireAdmin, async (request, response, next) => {
+  if (!requireOwner(request, response) || !requireCredentialsToken(request, response)) return
+  try {
+    const currentPassword = typeof request.body.currentPassword === 'string' ? request.body.currentPassword : ''
+    const newPassword = typeof request.body.newPassword === 'string' ? request.body.newPassword : ''
+    if (newPassword.length < 8 || newPassword.length > 128) {
+      response.status(400).json({ error: 'Choose a new password of 8 to 128 characters.' })
+      return
+    }
+    const weakReason = weakPasswordReason(newPassword, { email: request.admin.email, name: request.admin.name })
+    if (weakReason) {
+      response.status(400).json({ error: weakReason })
+      return
+    }
+    const account = await database.prepare('SELECT password_hash FROM admins WHERE id = ?').get(request.admin.id)
+    if (!account || !await verifyPassword(currentPassword, account.password_hash)) {
+      response.status(400).json({ error: 'Your current password is incorrect.' })
+      return
+    }
+    if (await verifyPassword(newPassword, account.password_hash)) {
+      response.status(400).json({ error: 'Choose a new password that is different from your current one.' })
+      return
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12)
+    await database.prepare('UPDATE admins SET password_hash = ? WHERE id = ?').run(passwordHash, request.admin.id)
+    response.json({ token: signAdminToken(request.admin.id, passwordHash) })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Owners change their own sign-in email after confirming their password.
+app.put('/api/admin/email', passwordChangeLimiter, requireAdmin, async (request, response, next) => {
+  if (!requireOwner(request, response) || !requireCredentialsToken(request, response)) return
+  try {
+    const currentPassword = typeof request.body.currentPassword === 'string' ? request.body.currentPassword : ''
+    const newEmail = typeof request.body.newEmail === 'string' ? request.body.newEmail.trim().toLowerCase() : ''
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail) || newEmail.length > 254) {
+      response.status(400).json({ error: 'Enter a valid email address.' })
+      return
+    }
+    if (newEmail === request.admin.email.toLowerCase()) {
+      response.status(400).json({ error: 'This is already your sign-in email.' })
+      return
+    }
+    const account = await database.prepare('SELECT password_hash FROM admins WHERE id = ?').get(request.admin.id)
+    if (!account || !await verifyPassword(currentPassword, account.password_hash)) {
+      response.status(400).json({ error: 'Your current password is incorrect.' })
+      return
+    }
+    const existing = await database.prepare('SELECT id FROM admins WHERE LOWER(email) = ? AND id <> ?')
+      .get(newEmail, request.admin.id)
+    if (existing) {
+      response.status(409).json({ error: 'An admin account already uses that email address.' })
+      return
+    }
+
+    await database.prepare('UPDATE admins SET email = ? WHERE id = ?').run(newEmail, request.admin.id)
+    const admin = await database.prepare(`
+      SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture", a.role,
+        a.store_id AS "storeId", s.name AS "storeName"
+      FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
+    `).get(request.admin.id)
+    response.json({ admin })
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      response.status(409).json({ error: 'An admin account already uses that email address.' })
+      return
+    }
+    next(error)
+  }
 })
 
 app.get('/api/admin/admins', requireAdmin, async (request, response) => {
@@ -1779,7 +2087,7 @@ app.get('/api/admin/customers', requireAdmin, async (_request, response) => {
   response.json({ customers })
 })
 
-app.patch('/api/admin/customers/:id/ban', requireAdmin, async (request, response) => {
+app.patch('/api/admin/customers/:id/ban', requireAdmin, ownerOnly, async (request, response) => {
   const id = Number(request.params.id)
   const isBanned = request.body.isBanned
   if (!Number.isSafeInteger(id) || id < 1 || typeof isBanned !== 'boolean') {
@@ -2163,6 +2471,11 @@ app.post('/api/admin/admins', requireAdmin, async (request, response, next) => {
       response.status(400).json({ error: 'Profile pictures must be image data smaller than 1 MB.' })
       return
     }
+    const weakReason = weakPasswordReason(password, { email: email.trim(), name })
+    if (weakReason) {
+      response.status(400).json({ error: weakReason })
+      return
+    }
     const passwordHash = await bcrypt.hash(password, 12)
     const admin = await createAdminAccount({
       name: name.trim(),
@@ -2185,7 +2498,7 @@ app.post('/api/admin/logout', requireAdmin, (_request, response) => {
   response.status(204).end()
 })
 
-app.get('/api/admin/fulfillment-settings', requireAdmin, async (_request, response) => {
+app.get('/api/admin/fulfillment-settings', requireAdmin, ownerOnly, async (_request, response) => {
   const zones = (await database.prepare(`
     SELECT z.id, z.location, z.pickup_enabled AS "pickupEnabled",
       z.delivery_enabled AS "deliveryEnabled", z.delivery_fee AS "deliveryFee",
@@ -2207,7 +2520,7 @@ app.get('/api/admin/fulfillment-settings', requireAdmin, async (_request, respon
   response.json({ zones, slots })
 })
 
-app.put('/api/admin/fulfillment-zones', requireAdmin, async (request, response) => {
+app.put('/api/admin/fulfillment-zones', requireAdmin, ownerOnly, async (request, response) => {
   const zones = request.body.zones
   if (!Array.isArray(zones) || zones.length > 50) {
     response.status(400).json({ error: 'Provide a valid list of delivery zones.' })
@@ -2230,7 +2543,7 @@ app.put('/api/admin/fulfillment-zones', requireAdmin, async (request, response) 
   response.json({ zones: updated })
 })
 
-app.put('/api/admin/fulfillment-slots', requireAdmin, async (request, response) => {
+app.put('/api/admin/fulfillment-slots', requireAdmin, ownerOnly, async (request, response) => {
   const slots = request.body.slots
   const timeMinutes = (value) => {
     const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value || '')
@@ -2252,7 +2565,7 @@ app.put('/api/admin/fulfillment-slots', requireAdmin, async (request, response) 
   response.json({ slots: updated })
 })
 
-app.get('/api/admin/activity', requireAdmin, async (_request, response) => {
+app.get('/api/admin/activity', requireAdmin, ownerOnly, async (_request, response) => {
   const activity = await database.prepare(`
     SELECT id, admin_name AS "adminName", action, method, path, created_at AS "createdAt"
     FROM admin_activity ORDER BY id DESC LIMIT 200
@@ -2334,7 +2647,7 @@ app.patch('/api/admin/reviews/:id/approval', requireAdmin, async (request, respo
   response.json({ id, isApproved: request.body.isApproved })
 })
 
-app.get('/api/admin/stock-alerts', requireAdmin, async (_request, response) => {
+app.get('/api/admin/stock-alerts', requireAdmin, ownerOnly, async (_request, response) => {
   const [inventoryRows, customItems] = await Promise.all([
     listMenuInventory(),
     listCustomMenuItems(),
@@ -2358,7 +2671,7 @@ app.get('/api/admin/stock-alerts', requireAdmin, async (_request, response) => {
   response.json({ items })
 })
 
-app.post('/api/admin/flavors', requireAdmin, async (request, response, next) => {
+app.post('/api/admin/flavors', requireAdmin, ownerOnly, async (request, response, next) => {
   try {
     const flavor = normalizeFlavor(request.body)
     if (!flavor) {
@@ -2392,7 +2705,7 @@ async function normalizeCustomMenuItem(body) {
   return { categoryTitle, name, detail, image, priceXaf, stock, isAvailable }
 }
 
-app.get('/api/admin/menu-categories', requireAdmin, async (_request, response) => {
+app.get('/api/admin/menu-categories', requireAdmin, ownerOnly, async (_request, response) => {
   response.json({ categories: await listMenuCategories() })
 })
 
@@ -2416,7 +2729,7 @@ async function normalizeMenuCategory(body, existing = null) {
   }
 }
 
-app.post('/api/admin/menu-categories', requireAdmin, async (request, response, next) => {
+app.post('/api/admin/menu-categories', requireAdmin, ownerOnly, async (request, response, next) => {
   const category = await normalizeMenuCategory(request.body)
   if (!category) {
     response.status(400).json({ error: 'Provide a category name, valid image path, and non-negative order.' })
@@ -2433,7 +2746,7 @@ app.post('/api/admin/menu-categories', requireAdmin, async (request, response, n
   }
 })
 
-app.put('/api/admin/menu-categories/:id', requireAdmin, async (request, response, next) => {
+app.put('/api/admin/menu-categories/:id', requireAdmin, ownerOnly, async (request, response, next) => {
   const id = Number(request.params.id)
   const existing = (await listMenuCategories()).find((category) => category.id === id)
   if (!existing) {
@@ -2456,7 +2769,7 @@ app.put('/api/admin/menu-categories/:id', requireAdmin, async (request, response
   }
 })
 
-app.delete('/api/admin/menu-categories/:id', requireAdmin, async (request, response) => {
+app.delete('/api/admin/menu-categories/:id', requireAdmin, ownerOnly, async (request, response) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
     response.status(400).json({ error: 'Menu category ID is invalid.' })
@@ -2474,7 +2787,7 @@ app.delete('/api/admin/menu-categories/:id', requireAdmin, async (request, respo
   response.status(204).end()
 })
 
-app.put('/api/admin/menu-inventory', requireAdmin, async (request, response) => {
+app.put('/api/admin/menu-inventory', requireAdmin, ownerOnly, async (request, response) => {
   const itemId = typeof request.body.itemId === 'string' ? request.body.itemId : ''
   const stock = Number(request.body.stock)
   const lowStockThreshold = Number(request.body.lowStockThreshold)
@@ -2501,7 +2814,7 @@ app.put('/api/admin/menu-inventory', requireAdmin, async (request, response) => 
   response.json({ itemId, stock, isAvailable, dietaryTags, lowStockThreshold })
 })
 
-app.post('/api/admin/uploads', requireAdmin, async (request, response) => {
+app.post('/api/admin/uploads', requireAdmin, ownerOnly, async (request, response) => {
   const dataUrl = typeof request.body.dataUrl === 'string' ? request.body.dataUrl : ''
   const match = /^data:image\/(jpeg|png|webp|gif);base64,([A-Za-z0-9+/]+={0,2})$/.exec(dataUrl)
   if (!match) {
@@ -2530,7 +2843,7 @@ app.post('/api/admin/uploads', requireAdmin, async (request, response) => {
   response.status(201).json({ image: `/uploads/${filename}` })
 })
 
-app.get('/api/admin/discount-codes', requireAdmin, async (_request, response) => {
+app.get('/api/admin/discount-codes', requireAdmin, ownerOnly, async (_request, response) => {
   response.json({ discountCodes: await listDiscountCodes() })
 })
 
@@ -2561,7 +2874,7 @@ function normalizeDiscountCode(body, existing = null) {
   }
 }
 
-app.post('/api/admin/discount-codes', requireAdmin, async (request, response, next) => {
+app.post('/api/admin/discount-codes', requireAdmin, ownerOnly, async (request, response, next) => {
   const code = normalizeDiscountCode(request.body)
   if (!code) {
     response.status(400).json({ error: 'Provide a unique code, valid discount amount, minimum total, and optional expiry.' })
@@ -2578,7 +2891,7 @@ app.post('/api/admin/discount-codes', requireAdmin, async (request, response, ne
   }
 })
 
-app.put('/api/admin/discount-codes/:id', requireAdmin, async (request, response, next) => {
+app.put('/api/admin/discount-codes/:id', requireAdmin, ownerOnly, async (request, response, next) => {
   const id = Number(request.params.id)
   const existing = (await listDiscountCodes()).find((code) => code.id === id)
   if (!existing) {
@@ -2601,7 +2914,7 @@ app.put('/api/admin/discount-codes/:id', requireAdmin, async (request, response,
   }
 })
 
-app.delete('/api/admin/discount-codes/:id', requireAdmin, async (request, response) => {
+app.delete('/api/admin/discount-codes/:id', requireAdmin, ownerOnly, async (request, response) => {
   if (!(await deleteDiscountCode(Number(request.params.id)))) {
     response.status(404).json({ error: 'Discount code not found.' })
     return
@@ -2650,11 +2963,13 @@ app.get('/api/admin/reports', requireAdmin, async (request, response) => {
     summary,
     popularItems,
     ...(request.admin.role === 'owner' ? { lowStock } : {}),
-    recentSales,
+    // Postgres returns DATE values as local-midnight Date objects; send plain YYYY-MM-DD
+    // so browsers in any timezone place each day correctly.
+    recentSales: recentSales.map((row) => ({ ...row, date: formatReportDate(row.date) })),
   })
 })
 
-app.post('/api/admin/menu-items', requireAdmin, async (request, response, next) => {
+app.post('/api/admin/menu-items', requireAdmin, ownerOnly, async (request, response, next) => {
   const itemDetails = await normalizeCustomMenuItem(request.body)
   if (!itemDetails) {
     response.status(400).json({ error: 'Choose a category and provide a name, description, valid image path, and whole-number price greater than zero.' })
@@ -2672,7 +2987,7 @@ app.post('/api/admin/menu-items', requireAdmin, async (request, response, next) 
   }
 })
 
-app.put('/api/admin/menu-items/:id', requireAdmin, async (request, response, next) => {
+app.put('/api/admin/menu-items/:id', requireAdmin, ownerOnly, async (request, response, next) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
     response.status(400).json({ error: 'Menu item ID is invalid.' })
@@ -2707,7 +3022,7 @@ app.put('/api/admin/menu-items/:id', requireAdmin, async (request, response, nex
   }
 })
 
-app.delete('/api/admin/menu-items/:id', requireAdmin, async (request, response, next) => {
+app.delete('/api/admin/menu-items/:id', requireAdmin, ownerOnly, async (request, response, next) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
     response.status(400).json({ error: 'Menu item ID is invalid.' })
@@ -2729,7 +3044,7 @@ app.delete('/api/admin/menu-items/:id', requireAdmin, async (request, response, 
   }
 })
 
-app.put('/api/admin/flavors/:id', requireAdmin, async (request, response, next) => {
+app.put('/api/admin/flavors/:id', requireAdmin, ownerOnly, async (request, response, next) => {
   try {
     const existing = await findFlavor(Number(request.params.id))
     if (!existing) {
@@ -2751,7 +3066,7 @@ app.put('/api/admin/flavors/:id', requireAdmin, async (request, response, next) 
   }
 })
 
-app.delete('/api/admin/flavors/:id', requireAdmin, async (request, response, next) => {
+app.delete('/api/admin/flavors/:id', requireAdmin, ownerOnly, async (request, response, next) => {
   try {
     const flavor = await findFlavor(Number(request.params.id))
     if (flavor?.reservedStock > 0) {
@@ -2799,9 +3114,25 @@ app.use((error, _request, response, _next) => {
     response.status(503).json({ error: 'Email delivery is not configured. Contact the store owner to finish setting up email delivery.' })
     return
   }
+  if (error instanceof CorsOriginError) {
+    console.warn(error.message)
+    response.status(403).json({ error: 'This website address is not allowed to use the store API. Add it to FRONTEND_ORIGINS.' })
+    return
+  }
   if (error instanceof PasswordVerificationError) {
     console.error(error)
     response.status(500).json({ error: 'Sign-in could not verify the account password. Contact the store owner to check or reset the account.' })
+    return
+  }
+  // Busy-database errors are temporary: every database connection was in use, Postgres refused
+  // a new connection, or it cancelled a transaction to break a lock conflict. Retrying works.
+  if (error?.code === '40P01' || error?.code === '40001' || error?.code === '53300'
+    || /timeout exceeded when trying to connect/i.test(error?.message || '')) {
+    console.warn(`Database busy (${error.code || error.message}) on ${_request.method} ${_request.path}`)
+    if (!response.headersSent) {
+      response.set('Retry-After', '3')
+      response.status(503).json({ error: 'The store is very busy right now. Please wait a moment and try again.' })
+    }
     return
   }
   console.error(error)

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCart } from "../../../useCart";
 import { type Flavor } from "../../../flavor-context/FlavorContext";
@@ -7,11 +7,22 @@ import { ArrowIcon, Footer, Header } from "../../../components/Layout";
 import { useLanguage } from "../../../language/useLanguage";
 import { formatCartMoney } from "../../../cartPricing";
 
+function BagIcon({ className = "size-4" }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+      <path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
 export function FlavorsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { addToCart } = useCart();
   const { flavors, loading, error } = useFlavors();
   const { t, language } = useLanguage();
+  const [addedId, setAddedId] = useState<Flavor["id"] | null>(null);
+  const addedTimer = useRef<number | undefined>(undefined);
   const availableFlavors = flavors.filter(
     (flavor: Flavor) => flavor.availableQuantity > 0,
   );
@@ -31,214 +42,333 @@ export function FlavorsPage() {
       );
     return matchesSearch && (!selectedTag || flavor.tag === selectedTag);
   });
+  const lowestPrice = availableFlavors.length
+    ? Math.min(...availableFlavors.map((flavor) => flavor.price))
+    : null;
+  const hasFilters = Boolean(search.trim() || selectedTag);
   const clearFilters = () => {
     setSearch("");
     setSearchParams({}, { replace: true });
   };
+  const selectTag = (tag: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (tag) nextParams.set("tag", tag);
+    else nextParams.delete("tag");
+    setSearchParams(nextParams, { replace: true });
+  };
+  const addFlavor = (flavor: Flavor) => {
+    if (!addToCart(flavor)) return;
+    setAddedId(flavor.id);
+    window.clearTimeout(addedTimer.current);
+    addedTimer.current = window.setTimeout(() => setAddedId(null), 1800);
+  };
+
+  useEffect(() => () => window.clearTimeout(addedTimer.current), []);
 
   return (
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
 
       <main>
-        <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
-          <div aria-hidden="true" className="absolute -right-28 -top-40 size-[32rem] rounded-full border-[76px] border-white/[0.04]" />
-          <div className="relative mx-auto grid max-w-[1320px] items-center gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[1fr_0.8fr] lg:px-12 lg:py-20">
-            <div className="max-w-2xl">
-              <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-white/65 transition hover:text-white">
-                <span aria-hidden="true">←</span> {t("Home")}
-              </Link>
-              <p className="mt-7 inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
+        {/* Hero */}
+        <section className="relative isolate overflow-hidden border-b border-[#ebe7dc]">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-48 -top-48 -z-10 size-[36rem] rounded-full bg-[#ffdc32]/15 blur-3xl" />
+          <div className="mx-auto grid max-w-[1320px] items-center gap-12 px-5 pb-16 pt-10 sm:px-8 sm:pt-14 lg:grid-cols-12 lg:gap-10 lg:px-12 lg:pb-20 lg:pt-16">
+            <div className="lg:col-span-6">
+              <nav aria-label={t("Breadcrumb")} className="flex items-center gap-2 text-xs font-bold text-[#7b8796]">
+                <Link className="transition hover:text-[#092a53]" to="/">{t("Home")}</Link>
+                <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
+                <span aria-current="page" className="text-[#092a53]">{t("Online shop catalog")}</span>
+              </nav>
+              <p className="mt-8 inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                 {t("This website's catalog")}
               </p>
-              <h1 className="mt-4 font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+              <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-[#092a53] sm:text-6xl lg:text-7xl">
                 {t("Online shop catalog")}
               </h1>
-              <p className="mt-4 max-w-xl text-sm leading-6 text-white/75 sm:text-base sm:leading-7">
+              <p className="mt-6 max-w-xl text-base leading-7 text-[#52647b] sm:text-lg sm:leading-8">
                 {t("Browse products entered by this website's operator. This catalog is separate from Cold Stone Creamery Cameroon and is not a confirmed local menu or price list.")}
               </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <a className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-bold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]" href="#shop-products">
+              <div className="mt-9 flex flex-wrap items-center gap-3">
+                <a
+                  className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-7 py-4 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  href="#shop-products"
+                >
                   {t("Find your flavors")} <span aria-hidden="true">↓</span>
                 </a>
-                <Link className="inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10" to="/cart">
-                  {t("Go to your bag")} <ArrowIcon />
+                <Link
+                  className="inline-flex items-center gap-2 rounded-full border border-[#d9d4c7] bg-white px-7 py-4 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:border-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  to="/cart"
+                >
+                  <BagIcon /> {t("Go to your bag")}
                 </Link>
               </div>
+              {!loading && !error && availableFlavors.length > 0 && (
+                <dl className="mt-12 flex flex-wrap gap-x-10 gap-y-4 border-t border-[#e9e5da] pt-6">
+                  <div>
+                    <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8792a0]">{t("Flavors")}</dt>
+                    <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums text-[#092a53]">{availableFlavors.length}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8792a0]">{t("Tags")}</dt>
+                    <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums text-[#092a53]">{flavorTags.length}</dd>
+                  </div>
+                  {lowestPrice !== null && (
+                    <div>
+                      <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8792a0]">{t("Starting from")}</dt>
+                      <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums text-[#a48700]">{formatCartMoney(lowestPrice, "xaf", language)}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
             </div>
-            <div className="relative mx-auto w-full max-w-[500px] pb-4 pr-4 sm:pb-6 sm:pr-6">
-              <div aria-hidden="true" className="absolute bottom-0 right-0 h-[68%] w-[72%] rounded-[28px] bg-[#ffdc32]" />
-              <img alt={t("Colorful ice cream scoops ready to share")} className="relative z-10 aspect-[1.22] w-full rounded-[26px] object-cover shadow-[0_24px_60px_rgba(0,0,0,0.25)] sm:rounded-[32px]" src="/ice-images/ice-4.webp" />
-              <div className="absolute -bottom-1 left-0 z-20 flex items-center gap-3 rounded-2xl border border-[#e7e3d9] bg-white p-3 text-[#102c50] shadow-lg sm:-left-4 sm:p-4">
-                <img alt="" aria-hidden="true" className="size-12 rounded-xl object-cover sm:size-14" src="/ice-images/ice-3.webp" />
-                <div>
-                  <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#806a00]">{t("More scoops, more smiles")}</p>
-                  <p className="mt-1 text-xs font-bold sm:text-sm">{t("Pick any three scoops and the lowest-priced one is on us.")}</p>
+
+            <div className="relative lg:col-span-6">
+              <div className="grid grid-cols-5 grid-rows-2 gap-3 sm:gap-4 [aspect-ratio:5/4]">
+                <figure className="col-span-3 row-span-2 overflow-hidden rounded-[30px] bg-[#fff3b8] shadow-[0_28px_64px_rgba(9,42,83,0.18)]">
+                  <img alt={t("Colorful ice cream scoops ready to share")} className="size-full object-cover transition duration-700 hover:scale-[1.03]" src="/images/hero-ice-cream.jpg" />
+                </figure>
+                <figure className="col-span-2 overflow-hidden rounded-[24px] bg-[#fff3b8] shadow-[0_16px_36px_rgba(9,42,83,0.12)]">
+                  <img alt="" aria-hidden="true" className="size-full object-cover transition duration-700 hover:scale-[1.05]" src="/ice-images/ice-3.webp" />
+                </figure>
+                <figure className="col-span-2 overflow-hidden rounded-[24px] bg-[#fff3b8] shadow-[0_16px_36px_rgba(9,42,83,0.12)]">
+                  <img alt="" aria-hidden="true" className="size-full object-cover transition duration-700 hover:scale-[1.05]" src="/ice-images/ice-6.webp" />
+                </figure>
+              </div>
+              <div className="absolute -bottom-6 left-4 flex max-w-[300px] items-center gap-3 rounded-2xl border border-[#eeeae1] bg-white/95 p-4 shadow-[0_18px_40px_rgba(9,42,83,0.14)] backdrop-blur-sm sm:left-8">
+                <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#ffdc32] font-display text-sm font-extrabold text-[#092a53]">3×</span>
+                <div className="leading-tight">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t("More scoops, more smiles")}</p>
+                  <p className="mt-1 text-xs font-bold leading-4 text-[#092a53]">{t("Pick any three scoops and the lowest-priced one is on us.")}</p>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <div className="mx-auto max-w-[1320px] px-5 py-8 sm:px-8 sm:py-12 lg:px-12">
-          <p className="mb-8 rounded-2xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-3.5 text-sm leading-6 text-[#624f00] sm:px-5">
-            {t("Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
-          </p>
-
-          <section aria-labelledby="shop-products-heading" id="shop-products">
-            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div className="mx-auto max-w-[1320px] px-5 py-12 sm:px-8 sm:py-16 lg:px-12">
+          <section aria-labelledby="shop-products-heading" className="scroll-mt-4" id="shop-products">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t("Find your flavors")}</p>
-                <h2 className="mt-1 font-display text-2xl font-extrabold tracking-tight sm:text-3xl" id="shop-products-heading">{t("A scoop for every mood")}</h2>
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                  <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
+                  {t("Find your flavors")}
+                </p>
+                <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight text-[#092a53] sm:text-5xl" id="shop-products-heading">
+                  {t("A scoop for every mood")}
+                </h2>
               </div>
               {!loading && !error && (
-                <p className="text-sm font-semibold text-[#65748a]">{t("{count} flavors available", { count: filteredFlavors.length })}</p>
+                <p aria-live="polite" className="rounded-full border border-[#ebe7dc] bg-white px-4 py-2 text-xs font-bold text-[#65748a]">
+                  {t("{count} flavors available", { count: filteredFlavors.length })}
+                </p>
               )}
             </div>
 
-            <div className="mb-6 grid gap-3 rounded-[22px] border border-[#e7e3d9] bg-white p-4 shadow-[0_8px_28px_rgba(18,44,80,0.05)] sm:grid-cols-[minmax(0,1fr)_minmax(220px,0.45fr)] sm:p-5">
-              <label className="block text-xs font-bold text-[#52647b]">
-                {t("Search flavors")}
-                <span className="relative mt-1.5 block">
-                  <svg aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8792a0]" fill="none" viewBox="0 0 20 20">
-                    <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="m13 13 4 4" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
-                  </svg>
-                  <input
-                    className="w-full rounded-xl border border-[#e7e3d9] bg-[#fbfaf5] py-3 pl-10 pr-4 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#8792a0] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40"
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder={t("Search by flavor name or description")}
-                    type="search"
-                    value={search}
-                  />
-                </span>
-              </label>
-              <label className="block text-xs font-bold text-[#52647b]">
-                {t("Flavor tag")}
-                <select
-                  className="mt-1.5 w-full rounded-xl border border-[#e7e3d9] bg-[#fbfaf5] px-4 py-3 text-sm font-normal text-[#102c50] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40"
-                  onChange={(event) => {
-                    const nextParams = new URLSearchParams(searchParams);
-                    if (event.target.value) nextParams.set("tag", event.target.value);
-                    else nextParams.delete("tag");
-                    setSearchParams(nextParams, { replace: true });
-                  }}
-                  value={selectedTag}
-                >
-                  <option value="">{t("All tags")}</option>
-                  {flavorTags.map((tag) => (
-                    <option key={tag} value={tag}>{t(tag)}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            {flavorTags.length > 0 && (
-              <div className="mb-6 flex flex-wrap gap-2" aria-label={t("Flavor tag")}>
-                <button
-                  className={`rounded-full px-4 py-2 text-xs font-bold transition ${selectedTag ? "border border-[#d9d6cc] bg-white text-[#65748a] hover:border-[#092a53] hover:text-[#092a53]" : "bg-[#092a53] text-white"}`}
-                  onClick={() => setSearchParams({}, { replace: true })}
-                  type="button"
-                >
-                  {t("All tags")}
-                </button>
-                {flavorTags.map((tag) => (
+            {/* Search + tags */}
+            <div className="relative z-30 mb-10 rounded-[28px] bg-white p-3 shadow-[0_1px_0_rgba(9,42,83,0.04),0_14px_40px_rgba(9,42,83,0.07)] ring-1 ring-[#ebe7dc] sm:p-4">
+              <label className="group relative flex items-center rounded-[20px] bg-[#fbfaf5] transition focus-within:bg-white focus-within:ring-1 focus-within:ring-[#c9b24a]">
+                <span className="sr-only">{t("Search flavors")}</span>
+                <svg aria-hidden="true" className="pointer-events-none absolute left-5 size-5 text-[#8792a0] transition group-focus-within:text-[#092a53]" fill="none" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+                  <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                </svg>
+                <input
+                  className="w-full bg-transparent py-4 pl-14 pr-12 text-base font-semibold text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#8792a0] [&::-webkit-search-cancel-button]:hidden"
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder={t("Search by flavor name or description")}
+                  type="search"
+                  value={search}
+                />
+                {search && (
                   <button
-                    className={`rounded-full px-4 py-2 text-xs font-bold transition ${selectedTag === tag ? "bg-[#092a53] text-white" : "border border-[#d9d6cc] bg-white text-[#65748a] hover:border-[#092a53] hover:text-[#092a53]"}`}
-                    key={tag}
-                    onClick={() => setSearchParams({ tag }, { replace: true })}
+                    aria-label={t("Clear search")}
+                    className="absolute right-3 grid size-8 place-items-center rounded-full text-[#8792a0] transition hover:bg-[#efece3] hover:text-[#092a53]"
+                    onClick={() => setSearch("")}
                     type="button"
                   >
-                    {t(tag)}
+                    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                    </svg>
                   </button>
+                )}
+              </label>
+
+              {flavorTags.length > 0 && (
+                <div className="mt-3 flex items-center gap-3 px-1">
+                  <span className="hidden shrink-0 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0] sm:inline">{t("Flavor tag")}</span>
+                  <div aria-label={t("Flavor tag")} className="-my-1 flex flex-1 gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group">
+                    {["", ...flavorTags].map((tag) => {
+                      const active = selectedTag === tag;
+                      return (
+                        <button
+                          aria-pressed={active}
+                          className={`shrink-0 rounded-full px-4 py-2 text-xs font-extrabold transition ${
+                            active
+                              ? "bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.2)]"
+                              : "bg-[#fbfaf5] text-[#52647b] ring-1 ring-[#ebe7dc] hover:text-[#092a53] hover:ring-[#d9d4c7]"
+                          }`}
+                          key={tag || "all"}
+                          onClick={() => selectTag(tag)}
+                          type="button"
+                        >
+                          {tag ? t(tag) : t("All tags")}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {hasFilters && (
+                    <button
+                      className="hidden shrink-0 text-xs font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 sm:inline"
+                      onClick={clearFilters}
+                      type="button"
+                    >
+                      {t("Clear filters")}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Products */}
+            <div className="grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredFlavors.map((flavor) => {
+                const added = addedId === flavor.id;
+                return (
+                  <article
+                    className="group relative flex flex-col rounded-[28px] bg-white p-2.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a]"
+                    key={flavor.id}
+                  >
+                    <Link
+                      aria-hidden="true"
+                      className={`relative block aspect-square overflow-hidden rounded-[22px] ${flavor.color}`}
+                      tabIndex={-1}
+                      to={`/flavor/${flavor.id}`}
+                    >
+                      <img
+                        alt=""
+                        className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05]"
+                        src={flavor.image}
+                      />
+                      {flavor.tag && (
+                        <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#52647b] shadow-sm backdrop-blur-sm">
+                          {t(flavor.tag)}
+                        </span>
+                      )}
+                      {flavor.availableQuantity <= 5 && (
+                        <span className="absolute right-3 top-3 rounded-full bg-[#092a53]/85 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#ffdc32] backdrop-blur-sm">
+                          {t("{count} left", { count: flavor.availableQuantity })}
+                        </span>
+                      )}
+                    </Link>
+
+                    <div className="@container flex flex-1 flex-col px-3 pb-3 pt-5 sm:px-4">
+                      <h3 className="font-display text-xl font-extrabold leading-snug text-[#092a53]">
+                        <Link className="after:absolute after:inset-0 after:rounded-[28px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#bd9c00]" to={`/flavor/${flavor.id}`}>
+                          {t(flavor.name)}
+                        </Link>
+                      </h3>
+                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#65748a]">{t(flavor.detail)}</p>
+
+                      <div className="mt-auto flex flex-col gap-3 border-t border-dashed border-[#e7e2d4] pt-4 @[16.5rem]:flex-row @[16.5rem]:items-center @[16.5rem]:justify-between">
+                        <span className="whitespace-nowrap font-display text-lg font-extrabold tabular-nums text-[#092a53]">
+                          {formatCartMoney(flavor.price, "xaf", language)}
+                        </span>
+                        <button
+                          aria-label={t("Add {name} to your bag", { name: t(flavor.name) })}
+                          className={`relative z-10 inline-flex w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-3 text-xs font-extrabold transition @[16.5rem]:w-auto @[16.5rem]:py-2.5 duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
+                            added
+                              ? "bg-[#4caf50] text-white"
+                              : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white"
+                          }`}
+                          onClick={() => addFlavor(flavor)}
+                          type="button"
+                        >
+                          {added ? (
+                            <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                              <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+                            </svg>
+                          ) : (
+                            <BagIcon />
+                          )}
+                          <span aria-live="polite">{added ? t("Added") : t("Add to bag")}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            {!loading && !error && availableFlavors.length === 0 && (
+              <div className="rounded-[28px] bg-white px-6 py-16 text-center ring-1 ring-[#ebe7dc]">
+                <p className="font-display text-xl font-extrabold text-[#092a53]">{t("All flavors are currently sold out. Please check back soon.")}</p>
+              </div>
+            )}
+            {!loading && !error && availableFlavors.length > 0 && filteredFlavors.length === 0 && (
+              <div className="flex flex-col items-center rounded-[28px] bg-white px-6 py-16 text-center ring-1 ring-[#ebe7dc]">
+                <span aria-hidden="true" className="grid size-14 place-items-center rounded-full bg-[#fbfaf5] text-[#8792a0] ring-1 ring-[#ebe7dc]">
+                  <svg className="size-6" fill="none" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+                    <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                  </svg>
+                </span>
+                <p className="mt-5 font-display text-xl font-extrabold text-[#092a53]">{t("No flavors match your filters.")}</p>
+                <button
+                  className="mt-5 rounded-full bg-[#092a53] px-6 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b]"
+                  onClick={clearFilters}
+                  type="button"
+                >
+                  {t("Clear filters")}
+                </button>
+              </div>
+            )}
+            {loading && !error && (
+              <div aria-hidden="true" className="grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 4 }, (_, index) => (
+                  <div className="rounded-[28px] bg-white p-2.5 ring-1 ring-[#ebe7dc]" key={index}>
+                    <div className="aspect-square animate-pulse rounded-[22px] bg-[#f1ede2]" />
+                    <div className="space-y-3 px-3 pb-3 pt-5">
+                      <div className="h-5 w-2/3 animate-pulse rounded-full bg-[#f1ede2]" />
+                      <div className="h-3 w-full animate-pulse rounded-full bg-[#f4f1e8]" />
+                      <div className="h-3 w-4/5 animate-pulse rounded-full bg-[#f4f1e8]" />
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
-
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 lg:gap-5">
-          {filteredFlavors.map((flavor) => (
-            <article
-              key={flavor.id}
-              className="group overflow-hidden rounded-[22px] border border-[#e7e3d9] bg-white shadow-[0_8px_26px_rgba(18,44,80,0.05)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(18,44,80,0.12)]"
-            >
-              <Link
-                to={`/flavor/${flavor.id}`}
-                className={`relative block aspect-[0.94] overflow-hidden ${flavor.color}`}
+            {(loading || error) && (
+              <p
+                className={`mt-5 rounded-2xl px-5 py-4 text-sm ${error ? "bg-red-50 text-red-700" : "sr-only"}`}
+                role={error ? "alert" : "status"}
               >
-                <img
-                  alt={`${t(flavor.name)} ${t("ice cream")}`}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  src={flavor.image}
-                />
-                <span className="absolute left-3 top-3 rounded-full border border-white/60 bg-white/95 px-2.5 py-1.5 text-[9px] font-bold text-[#52647b] shadow-sm">
-                  {t(flavor.tag)}
-                </span>
-              </Link>
-              <div className="p-3.5 sm:p-4">
-                <Link
-                  to={`/flavor/${flavor.id}`}
-                  className="font-display text-base font-bold leading-tight text-[#102c50] hover:text-[#ccaa00] sm:text-lg"
-                >
-                  {t(flavor.name)}
-                </Link>
-                <p className="mt-1.5 min-h-10 text-[11px] leading-4 text-[#7b8796] sm:text-xs">
-                  {t(flavor.detail)}
-                </p>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-sm font-extrabold text-[#102c50]">
-                    {formatCartMoney(flavor.price, "xaf", language)}
-                  </span>
-                  <button
-                    aria-label={t("Add {name} to your bag", {
-                      name: t(flavor.name),
-                    })}
-                    className="grid size-9 place-items-center rounded-full bg-[#ffdc32] text-lg font-bold text-[#102c50] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#102c50]"
-                    onClick={() => addToCart(flavor)}
-                    type="button"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
-            </div>
-        {!loading && !error && availableFlavors.length === 0 && (
-          <p className="mt-6 rounded-2xl border border-[#eadb8a] bg-[#fff9dc] px-5 py-6 text-center text-sm text-[#624f00]">
-            {t("All flavors are currently sold out. Please check back soon.")}
-          </p>
-        )}
-        {!loading &&
-          !error &&
-          availableFlavors.length > 0 &&
-          filteredFlavors.length === 0 && (
-            <div className="mt-6 rounded-2xl border border-[#e7e3d9] bg-white px-5 py-10 text-center">
-              <p className="font-display text-lg font-bold">{t("No flavors match your filters.")}</p>
-              <button className="mt-3 text-sm font-bold text-[#806a00] underline decoration-[#ffdc32] underline-offset-4" onClick={clearFilters} type="button">{t("Clear filters")}</button>
-            </div>
-          )}
-        {(loading || error) && (
-          <p
-            className={`mt-5 rounded-xl border px-4 py-3 text-sm ${error ? "border-red-200 bg-red-50 text-red-700" : "border-[#eadb8a] bg-[#fff9dc] text-[#624f00]"}`}
-            role={error ? "alert" : "status"}
-          >
-            {t(error || "Loading flavors…")}
-          </p>
-        )}
+                {t(error || "Loading flavors…")}
+              </p>
+            )}
 
+            <p className="mt-8 flex gap-3 text-xs leading-5 text-[#8792a0]">
+              <span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 text-[10px] font-extrabold text-[#806a00]">i</span>
+              {t("Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
+            </p>
           </section>
 
-          <section className="relative isolate mt-14 overflow-hidden rounded-[26px] bg-[#ffdc32] px-6 py-8 text-[#092a53] sm:px-10 sm:py-10">
-            <div aria-hidden="true" className="absolute -right-12 -top-24 size-64 rounded-full border-[40px] border-[#092a53]/[0.06]" />
-            <div className="relative flex flex-wrap items-center justify-between gap-6">
-              <div>
-                <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#624f00]">{t("This promotion applies only to this website's online catalog.")}</p>
-                <h2 className="font-display text-2xl font-bold sm:text-3xl">{t("More scoops, more smiles")}</h2>
-                <p className="mt-2 text-sm text-[#53647b]">{t("Pick any three scoops and the lowest-priced one is on us.")}</p>
+          {/* Promo */}
+          <section className="relative isolate mt-16 overflow-hidden rounded-[32px] bg-[#092a53] px-7 py-10 text-white sm:px-12 sm:py-14">
+            <div aria-hidden="true" className="absolute -right-16 -top-24 -z-10 size-72 rounded-full border-[44px] border-white/[0.05]" />
+            <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1.5 bg-gradient-to-r from-[#ffdc32] via-[#ffdc32]/50 to-transparent" />
+            <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-5">
+                <span aria-hidden="true" className="hidden size-16 shrink-0 place-items-center rounded-2xl bg-[#ffdc32] font-display text-xl font-extrabold text-[#092a53] sm:grid">3×</span>
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t("This promotion applies only to this website's online catalog.")}</p>
+                  <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">{t("More scoops, more smiles")}</h2>
+                  <p className="mt-2 max-w-lg text-sm leading-6 text-white/70">{t("Pick any three scoops and the lowest-priced one is on us.")}</p>
+                </div>
               </div>
               <Link
+                className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#ffdc32] px-7 py-4 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
                 to="/cart"
-                className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b]"
               >
                 {t("Go to your bag")} <ArrowIcon />
               </Link>

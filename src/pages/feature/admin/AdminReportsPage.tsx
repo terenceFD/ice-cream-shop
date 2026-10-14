@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { apiRequest } from '../../../api/api'
 import { useAdminAuth } from './useAdminAuth'
 import { useLanguage } from '../../../language/useLanguage'
@@ -22,8 +22,36 @@ interface AdminReport {
   recentSales: { date: string; orders: number; sales: number }[]
 }
 
+const CHART_DAYS = 30
+
+const icons = {
+  chart: 'M4 19V5m0 14h16M8 15v-3m4 3V8m4 7v-5',
+  receipt: 'M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6m-6 4h6m-6 4h3',
+  money: 'M3 7h18v10H3V7Zm9 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM6 10v4m12-4v4',
+  basket: 'M5 9h14l-1.5 10h-11L5 9Zm3 0 4-5 4 5',
+  check: 'm5 12.5 4.5 4.5L19 7.5',
+  download: 'M12 4v12m0 0-5-5m5 5 5-5M5 20h14',
+  print: 'M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M7 14h10v6H7v-6Z',
+  trophy: 'M8 4h8v5a4 4 0 0 1-8 0V4Zm0 2H5a3 3 0 0 0 3 4m8-4h3a3 3 0 0 1-3 4m-4 3v4m-3 3h6',
+  alert: 'M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
+  chevron: 'm6 9 6 6 6-6',
+  box: 'M4 8l8-4 8 4v8l-8 4-8-4V8Zm0 0 8 4m0 0 8-4m-8 4v8',
+}
+
+function Icon({ path, className = 'size-4' }: { path: string; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path d={path} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+    </svg>
+  )
+}
+
 function formatXaf(value: number, language: string) {
   return `${new Intl.NumberFormat(language === 'fr' ? 'fr-CM' : 'en-CM').format(Number(value || 0))} FCFA`
+}
+
+function compactXaf(value: number, language: string) {
+  return new Intl.NumberFormat(language === 'fr' ? 'fr-CM' : 'en-CM', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value || 0))
 }
 
 function csvCell(value: unknown) {
@@ -33,11 +61,18 @@ function csvCell(value: unknown) {
   return `"${safeText.replaceAll('"', '""')}"`
 }
 
+function isoDay(date: Date) {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`
+}
+
 export function AdminReportsPage() {
   const { sessionToken } = useAdminAuth()
   const { t, language } = useLanguage()
+  const locale = language === 'fr' ? 'fr-CM' : 'en-CM'
   const [report, setReport] = useState<AdminReport | null>(null)
   const [error, setError] = useState('')
+  const [chartMetric, setChartMetric] = useState<'sales' | 'orders'>('sales')
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -47,26 +82,42 @@ export function AdminReportsPage() {
     return () => { cancelled = true }
   }, [sessionToken])
 
-  if (error) return <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>
-  if (!report) return (
-    <div className="space-y-4">
-      <div className="h-28 animate-pulse rounded-[28px] bg-[#e8edf5]" />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="h-28 animate-pulse rounded-2xl bg-[#eef2f6]" />
-        ))}
+  const series = useMemo(() => {
+    const byDate = new Map((report?.recentSales || []).map((row) => [String(row.date).slice(0, 10), row]))
+    const today = new Date()
+    return Array.from({ length: CHART_DAYS }, (_, index) => {
+      const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - (CHART_DAYS - 1 - index)))
+      const key = isoDay(date)
+      const row = byDate.get(key)
+      return { key, date, sales: Number(row?.sales || 0), orders: Number(row?.orders || 0) }
+    })
+  }, [report])
+
+  if (error) {
+    return (
+      <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+        <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
+        {error}
+      </p>
+    )
+  }
+  if (!report) {
+    return (
+      <div aria-label={t('Loading…')} className="space-y-6" role="status">
+        <div className="h-20 animate-pulse rounded-2xl bg-[#eef2f6]" />
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => <div className="h-32 animate-pulse rounded-2xl bg-[#eef2f6]" key={index} />)}
+        </div>
+        <div className="h-80 animate-pulse rounded-[20px] bg-[#eef2f6]" />
       </div>
-      <div className="mt-8 grid gap-8 xl:grid-cols-2">
-        <div className="h-64 animate-pulse rounded-[28px] bg-[#eef2f6]" />
-        <div className="h-64 animate-pulse rounded-[28px] bg-[#eef2f6]" />
-      </div>
-    </div>
-  )
+    )
+  }
 
   function exportReport() {
+    if (!report) return
     const rows = [
       [t('Sales and inventory reports')],
-      [t('Generated at'), new Intl.DateTimeFormat(language === 'fr' ? 'fr-CM' : 'en-CM', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())],
+      [t('Generated at'), new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())],
       [],
       [t('Summary')],
       [t('Metric'), t('Value'), t('Unit')],
@@ -81,23 +132,23 @@ export function AdminReportsPage() {
       ...(report.popularItems.length ? [] : [[t('No paid orders yet.')]]),
       [],
       ...(report.lowStock ? [
-      [t('Low stock')],
-      [t('Item'), t('Stock'), t('Reserved'), t('Available'), t('Status')],
-      ...report.lowStock.map((item) => [
-        item.name || item.itemId,
-        item.stock,
-        item.reservedStock,
-        item.availableQuantity,
-        item.isAvailable ? t('Available') : t('Unavailable'),
-      ]),
-      ...(report.lowStock.length ? [] : [[t('No items are low in stock.')]]),
+        [t('Low stock')],
+        [t('Item'), t('Stock'), t('Reserved'), t('Available'), t('Status')],
+        ...report.lowStock.map((item) => [
+          item.name || item.itemId,
+          item.stock,
+          item.reservedStock,
+          item.availableQuantity,
+          item.isAvailable ? t('Available') : t('Unavailable'),
+        ]),
+        ...(report.lowStock.length ? [] : [[t('No items are low in stock.')]]),
       ] : []),
       [],
       [t('Daily sales — last 30 days')],
       [t('Date'), t('Orders'), t('Sales'), t('Currency')],
       ...report.recentSales.map((row) => [row.date, row.orders, row.sales, 'FCFA']),
     ]
-    const csv = `\uFEFF${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}`
+    const csv = `﻿${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}`
     const fileUrl = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
     const link = document.createElement('a')
     const now = new Date()
@@ -110,126 +161,304 @@ export function AdminReportsPage() {
     window.setTimeout(() => URL.revokeObjectURL(fileUrl), 1000)
   }
 
-  const summaryCards = [
-    { label: t('Total orders'), value: report.summary.orderCount.toLocaleString(), accent: 'bg-[#eff7ff] text-[#0b5ec8]' },
-    { label: t('Paid sales'), value: formatXaf(report.summary.sales, language), accent: 'bg-[#edf9f0] text-[#1b7f4b]' },
-    { label: t('Average paid order'), value: formatXaf(report.summary.averageOrder, language), accent: 'bg-[#fff4da] text-[#9a6b00]' },
-    { label: t('Orders placed'), value: report.summary.placedCount.toLocaleString(), accent: 'bg-[#f3eefb] text-[#5f3dc4]' },
+  const periodSales = series.reduce((sum, day) => sum + day.sales, 0)
+  const periodOrders = series.reduce((sum, day) => sum + day.orders, 0)
+  const lastWeek = series.slice(-7).reduce((sum, day) => sum + day.sales, 0)
+  const previousWeek = series.slice(-14, -7).reduce((sum, day) => sum + day.sales, 0)
+  const weekChange = previousWeek > 0 ? Math.round(((lastWeek - previousWeek) / previousWeek) * 100) : null
+  const bestDay = series.reduce((best, day) => (day.sales > best.sales ? day : best), series[0])
+  const completion = report.summary.orderCount ? Math.round((report.summary.placedCount / report.summary.orderCount) * 100) : 0
+
+  const values = series.map((day) => (chartMetric === 'sales' ? day.sales : day.orders))
+  const maxValue = Math.max(1, ...values)
+  const chartWidth = 720
+  const chartHeight = 220
+  const stepX = chartWidth / (series.length - 1)
+  const points = values.map((value, index) => [index * stepX, chartHeight - (value / maxValue) * (chartHeight - 16) - 4] as const)
+  const linePath = points.map(([x, y], index) => `${index ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
+  const areaPath = `${linePath} L${chartWidth},${chartHeight} L0,${chartHeight} Z`
+  const hovered = hoverIndex !== null ? series[hoverIndex] : null
+  const gridLines = [0.25, 0.5, 0.75, 1]
+
+  const topSales = Math.max(1, ...report.popularItems.map((item) => item.sales))
+  const popularTotal = report.popularItems.reduce((sum, item) => sum + item.sales, 0)
+
+  const kpis = [
+    { label: t('Paid sales'), value: formatXaf(report.summary.sales, language), hint: weekChange === null ? t('All time') : t('{change}% vs. previous week', { change: weekChange > 0 ? `+${weekChange}` : weekChange }), trend: weekChange, icon: icons.money, accent: 'bg-[#e5f4ea] text-[#2c7a4f]' },
+    { label: t('Total orders'), value: report.summary.orderCount.toLocaleString(locale), hint: t('{count} in the last 30 days', { count: periodOrders }), trend: null, icon: icons.receipt, accent: 'bg-[#e9f1fa] text-[#315982]' },
+    { label: t('Average paid order'), value: formatXaf(report.summary.averageOrder, language), hint: t('Per paid order'), trend: null, icon: icons.basket, accent: 'bg-[#fff4c2] text-[#8a6f00]' },
+    { label: t('Orders placed'), value: report.summary.placedCount.toLocaleString(locale), hint: t('{rate}% of orders completed payment', { rate: completion }), trend: null, icon: icons.check, accent: 'bg-[#efe9fb] text-[#5b3fa0]' },
   ]
 
   return (
-    <div className="space-y-6" data-scroll-reveal="skip">
-      <header className="relative isolate overflow-hidden rounded-[28px] bg-gradient-to-br from-[#0f2341] via-[#153b68] to-[#1b557d] p-5 text-white shadow-[0_18px_40px_rgba(15,35,65,0.18)] sm:p-7">
-        <div aria-hidden="true" className="absolute -right-12 -top-16 size-48 rounded-full border-[30px] border-white/10" />
-        <div aria-hidden="true" className="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-[#ffdc32]/10 blur-3xl" />
-        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#ffdc32]">
-              <span aria-hidden="true">✦</span>
-              {t('Store analytics')}
-            </span>
-            <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">{t('Sales and inventory reports')}</h1>
-            <p className="mt-2 max-w-lg text-sm leading-6 text-slate-200">
-              {t('Track performance, demand, and stock health across your store in one place.')}
-            </p>
+    <div className="min-w-0 space-y-6" data-scroll-reveal="skip">
+      <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
+          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
+            <Icon className="size-7" path={icons.chart} />
+          </span>
+          <div className="min-w-0">
+            <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
+              {t('Store analytics')} <span aria-hidden="true" className="mx-1">/</span>
+              <span className="text-[#a48700]">{t('Reports')}</span>
+            </nav>
+            <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Sales and inventory reports')}</h1>
+            <p className="mt-0.5 text-sm text-[#65748a]">{t('Track performance, demand, and stock health across your store in one place.')}</p>
           </div>
-          <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#102a4c] shadow-sm transition hover:bg-[#f4f8ff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32]" onClick={exportReport} type="button">
-            <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 20 20">
-              <path d="M10 2.5v9m0 0 3.5-3.5M10 11.5 6.5 8M3.5 12.5v3h13v-3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
-            </svg>
-            {t('Export')}
+        </div>
+        <div className="flex flex-wrap gap-2.5 print:hidden">
+          <button
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53]"
+            onClick={() => window.print()}
+            type="button"
+          >
+            <Icon path={icons.print} />
+            {t('Print')}
+          </button>
+          <button
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+            onClick={exportReport}
+            type="button"
+          >
+            <Icon path={icons.download} />
+            {t('Export CSV')}
           </button>
         </div>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {summaryCards.map((card) => (
-          <article className="rounded-[24px] border border-[#e5ebf4] bg-white p-5 shadow-[0_14px_28px_rgba(15,35,65,0.04)]" key={card.label}>
-            <div className={`inline-flex rounded-full px-3 py-1.5 text-[11px] font-bold ${card.accent}`}>{card.label}</div>
-            <p className="mt-4 font-display text-2xl font-black text-[#112c50]">{card.value}</p>
+      <section aria-label={t('Summary')} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {kpis.map((kpi) => (
+          <article className="rounded-2xl border border-[#e5ebf3] bg-white p-4 sm:p-5" key={kpi.label}>
+            <span className={`grid size-9 place-items-center rounded-xl ${kpi.accent}`}><Icon path={kpi.icon} /></span>
+            <p className="mt-4 truncate font-display text-[1.6rem] font-extrabold leading-none tracking-tight text-[#102c50]">{kpi.value}</p>
+            <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{kpi.label}</p>
+            <p className={`mt-0.5 truncate text-[11px] font-semibold ${kpi.trend === null ? 'text-[#a3b0bf]' : kpi.trend >= 0 ? 'text-[#2c7a4f]' : 'text-[#b2433a]'}`}>
+              {kpi.trend !== null && <span aria-hidden="true">{kpi.trend >= 0 ? '▲ ' : '▼ '}</span>}
+              {kpi.hint}
+            </p>
           </article>
         ))}
-      </div>
+      </section>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <section className="rounded-[28px] border border-[#e5ebf4] bg-white p-5 shadow-[0_14px_30px_rgba(10,30,60,0.04)] sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-2xl font-bold text-[#102c4f]">{t('Best-selling products')}</h2>
-            <span className="rounded-full bg-[#edf9f0] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#1b7f4b]">{t('Top')}</span>
+      <section aria-labelledby="trend-title" className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="trend-title">{t('Daily sales — last 30 days')}</h2>
+            <p className="mt-1 text-xs text-[#65748a]">
+              {t('{sales} from {orders} orders', { sales: formatXaf(periodSales, language), orders: periodOrders })}
+              {bestDay?.sales > 0 && ` · ${t('Best day: {date}', { date: bestDay.date.toLocaleDateString(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' }) })}`}
+            </p>
           </div>
-          <div className="mt-4 space-y-3">
-            {report.popularItems.map((item, index) => (
-              <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#edf1f6] bg-[#f9fbff] p-3" key={item.name}>
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex size-9 items-center justify-center rounded-full bg-[#dfeaf9] text-sm font-extrabold text-[#103d70]">{index + 1}</div>
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-[#1a2e42]">{item.name}</p>
-                    <p className="text-xs text-[#65748a]">{item.quantity} {t('sold')}</p>
-                  </div>
-                </div>
-                <p className="whitespace-nowrap text-sm font-bold text-[#123253]">{formatXaf(item.sales, language)}</p>
-              </div>
+          <div aria-label={t('Chart metric')} className="flex rounded-xl bg-[#f1f4f8] p-1 print:hidden" role="group">
+            {([
+              { key: 'sales', label: t('Sales') },
+              { key: 'orders', label: t('Orders') },
+            ] as const).map((option) => (
+              <button
+                aria-pressed={chartMetric === option.key}
+                className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${chartMetric === option.key ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
+                key={option.key}
+                onClick={() => setChartMetric(option.key)}
+                type="button"
+              >
+                {option.label}
+              </button>
             ))}
-            {!report.popularItems.length && <p className="rounded-2xl bg-[#f7f8fa] p-4 text-sm text-[#65748a]">{t('No paid orders yet.')}</p>}
           </div>
-        </section>
-
-        {report.lowStock && <section className="rounded-[28px] border border-[#e5ebf4] bg-white p-5 shadow-[0_14px_30px_rgba(10,30,60,0.04)] sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-2xl font-bold text-[#102c4f]">{t('Low stock')}</h2>
-            <span className="rounded-full bg-[#fff1f1] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#bf3b3b]">{t('Alert')}</span>
-          </div>
-          <div className="mt-4 space-y-3">
-            {report.lowStock.map((item) => {
-              const availableUnits = Math.max(0, item.availableQuantity)
-              const level = Math.min(100, Math.max(0, (availableUnits / Math.max(1, item.stock || item.availableQuantity || 1)) * 100))
-              return (
-                <div className="rounded-2xl border border-[#edf1f6] bg-[#fffdfc] p-3" key={item.itemId}>
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="truncate font-semibold text-[#1a2e42]">{item.name || item.itemId}</p>
-                    <span className="shrink-0 text-xs font-bold text-[#bf3b3b]">{availableUnits} {t('available')}</span>
-                  </div>
-                  <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#f1f4f7]">
-                    <div className="h-full rounded-full bg-gradient-to-r from-[#f5b15e] to-[#d45353]" style={{ width: `${level}%` }} />
-                  </div>
-                  <div className="mt-2 flex justify-between text-[11px] text-[#65748a]">
-                    <span>{t('Stock')} {item.stock}</span>
-                    <span>{t('Reserved')} {item.reservedStock}</span>
-                  </div>
-                </div>
-              )
-            })}
-            {!report.lowStock.length && <p className="rounded-2xl bg-[#f7f8fa] p-4 text-sm text-[#65748a]">{t('No items are low in stock.')}</p>}
-          </div>
-        </section>}
-      </div>
-
-      <section className="rounded-[28px] border border-[#e5ebf4] bg-white p-5 shadow-[0_14px_30px_rgba(10,30,60,0.04)] sm:p-6">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="font-display text-2xl font-bold text-[#102c4f]">{t('Daily sales — last 30 days')}</h2>
-          <span className="rounded-full bg-[#edf5ff] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#2158a1]">{t('30D')}</span>
         </div>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[420px] text-left text-sm">
-            <thead className="bg-[#f5f8fb] text-[11px] uppercase tracking-[0.12em] text-[#65748a]">
-              <tr>
-                <th className="p-3 font-bold">{t('Date')}</th>
-                <th className="p-3 font-bold">{t('Orders')}</th>
-                <th className="p-3 font-bold">{t('Sales')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.recentSales.map((row) => (
-                <tr className="border-t border-[#edf1f6]" key={row.date}>
-                  <td className="p-3 text-[#1a2e42]">{row.date}</td>
-                  <td className="p-3 text-[#1a2e42]">{row.orders}</td>
-                  <td className="p-3 font-bold text-[#123253]">{formatXaf(row.sales, language)}</td>
-                </tr>
+
+        <div className="relative mt-6">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex w-12 flex-col justify-between pb-6 text-right text-[10px] font-semibold text-[#a3b0bf]">
+            {[...gridLines].reverse().map((ratio) => (
+              <span key={ratio}>{chartMetric === 'sales' ? compactXaf(maxValue * ratio, language) : Math.round(maxValue * ratio)}</span>
+            ))}
+            <span>0</span>
+          </div>
+          <div className="relative ml-14">
+            <svg
+              aria-label={t('Daily sales — last 30 days')}
+              className="h-56 w-full overflow-visible"
+              onMouseLeave={() => setHoverIndex(null)}
+              onMouseMove={(event) => {
+                const rect = event.currentTarget.getBoundingClientRect()
+                const ratio = (event.clientX - rect.left) / rect.width
+                setHoverIndex(Math.max(0, Math.min(series.length - 1, Math.round(ratio * (series.length - 1)))))
+              }}
+              preserveAspectRatio="none"
+              role="img"
+              viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+            >
+              <defs>
+                <linearGradient id="report-area" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor="#ffdc32" stopOpacity="0.45" />
+                  <stop offset="100%" stopColor="#ffdc32" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              {gridLines.map((ratio) => (
+                <line key={ratio} stroke="#eef2f6" strokeWidth="1" vectorEffect="non-scaling-stroke" x1="0" x2={chartWidth} y1={chartHeight - ratio * (chartHeight - 16) - 4} y2={chartHeight - ratio * (chartHeight - 16) - 4} />
               ))}
-            </tbody>
-          </table>
+              <line stroke="#dde4ec" strokeWidth="1" vectorEffect="non-scaling-stroke" x1="0" x2={chartWidth} y1={chartHeight} y2={chartHeight} />
+              <path d={areaPath} fill="url(#report-area)" />
+              <path d={linePath} fill="none" stroke="#092a53" strokeLinejoin="round" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
+              {hoverIndex !== null && (
+                <line stroke="#092a53" strokeDasharray="4 4" strokeOpacity="0.35" strokeWidth="1" vectorEffect="non-scaling-stroke" x1={points[hoverIndex][0]} x2={points[hoverIndex][0]} y1="0" y2={chartHeight} />
+              )}
+            </svg>
+            {hoverIndex !== null && hovered && (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#092a53] shadow"
+                  style={{ left: `${(hoverIndex / (series.length - 1)) * 100}%`, top: `${(points[hoverIndex][1] / chartHeight) * 100}%` }}
+                />
+                <div
+                  className="pointer-events-none absolute -top-2 z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-xl bg-[#092a53] px-3 py-2 text-xs text-white shadow-lg"
+                  style={{ left: `${Math.min(88, Math.max(12, (hoverIndex / (series.length - 1)) * 100))}%` }}
+                >
+                  <p className="font-bold">{hovered.date.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })}</p>
+                  <p className="mt-0.5 text-white/75">{formatXaf(hovered.sales, language)} · {t('{count} orders', { count: hovered.orders })}</p>
+                </div>
+              </>
+            )}
+            <div className="mt-2 flex justify-between text-[10px] font-semibold text-[#a3b0bf]">
+              {[0, 7, 14, 21, 29].map((index) => (
+                <span key={index}>{series[index].date.toLocaleDateString(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' })}</span>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+        <section aria-labelledby="best-sellers-title" className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="grid size-9 place-items-center rounded-xl bg-[#fff4c2] text-[#8a6f00]"><Icon path={icons.trophy} /></span>
+              <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="best-sellers-title">{t('Best-selling products')}</h2>
+            </div>
+            {popularTotal > 0 && <p className="text-xs font-bold text-[#4f6379]">{formatXaf(popularTotal, language)}</p>}
+          </div>
+          {report.popularItems.length ? (
+            <ol className="mt-5 space-y-3.5">
+              {report.popularItems.map((item, index) => {
+                const share = popularTotal ? Math.round((item.sales / popularTotal) * 100) : 0
+                return (
+                  <li key={item.name}>
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="flex min-w-0 items-center gap-3">
+                        <span className={`grid size-7 shrink-0 place-items-center rounded-lg text-xs font-extrabold ${index === 0 ? 'bg-[#ffdc32] text-[#092a53]' : index < 3 ? 'bg-[#092a53] text-white' : 'bg-[#f1f4f8] text-[#65748a]'}`}>{index + 1}</span>
+                        <span className="truncate font-bold text-[#102c50]">{item.name}</span>
+                        <span className="shrink-0 text-xs text-[#8190a1]">{item.quantity} {t('sold')}</span>
+                      </span>
+                      <span className="shrink-0 font-bold tabular-nums text-[#102c50]">{formatXaf(item.sales, language)}</span>
+                    </div>
+                    <div className="ml-10 mt-1.5 flex items-center gap-2">
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#f1f4f8]">
+                        <div className={`h-full rounded-full ${index === 0 ? 'bg-[#ffdc32]' : 'bg-[#092a53]'}`} style={{ width: `${(item.sales / topSales) * 100}%` }} />
+                      </div>
+                      <span className="w-9 text-right text-[11px] font-bold text-[#8190a1]">{share}%</span>
+                    </div>
+                  </li>
+                )
+              })}
+            </ol>
+          ) : (
+            <p className="mt-5 rounded-xl bg-[#f7f9fc] p-5 text-center text-sm text-[#8190a1]">{t('No paid orders yet.')}</p>
+          )}
+        </section>
+
+        {report.lowStock && (
+          <section aria-labelledby="low-stock-title" className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="grid size-9 place-items-center rounded-xl bg-[#fdecea] text-[#b2433a]"><Icon path={icons.alert} /></span>
+                <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="low-stock-title">{t('Low stock')}</h2>
+              </div>
+              {report.lowStock.length > 0 && (
+                <span className="rounded-full bg-[#fdecea] px-2.5 py-1 text-[11px] font-extrabold text-[#a53f37]">{report.lowStock.length}</span>
+              )}
+            </div>
+            {report.lowStock.length ? (
+              <ul className="mt-5 space-y-3">
+                {report.lowStock.map((item) => {
+                  const availableUnits = Math.max(0, item.availableQuantity)
+                  const level = Math.min(100, Math.max(0, (availableUnits / Math.max(1, item.stock || item.availableQuantity || 1)) * 100))
+                  const isOut = availableUnits === 0 || !item.isAvailable
+                  return (
+                    <li className="rounded-xl bg-[#fafbfd] p-3 ring-1 ring-[#eef2f6]" key={item.itemId}>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-sm font-bold text-[#102c50]">{item.name || item.itemId}</p>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${isOut ? 'bg-[#fdeeee] text-[#a53f37]' : 'bg-[#fff6e5] text-[#9a6200]'}`}>
+                          {isOut ? t('Sold out') : `${availableUnits} ${t('available')}`}
+                        </span>
+                      </div>
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#edf1f5]">
+                        <div className={`h-full rounded-full ${isOut ? 'bg-[#d2544b]' : 'bg-[#e0a100]'}`} style={{ width: `${Math.max(isOut ? 0 : 4, level)}%` }} />
+                      </div>
+                      <div className="mt-1.5 flex justify-between text-[11px] text-[#8190a1]">
+                        <span>{t('Stock')} {item.stock}</span>
+                        <span>{t('Reserved')} {item.reservedStock}</span>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <div className="mt-5 flex items-center gap-3 rounded-xl bg-[#eaf6ee] p-4 text-sm font-semibold text-[#246a46]">
+                <Icon path={icons.check} />
+                {t('No items are low in stock.')}
+              </div>
+            )}
+          </section>
+        )}
+      </div>
+
+      <details className="group rounded-[20px] border border-[#e5ebf3] bg-white open:pb-2">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 sm:px-6 [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center gap-3">
+            <span className="grid size-9 place-items-center rounded-xl bg-[#e9f1fa] text-[#315982]"><Icon path={icons.box} /></span>
+            <span>
+              <span className="block font-display text-lg font-extrabold text-[#092a53]">{t('Daily breakdown')}</span>
+              <span className="block text-xs text-[#65748a]">{t('{count} days with sales', { count: report.recentSales.length })}</span>
+            </span>
+          </span>
+          <Icon className="size-5 text-[#8190a1] transition group-open:rotate-180" path={icons.chevron} />
+        </summary>
+        <div className="relative overflow-x-auto px-2 sm:px-4">
+          <table className="w-full min-w-[420px] text-left text-sm">
+            <thead>
+              <tr className="border-b border-[#edf1f5] text-[11px] uppercase tracking-[0.08em] text-[#8190a1]">
+                <th className="px-3 py-2.5 font-extrabold" scope="col">{t('Date')}</th>
+                <th className="px-3 py-2.5 text-right font-extrabold" scope="col">{t('Orders')}</th>
+                <th className="px-3 py-2.5 text-right font-extrabold" scope="col">{t('Sales')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#f0f3f7]">
+              {[...report.recentSales].reverse().map((row) => (
+                <tr className="hover:bg-[#fafbfd]" key={row.date}>
+                  <td className="px-3 py-2.5 font-semibold text-[#102c50]">
+                    {new Date(`${String(row.date).slice(0, 10)}T00:00:00Z`).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}
+                  </td>
+                  <td className="px-3 py-2.5 text-right tabular-nums text-[#4f6379]">{row.orders}</td>
+                  <td className="px-3 py-2.5 text-right font-bold tabular-nums text-[#102c50]">{formatXaf(row.sales, language)}</td>
+                </tr>
+              ))}
+              {!report.recentSales.length && (
+                <tr><td className="px-3 py-6 text-center text-[#8190a1]" colSpan={3}>{t('No paid orders yet.')}</td></tr>
+              )}
+            </tbody>
+            {report.recentSales.length > 0 && (
+              <tfoot>
+                <tr className="border-t-2 border-[#e3e9f0]">
+                  <th className="px-3 py-3 font-extrabold text-[#092a53]" scope="row">{t('Total')}</th>
+                  <td className="px-3 py-3 text-right font-extrabold tabular-nums text-[#092a53]">{periodOrders}</td>
+                  <td className="px-3 py-3 text-right font-extrabold tabular-nums text-[#092a53]">{formatXaf(periodSales, language)}</td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      </details>
     </div>
   )
 }

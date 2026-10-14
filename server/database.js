@@ -21,6 +21,24 @@ if (!["sqlite", "postgres"].includes(configuredDatabaseBackend)) {
 
 export const databaseKind = configuredDatabaseBackend;
 
+// Built-in category covers that changed to better-matching photos: [category, old default, new].
+// Only covers still on the old default change, so covers an admin picked are kept.
+const CATEGORY_IMAGE_UPDATES = [
+  ["Ice Cream", "/menu-images/product-1.webp", "/menu-images/ice-cream-signature.webp"],
+  ["Silk & Sorbet", "/menu-images/product-5.webp", "/menu-images/silk-chocolate-shake.webp"],
+  ["Novelties", "/cream/cream%201.webp", "/menu-images/sorbet-cup.webp"],
+  ["Limited-Time Favorites", "/menu-images/product-3.webp", "/menu-images/limited-time-treats.webp"],
+];
+
+// Flavor photos that showed a different product: [flavor name, old photo, matching photo].
+// vanilla.jpg shows a strawberry scoop and strawberry.jpg shows vanilla scoops, so they swap.
+// Only flavors still on the old photo change, so photos an admin picked are kept.
+const FLAVOR_IMAGE_UPDATES = [
+  ["Vanilla Dream", "/images/vanilla.jpg", "/images/strawberry.jpg"],
+  ["Strawberry Delight", "/images/strawberry.jpg", "/images/vanilla.jpg"],
+  ["Cookies & Cream", "/images/hero-ice-cream.jpg", "/cream/cream%202.webp"],
+];
+
 export let database;
 
 if (configuredDatabaseBackend === "postgres") {
@@ -66,7 +84,7 @@ if (configuredDatabaseBackend === "postgres") {
       tag TEXT NOT NULL DEFAULT 'New flavor',
       servings INTEGER NOT NULL DEFAULT 2,
       allergies TEXT NOT NULL DEFAULT '[]',
-      origin TEXT NOT NULL DEFAULT 'Antixor Icy',
+      origin TEXT NOT NULL DEFAULT 'Cold Stone Creamery',
       stock INTEGER NOT NULL DEFAULT 100 CHECK (stock >= 0),
       reserved_stock INTEGER NOT NULL DEFAULT 0 CHECK (reserved_stock >= 0)
     );
@@ -469,6 +487,9 @@ if (configuredDatabaseBackend === "postgres") {
 
   addColumnIfMissing("customers", "profile_picture", "TEXT NOT NULL DEFAULT ''");
   addColumnIfMissing("admins", "role", "TEXT NOT NULL DEFAULT 'owner'");
+  addColumnIfMissing("admins", "security_pin_hash", "TEXT");
+  // The site was renamed from "Antixor Icy"; flavors that used the old default origin follow.
+  sqliteDatabase.prepare("UPDATE flavors SET origin = 'Cold Stone Creamery' WHERE origin = 'Antixor Icy'").run();
   addColumnIfMissing(
     "admins",
     "store_id",
@@ -505,6 +526,20 @@ if (configuredDatabaseBackend === "postgres") {
     INSERT OR IGNORE INTO menu_categories (title, description, image, icon, base_title, sort_order)
     VALUES (@title, @description, @image, @icon, @title, @sortOrder)
   `);
+  const refreshDefaultCategoryImage = sqliteDatabase.prepare(
+    "UPDATE menu_categories SET image = ? WHERE base_title = ? AND image = ?",
+  );
+  for (const [baseTitle, previousImage, image] of CATEGORY_IMAGE_UPDATES) {
+    refreshDefaultCategoryImage.run(image, baseTitle, previousImage);
+  }
+  sqliteDatabase.transaction(() => {
+    const updateFlavorImage = sqliteDatabase.prepare(
+      "UPDATE flavors SET image = ? WHERE name = ? AND image = ?",
+    );
+    for (const [name, previousImage, image] of FLAVOR_IMAGE_UPDATES) {
+      updateFlavorImage.run(image, name, previousImage);
+    }
+  })();
   for (const [sortOrder, category] of coldStoneMenuCategories.entries()) {
     seedCategory.run({ ...category, sortOrder });
     for (const item of category.items) {
@@ -647,6 +682,29 @@ export async function verifyDatabaseSchema() {
   `).run();
   await database.prepare(`
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
+  `).run();
+  await database.prepare(`
+    ALTER TABLE admins ADD COLUMN IF NOT EXISTS security_pin_hash TEXT
+  `).run();
+  for (const [baseTitle, previousImage, image] of CATEGORY_IMAGE_UPDATES) {
+    await database.prepare(
+      "UPDATE menu_categories SET image = ? WHERE base_title = ? AND image = ?",
+    ).run(image, baseTitle, previousImage);
+  }
+  // One transaction, so the vanilla/strawberry swap never leaves both on the same photo.
+  await database.transaction(async () => {
+    for (const [name, previousImage, image] of FLAVOR_IMAGE_UPDATES) {
+      await database.prepare(
+        "UPDATE flavors SET image = ? WHERE name = ? AND image = ?",
+      ).run(image, name, previousImage);
+    }
+  });
+  // The site was renamed from "Antixor Icy"; update the default and flavors that used it.
+  await database.prepare(`
+    ALTER TABLE flavors ALTER COLUMN origin SET DEFAULT 'Cold Stone Creamery'
+  `).run();
+  await database.prepare(`
+    UPDATE flavors SET origin = 'Cold Stone Creamery' WHERE origin = 'Antixor Icy'
   `).run();
   await database.prepare(`
     ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
@@ -1278,7 +1336,7 @@ export async function rollbackCheckoutOrder(orderId) {
       if (result.changes === 0) return false;
 
       const items = await database.prepare(
-        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
+        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
       ).all(orderId);
       for (const item of items) {
         if (item.flavorId !== null) {
@@ -1324,7 +1382,7 @@ export async function rollbackCheckoutOrder(orderId) {
     if (result.changes === 0) return false
 
     const items = database.prepare(
-      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
+      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
     ).all(orderId)
 
     for (const item of items) {
@@ -1381,7 +1439,7 @@ export async function finalizePaidCheckout(orderId, session, provider = "stripe"
       if (result.changes === 0) return { paymentRecorded: false, earnedPoints: 0 };
 
       const items = await database.prepare(
-        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
+        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
       ).all(orderId);
       for (const item of items) {
         const stockResult = item.flavorId !== null
@@ -1452,7 +1510,7 @@ export async function finalizePaidCheckout(orderId, session, provider = "stripe"
     if (result.changes === 0) return { paymentRecorded: false, earnedPoints: 0 }
 
     const items = database.prepare(
-      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
+      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
     ).all(orderId)
 
     const decrementStock = database.prepare(`
@@ -1593,7 +1651,7 @@ export async function markCheckoutPaymentFailed(orderId, sessionId, provider = "
       if (result.changes === 0) return false;
 
       const items = await database.prepare(
-        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
+        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
       ).all(orderId);
       for (const item of items) {
         if (item.flavorId !== null) {
@@ -1642,7 +1700,7 @@ export async function markCheckoutPaymentFailed(orderId, sessionId, provider = "
     if (result.changes === 0) return false
 
     const items = database.prepare(
-      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ?',
+      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
     ).all(orderId)
 
     for (const item of items) {
@@ -1707,7 +1765,7 @@ export async function updateAdminProfilePicture(adminId, profilePicture) {
         a.role, a.store_id AS "storeId", s.name AS "storeName"
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(adminId)
-  })
+  })()
 }
 
 export async function setCustomerBanStatus(id, isBanned) {
@@ -1725,7 +1783,7 @@ export async function setCustomerBanStatus(id, isBanned) {
       .run(isBanned ? 1 : 0, id)
     if (!result.changes) return null
     return { id, isBanned }
-  })
+  })()
 }
 
 export async function clearDeliveredOrders(storeId = null) {
@@ -1754,7 +1812,7 @@ export async function clearDeliveredOrders(storeId = null) {
       `DELETE FROM orders WHERE status = 'delivered'${storeFilter}`,
     ).run(...parameters).changes
     return { count: deletedCount, deleted: true }
-  })
+  })()
 }
 
 export async function createAdminAccount({ name, email, passwordHash, profilePicture = '', storeId }) {
@@ -1782,7 +1840,7 @@ export async function createAdminAccount({ name, email, passwordHash, profilePic
         a.role, a.store_id AS "storeId", s.name AS "storeName"
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(Number(result.lastInsertRowid))
-  })
+  })()
 }
 
 export async function updateFulfillmentZones(zones) {
@@ -1819,7 +1877,7 @@ export async function updateFulfillmentZones(zones) {
       )
     }
     return zones.length
-  })
+  })()
 }
 
 export async function updateFulfillmentSlots(slots) {
@@ -1856,7 +1914,7 @@ export async function updateFulfillmentSlots(slots) {
       index,
     ))
     return slots.length
-  })
+  })()
 }
 
 export async function listCakeRequests(storeId = null) {
@@ -1909,7 +1967,7 @@ export async function setReviewApproval(id, isApproved) {
       .run(isApproved ? 1 : 0, id)
     if (!result.changes) return null
     return { id, isApproved }
-  })
+  })()
 }
 
 export async function addCustomerFavorite(customerId, itemId) {
@@ -2140,7 +2198,7 @@ export async function updateOrderFulfillmentStatus(id, fulfillmentStatus) {
       fulfillmentStatus: legacyStatus,
       deliveryStage: fulfillmentStatus,
     }
-  })
+  })()
 }
 
 export async function deleteFailedOrder(id) {
@@ -2173,7 +2231,7 @@ export async function deleteFailedOrder(id) {
 
     database.prepare('DELETE FROM orders WHERE id = ?').run(id)
     return 'deleted'
-  })
+  })()
 }
 
 export async function createCheckoutOrder({

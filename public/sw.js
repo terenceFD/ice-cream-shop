@@ -1,5 +1,7 @@
-const CACHE_NAME = 'antixor-icy-shell-v3'
-const SHELL_URLS = ['/', '/index.html', '/app-icon.svg', '/cold-stone-favicon.svg']
+const CACHE_NAME = 'cold-stone-shell-v5'
+// Caches from before the site was renamed are removed on activation too.
+const CACHE_PREFIXES = ['cold-stone-shell-', 'antixor-icy-shell-']
+const SHELL_URLS = ['/', '/index.html', '/logo.png', '/favicon.ico', '/favicon-32.png', '/icons/icon-192.png']
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -23,7 +25,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(keys
-      .filter((key) => key.startsWith('antixor-icy-shell-') && key !== CACHE_NAME)
+      .filter((key) => CACHE_PREFIXES.some((prefix) => key.startsWith(prefix)) && key !== CACHE_NAME)
       .map((key) => caches.delete(key)))),
   )
   self.clients.claim()

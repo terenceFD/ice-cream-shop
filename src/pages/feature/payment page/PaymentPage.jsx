@@ -8,36 +8,54 @@ import {
   getCartPricing,
   USD_TO_XAF,
 } from "../../../cartPricing";
-import { apiRequest, CUSTOMER_TOKEN_KEY } from "../../../api/api";
+import { apiRequest, getCustomerToken } from "../../../api/api";
 import { useLanguage } from "../../../language/useLanguage";
 import { useAuth } from "../../../authcontext/useAuth";
 
-const CHECKOUT_DETAILS_KEY = "antixor-icy-checkout-details";
+const CHECKOUT_DETAILS_KEY = "cold-stone-checkout-details";
 const PAYMENT_PENDING_MESSAGE = "Stripe has not confirmed this payment yet.";
 const CAMPAY_PENDING_MESSAGE = "CamPay has not confirmed this payment yet.";
 const PAYMENT_CONFIRMATION_RETRIES = 8;
 const PAYMENT_CONFIRMATION_RETRY_DELAY_MS = 1500;
+const icons = {
+  arrow: "M5 12h14m-5-5 5 5-5 5",
+  check: "m5 12.5 4.5 4.5L19 7.5",
+  card: "M3 6h18v12H3V6Zm0 4h18M7 15h4",
+  phone: "M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm3 15h2",
+  lock: "M6 11h12v9H6v-9Zm2 0V8a4 4 0 0 1 8 0v3",
+  shield: "M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6l-7-3Zm-3 9 2 2 4-4",
+  alert: "M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z",
+  info: "M12 11v5m0-8.5v.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+  user: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0",
+  store: "M4 10h16l-1.5-5h-13L4 10Zm0 0v10h16V10M9 20v-5h6v5",
+  truck: "M3 7h11v9H3V7Zm11 3h4l3 3v3h-7v-6ZM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z",
+  calendar: "M5 6h14v14H5V6Zm0 4h14M9 4v4m6-4v4",
+  pin: "M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Zm0-9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z",
+  edit: "M4 20h4L19 9l-4-4L4 16v4Zm9-13 4 4",
+};
+
+function Icon({ path, className = "size-[18px]" }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path d={path} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
 const paymentMethods = [
   {
     id: "card",
     label: "Card",
     detail: "Pay securely with a credit or debit card through Stripe.",
     available: true,
-    icon: "💳",
+    icon: icons.card,
   },
   {
     id: "campay",
     label: "MTN / Orange Mobile Money",
     detail: "Pay through CamPay Mobile Money checkout using MTN or Orange Money.",
     available: false,
-    icon: "📱",
-  },
-  {
-    id: "crypto",
-    label: "Crypto",
-    detail: "Cryptocurrency payments are not connected yet.",
-    available: false,
-    icon: "₿",
+    icon: icons.phone,
   },
 ];
 
@@ -73,7 +91,7 @@ async function verifyCamPayPayment(externalReference, isCancelled) {
     try {
       return await apiRequest(
         `/payment/campay/${encodeURIComponent(externalReference)}`,
-        { token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY) },
+        { token: getCustomerToken() },
       );
     } catch (error) {
       if (
@@ -171,7 +189,7 @@ export function PaymentPage() {
       : camPayReference
         ? verifyCamPayPayment(camPayReference, () => cancelledRequest)
         : apiRequest(`/customer/orders/${encodeURIComponent(loyaltyOrderId)}`, {
-            token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY),
+            token: getCustomerToken(),
           })
     verification
       .then(({ order: paidOrder }) => {
@@ -225,7 +243,7 @@ export function PaymentPage() {
           discountCode: checkoutDetails?.discountCode || "",
           redeemLoyaltyPoints: checkoutDetails?.redeemLoyaltyPoints === true,
         },
-        token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY) || undefined,
+        token: getCustomerToken() || undefined,
       });
       sessionStorage.setItem(
         CHECKOUT_DETAILS_KEY,
@@ -238,344 +256,537 @@ export function PaymentPage() {
     }
   }
 
+
+  const money = (amount) => formatMoney(Math.round(amount), currency, language);
+  const isPickup = checkoutDetails?.fulfillmentType === "pickup";
+  const scheduledDateLabel = (() => {
+    const value = checkoutDetails?.scheduledDate;
+    if (!value) return "";
+    const date = new Date(`${value}T12:00:00`);
+    return Number.isNaN(date.getTime())
+      ? value
+      : date.toLocaleDateString(language === "fr" ? "fr-CM" : "en-CM", {
+          weekday: "short",
+          day: "numeric",
+          month: "long",
+        });
+  })();
+  const totalSavings = discount + codeDiscount + loyaltyDiscount;
+  const canPay =
+    !isStartingCheckout &&
+    cartItems.length > 0 &&
+    selectedMethodAvailable &&
+    !hasUnavailableItems;
+  const steps = [t("Shopping bag"), t("Checkout"), t("Payment")];
+
+  const statusShell = (children, tone = "default") => (
+    <section
+      aria-live="polite"
+      className={`relative mx-auto max-w-2xl overflow-hidden rounded-[32px] bg-white text-center shadow-[0_24px_60px_rgba(18,44,80,0.1)] ring-1 ${
+        tone === "error" ? "ring-[#f2d6cf]" : tone === "success" ? "ring-[#d6e8c7]" : "ring-[#ebe7dc]"
+      }`}
+      data-scroll-reveal="skip"
+      role="status"
+    >
+      {children}
+    </section>
+  );
+
   return (
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
 
-      <main className="mx-auto max-w-[1240px] px-4 py-7 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+      <main>
         {paymentStatus === "paid" ? (
-          <section aria-live="polite" className="mx-auto max-w-2xl overflow-hidden rounded-[28px] border border-[#dce9c8] bg-white text-center shadow-[0_18px_50px_rgba(18,44,80,0.1)]" data-scroll-reveal="skip" role="status">
-            <div className="h-2 bg-gradient-to-r from-[#a8df62] via-[#d8f29a] to-[#ffdc32]" />
-            <div className="p-6 sm:p-10">
-            <span
-              aria-hidden="true"
-              className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#e8f6d4] text-3xl font-bold text-[#163e35] shadow-sm"
-            >
-              ✓
-            </span>
-            <p className="mt-5 inline-flex rounded-full bg-[#e8f6d4] px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#163e35]">
-              {t("Payment confirmed")}
-            </p>
-            <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-5xl">
-              {t("Thank you, {name}!", { name: order?.customerName })}
-            </h1>
-            <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-[#65748a]">
-              {t(
-                "Your payment was confirmed. Order #{id} is being prepared for {email}.",
-                { id: order?.id, email: order?.customerEmail },
-              )}
-            </p>
-            {order?.storeName && (
-              <div className="mx-auto mt-5 max-w-md rounded-2xl border border-[#dce7f1] bg-[#f4f8fc] px-4 py-3 text-left">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8a7500]">{t("Assigned store")}</p>
-                <p className="mt-1 text-sm font-extrabold text-[#092a53]">{t(order.storeName)}</p>
-                {order.storeAddress && <p className="mt-1 text-xs leading-5 text-[#65748a]">{t(order.storeAddress)}</p>}
-              </div>
-            )}
-            <p className="mt-5 font-display text-3xl font-extrabold text-[#092a53]">
-              {formatMoney(order?.totalCents || 0, order?.currency, language)}
-            </p>
-            <Link
-              className="mt-7 inline-flex rounded-xl bg-[#ffdc32] px-6 py-3.5 font-extrabold text-[#102c50] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#ffe76c]"
-              to="/flavors"
-            >
-              {t("Continue shopping")}
-            </Link>
-            </div>
-          </section>
-        ) : paymentStatus === "checking" ? (
-          <section className="mx-auto max-w-2xl rounded-[28px] border border-[#e4e8ee] bg-white p-8 text-center shadow-[0_18px_50px_rgba(18,44,80,0.08)] sm:p-12" aria-live="polite" data-scroll-reveal="skip" role="status">
-            <span aria-hidden="true" className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#eaf2fb] text-2xl text-[#092a53]">↻</span>
-            <p className="mt-5 font-display text-2xl font-extrabold text-[#092a53]">
-              {t("Checking your payment…")}
-            </p>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#65748a]">
-              {t("Please wait while your provider confirms the transaction.")}
-            </p>
-          </section>
-        ) : paymentStatus === "unverified" ? (
-          <section className="mx-auto max-w-2xl overflow-hidden rounded-[28px] border border-[#f0d0c8] bg-white shadow-[0_18px_50px_rgba(18,44,80,0.08)]" data-scroll-reveal="skip">
-            <div className="h-2 bg-[#d97362]" />
-            <div className="p-6 sm:p-8">
-            <p className="inline-flex rounded-full bg-red-50 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-red-800">
-              {t("Payment not confirmed")}
-            </p>
-            <h1 className="mt-3 font-display text-3xl font-extrabold text-[#092a53]">
-              {t("We could not verify this payment")}
-            </h1>
-            <p className="mt-3 rounded-xl bg-red-50/70 p-4 text-sm leading-6 text-red-800" role="alert">{error}</p>
-            <p className="mt-3 text-sm leading-6 text-[#65748a]">
-              {t(
-                "Your order has not been marked as paid. If your bank shows a charge, please contact us before trying again.",
-              )}
-            </p>
-            <Link
-              className="mt-6 inline-flex rounded-full border-2 border-[#65748a] px-5 py-2.5 text-sm font-bold transition hover:bg-[#f4f1e7]"
-              to="/contact"
-            >
-              {t("Contact support")}
-            </Link>
-            </div>
-          </section>
-        ) : (
-          <>
-            <Link
-              to="/checkout"
-              state={{ checkoutDetails }}
-              className="inline-flex items-center gap-2 rounded-full border border-[#dce2ea] bg-white px-4 py-2.5 text-sm font-bold text-[#52647b] shadow-sm transition hover:border-[#092a53] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
-            >
-              <span aria-hidden="true">←</span> {t("Back to delivery details")}
-            </Link>
-            <div className="mb-7 mt-6 rounded-[28px] bg-[#092a53] px-6 py-7 text-white shadow-[0_18px_45px_rgba(9,42,83,0.14)] sm:px-9 sm:py-9">
-              <div className="flex flex-wrap items-end justify-between gap-6">
-                <div>
-                  <p className="mb-2 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
-                    <span aria-hidden="true" className="text-base">✦</span>{t("Final step")}
+          <div className="px-5 py-10 sm:px-8 sm:py-16">
+            {statusShell(
+              <>
+                <div className="relative isolate overflow-hidden bg-[#092a53] px-6 pb-10 pt-12 text-white sm:px-10">
+                  <div aria-hidden="true" className="absolute -right-20 -top-28 -z-10 size-72 rounded-full border-[48px] border-white/[0.05]" />
+                  <div aria-hidden="true" className="absolute -bottom-28 -left-10 -z-10 size-64 rounded-full bg-[#ffdc32]/10 blur-3xl" />
+                  <span className="relative mx-auto grid size-20 place-items-center">
+                    <span aria-hidden="true" className="absolute inset-0 animate-ping rounded-full bg-[#8cbc5f]/30 [animation-iteration-count:2] motion-reduce:hidden" />
+                    <span className="relative grid size-20 place-items-center rounded-full bg-[#6c9c45] text-white shadow-[0_0_0_8px_rgba(108,156,69,0.2)]">
+                      <Icon className="size-10" path={icons.check} />
+                    </span>
+                  </span>
+                  <p className="mt-6 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
+                    {t("Payment confirmed")}
                   </p>
-                  <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
-                    {t("Payment")}
+                  <h1 className="mt-2 font-display text-3xl font-extrabold leading-tight sm:text-[2.6rem]">
+                    {t("Thank you, {name}!", { name: order?.customerName })}
                   </h1>
-                  <p className="mt-2 max-w-xl text-sm leading-6 text-white/70">
-                    {t("Choose a payment method available for your location.")}
+                  <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/70">
+                    {t(
+                      "Your payment was confirmed. Order #{id} is being prepared for {email}.",
+                      { id: order?.id, email: order?.customerEmail },
+                    )}
                   </p>
                 </div>
-                <div aria-label={t("Checkout progress")} className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.1em] text-white/65 sm:gap-3">
-                  <span className="flex items-center gap-2"><span aria-hidden="true" className="grid size-7 place-items-center rounded-full bg-[#d8f29a] text-xs text-[#163e35]">✓</span><span className="hidden sm:inline">{t("Your details")}</span></span>
-                  <span aria-hidden="true" className="h-px w-5 bg-white/25 sm:w-8" />
-                  <span className="flex items-center gap-2 text-[#ffdc32]"><span className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-xs text-[#092a53]">2</span><span className="hidden sm:inline">{t("Payment")}</span></span>
-                </div>
-              </div>
-            </div>
-            <p className="mb-7 flex items-start gap-3 rounded-2xl border border-[#eadb8a] bg-[#fff9dc] px-4 py-4 text-sm leading-6 text-[#624f00] sm:px-5">
-                <span aria-hidden="true" className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-xs font-extrabold">i</span>
-                {t(hasMenuItems
-                  ? "Menu items and FCFA prices are illustrative examples, not confirmed local menu items or prices. Orders are handled by this independent website."
-                  : "Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
-            </p>
 
-            {cancelled && (
-              <p
-                className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-900"
-                role="status"
-              >
-                <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full bg-amber-200 font-bold">!</span>
-                {t(
-                  "Checkout was cancelled. No payment was taken; you can try again when you are ready.",
-                )}
-              </p>
-            )}
-
-            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_370px] lg:gap-8">
-              <section className="space-y-6 rounded-[28px] border border-[#e4e8ee] bg-white p-5 shadow-[0_12px_36px_rgba(18,44,80,0.07)] sm:p-8">
-                <div className="rounded-2xl border border-[#e4e8ee] bg-[#f7f9fc] p-4 sm:p-5">
-                  <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#8a7500]">{t("Delivery details")}</p>
-                  <h2 className="font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
-                    {t(checkoutDetails?.fulfillmentType === 'pickup' ? 'Pickup at' : 'Delivering to')}
-                  </h2>
-                  <p className="mt-3 text-sm font-extrabold">
-                    {checkoutDetails?.name}
-                  </p>
-                  {checkoutDetails?.storeName && (
-                    <div className="mt-3 rounded-xl border border-[#dce5ef] bg-white px-3.5 py-3">
-                      <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8a7500]">{t('Selected store')}</p>
-                      <p className="mt-1 text-sm font-bold text-[#092a53]">{t(checkoutDetails.storeName)}</p>
-                      {checkoutDetails.storeAddress && <p className="mt-1 text-xs leading-5 text-[#65748a]">{t(checkoutDetails.storeAddress)}</p>}
+                <div className="p-6 text-left sm:p-10">
+                  <dl className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]">
+                      <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">{t("Order number")}</dt>
+                      <dd className="mt-1 font-display text-2xl font-extrabold text-[#092a53]">#{order?.id}</dd>
                     </div>
-                  )}
-                  <p className="mt-1 text-sm leading-6 text-[#65748a]">
-                    {checkoutDetails?.residence ? `${checkoutDetails.residence}, ` : ''}
-                    {checkoutDetails?.city}
-                  </p>
-                  {checkoutDetails?.scheduledDate && <p className="mt-2 inline-flex rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#52647b]">{t('Scheduled date')}: {checkoutDetails.scheduledDate} · {t(checkoutDetails.timeSlotLabel)}</p>}
-                  <p className="mt-2 text-sm text-[#65748a]">
-                    {checkoutDetails?.email}
-                  </p>
-                </div>
+                    <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]">
+                      <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">{t("Amount paid")}</dt>
+                      <dd className="mt-1 font-display text-2xl font-extrabold text-[#092a53]">
+                        {formatMoney(order?.totalCents || 0, order?.currency, language)}
+                      </dd>
+                    </div>
+                    {order?.storeName && (
+                      <div className="flex items-start gap-3 rounded-2xl bg-[#f3f6fa] p-4 sm:col-span-2">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-[#092a53] shadow-sm">
+                          <Icon path={icons.pin} />
+                        </span>
+                        <div className="min-w-0">
+                          <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">{t("Assigned store")}</dt>
+                          <dd className="mt-0.5 text-sm font-extrabold text-[#092a53]">{t(order.storeName)}</dd>
+                          {order.storeAddress && <dd className="text-xs leading-5 text-[#65748a]">{t(order.storeAddress)}</dd>}
+                        </div>
+                      </div>
+                    )}
+                  </dl>
 
-                <fieldset>
-                  <legend className="font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
-                    {t("Choose payment method")}
-                  </legend>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {displayedPaymentMethods.map((method) => (
-                      <label
-                        className={`flex min-h-[116px] items-start gap-3 rounded-2xl border p-4 transition ${
-                          method.available
-                            ? "cursor-pointer border-[#dce2ea] bg-white hover:border-[#bd9c00] has-[:checked]:border-[#bd9c00] has-[:checked]:bg-[#fff9dc] has-[:checked]:shadow-[0_8px_20px_rgba(189,156,0,0.1)]"
-                            : "cursor-not-allowed border-[#e4e8ee] bg-[#f7f9fc] opacity-70"
-                        }`}
-                        key={method.id}
-                      >
-                        <input
-                          checked={selectedPaymentMethod === method.id}
-                          className="mt-1 accent-[#bd9c00] disabled:cursor-not-allowed"
-                          disabled={!method.available}
-                          name="paymentMethod"
-                          onChange={() => setSelectedPaymentMethod(method.id)}
-                          type="radio"
-                          value={method.id}
-                        />
-                        <span aria-hidden="true" className="mt-0.5 text-xl">
-                          {method.icon}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="flex flex-wrap items-center justify-between gap-2">
-                            <span className="text-sm font-bold">
-                              {t(method.label)}
-                            </span>
-                            <span
-                              className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide ${
-                                method.available
-                                  ? "bg-[#d8f29a] text-[#163e35]"
-                                  : "bg-[#e9e7df] text-[#65748a]"
-                              }`}
-                            >
-                              {t(
-                                method.available
-                                  ? "Available"
-                                  : method.id === "campay"
-                                    ? "Setup required"
-                                    : "Coming soon",
-                              )}
-                            </span>
+                  <div className="mt-7">
+                    <p className="text-xs font-extrabold text-[#52647b]">{t("What happens next")}</p>
+                    <ol className="mt-3 space-y-3">
+                      {[
+                        { title: t("Payment confirmed"), body: t("A receipt is on its way to your inbox."), done: true },
+                        { title: t("Preparing"), body: t("The store starts on your treats.") },
+                        { title: t(isPickup ? "Ready" : "Out for delivery"), body: t("Follow every step live from your account.") },
+                      ].map((step, index) => (
+                        <li className="flex items-start gap-3" key={step.title}>
+                          <span
+                            className={`grid size-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold ${
+                              step.done ? "bg-[#6c9c45] text-white" : "bg-[#f1eee4] text-[#8b95a2]"
+                            }`}
+                          >
+                            {step.done ? <Icon className="size-3.5" path={icons.check} /> : index + 1}
                           </span>
-                          <span className="mt-1 block text-xs leading-5 text-[#65748a]">
-                            {t(method.detail)}
+                          <span>
+                            <span className="block text-sm font-extrabold text-[#102c50]">{step.title}</span>
+                            <span className="block text-xs leading-5 text-[#65748a]">{step.body}</span>
                           </span>
-                        </span>
-                      </label>
-                    ))}
+                        </li>
+                      ))}
+                    </ol>
                   </div>
-                  <p className="mt-3 text-xs leading-5 text-[#65748a]">
-                    {t(selectedPaymentMethod === "campay"
-                      ? "Mobile Money is completed on CamPay’s secure checkout. This website never asks for your payment PIN."
-                      : "Card details are entered on Stripe’s secure checkout and are never stored by this website.")}
-                  </p>
-                </fieldset>
 
+                  <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <Link
+                      className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] shadow-[0_12px_26px_rgba(255,220,50,0.35)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]"
+                      to="/account/orders?tab=orders"
+                    >
+                      {t("Track my order")} <Icon className="size-4" path={icons.arrow} />
+                    </Link>
+                    <Link
+                      className="flex flex-1 items-center justify-center rounded-full px-6 py-3.5 text-sm font-extrabold text-[#092a53] ring-1 ring-[#dcd8cc] transition hover:bg-[#fbfaf5] hover:ring-[#092a53]"
+                      to="/flavors"
+                    >
+                      {t("Continue shopping")}
+                    </Link>
+                  </div>
+                </div>
+              </>,
+              "success",
+            )}
+          </div>
+        ) : paymentStatus === "checking" ? (
+          <div className="px-5 py-16 sm:px-8 sm:py-24">
+            {statusShell(
+              <div className="px-6 py-14 sm:px-12">
+                <span className="relative mx-auto grid size-20 place-items-center">
+                  <svg aria-hidden="true" className="absolute inset-0 size-20 animate-spin motion-reduce:animate-none" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" fill="none" r="36" stroke="#f1eee4" strokeWidth="5" />
+                    <circle cx="40" cy="40" fill="none" r="36" stroke="#ffdc32" strokeDasharray="60 200" strokeLinecap="round" strokeWidth="5" />
+                  </svg>
+                  <span className="grid size-12 place-items-center rounded-full bg-[#092a53] text-[#ffdc32]">
+                    <Icon path={icons.lock} />
+                  </span>
+                </span>
+                <p className="mt-7 font-display text-2xl font-extrabold text-[#092a53] sm:text-3xl">
+                  {t("Checking your payment…")}
+                </p>
+                <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#65748a]">
+                  {t("Please wait while your provider confirms the transaction.")}
+                </p>
+                <p className="mt-6 text-xs font-semibold text-[#8b95a2]">{t("Please don’t close or refresh this page.")}</p>
+              </div>,
+            )}
+          </div>
+        ) : paymentStatus === "unverified" ? (
+          <div className="px-5 py-12 sm:px-8 sm:py-20">
+            {statusShell(
+              <div className="px-6 py-12 sm:px-12">
+                <span className="mx-auto grid size-20 place-items-center rounded-full bg-red-50 text-red-600 shadow-[0_0_0_8px_rgba(254,226,226,0.6)]">
+                  <Icon className="size-9" path={icons.alert} />
+                </span>
+                <p className="mt-6 text-[10px] font-extrabold uppercase tracking-[0.2em] text-red-700">
+                  {t("Payment not confirmed")}
+                </p>
+                <h1 className="mt-2 font-display text-3xl font-extrabold text-[#092a53]">
+                  {t("We could not verify this payment")}
+                </h1>
                 {error && (
-                  <p
-                    className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
-                    role="alert"
-                  >
+                  <p className="mx-auto mt-5 max-w-md rounded-2xl bg-red-50 p-4 text-sm font-semibold leading-6 text-red-800 ring-1 ring-red-100" role="alert">
                     {error}
                   </p>
                 )}
-                <button
-                  className="w-full rounded-xl bg-[#ffdc32] px-6 py-4 text-base font-extrabold text-[#102c50] shadow-[0_8px_18px_rgba(189,156,0,0.16)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
-                  disabled={
-                    isStartingCheckout ||
-                    cartItems.length === 0 ||
-                    !selectedMethodAvailable ||
-                    hasUnavailableItems
-                  }
-                  onClick={startCheckout}
-                  type="button"
-                >
-                  {isStartingCheckout
-                    ? t(selectedPaymentMethod === "campay"
-                      ? "Connecting to CamPay…"
-                      : "Connecting to Stripe…")
-                    : t("Confirm payment for {amount}", {
-                        amount: formatMoney(
-                          finalTotal,
-                          currency,
-                          language,
-                        ),
-                      })}
-                </button>
-                {hasUnavailableItems && (
-                  <p className="text-sm text-red-700" role="alert">
-                    {t("Stock changed while you were checking out.")}{" "}
-                    <Link className="font-bold underline" to="/cart">
-                      {t("Review your bag")}
-                    </Link>{" "}
-                    {t("before paying.")}
-                  </p>
-                )}
-              </section>
+                <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-[#65748a]">
+                  {t(
+                    "Your order has not been marked as paid. If your bank shows a charge, please contact us before trying again.",
+                  )}
+                </p>
+                <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                  <Link
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b]"
+                    to="/contact"
+                  >
+                    {t("Contact support")}
+                  </Link>
+                  <Link
+                    className="inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm font-extrabold text-[#092a53] ring-1 ring-[#dcd8cc] transition hover:bg-[#fbfaf5] hover:ring-[#092a53]"
+                    to="/account/orders?tab=orders"
+                  >
+                    {t("View my orders")}
+                  </Link>
+                </div>
+              </div>,
+              "error",
+            )}
+          </div>
+        ) : (
+          <>
+            <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-12 pt-9 text-white sm:px-8 sm:pb-16 sm:pt-12 lg:px-12">
+              <div aria-hidden="true" className="absolute -right-32 -top-44 -z-10 size-[30rem] rounded-full border-[64px] border-white/[0.04]" />
+              <div aria-hidden="true" className="absolute -bottom-40 left-[15%] -z-10 size-80 rounded-full bg-[#ffdc32]/[0.08] blur-3xl" />
+              <div className="mx-auto max-w-[1240px]">
+                <nav aria-label={t("Breadcrumb")} className="text-xs font-semibold text-white/55">
+                  <Link className="transition hover:text-[#ffdc32]" to="/cart">{t("Shopping bag")}</Link>
+                  <span aria-hidden="true" className="mx-2">/</span>
+                  <Link className="transition hover:text-[#ffdc32]" state={{ checkoutDetails }} to="/checkout">{t("Checkout")}</Link>
+                  <span aria-hidden="true" className="mx-2">/</span>
+                  <span aria-current="page" className="text-white">{t("Payment")}</span>
+                </nav>
 
-              <aside className="h-fit overflow-hidden rounded-[28px] border border-[#e4e8ee] bg-white shadow-[0_12px_36px_rgba(18,44,80,0.07)] lg:sticky lg:top-6">
-                <div className="bg-[#092a53] px-5 py-5 text-white sm:px-6">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#ffdc32]">{t("Final step")}</p>
-                  <h2 className="mt-1 font-display text-2xl font-extrabold">
-                    {t("Order summary")}
-                  </h2>
+                <div className="mt-6 flex flex-wrap items-end justify-between gap-8">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32] before:h-px before:w-6 before:bg-[#ffdc32]/70">
+                      {t("Final step")}
+                    </p>
+                    <h1 className="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-[3.4rem]">
+                      {t("Payment")}
+                    </h1>
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-white/65 sm:text-base">
+                      {t("Choose a payment method available for your location.")}
+                    </p>
+                  </div>
+
+                  <ol aria-label={t("Checkout progress")} className="flex items-center gap-2 sm:gap-3">
+                    {steps.map((step, index) => {
+                      const isCurrent = index === 2;
+                      return (
+                        <li className="flex items-center gap-2 sm:gap-3" key={step}>
+                          <span
+                            aria-current={isCurrent ? "step" : undefined}
+                            className={`flex items-center gap-2 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-3.5 text-xs font-extrabold ${
+                              isCurrent ? "bg-[#ffdc32] text-[#092a53]" : "bg-white/10 text-white ring-1 ring-white/15"
+                            }`}
+                          >
+                            <span className={`grid size-6 place-items-center rounded-full text-[11px] ${isCurrent ? "bg-[#092a53] text-[#ffdc32]" : "bg-[#6c9c45] text-white"}`}>
+                              {isCurrent ? index + 1 : <Icon className="size-3.5" path={icons.check} />}
+                            </span>
+                            {step}
+                          </span>
+                          {index < steps.length - 1 && <span aria-hidden="true" className="hidden h-px w-6 bg-[#ffdc32]/60 sm:block" />}
+                        </li>
+                      );
+                    })}
+                  </ol>
                 </div>
-                <div className="p-5 sm:p-6">
-                  <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <div className="flex items-center gap-3" key={item.id}>
-                      <img
-                        alt=""
-                        className="checkout-item-image rounded-xl border border-[#edf0f4] bg-[#f4f1e7]"
-                        src={item.image}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold">
-                          {t(item.name)}
-                        </p>
-                        <p className="text-xs text-[#65748a]">
-                          {t("Qty: {quantity}", { quantity: item.quantity })}
-                        </p>
-                      </div>
-                      <span className="shrink-0 whitespace-nowrap text-sm font-semibold">
-                        {formatMoney(
-                          Math.round(item.price * item.quantity),
-                          currency,
-                          language,
-                        )}
-                      </span>
-                    </div>
-                  ))}
-                  </div>
-                  <div className="mt-5 space-y-3 border-t border-dashed border-[#dce2ea] pt-4 text-sm">
-                  <div className="flex justify-between gap-4">
-                    <span className="text-[#65748a]">{t("Subtotal")}</span>
-                    <span className="font-semibold">
-                      {formatMoney(Math.round(subtotal), currency, language)}
-                    </span>
-                  </div>
-                  {discount > 0 && (
-                    <div className="flex justify-between gap-4 text-[#163e35]">
-                      <span className="min-w-0 font-semibold">
-                        {t("Buy 2 Get 1 Free ({count} free)", {
-                          count: freeScoops,
+              </div>
+            </section>
+
+            <div className="mx-auto max-w-[1240px] px-5 py-8 sm:px-8 sm:py-12 lg:px-12">
+              {cancelled && (
+                <div className="mb-6 flex items-start gap-3 rounded-[22px] bg-[#fff7ed] p-4 text-sm leading-6 text-[#8a4b00] ring-1 ring-[#fbd9a8] sm:p-5" role="status">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#ffe8c7] text-[#b45f00]">
+                    <Icon className="size-4" path={icons.alert} />
+                  </span>
+                  <span className="pt-1.5 font-semibold">
+                    {t("Checkout was cancelled. No payment was taken; you can try again when you are ready.")}
+                  </span>
+                </div>
+              )}
+
+              <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_390px] xl:gap-10">
+                <div className="min-w-0 space-y-5">
+                  {checkoutDetails && (
+                    <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:p-8">
+                      <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#a48700] before:h-px before:w-5 before:bg-[#d6bd4a]">
+                            {t("Delivery details")}
+                          </p>
+                          <h2 className="mt-2 font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
+                            {t(isPickup ? "Pickup at" : "Delivering to")}
+                          </h2>
+                        </div>
+                        <Link
+                          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-extrabold text-[#52647b] ring-1 ring-[#dcd8cc] transition hover:text-[#092a53] hover:ring-[#092a53]"
+                          state={{ checkoutDetails }}
+                          to="/checkout"
+                        >
+                          <Icon className="size-3.5" path={icons.edit} />
+                          {t("Edit")}
+                        </Link>
+                      </header>
+
+                      <dl className="grid gap-3 sm:grid-cols-3">
+                        {[
+                          {
+                            icon: icons.user,
+                            label: t("Contact"),
+                            lines: [checkoutDetails.name, checkoutDetails.email, checkoutDetails.phone],
+                          },
+                          {
+                            icon: isPickup ? icons.store : icons.truck,
+                            label: t(isPickup ? "Pickup" : "Delivery"),
+                            lines: [
+                              checkoutDetails.storeName ? t(checkoutDetails.storeName) : t(checkoutDetails.city || ""),
+                              checkoutDetails.residence,
+                              checkoutDetails.storeAddress ? t(checkoutDetails.storeAddress) : "",
+                            ],
+                          },
+                          {
+                            icon: icons.calendar,
+                            label: t("Scheduled date"),
+                            lines: [scheduledDateLabel, checkoutDetails.timeSlotLabel ? t(checkoutDetails.timeSlotLabel) : ""],
+                          },
+                        ].map((block) => (
+                          <div className="rounded-[20px] bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]" key={block.label}>
+                            <dt className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">
+                              <span className="grid size-7 place-items-center rounded-lg bg-white text-[#092a53] shadow-sm">
+                                <Icon className="size-3.5" path={block.icon} />
+                              </span>
+                              {block.label}
+                            </dt>
+                            {block.lines.filter(Boolean).map((line, index) => (
+                              <dd
+                                className={`break-words ${index === 0 ? "mt-3 text-sm font-extrabold text-[#102c50]" : "mt-0.5 text-xs leading-5 text-[#65748a]"}`}
+                                key={`${block.label}-${index}`}
+                              >
+                                {line}
+                              </dd>
+                            ))}
+                          </div>
+                        ))}
+                      </dl>
+                    </section>
+                  )}
+
+                  <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:p-8">
+                    <fieldset>
+                      <legend className="w-full">
+                        <span className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#a48700] before:h-px before:w-5 before:bg-[#d6bd4a]">
+                          {t("Payment method")}
+                        </span>
+                        <span className="mt-2 block font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
+                          {t("Choose payment method")}
+                        </span>
+                      </legend>
+                      <div className="mt-6 grid gap-3">
+                        {displayedPaymentMethods.map((method) => {
+                          const isSelected = selectedPaymentMethod === method.id && method.available;
+                          return (
+                            <label
+                              className={`flex items-center gap-4 rounded-[22px] p-4 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] sm:p-5 ${
+                                !method.available
+                                  ? "cursor-not-allowed bg-[#fbfaf5] ring-[#ece8dc]"
+                                  : isSelected
+                                    ? "cursor-pointer bg-[#fffbea] ring-2 ring-[#e8c400] shadow-[0_8px_20px_rgba(189,156,0,0.12)]"
+                                    : "cursor-pointer bg-white ring-[#e3dfd3] hover:ring-[#cfcabb]"
+                              }`}
+                              key={method.id}
+                            >
+                              <input
+                                checked={selectedPaymentMethod === method.id}
+                                className="sr-only"
+                                disabled={!method.available}
+                                name="paymentMethod"
+                                onChange={() => setSelectedPaymentMethod(method.id)}
+                                type="radio"
+                                value={method.id}
+                              />
+                              <span
+                                className={`grid size-12 shrink-0 place-items-center rounded-2xl transition ${
+                                  !method.available
+                                    ? "bg-[#f1eee4] text-[#9aa3af]"
+                                    : isSelected
+                                      ? "bg-[#092a53] text-[#ffdc32]"
+                                      : "bg-[#f4f1e8] text-[#52647b]"
+                                }`}
+                              >
+                                <Icon className="size-6" path={method.icon} />
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="flex flex-wrap items-center gap-2">
+                                  <span className={`text-sm font-extrabold ${method.available ? "text-[#092a53]" : "text-[#8b95a2]"}`}>
+                                    {t(method.label)}
+                                  </span>
+                                  <span
+                                    className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${
+                                      method.available ? "bg-[#eef6e8] text-[#3f6b22]" : "bg-[#ecebe5] text-[#8b95a2]"
+                                    }`}
+                                  >
+                                    {t(method.available ? "Available" : method.id === "campay" ? "Setup required" : "Coming soon")}
+                                  </span>
+                                </span>
+                                <span className="mt-1 block text-xs leading-5 text-[#65748a]">{t(method.detail)}</span>
+                              </span>
+                              <span
+                                className={`grid size-5 shrink-0 place-items-center rounded-full ring-2 transition ${
+                                  isSelected ? "bg-[#092a53] ring-[#092a53]" : "ring-[#d4cfc0]"
+                                }`}
+                              >
+                                {isSelected && <Icon className="size-3 text-white" path={icons.check} />}
+                              </span>
+                            </label>
+                          );
                         })}
-                      </span>
-                      <span className="shrink-0 font-bold">−{formatMoney(Math.round(discount), currency, language)}</span>
-                    </div>
-                  )}
-                  {checkoutDetails?.discountCode && codeDiscount > 0 && (
-                    <div className="flex justify-between gap-4 text-[#163e35]">
-                      <span className="min-w-0 font-semibold">{t("Discount code {code}", { code: checkoutDetails.discountCode })}</span>
-                      <span className="shrink-0 font-bold">−{formatMoney(codeDiscount, currency, language)}</span>
-                    </div>
-                  )}
-                  {loyaltyDiscount > 0 && (
-                    <div className="flex justify-between gap-4 text-[#163e35]">
-                      <span className="min-w-0 font-semibold">{t("Loyalty reward ({points} points)", { points: checkoutDetails?.loyaltyPointsToRedeem })}</span>
-                      <span className="shrink-0 font-bold">−{formatMoney(loyaltyDiscount, currency, language)}</span>
-                    </div>
-                  )}
-                  {deliveryFee > 0 && (
-                    <div className="flex justify-between gap-4">
-                      <span className="text-[#65748a]">{t("Delivery fee")}</span>
-                      <span className="shrink-0 font-semibold">{formatMoney(deliveryFee, currency, language)}</span>
-                    </div>
-                  )}
-                  <div className="flex items-baseline justify-between gap-3 border-t border-[#dce2ea] pt-4">
-                    <span className="font-display text-lg font-bold">
-                      {t("Total")}
-                    </span>
-                    <span className="shrink-0 font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
-                      {formatMoney(finalTotal, currency, language)}
-                    </span>
-                  </div>
-                  </div>
+                      </div>
+                    </fieldset>
+
+                    <p className="mt-5 flex items-start gap-3 rounded-2xl bg-[#f3f6fa] p-4 text-xs leading-5 text-[#52647b]">
+                      <Icon className="mt-0.5 size-4 shrink-0 text-[#092a53]" path={icons.shield} />
+                      {t(selectedPaymentMethod === "campay"
+                        ? "Mobile Money is completed on CamPay’s secure checkout. This website never asks for your payment PIN."
+                        : "Card details are entered on Stripe’s secure checkout and are never stored by this website.")}
+                    </p>
+                  </section>
+
+                  <p className="flex gap-3 rounded-2xl bg-[#fffbea] px-4 py-3.5 text-xs leading-5 text-[#6b5800] ring-1 ring-[#f0e2a0] sm:px-5">
+                    <Icon className="mt-0.5 size-4 shrink-0" path={icons.info} />
+                    {t(hasMenuItems
+                      ? "Menu items and FCFA prices are illustrative examples, not confirmed local menu items or prices. Orders are handled by this independent website."
+                      : "Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
+                  </p>
                 </div>
-                <p className="border-t border-[#edf0f4] bg-[#fbfcfe] px-5 py-3 text-center text-[10px] font-semibold text-[#7b8796] sm:px-6">{t("Your total includes the delivery fee shown above.")}</p>
-              </aside>
+
+                <aside aria-labelledby="payment-summary-heading" className="relative z-10 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300">
+                  <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_18px_50px_rgba(18,44,80,0.09)] ring-1 ring-[#ebe7dc]">
+                    <div className="bg-[#092a53] px-6 py-5 text-white sm:px-7">
+                      <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">{t("Your order")}</p>
+                      <h2 className="mt-1 font-display text-2xl font-extrabold" id="payment-summary-heading">{t("Order summary")}</h2>
+                    </div>
+
+                    <div className="p-6 sm:p-7">
+                      <ul className="max-h-72 space-y-3.5 overflow-y-auto pr-1">
+                        {cartItems.map((item) => (
+                          <li className="flex items-center gap-3.5" key={item.id}>
+                            <span className="relative shrink-0">
+                              <img alt="" className={`size-14 rounded-2xl object-cover ring-1 ring-black/5 ${item.color || "bg-[#f4f1e7]"}`} src={item.image} />
+                              <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#092a53] px-1 text-[10px] font-extrabold text-white ring-2 ring-white">
+                                {item.quantity}
+                              </span>
+                            </span>
+                            <p className="min-w-0 flex-1 truncate text-sm font-extrabold text-[#102c50]">{t(item.name)}</p>
+                            <span className="shrink-0 whitespace-nowrap text-sm font-bold tabular-nums text-[#102c50]">
+                              {money(item.price * item.quantity)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <dl className="mt-6 space-y-3 border-t border-[#f0ece2] pt-5 text-sm">
+                        <div className="flex justify-between gap-4">
+                          <dt className="text-[#65748a]">{t("Subtotal")}</dt>
+                          <dd className="font-bold tabular-nums">{money(subtotal)}</dd>
+                        </div>
+                        {discount > 0 && (
+                          <div className="flex justify-between gap-4 text-[#3f6b22]">
+                            <dt className="min-w-0 font-semibold">{t("Buy 2 Get 1 Free ({count} free)", { count: freeScoops })}</dt>
+                            <dd className="shrink-0 font-extrabold tabular-nums">−{money(discount)}</dd>
+                          </div>
+                        )}
+                        {checkoutDetails?.discountCode && codeDiscount > 0 && (
+                          <div className="flex justify-between gap-4 text-[#3f6b22]">
+                            <dt className="min-w-0 font-semibold">{t("Discount code {code}", { code: checkoutDetails.discountCode })}</dt>
+                            <dd className="shrink-0 font-extrabold tabular-nums">−{money(codeDiscount)}</dd>
+                          </div>
+                        )}
+                        {loyaltyDiscount > 0 && (
+                          <div className="flex justify-between gap-4 text-[#3f6b22]">
+                            <dt className="min-w-0 font-semibold">{t("Loyalty reward ({points} points)", { points: checkoutDetails?.loyaltyPointsToRedeem })}</dt>
+                            <dd className="shrink-0 font-extrabold tabular-nums">−{money(loyaltyDiscount)}</dd>
+                          </div>
+                        )}
+                        <div className="flex justify-between gap-4">
+                          <dt className="text-[#65748a]">{t(isPickup ? "Pickup" : "Delivery fee")}</dt>
+                          <dd className="shrink-0 font-bold tabular-nums">{deliveryFee > 0 ? money(deliveryFee) : t("Free")}</dd>
+                        </div>
+                      </dl>
+
+                      <div className="mt-5 flex items-end justify-between gap-3 border-t border-dashed border-[#dcd8cc] pt-5">
+                        <span className="font-display text-lg font-extrabold text-[#092a53]">{t("Total")}</span>
+                        <span className="font-display text-3xl font-extrabold tabular-nums leading-none text-[#092a53]">{money(finalTotal)}</span>
+                      </div>
+                      {totalSavings > 0 && (
+                        <p className="mt-2 text-right text-xs font-bold text-[#3f6b22]">{t("You save {amount}", { amount: money(totalSavings) })}</p>
+                      )}
+
+                      {error && (
+                        <p className="mt-5 flex items-start gap-2 rounded-2xl bg-red-50 p-3.5 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+                          <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
+                          {error}
+                        </p>
+                      )}
+                      {hasUnavailableItems && (
+                        <p className="mt-5 rounded-2xl bg-red-50 p-3.5 text-sm text-red-700 ring-1 ring-red-100" role="alert">
+                          {t("Stock changed while you were checking out.")}{" "}
+                          <Link className="font-extrabold underline underline-offset-2" to="/cart">{t("Review your bag")}</Link>{" "}
+                          {t("before paying.")}
+                        </p>
+                      )}
+
+                      <button
+                        className="group mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#ffdc32] px-6 py-4 text-sm font-extrabold text-[#092a53] shadow-[0_12px_26px_rgba(255,220,50,0.35)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-[#ecebe5] disabled:text-[#8b95a2] disabled:shadow-none"
+                        disabled={!canPay}
+                        onClick={startCheckout}
+                        type="button"
+                      >
+                        {isStartingCheckout ? (
+                          <>
+                            <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
+                            {t(selectedPaymentMethod === "campay" ? "Connecting to CamPay…" : "Connecting to Stripe…")}
+                          </>
+                        ) : (
+                          <>
+                            <Icon className="size-4" path={icons.lock} />
+                            {t("Confirm payment for {amount}", { amount: money(finalTotal) })}
+                          </>
+                        )}
+                      </button>
+                      <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-[11px] font-semibold text-[#8b95a2]">
+                        <Icon className="size-3.5" path={icons.shield} />
+                        {t(selectedPaymentMethod === "campay" ? "Secured by CamPay" : "Secured by Stripe")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Link
+                    className="mt-4 flex items-center justify-center gap-2 text-sm font-extrabold text-[#806a00] transition hover:text-[#092a53]"
+                    state={{ checkoutDetails }}
+                    to="/checkout"
+                  >
+                    <Icon className="size-4 rotate-180" path={icons.arrow} />
+                    {t("Back to delivery details")}
+                  </Link>
+                </aside>
+              </div>
             </div>
           </>
         )}

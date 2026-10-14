@@ -30,9 +30,13 @@ import { AdminReportsPage } from "../pages/feature/admin/AdminReportsPage";
 import { AdminLayout } from "../components/AdminLayout";
 import { AdminNotificationsPage } from "../pages/feature/admin/AdminNotificationsPage";
 import { CustomCakeRequestPage } from "../pages/feature/cakes/CustomCakeRequestPage";
+import { AdminStoreOverviewPage } from "../pages/feature/admin/AdminStoreOverviewPage";
 import {
+  AdminActivityPage,
   AdminCakeRequestsPage,
+  AdminFulfillmentPage,
   AdminReviewsPage,
+  AdminStockAlertsPage,
 } from "../pages/feature/admin/AdminNewFeaturesPages";
 import {
   AdminDeliveredPage,
@@ -41,7 +45,9 @@ import {
 } from "../pages/feature/admin/AdminSalesPages";
 import { LanguageProvider } from "../language/LanguageContext";
 import { ScrollRevealObserver } from "../components/ScrollRevealObserver";
+import { ScrollProgress } from "../components/ScrollProgress";
 import { WebsiteLoader } from "../components/WebsiteLoader";
+import { InstallAppPrompt } from "../components/InstallAppPrompt";
 
 function SkipToMainContent() {
   const location = useLocation();
@@ -71,6 +77,7 @@ function App() {
         <CartProvider>
           <BrowserRouter>
             <ScrollRevealObserver />
+            <ScrollProgress />
             <WebsiteLoader />
             <SkipToMainContent />
             <AuthProvider>
@@ -99,9 +106,13 @@ function App() {
                     }
                   >
                     <Route path="/admin" element={<AdminPage />} />
+                    <Route path="/admin/overview" element={<AdminStoreOverviewPage />} />
                     <Route path="/admin/menu" element={<AdminMenuPage />} />
                     <Route path="/admin/inventory" element={<AdminInventoryPage />} />
                     <Route path="/admin/categories" element={<AdminCategoriesPage />} />
+                    <Route path="/admin/stock-alerts" element={<AdminStockAlertsPage />} />
+                    <Route path="/admin/fulfillment" element={<AdminFulfillmentPage />} />
+                    <Route path="/admin/activity" element={<AdminActivityPage />} />
                     <Route path="/admin/promotions" element={<AdminPromotionsPage />} />
                     <Route path="/admin/reports" element={<AdminReportsPage />} />
                     <Route path="/admin/reviews" element={<AdminReviewsPage />} />
@@ -130,6 +141,7 @@ function App() {
                   </Route>
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
+                <InstallAppPrompt />
               </AdminAuthProvider>
             </AuthProvider>
           </BrowserRouter>

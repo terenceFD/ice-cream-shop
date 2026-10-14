@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { AuthContext } from "./useAuth";
-import { apiRequest, CUSTOMER_TOKEN_KEY } from "../api/api";
+import { apiRequest, clearCustomerToken, CUSTOMER_TOKEN_KEY, getCustomerToken, setCustomerToken } from "../api/api";
 
 interface Customer {
   id: number;
@@ -39,7 +39,7 @@ export interface AuthContextValue {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [token, setToken] = useState(
-    () => sessionStorage.getItem(CUSTOMER_TOKEN_KEY) || "",
+    () => getCustomerToken(),
   );
   const [isLoading, setIsLoading] = useState(true);
   const [sessionError, setSessionError] = useState("");
@@ -80,12 +80,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setCustomer(null);
       setSessionError("Your session expired. Please sign in again.");
     }
+    // Keep other open tabs in step when the customer signs in or out in one of them.
+    function syncTokenFromOtherTab(event: StorageEvent) {
+      if (event.key === CUSTOMER_TOKEN_KEY || event.key === null) setToken(getCustomerToken());
+    }
     window.addEventListener("customer-session-expired", clearExpiredSession);
-    return () =>
+    window.addEventListener("storage", syncTokenFromOtherTab);
+    return () => {
       window.removeEventListener(
         "customer-session-expired",
         clearExpiredSession,
       );
+      window.removeEventListener("storage", syncTokenFromOtherTab);
+    };
   }, []);
 
   async function authenticate(path: string, credentials: Record<string, string>) {
@@ -93,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: "POST",
       body: credentials,
     });
-    sessionStorage.setItem(CUSTOMER_TOKEN_KEY, result.token);
+    setCustomerToken(result.token);
     setToken(result.token);
     setCustomer(result.customer);
     setSessionError("");
@@ -111,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (!result) throw new Error("The API server returned an empty response.");
 
-    sessionStorage.setItem(CUSTOMER_TOKEN_KEY, result.token);
+    setCustomerToken(result.token);
     setToken(result.token);
     setCustomer(result.customer);
     setSessionError("");
@@ -132,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       if (token) await apiRequest("/auth/logout", { method: "POST", token });
     } finally {
-      sessionStorage.removeItem(CUSTOMER_TOKEN_KEY);
+      clearCustomerToken();
       setToken("");
       setCustomer(null);
     }

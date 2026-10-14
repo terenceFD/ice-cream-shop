@@ -8,8 +8,43 @@ type ApiError = {
 }
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
-const ADMIN_TOKEN_KEY = 'antixor-icy-admin-token'
-const CUSTOMER_TOKEN_KEY = 'antixor-icy-customer-token'
+const ADMIN_TOKEN_KEY = 'cold-stone-admin-token'
+const CUSTOMER_TOKEN_KEY = 'cold-stone-customer-token'
+const ADMIN_WELCOME_KEY = 'cold-stone-admin-welcome'
+
+// The customer token lives in localStorage so the sign-in survives reloads, new tabs and browser restarts.
+export function getCustomerToken(): string {
+  try {
+    const token = localStorage.getItem(CUSTOMER_TOKEN_KEY)
+    if (token) return token
+    // Move a token saved by older builds (sessionStorage) over to localStorage.
+    const legacyToken = sessionStorage.getItem(CUSTOMER_TOKEN_KEY)
+    if (legacyToken) {
+      localStorage.setItem(CUSTOMER_TOKEN_KEY, legacyToken)
+      sessionStorage.removeItem(CUSTOMER_TOKEN_KEY)
+    }
+    return legacyToken || ''
+  } catch {
+    return ''
+  }
+}
+
+export function setCustomerToken(token: string) {
+  try {
+    localStorage.setItem(CUSTOMER_TOKEN_KEY, token)
+  } catch {
+    // Storage can be unavailable (private mode); the session then lasts only for this page.
+  }
+}
+
+export function clearCustomerToken() {
+  try {
+    localStorage.removeItem(CUSTOMER_TOKEN_KEY)
+    sessionStorage.removeItem(CUSTOMER_TOKEN_KEY)
+  } catch {
+    // Nothing to clear when storage is unavailable.
+  }
+}
 
 export async function apiRequest<T = any>(path: string, { body, token, ...options }: ApiOptions = {}): Promise<T | null> {
   const headers = new Headers(options.headers)
@@ -39,11 +74,16 @@ export async function apiRequest<T = any>(path: string, { body, token, ...option
     throw new Error('The API server returned an invalid response.')
   }
   if (!response.ok) {
+    // Only end the session whose token was rejected, so an expired admin session does not sign the customer out.
     if (response.status === 401 && token) {
-      sessionStorage.removeItem(ADMIN_TOKEN_KEY)
-      sessionStorage.removeItem(CUSTOMER_TOKEN_KEY)
-      window.dispatchEvent(new Event('admin-session-expired'))
-      window.dispatchEvent(new Event('customer-session-expired'))
+      if (token === sessionStorage.getItem(ADMIN_TOKEN_KEY)) {
+        sessionStorage.removeItem(ADMIN_TOKEN_KEY)
+        window.dispatchEvent(new Event('admin-session-expired'))
+      }
+      if (token === getCustomerToken()) {
+        clearCustomerToken()
+        window.dispatchEvent(new Event('customer-session-expired'))
+      }
     }
     if (result.error) throw new Error(result.error)
     const endpoint = new URL(`${API_BASE_URL}/api${path}`, window.location.origin).pathname
@@ -52,4 +92,4 @@ export async function apiRequest<T = any>(path: string, { body, token, ...option
   return result as T
 }
 
-export { ADMIN_TOKEN_KEY, CUSTOMER_TOKEN_KEY }
+export { ADMIN_TOKEN_KEY, ADMIN_WELCOME_KEY, CUSTOMER_TOKEN_KEY }

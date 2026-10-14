@@ -12,7 +12,9 @@ export function ScrollRevealObserver() {
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue
-        entry.target.classList.add('is-scroll-revealed')
+        // Record the reveal in a data attribute rather than a class: React rewrites className
+        // when a component re-renders (for example loading -> loaded), which would hide it again.
+        ;(entry.target as HTMLElement).dataset.scrollReveal = 'revealed'
         observer.unobserve(entry.target)
       }
     }, {
@@ -21,7 +23,7 @@ export function ScrollRevealObserver() {
     })
 
     function observePageSections() {
-      const elements = document.querySelectorAll<HTMLElement>('main > *, main section, main article, main form, footer')
+      const elements = document.querySelectorAll<HTMLElement>('main > *, main section, main article, main form, main ul.grid > li, footer')
       for (const element of elements) {
         if (element.closest('[data-scroll-reveal="skip"]') || revealedElements.has(element)) continue
         const isMainChild = element.parentElement?.tagName === 'MAIN'
@@ -30,9 +32,9 @@ export function ScrollRevealObserver() {
           && element.querySelector('section, article, form')
         if (isMainChild && containsAnimatedContent) continue
 
-        if (element.matches('article')) {
-          const siblingCards = Array.from(element.parentElement.children)
-            .filter((sibling) => sibling.tagName === 'ARTICLE')
+        if (element.matches('article, li')) {
+          const siblingCards = Array.from(element.parentElement?.children ?? [])
+            .filter((sibling) => sibling.tagName === element.tagName)
           const cardIndex = siblingCards.indexOf(element)
           element.style.setProperty('--scroll-reveal-delay', `${(cardIndex % 6) * 65}ms`)
         }
@@ -53,7 +55,6 @@ export function ScrollRevealObserver() {
       document.documentElement.classList.remove('scroll-reveal-enabled')
       for (const element of revealedElements) {
         delete element.dataset.scrollReveal
-        element.classList.remove('is-scroll-revealed')
         element.style.removeProperty('--scroll-reveal-delay')
       }
     }

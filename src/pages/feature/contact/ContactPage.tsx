@@ -1,10 +1,11 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Footer, Header } from '../../../components/Layout'
+import { ArrowIcon, Footer, Header } from '../../../components/Layout'
 import { apiRequest } from '../../../api/api'
 import { useLanguage } from '../../../language/useLanguage'
 
-const inputClassName = 'mt-2 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3.5 text-sm font-normal text-[#102c50] outline-none transition placeholder:text-[#9aa4b1] focus:border-[#bd9c00] focus:bg-white focus:ring-2 focus:ring-[#ffdc32]/40'
+const inputClassName = 'w-full rounded-2xl border border-transparent bg-[#fbfaf5] px-5 py-4 text-sm font-medium text-[#092a53] outline-none! ring-1 ring-[#ebe7dc] transition placeholder:font-normal placeholder:text-[#a5aebb] hover:ring-[#ddd6c4] focus:bg-white focus:ring-[#c9b24a]'
+const labelClassName = 'text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]'
 
 interface ContactFormData {
   name: string
@@ -25,6 +26,221 @@ interface ContactStore {
 interface FulfillmentZone extends ContactStore {
   pickupEnabled: boolean
   deliveryEnabled: boolean
+}
+
+interface StoreOption {
+  value: string
+  name: string
+  location: string
+}
+
+function PinIcon({ className = 'size-4' }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 1 1 13 0c0 5.4-6.5 11-6.5 11Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+      <circle cx="12" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  )
+}
+
+function StoreSelect({
+  disabled,
+  label,
+  onChange,
+  placeholder,
+  stores,
+  value,
+}: {
+  disabled: boolean
+  label: string
+  onChange: (value: string) => void
+  placeholder: string
+  stores: StoreOption[]
+  value: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+  const id = useId()
+  const selectedIndex = stores.findIndex((store) => store.value === value)
+  const selected = selectedIndex >= 0 ? stores[selectedIndex] : null
+
+  useEffect(() => {
+    if (!open) return undefined
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', closeOnOutsideClick)
+    return () => document.removeEventListener('pointerdown', closeOnOutsideClick)
+  }, [open])
+
+  useEffect(() => {
+    if (open) listRef.current?.focus()
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    listRef.current?.querySelector(`[data-index="${activeIndex}"]`)?.scrollIntoView({ block: 'nearest' })
+  }, [activeIndex, open])
+
+  const openList = () => {
+    if (disabled || stores.length === 0) return
+    setActiveIndex(Math.max(selectedIndex, 0))
+    setOpen(true)
+  }
+
+  const choose = (index: number) => {
+    onChange(stores[index].value)
+    setOpen(false)
+    buttonRef.current?.focus()
+  }
+
+  const onButtonKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+      event.preventDefault()
+      openList()
+    }
+  }
+
+  const onListKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {
+    const last = stores.length - 1
+    const moves: Record<string, number> = {
+      ArrowDown: Math.min(activeIndex + 1, last),
+      ArrowUp: Math.max(activeIndex - 1, 0),
+      Home: 0,
+      End: last,
+    }
+    if (event.key in moves) {
+      event.preventDefault()
+      setActiveIndex(moves[event.key])
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      choose(activeIndex)
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      setOpen(false)
+      buttonRef.current?.focus()
+    } else if (event.key === 'Tab') {
+      setOpen(false)
+    }
+  }
+
+  return (
+    <div className="relative z-20" ref={rootRef}>
+      <span className={labelClassName} id={`${id}-label`}>{label}</span>
+
+      {/* Keeps native "required" validation for the custom control. */}
+      <input
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-0 left-6 h-px w-px opacity-0"
+        name="storeId"
+        onChange={() => undefined}
+        onInvalid={() => requestAnimationFrame(() => buttonRef.current?.focus())}
+        required
+        tabIndex={-1}
+        value={value}
+      />
+
+      <button
+        aria-controls={`${id}-list`}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-labelledby={`${id}-label ${id}-value`}
+        className={`mt-2 flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left ring-1 outline-none! transition disabled:cursor-not-allowed disabled:opacity-60 ${
+          open
+            ? 'bg-white shadow-[0_10px_30px_rgba(9,42,83,0.08)] ring-[#c9b24a]'
+            : 'bg-[#fbfaf5] ring-[#ebe7dc] hover:ring-[#ddd6c4]'
+        }`}
+        disabled={disabled}
+        onClick={() => (open ? setOpen(false) : openList())}
+        onKeyDown={onButtonKeyDown}
+        ref={buttonRef}
+        type="button"
+      >
+        <span
+          aria-hidden="true"
+          className={`grid size-10 shrink-0 place-items-center rounded-xl transition ${
+            selected ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-white text-[#8792a0] ring-1 ring-[#ebe7dc]'
+          }`}
+        >
+          <PinIcon />
+        </span>
+        <span className="min-w-0 flex-1" id={`${id}-value`}>
+          {selected ? (
+            <>
+              <span className="block truncate text-sm font-extrabold text-[#092a53]">{selected.name}</span>
+              <span className="mt-0.5 block truncate text-xs font-semibold text-[#7b8796]">{selected.location}</span>
+            </>
+          ) : (
+            <span className="block truncate text-sm font-medium text-[#a5aebb]">{placeholder}</span>
+          )}
+        </span>
+        <svg
+          aria-hidden="true"
+          className={`size-4 shrink-0 text-[#8792a0] transition duration-200 ${open ? 'rotate-180 text-[#092a53]' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+        </svg>
+      </button>
+
+      <ul
+        aria-activedescendant={open ? `${id}-option-${activeIndex}` : undefined}
+        aria-labelledby={`${id}-label`}
+        className={`absolute inset-x-0 top-[calc(100%+8px)] z-40 max-h-80 origin-top overflow-y-auto overscroll-contain rounded-2xl bg-white p-2 shadow-[0_28px_64px_rgba(9,42,83,0.18),0_2px_6px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] outline-none! transition duration-150 ease-out ${
+          open ? 'visible translate-y-0 scale-100 opacity-100' : 'invisible -translate-y-1 scale-[0.98] opacity-0'
+        }`}
+        id={`${id}-list`}
+        onKeyDown={onListKeyDown}
+        ref={listRef}
+        role="listbox"
+        tabIndex={-1}
+      >
+        {stores.map((store, index) => {
+          const isSelected = index === selectedIndex
+          const isActive = index === activeIndex
+          return (
+            <li
+              aria-selected={isSelected}
+              className={`flex cursor-pointer items-center gap-4 rounded-xl px-3 py-3 transition-colors ${isActive ? 'bg-[#fbf6e3]' : ''}`}
+              data-index={index}
+              id={`${id}-option-${index}`}
+              key={store.value}
+              onClick={() => choose(index)}
+              onMouseEnter={() => setActiveIndex(index)}
+              role="option"
+            >
+              <span
+                aria-hidden="true"
+                className={`grid size-9 shrink-0 place-items-center rounded-lg transition ${
+                  isSelected ? 'bg-[#092a53] text-[#ffdc32]' : isActive ? 'bg-white text-[#a48700]' : 'bg-[#fbfaf5] text-[#8792a0]'
+                }`}
+              >
+                <PinIcon />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className={`block truncate text-sm ${isSelected ? 'font-extrabold text-[#092a53]' : 'font-bold text-[#24405f]'}`}>
+                  {store.name}
+                </span>
+                <span className="mt-0.5 block truncate text-xs font-semibold text-[#8792a0]">{store.location}</span>
+              </span>
+              <span
+                aria-hidden="true"
+                className={`grid size-5 shrink-0 place-items-center rounded-full transition ${isSelected ? 'bg-[#092a53] text-white' : 'text-transparent'}`}
+              >
+                <svg className="size-3" fill="none" viewBox="0 0 24 24">
+                  <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+                </svg>
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
 }
 
 export function ContactPage() {
@@ -80,113 +296,198 @@ export function ContactPage() {
     }
   }
 
+  const steps = [
+    { title: 'Choose a store', detail: 'Choose a store and your message will be routed to that store’s admin team.' },
+    { title: 'Write your message', detail: 'Please complete all required fields before sending.' },
+    { title: 'Send message', detail: 'Choose the store you want to contact. Only that store’s admin team will receive your message.' },
+  ]
+
   return (
-    <div className="min-h-screen bg-white text-[#102c50]">
+    <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
       <main>
-        <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
-          <div aria-hidden="true" className="absolute -right-24 -top-44 size-[30rem] rounded-full border-[70px] border-white/[0.04]" />
-          <div className="relative mx-auto max-w-[1160px] px-5 py-14 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
-            <div className="max-w-3xl">
-              <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
-                <span aria-hidden="true" className="size-1.5 rounded-full bg-[#ffdc32]" />
+        <section className="relative isolate overflow-hidden border-b border-[#ebe7dc]">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-48 -top-48 -z-10 size-[36rem] rounded-full bg-[#ffdc32]/15 blur-3xl" />
+          <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-end gap-10 px-5 pb-14 pt-14 sm:px-8 sm:pt-20 lg:grid-cols-12 lg:px-12 lg:pb-20 lg:pt-24">
+            <div className="lg:col-span-7">
+              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                 {t('We’d love to hear from you')}
               </p>
-              <h1 className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">{t('Contact us')}</h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
+              <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-[#092a53] sm:text-6xl lg:text-[5.25rem]">
+                {t('Contact us')}
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-7 text-[#52647b] sm:text-lg sm:leading-8">
                 {t('Have a question for a store? Choose its branch and send a message directly to that store’s team.')}
               </p>
+            </div>
+            <div className="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
+              <a
+                className="group inline-flex items-center gap-3 rounded-full border border-[#e5e1d7] bg-white py-2 pl-2 pr-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#d9c76d]"
+                href="https://www.instagram.com/coldstonecameroon/"
+                rel="noreferrer"
+                target="_blank"
+              >
+                <span className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-[#ffdc32] via-[#f56586] to-[#7b4bd8] p-[2px]">
+                  <span className="grid size-full place-items-center rounded-full bg-white text-[#092a53]">
+                    <svg aria-hidden="true" className="size-[18px]" fill="none" viewBox="0 0 24 24">
+                      <rect height="18" rx="5" stroke="currentColor" strokeWidth="1.8" width="18" x="3" y="3" />
+                      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.8" />
+                      <circle cx="17.25" cy="6.75" fill="currentColor" r="1.1" />
+                    </svg>
+                  </span>
+                </span>
+                <span className="leading-tight">
+                  <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t('Local social page')}</span>
+                  <span className="block text-sm font-extrabold text-[#092a53]">@coldstonecameroon</span>
+                </span>
+              </a>
+              <Link
+                className="inline-flex items-center gap-2 rounded-full border border-[#e5e1d7] bg-white px-5 py-3 text-sm font-extrabold text-[#092a53] shadow-sm transition hover:-translate-y-0.5 hover:border-[#092a53]"
+                to="/about"
+              >
+                {t('Read about this guide →')}
+              </Link>
             </div>
           </div>
         </section>
 
-        <section className="bg-[#fbfaf5] px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
-          <div className="mx-auto grid max-w-[1160px] items-start gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:gap-8">
-            <aside className="relative isolate overflow-hidden rounded-[24px] bg-[#092a53] p-6 text-white sm:p-8 lg:sticky lg:top-8">
-              <div aria-hidden="true" className="absolute -bottom-20 -right-20 size-56 rounded-full border-[38px] border-white/[0.04]" />
-              <div className="relative">
-                <span aria-hidden="true" className="grid size-12 place-items-center rounded-2xl bg-[#ffdc32] text-xl text-[#092a53]">✉</span>
-                <h2 className="mt-6 font-display text-2xl font-bold sm:text-3xl">{t('Say hello')}</h2>
-                <p className="mt-3 text-sm leading-6 text-white/70">
-                  {t('Choose a store and your message will be routed to that store’s admin team.')}
-                </p>
+        <section className="px-5 py-14 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+          <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-14">
+            <aside className="lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300 lg:col-span-4">
+              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
+                {t('How it works')}
+              </p>
+              <h2 className="mt-4 font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl">
+                {t('Say hello')}
+              </h2>
 
-                <div className="mt-8 space-y-5">
-                  <div className="flex gap-3 border-t border-white/15 pt-5">
-                    <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/10 text-[#ffdc32]">◎</span>
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#ffdc32]">{t('Local social page')}</p>
-                      <a className="mt-1 inline-block text-sm font-semibold text-white transition hover:text-[#ffdc32]" href="https://www.instagram.com/coldstonecameroon/" rel="noreferrer" target="_blank">{t('Cold Stone Cameroon on Instagram')}</a>
+              <ol className="relative mt-8 space-y-7 before:absolute before:bottom-3 before:left-[19px] before:top-3 before:w-px before:bg-[#e5e1d7]">
+                {steps.map((step, index) => (
+                  <li className="relative flex gap-5" key={step.title}>
+                    <span className="relative z-10 grid size-10 shrink-0 place-items-center rounded-full bg-white font-display text-sm font-extrabold tabular-nums text-[#092a53] ring-1 ring-[#e5e1d7]">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <div className="pt-1.5">
+                      <h3 className="font-display text-lg font-extrabold text-[#092a53]">{t(step.title)}</h3>
+                      <p className="mt-1 text-sm leading-6 text-[#65748a]">{t(step.detail)}</p>
                     </div>
-                  </div>
-                  <div className="flex gap-3 border-t border-white/15 pt-5">
-                    <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/10 text-[#ffdc32]">↗</span>
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#ffdc32]">{t('Our story')}</p>
-                      <Link className="mt-1 inline-block text-sm font-semibold text-white transition hover:text-[#ffdc32]" to="/about">{t('Read about this guide →')}</Link>
-                    </div>
-                  </div>
-                </div>
-                <p className="mt-8 rounded-2xl border border-white/15 bg-white/[0.06] p-4 text-xs leading-5 text-white/65">
+                  </li>
+                ))}
+              </ol>
+
+              <div className="mt-10 flex gap-4 rounded-[22px] border border-[#ecdfa6] bg-[#fffaf0] p-5">
+                <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 font-display text-sm font-extrabold text-[#806a00]">i</span>
+                <p className="text-xs leading-5 text-[#624f00]">
                   {t('For current store information, please contact a local branch through its public listing.')}
                 </p>
               </div>
             </aside>
 
-            <section className="rounded-[24px] border border-[#e7e3d9] bg-white p-5 shadow-[0_12px_40px_rgba(18,44,80,0.07)] sm:p-8 lg:p-10">
-              <div className="border-b border-[#e7e3d9] pb-5 sm:pb-6">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t('Contact a store')}</p>
-                <h2 className="mt-2 font-display text-2xl font-bold sm:text-3xl">{t('Send us a message')}</h2>
-                <p className="mt-2 text-sm leading-6 text-[#65748a]">{t('Choose the store you want to contact. Only that store’s admin team will receive your message.')}</p>
+            <section
+              aria-labelledby="contact-form-title"
+              className="rounded-[32px] bg-white p-6 shadow-[0_1px_0_rgba(9,42,83,0.04),0_24px_60px_rgba(9,42,83,0.08)] ring-1 ring-[#ebe7dc] sm:p-10 lg:col-span-8 lg:p-12"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">{t('Contact a store')}</p>
+                  <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl" id="contact-form-title">
+                    {t('Send us a message')}
+                  </h2>
+                </div>
+                <span aria-hidden="true" className="grid size-14 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]">
+                  <svg className="size-6" fill="none" viewBox="0 0 24 24">
+                    <rect height="14" rx="3" stroke="currentColor" strokeWidth="1.8" width="18" x="3" y="5" />
+                    <path d="m4 7 8 6 8-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                  </svg>
+                </span>
               </div>
-              <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-                <label className="block text-sm font-semibold">
-                  {t('Choose a store')}
-                  <select className={inputClassName} disabled={isLoadingStores || stores.length === 0} name="storeId" onChange={handleChange} required value={form.storeId}>
-                    <option value="">{isLoadingStores ? t('Loading stores…') : t('Select the store you want to contact')}</option>
-                    {stores.map((store) => (
-                      <option key={store.storeId} value={store.storeId}>
-                        {t(store.storeName)} · {t(store.storeTown)}{store.storeArea ? ` — ${t(store.storeArea)}` : ''}
-                      </option>
-                    ))}
-                  </select>
-                  {storesError && <span className="mt-2 block text-sm font-normal text-red-700" role="alert">{storesError}</span>}
-                  {!isLoadingStores && !storesError && stores.length === 0 && <span className="mt-2 block text-sm font-normal text-[#65748a]">{t('No active stores are available right now.')}</span>}
-                </label>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <label className="block text-sm font-semibold">
-                    {t('Your name')}
-                    <input autoComplete="name" className={inputClassName} maxLength={100} name="name" onChange={handleChange} placeholder={t('Enter your name')} required value={form.name} />
-                  </label>
-                  <label className="block text-sm font-semibold">
-                    {t('Email address')}
-                    <input autoComplete="email" className={inputClassName} maxLength={254} name="email" onChange={handleChange} placeholder={t('you@example.com')} required type="email" value={form.email} />
-                  </label>
-                </div>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <label className="block text-sm font-semibold">
-                    {t('Phone number')} <span className="font-normal text-[#8792a0]">{t('(optional)')}</span>
-                    <input autoComplete="tel" className={inputClassName} maxLength={40} name="phone" onChange={handleChange} placeholder={t('Add a phone number if you prefer')} type="tel" value={form.phone} />
-                  </label>
-                  <label className="block text-sm font-semibold">
-                    {t('Subject')}
-                    <input className={inputClassName} maxLength={150} name="subject" onChange={handleChange} placeholder={t('What is your message about?')} required value={form.subject} />
-                  </label>
-                </div>
-                <label className="block text-sm font-semibold">
-                  {t('Message')}
-                  <textarea className={`${inputClassName} min-h-40 resize-y`} maxLength={5000} name="message" onChange={handleChange} placeholder={t('Write your message here…')} required value={form.message} />
-                </label>
-                {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p>}
-                {submitted && <p className="rounded-xl bg-[#eaf5d8] px-4 py-3 text-sm text-[#274d20]" role="status">{t('Thanks for reaching out. Your message has been sent to our team.')}</p>}
-                <div className="flex flex-col gap-3 border-t border-[#e7e3d9] pt-5 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-xs leading-5 text-[#8792a0]">{t('Please complete all required fields before sending.')}</p>
-                  <button className="inline-flex items-center justify-center gap-2 rounded-full bg-[#ffdc32] px-7 py-3.5 text-sm font-bold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] disabled:cursor-wait disabled:opacity-60" disabled={isSubmitting || isLoadingStores || stores.length === 0} type="submit">
-                    {isSubmitting ? t('Sending message…') : t('Send message')}
-                    {!isSubmitting && <span aria-hidden="true">→</span>}
+
+              {submitted ? (
+                <div className="mt-10 flex flex-col items-center rounded-[24px] bg-[#f3f8ef] px-6 py-14 text-center" role="status">
+                  <span aria-hidden="true" className="grid size-16 place-items-center rounded-full bg-[#4caf50] text-white shadow-[0_12px_30px_rgba(76,175,80,0.35)]">
+                    <svg className="size-8" fill="none" viewBox="0 0 24 24">
+                      <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+                    </svg>
+                  </span>
+                  <p className="mt-6 max-w-md font-display text-xl font-extrabold leading-snug text-[#274d20]">
+                    {t('Thanks for reaching out. Your message has been sent to our team.')}
+                  </p>
+                  <button
+                    className="mt-8 inline-flex items-center gap-2 rounded-full border border-[#cfe2c4] bg-white px-6 py-3 text-sm font-extrabold text-[#274d20] transition hover:-translate-y-0.5"
+                    onClick={() => setSubmitted(false)}
+                    type="button"
+                  >
+                    {t('Send message')} <span aria-hidden="true">→</span>
                   </button>
                 </div>
-              </form>
+              ) : (
+                <form className="mt-10 space-y-6" onSubmit={handleSubmit}>
+                  <div>
+                    <StoreSelect
+                      disabled={isLoadingStores || stores.length === 0}
+                      label={t('Choose a store')}
+                      onChange={(storeId) => {
+                        setForm((currentForm) => ({ ...currentForm, storeId }))
+                        setSubmitted(false)
+                      }}
+                      placeholder={isLoadingStores ? t('Loading stores…') : t('Select the store you want to contact')}
+                      stores={stores.map((store) => ({
+                        value: String(store.storeId),
+                        name: t(store.storeName),
+                        location: [t(store.storeTown), store.storeArea ? t(store.storeArea) : ''].filter(Boolean).join(' · '),
+                      }))}
+                      value={form.storeId}
+                    />
+                    {storesError && <span className="mt-2 block text-sm text-red-700" role="alert">{storesError}</span>}
+                    {!isLoadingStores && !storesError && stores.length === 0 && <span className="mt-2 block text-sm text-[#65748a]">{t('No active stores are available right now.')}</span>}
+                  </div>
+
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <label className="block">
+                      <span className={labelClassName}>{t('Your name')}</span>
+                      <input autoComplete="name" className={`${inputClassName} mt-2`} maxLength={100} name="name" onChange={handleChange} placeholder={t('Enter your name')} required value={form.name} />
+                    </label>
+                    <label className="block">
+                      <span className={labelClassName}>{t('Email address')}</span>
+                      <input autoComplete="email" className={`${inputClassName} mt-2`} maxLength={254} name="email" onChange={handleChange} placeholder={t('you@example.com')} required type="email" value={form.email} />
+                    </label>
+                    <label className="block">
+                      <span className={labelClassName}>
+                        {t('Phone number')} <span className="font-semibold normal-case tracking-normal text-[#a5aebb]">{t('(optional)')}</span>
+                      </span>
+                      <input autoComplete="tel" className={`${inputClassName} mt-2`} maxLength={40} name="phone" onChange={handleChange} placeholder={t('Add a phone number if you prefer')} type="tel" value={form.phone} />
+                    </label>
+                    <label className="block">
+                      <span className={labelClassName}>{t('Subject')}</span>
+                      <input className={`${inputClassName} mt-2`} maxLength={150} name="subject" onChange={handleChange} placeholder={t('What is your message about?')} required value={form.subject} />
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className={labelClassName}>{t('Message')}</span>
+                      <span className="text-[11px] font-semibold tabular-nums text-[#a5aebb]">{form.message.length} / 5000</span>
+                    </span>
+                    <textarea className={`${inputClassName} mt-2 min-h-44 resize-y leading-7`} maxLength={5000} name="message" onChange={handleChange} placeholder={t('Write your message here…')} required value={form.message} />
+                  </label>
+
+                  {error && <p className="flex gap-3 rounded-2xl bg-red-50 px-5 py-4 text-sm text-red-700" role="alert"><span aria-hidden="true" className="font-extrabold">!</span>{error}</p>}
+
+                  <div className="flex flex-col-reverse gap-4 border-t border-[#efece3] pt-6 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs leading-5 text-[#8792a0]">{t('Please complete all required fields before sending.')}</p>
+                    <button
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-[#092a53] px-8 py-4 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.22)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] disabled:translate-y-0 disabled:cursor-wait disabled:opacity-60"
+                      disabled={isSubmitting || isLoadingStores || stores.length === 0}
+                      type="submit"
+                    >
+                      {isSubmitting ? t('Sending message…') : t('Send message')}
+                      {!isSubmitting && <ArrowIcon />}
+                    </button>
+                  </div>
+                </form>
+              )}
             </section>
           </div>
         </section>

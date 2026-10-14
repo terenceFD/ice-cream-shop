@@ -32,8 +32,19 @@ if (!connectionString) {
 const pool = new Pool({
   connectionString,
   max: Number(process.env.DATABASE_POOL_SIZE || 5),
+  // When every connection is busy, requests queue for a free one. Give up after a while so a
+  // stalled database surfaces as a "busy, try again" reply instead of requests hanging forever.
+  connectionTimeoutMillis: Number(process.env.DATABASE_CONNECT_TIMEOUT_MS || 15000),
   ssl: postgresSslConfig(),
   application_name: 'ice-cream-site',
+})
+
+// The hosted pooler closes idle connections from time to time. pg-pool emits that as an
+// 'error' event on the pool; without a listener Node treats it as uncaught and the whole
+// API process exits. The broken client is already discarded, so logging is enough —
+// the next query opens a fresh connection.
+pool.on('error', (error) => {
+  console.warn(`Idle database connection dropped (${error.code || error.message}); it will be replaced on the next query.`)
 })
 
 function parameterize(sql, parameters) {
@@ -157,6 +168,26 @@ function activeClient() {
   return transactionContext.getStore()?.client || pool
 }
 
+// Errors raised while *opening* a connection (DNS lookup or refused socket). The query
+// never reached Postgres, so retrying cannot apply a write twice.
+const CONNECTION_SETUP_ERRORS = new Set(['ENOTFOUND', 'EAI_AGAIN', 'ECONNREFUSED'])
+const CONNECTION_RETRY_DELAYS_MS = [250, 750]
+
+async function runQuery(sql, values) {
+  const client = activeClient()
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await client.query(sql, values)
+    } catch (error) {
+      const canRetry = client === pool
+        && CONNECTION_SETUP_ERRORS.has(error?.code)
+        && attempt < CONNECTION_RETRY_DELAYS_MS.length
+      if (!canRetry) throw error
+      await new Promise((resolve) => setTimeout(resolve, CONNECTION_RETRY_DELAYS_MS[attempt]))
+    }
+  }
+}
+
 function insertIdentity(sql) {
   const match = /\bINSERT\s+(?:OR\s+IGNORE\s+)?INTO\s+([a-z_][a-z0-9_]*)/i.exec(sql)
   if (!match || !identityTables.has(match[1].toLowerCase()) || /\bRETURNING\b/i.test(sql)) {
@@ -170,18 +201,18 @@ export const database = {
     return {
       async all(...parameters) {
         const prepared = translateSql(sql, queryParameters(parameters))
-        const result = await activeClient().query(prepared.sql, prepared.values)
+        const result = await runQuery(prepared.sql, prepared.values)
         return result.rows
       },
       async get(...parameters) {
         const prepared = translateSql(sql, queryParameters(parameters))
-        const result = await activeClient().query(prepared.sql, prepared.values)
+        const result = await runQuery(prepared.sql, prepared.values)
         return result.rows[0]
       },
       async run(...parameters) {
         const statement = insertIdentity(sql)
         const prepared = translateSql(statement, queryParameters(parameters))
-        const result = await activeClient().query(prepared.sql, prepared.values)
+        const result = await runQuery(prepared.sql, prepared.values)
         return {
           changes: result.rowCount,
           lastInsertRowid: result.rows[0]?.id,

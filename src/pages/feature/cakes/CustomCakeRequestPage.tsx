@@ -1,12 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { apiRequest, CUSTOMER_TOKEN_KEY } from '../../../api/api'
+import { apiRequest, getCustomerToken } from '../../../api/api'
 import { useAuth } from '../../../authcontext/useAuth'
-import { Footer, Header } from '../../../components/Layout'
+import { ArrowIcon, Footer, Header } from '../../../components/Layout'
 import { useLanguage } from '../../../language/useLanguage'
 import { getCameroonDate } from '../../../../shared/cameroonDate'
 
-const inputClass = 'mt-2 w-full rounded-xl border border-[#e2e3e4] bg-[#fcfcfb] px-4 py-3.5 text-sm text-[#102c50] shadow-sm transition placeholder:text-[#9aa3ae] hover:border-[#bdc5cf] focus:border-[#bd9c00] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#ffdc32]/20'
 const toppingOptions = ['Sprinkles', 'Chocolate chips', 'Fresh fruit', 'Cookie pieces', 'Whipped cream']
 
 export function CustomCakeRequestPage() {
@@ -21,6 +20,10 @@ export function CustomCakeRequestPage() {
   const [storeError, setStoreError] = useState('')
   const [minPickupDate] = useState(() => getCameroonDate())
   const [maxPickupDate] = useState(() => getCameroonDate(90))
+  const [size, setSize] = useState('Medium')
+  const [flavor, setFlavor] = useState('Vanilla')
+  const [pickupDate, setPickupDate] = useState('')
+  const [messageLength, setMessageLength] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -47,7 +50,7 @@ export function CustomCakeRequestPage() {
     try {
       const result = await apiRequest<{ requestId: number }>('/cake-requests', {
         method: 'POST',
-        token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY) || undefined,
+        token: getCustomerToken() || undefined,
         body: {
           name: form.get('name'),
           email: form.get('email'),
@@ -63,6 +66,10 @@ export function CustomCakeRequestPage() {
       setSuccess(t('Request #{id} sent. The store will contact you to confirm the details and price.', { id: result.requestId }))
       formElement.reset()
       setToppings([])
+      setSize('Medium')
+      setFlavor('Vanilla')
+      setPickupDate('')
+      setMessageLength(0)
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Unable to send cake request.')
     } finally {
@@ -70,162 +77,345 @@ export function CustomCakeRequestPage() {
     }
   }
 
+  const sizeOptions = [
+    { label: 'Small', icon: 'size-7' },
+    { label: 'Medium', icon: 'size-9' },
+    { label: 'Large', icon: 'size-11' },
+  ]
+  const flavorOptions = [
+    { label: 'Vanilla', swatch: 'bg-[#f6e7b9]' },
+    { label: 'Chocolate', swatch: 'bg-[#6b3f26]' },
+    { label: 'Strawberry', swatch: 'bg-[#f39bb0]' },
+    { label: 'Mango', swatch: 'bg-[#f7b23b]' },
+    { label: 'Custom flavor — tell us below', swatch: 'bg-[conic-gradient(#ffdc32,#f56586,#7b4bd8,#4fc4e8,#ffdc32)]' },
+  ]
+  const selectedStore = stores.find((store) => String(store.storeId) === selectedStoreId)
+  const labelClass = 'text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]'
+  const fieldClass = 'mt-2 w-full rounded-2xl bg-white px-4 py-3.5 text-sm font-semibold text-[#092a53] outline-none! ring-1 ring-[#e5e1d7] transition placeholder:font-normal placeholder:text-[#a5aebb] hover:ring-[#d6cfbd] focus:ring-[#c9b24a]'
+  const stepHeading = (number: string, title: string, id: string) => (
+    <h3 className="flex items-center gap-3 font-display text-xl font-extrabold text-[#092a53]" id={id}>
+      <span className="grid size-9 place-items-center rounded-full bg-[#092a53] font-display text-sm text-[#ffdc32]">{number}</span>
+      {t(title)}
+    </h3>
+  )
+  const formatDate = (value: string) =>
+    value ? new Date(`${value}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'long' }) : ''
+
   return (
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
       <main>
-        <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
-          <div aria-hidden="true" className="absolute -right-40 -top-48 size-[34rem] rounded-full border-[70px] border-white/[0.035]" />
-          <div aria-hidden="true" className="absolute -bottom-52 -left-32 size-[27rem] rounded-full border-[55px] border-[#ffdc32]/[0.08]" />
-          <div className="relative mx-auto grid max-w-[1320px] items-center gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[1fr_0.9fr] lg:gap-14 lg:px-12 lg:py-20">
-            <div className="relative z-10 max-w-2xl">
-              <Link className="inline-flex items-center gap-2 text-sm font-semibold text-white/70 transition hover:text-[#ffdc32]" to="/menu">
-                <span aria-hidden="true">←</span>{t('Back to menu')}
-              </Link>
-              <p className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32] sm:text-[11px]">
-                <span aria-hidden="true" className="text-sm">✦</span>{t('Made for your celebration')}
+        {/* Hero */}
+        <section className="relative isolate overflow-hidden border-b border-[#ebe7dc]">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-48 -top-48 -z-10 size-[36rem] rounded-full bg-[#ffdc32]/15 blur-3xl" />
+          <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-12 px-5 pb-16 pt-10 sm:px-8 sm:pt-14 lg:grid-cols-12 lg:gap-10 lg:px-12 lg:pb-20 lg:pt-16">
+            <div className="lg:col-span-6">
+              <nav aria-label={t('Breadcrumb')} className="flex items-center gap-2 text-xs font-bold text-[#7b8796]">
+                <Link className="transition hover:text-[#092a53]" to="/menu">{t('Menu')}</Link>
+                <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
+                <span aria-current="page" className="text-[#092a53]">{t('Custom cake request')}</span>
+              </nav>
+              <p className="mt-8 inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
+                {t('Made for your celebration')}
               </p>
-              <h1 className="mt-5 max-w-xl font-display text-4xl font-extrabold leading-[1.06] tracking-tight sm:text-5xl lg:text-6xl">
+              <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-[#092a53] sm:text-6xl lg:text-7xl">
                 {t('Custom cake request')}
               </h1>
-              <p className="mt-5 max-w-xl text-sm leading-7 text-white/75 sm:text-base sm:leading-8">
+              <p className="mt-6 max-w-xl text-base leading-7 text-[#52647b] sm:text-lg sm:leading-8">
                 {t('Choose your cake details and requested pickup date. This is a request, not a confirmed order; the store will contact you about availability and pricing.')}
               </p>
-              <a className="mt-7 inline-flex items-center justify-center gap-3 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] shadow-[0_12px_28px_rgba(255,220,50,0.17)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40" href="#cake-request-form">
-                {t('Start your request')}<span aria-hidden="true">↓</span>
-              </a>
-              <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-white/75 sm:text-sm">
-                <span className="inline-flex items-center gap-2"><span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-white/10 text-[#ffdc32]">✓</span>{t('Made for your celebration')}</span>
-                <span className="inline-flex items-center gap-2"><span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-white/10 text-[#ffdc32]">✓</span>{t('Choose your cake details')}</span>
+              <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
+                <a
+                  className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-7 py-4 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  href="#cake-request-form"
+                >
+                  {t('Start your request')} <span aria-hidden="true">↓</span>
+                </a>
+                <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-[#52647b]">
+                  {['Choose your cake details', 'We’ll confirm the details'].map((label) => (
+                    <li className="inline-flex items-center gap-2" key={label}>
+                      <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#ffdc32]/40 text-[#806a00]">
+                        <svg className="size-3" fill="none" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" /></svg>
+                      </span>
+                      {t(label)}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 
-            <div className="relative mx-auto w-full max-w-[570px] pb-6 pr-5 sm:pb-8 sm:pr-8">
-              <div aria-hidden="true" className="absolute bottom-0 right-0 h-[72%] w-[73%] rounded-[30px] bg-[#ffdc32] sm:rounded-[38px]" />
-              <img
-                alt={t('Custom celebration cake')}
-                className="relative z-10 aspect-[1.2] w-full rounded-[26px] object-cover shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:rounded-[34px]"
-                src="/cake-images/cake-1.webp"
-              />
-              <img
-                alt=""
-                aria-hidden="true"
-                className="absolute -right-1 top-5 z-20 size-20 rounded-2xl border-4 border-[#092a53] object-cover shadow-xl sm:-right-2 sm:top-8 sm:size-28"
-                src="/cake-images/cake-3.webp"
-              />
-              <div className="absolute -bottom-1 left-0 z-20 flex max-w-[250px] items-center gap-3 rounded-2xl border border-[#e7e3d9] bg-white p-3 text-[#102c50] shadow-[0_14px_35px_rgba(0,0,0,0.2)] sm:-left-4 sm:max-w-[300px] sm:p-4">
-                <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#fff3b8] text-xl text-[#806a00] sm:size-14">✦</span>
-                <div>
-                  <p className="text-[9px] font-extrabold uppercase tracking-[0.13em] text-[#806a00]">{t('A treat made your way')}</p>
-                  <p className="mt-1 text-xs font-bold leading-5 sm:text-sm">{t('Share your ideas and we’ll help bring your celebration cake to life.')}</p>
+            <div className="relative lg:col-span-6">
+              <div className="grid grid-cols-5 grid-rows-2 gap-3 sm:gap-4 [aspect-ratio:5/4]">
+                <figure className="col-span-3 row-span-2 overflow-hidden rounded-[30px] bg-[#fff3b8] shadow-[0_28px_64px_rgba(9,42,83,0.18)]">
+                  <img alt={t('Custom celebration cake')} className="size-full object-cover" src="/cake-images/cake-1.webp" />
+                </figure>
+                <figure className="col-span-2 overflow-hidden rounded-[24px] bg-[#fff3b8] shadow-[0_16px_36px_rgba(9,42,83,0.12)]">
+                  <img alt="" aria-hidden="true" className="size-full object-cover" src="/cake-images/cake-3.webp" />
+                </figure>
+                <figure className="col-span-2 overflow-hidden rounded-[24px] bg-[#fff3b8] shadow-[0_16px_36px_rgba(9,42,83,0.12)]">
+                  <img alt="" aria-hidden="true" className="size-full object-cover" src="/cake-images/cake-5.webp" />
+                </figure>
+              </div>
+              <div className="absolute -bottom-6 left-4 flex max-w-[320px] items-center gap-3 rounded-2xl border border-[#eeeae1] bg-white/95 p-4 shadow-[0_18px_40px_rgba(9,42,83,0.14)] backdrop-blur-sm sm:left-8">
+                <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#ffdc32] text-[#092a53]">
+                  <svg className="size-6" fill="none" viewBox="0 0 24 24">
+                    <path d="M4 20h16M5 20v-6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6M5 16c2 1 3-1 4.7 0s2.6 1 4.6 0 3 1 4.7 0M12 12V8m0-3v.01" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                  </svg>
+                </span>
+                <div className="leading-tight">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t('A treat made your way')}</p>
+                  <p className="mt-1 text-xs font-bold leading-4 text-[#092a53]">{t('Share your ideas and we’ll help bring your celebration cake to life.')}</p>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="px-5 py-10 sm:px-8 sm:py-14 lg:px-12 lg:py-16">
-          <div className="mx-auto grid max-w-[1160px] items-start gap-7 lg:grid-cols-[0.72fr_1.28fr] lg:gap-10">
-            <aside className="space-y-5 lg:sticky lg:top-8">
-              <div className="rounded-[24px] border border-[#e7e3d9] bg-white p-6 shadow-[0_12px_35px_rgba(16,44,80,0.05)] sm:p-7">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t('Your celebration, your cake')}</p>
-                <h2 className="mt-3 font-display text-2xl font-extrabold leading-tight sm:text-3xl">{t('Let’s make it memorable.')}</h2>
-                <p className="mt-3 text-sm leading-6 text-[#65748a]">{t('Share the details that matter most. The selected store will follow up to confirm availability and pricing.')}</p>
-                <div className="mt-6 space-y-4 border-t border-[#eeeae1] pt-5">
-                  {[
-                    { number: '01', title: 'Tell us what you love', detail: 'Choose a size, flavor and toppings.' },
-                    { number: '02', title: 'Pick a store and date', detail: 'Select a pickup location and preferred day.' },
-                    { number: '03', title: 'We’ll confirm the details', detail: 'The store will contact you before your request is confirmed.' },
-                  ].map((step) => (
-                    <div className="flex gap-3" key={step.number}>
-                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#fff5c8] text-xs font-extrabold text-[#806a00]">{step.number}</span>
-                      <div>
-                        <h3 className="text-sm font-bold">{t(step.title)}</h3>
-                        <p className="mt-1 text-xs leading-5 text-[#65748a]">{t(step.detail)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-[#eadb8a] bg-[#fff9dc] p-5 text-sm leading-6 text-[#624f00]">
-                <p className="font-extrabold">{t('Please note')}</p>
-                <p className="mt-1">{t('Sending this form is a request only. Your order is not confirmed until the store contacts you.')}</p>
-              </div>
-            </aside>
+        <section className="px-5 py-14 sm:px-8 sm:py-20 lg:px-12">
+          <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-12">
+            {/* Form */}
+            <form
+              className="scroll-mt-6 rounded-[32px] bg-white p-6 shadow-[0_1px_0_rgba(9,42,83,0.04),0_24px_60px_rgba(9,42,83,0.08)] ring-1 ring-[#ebe7dc] sm:p-10 lg:col-span-8"
+              id="cake-request-form"
+              onSubmit={submitRequest}
+            >
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">{t('A few details to get started')}</p>
+              <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl">{t('Tell us about your cake')}</h2>
+              <p className="mt-2 text-sm text-[#65748a]">{t('Fields marked with an asterisk are required.')}</p>
 
-            <form className="scroll-mt-6 rounded-[24px] border border-[#e7e3d9] bg-white p-5 shadow-[0_16px_45px_rgba(16,44,80,0.07)] sm:p-8 lg:p-9" id="cake-request-form" onSubmit={submitRequest}>
-              <div className="mb-7 border-b border-[#eeeae1] pb-6">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t('A few details to get started')}</p>
-                <h2 className="mt-2 font-display text-2xl font-extrabold sm:text-3xl">{t('Tell us about your cake')}</h2>
-                <p className="mt-2 text-sm leading-6 text-[#65748a]">{t('Fields marked with an asterisk are required.')}</p>
-              </div>
+              {/* Step 1 */}
+              <section aria-labelledby="cake-design-heading" className="mt-10 border-t border-[#efece3] pt-8">
+                {stepHeading('1', 'Design your cake', 'cake-design-heading')}
 
-              <section aria-labelledby="cake-contact-heading">
-                <h3 className="mb-4 flex items-center gap-3 text-sm font-extrabold" id="cake-contact-heading">
-                  <span className="grid size-8 place-items-center rounded-xl bg-[#092a53] text-xs text-[#ffdc32]">1</span>{t('Your contact details')}
-                </h3>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="text-sm font-semibold">{t('Full name')} <span className="text-[#a48700]">*</span><input autoComplete="name" className={inputClass} defaultValue={customer?.name || ''} maxLength={100} name="name" required /></label>
-                  <label className="text-sm font-semibold">{t('Email address')} <span className="text-[#a48700]">*</span><input autoComplete="email" className={inputClass} defaultValue={customer?.email || ''} maxLength={254} name="email" required type="email" /></label>
-                  <label className="text-sm font-semibold sm:col-span-2">{t('Phone number')} <span className="text-[#a48700]">*</span><input autoComplete="tel" className={inputClass} defaultValue={customer?.phone || ''} maxLength={40} name="phone" required type="tel" /></label>
-                </div>
-              </section>
-
-              <section aria-labelledby="cake-design-heading" className="mt-8 border-t border-[#eeeae1] pt-7">
-                <h3 className="mb-4 flex items-center gap-3 text-sm font-extrabold" id="cake-design-heading">
-                  <span className="grid size-8 place-items-center rounded-xl bg-[#092a53] text-xs text-[#ffdc32]">2</span>{t('Design your cake')}
-                </h3>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="text-sm font-semibold">{t('Cake size')}
-                    <select className={inputClass} name="size"><option>{t('Small')}</option><option>{t('Medium')}</option><option>{t('Large')}</option></select>
-                  </label>
-                  <label className="text-sm font-semibold">{t('Cake flavor')}
-                    <select className={inputClass} name="flavor"><option>{t('Vanilla')}</option><option>{t('Chocolate')}</option><option>{t('Strawberry')}</option><option>{t('Mango')}</option><option>{t('Custom flavor — tell us below')}</option></select>
-                  </label>
-                </div>
-                <fieldset className="mt-5">
-                  <legend className="text-sm font-semibold">{t('Toppings')} <span className="font-normal text-[#8792a0]">({t('optional')})</span></legend>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    {toppingOptions.map((topping) => (
-                      <label className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-3 text-sm transition ${toppings.includes(topping) ? 'border-[#bd9c00] bg-[#fff9dc] text-[#102c50]' : 'border-[#e7e3d9] bg-[#fcfcfb] text-[#52647b] hover:border-[#c9c5b8] hover:bg-[#fbfaf5]'}`} key={topping}>
-                        <input checked={toppings.includes(topping)} className="size-4 accent-[#bd9c00]" onChange={(event) => setToppings((current) => event.target.checked ? [...current, topping] : current.filter((value) => value !== topping))} type="checkbox" />
-                        {t(topping)}
-                      </label>
-                    ))}
+                <fieldset className="mt-6">
+                  <legend className={labelClass}>{t('Cake size')}</legend>
+                  <div className="mt-3 grid grid-cols-3 gap-3">
+                    {sizeOptions.map((option) => {
+                      const value = t(option.label)
+                      const checked = size === option.label
+                      return (
+                        <label
+                          className={`relative flex cursor-pointer flex-col items-center justify-end gap-3 rounded-2xl px-3 pb-4 pt-5 text-center ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${
+                            checked ? 'bg-[#092a53] text-white ring-[#092a53]' : 'bg-[#fbfaf5] text-[#092a53] ring-[#ebe7dc] hover:ring-[#d6cfbd]'
+                          }`}
+                          key={option.label}
+                        >
+                          <input checked={checked} className="sr-only" name="size" onChange={() => setSize(option.label)} type="radio" value={value} />
+                          <svg aria-hidden="true" className={`${option.icon} ${checked ? 'text-[#ffdc32]' : 'text-[#a48700]'}`} fill="none" viewBox="0 0 24 24">
+                            <path d="M4 20h16M5 20v-6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6M5 16c2 1 3-1 4.7 0s2.6 1 4.6 0 3 1 4.7 0M12 12V8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" />
+                          </svg>
+                          <span className="text-sm font-extrabold">{value}</span>
+                        </label>
+                      )
+                    })}
                   </div>
                 </fieldset>
-                <label className="mt-5 block text-sm font-semibold">{t('Message on cake or special instructions')} <span className="font-normal text-[#8792a0]">({t('optional')})</span>
-                  <textarea className={`${inputClass} resize-y`} maxLength={200} name="message" placeholder={t('Add a message or any details you’d like us to know.')} rows={4} />
-                  <span className="mt-1.5 block text-right text-xs font-normal text-[#8792a0]">{t('Maximum 200 characters')}</span>
+
+                <fieldset className="mt-7">
+                  <legend className={labelClass}>{t('Cake flavor')}</legend>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {flavorOptions.map((option) => {
+                      const value = t(option.label)
+                      const checked = flavor === option.label
+                      return (
+                        <label
+                          className={`inline-flex cursor-pointer items-center gap-2.5 rounded-full py-2 pl-2 pr-4 text-sm font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${
+                            checked ? 'bg-[#fbf6e3] text-[#092a53] ring-[#c9b24a]' : 'bg-white text-[#52647b] ring-[#e5e1d7] hover:ring-[#d6cfbd]'
+                          }`}
+                          key={option.label}
+                        >
+                          <input checked={checked} className="sr-only" name="flavor" onChange={() => setFlavor(option.label)} type="radio" value={value} />
+                          <span aria-hidden="true" className={`size-6 rounded-full ring-2 ring-white ${option.swatch} ${checked ? 'shadow-[0_0_0_2px_#c9b24a]' : 'shadow-[0_0_0_1px_#e5e1d7]'}`} />
+                          {value}
+                        </label>
+                      )
+                    })}
+                  </div>
+                </fieldset>
+
+                <fieldset className="mt-7">
+                  <legend className={labelClass}>{t('Toppings')} <span className="font-semibold normal-case tracking-normal text-[#a5aebb]">({t('optional')})</span></legend>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {toppingOptions.map((topping) => {
+                      const checked = toppings.includes(topping)
+                      return (
+                        <label
+                          className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${
+                            checked ? 'bg-[#092a53] text-white ring-[#092a53]' : 'bg-white text-[#52647b] ring-[#e5e1d7] hover:ring-[#d6cfbd]'
+                          }`}
+                          key={topping}
+                        >
+                          <input
+                            checked={checked}
+                            className="sr-only"
+                            onChange={(event) => setToppings((current) => event.target.checked ? [...current, topping] : current.filter((value) => value !== topping))}
+                            type="checkbox"
+                          />
+                          <span aria-hidden="true" className={`grid size-4 place-items-center rounded-full transition ${checked ? 'bg-[#ffdc32] text-[#092a53]' : 'ring-1 ring-[#c9c3b4]'}`}>
+                            {checked && <svg className="size-2.5" fill="none" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" /></svg>}
+                          </span>
+                          {t(topping)}
+                        </label>
+                      )
+                    })}
+                  </div>
+                </fieldset>
+
+                <label className="mt-7 block">
+                  <span className="flex items-baseline justify-between gap-3">
+                    <span className={labelClass}>{t('Message on cake or special instructions')} <span className="font-semibold normal-case tracking-normal text-[#a5aebb]">({t('optional')})</span></span>
+                    <span className="shrink-0 text-[11px] font-semibold tabular-nums text-[#a5aebb]">{messageLength} / 200</span>
+                  </span>
+                  <textarea
+                    className={`${fieldClass} resize-y leading-7`}
+                    maxLength={200}
+                    name="message"
+                    onChange={(event) => setMessageLength(event.target.value.length)}
+                    placeholder={t('Add a message or any details you’d like us to know.')}
+                    rows={3}
+                  />
                 </label>
               </section>
 
-              <section aria-labelledby="cake-pickup-heading" className="mt-8 border-t border-[#eeeae1] pt-7">
-                <h3 className="mb-4 flex items-center gap-3 text-sm font-extrabold" id="cake-pickup-heading">
-                  <span className="grid size-8 place-items-center rounded-xl bg-[#092a53] text-xs text-[#ffdc32]">3</span>{t('Pickup details')}
-                </h3>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="text-sm font-semibold">{t('Selected store')} <span className="text-[#a48700]">*</span>
-                    <select className={inputClass} name="storeId" onChange={(event) => setSelectedStoreId(event.target.value)} required value={selectedStoreId}>
-                      {stores.map((store) => <option key={store.storeId} value={store.storeId}>{t(store.storeName)}{store.storeAddress ? ` · ${t(store.storeAddress)}` : ` · ${t(store.location)}`}</option>)}
-                    </select>
+              {/* Step 2 */}
+              <section aria-labelledby="cake-pickup-heading" className="mt-10 border-t border-[#efece3] pt-8">
+                {stepHeading('2', 'Pickup details', 'cake-pickup-heading')}
+                <fieldset className="mt-6">
+                  <legend className={labelClass}>{t('Selected store')} <span className="text-[#a48700]">*</span></legend>
+                  <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {stores.map((store) => {
+                      const checked = String(store.storeId) === selectedStoreId
+                      return (
+                        <label
+                          className={`flex min-w-0 cursor-pointer items-center gap-3 rounded-2xl p-3 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${
+                            checked ? 'bg-[#fbf6e3] ring-[#c9b24a]' : 'bg-white ring-[#e5e1d7] hover:ring-[#d6cfbd]'
+                          }`}
+                          key={store.storeId}
+                        >
+                          <input checked={checked} className="sr-only" name="storeId" onChange={() => setSelectedStoreId(String(store.storeId))} required type="radio" value={store.storeId} />
+                          <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-xl transition ${checked ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#f4f1e8] text-[#8792a0]'}`}>
+                            <svg className="size-[18px]" fill="none" viewBox="0 0 24 24">
+                              <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 1 1 13 0c0 5.4-6.5 11-6.5 11Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+                              <circle cx="12" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.8" />
+                            </svg>
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-extrabold text-[#092a53]">{t(store.storeName)}</span>
+                            <span className="mt-0.5 block truncate text-xs font-semibold text-[#8792a0]">{t(store.storeAddress || store.location)}</span>
+                          </span>
+                          <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full ring-2 ${checked ? 'bg-[#092a53] ring-[#092a53]' : 'ring-[#ddd6c4]'}`}>
+                            {checked && <span className="size-2 rounded-full bg-[#ffdc32]" />}
+                          </span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </fieldset>
+                <label className="mt-6 block sm:max-w-xs">
+                  <span className={labelClass}>{t('Pickup date')} <span className="text-[#a48700]">*</span></span>
+                  <input className={fieldClass} max={maxPickupDate} min={minPickupDate} name="pickupDate" onChange={(event) => setPickupDate(event.target.value)} required type="date" />
+                </label>
+              </section>
+
+              {/* Step 3 */}
+              <section aria-labelledby="cake-contact-heading" className="mt-10 border-t border-[#efece3] pt-8">
+                {stepHeading('3', 'Your contact details', 'cake-contact-heading')}
+                <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                  <label className="block">
+                    <span className={labelClass}>{t('Full name')} <span className="text-[#a48700]">*</span></span>
+                    <input autoComplete="name" className={fieldClass} defaultValue={customer?.name || ''} maxLength={100} name="name" required />
                   </label>
-                  <label className="text-sm font-semibold">{t('Pickup date')} <span className="text-[#a48700]">*</span>
-                    <input className={inputClass} max={maxPickupDate} min={minPickupDate} name="pickupDate" required type="date" />
+                  <label className="block">
+                    <span className={labelClass}>{t('Email address')} <span className="text-[#a48700]">*</span></span>
+                    <input autoComplete="email" className={fieldClass} defaultValue={customer?.email || ''} maxLength={254} name="email" required type="email" />
+                  </label>
+                  <label className="block sm:col-span-2">
+                    <span className={labelClass}>{t('Phone number')} <span className="text-[#a48700]">*</span></span>
+                    <input autoComplete="tel" className={fieldClass} defaultValue={customer?.phone || ''} maxLength={40} name="phone" required type="tel" />
                   </label>
                 </div>
               </section>
 
-              {(error || storeError) && <p className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{error || storeError}</p>}
-              {!storeError && !stores.length && <p className="mt-6 rounded-xl border border-[#eadb8a] bg-[#fff9dc] p-4 text-sm text-[#624f00]" role="status">{t('No pickup locations are available right now. Please try again later.')}</p>}
-              {success && <p className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800" role="status">{success}</p>}
-              <div className="mt-7 flex flex-col gap-3 border-t border-[#eeeae1] pt-6 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs leading-5 text-[#65748a]">{t('We’ll be in touch to confirm your request.')}</p>
-                <button className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-[#ffdc32] px-7 py-3.5 text-sm font-extrabold text-[#092a53] shadow-[0_8px_22px_rgba(189,156,0,0.17)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffdc32]/40 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto" disabled={isSubmitting || !stores.length || Boolean(storeError)} type="submit">
-                  {isSubmitting ? t('Sending…') : t('Send cake request')}<span aria-hidden="true">→</span>
+              {(error || storeError) && (
+                <p className="mt-8 flex gap-3 rounded-2xl bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100" role="alert">
+                  <span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-full bg-red-100 text-xs font-extrabold">!</span>
+                  {error || storeError}
+                </p>
+              )}
+              {!storeError && !stores.length && (
+                <p className="mt-8 rounded-2xl bg-[#fffaf0] p-4 text-sm text-[#624f00] ring-1 ring-[#ecdfa6]" role="status">{t('No pickup locations are available right now. Please try again later.')}</p>
+              )}
+              {success && (
+                <p className="mt-8 flex items-start gap-3 rounded-2xl bg-[#f3f8ef] p-5 text-sm font-semibold leading-6 text-[#274d20] ring-1 ring-[#cfe2c4]" role="status">
+                  <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-[#4caf50] text-white">
+                    <svg className="size-4" fill="none" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" /></svg>
+                  </span>
+                  {success}
+                </p>
+              )}
+
+              <div className="mt-8 flex flex-col-reverse gap-4 border-t border-[#efece3] pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs leading-5 text-[#8792a0]">{t('We’ll be in touch to confirm your request.')}</p>
+                <button
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#092a53] px-8 py-4 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.22)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isSubmitting || !stores.length || Boolean(storeError)}
+                  type="submit"
+                >
+                  {isSubmitting ? t('Sending…') : t('Send cake request')}
+                  {!isSubmitting && <ArrowIcon />}
                 </button>
               </div>
             </form>
+
+            {/* Live summary */}
+            <aside className="space-y-5 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300 lg:col-span-4">
+              <div className="overflow-hidden rounded-[28px] bg-[#092a53] text-white shadow-[0_24px_60px_rgba(9,42,83,0.2)]">
+                <div className="relative isolate p-6">
+                  <span aria-hidden="true" className="absolute -right-10 -top-12 -z-10 size-36 rounded-full border-[22px] border-white/[0.06]" />
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t('Your celebration, your cake')}</p>
+                  <h2 className="mt-2 font-display text-2xl font-extrabold">{t('Your cake')}</h2>
+                </div>
+                <dl aria-live="polite" className="divide-y divide-white/10 border-t border-white/10 px-6">
+                  {[
+                    { label: 'Cake size', value: t(size) },
+                    { label: 'Cake flavor', value: t(flavor) },
+                    { label: 'Toppings', value: toppings.length ? toppings.map((topping) => t(topping)).join(', ') : t('None') },
+                    { label: 'Selected store', value: selectedStore ? t(selectedStore.storeName) : '' },
+                    { label: 'Pickup date', value: formatDate(pickupDate) },
+                  ].map((row) => (
+                    <div className="flex items-start justify-between gap-4 py-3.5" key={row.label}>
+                      <dt className="text-xs font-semibold text-white/55">{t(row.label)}</dt>
+                      <dd className={`text-right text-sm font-extrabold ${row.value ? 'text-white' : 'text-white/35'}`}>{row.value || t('Not selected yet')}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              <ol className="space-y-4 rounded-[24px] bg-white p-6 ring-1 ring-[#ebe7dc]">
+                {[
+                  { title: 'Tell us what you love', detail: 'Choose a size, flavor and toppings.' },
+                  { title: 'Pick a store and date', detail: 'Select a pickup location and preferred day.' },
+                  { title: 'We’ll confirm the details', detail: 'The store will contact you before your request is confirmed.' },
+                ].map((step, index) => (
+                  <li className="flex gap-3" key={step.title}>
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#fbf6e3] font-display text-xs font-extrabold tabular-nums text-[#a48700]">{String(index + 1).padStart(2, '0')}</span>
+                    <div>
+                      <h3 className="text-sm font-extrabold text-[#092a53]">{t(step.title)}</h3>
+                      <p className="mt-0.5 text-xs leading-5 text-[#65748a]">{t(step.detail)}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="flex gap-3 rounded-[22px] bg-[#fffaf0] p-5 ring-1 ring-[#ecdfa6]">
+                <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 font-display text-xs font-extrabold text-[#806a00]">i</span>
+                <div className="text-xs leading-5 text-[#624f00]">
+                  <p className="font-extrabold">{t('Please note')}</p>
+                  <p className="mt-0.5">{t('Sending this form is a request only. Your order is not confirmed until the store contacts you.')}</p>
+                </div>
+              </div>
+            </aside>
           </div>
         </section>
       </main>

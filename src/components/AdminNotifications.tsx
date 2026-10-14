@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { apiRequest } from '../api/api'
 import { useAdminAuth } from '../pages/feature/admin/useAdminAuth'
 import { useLanguage } from '../language/useLanguage'
@@ -28,31 +28,93 @@ type ContactMessageResponse = Omit<ContactMessage, 'createdAt' | 'isRead' | 'rep
   replied_at?: string | null
 }
 
-function formatDate(value: string | null | undefined, t: (key: string) => string) {
-  if (typeof value !== 'string' || !value.trim()) return t('Date unavailable')
+type InboxFilter = 'all' | 'unread' | 'awaiting' | 'replied'
+
+const icons = {
+  inbox: 'M4 13h4l1.5 3h5L16 13h4M4 13l2.5-8h11L20 13M4 13v6h16v-6',
+  refresh: 'M4 12a8 8 0 0 1 13.7-5.7L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.7L4 15.5M4 20v-4.5h4.5',
+  search: 'm20 20-4.2-4.2M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z',
+  mail: 'M4 6h16v12H4V6Zm0 0 8 7 8-7',
+  mailOpen: 'M4 10 12 4l8 6v10H4V10Zm0 0 8 6 8-6',
+  phone: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z',
+  reply: 'M10 9 5 13l5 4M5 13h9a5 5 0 0 1 5 5v1',
+  send: 'M21 3 10 14M21 3l-7 18-4-7-7-4 18-7Z',
+  trash: 'M4 7h16M10 11v6m4-6v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
+  check: 'm5 12.5 4.5 4.5L19 7.5',
+  alert: 'M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
+  close: 'M6 6l12 12M18 6 6 18',
+  back: 'm15 6-6 6 6 6',
+  pin: 'M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Zm0-9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
+  copy: 'M9 9h10v10H9V9Zm-4 6V5h10',
+}
+
+function Icon({ path, className = 'size-4' }: { path: string; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path d={path} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+    </svg>
+  )
+}
+
+function parseDate(value: string | null | undefined) {
+  if (typeof value !== 'string' || !value.trim()) return null
   const normalizedValue = value.includes('T') ? value : value.replace(' ', 'T')
   const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalizedValue)
   const date = new Date(hasTimezone ? normalizedValue : `${normalizedValue}Z`)
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function formatDate(value: string | null | undefined, t: (key: string) => string, language: string) {
+  const date = parseDate(value)
+  if (!date) return t('Date unavailable')
+  return date.toLocaleString(language === 'fr' ? 'fr-CM' : 'en-CM', { dateStyle: 'medium', timeStyle: 'short' })
+}
+
+function shortDate(value: string | null | undefined, language: string) {
+  const date = parseDate(value)
+  if (!date) return ''
+  const locale = language === 'fr' ? 'fr-CM' : 'en-CM'
+  const now = new Date()
+  if (date.toDateString() === now.toDateString()) return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+  if (now.getTime() - date.getTime() < 6 * 86400000) return date.toLocaleDateString(locale, { weekday: 'short' })
+  return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' })
+}
+
+function initials(name: string) {
+  return String(name || '?').trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join('')
+}
+
+const avatarTones = ['bg-[#e9f1fa] text-[#245281]', 'bg-[#fff4c2] text-[#7a6300]', 'bg-[#e5f4ea] text-[#2c7a4f]', 'bg-[#fdecea] text-[#a53f37]', 'bg-[#efe9fb] text-[#5b3fa0]']
+
+function avatarTone(name: string) {
+  const sum = [...String(name)].reduce((total, character) => total + character.charCodeAt(0), 0)
+  return avatarTones[sum % avatarTones.length]
 }
 
 export function AdminNotifications() {
   const { sessionToken } = useAdminAuth()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [messages, setMessages] = useState<ContactMessage[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState('')
-  const [replyingTo, setReplyingTo] = useState<number | null>(null)
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [isComposing, setIsComposing] = useState(false)
   const [replyDraft, setReplyDraft] = useState('')
   const [sendingId, setSendingId] = useState<number | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [isClearingAll, setIsClearingAll] = useState(false)
   const [replyErrors, setReplyErrors] = useState<Record<number, string>>({})
   const [replySent, setReplySent] = useState<Record<number, boolean>>({})
+  const [filter, setFilter] = useState<InboxFilter>('all')
+  const [search, setSearch] = useState('')
+  const [confirm, setConfirm] = useState<{ type: 'delete'; message: ContactMessage } | { type: 'clear' } | null>(null)
+  const [copied, setCopied] = useState(false)
 
   const refresh = useCallback(async () => {
     setError('')
+    setIsRefreshing(true)
     try {
       const result = await apiRequest<{ messages: ContactMessageResponse[]; unreadCount: number }>('/admin/notifications', { token: sessionToken })
       if (!result || !Array.isArray(result.messages)) {
@@ -66,15 +128,48 @@ export function AdminNotifications() {
       })))
       setUnreadCount(result.unreadCount)
     } catch (loadError) {
-      setError(loadError.message)
+      setError(loadError instanceof Error ? loadError.message : String(loadError))
     } finally {
       setIsLoading(false)
+      setIsRefreshing(false)
     }
   }, [sessionToken, t])
 
   useEffect(() => {
     refresh()
   }, [refresh])
+
+  useEffect(() => {
+    if (!confirm) return undefined
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setConfirm(null)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [confirm])
+
+  const counts = useMemo(() => ({
+    all: messages.length,
+    unread: messages.filter((message) => !message.isRead).length,
+    awaiting: messages.filter((message) => !message.repliedAt && !replySent[message.id]).length,
+    replied: messages.filter((message) => message.repliedAt || replySent[message.id]).length,
+  }), [messages, replySent])
+
+  const visibleMessages = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    return messages.filter((message) => {
+      const isReplied = Boolean(message.repliedAt || replySent[message.id])
+      const matchesFilter = filter === 'all'
+        || (filter === 'unread' && !message.isRead)
+        || (filter === 'awaiting' && !isReplied)
+        || (filter === 'replied' && isReplied)
+      const matchesSearch = !query || [message.name, message.email, message.subject, message.message, message.phone, message.storeName]
+        .some((value) => String(value || '').toLowerCase().includes(query))
+      return matchesFilter && matchesSearch
+    })
+  }, [filter, messages, replySent, search])
+
+  const selectedMessage = messages.find((message) => message.id === selectedId) || null
 
   async function markRead(id: number) {
     setError('')
@@ -85,8 +180,16 @@ export function AdminNotifications() {
       ))
       setUnreadCount((count) => Math.max(0, count - 1))
     } catch (updateError) {
-      setError(updateError.message)
+      setError(updateError instanceof Error ? updateError.message : String(updateError))
     }
+  }
+
+  function openMessage(message: ContactMessage) {
+    setSelectedId(message.id)
+    setIsComposing(false)
+    setReplyDraft('')
+    setCopied(false)
+    if (!message.isRead) markRead(message.id)
   }
 
   async function sendReply(event: FormEvent<HTMLFormElement>, message: ContactMessage) {
@@ -106,20 +209,16 @@ export function AdminNotifications() {
       ))
       setUnreadCount((count) => message.isRead ? count : Math.max(0, count - 1))
       setReplyDraft('')
-      setReplyingTo(null)
+      setIsComposing(false)
       setReplySent((current) => ({ ...current, [message.id]: true }))
     } catch (sendError) {
-      setReplyErrors((current) => ({ ...current, [message.id]: sendError.message }))
+      setReplyErrors((current) => ({ ...current, [message.id]: sendError instanceof Error ? sendError.message : String(sendError) }))
     } finally {
       setSendingId(null)
     }
   }
 
   async function deleteMessage(message: ContactMessage) {
-    if (!window.confirm(t('Delete notification from {name}? This cannot be undone.', { name: message.name }))) {
-      return
-    }
-
     setError('')
     setDeletingId(message.id)
     try {
@@ -136,22 +235,20 @@ export function AdminNotifications() {
         delete updated[message.id]
         return updated
       })
-      if (replyingTo === message.id) {
-        setReplyingTo(null)
+      if (selectedId === message.id) {
+        setSelectedId(null)
+        setIsComposing(false)
         setReplyDraft('')
       }
+      setConfirm(null)
     } catch (deleteError) {
-      setError(t(deleteError.message))
+      setError(t(deleteError instanceof Error ? deleteError.message : String(deleteError)))
     } finally {
       setDeletingId(null)
     }
   }
 
   async function clearAllMessages() {
-    if (!window.confirm(t('Clear all {count} contact notifications? This cannot be undone.', { count: messages.length }))) {
-      return
-    }
-
     setError('')
     setIsClearingAll(true)
     try {
@@ -163,132 +260,373 @@ export function AdminNotifications() {
       setUnreadCount(0)
       setReplySent({})
       setReplyErrors({})
-      setReplyingTo(null)
+      setSelectedId(null)
+      setIsComposing(false)
       setReplyDraft('')
+      setConfirm(null)
     } catch (clearError) {
-      setError(t(clearError.message))
+      setError(t(clearError instanceof Error ? clearError.message : String(clearError)))
     } finally {
       setIsClearingAll(false)
     }
   }
 
+  async function copyEmail(email: string) {
+    try {
+      await navigator.clipboard.writeText(email)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopied(false)
+    }
+  }
+
+  const filters: { key: InboxFilter; label: string }[] = [
+    { key: 'all', label: t('All') },
+    { key: 'unread', label: t('Unread') },
+    { key: 'awaiting', label: t('Needs reply') },
+    { key: 'replied', label: t('Replied') },
+  ]
+
   return (
-    <section className="mb-8 scroll-mt-6 rounded-[28px] border border-[#e5ebf4] bg-white p-5 shadow-[0_18px_40px_rgba(15,35,65,0.05)] sm:p-7" id="notifications">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#edf5ff] px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#1f5fa9]">
-            <span aria-hidden="true">✦</span>
-            {t('Inbox')}
+    <div className="min-w-0 space-y-6">
+      <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
+          <span className="relative grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
+            <Icon className="size-7" path={icons.inbox} />
+            {unreadCount > 0 && (
+              <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#e5484d] px-1 text-[10px] font-extrabold text-white ring-2 ring-white">{unreadCount}</span>
+            )}
+          </span>
+          <div className="min-w-0">
+            <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
+              {t('Sales')} <span aria-hidden="true" className="mx-1">/</span>
+              <span className="text-[#a48700]">{t('Notifications')}</span>
+            </nav>
+            <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Notifications')}</h1>
+            <p className="mt-0.5 text-sm text-[#65748a]">{t('Stay on top of customer inquiries and follow up promptly.')}</p>
           </div>
-          <h2 className="font-display text-2xl font-bold text-[#102c50]">
-            {t('Contact notifications')}
-            {unreadCount > 0 ? ` (${unreadCount} ${t('New').toLowerCase()})` : ''}
-          </h2>
-          <p className="mt-1 text-sm text-[#65748a]">{t('Messages submitted through the website contact form.')}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {messages.length > 3 && (
             <button
-              className="rounded-full border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-bold text-[#b2433a] transition hover:bg-red-50 disabled:cursor-wait disabled:opacity-60"
               disabled={isLoading || isClearingAll || deletingId !== null}
-              onClick={clearAllMessages}
+              onClick={() => setConfirm({ type: 'clear' })}
               type="button"
             >
-              {isClearingAll ? t('Clearing notifications…') : t('Clear all')}
+              <Icon path={icons.trash} />
+              {t('Clear all')}
             </button>
           )}
-          <button className="rounded-full border border-[#d7e0eb] bg-[#f7f9fb] px-4 py-2.5 text-sm font-bold text-[#123253] transition hover:border-[#c6d5e8] hover:bg-white disabled:opacity-60" disabled={isLoading || isClearingAll} onClick={refresh} type="button">
+          <button
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+            disabled={isRefreshing || isClearingAll}
+            onClick={refresh}
+            type="button"
+          >
+            <Icon className={`size-4 ${isRefreshing ? 'animate-spin' : ''}`} path={icons.refresh} />
             {t('Refresh')}
           </button>
         </div>
-      </div>
+      </header>
 
-      {error && <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p>}
-      {isLoading ? (
-        <div className="mt-6 space-y-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="h-32 animate-pulse rounded-2xl bg-[#edf2f9]" />
-          ))}
-        </div>
-      ) : messages.length === 0 ? (
-        <div className="mt-5 rounded-[24px] border border-dashed border-[#dfe6f1] bg-[#f9fbff] px-4 py-8 text-center text-sm text-[#65748a]">
-          {t('No contact messages yet.')}
-        </div>
-      ) : (
-        <div className="mt-5 space-y-4">
-          {messages.map((message) => (
-            <article className={`rounded-[24px] border p-4 shadow-sm sm:p-5 ${message.isRead ? 'border-[#e5ebf4] bg-white' : 'border-[#eadb8a] bg-[#fffdf5]'}`} key={message.id}>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-display text-xl font-bold text-[#102c50]">{message.subject}</h3>
-                    {!message.isRead && <span className="rounded-full bg-[#ffdc32] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#1a2f4b]">{t('New')}</span>}
+      {error && (
+        <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+          <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
+          {error}
+        </p>
+      )}
+
+      <section aria-label={t('Contact notifications')} className="grid min-h-[34rem] overflow-hidden rounded-[20px] border border-[#e5ebf3] bg-white xl:grid-cols-[minmax(20rem,26rem)_minmax(0,1fr)]">
+        {/* Message list */}
+        <div className={`flex min-w-0 flex-col border-[#edf1f5] xl:border-r ${selectedMessage ? 'hidden xl:flex' : 'flex'}`}>
+          <div className="space-y-3 border-b border-[#edf1f5] p-4">
+            <label className="relative block">
+              <span className="sr-only">{t('Search')}</span>
+              <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
+              <input
+                className="w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] py-2.5 pl-10 pr-3.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!"
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder={t('Search messages')}
+                type="search"
+                value={search}
+              />
+            </label>
+            <div aria-label={t('Filter messages')} className="flex gap-1 overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
+              {filters.map((option) => (
+                <button
+                  aria-pressed={filter === option.key}
+                  className={`inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${filter === option.key ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
+                  key={option.key}
+                  onClick={() => setFilter(option.key)}
+                  type="button"
+                >
+                  {option.label}
+                  <span className={`rounded-full px-1.5 text-[10px] ${filter === option.key ? 'bg-[#092a53] text-white' : 'bg-white/70 text-[#8190a1]'}`}>{counts[option.key]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div aria-label={t('Loading…')} className="space-y-1 p-2" role="status">
+              {[0, 1, 2, 3, 4].map((row) => (
+                <div className="flex animate-pulse gap-3 rounded-xl p-3" key={row}>
+                  <span className="size-10 shrink-0 rounded-full bg-[#eef2f6]" />
+                  <div className="flex-1 space-y-2">
+                    <span className="block h-3 w-1/2 rounded bg-[#eef2f6]" />
+                    <span className="block h-3 w-4/5 rounded bg-[#eef2f6]" />
                   </div>
-                  <p className="mt-1 text-xs font-medium uppercase tracking-[0.08em] text-[#65748a]">{formatDate(message.createdAt, t)}</p>
-                  {message.storeName && <p className="mt-1 text-xs font-semibold text-[#365775]">{t('Assigned store: {store}', { store: t(message.storeName) })}</p>}
                 </div>
-                {!message.isRead && (
-                  <button className="shrink-0 rounded-full border border-[#d8deea] bg-white px-3 py-1.5 text-xs font-bold text-[#123253] transition hover:border-[#b9c9df] hover:bg-[#f7f9fb]" onClick={() => markRead(message.id)} type="button">
-                    {t('Mark as read')}
+              ))}
+            </div>
+          ) : visibleMessages.length === 0 ? (
+            <div className="grid flex-1 place-items-center px-6 py-14 text-center">
+              <div>
+                <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f4f8] text-[#8190a1]"><Icon className="size-5" path={icons.inbox} /></span>
+                <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">
+                  {messages.length ? t('No messages match this view.') : t('No contact messages yet.')}
+                </p>
+                <p className="mt-1 text-sm text-[#8190a1]">{t('Messages submitted through the website contact form.')}</p>
+              </div>
+            </div>
+          ) : (
+            <ul className="max-h-[40rem] flex-1 overflow-y-auto p-2">
+              {visibleMessages.map((message) => {
+                const isSelected = message.id === selectedId
+                const isReplied = Boolean(message.repliedAt || replySent[message.id])
+                return (
+                  <li key={message.id}>
+                    <button
+                      aria-current={isSelected ? 'true' : undefined}
+                      className={`relative flex w-full gap-3 rounded-xl p-3 text-left transition focus-visible:outline-2 focus-visible:outline-[#bd9c00] ${
+                        isSelected ? 'bg-[#092a53] text-white' : 'hover:bg-[#f6f8fb]'
+                      } ${deletingId === message.id ? 'opacity-50' : ''}`}
+                      onClick={() => openMessage(message)}
+                      type="button"
+                    >
+                      {!message.isRead && !isSelected && <span aria-hidden="true" className="absolute left-1 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#3b7dd8]" />}
+                      <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-full text-xs font-extrabold ${isSelected ? 'bg-[#ffdc32] text-[#092a53]' : avatarTone(message.name)}`}>
+                        {initials(message.name)}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-baseline justify-between gap-2">
+                          <span className={`truncate text-sm ${message.isRead ? 'font-semibold' : 'font-extrabold'} ${isSelected ? 'text-white' : 'text-[#102c50]'}`}>{message.name}</span>
+                          <span className={`shrink-0 text-[11px] font-semibold ${isSelected ? 'text-white/65' : 'text-[#8190a1]'}`}>{shortDate(message.createdAt, language)}</span>
+                        </span>
+                        <span className={`block truncate text-xs ${message.isRead ? 'font-medium' : 'font-bold'} ${isSelected ? 'text-white/90' : 'text-[#355777]'}`}>{message.subject}</span>
+                        <span className={`mt-0.5 block truncate text-xs ${isSelected ? 'text-white/60' : 'text-[#8190a1]'}`}>{message.message}</span>
+                        {(isReplied || message.storeName) && (
+                          <span className="mt-1.5 flex flex-wrap gap-1">
+                            {isReplied && (
+                              <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isSelected ? 'bg-white/15 text-white' : 'bg-[#eaf6ee] text-[#246a46]'}`}>
+                                <Icon className="size-3" path={icons.reply} />
+                                {t('Replied')}
+                              </span>
+                            )}
+                            {message.storeName && (
+                              <span className={`max-w-[10rem] truncate rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isSelected ? 'bg-white/15 text-white' : 'bg-[#f1f4f8] text-[#4f6379]'}`}>{t(message.storeName)}</span>
+                            )}
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* Reading pane */}
+        <div className={`min-w-0 flex-col ${selectedMessage ? 'flex' : 'hidden xl:flex'}`}>
+          {selectedMessage ? (
+            <>
+              <div className="flex items-center justify-between gap-3 border-b border-[#edf1f5] px-4 py-3 sm:px-6">
+                <button
+                  className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-bold text-[#355777] transition hover:bg-[#f1f4f8] xl:hidden"
+                  onClick={() => setSelectedId(null)}
+                  type="button"
+                >
+                  <Icon path={icons.back} />
+                  {t('Back to inbox')}
+                </button>
+                <span className="hidden text-[11px] font-semibold text-[#8190a1] xl:block">{formatDate(selectedMessage.createdAt, t, language)}</span>
+                <div className="flex items-center gap-1">
+                  {!selectedMessage.isRead && (
+                    <button aria-label={t('Mark as read')} className="grid size-9 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53]" onClick={() => markRead(selectedMessage.id)} title={t('Mark as read')} type="button">
+                      <Icon path={icons.mailOpen} />
+                    </button>
+                  )}
+                  <button
+                    aria-label={t('Delete')}
+                    className="grid size-9 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                    disabled={deletingId === selectedMessage.id || isClearingAll}
+                    onClick={() => setConfirm({ type: 'delete', message: selectedMessage })}
+                    title={t('Delete')}
+                    type="button"
+                  >
+                    <Icon path={icons.trash} />
                   </button>
+                  <button aria-label={t('Close')} className="hidden size-9 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53] xl:grid" onClick={() => setSelectedId(null)} title={t('Close')} type="button">
+                    <Icon path={icons.close} />
+                  </button>
+                </div>
+              </div>
+
+              <article className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
+                <h2 className="font-display text-2xl font-extrabold leading-tight text-[#092a53]">{selectedMessage.subject}</h2>
+                <div className="mt-5 flex flex-wrap items-start justify-between gap-4 border-b border-[#edf1f5] pb-5">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full text-sm font-extrabold ${avatarTone(selectedMessage.name)}`}>{initials(selectedMessage.name)}</span>
+                    <div className="min-w-0">
+                      <p className="truncate font-bold text-[#102c50]">{selectedMessage.name}</p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                        <a className="inline-flex items-center gap-1 font-semibold text-[#355777] hover:underline" href={`mailto:${selectedMessage.email}`}>
+                          <Icon className="size-3.5" path={icons.mail} />
+                          {selectedMessage.email}
+                        </a>
+                        <button className="inline-flex items-center gap-1 font-semibold text-[#8190a1] hover:text-[#092a53]" onClick={() => copyEmail(selectedMessage.email)} type="button">
+                          <Icon className="size-3.5" path={copied ? icons.check : icons.copy} />
+                          {t(copied ? 'Copied' : 'Copy')}
+                        </button>
+                        {selectedMessage.phone && (
+                          <a className="inline-flex items-center gap-1 font-semibold text-[#355777] hover:underline" href={`tel:${selectedMessage.phone}`}>
+                            <Icon className="size-3.5" path={icons.phone} />
+                            {selectedMessage.phone}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedMessage.storeName && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#f1f4f8] px-2.5 py-1 text-[11px] font-bold text-[#4f6379]">
+                        <Icon className="size-3.5" path={icons.pin} />
+                        {t(selectedMessage.storeName)}
+                      </span>
+                    )}
+                    <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 text-[11px] font-bold text-[#4f6379] xl:hidden">{formatDate(selectedMessage.createdAt, t, language)}</span>
+                  </div>
+                </div>
+
+                <p className="mt-6 whitespace-pre-wrap text-[15px] leading-7 text-[#3f526a]">{selectedMessage.message}</p>
+
+                {(selectedMessage.repliedAt || replySent[selectedMessage.id]) && (
+                  <p className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#eaf6ee] px-3.5 py-2.5 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
+                    <Icon path={icons.check} />
+                    {replySent[selectedMessage.id]
+                      ? t('Reply email sent to {email}.', { email: selectedMessage.email })
+                      : `${t('Reply sent')} · ${formatDate(selectedMessage.repliedAt, t, language)}`}
+                  </p>
                 )}
-              </div>
+              </article>
 
-              <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-[#52657d]">{message.message}</p>
-
-              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-[#edf1f6] pt-3 text-xs text-[#65748a]">
-                <span className="font-bold text-[#102c50]">{message.name}</span>
-                <a className="text-[#205091] underline-offset-2 hover:underline" href={`mailto:${message.email}`}>{message.email}</a>
-                {message.phone && <a className="text-[#205091] underline-offset-2 hover:underline" href={`tel:${message.phone}`}>{message.phone}</a>}
-              </div>
-
-              <div className="mt-5">
-                {replyingTo === message.id ? (
-                  <form className="space-y-3" onSubmit={(event) => sendReply(event, message)}>
-                    <label className="block text-sm font-semibold text-[#42546d]" htmlFor={`reply-${message.id}`}>
-                      {t('Reply to {name}', { name: message.name })}
+              <div className="border-t border-[#edf1f5] bg-[#fafbfd] p-4 sm:px-6">
+                {isComposing ? (
+                  <form className="space-y-3" onSubmit={(event) => sendReply(event, selectedMessage)}>
+                    <label className="flex items-center justify-between gap-2 text-xs font-bold text-[#4f6379]" htmlFor={`reply-${selectedMessage.id}`}>
+                      <span>{t('Reply to {name}', { name: selectedMessage.name })}</span>
+                      <span className="font-semibold text-[#a3b0bf]">{replyDraft.length}/5000</span>
                     </label>
                     <textarea
                       autoFocus
-                      className="min-h-28 w-full resize-y rounded-2xl border border-[#d9dfe9] bg-white px-4 py-3 text-sm text-[#102c50] outline-none transition focus:border-[#0d4d8b] focus:ring-2 focus:ring-[#dceafc]"
-                      id={`reply-${message.id}`}
+                      className="min-h-32 w-full resize-y rounded-xl border border-[#dde4ec] bg-white px-4 py-3 text-sm leading-6 text-[#102c50] transition placeholder:text-[#9aa5b3] focus:border-[#bd9c00] focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!"
+                      id={`reply-${selectedMessage.id}`}
                       maxLength={5000}
                       onChange={(event) => setReplyDraft(event.target.value)}
+                      placeholder={t('Write your reply…')}
                       required
                       value={replyDraft}
                     />
-                    {replyErrors[message.id] && <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{replyErrors[message.id]}</p>}
-                    <div className="flex flex-wrap gap-2">
-                      <button className="rounded-full bg-[#0f2341] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#173763] disabled:cursor-wait disabled:opacity-60" disabled={sendingId === message.id || !replyDraft.trim()} type="submit">
-                        {sendingId === message.id ? t('Sending…') : t('Send email reply')}
-                      </button>
-                      <button className="rounded-full border border-[#d9dfe9] bg-white px-4 py-2 text-sm font-bold text-[#123253] transition hover:bg-[#f6f9fc] disabled:opacity-60" disabled={sendingId === message.id} onClick={() => { setReplyingTo(null); setReplyDraft('') }} type="button">
+                    {replyErrors[selectedMessage.id] && (
+                      <p className="flex items-start gap-2 rounded-xl bg-red-50 px-3.5 py-2.5 text-sm font-semibold text-red-700" role="alert">
+                        <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
+                        {replyErrors[selectedMessage.id]}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <button
+                        className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] disabled:opacity-60"
+                        disabled={sendingId === selectedMessage.id}
+                        onClick={() => { setIsComposing(false); setReplyDraft('') }}
+                        type="button"
+                      >
                         {t('Cancel')}
+                      </button>
+                      <button
+                        className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={sendingId === selectedMessage.id || !replyDraft.trim()}
+                        type="submit"
+                      >
+                        <Icon path={icons.send} />
+                        {sendingId === selectedMessage.id ? t('Sending…') : t('Send email reply')}
                       </button>
                     </div>
                   </form>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button className="rounded-full bg-[#f2f7ff] px-4 py-2 text-sm font-bold text-[#143b69] transition hover:bg-[#e4efff]" onClick={() => { setReplyingTo(message.id); setReplyDraft(''); setReplySent((current) => ({ ...current, [message.id]: false })) }} type="button">
-                      {t('Reply')}
-                    </button>
-                    {replySent[message.id] && <p className="text-sm font-semibold text-[#163e35]" role="status">{t('Reply email sent to {email}.', { email: message.email })}</p>}
-                    {message.repliedAt && <p className="text-sm font-semibold text-[#163e35]">{t('Reply sent')}</p>}
-                    <button
-                      className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
-                      disabled={deletingId === message.id || isClearingAll}
-                      onClick={() => deleteMessage(message)}
-                      type="button"
-                    >
-                      {deletingId === message.id ? t('Deleting…') : t('Delete')}
-                    </button>
-                  </div>
+                  <button
+                    className="flex w-full items-center gap-3 rounded-xl border border-[#dde4ec] bg-white px-4 py-3 text-left text-sm font-semibold text-[#8190a1] transition hover:border-[#c3cfdc] hover:text-[#092a53]"
+                    onClick={() => {
+                      setIsComposing(true)
+                      setReplyDraft('')
+                      setReplyErrors((current) => ({ ...current, [selectedMessage.id]: '' }))
+                    }}
+                    type="button"
+                  >
+                    <Icon className="size-[18px] text-[#355777]" path={icons.reply} />
+                    {t('Reply to {name}', { name: selectedMessage.name })}…
+                  </button>
                 )}
               </div>
-            </article>
-          ))}
+            </>
+          ) : (
+            <div className="grid flex-1 place-items-center px-6 py-14 text-center">
+              <div>
+                <span className="mx-auto grid size-16 place-items-center rounded-3xl bg-[#f7f9fc] text-[#a3b0bf] ring-1 ring-[#e8edf3]">
+                  <Icon className="size-7" path={icons.mail} />
+                </span>
+                <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t('Select a message')}</p>
+                <p className="mx-auto mt-1 max-w-xs text-sm text-[#8190a1]">
+                  {counts.unread
+                    ? t('You have {count} unread messages.', { count: counts.unread })
+                    : t('You’re all caught up.')}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {confirm && (
+        <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
+          <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setConfirm(null)} tabIndex={-1} type="button" />
+          <section aria-labelledby="notification-confirm-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
+            <span className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600"><Icon className="size-6" path={icons.trash} /></span>
+            <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="notification-confirm-title">
+              {confirm.type === 'clear' ? t('Clear all') : t('Delete')}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#65748a]">
+              {confirm.type === 'clear'
+                ? t('Clear all {count} contact notifications? This cannot be undone.', { count: messages.length })
+                : t('Delete notification from {name}? This cannot be undone.', { name: confirm.message.name })}
+            </p>
+            <div className="mt-6 flex justify-end gap-2.5">
+              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6]" onClick={() => setConfirm(null)} type="button">{t('Cancel')}</button>
+              <button
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                disabled={isClearingAll || deletingId !== null}
+                onClick={() => (confirm.type === 'clear' ? clearAllMessages() : deleteMessage(confirm.message))}
+                type="button"
+              >
+                <Icon path={icons.trash} />
+                {isClearingAll ? t('Clearing notifications…') : deletingId !== null ? t('Deleting…') : confirm.type === 'clear' ? t('Clear all') : t('Delete')}
+              </button>
+            </div>
+          </section>
         </div>
       )}
-    </section>
+    </div>
   )
 }

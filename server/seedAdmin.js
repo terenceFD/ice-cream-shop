@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcrypt'
 import { database } from './database.js'
 
 function isUniqueConstraintError(error) {

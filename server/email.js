@@ -52,7 +52,7 @@ export async function sendContactReply({ to, recipientName, subject, reply, admi
     from,
     to,
     subject: `Re: ${subject.replace(/[\r\n]+/g, ' ')}`,
-    text: `Hello ${recipientName},\n\n${reply}\n\nRegards,\n${adminName}\nAntixor Icy`,
+    text: `Hello ${recipientName},\n\n${reply}\n\nRegards,\n${adminName}\nCold Stone Creamery`,
   })
 }
 
@@ -74,7 +74,7 @@ export async function sendNewOrderNotification({ recipients, orderId, customerNa
     to: recipients,
     subject: `New order #${orderId} placed`,
     text: [
-      'A new order has been placed at Antixor Icy.',
+      'A new order has been placed at Cold Stone Creamery.',
       '',
       `Order: #${orderId}`,
       'Payment status: Awaiting payment',
@@ -133,7 +133,7 @@ export async function sendOrderStatusUpdate({
   await transporter.sendMail({
     from,
     to,
-    subject: `Update on your Antixor Icy order #${orderId}`,
+    subject: `Update on your Cold Stone Creamery order #${orderId}`,
     text: [
       `Hello ${recipientName},`,
       '',
@@ -141,7 +141,7 @@ export async function sendOrderStatusUpdate({
       ...receipt,
       '',
       'Thank you,',
-      'Antixor Icy',
+      'Cold Stone Creamery',
     ].join('\n'),
   })
 }

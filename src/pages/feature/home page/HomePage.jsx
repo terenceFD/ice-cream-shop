@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Footer,
@@ -32,7 +32,7 @@ const homeSlides = [
     accent: "starts here.",
     description:
       "Browse signature creations, explore the online catalog, and discover publicly listed locations across Cameroon.",
-    image: "/ice-images/ice-5.webp",
+    image: "/ice-images/ice-9.jpg",
     alt: "Colorful ice cream creations ready to enjoy",
     caption: "The signature experience",
   },
@@ -42,7 +42,7 @@ const homeSlides = [
     accent: "a little sweeter.",
     description:
       "Find a treat for today, a new flavor to love, or something special to share.",
-    image: "/ice-images/ice-4.webp",
+    image: "/cream/cream%204.webp",
     alt: "A delicious ice cream treat",
     caption: "A treat worth sharing",
   },
@@ -52,7 +52,7 @@ const homeSlides = [
     accent: "is waiting.",
     description:
       "Explore the menu, discover signature combinations, and find a scoop that feels just right.",
-    image: "/ice-images/ice-3.webp",
+    image: "/ice-images/ice-10.jpg",
     alt: "A colorful ice cream creation",
     caption: "Choose. Mix. Make it yours.",
   },
@@ -76,18 +76,22 @@ export function HomePage() {
   const [menuError, setMenuError] = useState("");
   const [cartNotice, setCartNotice] = useState("");
   const [reviews, setReviews] = useState([]);
+  const [reviewStats, setReviewStats] = useState({ count: 0, average: 0 });
   const [reviewsError, setReviewsError] = useState("");
   const [activeSlide, setActiveSlide] = useState(0);
+  const [addedItemKey, setAddedItemKey] = useState(null);
+  const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
+  const addedTimer = useRef(undefined);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const intervalId = window.setInterval(() => {
+    const timeoutId = window.setTimeout(() => {
       setActiveSlide((current) => (current + 1) % homeSlides.length);
     }, 6000);
 
-    return () => window.clearInterval(intervalId);
-  }, []);
+    return () => window.clearTimeout(timeoutId);
+  }, [activeSlide]);
 
   useEffect(() => {
     let cancelled = false;
@@ -105,6 +109,19 @@ export function HomePage() {
       .then(({ reviews: approvedReviews }) => {
         if (!cancelled) {
           setReviews(approvedReviews.slice(0, 3));
+          setReviewStats({
+            count: approvedReviews.length,
+            average: approvedReviews.length
+              ? approvedReviews.reduce((total, review) => total + Number(review.rating || 0), 0) /
+                approvedReviews.length
+              : 0,
+          });
+          setReviewStats({
+            count: approvedReviews.length,
+            average: approvedReviews.length
+              ? approvedReviews.reduce((total, review) => total + Number(review.rating || 0), 0) / approvedReviews.length
+              : 0,
+          });
           setReviewsError("");
         }
       })
@@ -123,12 +140,22 @@ export function HomePage() {
       itemType: "menu",
       categoryTitle: "Ice Cream",
     });
+    setCartNoticeIsError(!added);
     setCartNotice(
       added
         ? t("Added {name} to your bag.", { name: t(item.name) })
         : t("This item could not be added to your bag. Please try again."),
     );
+    if (added) {
+      setAddedItemKey(item.id || item.name);
+      window.clearTimeout(addedTimer.current);
+      addedTimer.current = window.setTimeout(() => setAddedItemKey(null), 1800);
+    }
   }
+
+  useEffect(() => () => window.clearTimeout(addedTimer.current), []);
+
+  const averageRating = reviewStats.average;
 
   const formatPrice = (price) =>
     `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
@@ -139,91 +166,84 @@ export function HomePage() {
       <main>
         <section
           id="home"
-          className="relative isolate w-full overflow-hidden bg-[#092a53] px-5 pb-20 pt-8 text-white sm:px-8 sm:pb-24 sm:pt-12 lg:px-12 lg:pt-14"
+          className="relative isolate w-full overflow-hidden bg-[#092a53] text-white"
         >
           <div
             aria-hidden="true"
-            className="absolute -right-20 top-16 size-44 rounded-full bg-[#ffdc32]/15 sm:size-64"
+            className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[#ffdc32]/[0.12] blur-3xl"
           />
           <div
             aria-hidden="true"
-            className="absolute bottom-20 left-[42%] size-5 rounded-full bg-[#ffdc32]/80"
+            className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[34rem] rounded-full bg-[#1c4f8a]/50 blur-3xl"
           />
-          <div className="relative mx-auto w-full max-w-[1320px]">
-            <div className="relative grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-10">
-              <div className="relative z-10 max-w-[590px]">
-                <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#ffdc32] shadow-sm sm:text-xs">
-                  <span aria-hidden="true" className="text-lg text-[#ffdc32]">
-                    ✦
-                  </span>
-                  {t(homeSlides[activeSlide].eyebrow)}
-                  <span aria-hidden="true" className="text-lg text-[#ffdc32]">
-                    ✦
-                  </span>
-                </p>
-                <h1 className="font-display text-[clamp(2.75rem,6.4vw,5.5rem)] font-extrabold leading-[0.96] tracking-[-0.065em] text-white">
-                  {t(homeSlides[activeSlide].title)}
-                  <span className="mt-1 block font-display font-bold italic tracking-[-0.045em] text-[#ffdc32]">
-                    {t(homeSlides[activeSlide].accent)}
-                  </span>
-                </h1>
-                <p className="mt-6 max-w-md text-sm leading-6 text-white/75 sm:text-base sm:leading-7">
-                  {t(homeSlides[activeSlide].description)}
-                </p>
-                <div className="mt-6 flex flex-wrap gap-3">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:28px_28px]"
+          />
+
+          <div className="mx-auto w-full max-w-[1320px] px-5 pt-10 sm:px-8 sm:pt-14 lg:px-12 lg:pt-16">
+            <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+              {/* Copy */}
+              <div className="relative z-10 lg:col-span-6">
+                <div className="home-hero-copy" key={activeSlide}>
+                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
+                    <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />
+                    {t(homeSlides[activeSlide].eyebrow)}
+                  </p>
+                  <h1 className="mt-6 font-display text-[clamp(2.9rem,6.6vw,5.75rem)] font-extrabold leading-[0.95] tracking-[-0.04em] text-white">
+                    {t(homeSlides[activeSlide].title)}
+                    <span className="mt-1 block text-[#ffdc32]">
+                      {t(homeSlides[activeSlide].accent)}
+                    </span>
+                  </h1>
+                  <p className="mt-7 max-w-lg text-base leading-7 text-white/70 sm:text-lg sm:leading-8">
+                    {t(homeSlides[activeSlide].description)}
+                  </p>
+                </div>
+
+                <div className="mt-9 flex flex-wrap items-center gap-3">
                   <Link
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#ffdc32] px-5 py-3 text-sm font-bold text-[#102c50] shadow-lg shadow-[#102c50]/15 transition hover:-translate-y-0.5 hover:bg-[#ffe665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-7 py-4 text-sm font-extrabold text-[#092a53] shadow-[0_14px_34px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
                     to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
                   >
                     {t("Order now")} <ArrowIcon />
                   </Link>
                   <Link
-                    className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/[0.08] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#ffdc32] hover:bg-white/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
                     to="/flavors"
                   >
                     {t("Explore flavors")} <ArrowIcon diagonal />
                   </Link>
                 </div>
-                <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-white/85">
-                  <span className="inline-flex items-center gap-2">
-                    <span aria-hidden="true" className="text-lg text-[#ffdc32]">
-                      ✧
-                    </span>
-                    {t("Signature creations")}
-                  </span>
-                  <span className="inline-flex items-center gap-2">
-                    <span aria-hidden="true" className="text-lg text-[#ffdc32]">
-                      ♡
-                    </span>
-                    {t("A flavor for every mood")}
-                  </span>
-                  <span className="inline-flex items-center gap-2">
-                    <span aria-hidden="true" className="text-lg text-[#ffdc32]">
-                      ⌖
-                    </span>
-                    {t("Cameroon locations")}
-                  </span>
-                </div>
-                <p className="mt-6 max-w-lg text-[11px] leading-5 text-white/60">
-                  {t(
-                    "Independent information guide — not an official Cold Stone Creamery website.",
-                  )}
+
+                <ul className="mt-12 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/10 pt-6 text-sm font-semibold text-white/80">
+                  {["Signature creations", "A flavor for every mood", "Cameroon locations"].map((label) => (
+                    <li className="inline-flex items-center gap-2.5" key={label}>
+                      <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#ffdc32]/15 text-[#ffdc32]">
+                        <svg className="size-3" fill="none" viewBox="0 0 24 24">
+                          <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+                        </svg>
+                      </span>
+                      {t(label)}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-5 text-[11px] leading-5 text-white/45">
+                  {t("Independent information guide — not an official Cold Stone Creamery website.")}
                 </p>
               </div>
+
+              {/* Carousel */}
               <div
                 aria-label={t("Featured treats")}
                 aria-roledescription={t("carousel")}
-                className="relative mx-auto w-full max-w-[650px] lg:pr-3"
+                className="relative lg:col-span-6"
                 role="region"
               >
                 <div
-                  aria-hidden="true"
-                  className="absolute -right-4 top-6 size-20 rounded-full border-2 border-[#ffdc32] sm:-right-2 sm:size-28"
-                />
-                <div
                   aria-label={`${activeSlide + 1} / ${homeSlides.length}`}
                   aria-roledescription={t("slide")}
-                  className="relative aspect-[1.08] overflow-hidden rounded-[32px] bg-[#ffdc32]/20 shadow-[0_28px_70px_rgba(9,42,83,0.18)] sm:aspect-[1.18] sm:rounded-[42px]"
+                  className="relative aspect-[4/5] overflow-hidden rounded-[36px] bg-[#0f3566] shadow-[0_40px_90px_rgba(0,0,0,0.35)] ring-1 ring-white/10 sm:aspect-[5/5] lg:aspect-[4/5] xl:aspect-[5/5]"
                   role="group"
                 >
                   {homeSlides.map((slide, index) => {
@@ -233,9 +253,7 @@ export function HomePage() {
                         alt={isActive ? t(slide.alt) : ""}
                         aria-hidden={!isActive}
                         className={`home-slide-image absolute inset-0 size-full object-cover object-center ${
-                          isActive
-                            ? "scale-100 opacity-100"
-                            : "scale-[1.025] opacity-0"
+                          isActive ? "scale-100 opacity-100" : "scale-[1.04] opacity-0"
                         }`}
                         fetchPriority={index === 0 ? "high" : "auto"}
                         key={slide.image}
@@ -244,792 +262,960 @@ export function HomePage() {
                       />
                     );
                   })}
-                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 bg-gradient-to-t from-[#092a53]/85 via-[#092a53]/35 to-transparent px-4 pb-4 pt-16 sm:px-6 sm:pb-6">
-                    <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-                      <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-lg text-[#102c50] sm:size-10">
-                        ✦
-                      </span>
-                      <div className="min-w-0">
-                        <p className="truncate text-[9px] font-extrabold uppercase tracking-[0.12em] text-white/75 sm:text-[10px]">
-                          {t("Featured")}
-                        </p>
-                        <p className="truncate font-display text-sm font-bold text-white sm:text-base">
-                          {t(homeSlides[activeSlide].caption)}
-                        </p>
+                  <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#061d3a]/85 via-[#061d3a]/10 to-transparent" />
+
+                  <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-5 sm:p-6">
+                    <span className="rounded-full border border-white/25 bg-white/15 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-white backdrop-blur-md">
+                      {t("Featured")}
+                    </span>
+                    <span aria-live="polite" className="font-display text-sm font-extrabold tabular-nums text-white">
+                      {String(activeSlide + 1).padStart(2, "0")}
+                      <span className="text-white/50"> / {String(homeSlides.length).padStart(2, "0")}</span>
+                    </span>
+                  </div>
+
+                  <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
+                    <p className="max-w-xs font-display text-2xl font-extrabold leading-tight sm:text-3xl">
+                      {t(homeSlides[activeSlide].caption)}
+                    </p>
+                    <div className="mt-5 flex items-center gap-3">
+                      <div aria-hidden="true" className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/20">
+                        <span className="home-hero-progress absolute inset-0 rounded-full bg-[#ffdc32]" key={activeSlide} />
                       </div>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <span aria-live="polite" className="mr-1 text-[10px] font-bold tabular-nums text-white/85 sm:text-xs">
-                        {String(activeSlide + 1).padStart(2, "0")} / {String(homeSlides.length).padStart(2, "0")}
-                      </span>
                       <button
                         aria-label={t("Previous slide")}
-                        className="grid size-9 place-items-center rounded-full border border-white/40 bg-white/10 text-lg text-white backdrop-blur transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] sm:size-10"
+                        className="grid size-11 place-items-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
                         onClick={() => setActiveSlide((activeSlide + homeSlides.length - 1) % homeSlides.length)}
                         type="button"
                       >
-                        <span aria-hidden="true">←</span>
+                        <svg aria-hidden="true" className="size-4 rotate-180" fill="none" viewBox="0 0 20 20">
+                          <path d="M3.5 10h12m-5-5 5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                        </svg>
                       </button>
                       <button
                         aria-label={t("Next slide")}
-                        className="grid size-9 place-items-center rounded-full bg-[#ffdc32] text-lg text-[#102c50] shadow-md transition hover:scale-105 hover:bg-[#ffe665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:size-10"
+                        className="grid size-11 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] shadow-md transition hover:scale-105 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                         onClick={() => setActiveSlide((activeSlide + 1) % homeSlides.length)}
                         type="button"
                       >
-                        <span aria-hidden="true">→</span>
+                        <ArrowIcon />
                       </button>
                     </div>
                   </div>
                 </div>
-                <div aria-label={t("Choose a featured slide")} className="mt-4 flex items-center justify-center gap-2 lg:justify-start" role="group">
+
+                {/* Thumbnails */}
+                <div
+                  aria-label={t("Choose a featured slide")}
+                  className="absolute -left-4 top-1/2 hidden -translate-y-1/2 flex-col gap-3 rounded-[22px] bg-white/10 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/15 backdrop-blur-md sm:flex lg:-left-10"
+                  role="group"
+                >
+                  {homeSlides.map((slide, index) => {
+                    const isActive = activeSlide === index;
+                    return (
+                      <button
+                        aria-current={isActive ? "true" : undefined}
+                        aria-label={t("Show slide {number}", { number: index + 1 })}
+                        className={`relative size-16 overflow-hidden rounded-2xl transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
+                          isActive ? "ring-2 ring-[#ffdc32]" : "opacity-60 hover:opacity-100"
+                        }`}
+                        key={slide.image}
+                        onClick={() => setActiveSlide(index)}
+                        type="button"
+                      >
+                        <img alt="" className="size-full object-cover" src={slide.image} />
+                      </button>
+                    );
+                  })}
+                </div>
+                <div aria-label={t("Choose a featured slide")} className="mt-4 flex justify-center gap-2 sm:hidden" role="group">
                   {homeSlides.map((slide, index) => (
                     <button
                       aria-current={activeSlide === index ? "true" : undefined}
                       aria-label={t("Show slide {number}", { number: index + 1 })}
-                      className={`h-2.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 ${
-                        activeSlide === index
-                          ? "w-8 bg-[#ffdc32]"
-                          : "w-2.5 bg-white/35 hover:bg-white/65"
-                      }`}
+                      className={`h-2 rounded-full transition-all ${activeSlide === index ? "w-8 bg-[#ffdc32]" : "w-2 bg-white/35"}`}
                       key={slide.image}
                       onClick={() => setActiveSlide(index)}
                       type="button"
                     />
                   ))}
-                  <span className="ml-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white/65">
-                    {t("Explore the collection")}
-                  </span>
                 </div>
               </div>
             </div>
-            <div className="relative mt-12 grid gap-3 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4">
-              {[
-                {
-                  icon: "⌖",
-                  title: "Cameroon locations",
-                  detail: "Find a listed shop near you.",
-                  to: "/locations",
-                },
-                {
-                  icon: "✧",
-                  title: "Explore the menu",
-                  detail: "Browse signature creations and treats.",
-                  to: "/menu",
-                },
-                {
-                  icon: "♡",
-                  title: "Explore flavors",
-                  detail: "Find a new favorite in the catalog.",
-                  to: "/flavors",
-                },
-                {
-                  icon: "✿",
-                  title: "Custom cake requests",
-                  detail: "Plan a cake for your celebration.",
-                  to: "/custom-cake",
-                },
-              ].map((feature) => (
-                <Link
-                  className="group flex min-h-[94px] items-center gap-3 rounded-2xl border border-[#e7e3d9] bg-white p-4 shadow-[0_8px_24px_rgba(9,42,83,0.045)] transition duration-300 hover:-translate-y-1 hover:border-[#e8d77b] hover:shadow-[0_15px_34px_rgba(9,42,83,0.1)] sm:p-5"
-                  key={feature.title}
-                  to={feature.to}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#fff3b8] text-xl text-[#102c50] transition group-hover:bg-[#ffdc32]"
-                  >
-                    {feature.icon}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-xs font-extrabold text-[#102c50] sm:text-sm">
-                      {t(feature.title)}
-                    </span>
-                    <span className="mt-1 block text-[11px] leading-4 text-[#65748a]">
-                      {t(feature.detail)}
-                    </span>
-                  </span>
-                  <span aria-hidden="true" className="ml-auto shrink-0 text-lg text-[#bd9c00] transition-transform group-hover:translate-x-1">
-                    →
-                  </span>
-                </Link>
-              ))}
-            </div>
           </div>
-          <svg
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-16 w-full sm:h-20"
-            preserveAspectRatio="none"
-            viewBox="0 0 1440 100"
-          >
-            <path
-              d="M0 36C170 80 310 3 500 38s310 51 480 15 270-16 460 20v27H0Z"
-              fill="#5ac4d9"
-            />
-            <path
-              d="M0 44c180-26 280 10 450 5s270-42 450-21 290 20 540-13v85H0Z"
-              fill="#fbfaf5"
-            />
-          </svg>
+
+          {/* Quick links */}
+          <div className="mt-16 border-t border-white/10 bg-[#061f40]/60 lg:mt-20">
+            <ul className="mx-auto grid max-w-[1320px] sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { icon: "⌖", title: "Cameroon locations", detail: "Find a listed shop near you.", to: "/locations" },
+                { icon: "✧", title: "Explore the menu", detail: "Browse signature creations and treats.", to: "/menu" },
+                { icon: "♡", title: "Explore flavors", detail: "Find a new favorite in the catalog.", to: "/flavors" },
+                { icon: "✿", title: "Custom cake requests", detail: "Plan a cake for your celebration.", to: "/custom-cake" },
+              ].map((feature, index) => (
+                <li
+                  className={`border-white/10 ${index > 0 ? "border-t sm:border-t-0" : ""} ${index % 2 === 1 ? "sm:border-l" : ""} ${index > 1 ? "sm:border-t lg:border-t-0" : ""} ${index === 2 ? "lg:border-l" : ""}`}
+                  key={feature.title}
+                >
+                  <Link
+                    className="group flex h-full items-center gap-4 px-5 py-6 transition hover:bg-white/[0.04] focus-visible:bg-white/[0.06] focus-visible:outline-none sm:px-8 lg:py-7"
+                    to={feature.to}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="grid size-11 shrink-0 place-items-center rounded-2xl bg-white/[0.07] text-lg text-[#ffdc32] ring-1 ring-white/10 transition group-hover:bg-[#ffdc32] group-hover:text-[#092a53]"
+                    >
+                      {feature.icon}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-extrabold text-white">{t(feature.title)}</span>
+                      <span className="mt-1 block text-xs leading-5 text-white/55">{t(feature.detail)}</span>
+                    </span>
+                    <span aria-hidden="true" className="shrink-0 text-white/40 transition group-hover:translate-x-1 group-hover:text-[#ffdc32]">
+                      <ArrowIcon />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
 
         <section
           aria-labelledby="popular-flavors-heading"
-          className="relative isolate overflow-hidden bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-10"
+          className="relative isolate overflow-hidden bg-[#fbfaf5] px-5 py-20 sm:px-8 sm:py-24 lg:px-10 lg:py-28"
         >
           <div
             aria-hidden="true"
-            className="absolute -right-28 top-16 -z-0 size-72 rounded-full border-[42px] border-[#ffdc32]/20"
+            className="pointer-events-none absolute -left-40 top-20 -z-10 size-[30rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
           />
-          <div className="relative z-10 mx-auto max-w-[1240px]">
-            <div className="mb-7 flex flex-wrap items-end justify-between gap-4 sm:mb-9">
-              <div>
-                <p className="mb-3 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7500]">
-                  <span aria-hidden="true" className="text-base">
-                    ✦
-                  </span>
+          <div className="mx-auto max-w-[1320px]">
+            <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-2xl">
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                  <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                   {t("Our favorites")}
                 </p>
                 <h2
-                  className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl lg:text-5xl"
+                  className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
                   id="popular-flavors-heading"
                 >
                   {t("Popular Flavors")}
                 </h2>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-[#65748a]">
-                  {t(
-                    "From classic scoops to signature creations, find a new favorite.",
-                  )}
+                <p className="mt-4 max-w-xl text-base leading-7 text-[#52647b]">
+                  {t("From classic scoops to signature creations, find a new favorite.")}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center">
-                <Link
-                  className="inline-flex items-center gap-2 rounded-full border border-[#d9d6cc] bg-white px-4 py-2.5 text-xs font-extrabold text-[#092a53] shadow-sm transition hover:-translate-y-0.5 hover:border-[#bd9c00] hover:bg-[#fffbea] sm:text-sm"
-                  to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
-                >
-                  {t("View all")} <ArrowIcon />
-                </Link>
-              </div>
+              <Link
+                className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 md:self-auto"
+                to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
+              >
+                {t("View all")} <ArrowIcon />
+              </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 min-[460px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
               {popularFlavors.map((item, index) => {
-                const soldOut =
-                  item.isAvailable === false || item.availableQuantity < 1;
+                const soldOut = item.isAvailable === false || item.availableQuantity < 1;
+                const featured = index === 0;
+                const itemKey = item.id || item.name;
+                const added = addedItemKey === itemKey;
                 return (
                   <article
-                    className="group overflow-hidden rounded-[26px] border border-[#ece9e1] bg-[#fbfaf5] shadow-[0_8px_26px_rgba(18,44,80,0.045)] transition duration-300 hover:-translate-y-1.5 hover:border-[#e7d77f] hover:shadow-[0_20px_44px_rgba(18,44,80,0.12)]"
-                    key={item.id || item.name}
+                    className={`group relative flex flex-col rounded-[28px] bg-white p-2.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] ${
+                      featured ? "sm:col-span-2 lg:row-span-2" : ""
+                    }`}
+                    key={itemKey}
                   >
                     <div
-                      className="relative aspect-[1.08] overflow-hidden"
+                      className={`relative overflow-hidden rounded-[22px] ${featured ? "aspect-[4/3] lg:aspect-auto lg:min-h-0 lg:flex-1" : "aspect-[4/3]"}`}
                       style={{ backgroundColor: popularFlavorColors[index] }}
                     >
                       <img
-                        alt={t(item.name)}
-                        className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.07]"
+                        alt=""
+                        className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05] ${featured ? "lg:absolute lg:inset-0" : ""} ${soldOut ? "grayscale-[60%]" : ""}`}
                         loading="lazy"
                         onError={(event) => {
                           event.currentTarget.onerror = null;
-                          event.currentTarget.src =
-                            "/images/hero-ice-cream.jpg";
+                          event.currentTarget.src = "/images/hero-ice-cream.jpg";
                         }}
                         src={item.image}
                       />
-                      <span
-                        className={`absolute left-4 top-4 rounded-full border border-white/70 px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-[0.1em] shadow-sm backdrop-blur-sm ${soldOut ? "bg-red-50/95 text-red-700" : "bg-white/95 text-[#37632c]"}`}
-                      >
-                        {soldOut ? t("Sold out") : t("Popular pick")}
-                      </span>
-                      <span
-                        aria-hidden="true"
-                        className="absolute bottom-4 right-4 grid size-10 translate-y-1 place-items-center rounded-full bg-[#ffdc32] text-lg font-bold text-[#092a53] opacity-0 shadow-md transition duration-300 group-hover:translate-y-0 group-hover:opacity-100"
-                      >
-                        ↗
+                      <span className="absolute left-3 top-3 flex items-center gap-2 sm:left-4 sm:top-4">
+                        <span className={`grid place-items-center rounded-full bg-[#092a53] font-display font-extrabold tabular-nums text-[#ffdc32] shadow-md ${featured ? "size-12 text-base" : "size-9 text-xs"}`}>
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        {(featured || soldOut) && (
+                          <span className={`rounded-full px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.1em] shadow-sm backdrop-blur-sm ${soldOut ? "bg-white/95 text-red-700" : "bg-white/95 text-[#092a53]"}`}>
+                            {soldOut ? t("Sold out") : t("Popular pick")}
+                          </span>
+                        )}
                       </span>
                     </div>
-                    <div className="p-4 sm:p-5">
-                      <h3 className="min-h-12 font-display text-base font-extrabold leading-snug text-[#102c50] sm:text-lg">
-                        {t(item.name)}
+
+                    <div className={`@container flex flex-col ${featured ? "px-3 pb-3 pt-6 sm:px-5 sm:pb-4" : "flex-1 px-3 pb-3 pt-5"}`}>
+                      <h3 className={`font-display font-extrabold leading-snug text-[#092a53] ${featured ? "text-2xl sm:text-3xl" : "text-lg"}`}>
+                        <Link
+                          className="after:absolute after:inset-0 after:rounded-[28px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#bd9c00]"
+                          to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
+                        >
+                          {t(item.name)}
+                        </Link>
                       </h3>
-                      <p className="mt-1 line-clamp-2 min-h-10 text-xs leading-5 text-[#65748a]">
+                      <p className={`mt-2 text-sm leading-6 text-[#65748a] ${featured ? "line-clamp-2 sm:text-base sm:leading-7" : "line-clamp-2"}`}>
                         {t(item.detail)}
                       </p>
-                      <div className="mt-4 flex items-end justify-between gap-2 border-t border-[#e7e3d9] pt-3">
-                        <div>
-                          <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#8792a0]">
-                            {t("Illustrative price")}
-                          </p>
-                          <span className="mt-1 block text-sm font-extrabold text-[#092a53]">
-                            {formatPrice(item.priceXaf)}
-                          </span>
+                      <div className="mt-auto pt-5">
+                        <div className="flex flex-col gap-3 border-t border-dashed border-[#e7e2d4] pt-4 @[16.5rem]:flex-row @[16.5rem]:items-center @[16.5rem]:justify-between">
+                          <div>
+                            <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">
+                              {t("Illustrative price")}
+                            </p>
+                            <p className={`mt-0.5 whitespace-nowrap font-display font-extrabold tabular-nums text-[#092a53] ${featured ? "text-2xl" : "text-lg"}`}>
+                              {formatPrice(item.priceXaf)}
+                            </p>
+                          </div>
+                          <button
+                            aria-label={soldOut ? t("Sold out") : t("Add {name} to your bag", { name: t(item.name) })}
+                            className={`relative z-10 inline-flex w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 py-3 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#8792a0] @[16.5rem]:w-auto ${
+                              added
+                                ? "bg-[#4caf50] text-white"
+                                : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white"
+                            }`}
+                            disabled={soldOut}
+                            onClick={() => handleAddToCart(item)}
+                            type="button"
+                          >
+                            {added ? (
+                              <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                                <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+                              </svg>
+                            ) : !soldOut ? (
+                              <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                                <path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+                                <path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                              </svg>
+                            ) : null}
+                            {soldOut ? t("Sold out") : added ? t("Added") : t("Add to bag")}
+                          </button>
                         </div>
-                        <button
-                          aria-label={
-                            soldOut
-                              ? t("Sold out")
-                              : t("Add {name} to your bag", {
-                                  name: t(item.name),
-                                })
-                          }
-                          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#092a53] px-4 text-xs font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#d9d6cc] disabled:text-[#65748a]"
-                          disabled={soldOut}
-                          onClick={() => handleAddToCart(item)}
-                          type="button"
-                        >
-                          {soldOut ? (
-                            t("Sold out")
-                          ) : (
-                            <>
-                              {t("Add")} <span aria-hidden="true">+</span>
-                            </>
-                          )}
-                        </button>
                       </div>
                     </div>
                   </article>
                 );
               })}
             </div>
+
             {menuError && (
-              <p className="mt-4 text-xs text-[#65748a]" role="status">
+              <p className="mt-6 text-xs text-[#65748a]" role="status">
                 {t("Menu availability could not be refreshed")}: {menuError}
               </p>
             )}
-            {cartNotice && (
-              <p
-                aria-live="polite"
-                className="mt-4 text-sm font-semibold text-[#315a36]"
-              >
-                {cartNotice}
-              </p>
-            )}
+            <p aria-live="polite" className={cartNotice && cartNoticeIsError ? "mt-6 text-sm font-semibold text-red-700" : "sr-only"}>
+              {cartNotice}
+            </p>
           </div>
-          <svg
-            aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 -z-0 h-10 w-full sm:h-14"
-            preserveAspectRatio="none"
-            viewBox="0 0 1440 80"
-          >
-            <path
-              d="M0 43C170 80 310 3 500 38s310 51 480 15 270-16 460 20V80H0Z"
-              fill="#102c50"
-            />
-            <path
-              d="M0 56c180-26 280 10 450 5s270-42 450-21 290 20 540-13v53H0Z"
-              fill="#5ac4d9"
-              opacity=".75"
-            />
-          </svg>
         </section>
 
         <section
           aria-labelledby="why-choose-us-heading"
-          className="relative isolate w-full overflow-hidden bg-[#f4f2e9] px-5 py-16 sm:px-8 sm:py-20 lg:px-10"
+          className="relative isolate w-full overflow-hidden bg-[#092a53] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-10 lg:py-28"
           data-scroll-reveal="skip"
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full border-[42px] border-[#ffdc32]/20 sm:size-96"
+            className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[34rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -bottom-24 -left-20 size-64 rounded-full border-[38px] border-[#092a53]/[0.04]"
+            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.05] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:28px_28px]"
           />
-          <div className="relative z-10 mx-auto w-full max-w-[1240px]">
-            <div className="mb-8 flex flex-col justify-between gap-4 sm:mb-10 sm:flex-row sm:items-end">
-              <div className="max-w-2xl">
-                <p className="mb-3 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7500]">
-                  <span aria-hidden="true" className="text-base">
-                    ✦
-                  </span>
-                  {t("Why choose us")}
-                </p>
-                <h2
-                  className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl lg:text-5xl"
-                  id="why-choose-us-heading"
-                >
-                  {t("More scoops. More smiles.")}
-                </h2>
-              </div>
-              <p className="max-w-sm text-sm leading-6 text-[#65748a]">
-                {t("A flavor for every mood")}
+          <div className="mx-auto grid w-full max-w-[1320px] items-center gap-14 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
+              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
+                <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />
+                {t("Why choose us")}
               </p>
-            </div>
-            <div className="grid overflow-hidden rounded-[26px] border border-[#e5e1d7] bg-white sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                {
-                  icon: "✿",
-                  title: "Natural ingredients",
-                  detail: "Only the good stuff, always.",
-                  color: "#a8df62",
-                },
-                {
-                  icon: "★",
-                  title: "Unique flavors",
-                  detail: "Classic to creative.",
-                  color: "#ffdc32",
-                },
-                {
-                  icon: "❄",
-                  title: "Freshly made",
-                  detail: "A little joy, every day.",
-                  color: "#4fc4e8",
-                },
-                {
-                  icon: "♡",
-                  title: "Happy customers",
-                  detail: "Your smile is our success.",
-                  color: "#f56586",
-                },
-              ].map((benefit) => (
-                <article
-                  className="group relative border-b border-[#eeeae1] p-5 transition-colors duration-300 hover:bg-[#fffbea] sm:p-6 lg:border-b-0 lg:border-r last:border-0"
-                  key={benefit.title}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="grid size-12 place-items-center rounded-2xl text-xl font-bold text-[#102c50] shadow-sm transition duration-300 group-hover:rotate-[-4deg] group-hover:scale-105 sm:size-14"
-                    style={{ backgroundColor: benefit.color }}
-                  >
-                    {benefit.icon}
+              <h2
+                className="mt-5 font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl"
+                id="why-choose-us-heading"
+              >
+                {t("More scoops. More smiles.")}
+              </h2>
+              <p className="mt-5 max-w-md text-base leading-7 text-white/65 sm:text-lg sm:leading-8">
+                {t("Signature creations, bold mix-ins and a treat for every mood, at branches across Cameroon.")}
+              </p>
+
+              <div className="relative mt-10">
+                <figure className="overflow-hidden rounded-[30px] shadow-[0_30px_70px_rgba(0,0,0,0.3)] ring-1 ring-white/10">
+                  <img
+                    alt=""
+                    className="aspect-[16/10] w-full object-cover"
+                    loading="lazy"
+                    src="/cream/cream%202.webp"
+                  />
+                </figure>
+                <div className="absolute -bottom-6 right-4 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-[#092a53] shadow-[0_20px_44px_rgba(0,0,0,0.25)] sm:right-6">
+                  <span aria-hidden="true" className="grid size-10 place-items-center rounded-xl bg-[#ffdc32] text-[#092a53]">
+                    <svg className="size-5" fill="none" viewBox="0 0 24 24">
+                      <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+                    </svg>
                   </span>
-                  <h3 className="mt-5 font-display text-lg font-extrabold text-[#092a53]">
-                    {t(benefit.title)}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-[#65748a]">
-                    {t(benefit.detail)}
-                  </p>
-                </article>
-              ))}
+                  <span className="leading-tight">
+                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t("Signature creations")}</span>
+                    <span className="mt-0.5 block text-sm font-bold">{t("A treat made your way")}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7">
+              <ul className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+                {[
+                  {
+                    title: "Natural ingredients",
+                    detail: "Only the good stuff, always.",
+                    icon: (
+                      <path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Zm0 0 7-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                    ),
+                  },
+                  {
+                    title: "Unique flavors",
+                    detail: "Classic to creative.",
+                    icon: (
+                      <path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+                    ),
+                  },
+                  {
+                    title: "Freshly made",
+                    detail: "A little joy, every day.",
+                    icon: (
+                      <path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.8 12 6.5l2.5-1.7M9.5 19.2 12 17.5l2.5 1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                    ),
+                  },
+                  {
+                    title: "Happy customers",
+                    detail: "Your smile is our success.",
+                    icon: (
+                      <>
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                        <path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8M9 9.5h.01M15 9.5h.01" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                      </>
+                    ),
+                  },
+                ].map((benefit, index) => (
+                  <li
+                    className={`group relative flex flex-col rounded-[26px] bg-white/[0.04] p-7 ring-1 ring-white/10 transition duration-300 hover:-translate-y-1 hover:bg-white/[0.07] hover:ring-[#ffdc32]/40 sm:p-8 ${
+                      index % 2 === 1 ? "sm:translate-y-8 sm:hover:translate-y-7" : ""
+                    }`}
+                    key={benefit.title}
+                  >
+                    <div className="flex items-start justify-between">
+                      <span
+                        aria-hidden="true"
+                        className="grid size-14 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53] shadow-[0_10px_24px_rgba(255,220,50,0.2)] transition duration-300 group-hover:-rotate-6 group-hover:scale-105"
+                      >
+                        <svg className="size-6" fill="none" viewBox="0 0 24 24">{benefit.icon}</svg>
+                      </span>
+                      <span aria-hidden="true" className="font-display text-sm font-extrabold tabular-nums text-white/30">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                    <h3 className="mt-8 font-display text-2xl font-extrabold leading-tight">
+                      {t(benefit.title)}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-white/60">
+                      {t(benefit.detail)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-12 flex flex-wrap items-center gap-4 sm:mt-16">
+                <Link
+                  className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-7 py-4 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                  to="/menu"
+                >
+                  {t("Explore the menu")} <ArrowIcon />
+                </Link>
+                <p className="text-sm font-semibold text-white/55">{t("A flavor for every mood")}</p>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="relative isolate overflow-hidden bg-white px-4 py-16 sm:px-7 sm:py-20 lg:px-10">
+        <section
+          aria-labelledby="home-menu-heading"
+          className="relative isolate overflow-hidden bg-white px-5 py-20 sm:px-8 sm:py-24 lg:px-10 lg:py-28"
+        >
           <div
             aria-hidden="true"
-            className="absolute -left-24 top-16 -z-10 size-72 rounded-full border-[48px] border-[#ffdc32]/20"
+            className="pointer-events-none absolute -right-40 top-10 -z-10 size-[30rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
           />
           <div className="mx-auto max-w-[1320px]">
-            <div className="mb-8 flex flex-wrap items-end justify-between gap-4 sm:mb-10">
-              <div>
-                <p className="mb-3 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">
-                  <span aria-hidden="true" className="text-base">
-                    ✦
-                  </span>
+            <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-2xl">
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                  <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                   {t("The Cold Stone experience")}
                 </p>
-                <h2 className="font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl lg:text-5xl">
+                <h2
+                  className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
+                  id="home-menu-heading"
+                >
                   {t("Menu highlights")}
                 </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-[#65748a]">
+                <p className="mt-4 max-w-xl text-base leading-7 text-[#52647b]">
                   {t(
                     "These categories appear on the global Cold Stone menu. Ask a Cameroon branch to confirm current selection.",
                   )}
                 </p>
               </div>
               <Link
-                className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-5 py-3 text-xs font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#163e6b] sm:text-sm"
+                className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 md:self-auto"
                 to="/menu"
               >
                 {t("View menu guide")} <ArrowIcon diagonal />
               </Link>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {coldStoneMenuCategories.map((category) => (
-                <Link
-                  aria-label={`${t(category.title)} — ${t("Browse the categories")}`}
-                  className="group flex min-h-[340px] flex-col overflow-hidden rounded-[24px] border border-[#e7e3d9] bg-white shadow-[0_8px_28px_rgba(18,44,80,0.05)] transition duration-300 hover:-translate-y-1 hover:border-[#d9c76d] hover:shadow-[0_18px_40px_rgba(18,44,80,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4"
-                  key={category.title}
-                  to={`/menu?category=${encodeURIComponent(category.title)}`}
-                >
-                  <div className="relative h-44 shrink-0 overflow-hidden bg-[#fff3b8]">
+
+            <div className="mt-12 grid auto-rows-[260px] gap-4 sm:grid-cols-2 sm:auto-rows-[240px] lg:grid-cols-4 lg:auto-rows-[220px] lg:gap-5">
+              {coldStoneMenuCategories.map((category, index) => {
+                const featured = index === 0;
+                const layout = [
+                  "sm:col-span-2 sm:row-span-2",
+                  "lg:col-span-2",
+                  "",
+                  "",
+                  "lg:col-span-2",
+                  "sm:col-span-2 lg:col-span-2",
+                ][index] ?? "";
+                return (
+                  <Link
+                    aria-label={`${t(category.title)} — ${t("Browse the categories")}`}
+                    className={`group relative isolate flex flex-col justify-end overflow-hidden rounded-[26px] bg-[#092a53] text-white shadow-[0_12px_32px_rgba(9,42,83,0.1)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_rgba(9,42,83,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4 ${layout}`}
+                    key={category.title}
+                    to={`/menu?category=${encodeURIComponent(category.title)}`}
+                  >
                     <img
                       alt=""
                       aria-hidden="true"
-                      className="size-full object-cover transition duration-700 group-hover:scale-[1.05]"
+                      className="absolute inset-0 -z-20 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06]"
                       loading="lazy"
                       src={category.image}
                     />
-                    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#092a53]/20 to-transparent" />
-                    <span aria-hidden="true" className="absolute left-4 top-4 grid size-11 place-items-center rounded-2xl bg-white/95 text-2xl shadow-sm backdrop-blur-sm">
-                      {category.icon}
-                    </span>
-                    <span className="absolute right-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-extrabold text-[#52647b] shadow-sm backdrop-blur-sm">
-                      {t("{count} items", { count: category.items.length })}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5 sm:p-6">
-                    <div className="flex items-end justify-between gap-3">
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a]/90 via-[#061d3a]/35 to-transparent transition duration-500 group-hover:from-[#061d3a]/95"
+                    />
+
+                    <div className="absolute inset-x-5 top-5 flex items-center justify-between sm:inset-x-6 sm:top-6">
+                      <span className="font-display text-sm font-extrabold tabular-nums text-white/80">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white backdrop-blur-md">
+                        {t("{count} items", { count: category.items.length })}
+                      </span>
+                    </div>
+
+                    <div className="flex items-end justify-between gap-4 p-5 sm:p-6">
                       <div className="min-w-0">
-                        <p className="mb-1 text-[9px] font-extrabold uppercase tracking-[0.13em] text-[#a48700]">
+                        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
                           {t("Menu category")}
                         </p>
-                        <h3 className="font-display text-xl font-extrabold leading-tight text-[#092a53] sm:text-2xl">
+                        <h3
+                          className={`mt-1.5 font-display font-extrabold leading-tight tracking-tight ${
+                            featured ? "text-3xl sm:text-4xl lg:text-5xl" : "text-xl sm:text-2xl"
+                          }`}
+                        >
                           {t(category.title)}
                         </h3>
+                        <p
+                          className={`mt-2 max-w-md text-sm leading-6 text-white/75 ${
+                            featured ? "line-clamp-2" : "line-clamp-2 sm:line-clamp-1 lg:line-clamp-2"
+                          }`}
+                        >
+                          {t(category.description)}
+                        </p>
                       </div>
                       <span
                         aria-hidden="true"
-                        className="grid size-10 shrink-0 translate-x-1 place-items-center rounded-xl border border-[#e7e3d9] text-[#092a53] transition duration-300 group-hover:translate-x-0 group-hover:border-[#092a53] group-hover:bg-[#092a53] group-hover:text-white"
+                        className="grid size-11 shrink-0 place-items-center rounded-full bg-white text-[#092a53] shadow-md transition duration-300 group-hover:bg-[#ffdc32] group-hover:-rotate-45"
                       >
                         <ArrowIcon />
                       </span>
                     </div>
-                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#65748a]">
-                      {t(category.description)}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
 
         <section
           aria-labelledby="home-about-heading"
-          className="relative isolate overflow-hidden bg-[#fbfaf5] px-4 py-16 sm:px-7 sm:py-20 lg:px-10"
+          className="relative isolate overflow-hidden bg-[#fbfaf5] px-4 py-16 sm:px-7 sm:py-24 lg:px-10"
           data-scroll-reveal="skip"
         >
           <div
             aria-hidden="true"
-            className="absolute -right-28 top-10 -z-10 size-72 rounded-full border-[44px] border-[#dff0ed]/70"
+            className="absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-[#e5e1d7] to-transparent"
           />
-          <div className="mx-auto grid max-w-[1320px] gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-            <article className="relative isolate flex min-h-[360px] overflow-hidden rounded-[28px] bg-[#ffdc32] text-[#092a53] shadow-[0_18px_46px_rgba(121,99,0,0.15)] sm:min-h-[410px]">
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 -z-10 bg-gradient-to-br from-[#ffe76c] via-[#ffdc32] to-[#f2c900]"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute -left-20 -top-28 -z-10 size-64 rounded-full border-[40px] border-white/20"
-              />
-              <div className="relative z-10 flex w-[64%] flex-col items-start justify-center p-6 sm:w-[60%] sm:p-9 lg:p-11">
-                <p className="inline-flex items-center gap-2 rounded-full border border-[#092a53]/10 bg-white/75 px-3.5 py-2 text-[9px] font-extrabold uppercase tracking-[0.15em]">
-                  <span aria-hidden="true">✦</span>
-                  {t("Explore the menu")}
+          <div
+            aria-hidden="true"
+            className="absolute -right-40 top-1/3 -z-10 size-[28rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
+          />
+          <div className="mx-auto max-w-[1320px]">
+            <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+              <div className="relative lg:col-span-6">
+                <div className="grid grid-cols-6 grid-rows-6 gap-3 sm:gap-4 [aspect-ratio:1/1] sm:[aspect-ratio:6/5]">
+                  <figure className="relative col-span-4 row-span-6 overflow-hidden rounded-[28px] bg-[#fff3b8] shadow-[0_24px_60px_rgba(9,42,83,0.16)]">
+                    <img
+                      alt={t("A child enjoying ice cream")}
+                      className="size-full object-cover object-[58%_30%] transition duration-700 hover:scale-[1.03]"
+                      loading="lazy"
+                      src="/ice-images/about-child.jpg"
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#092a53]/40 via-transparent to-transparent"
+                    />
+                  </figure>
+                  <figure className="relative col-span-2 row-span-3 overflow-hidden rounded-[22px] bg-[#fff3b8] shadow-[0_14px_34px_rgba(9,42,83,0.12)]">
+                    <img
+                      alt={t("Ice cream cupcake")}
+                      className="size-full object-cover transition duration-700 hover:scale-[1.05]"
+                      loading="lazy"
+                      src="/cream/cream%203.webp"
+                    />
+                  </figure>
+                  <figure className="relative col-span-2 row-span-3 overflow-hidden rounded-[22px] bg-[#fff3b8] shadow-[0_14px_34px_rgba(9,42,83,0.12)]">
+                    <img
+                      alt={t("Chocolate ice cream cupcake")}
+                      className="size-full object-cover transition duration-700 hover:scale-[1.05]"
+                      loading="lazy"
+                      src="/cream/cream%205.webp"
+                    />
+                  </figure>
+                </div>
+                <div className="absolute -bottom-6 left-4 flex items-center gap-3 rounded-2xl border border-[#eeeae1] bg-white/95 px-4 py-3 shadow-[0_18px_40px_rgba(9,42,83,0.14)] backdrop-blur-sm sm:left-8 sm:px-5 sm:py-4">
+                  <div aria-hidden="true" className="flex -space-x-2.5">
+                    {["/cream/cream%201.webp", "/ice-images/ice-7.webp", "/milk/mk-2.webp"].map((src) => (
+                      <img
+                        alt=""
+                        className="size-9 rounded-full border-2 border-white object-cover"
+                        key={src}
+                        loading="lazy"
+                        src={src}
+                      />
+                    ))}
+                  </div>
+                  <div className="leading-tight">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">
+                      {t("Happy customers")}
+                    </p>
+                    <p className="mt-0.5 text-sm font-bold text-[#092a53]">
+                      {t("Your smile is our success.")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-6 lg:pl-4">
+                <p className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#a48700]">
+                  <span aria-hidden="true" className="h-px w-8 bg-[#a48700]" />
+                  {t("About us")}
                 </p>
-                <h2 className="mt-5 font-display text-3xl font-extrabold leading-[1.05] tracking-tight sm:text-4xl lg:text-5xl">
-                  {t("A little joy")}
-                  <span className="mt-1 block">{t("in every scoop.")}</span>
+                <h2
+                  className="mt-4 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
+                  id="home-about-heading"
+                >
+                  {t("The joy is in the details.")}
                 </h2>
-                <p className="mt-3 max-w-[260px] text-xs leading-5 text-[#092a53]/75 sm:text-sm sm:leading-6">
-                  {t("Browse signature creations and treats.")}
+                <p className="mt-5 max-w-xl text-base leading-7 text-[#52647b]">
+                  {t(
+                    "Discover Cold Stone ice cream, signature creations, and the mix-ins that make every scoop a little more special.",
+                  )}
                 </p>
+
+                <dl className="mt-8 divide-y divide-[#e9e5da] border-y border-[#e9e5da]">
+                  {[
+                    { number: "01", label: "Pickup or delivery", detail: "Choose what suits your day." },
+                    { number: "02", label: "Loyalty rewards", detail: "Earn points on every order." },
+                    { number: "03", label: "Custom cakes", detail: "Plan a cake for any celebration." },
+                  ].map((item) => (
+                    <div className="group flex items-baseline gap-5 py-4 sm:py-5" key={item.label}>
+                      <span
+                        aria-hidden="true"
+                        className="font-display text-sm font-extrabold tabular-nums text-[#c9b24a] transition-colors group-hover:text-[#a48700]"
+                      >
+                        {item.number}
+                      </span>
+                      <div className="flex flex-1 flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                        <dt className="font-display text-lg font-extrabold text-[#092a53]">
+                          {t(item.label)}
+                        </dt>
+                        <dd className="text-sm text-[#65748a]">{t(item.detail)}</dd>
+                      </div>
+                    </div>
+                  ))}
+                </dl>
+
+                <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <Link
+                    className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                    to="/about"
+                  >
+                    {t("Discover our story")} <ArrowIcon />
+                  </Link>
+                  <Link
+                    className="inline-flex items-center gap-2 rounded-full border border-[#d9d4c7] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:border-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                    to="/menu"
+                  >
+                    {t("Explore the menu")}
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative isolate mt-20 overflow-hidden rounded-[28px] bg-[#ffdc32] px-6 py-8 text-[#092a53] shadow-[0_18px_46px_rgba(121,99,0,0.14)] sm:px-10 sm:py-10 lg:mt-24">
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 -z-10 bg-gradient-to-r from-[#ffe76c] via-[#ffdc32] to-[#f2c900]"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute -right-16 -top-20 -z-10 size-56 rounded-full border-[36px] border-white/25"
+              />
+              <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#092a53]/75">
+                    {t("Browse signature creations and treats.")}
+                  </p>
+                  <p className="mt-2 font-display text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
+                    {t("Ready for your next scoop?")}
+                  </p>
+                </div>
                 <Link
-                  className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#092a53] px-5 py-3 text-xs font-extrabold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#163e6b] sm:text-sm"
+                  className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-[#ffdc32] md:self-auto"
                   to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
                 >
                   {t("Order now")} <ArrowIcon />
                 </Link>
               </div>
-              <div
-                aria-hidden="true"
-                className="absolute bottom-0 right-0 top-0 w-[46%] sm:w-[48%]"
-              >
-                <div className="absolute bottom-[-12%] right-[-9%] size-[115%] rounded-full border-[28px] border-white/20 sm:border-[38px]" />
-                <img
-                  alt={t("Ice cream cone")}
-                  className="absolute bottom-[7%] right-[3%] h-[76%] w-[66%] rounded-[48%_48%_20%_20%] border-[5px] border-[#ffdc32] object-cover object-center shadow-2xl transition duration-500 hover:-translate-y-1"
-                  loading="lazy"
-                  src="/ice-images/ice-4.webp"
-                />
-                <img
-                  alt={t("Ice cream sundae")}
-                  className="absolute bottom-[7%] left-[-7%] h-[42%] w-[46%] rounded-[45%_45%_20%_20%] border-4 border-[#ffdc32] object-cover object-center shadow-xl sm:border-[5px]"
-                  loading="lazy"
-                  src="/ice-images/ice-1.jpg"
-                />
-                <img
-                  alt={t("Ice cream treat")}
-                  className="absolute right-[4%] top-[6%] h-[34%] w-[39%] rounded-[45%_45%_20%_20%] border-4 border-[#ffdc32] object-cover object-center shadow-xl sm:border-[5px]"
-                  loading="lazy"
-                  src="/ice-images/ice-3.webp"
-                />
-                <span className="absolute bottom-[8%] left-[28%] grid size-9 place-items-center rounded-full bg-white text-sm font-extrabold text-[#806a00] shadow-lg sm:size-11">
-                  3×
-                </span>
-              </div>
-            </article>
-
-            <article className="relative isolate flex min-h-[340px] overflow-hidden rounded-[28px] border border-[#e7e3d9] bg-[#092a53] text-white shadow-[0_16px_42px_rgba(9,42,83,0.12)] sm:min-h-[390px]">
-              <img
-                alt={t("A child enjoying ice cream")}
-                className="absolute inset-0 -z-20 size-full object-cover object-[58%_center]"
-                loading="lazy"
-                src="/ice-images/about-child.jpg"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 -z-10 bg-gradient-to-r from-[#092a53] via-[#092a53]/95 to-[#092a53]/15"
-              />
-              <div className="relative z-10 flex w-full flex-col items-start justify-center p-6 sm:w-[74%] sm:p-9 lg:p-11">
-                <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-[9px] font-extrabold uppercase tracking-[0.15em] text-[#ffdc32]">
-                  <span aria-hidden="true">♡</span>
-                  {t("About us")}
-                </p>
-                <h2
-                  className="mt-5 max-w-sm font-display text-3xl font-extrabold leading-tight sm:text-4xl"
-                  id="home-about-heading"
-                >
-                  {t("The joy is in the details.")}
-                </h2>
-                <p className="mt-3 max-w-sm text-xs leading-6 text-white/80 sm:text-sm sm:leading-7">
-                  {t(
-                    "Discover Cold Stone ice cream, signature creations, and the mix-ins that make every scoop a little more special.",
-                  )}
-                </p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {[
-                    { icon: "✿", label: "Freshly made" },
-                    { icon: "♡", label: "Quality ingredients" },
-                    { icon: "☺", label: "Happy customers" },
-                  ].map((item) => (
-                    <span
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1.5 text-[9px] font-bold text-white/90 sm:text-[10px]"
-                      key={item.label}
-                    >
-                      <span aria-hidden="true" className="text-[#ffdc32]">
-                        {item.icon}
-                      </span>
-                      {t(item.label)}
-                    </span>
-                  ))}
-                </div>
-                <Link
-                  className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffdc32] sm:text-sm"
-                  to="/about"
-                >
-                  {t("Discover our story")} <ArrowIcon />
-                </Link>
-              </div>
-              <div
-                aria-hidden="true"
-                className="absolute inset-y-0 right-0 -z-10 w-[40%] bg-gradient-to-l from-transparent to-[#092a53]/30"
-              />
-            </article>
+            </div>
           </div>
         </section>
 
+        {/* Shown once there is at least one approved review, so new visitors never see an empty block. */}
+        {reviews.length > 0 && (
         <section
           aria-labelledby="real-reviews-heading"
-          className="relative isolate overflow-hidden bg-[#092a53] px-5 py-16 text-white sm:px-8 sm:py-20 lg:px-10"
+          className="relative isolate overflow-hidden bg-[#092a53] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-10 lg:py-28"
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -right-16 -top-24 size-72 rounded-full border-[42px] border-white/[0.06] sm:size-96"
+            className="pointer-events-none absolute -left-40 -top-40 -z-10 size-[34rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute bottom-0 left-0 h-1.5 w-full bg-gradient-to-r from-[#ffdc32] via-[#ffdc32]/50 to-transparent"
+            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.05] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:28px_28px]"
           />
-          <div className="relative z-10 mx-auto max-w-[1240px]">
-            <div className="mb-8 flex flex-wrap items-end justify-between gap-5 sm:mb-10">
-              <div>
-                <p className="mb-2 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
-                  <span aria-hidden="true" className="text-base">
-                    ✦
-                  </span>
+          <div className="mx-auto grid max-w-[1320px] gap-12 lg:grid-cols-12 lg:gap-16">
+            {/* Summary */}
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-28">
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
+                  <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />
                   {t("What our customers are saying")}
                 </p>
                 <h2
-                  className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
+                  className="mt-5 font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-5xl"
                   id="real-reviews-heading"
                 >
                   {t("Real Reviews")}
                 </h2>
-              </div>
-              <Link
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-5 py-3 text-xs font-extrabold text-white transition hover:-translate-y-0.5 hover:border-[#ffdc32] hover:bg-[#ffdc32] hover:text-[#092a53] sm:text-sm"
-                to="/menu"
-              >
-                {t("Explore the menu")} <ArrowIcon />
-              </Link>
-            </div>
-            {reviewsError ? (
-              <p
-                className="rounded-2xl border border-white/15 bg-white/10 p-5 text-sm leading-6 text-white/85"
-                role="status"
-              >
-                {t("Customer reviews could not be loaded")}: {reviewsError}
-              </p>
-            ) : reviews.length ? (
-              <div className="grid gap-4 md:grid-cols-3">
-                {reviews.map((review, index) => {
-                  const customerName = review.customerName || t("Customer");
-                  return (
-                    <article
-                      className="flex min-h-[260px] flex-col rounded-[24px] border border-white/70 bg-[#fffefa] p-5 text-[#102c50] shadow-[0_12px_34px_rgba(0,0,0,0.13)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_rgba(0,0,0,0.2)] sm:p-6"
-                      key={`${review.createdAt}-${review.itemName}-${index}`}
-                    >
-                      <div className="mb-4 flex items-center justify-between gap-3">
-                        <div
-                          aria-label={t("{rating} out of 5 stars", {
-                            rating: review.rating,
-                          })}
-                          className="flex gap-0.5 text-base leading-none text-[#a48700]"
+
+                {reviews.length > 0 && (
+                  <div className="mt-10 rounded-[26px] bg-white/[0.05] p-6 ring-1 ring-white/10">
+                    <div className="flex items-end gap-4">
+                      <span className="font-display text-6xl font-extrabold leading-none tabular-nums">
+                        {averageRating.toFixed(1)}
+                      </span>
+                      <div className="pb-1">
+                        <p
+                          aria-label={t("{rating} out of 5 stars", { rating: averageRating.toFixed(1) })}
+                          className="text-xl leading-none tracking-[0.12em] text-[#ffdc32]"
                         >
-                          {"★".repeat(review.rating)}
-                          <span className="text-[#d9d6cc]">
-                            {"★".repeat(5 - review.rating)}
-                          </span>
-                        </div>
-                        <span
-                          aria-hidden="true"
-                          className="grid size-9 place-items-center rounded-full bg-[#fff3b8] font-display text-2xl leading-none text-[#806a00]"
-                        >
-                          “
-                        </span>
+                          {"★".repeat(Math.round(averageRating))}
+                          <span className="text-white/20">{"★".repeat(5 - Math.round(averageRating))}</span>
+                        </p>
+                        <p className="mt-2 text-xs font-semibold text-white/55">
+                          {t("Based on {count} reviews", { count: reviewStats.count })}
+                        </p>
                       </div>
-                      <p className="flex-1 font-display text-base font-semibold leading-7 text-[#334963] sm:text-[17px]">
-                        “{review.review || t("No written comment.")}”
-                      </p>
-                      <div className="mt-5 flex items-center gap-3 border-t border-[#e7e3d9] pt-4">
-                        {review.profilePicture ? (
+                    </div>
+                    <div aria-hidden="true" className="mt-6 flex -space-x-2.5">
+                      {reviews.map((review, index) =>
+                        review.profilePicture ? (
                           <img
                             alt=""
-                            aria-hidden="true"
-                            className="size-11 shrink-0 rounded-full border-2 border-[#fff3b8] object-cover"
+                            className="size-10 rounded-full object-cover ring-2 ring-[#092a53]"
+                            key={`avatar-${index}`}
                             src={review.profilePicture}
                           />
                         ) : (
                           <span
-                            aria-hidden="true"
-                            className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffdc32] font-display text-lg font-bold text-[#102c50]"
+                            className="grid size-10 place-items-center rounded-full bg-[#ffdc32] font-display text-sm font-extrabold text-[#092a53] ring-2 ring-[#092a53]"
+                            key={`avatar-${index}`}
                           >
-                            {customerName.charAt(0).toUpperCase()}
+                            {(review.customerName || t("Customer")).charAt(0).toUpperCase()}
                           </span>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-extrabold text-[#102c50]">
-                            {customerName}
-                          </p>
-                          <p className="mt-0.5 truncate text-[10px] font-bold uppercase tracking-[0.1em] text-[#8a7500]">
-                            {t(review.itemName)}
-                          </p>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-white/15 bg-white/10 px-5 py-8 text-center sm:py-10">
-                <span
-                  aria-hidden="true"
-                  className="mx-auto mb-3 grid size-12 place-items-center rounded-full bg-[#ffdc32] text-xl text-[#092a53]"
+                        ),
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <Link
+                  className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-7 py-4 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                  to="/menu"
                 >
-                  ✦
-                </span>
-                <p className="text-sm font-semibold text-white/85">
-                  {t("No approved reviews yet.")}
-                </p>
+                  {t("Explore the menu")} <ArrowIcon />
+                </Link>
               </div>
-            )}
+            </div>
+
+            {/* Reviews */}
+            <div className="lg:col-span-8">
+              {reviewsError ? (
+                <p
+                  className="flex gap-3 rounded-[24px] bg-white/[0.05] p-6 text-sm leading-6 text-white/80 ring-1 ring-white/10"
+                  role="status"
+                >
+                  <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full bg-white/10 text-xs font-extrabold">!</span>
+                  {t("Customer reviews could not be loaded")}: {reviewsError}
+                </p>
+              ) : reviews.length ? (
+                <ul className="grid gap-5 md:grid-cols-2">
+                  {reviews.map((review, index) => {
+                    const customerName = review.customerName || t("Customer");
+                    const featured = index === 0;
+                    return (
+                      <li
+                        className={`relative flex flex-col overflow-hidden rounded-[28px] transition duration-300 hover:-translate-y-1 ${
+                          featured
+                            ? "bg-white p-8 text-[#092a53] shadow-[0_30px_70px_rgba(0,0,0,0.3)] sm:p-10 md:col-span-2"
+                            : "bg-white/[0.05] p-7 text-white ring-1 ring-white/10 hover:bg-white/[0.08] sm:p-8"
+                        } ${reviews.length === 2 && !featured ? "md:col-span-2" : ""}`}
+                        key={`${review.createdAt}-${review.itemName}-${index}`}
+                      >
+                        <svg
+                          aria-hidden="true"
+                          className={`absolute right-6 top-6 ${featured ? "size-20 text-[#ffdc32]/40 sm:size-24" : "size-12 text-white/10"}`}
+                          fill="currentColor"
+                          viewBox="0 0 32 32"
+                        >
+                          <path d="M13 7C7.5 8.6 4 13 4 18.5V25h9v-9H8.6c.4-3.2 2.4-5.6 5.4-6.7L13 7Zm15 0c-5.5 1.6-9 6-9 11.5V25h9v-9h-4.4c.4-3.2 2.4-5.6 5.4-6.7L28 7Z" />
+                        </svg>
+
+                        <p
+                          aria-label={t("{rating} out of 5 stars", { rating: review.rating })}
+                          className={`relative leading-none tracking-[0.12em] ${featured ? "text-lg text-[#d4ad00]" : "text-sm text-[#ffdc32]"}`}
+                        >
+                          {"★".repeat(review.rating)}
+                          <span className={featured ? "text-[#e2ddd0]" : "text-white/20"}>
+                            {"★".repeat(5 - review.rating)}
+                          </span>
+                        </p>
+
+                        <blockquote
+                          className={`relative mt-5 flex-1 font-display font-bold ${
+                            featured
+                              ? "pr-12 text-2xl leading-snug sm:pr-24 sm:text-3xl sm:leading-snug"
+                              : "pr-10 text-lg leading-relaxed text-white/90"
+                          }`}
+                        >
+                          “{review.review || t("No written comment.")}”
+                        </blockquote>
+
+                        <footer className={`relative mt-8 flex items-center gap-3 border-t pt-5 ${featured ? "border-[#efece3]" : "border-white/10"}`}>
+                          {review.profilePicture ? (
+                            <img
+                              alt=""
+                              className={`shrink-0 rounded-full object-cover ${featured ? "size-12 ring-4 ring-[#fff3b8]" : "size-10 ring-2 ring-white/15"}`}
+                              src={review.profilePicture}
+                            />
+                          ) : (
+                            <span
+                              aria-hidden="true"
+                              className={`grid shrink-0 place-items-center rounded-full bg-[#ffdc32] font-display font-extrabold text-[#092a53] ${featured ? "size-12 text-lg" : "size-10 text-sm"}`}
+                            >
+                              {customerName.charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className={`truncate font-extrabold ${featured ? "text-base" : "text-sm"}`}>{customerName}</p>
+                            {review.itemName && (
+                              <p className={`mt-0.5 truncate text-[10px] font-extrabold uppercase tracking-[0.14em] ${featured ? "text-[#a48700]" : "text-[#ffdc32]/70"}`}>
+                                {t(review.itemName)}
+                              </p>
+                            )}
+                          </div>
+                        </footer>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <div className="flex flex-col items-center rounded-[28px] bg-white/[0.05] px-6 py-16 text-center ring-1 ring-white/10">
+                  <span aria-hidden="true" className="grid size-14 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]">
+                    <svg className="size-7" fill="none" viewBox="0 0 24 24">
+                      <path d="M5 5h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-8l-5 4v-4H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+                    </svg>
+                  </span>
+                  <p className="mt-5 font-display text-xl font-extrabold">{t("No approved reviews yet.")}</p>
+                </div>
+              )}
+            </div>
           </div>
         </section>
+        )}
 
         <section
           aria-labelledby="home-faq-heading"
-          className="relative isolate overflow-hidden bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-10"
+          className="relative isolate overflow-hidden bg-white px-5 py-20 sm:px-8 sm:py-24 lg:px-10 lg:py-28"
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -left-24 top-12 size-64 rounded-full border-[38px] border-[#ffdc32]/20 sm:size-80"
+            className="pointer-events-none absolute -left-40 top-24 -z-10 size-[30rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
           />
-          <div className="relative z-10 mx-auto grid max-w-[1240px] gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
-            <div className="lg:sticky lg:top-28 lg:h-fit">
-              <p className="mb-3 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7500]">
-                <span aria-hidden="true" className="text-base">
-                  ✦
-                </span>
-                {t("Here to help")}
-              </p>
-              <h2
-                className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl lg:text-5xl"
-                id="home-faq-heading"
-              >
-                {t("Frequently Asked Questions")}
-              </h2>
-              <p className="mt-4 max-w-sm text-sm leading-6 text-[#65748a]">
-                {t(
-                  "Find quick answers about this guide, local listings, and the information on our site.",
-                )}
-              </p>
-              <Link
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#092a53] px-5 py-3 text-xs font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#163e6b] sm:text-sm"
-                to="/contact"
-              >
-                {t("Contact us")} <ArrowIcon />
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {[
-                {
-                  question:
-                    "Is this the official Cold Stone Creamery Cameroon website?",
-                  answer:
-                    "No. This is an independent information guide and is not affiliated with or operated by Cold Stone Creamery.",
-                },
-                {
-                  question:
-                    "Are the listed locations and opening hours always current?",
-                  answer:
-                    "Public business details can change. Please confirm a location and its hours through a current local listing before visiting.",
-                },
-                {
-                  question: "Will every Cameroon location have the same menu?",
-                  answer:
-                    "Menus, flavors, and availability may vary by location. Contact your preferred shop to check what is currently available.",
-                },
-                {
-                  question: "Can I order treats through this website?",
-                  answer:
-                    "This site has a separate online catalog and checkout managed by its operator. Those products and prices are not confirmed as Cold Stone Cameroon offerings.",
-                },
-                {
-                  question: "How can I find a location near me?",
-                  answer:
-                    "Use the Locations page to browse the public listings and available address details for Cameroon.",
-                },
-                {
-                  question: "How can I contact this website?",
-                  answer:
-                    "Use the Contact page to send a message to the operator of this independent guide.",
-                },
-              ].map(({ question, answer }) => (
-                <details
-                  className="group rounded-2xl border border-[#e5e1d7] bg-[#fbfaf5] px-5 py-4 transition duration-200 hover:border-[#d9c76d] open:border-[#d9c76d] open:bg-white open:shadow-[0_14px_34px_rgba(18,44,80,0.08)] sm:px-6 sm:py-5"
-                  key={question}
+          <div className="mx-auto grid max-w-[1240px] gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
+              <div className="lg:sticky lg:top-28">
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                  <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
+                  {t("Here to help")}
+                </p>
+                <h2
+                  className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
+                  id="home-faq-heading"
                 >
-                  <summary className="flex cursor-pointer list-none items-center gap-4 text-sm font-extrabold leading-6 text-[#092a53] marker:content-none sm:text-base">
-                    <span
-                      aria-hidden="true"
-                      className="grid size-8 shrink-0 place-items-center rounded-full bg-[#fff3b8] text-xs font-extrabold text-[#806a00] transition group-open:bg-[#092a53] group-open:text-[#ffdc32]"
-                    >
-                      ?
-                    </span>
-                    <span className="flex-1">{t(question)}</span>
-                    <span
-                      aria-hidden="true"
-                      className="grid size-8 shrink-0 place-items-center rounded-full border border-[#e7e3d9] text-[#65748a] transition duration-200 group-open:rotate-45 group-open:border-[#092a53] group-open:bg-[#092a53] group-open:text-white"
-                    >
-                      <svg className="size-4" fill="none" viewBox="0 0 24 24">
-                        <path
-                          d="M12 5v14M5 12h14"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeWidth="2"
-                        />
-                      </svg>
-                    </span>
-                  </summary>
-                  <p className="ml-12 mt-3 max-w-2xl border-t border-[#eeeae1] pt-4 text-sm leading-6 text-[#65748a] sm:ml-12">
-                    {t(answer)}
+                  {t("Frequently Asked Questions")}
+                </h2>
+                <p className="mt-5 max-w-md text-base leading-7 text-[#52647b]">
+                  {t(
+                    "Find quick answers about this guide, local listings, and the information on our site.",
+                  )}
+                </p>
+
+                <div className="relative isolate mt-10 overflow-hidden rounded-[26px] bg-[#092a53] p-7 text-white shadow-[0_20px_50px_rgba(9,42,83,0.18)] sm:p-8">
+                  <div
+                    aria-hidden="true"
+                    className="absolute -right-14 -top-14 -z-10 size-44 rounded-full border-[28px] border-white/[0.06]"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="grid size-12 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]"
+                  >
+                    <svg className="size-6" fill="none" viewBox="0 0 24 24">
+                      <path
+                        d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V17H6.5A2.5 2.5 0 0 1 4 14.5v-8Z"
+                        stroke="currentColor"
+                        strokeLinejoin="round"
+                        strokeWidth="1.8"
+                      />
+                      <path d="M8.5 9.5h7M8.5 12.5h4" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                    </svg>
+                  </span>
+                  <h3 className="mt-6 font-display text-2xl font-extrabold leading-tight">
+                    {t("Still have questions?")}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-white/70">
+                    {t("Use the Contact page to send a message to the operator of this independent guide.")}
                   </p>
-                </details>
-              ))}
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Link
+                      className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                      to="/contact"
+                    >
+                      {t("Contact us")} <ArrowIcon />
+                    </Link>
+                    <Link
+                      className="inline-flex items-center gap-2 rounded-full border border-white/25 px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                      to="/locations"
+                    >
+                      {t("Locations")}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7">
+              <div className="border-t border-[#e5e1d7]">
+                {[
+                  {
+                    question:
+                      "Is this the official Cold Stone Creamery Cameroon website?",
+                    answer:
+                      "No. This is an independent information guide and is not affiliated with or operated by Cold Stone Creamery.",
+                  },
+                  {
+                    question:
+                      "Are the listed locations and opening hours always current?",
+                    answer:
+                      "Public business details can change. Please confirm a location and its hours through a current local listing before visiting.",
+                  },
+                  {
+                    question: "Will every Cameroon location have the same menu?",
+                    answer:
+                      "Menus, flavors, and availability may vary by location. Contact your preferred shop to check what is currently available.",
+                  },
+                  {
+                    question: "Can I order treats through this website?",
+                    answer:
+                      "This site has a separate online catalog and checkout managed by its operator. Those products and prices are not confirmed as Cold Stone Cameroon offerings.",
+                  },
+                  {
+                    question: "How can I find a location near me?",
+                    answer:
+                      "Use the Locations page to browse the public listings and available address details for Cameroon.",
+                  },
+                  {
+                    question: "How can I contact this website?",
+                    answer:
+                      "Use the Contact page to send a message to the operator of this independent guide.",
+                  },
+                ].map(({ question, answer }, index) => (
+                  <details
+                    className="group border-b border-[#e5e1d7] transition-colors open:border-[#092a53]/20"
+                    key={question}
+                    open={index === 0}
+                  >
+                    <summary className="flex cursor-pointer list-none items-start gap-5 py-6 marker:content-none focus-visible:outline-none sm:gap-7 sm:py-7 [&::-webkit-details-marker]:hidden">
+                      <span
+                        aria-hidden="true"
+                        className="pt-1 font-display text-sm font-extrabold tabular-nums text-[#c9b24a] transition-colors group-open:text-[#a48700]"
+                      >
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span className="flex-1 font-display text-lg font-extrabold leading-snug text-[#092a53] transition-colors group-hover:text-[#163e6b] sm:text-xl">
+                        {t(question)}
+                      </span>
+                      <span
+                        aria-hidden="true"
+                        className="relative mt-0.5 grid size-9 shrink-0 place-items-center rounded-full border border-[#e5e1d7] text-[#092a53] transition duration-300 group-hover:border-[#092a53] group-open:border-[#ffdc32] group-open:bg-[#ffdc32]"
+                      >
+                        <span className="absolute h-0.5 w-3.5 rounded-full bg-current" />
+                        <span className="absolute h-3.5 w-0.5 rounded-full bg-current transition duration-300 group-open:rotate-90 group-open:opacity-0" />
+                      </span>
+                    </summary>
+                    <p className="-mt-2 max-w-2xl pb-7 pl-11 pr-14 text-base leading-7 text-[#52647b] sm:pl-14">
+                      {t(answer)}
+                    </p>
+                  </details>
+                ))}
+              </div>
             </div>
           </div>
         </section>

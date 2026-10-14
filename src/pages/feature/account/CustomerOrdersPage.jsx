@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-import { apiRequest, CUSTOMER_TOKEN_KEY } from "../../../api/api";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { apiRequest, getCustomerToken } from "../../../api/api";
 import { Footer, Header } from "../../../components/Layout";
 import { useCart } from "../../../useCart";
 import { useAuth } from "../../../authcontext/useAuth";
@@ -8,9 +8,37 @@ import { cameroonDeliveryLocations } from "../../../data";
 import { useLanguage } from "../../../language/useLanguage";
 
 const fieldClass =
-  "mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-white px-4 py-3 text-sm";
+  "mt-2 w-full rounded-2xl border border-[#e3dfd3] bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-[#102c50] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#cfcabb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
+const labelClass = "block text-xs font-extrabold text-[#52647b]";
+const cardClass =
+  "rounded-[26px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:p-7";
+const eyebrowClass =
+  "flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#a48700] before:h-px before:w-5 before:bg-[#d6bd4a]";
+const primaryButton =
+  "inline-flex items-center justify-center gap-2 rounded-full bg-[#092a53] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-wait disabled:opacity-55";
+const ghostButton =
+  "inline-flex items-center justify-center gap-2 rounded-full border border-[#dcd8cc] bg-white px-4 py-2.5 text-xs font-extrabold text-[#52647b] transition hover:border-[#092a53] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50";
+
 const PROFILE_IMAGE_DIMENSION = 256;
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024;
+const POINTS_PER_REWARD = 100;
+const REWARD_VALUE_FCFA = 1000;
+
+const TABS = [
+  { key: "overview", label: "Overview", icon: "M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z" },
+  { key: "orders", label: "Orders", icon: "M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" },
+  { key: "saved", label: "Saved", icon: "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" },
+  { key: "rewards", label: "Rewards", icon: "M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" },
+  { key: "profile", label: "Profile", icon: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" },
+];
+
+function Icon({ path, className = "size-[18px]" }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path d={path} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+    </svg>
+  );
+}
 
 async function resizeProfilePicture(file) {
   if (!file.type.startsWith("image/")) {
@@ -50,6 +78,32 @@ function orderStatus(order, t) {
   );
 }
 
+function isPaymentIssue(order) {
+  return order.status === "pending_payment" || order.status === "payment_failed";
+}
+
+function isCompleted(order) {
+  return (
+    order.status === "delivered" ||
+    order.deliveryStage === "delivered" ||
+    order.fulfillmentStatus === "delivered"
+  );
+}
+
+function isActive(order) {
+  return order.status !== "payment_failed" && !isCompleted(order);
+}
+
+function statusTone(order) {
+  if (order.status === "payment_failed")
+    return "bg-red-50 text-red-700 ring-red-200";
+  if (order.status === "pending_payment")
+    return "bg-orange-50 text-orange-700 ring-orange-200";
+  if (isCompleted(order))
+    return "bg-[#eef6e8] text-[#3f6b22] ring-[#cfe3bf]";
+  return "bg-[#fff6cc] text-[#715e00] ring-[#efdc85]";
+}
+
 function formatOrderDate(value, language, t) {
   if (typeof value !== "string" || !value.trim()) return t("Date unavailable");
   const normalizedValue = value.includes("T") ? value : value.replace(" ", "T");
@@ -57,7 +111,63 @@ function formatOrderDate(value, language, t) {
   const date = new Date(hasTimezone ? normalizedValue : `${normalizedValue}Z`);
   return Number.isNaN(date.getTime())
     ? t("Date unavailable")
-    : date.toLocaleString(language === "fr" ? "fr-CM" : "en-CM");
+    : date.toLocaleString(language === "fr" ? "fr-CM" : "en-CM", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+}
+
+function Avatar({ customer, size = "size-20", text = "text-3xl" }) {
+  return customer.profilePicture ? (
+    <img
+      alt={customer.name || ""}
+      className={`${size} shrink-0 rounded-full object-cover`}
+      src={customer.profilePicture}
+    />
+  ) : (
+    <span
+      aria-hidden="true"
+      className={`${size} ${text} grid shrink-0 place-items-center rounded-full bg-[#ffdc32] font-display font-extrabold text-[#092a53]`}
+    >
+      {(customer.name || "A").charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
+function SectionHeading({ eyebrow, title, description, action }) {
+  return (
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+      <div className="min-w-0">
+        <p className={eyebrowClass}>{eyebrow}</p>
+        <h2 className="mt-2 font-display text-2xl font-extrabold leading-tight text-[#092a53] sm:text-[1.75rem]">
+          {title}
+        </h2>
+        {description && (
+          <p className="mt-1.5 max-w-xl text-sm leading-6 text-[#65748a]">
+            {description}
+          </p>
+        )}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+function EmptyState({ icon, title, body, children }) {
+  return (
+    <div className="rounded-[26px] border border-dashed border-[#dcd6c4] bg-[#fdfcf7] px-6 py-12 text-center">
+      <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-white text-[#a48700] shadow-sm ring-1 ring-[#ece6d2]">
+        <Icon className="size-6" path={icon} />
+      </span>
+      <h3 className="mt-4 font-display text-xl font-extrabold text-[#092a53]">
+        {title}
+      </h3>
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#65748a]">
+        {body}
+      </p>
+      {children}
+    </div>
+  );
 }
 
 function OrderProgress({ order, t }) {
@@ -81,69 +191,364 @@ function OrderProgress({ order, t }) {
         (currentStage === "accepted" && step.key === "preparing"),
     ),
   );
+  const isDone = currentStage === "delivered";
+  const fill = steps.length > 1 ? (currentIndex / (steps.length - 1)) * 100 : 100;
 
   return (
     <section
       aria-label={t("Live order tracking")}
       aria-live="polite"
       aria-atomic="true"
-      className="mt-4 rounded-2xl border border-[#e7e3d9] bg-[#fbfaf5] p-4 sm:p-5"
+      className="rounded-2xl bg-[#f7f6f0] p-4 ring-1 ring-[#ece8dc] sm:p-5"
     >
-      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-        <h4 className="text-sm font-extrabold text-[#102c50]">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+        <p className="flex items-center gap-2 text-xs font-extrabold text-[#102c50]">
+          {!isDone && (
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#6c9c45] opacity-60 motion-reduce:hidden" />
+              <span className="relative inline-flex size-2 rounded-full bg-[#6c9c45]" />
+            </span>
+          )}
           {t("Live order tracking")}
-        </h4>
+        </p>
         <p className="text-xs font-semibold text-[#65748a]">
-          {t(orderStatus(order, t))}
+          {orderStatus(order, t)}
         </p>
       </div>
-      <ol
-        className="grid items-start"
-        style={{
-          gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))`,
-        }}
-      >
-        {steps.map((step, index) => {
-          const isComplete = index < currentIndex;
-          const isCurrent = index === currentIndex;
-          return (
-            <li
-              aria-current={isCurrent ? "step" : undefined}
-              className="relative min-w-0 text-center"
-              key={step.key}
-            >
-              {index < steps.length - 1 && (
+      <div className="relative">
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-[calc(50%/var(--steps))] top-[13px] h-1 rounded-full bg-[#e2ded2]"
+          style={{ "--steps": steps.length }}
+        >
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[#6c9c45] to-[#8cbc5f] transition-[width] duration-700"
+            style={{ width: `${fill}%` }}
+          />
+        </div>
+        <ol
+          className="relative grid items-start"
+          style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
+        >
+          {steps.map((step, index) => {
+            const isComplete = index < currentIndex || isDone;
+            const isCurrent = index === currentIndex && !isDone;
+            return (
+              <li
+                aria-current={isCurrent ? "step" : undefined}
+                className="min-w-0 text-center"
+                key={step.key}
+              >
                 <span
-                  aria-hidden="true"
-                  className={`absolute left-1/2 top-4 h-0.5 w-full ${index < currentIndex ? "bg-[#6c9c45]" : "bg-[#d9d6cc]"}`}
-                />
-              )}
-              <span
-                className={`relative mx-auto grid size-8 place-items-center rounded-full border-2 text-xs font-extrabold ${
-                  isComplete
-                    ? "border-[#6c9c45] bg-[#6c9c45] text-white"
-                    : isCurrent
-                      ? "border-[#bd9c00] bg-[#ffdc32] text-[#102c50]"
-                      : "border-[#d9d6cc] bg-white text-[#8b95a2]"
-                }`}
-              >
-                {isComplete ? "✓" : index + 1}
-              </span>
-              <span
-                className={`mt-2 block px-1 text-[10px] leading-4 sm:text-xs ${isCurrent || isComplete ? "font-bold text-[#102c50]" : "font-medium text-[#8b95a2]"}`}
-              >
-                {t(step.label)}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
-      <p className="mt-4 text-center text-[11px] leading-5 text-[#65748a]">
-        {t(
-          "This timeline refreshes automatically. Email updates are sent when your order status changes.",
-        )}
-      </p>
+                  className={`mx-auto grid size-[30px] place-items-center rounded-full text-[11px] font-extrabold ring-4 ring-[#f7f6f0] ${
+                    isComplete
+                      ? "bg-[#6c9c45] text-white"
+                      : isCurrent
+                        ? "bg-[#ffdc32] text-[#092a53] shadow-[0_0_0_6px_rgba(255,220,50,0.25)]"
+                        : "bg-white text-[#9aa3af] ring-[#f7f6f0] outline outline-1 outline-[#ddd8ca]"
+                  }`}
+                >
+                  {isComplete ? (
+                    <Icon className="size-3.5" path="m5 12.5 4.5 4.5L19 7.5" />
+                  ) : (
+                    index + 1
+                  )}
+                </span>
+                <span
+                  className={`mt-2 block px-1 text-[10px] leading-4 sm:text-xs ${
+                    isCurrent || isComplete
+                      ? "font-bold text-[#102c50]"
+                      : "font-medium text-[#8b95a2]"
+                  }`}
+                >
+                  {t(step.label)}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+      {!isDone && (
+        <p className="mt-4 text-[11px] leading-5 text-[#65748a]">
+          {t(
+            "This timeline refreshes automatically. Email updates are sent when your order status changes.",
+          )}
+        </p>
+      )}
     </section>
+  );
+}
+
+function StarRating({ value, onChange, t }) {
+  return (
+    <fieldset>
+      <legend className={labelClass}>{t("Rating")}</legend>
+      <div className="mt-2 flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <label className="cursor-pointer" key={star}>
+            <input
+              checked={value === star}
+              className="peer sr-only"
+              name="rating"
+              onChange={() => onChange(star)}
+              type="radio"
+              value={star}
+            />
+            <span className="sr-only">{star} / 5</span>
+            <svg
+              aria-hidden="true"
+              className={`size-8 rounded-md transition peer-focus-visible:ring-2 peer-focus-visible:ring-[#bd9c00] ${
+                star <= value ? "text-[#f5b800]" : "text-[#e2ded2] hover:text-[#f5d76e]"
+              }`}
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" />
+            </svg>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function OrderReviewForm({ order, token, t }) {
+  const [itemId, setItemId] = useState(
+    order.items.find((item) => item.productId)?.productId || "",
+  );
+  const [rating, setRating] = useState(5);
+  const [review, setReview] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const items = order.items.filter((item) => item.productId);
+
+  if (!items.length) return null;
+
+  async function submitReview(event) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+    setError("");
+    try {
+      await apiRequest("/customer/reviews", {
+        method: "POST",
+        token,
+        body: { orderId: order.id, itemId, rating, review },
+      });
+      setMessage(t("Thanks! Your review is awaiting approval."));
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <details className="group/review mt-5 rounded-2xl ring-1 ring-[#ece8dc] open:bg-[#fdfcf7]">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-4 py-3.5 text-sm font-extrabold text-[#102c50] transition hover:bg-[#fbfaf5] [&::-webkit-details-marker]:hidden">
+        <span className="flex items-center gap-2.5">
+          <span className="grid size-8 place-items-center rounded-xl bg-[#fff6cc] text-[#a48700]">
+            <Icon className="size-4" path="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" />
+          </span>
+          {t("Review a purchased item")}
+        </span>
+        <Icon className="size-4 text-[#8b95a2] transition group-open/review:rotate-180" path="m6 9 6 6 6-6" />
+      </summary>
+      {message ? (
+        <p
+          className="mx-4 mb-4 rounded-xl bg-[#eef6e8] p-3 text-sm font-semibold text-[#3f6b22]"
+          role="status"
+        >
+          {message}
+        </p>
+      ) : (
+        <form className="space-y-4 px-4 pb-4" onSubmit={submitReview}>
+          <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+            <label className={labelClass}>
+              {t("Product")}
+              <select
+                className={fieldClass}
+                onChange={(event) => setItemId(event.target.value)}
+                value={itemId}
+              >
+                {items.map((item) => (
+                  <option key={item.productId} value={item.productId}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <StarRating onChange={setRating} t={t} value={rating} />
+          </div>
+          <label className={labelClass}>
+            {t("Your review")}
+            <textarea
+              className={`${fieldClass} resize-y`}
+              maxLength={1000}
+              onChange={(event) => setReview(event.target.value)}
+              rows={3}
+              value={review}
+            />
+          </label>
+          {error && (
+            <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert">
+              {error}
+            </p>
+          )}
+          <button className={primaryButton} disabled={saving} type="submit">
+            {saving ? t("Submitting…") : t("Submit review")}
+          </button>
+        </form>
+      )}
+    </details>
+  );
+}
+
+function OrderCard({
+  order,
+  formatPrice,
+  language,
+  t,
+  isSaved,
+  isSaving,
+  isReordering,
+  onSave,
+  onReorder,
+}) {
+  const itemCount = order.items.reduce((count, item) => count + item.quantity, 0);
+  const paymentIssue = isPaymentIssue(order);
+
+  return (
+    <article className="overflow-hidden rounded-[26px] bg-white shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc]">
+      <header className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 sm:px-7 sm:pt-6">
+        <div className="flex min-w-0 items-center gap-3.5">
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
+            <Icon path="M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" />
+          </span>
+          <div className="min-w-0">
+            <h3 className="font-display text-lg font-extrabold text-[#092a53]">
+              {t("Order #{id}", { id: order.id })}
+            </h3>
+            <p className="mt-0.5 text-xs font-medium text-[#65748a]">
+              {formatOrderDate(order.createdAt, language, t)} ·{" "}
+              {t("{count} items", { count: itemCount })}
+            </p>
+          </div>
+        </div>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold ring-1 ${statusTone(order)}`}
+        >
+          <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+          {orderStatus(order, t)}
+        </span>
+      </header>
+
+      <div className="space-y-5 px-5 py-5 sm:px-7 sm:py-6">
+        {!paymentIssue && <OrderProgress order={order} t={t} />}
+
+        <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,15rem)]">
+          <div>
+            <ul className="divide-y divide-[#f0ece2]">
+              {order.items.map((item, index) => (
+                <li
+                  className="flex items-center justify-between gap-4 py-2.5 text-sm first:pt-0"
+                  key={`${order.id}-${index}`}
+                >
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="grid h-7 min-w-7 shrink-0 place-items-center rounded-lg bg-[#f4f1e7] px-1.5 text-xs font-extrabold text-[#52647b]">
+                      {item.quantity}×
+                    </span>
+                    <span className="truncate font-semibold text-[#102c50]">
+                      {item.name}
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-bold text-[#52647b]">
+                    {formatPrice(item.lineTotalCents)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-3 flex items-center justify-between rounded-2xl bg-[#fbfaf5] px-4 py-3">
+              <span className="text-sm font-bold text-[#65748a]">{t("Total")}</span>
+              <span className="font-display text-xl font-extrabold text-[#092a53]">
+                {formatPrice(order.totalCents)}
+              </span>
+            </div>
+          </div>
+
+          <dl className="space-y-3 text-sm">
+            {order.scheduledFor && (
+              <div className="rounded-2xl bg-[#f3f6fa] px-4 py-3">
+                <dt className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
+                  {t(
+                    order.fulfillmentType === "pickup"
+                      ? "Pickup scheduled"
+                      : "Delivery scheduled",
+                  )}
+                </dt>
+                <dd className="mt-1 font-bold text-[#092a53]">
+                  {new Date(order.scheduledFor).toLocaleString(
+                    language === "fr" ? "fr-CM" : "en-CM",
+                    { dateStyle: "medium", timeStyle: "short" },
+                  )}
+                </dd>
+              </div>
+            )}
+            <div className="rounded-2xl bg-[#f3f6fa] px-4 py-3">
+              <dt className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
+                {t("Assigned store")}
+              </dt>
+              <dd className="mt-1 font-bold text-[#092a53]">
+                {t(order.storeName || "Store not recorded")}
+              </dd>
+              {order.storeAddress && (
+                <dd className="mt-0.5 text-xs leading-5 text-[#65748a]">
+                  {t(order.storeAddress)}
+                </dd>
+              )}
+            </div>
+            {(order.deliveryResidence || order.deliveryCity) && (
+              <div className="rounded-2xl bg-[#f3f6fa] px-4 py-3">
+                <dt className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
+                  {t(order.fulfillmentType === "pickup" ? "Pickup" : "Delivery")}
+                </dt>
+                <dd className="mt-1 text-xs font-semibold leading-5 text-[#52647b]">
+                  {order.deliveryResidence ? `${order.deliveryResidence}, ` : ""}
+                  {order.deliveryCity}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
+
+        {!paymentIssue && (
+          <div className="flex flex-wrap justify-end gap-2.5 border-t border-[#f0ece2] pt-5">
+            <button
+              className={ghostButton}
+              disabled={isSaving || isSaved}
+              onClick={onSave}
+              type="button"
+            >
+              <Icon
+                className="size-4"
+                path={isSaved ? "m5 12.5 4.5 4.5L19 7.5" : "M6 4h12v16l-6-4-6 4V4Z"}
+              />
+              {isSaving ? t("Saving…") : isSaved ? t("Saved for later") : t("Save cart")}
+            </button>
+            <button
+              className={`${primaryButton} px-4 py-2.5 text-xs`}
+              disabled={isReordering}
+              onClick={onReorder}
+              type="button"
+            >
+              <Icon className="size-4" path="M4 12a8 8 0 0 1 13.7-5.7L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.7L4 15.5M4 20v-4.5h4.5" />
+              {isReordering ? t("Adding…") : t("Reorder")}
+            </button>
+          </div>
+        )}
+      </div>
+    </article>
   );
 }
 
@@ -192,216 +597,203 @@ function CustomerProfileDetails({ customer, onSave, t }) {
   }
 
   return (
-    <form className="mt-5 space-y-4" onSubmit={saveProfile}>
-      <div className="flex items-center gap-4 rounded-2xl border border-[#e8e4da] bg-[#fbfaf5] p-4">
-        {profile.profilePicture ? (
-          <img
-            alt={profile.name || "Profile"}
-            className="size-[68px] rounded-full border-2 border-white object-cover shadow-sm"
-            src={profile.profilePicture}
+    <form className="space-y-6" onSubmit={saveProfile}>
+      <div className="flex flex-col gap-5 rounded-[22px] bg-[#fbfaf5] p-5 ring-1 ring-[#ece8dc] sm:flex-row sm:items-center">
+        <div className="relative w-fit">
+          <Avatar
+            customer={{ name: profile.name, profilePicture: profile.profilePicture }}
+            size="size-24"
+            text="text-4xl"
           />
-        ) : (
-          <div className="flex size-[68px] shrink-0 items-center justify-center rounded-full bg-[#ffeb9c] text-xl font-extrabold text-[#102c50]">
-            {(profile.name || "A").charAt(0).toUpperCase()}
-          </div>
-        )}
-        <label className="min-w-0 flex-1 text-sm font-bold text-[#102c50]">
-          {t("Profile picture")}
-          <input
-            accept="image/*"
-            className={`${fieldClass} mt-2 cursor-pointer file:mr-3 file:rounded-full file:border-0 file:bg-[#092a53] file:px-3 file:py-2 file:text-xs file:font-bold file:text-white`}
-            onChange={handleProfilePictureChange}
-            type="file"
-          />
-          <span className="mt-1.5 block text-xs font-normal leading-5 text-[#65748a]">
+          <span className="absolute -bottom-1 -right-1 grid size-9 place-items-center rounded-full bg-[#092a53] text-white ring-4 ring-[#fbfaf5]">
+            <Icon className="size-4" path="M4 8h3l2-3h6l2 3h3v11H4V8Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+          </span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-extrabold text-[#102c50]">{t("Profile picture")}</p>
+          <p className="mt-1 text-xs leading-5 text-[#65748a]">
             {t("Optional. Image will be resized before saving (5 MB max).")}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <label className={`${ghostButton} cursor-pointer focus-within:ring-2 focus-within:ring-[#bd9c00]`}>
+              <Icon className="size-4" path="M12 16V4m0 0L7 9m5-5 5 5M5 20h14" />
+              {t("Upload photo")}
+              <input
+                accept="image/*"
+                className="sr-only"
+                onChange={handleProfilePictureChange}
+                type="file"
+              />
+            </label>
+            {profile.profilePicture && (
+              <button
+                className="rounded-full px-3 py-2.5 text-xs font-bold text-[#a34d4d] transition hover:bg-red-50"
+                onClick={() => setProfile({ ...profile, profilePicture: "" })}
+                type="button"
+              >
+                {t("Remove")}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <label className={labelClass}>
+          {t("Full name")}
+          <input
+            autoComplete="name"
+            className={fieldClass}
+            maxLength={100}
+            onChange={(event) => setProfile({ ...profile, name: event.target.value })}
+            required
+            value={profile.name}
+          />
+        </label>
+        <label className={labelClass}>
+          {t("Phone number")}
+          <input
+            autoComplete="tel"
+            className={fieldClass}
+            inputMode="tel"
+            maxLength={40}
+            onChange={(event) => setProfile({ ...profile, phone: event.target.value })}
+            value={profile.phone}
+          />
+        </label>
+        <label className={labelClass}>
+          {t("City / Cold Stone location")}
+          <span className="relative block">
+            <select
+              className={`${fieldClass} appearance-none pr-11`}
+              onChange={(event) =>
+                setProfile({ ...profile, deliveryCity: event.target.value })
+              }
+              value={profile.deliveryCity}
+            >
+              <option value="">{t("Select a listed location")}</option>
+              {cameroonDeliveryLocations.map((location) => (
+                <option key={location.value} value={location.value}>
+                  {t(location.town)} — {t(location.area)}
+                </option>
+              ))}
+            </select>
+            <Icon
+              className="pointer-events-none absolute right-4 top-1/2 mt-1 size-4 -translate-y-1/2 text-[#8b95a2]"
+              path="m6 9 6 6 6-6"
+            />
           </span>
         </label>
+        <label className={labelClass}>
+          {t("Your residence")}
+          <input
+            autoComplete="street-address"
+            className={fieldClass}
+            maxLength={150}
+            onChange={(event) =>
+              setProfile({ ...profile, deliveryResidence: event.target.value })
+            }
+            value={profile.deliveryResidence}
+          />
+        </label>
       </div>
-      <label className="block text-xs font-extrabold text-[#52647b]">
-        {t("Full name")}
-        <input
-          className={`${fieldClass} mt-2 rounded-xl bg-[#fbfaf5] focus:border-[#bd9c00] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#ffdc32]/40`}
-          maxLength={100}
-          onChange={(event) =>
-            setProfile({ ...profile, name: event.target.value })
-          }
-          required
-          value={profile.name}
-        />
-      </label>
-      <label className="block text-xs font-extrabold text-[#52647b]">
-        {t("Phone number")}
-        <input
-          className={`${fieldClass} mt-2 rounded-xl bg-[#fbfaf5] focus:border-[#bd9c00] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#ffdc32]/40`}
-          maxLength={40}
-          onChange={(event) =>
-            setProfile({ ...profile, phone: event.target.value })
-          }
-          value={profile.phone}
-        />
-      </label>
-      <label className="block text-xs font-extrabold text-[#52647b]">
-        {t("City / Cold Stone location")}
-        <select
-          className={`${fieldClass} mt-2 rounded-xl bg-[#fbfaf5] focus:border-[#bd9c00] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#ffdc32]/40`}
-          onChange={(event) =>
-            setProfile({ ...profile, deliveryCity: event.target.value })
-          }
-          value={profile.deliveryCity}
-        >
-          <option value="">{t("Select a listed location")}</option>
-          {cameroonDeliveryLocations.map((location) => (
-            <option key={location.value} value={location.value}>
-              {t(location.town)} — {t(location.area)}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="block text-xs font-extrabold text-[#52647b]">
-        {t("Your residence")}
-        <input
-          className={`${fieldClass} mt-2 rounded-xl bg-[#fbfaf5] focus:border-[#bd9c00] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#ffdc32]/40`}
-          maxLength={150}
-          onChange={(event) =>
-            setProfile({ ...profile, deliveryResidence: event.target.value })
-          }
-          value={profile.deliveryResidence}
-        />
-      </label>
-      {error && (
-        <p
-          className="rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-700"
-          role="alert"
-        >
-          {error}
-        </p>
-      )}
-      {message && (
-        <p
-          className="rounded-xl border border-green-100 bg-green-50 p-3 text-sm text-green-800"
-          role="status"
-        >
-          {message}
-        </p>
-      )}
-      <button
-        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#092a53] px-5 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 sm:w-auto"
-        disabled={isSaving}
-        type="submit"
-      >
-        {isSaving ? t("Saving…") : t("Save delivery details")}{" "}
-        {!isSaving && <span aria-hidden="true">→</span>}
-      </button>
+
+      <div className="flex flex-col-reverse gap-3 border-t border-[#f0ece2] pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <div aria-live="polite" className="min-h-5 text-sm">
+          {error && (
+            <p className="font-semibold text-red-700" role="alert">
+              {error}
+            </p>
+          )}
+          {message && (
+            <p className="flex items-center gap-2 font-semibold text-[#3f6b22]" role="status">
+              <Icon className="size-4" path="m5 12.5 4.5 4.5L19 7.5" />
+              {message}
+            </p>
+          )}
+        </div>
+        <button className={primaryButton} disabled={isSaving} type="submit">
+          {isSaving ? t("Saving…") : t("Save delivery details")}
+        </button>
+      </div>
     </form>
   );
 }
 
-function OrderReviewForm({ order, token, t }) {
-  const [itemId, setItemId] = useState(
-    order.items.find((item) => item.productId)?.productId || "",
-  );
-  const [rating, setRating] = useState("5");
-  const [review, setReview] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
-  const items = order.items.filter((item) => item.productId);
-
-  if (!items.length) return null;
-
-  async function submitReview(event) {
-    event.preventDefault();
-    setSaving(true);
-    setMessage("");
-    setError("");
-    try {
-      await apiRequest("/customer/reviews", {
-        method: "POST",
-        token,
-        body: { orderId: order.id, itemId, rating: Number(rating), review },
-      });
-      setMessage(t("Thanks! Your review is awaiting approval."));
-    } catch (submitError) {
-      setError(submitError.message);
-    } finally {
-      setSaving(false);
-    }
-  }
+function RewardsCard({ points, t, compact = false }) {
+  const rewardsAvailable = Math.floor(points / POINTS_PER_REWARD);
+  const progress = points % POINTS_PER_REWARD;
+  const remaining = POINTS_PER_REWARD - progress;
 
   return (
-    <form
-      className="mt-4 border-t border-[#d9d6cc] pt-4"
-      onSubmit={submitReview}
-    >
-      <h4 className="font-semibold">{t("Review a purchased item")}</h4>
-      <div className="mt-2 grid gap-3 sm:grid-cols-[1fr_110px]">
-        <label className="text-xs font-bold">
-          {t("Product")}
-          <select
-            className={fieldClass}
-            onChange={(event) => setItemId(event.target.value)}
-            value={itemId}
-          >
-            {items.map((item) => (
-              <option key={item.productId} value={item.productId}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="text-xs font-bold">
-          {t("Rating")}
-          <select
-            className={fieldClass}
-            onChange={(event) => setRating(event.target.value)}
-            value={rating}
-          >
-            {[5, 4, 3, 2, 1].map((value) => (
-              <option key={value} value={value}>
-                {value} / 5
-              </option>
-            ))}
-          </select>
-        </label>
+    <div className="relative isolate overflow-hidden rounded-[26px] bg-gradient-to-br from-[#0d3566] via-[#092a53] to-[#061d3a] p-6 text-white shadow-[0_18px_40px_rgba(9,42,83,0.22)] sm:p-7">
+      <div aria-hidden="true" className="absolute -right-16 -top-20 -z-10 size-56 rounded-full border-[40px] border-white/[0.05]" />
+      <div aria-hidden="true" className="absolute -bottom-24 -left-10 -z-10 size-56 rounded-full bg-[#ffdc32]/10 blur-3xl" />
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">
+            {t("Loyalty rewards")}
+          </p>
+          <p className="mt-2 font-display text-5xl font-extrabold leading-none">
+            {points}
+            <span className="ml-2 text-base font-bold text-white/70">{t("points")}</span>
+          </p>
+        </div>
+        <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]">
+          <Icon className="size-6" path="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" />
+        </span>
       </div>
-      <label className="mt-3 block text-xs font-bold">
-        {t("Your review")}
-        <textarea
-          className={fieldClass}
-          maxLength={1000}
-          onChange={(event) => setReview(event.target.value)}
-          rows={3}
-          value={review}
-        />
-      </label>
-      {error && (
-        <p className="mt-2 text-sm text-red-700" role="alert">
-          {error}
-        </p>
-      )}
-      {message && (
-        <p className="mt-2 text-sm text-green-800" role="status">
-          {message}
-        </p>
-      )}
-      {!message && (
-        <button
-          className="mt-3 rounded-full border border-[#65748a] px-4 py-2 text-sm font-bold disabled:opacity-50"
-          disabled={saving}
-          type="submit"
+
+      <div className="mt-6">
+        <div className="flex justify-between text-xs font-semibold text-white/70">
+          <span>{t("{points} points to your next reward", { points: remaining })}</span>
+          <span>
+            {progress}/{POINTS_PER_REWARD}
+          </span>
+        </div>
+        <div
+          aria-label={t("Progress to next reward")}
+          aria-valuemax={POINTS_PER_REWARD}
+          aria-valuemin={0}
+          aria-valuenow={progress}
+          className="mt-2 h-2.5 overflow-hidden rounded-full bg-white/12"
+          role="progressbar"
         >
-          {saving ? t("Submitting…") : t("Submit review")}
-        </button>
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[#ffdc32] to-[#ffe97a] shadow-[0_0_12px_rgba(255,220,50,0.6)] transition-[width] duration-700"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {!compact && (
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-white/[0.07] p-4 ring-1 ring-white/10">
+            <p className="text-[11px] font-bold text-white/60">{t("Rewards available")}</p>
+            <p className="mt-1 font-display text-2xl font-extrabold">{rewardsAvailable}</p>
+          </div>
+          <div className="rounded-2xl bg-white/[0.07] p-4 ring-1 ring-white/10">
+            <p className="text-[11px] font-bold text-white/60">{t("Worth")}</p>
+            <p className="mt-1 font-display text-2xl font-extrabold text-[#ffdc32]">
+              {new Intl.NumberFormat("fr-CM").format(rewardsAvailable * REWARD_VALUE_FCFA)}{" "}
+              <span className="text-sm text-white/80">FCFA</span>
+            </p>
+          </div>
+        </div>
       )}
-    </form>
+
+      <p className="mt-5 text-xs leading-5 text-white/65">
+        {t("Earn 1 point per 100 FCFA. Redeem 100 points for 1,000 FCFA off.")}
+      </p>
+    </div>
   );
 }
 
 export function CustomerOrdersPage() {
-  const { customer, isLoading, updateProfile } = useAuth();
+  const { customer, isLoading, updateProfile, logout } = useAuth();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { addItemsToCart } = useCart();
   const [orders, setOrders] = useState([]);
   const [favorites, setFavorites] = useState([]);
@@ -414,10 +806,16 @@ export function CustomerOrdersPage() {
   const [savingOrderId, setSavingOrderId] = useState(null);
   const [deletingSavedCartId, setDeletingSavedCartId] = useState(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [orderFilter, setOrderFilter] = useState("all");
   const [error, setError] = useState("");
 
+  const requestedTab = searchParams.get("tab");
+  const activeTab = TABS.some((tab) => tab.key === requestedTab)
+    ? requestedTab
+    : "overview";
+
   const refreshOrders = useCallback(async () => {
-    const token = sessionStorage.getItem(CUSTOMER_TOKEN_KEY);
+    const token = getCustomerToken();
     const result = await apiRequest("/customer/orders", { token });
     setOrders(result.orders);
   }, []);
@@ -425,7 +823,7 @@ export function CustomerOrdersPage() {
   useEffect(() => {
     if (!customer) return undefined;
     let cancelled = false;
-    const token = sessionStorage.getItem(CUSTOMER_TOKEN_KEY);
+    const token = getCustomerToken();
     Promise.all([
       apiRequest("/customer/favorites", { token }),
       apiRequest("/customer/saved-carts", { token }),
@@ -467,17 +865,52 @@ export function CustomerOrdersPage() {
   }, [customer, refreshOrders]);
 
   if (isLoading)
-    return <p className="p-8 text-center">{t("Loading account…")}</p>;
+    return (
+      <div className="grid min-h-screen place-items-center bg-[#f8f7f2] text-sm font-semibold text-[#65748a]">
+        {t("Loading account…")}
+      </div>
+    );
   if (!customer) return <Navigate replace state={{ from: "/account/orders" }} to="/login" />;
 
   const formatPrice = (amount) =>
     `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-CM").format(amount)} FCFA`;
+  const points = loyalty?.points ?? customer.loyaltyPoints ?? 0;
+  const firstName = (customer.name || "").trim().split(/\s+/)[0] || customer.name;
+  const activeOrders = orders.filter(isActive);
+  const currentOrder = activeOrders[0];
+  const lastCompletedOrder = orders.find(isCompleted);
+  const filteredOrders = orders.filter((order) =>
+    orderFilter === "active"
+      ? isActive(order)
+      : orderFilter === "completed"
+        ? isCompleted(order)
+        : true,
+  );
+  const tabCounts = {
+    orders: orders.length,
+    saved: favorites.length + savedCarts.length,
+  };
+
+  function selectTab(key) {
+    setSearchParams(key === "overview" ? {} : { tab: key }, { replace: true });
+    document
+      .getElementById("account-panel")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function handleLogout() {
+    try {
+      await logout();
+    } catch (logoutError) {
+      setAccountError(logoutError.message);
+    }
+  }
 
   async function removeFavorite(itemId) {
     try {
       await apiRequest(`/customer/favorites/${encodeURIComponent(itemId)}`, {
         method: "DELETE",
-        token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY),
+        token: getCustomerToken(),
       });
       setFavorites((current) =>
         current.filter((favorite) => favorite.itemId !== itemId),
@@ -540,7 +973,7 @@ export function CustomerOrdersPage() {
     try {
       const result = await apiRequest("/customer/saved-carts", {
         method: "POST",
-        token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY),
+        token: getCustomerToken(),
         body: { orderId: order.id },
       });
       setSavedCarts((current) => [
@@ -565,7 +998,7 @@ export function CustomerOrdersPage() {
     try {
       await apiRequest(`/customer/saved-carts/${savedCart.id}`, {
         method: "DELETE",
-        token: sessionStorage.getItem(CUSTOMER_TOKEN_KEY),
+        token: getCustomerToken(),
       });
       setSavedCarts((current) =>
         current.filter((item) => item.id !== savedCart.id),
@@ -577,542 +1010,569 @@ export function CustomerOrdersPage() {
     }
   }
 
+  const renderOrderCard = (order) => {
+    const isSaved = savedCarts.some((savedCart) => savedCart.sourceOrderId === order.id);
+    return (
+      <div key={order.id}>
+        <OrderCard
+          formatPrice={formatPrice}
+          isReordering={reorderingId === order.id}
+          isSaved={isSaved}
+          isSaving={savingOrderId === order.id}
+          language={language}
+          onReorder={() => reorderItems(order.items, order.id)}
+          onSave={() => saveOrder(order)}
+          order={order}
+          t={t}
+        />
+        {!isPaymentIssue(order) && (
+          <OrderReviewForm
+            order={order}
+            t={t}
+            token={getCustomerToken()}
+          />
+        )}
+      </div>
+    );
+  };
+
+  const favoritesGrid = (list) => (
+    <ul className="grid gap-3 sm:grid-cols-2">
+      {list.map((favorite) => (
+        <li
+          className="group flex items-center gap-3.5 rounded-[20px] bg-white p-3 ring-1 ring-[#ebe7dc] transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(18,44,80,0.08)]"
+          key={favorite.itemId}
+        >
+          <img
+            alt=""
+            className="size-16 shrink-0 rounded-2xl bg-[#f4f1e7] object-cover"
+            src={favorite.item.image}
+          />
+          <div className="min-w-0 flex-1">
+            <Link
+              className="block truncate text-sm font-extrabold text-[#102c50] transition hover:text-[#806a00]"
+              to={favorite.item.itemType === "menu" ? "/menu" : "/flavors"}
+            >
+              {favorite.item.name}
+            </Link>
+            <p className="mt-0.5 text-xs font-semibold text-[#8b95a2]">
+              {t(favorite.item.itemType === "menu" ? "Menu" : "Flavors")}
+            </p>
+          </div>
+          <button
+            aria-label={`${t("Remove")} ${favorite.item.name}`}
+            className="grid size-9 shrink-0 place-items-center rounded-full text-[#b44947] transition hover:bg-red-50"
+            onClick={() => removeFavorite(favorite.itemId)}
+            title={t("Remove")}
+            type="button"
+          >
+            <svg aria-hidden="true" className="size-[18px]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" />
+            </svg>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
-      <main className="mx-auto max-w-[1320px] px-4 py-7 sm:px-7 sm:py-10 lg:px-10 lg:py-12">
-        <section className="relative isolate overflow-hidden rounded-[30px] bg-[#092a53] px-6 py-8 text-white shadow-[0_18px_50px_rgba(9,42,83,0.16)] sm:px-9 sm:py-10 lg:px-12 lg:py-12">
+      <main className="mx-auto max-w-[1320px] px-4 pb-16 pt-6 sm:px-7 sm:pt-9 lg:px-10">
+        {/* Hero */}
+        <section className="relative isolate overflow-hidden rounded-[32px] bg-[#092a53] text-white shadow-[0_24px_60px_rgba(9,42,83,0.2)]">
+          <div aria-hidden="true" className="absolute -right-28 -top-40 -z-10 size-[30rem] rounded-full border-[64px] border-white/[0.04]" />
+          <div aria-hidden="true" className="absolute -bottom-40 left-1/3 -z-10 size-80 rounded-full bg-[#ffdc32]/[0.09] blur-3xl" />
           <div
             aria-hidden="true"
-            className="absolute -right-24 -top-32 -z-10 size-[25rem] rounded-full border-[54px] border-white/[0.05]"
+            className="absolute inset-0 -z-10 opacity-[0.06] [background-image:radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(90deg,transparent,#000)]"
           />
-          <div
-            aria-hidden="true"
-            className="absolute -bottom-36 right-[28%] -z-10 size-72 rounded-full bg-[#ffdc32]/[0.08] blur-2xl"
-          />
-          <div className="relative flex flex-col justify-between gap-7 sm:flex-row sm:items-center">
-            <div className="flex min-w-0 items-center gap-4 sm:gap-5">
-              {customer.profilePicture ? (
-                <img
-                  alt={customer.name || t("My account")}
-                  className="size-[72px] shrink-0 rounded-full border-2 border-white/30 object-cover shadow-lg sm:size-20"
-                  src={customer.profilePicture}
-                />
-              ) : (
-                <span
-                  aria-hidden="true"
-                  className="grid size-[72px] shrink-0 place-items-center rounded-full border-2 border-white/25 bg-[#ffdc32] font-display text-3xl font-extrabold text-[#092a53] shadow-lg sm:size-20"
-                >
-                  {(customer.name || "A").charAt(0).toUpperCase()}
-                </span>
-              )}
+
+          <div className="flex flex-col gap-8 px-6 pb-6 pt-8 sm:px-10 sm:pt-10 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 items-center gap-5">
+              <div className="rounded-full bg-gradient-to-br from-[#ffdc32] to-[#a48700] p-[3px] shadow-xl">
+                <div className="rounded-full bg-[#092a53] p-[3px]">
+                  <Avatar customer={customer} size="size-[76px] sm:size-24" text="text-4xl" />
+                </div>
+              </div>
               <div className="min-w-0">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.17em] text-[#ffdc32]">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
                   {t("My account")}
                 </p>
-                <h1 className="mt-1 break-words font-display text-3xl font-extrabold leading-tight sm:text-4xl">
-                  {customer.name}
+                <h1 className="mt-1.5 break-words font-display text-3xl font-extrabold leading-[1.05] sm:text-[2.6rem]">
+                  {t("Welcome back, {name}", { name: firstName })}
                 </h1>
-                <p className="mt-1 truncate text-sm text-white/70">
-                  {customer.email}
-                </p>
+                <p className="mt-1.5 truncate text-sm text-white/65">{customer.email}</p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3 sm:justify-end">
-              <a
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]"
-                href="#account-orders"
-              >
-                {t("Order history and status")}{" "}
-                <span aria-hidden="true">↓</span>
-              </a>
+            <div className="flex flex-wrap gap-3">
               <Link
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+                className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] shadow-[0_10px_24px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]"
                 to="/menu"
               >
-                {t("Browse the menu")} <span aria-hidden="true">→</span>
+                {t("Browse the menu")}
+                <Icon className="size-4" path="M5 12h14m-5-5 5 5-5 5" />
               </Link>
-            </div>
-          </div>
-        </section>
-
-        {accountError && (
-          <p
-            className="mt-5 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700"
-            role="alert"
-          >
-            {accountError}
-          </p>
-        )}
-        {accountNotice && (
-          <div
-            className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm text-green-900"
-            role="status"
-          >
-            <span>{accountNotice}</span>
-            {showCartLink && (
               <Link
-                className="font-bold underline underline-offset-2"
-                to="/cart"
+                className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-white ring-1 ring-white/25 transition hover:bg-white/10"
+                to="/custom-cake"
               >
-                {t("View shopping bag")}
+                {t("Design a custom cake")}
               </Link>
-            )}
+            </div>
           </div>
-        )}
 
-        <section
-          aria-label={t("Account summary")}
-          className="mt-5 grid gap-3 sm:grid-cols-3"
-        >
-          <article className="flex items-center gap-4 rounded-[22px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)]">
-            <span
-              aria-hidden="true"
-              className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff3b8] text-xl text-[#806a00]"
-            >
-              ✦
-            </span>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-[#65748a]">
-                {t("Loyalty rewards")}
-              </p>
-              <p className="mt-1 font-display text-2xl font-extrabold">
-                {loyalty?.points ?? customer.loyaltyPoints ?? 0}{" "}
-                <span className="text-sm font-bold">{t("points")}</span>
-              </p>
-            </div>
-          </article>
-          <article className="flex items-center gap-4 rounded-[22px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)]">
-            <span
-              aria-hidden="true"
-              className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#edf3f9] text-xl text-[#092a53]"
-            >
-              ▤
-            </span>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-[#65748a]">{t("Orders")}</p>
-              <p className="mt-1 font-display text-2xl font-extrabold">
-                {orders.length}
-              </p>
-            </div>
-          </article>
-          <article className="flex items-center gap-4 rounded-[22px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)]">
-            <span
-              aria-hidden="true"
-              className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff0ed] text-xl text-[#b44947]"
-            >
-              ♡
-            </span>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-[#65748a]">
-                {t("Saved favorites")}
-              </p>
-              <p className="mt-1 font-display text-2xl font-extrabold">
-                {favorites.length}
-              </p>
-            </div>
-          </article>
+          <dl className="grid grid-cols-2 border-t border-white/10 bg-white/[0.03] sm:grid-cols-4">
+            {[
+              { label: t("Orders"), value: orders.length },
+              { label: t("Active orders"), value: activeOrders.length },
+              { label: t("Saved favorites"), value: favorites.length },
+              { label: t("Loyalty rewards"), value: `${points} ${t("pts")}`, accent: true },
+            ].map((stat, index) => (
+              <div
+                className={`px-6 py-5 sm:px-10 ${index % 2 ? "border-l border-white/10" : ""} ${index > 1 ? "border-t border-white/10 sm:border-t-0" : ""} ${index === 2 ? "sm:border-l" : ""}`}
+                key={stat.label}
+              >
+                <dt className="text-[11px] font-bold text-white/55">{stat.label}</dt>
+                <dd
+                  className={`mt-1 font-display text-2xl font-extrabold sm:text-3xl ${stat.accent ? "text-[#ffdc32]" : ""}`}
+                >
+                  {stat.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </section>
 
-        <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.75fr)]">
-          <section aria-labelledby="account-orders" className="min-w-0">
-            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">
-                  {t("My account")}
-                </p>
-                <h2
-                  className="mt-1 font-display text-2xl font-extrabold sm:text-3xl"
-                  id="account-orders"
-                >
-                  {t("Order history and status")}
-                </h2>
-              </div>
-              <button
-                className="inline-flex items-center gap-2 rounded-full border border-[#d9d6cc] bg-white px-4 py-2.5 text-xs font-bold text-[#52647b] transition hover:border-[#092a53] hover:text-[#092a53] disabled:opacity-50"
-                disabled={loadingOrders}
-                onClick={() =>
-                  refreshOrders().catch((loadError) =>
-                    setError(loadError.message),
-                  )
-                }
-                type="button"
-              >
-                <span aria-hidden="true">↻</span> {t("Refresh order status")}
-              </button>
-            </div>
-            {error && (
+        {(accountError || accountNotice) && (
+          <div className="mt-5 space-y-3">
+            {accountError && (
               <p
-                className="mb-4 rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-700"
+                className="flex items-start gap-3 rounded-2xl bg-red-50 p-4 text-sm font-semibold text-red-700 ring-1 ring-red-100"
                 role="alert"
               >
-                {error}
+                <Icon className="mt-px size-[18px] shrink-0" path="M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+                {accountError}
               </p>
             )}
-            {loadingOrders ? (
-              <div className="rounded-[24px] border border-[#e7e3d9] bg-white p-8 text-center text-sm text-[#65748a]">
-                {t("Loading orders…")}
+            {accountNotice && (
+              <div
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#eef6e8] p-4 text-sm font-semibold text-[#3f6b22] ring-1 ring-[#cfe3bf]"
+                role="status"
+              >
+                <span>{accountNotice}</span>
+                {showCartLink && (
+                  <Link className="font-extrabold underline underline-offset-4" to="/cart">
+                    {t("View shopping bag")}
+                  </Link>
+                )}
               </div>
-            ) : orders.length ? (
-              <div className="space-y-4">
-                {orders.map((order) => (
-                  <article
-                    className="overflow-hidden rounded-[24px] border border-[#e7e3d9] bg-white shadow-[0_8px_26px_rgba(18,44,80,0.04)]"
-                    key={order.id}
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#eeeae1] bg-[#fffefa] px-5 py-4 sm:px-6">
-                      <div>
-                        <h3 className="font-display text-lg font-extrabold">
-                          {t("Order #{id}", { id: order.id })}
-                        </h3>
-                        <p className="mt-1 text-xs text-[#65748a]">
-                          {formatOrderDate(order.createdAt, language, t)}
-                        </p>
-                      </div>
-                      <span className="rounded-full border border-[#eedb83] bg-[#fff5c7] px-3.5 py-1.5 text-xs font-extrabold text-[#715e00]">
-                        {orderStatus(order, t)}
+            )}
+          </div>
+        )}
+
+        <div className="mt-6 grid items-start gap-6 lg:mt-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8">
+          {/* Navigation */}
+          <nav
+            aria-label={t("Account sections")}
+            className="relative z-10 -mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:-mx-7 sm:px-7 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+1.5rem)] lg:transition-[top] lg:duration-300 lg:mx-0 lg:overflow-visible lg:px-0"
+          >
+            <ul className="flex w-max gap-2 lg:w-auto lg:flex-col lg:gap-1 lg:rounded-[26px] lg:bg-white lg:p-2.5 lg:shadow-[0_10px_30px_rgba(18,44,80,0.05)] lg:ring-1 lg:ring-[#ebe7dc]">
+              {TABS.map((tab) => {
+                const isCurrent = tab.key === activeTab;
+                const count = tabCounts[tab.key];
+                return (
+                  <li key={tab.key}>
+                    <button
+                      aria-current={isCurrent ? "page" : undefined}
+                      className={`flex w-full items-center gap-3 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] lg:rounded-2xl lg:px-3 lg:py-3 ${
+                        isCurrent
+                          ? "bg-[#092a53] text-white shadow-[0_8px_20px_rgba(9,42,83,0.2)]"
+                          : "bg-white text-[#52647b] ring-1 ring-[#e7e3d8] hover:text-[#092a53] lg:bg-transparent lg:ring-0 lg:hover:bg-[#f6f4ec]"
+                      }`}
+                      onClick={() => selectTab(tab.key)}
+                      type="button"
+                    >
+                      <span
+                        className={`hidden size-9 shrink-0 place-items-center rounded-xl lg:grid ${
+                          isCurrent ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#f4f1e8] text-[#52647b]"
+                        }`}
+                      >
+                        <Icon path={tab.icon} />
                       </span>
-                    </div>
-                    <div className="px-5 py-4 sm:px-6">
-                      {order.scheduledFor && (
-                        <p className="mb-3 inline-flex items-center gap-2 rounded-xl bg-[#f4f7fa] px-3 py-2 text-xs font-semibold text-[#52647b]">
-                          <span aria-hidden="true">◷</span>
-                          {t(
-                            order.fulfillmentType === "pickup"
-                              ? "Pickup scheduled"
-                              : "Delivery scheduled",
-                          )}
-                          :{" "}
-                          {new Date(order.scheduledFor).toLocaleString(
-                            language === "fr" ? "fr-CM" : "en-CM",
-                          )}
-                        </p>
+                      <span className="flex-1 text-left">{t(tab.label)}</span>
+                      {count > 0 && (
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[11px] ${
+                            isCurrent ? "bg-white/15 text-white" : "bg-[#f1eee4] text-[#65748a]"
+                          }`}
+                        >
+                          {count}
+                        </span>
                       )}
-                      {order.status !== "pending_payment" &&
-                        order.status !== "payment_failed" && (
-                          <OrderProgress order={order} t={t} />
-                        )}
-                      <ul className="space-y-3">
-                        {order.items.map((item, index) => (
-                          <li
-                            className="flex items-center justify-between gap-4 text-sm"
-                            key={`${order.id}-${index}`}
+                    </button>
+                  </li>
+                );
+              })}
+              <li className="lg:mt-1 lg:border-t lg:border-[#f0ece2] lg:pt-1">
+                <button
+                  className="group/logout flex w-full items-center gap-3 whitespace-nowrap rounded-full bg-white px-4 py-2.5 text-sm font-extrabold text-[#52647b] ring-1 ring-[#e7e3d8] transition hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 lg:rounded-2xl lg:bg-transparent lg:px-3 lg:py-3 lg:ring-0 lg:hover:bg-red-50"
+                  onClick={handleLogout}
+                  type="button"
+                >
+                  <span className="hidden size-9 shrink-0 place-items-center rounded-xl bg-[#f4f1e8] transition group-hover/logout:bg-red-100 lg:grid">
+                    <Icon path="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H4" />
+                  </span>
+                  {t("Log out")}
+                </button>
+              </li>
+            </ul>
+          </nav>
+
+          {/* Panels */}
+          <div className="min-w-0 scroll-mt-24" id="account-panel">
+            {activeTab === "overview" && (
+              <div className="space-y-8">
+                <section>
+                  <SectionHeading
+                    action={
+                      orders.length > 0 && (
+                        <button className={ghostButton} onClick={() => selectTab("orders")} type="button">
+                          {t("View all orders")}
+                          <Icon className="size-4" path="M5 12h14m-5-5 5 5-5 5" />
+                        </button>
+                      )
+                    }
+                    eyebrow={t("Right now")}
+                    title={t("Current order")}
+                  />
+                  {loadingOrders ? (
+                    <div className="h-64 animate-pulse rounded-[26px] bg-white ring-1 ring-[#ebe7dc]" />
+                  ) : currentOrder ? (
+                    renderOrderCard(currentOrder)
+                  ) : (
+                    <EmptyState
+                      body={t("When you place an order, you can follow it here in real time.")}
+                      icon="M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1"
+                      title={t("No active orders")}
+                    >
+                      <div className="mt-6 flex flex-wrap justify-center gap-3">
+                        <Link className={primaryButton} to="/menu">
+                          {t("Browse the menu")}
+                        </Link>
+                        {lastCompletedOrder && (
+                          <button
+                            className={ghostButton}
+                            disabled={reorderingId === lastCompletedOrder.id}
+                            onClick={() =>
+                              reorderItems(lastCompletedOrder.items, lastCompletedOrder.id)
+                            }
+                            type="button"
                           >
-                            <span className="min-w-0 font-semibold text-[#52647b]">
-                              {item.name}{" "}
-                              <span className="text-[#8b95a2]">
-                                × {item.quantity}
+                            {reorderingId === lastCompletedOrder.id
+                              ? t("Adding…")
+                              : t("Order your last treat again")}
+                          </button>
+                        )}
+                      </div>
+                    </EmptyState>
+                  )}
+                </section>
+
+                <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                  <RewardsCard compact points={points} t={t} />
+                  <div className={cardClass}>
+                    <p className={eyebrowClass}>{t("Shortcuts")}</p>
+                    <h2 className="mt-2 font-display text-xl font-extrabold text-[#092a53]">
+                      {t("Quick actions")}
+                    </h2>
+                    <div className="mt-5 grid grid-cols-2 gap-3">
+                      {[
+                        { label: t("Browse the menu"), to: "/menu", icon: "M4 6h16M4 12h16M4 18h10" },
+                        { label: t("Design a custom cake"), to: "/custom-cake", icon: "M4 20h16M5 20v-7h14v7M8 13V9h8v4M12 9V5" },
+                        { label: t("Shop catalog"), to: "/flavors", icon: "M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" },
+                        { label: t("Contact us"), to: "/contact", icon: "M4 6h16v12H4V6Zm0 0 8 7 8-7" },
+                      ].map((action) => (
+                        <Link
+                          className="group flex flex-col gap-3 rounded-2xl bg-[#fbfaf5] p-4 text-sm font-extrabold text-[#102c50] ring-1 ring-[#ece8dc] transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_10px_24px_rgba(18,44,80,0.08)]"
+                          key={action.to}
+                          to={action.to}
+                        >
+                          <span className="grid size-10 place-items-center rounded-xl bg-white text-[#a48700] ring-1 ring-[#ece8dc] transition group-hover:bg-[#ffdc32] group-hover:text-[#092a53] group-hover:ring-transparent">
+                            <Icon path={action.icon} />
+                          </span>
+                          {action.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+
+                {favorites.length > 0 && (
+                  <section>
+                    <SectionHeading
+                      action={
+                        <button className={ghostButton} onClick={() => selectTab("saved")} type="button">
+                          {t("View all")}
+                          <Icon className="size-4" path="M5 12h14m-5-5 5 5-5 5" />
+                        </button>
+                      }
+                      eyebrow={t("Your collection")}
+                      title={t("Saved favorites")}
+                    />
+                    {favoritesGrid(favorites.slice(0, 4))}
+                  </section>
+                )}
+              </div>
+            )}
+
+            {activeTab === "orders" && (
+              <section aria-labelledby="account-orders-title">
+                <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+                  <div>
+                    <p className={eyebrowClass}>{t("My account")}</p>
+                    <h2
+                      className="mt-2 font-display text-2xl font-extrabold text-[#092a53] sm:text-[1.75rem]"
+                      id="account-orders-title"
+                    >
+                      {t("Order history and status")}
+                    </h2>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex rounded-full bg-white p-1 ring-1 ring-[#e7e3d8]" role="group" aria-label={t("Filter orders")}>
+                      {[
+                        { key: "all", label: t("All") },
+                        { key: "active", label: t("In progress") },
+                        { key: "completed", label: t("Completed") },
+                      ].map((filter) => (
+                        <button
+                          aria-pressed={orderFilter === filter.key}
+                          className={`rounded-full px-3.5 py-1.5 text-xs font-extrabold transition ${
+                            orderFilter === filter.key
+                              ? "bg-[#092a53] text-white"
+                              : "text-[#65748a] hover:text-[#092a53]"
+                          }`}
+                          key={filter.key}
+                          onClick={() => setOrderFilter(filter.key)}
+                          type="button"
+                        >
+                          {filter.label}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      aria-label={t("Refresh order status")}
+                      className="grid size-9 place-items-center rounded-full bg-white text-[#52647b] ring-1 ring-[#e7e3d8] transition hover:text-[#092a53] disabled:opacity-50"
+                      disabled={loadingOrders}
+                      onClick={() =>
+                        refreshOrders().catch((loadError) => setError(loadError.message))
+                      }
+                      title={t("Refresh order status")}
+                      type="button"
+                    >
+                      <Icon className="size-4" path="M4 12a8 8 0 0 1 13.7-5.7L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.7L4 15.5M4 20v-4.5h4.5" />
+                    </button>
+                  </div>
+                </div>
+                {error && (
+                  <p className="mb-4 rounded-2xl bg-red-50 p-4 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+                    {error}
+                  </p>
+                )}
+                {loadingOrders ? (
+                  <div className="space-y-4">
+                    {[0, 1].map((key) => (
+                      <div className="h-56 animate-pulse rounded-[26px] bg-white ring-1 ring-[#ebe7dc]" key={key} />
+                    ))}
+                  </div>
+                ) : filteredOrders.length ? (
+                  <div className="space-y-5">{filteredOrders.map(renderOrderCard)}</div>
+                ) : (
+                  <EmptyState
+                    body={
+                      orders.length
+                        ? t("No orders match this filter.")
+                        : t("You have not placed any orders yet.")
+                    }
+                    icon="M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1"
+                    title={t("No orders yet")}
+                  >
+                    <Link className={`${primaryButton} mt-6`} to="/menu">
+                      {t("Browse the menu")}
+                    </Link>
+                  </EmptyState>
+                )}
+              </section>
+            )}
+
+            {activeTab === "saved" && (
+              <div className="space-y-10">
+                <section>
+                  <SectionHeading
+                    description={t("Current prices and stock are checked when you add a saved cart.")}
+                    eyebrow={t("Your collection")}
+                    title={t("Saved carts")}
+                  />
+                  {savedCarts.length ? (
+                    <ul className="grid gap-4 md:grid-cols-2">
+                      {savedCarts.map((savedCart) => {
+                        const count = savedCart.items.reduce(
+                          (total, item) => total + item.quantity,
+                          0,
+                        );
+                        return (
+                          <li className={`${cardClass} flex flex-col sm:p-6`} key={savedCart.id}>
+                            <div className="flex items-start gap-3.5">
+                              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#a48700]">
+                                <Icon path="M6 4h12v16l-6-4-6 4V4Z" />
                               </span>
-                            </span>
-                            <span className="shrink-0 font-bold text-[#102c50]">
-                              {formatPrice(item.lineTotalCents)}
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate font-display text-lg font-extrabold text-[#092a53]">
+                                  {t(savedCart.label)}
+                                </p>
+                                <p className="text-xs font-semibold text-[#65748a]">
+                                  {t("{count} items", { count })}
+                                </p>
+                              </div>
+                            </div>
+                            <ul className="mt-4 flex-1 space-y-1.5 text-sm text-[#52647b]">
+                              {savedCart.items.slice(0, 3).map((item, index) => (
+                                <li className="flex gap-2" key={`${savedCart.id}-${index}`}>
+                                  <span className="font-extrabold text-[#102c50]">{item.quantity}×</span>
+                                  <span className="truncate">{item.name}</span>
+                                </li>
+                              ))}
+                              {savedCart.items.length > 3 && (
+                                <li className="text-xs font-semibold text-[#8b95a2]">
+                                  {t("+{count} more", { count: savedCart.items.length - 3 })}
+                                </li>
+                              )}
+                            </ul>
+                            <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#f0ece2] pt-4">
+                              <button
+                                className="text-xs font-bold text-[#a34d4d] transition hover:text-red-800 disabled:opacity-50"
+                                disabled={deletingSavedCartId === savedCart.id}
+                                onClick={() => removeSavedCart(savedCart)}
+                                type="button"
+                              >
+                                {deletingSavedCartId === savedCart.id ? t("Removing…") : t("Remove")}
+                              </button>
+                              <button
+                                className={`${primaryButton} px-4 py-2.5 text-xs`}
+                                disabled={reorderingId === `saved-${savedCart.id}`}
+                                onClick={() => reorderItems(savedCart.items, `saved-${savedCart.id}`)}
+                                type="button"
+                              >
+                                {reorderingId === `saved-${savedCart.id}`
+                                  ? t("Adding…")
+                                  : t("Add saved cart to bag")}
+                              </button>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <EmptyState
+                      body={t("No saved carts yet. Save a paid order to quickly rebuild its cart later.")}
+                      icon="M6 4h12v16l-6-4-6 4V4Z"
+                      title={t("Nothing saved yet")}
+                    />
+                  )}
+                </section>
+
+                <section>
+                  <SectionHeading eyebrow={t("Your collection")} title={t("Saved favorites")} />
+                  {favorites.length ? (
+                    favoritesGrid(favorites)
+                  ) : (
+                    <EmptyState
+                      body={t("Tap the heart on any treat to keep it here.")}
+                      icon="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"
+                      title={t("No saved favorites yet.")}
+                    >
+                      <Link className={`${primaryButton} mt-6`} to="/flavors">
+                        {t("Explore flavors")}
+                      </Link>
+                    </EmptyState>
+                  )}
+                </section>
+              </div>
+            )}
+
+            {activeTab === "rewards" && (
+              <section>
+                <SectionHeading
+                  description={t("Earn 1 point per 100 FCFA. Redeem 100 points for 1,000 FCFA off.")}
+                  eyebrow={t("Loyalty rewards")}
+                  title={t("Your rewards")}
+                />
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                  <RewardsCard points={points} t={t} />
+                  <div className={cardClass}>
+                    <h3 className="font-display text-lg font-extrabold text-[#092a53]">
+                      {t("Points history")}
+                    </h3>
+                    {loyalty?.entries?.length ? (
+                      <ul className="mt-4 divide-y divide-[#f0ece2]">
+                        {loyalty.entries.map((entry) => (
+                          <li className="flex items-center justify-between gap-3 py-3" key={entry.id}>
+                            <div className="flex min-w-0 items-center gap-3">
+                              <span
+                                className={`grid size-9 shrink-0 place-items-center rounded-xl ${
+                                  entry.pointsDelta > 0
+                                    ? "bg-[#eef6e8] text-[#3f6b22]"
+                                    : "bg-[#fff0ed] text-[#b44947]"
+                                }`}
+                              >
+                                <Icon
+                                  className="size-4"
+                                  path={entry.pointsDelta > 0 ? "M12 19V5m-6 6 6-6 6 6" : "M12 5v14m6-6-6 6-6-6"}
+                                />
+                              </span>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-bold capitalize text-[#102c50]">
+                                  {t(entry.entryType)}
+                                </p>
+                                <p className="text-xs text-[#65748a]">
+                                  {t("Order #{id}", { id: entry.orderId })}
+                                </p>
+                              </div>
+                            </div>
+                            <span
+                              className={`shrink-0 font-display text-lg font-extrabold ${
+                                entry.pointsDelta > 0 ? "text-[#3f6b22]" : "text-[#b44947]"
+                              }`}
+                            >
+                              {entry.pointsDelta > 0 ? "+" : ""}
+                              {entry.pointsDelta}
                             </span>
                           </li>
                         ))}
                       </ul>
-                      <div className="mt-4 flex items-center justify-between border-t border-[#eeeae1] pt-4">
-                        <span className="text-sm font-bold text-[#65748a]">
-                          {t("Total")}
-                        </span>
-                        <span className="font-display text-lg font-extrabold">
-                          {formatPrice(order.totalCents)}
-                        </span>
-                      </div>
-                      <div className="mt-4 rounded-xl border border-[#e6ebf1] bg-[#f7f9fc] px-3.5 py-3">
-                        <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8a7500]">
-                          {t("Assigned store")}
-                        </p>
-                        <p className="mt-1 text-sm font-bold text-[#092a53]">
-                          {t(order.storeName || "Store not recorded")}
-                        </p>
-                        {order.storeAddress && (
-                          <p className="mt-0.5 text-xs leading-5 text-[#65748a]">
-                            {t(order.storeAddress)}
-                          </p>
-                        )}
-                      </div>
-                      <p className="mt-3 text-xs text-[#65748a]">
-                        {order.deliveryResidence
-                          ? `${order.deliveryResidence}, `
-                          : ""}
-                        {order.deliveryCity}
+                    ) : (
+                      <p className="mt-4 rounded-2xl bg-[#fbfaf5] p-5 text-sm leading-6 text-[#65748a]">
+                        {t("Your points will appear here after your first paid order.")}
                       </p>
-                      {order.status !== "pending_payment" &&
-                        order.status !== "payment_failed" && (
-                          <div className="mt-4 flex flex-wrap justify-end gap-3 border-t border-[#eeeae1] pt-4">
-                            <button
-                              className="inline-flex items-center gap-2 rounded-full border border-[#d9d6cc] px-4 py-2.5 text-xs font-extrabold text-[#52647b] transition hover:border-[#092a53] hover:text-[#092a53] disabled:cursor-wait disabled:opacity-50"
-                              disabled={
-                                savingOrderId === order.id ||
-                                savedCarts.some(
-                                  (savedCart) =>
-                                    savedCart.sourceOrderId === order.id,
-                                )
-                              }
-                              onClick={() => saveOrder(order)}
-                              type="button"
-                            >
-                              {savingOrderId === order.id
-                                ? t("Saving…")
-                                : savedCarts.some(
-                                      (savedCart) =>
-                                        savedCart.sourceOrderId === order.id,
-                                    )
-                                  ? t("Saved for later")
-                                  : t("Save cart")}
-                            </button>
-                            <button
-                              className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-50"
-                              disabled={reorderingId === order.id}
-                              onClick={() =>
-                                reorderItems(order.items, order.id)
-                              }
-                              type="button"
-                            >
-                              {reorderingId === order.id
-                                ? t("Adding…")
-                                : t("Reorder")}{" "}
-                              <span aria-hidden="true">→</span>
-                            </button>
-                          </div>
-                        )}
-                      {order.status !== "pending_payment" &&
-                        order.status !== "payment_failed" && (
-                          <OrderReviewForm
-                            order={order}
-                            t={t}
-                            token={sessionStorage.getItem(CUSTOMER_TOKEN_KEY)}
-                          />
-                        )}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-[24px] border border-[#e7e3d9] bg-white px-6 py-10 text-center shadow-[0_8px_26px_rgba(18,44,80,0.04)]">
-                <span
-                  aria-hidden="true"
-                  className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#fff3b8] text-2xl text-[#806a00]"
-                >
-                  ▤
-                </span>
-                <h3 className="mt-4 font-display text-xl font-extrabold">
-                  {t("No orders yet")}
-                </h3>
-                <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#65748a]">
-                  {t("You have not placed any orders yet.")}
-                </p>
-                <Link
-                  className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]"
-                  to="/menu"
-                >
-                  {t("Browse the menu")} <span aria-hidden="true">→</span>
-                </Link>
-              </div>
-            )}
-          </section>
-
-          <aside className="space-y-5">
-            <section className="rounded-[24px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)] sm:p-6">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">
-                    {t("Your collection")}
-                  </p>
-                  <h2 className="mt-1 font-display text-xl font-extrabold">
-                    {t("Saved carts")}
-                  </h2>
-                  <p className="mt-2 text-xs leading-5 text-[#65748a]">
-                    {t(
-                      "Current prices and stock are checked when you add a saved cart.",
                     )}
-                  </p>
+                  </div>
                 </div>
-                <span
-                  aria-hidden="true"
-                  className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fff3b8] text-lg text-[#806a00]"
-                >
-                  ▤
-                </span>
-              </div>
-              {savedCarts.length ? (
-                <ul className="mt-4 divide-y divide-[#eeeae1]">
-                  {savedCarts.map((savedCart) => (
-                    <li
-                      className="py-3 first:pt-0 last:pb-0"
-                      key={savedCart.id}
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-[#102c50]">
-                            {t(savedCart.label)}
-                          </p>
-                          <p className="mt-1 text-xs text-[#65748a]">
-                            {t("{count} items", {
-                              count: savedCart.items.reduce(
-                                (count, item) => count + item.quantity,
-                                0,
-                              ),
-                            })}
-                          </p>
-                        </div>
-                        <button
-                          className="text-xs font-bold text-[#a34d4d] transition hover:text-red-800 disabled:opacity-50"
-                          disabled={deletingSavedCartId === savedCart.id}
-                          onClick={() => removeSavedCart(savedCart)}
-                          type="button"
-                        >
-                          {deletingSavedCartId === savedCart.id
-                            ? t("Removing…")
-                            : t("Remove")}
-                        </button>
-                      </div>
-                      <button
-                        className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#092a53] px-4 py-2 text-xs font-extrabold text-white transition hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-50"
-                        disabled={reorderingId === `saved-${savedCart.id}`}
-                        onClick={() =>
-                          reorderItems(savedCart.items, `saved-${savedCart.id}`)
-                        }
-                        type="button"
-                      >
-                        {reorderingId === `saved-${savedCart.id}`
-                          ? t("Adding…")
-                          : t("Add saved cart to bag")}{" "}
-                        <span aria-hidden="true">→</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-4 rounded-xl bg-[#fbfaf5] p-4 text-sm leading-6 text-[#65748a]">
-                  {t(
-                    "No saved carts yet. Save a paid order to quickly rebuild its cart later.",
-                  )}
-                </p>
-              )}
-            </section>
+              </section>
+            )}
 
-            <section className="rounded-[24px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)] sm:p-6">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">
-                  {t("Account profile")}
-                </p>
-                <h2 className="mt-1 font-display text-2xl font-extrabold">
-                  {t("Saved delivery details")}
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-[#65748a]">
-                  {t("Keep your contact and delivery information up to date.")}
-                </p>
-              </div>
-              <CustomerProfileDetails
-                customer={customer}
-                onSave={updateProfile}
-                t={t}
-              />
-            </section>
-
-            <section className="rounded-[24px] border border-[#e7e3d9] bg-white p-5 shadow-[0_8px_26px_rgba(18,44,80,0.04)] sm:p-6">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">
-                    {t("Your collection")}
-                  </p>
-                  <h2 className="mt-1 font-display text-xl font-extrabold">
-                    {t("Saved favorites")}
-                  </h2>
+            {activeTab === "profile" && (
+              <section>
+                <SectionHeading
+                  description={t("Keep your contact and delivery information up to date.")}
+                  eyebrow={t("Account profile")}
+                  title={t("Saved delivery details")}
+                />
+                <div className={cardClass}>
+                  <CustomerProfileDetails customer={customer} onSave={updateProfile} t={t} />
                 </div>
-                <span
-                  className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fff0ed] text-lg text-[#b44947]"
-                  aria-hidden="true"
-                >
-                  ♡
-                </span>
-              </div>
-              {favorites.length ? (
-                <ul className="mt-4 divide-y divide-[#eeeae1]">
-                  {favorites.map((favorite) => (
-                    <li
-                      className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
-                      key={favorite.itemId}
-                    >
-                      <img
-                        alt=""
-                        className="size-12 rounded-xl bg-[#f4f1e7] object-cover"
-                        src={favorite.item.image}
-                      />
-                      <Link
-                        className="min-w-0 flex-1 truncate text-sm font-bold text-[#102c50] transition hover:text-[#806a00]"
-                        to={
-                          favorite.item.itemType === "menu"
-                            ? "/menu"
-                            : "/flavors"
-                        }
-                      >
-                        {favorite.item.name}
-                      </Link>
-                      <button
-                        className="shrink-0 text-xs font-bold text-[#a34d4d] transition hover:text-red-800"
-                        onClick={() => removeFavorite(favorite.itemId)}
-                        type="button"
-                      >
-                        {t("Remove")}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-4 rounded-xl bg-[#fbfaf5] p-4 text-sm leading-6 text-[#65748a]">
-                  {t("No saved favorites yet.")}
-                </p>
-              )}
-            </section>
-
-            <section className="rounded-[24px] bg-[#092a53] p-5 text-white shadow-[0_10px_28px_rgba(9,42,83,0.12)] sm:p-6">
-              <div className="flex items-center gap-3">
-                <span
-                  aria-hidden="true"
-                  className="grid size-11 place-items-center rounded-2xl bg-[#ffdc32] text-xl text-[#092a53]"
-                >
-                  ✦
-                </span>
-                <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#ffdc32]">
-                    {t("Loyalty rewards")}
-                  </p>
-                  <p className="mt-0.5 font-display text-2xl font-extrabold">
-                    {loyalty?.points ?? customer.loyaltyPoints ?? 0}{" "}
-                    <span className="text-sm">{t("points")}</span>
-                  </p>
-                </div>
-              </div>
-              <p className="mt-4 text-sm leading-6 text-white/75">
-                {t(
-                  "Earn 1 point per 100 FCFA. Redeem 100 points for 1,000 FCFA off.",
-                )}
-              </p>
-              {loyalty?.entries?.length > 0 && (
-                <details className="mt-5 border-t border-white/15 pt-4">
-                  <summary className="cursor-pointer text-sm font-bold">
-                    {t("Points history")}
-                  </summary>
-                  <ul className="mt-3 space-y-2 text-sm text-white/80">
-                    {loyalty.entries.map((entry) => (
-                      <li className="flex justify-between gap-3" key={entry.id}>
-                        <span>
-                          {t(entry.entryType)} ·{" "}
-                          {t("Order #{id}", { id: entry.orderId })}
-                        </span>
-                        <span className="font-bold text-white">
-                          {entry.pointsDelta > 0 ? "+" : ""}
-                          {entry.pointsDelta}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
-            </section>
-          </aside>
+              </section>
+            )}
+          </div>
         </div>
       </main>
       <Footer />

@@ -1,0 +1,450 @@
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e3] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e4]:
+    - banner [ref=e6]:
+      - link "Cold Stone Creamery Cameroon home" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]: 🍦
+        - generic [ref=e9]: Cold StoneCameroon
+      - navigation [ref=e10]:
+        - link "Home" [ref=e11] [cursor=pointer]:
+          - /url: /#home
+        - group [ref=e12]:
+          - generic "Shop catalog" [ref=e13] [cursor=pointer]:
+            - generic [ref=e14]:
+              - generic [aria-hidden] [ref=e15]: ▤
+              - generic [ref=e16]: Shop catalog
+        - link "About us" [ref=e19] [cursor=pointer]:
+          - /url: /about
+        - group [ref=e20]:
+          - generic "Menu" [ref=e21] [cursor=pointer]:
+            - generic [ref=e22]:
+              - generic [aria-hidden] [ref=e23]: 🍦
+              - generic [ref=e24]: Menu
+        - link "Contact" [ref=e27] [cursor=pointer]:
+          - /url: /contact
+      - generic [ref=e28]:
+        - group [ref=e29]:
+          - 'generic "Language: English" [ref=e30] [cursor=pointer]':
+            - generic [aria-hidden] [ref=e31]: EN
+            - generic [ref=e32]: English
+        - group [ref=e35]:
+          - generic "Account" [ref=e36] [cursor=pointer]
+        - link "Shopping bag, 0 items" [ref=e40] [cursor=pointer]:
+          - /url: /cart
+    - main [ref=e44]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - paragraph [ref=e51]:
+              - generic [aria-hidden] [ref=e52]: ✦
+              - text: A little happiness in every scoop
+              - generic [aria-hidden] [ref=e53]: ✦
+            - heading "Your next favorite starts here." [level=1] [ref=e54]:
+              - text: Your next favorite
+              - generic [ref=e55]: starts here.
+            - paragraph [ref=e56]: Browse signature creations, explore the online catalog, and discover publicly listed locations across Cameroon.
+            - generic [ref=e57]:
+              - link "Order now" [ref=e58] [cursor=pointer]:
+                - /url: /menu?category=Ice%20Cream
+              - link "Explore flavors" [ref=e61] [cursor=pointer]:
+                - /url: /flavors
+            - generic [ref=e64]:
+              - generic [ref=e65]:
+                - generic [aria-hidden] [ref=e66]: ✧
+                - text: Signature creations
+              - generic [ref=e67]:
+                - generic [aria-hidden] [ref=e68]: ♡
+                - text: A flavor for every mood
+              - generic [ref=e69]:
+                - generic [aria-hidden] [ref=e70]: ⌖
+                - text: Cameroon locations
+            - paragraph [ref=e71]: Independent information guide — not an official Cold Stone Creamery website.
+          - region "Featured treats" [ref=e72]:
+            - group "1 / 3" [ref=e74]:
+              - img "Colorful ice cream creations ready to enjoy" [ref=e75]
+              - generic [ref=e78]:
+                - generic [ref=e79]:
+                  - generic [aria-hidden] [ref=e80]: ✦
+                  - generic [ref=e81]:
+                    - paragraph [ref=e82]: Featured
+                    - paragraph [ref=e83]: The signature experience
+                - generic [ref=e84]:
+                  - generic [ref=e85]: 01 / 03
+                  - button "Previous slide" [ref=e86]:
+                    - generic [aria-hidden] [ref=e87]: ←
+                  - button "Next slide" [ref=e88]:
+                    - generic [aria-hidden] [ref=e89]: →
+            - group "Choose a featured slide" [ref=e90]:
+              - button "Show slide 1" [ref=e91]
+              - button "Show slide 2" [ref=e92]
+              - button "Show slide 3" [ref=e93]
+              - generic [ref=e94]: Explore the collection
+        - generic [ref=e95]:
+          - link "Cameroon locations Find a listed shop near you." [ref=e96] [cursor=pointer]:
+            - /url: /locations
+            - generic [aria-hidden] [ref=e97]: ⌖
+            - generic [ref=e98]:
+              - generic [ref=e99]: Cameroon locations
+              - generic [ref=e100]: Find a listed shop near you.
+            - generic [aria-hidden] [ref=e101]: →
+          - link "Explore the menu Browse signature creations and treats." [ref=e102] [cursor=pointer]:
+            - /url: /menu
+            - generic [aria-hidden] [ref=e103]: ✧
+            - generic [ref=e104]:
+              - generic [ref=e105]: Explore the menu
+              - generic [ref=e106]: Browse signature creations and treats.
+            - generic [aria-hidden] [ref=e107]: →
+          - link "Explore flavors Find a new favorite in the catalog." [ref=e108] [cursor=pointer]:
+            - /url: /flavors
+            - generic [aria-hidden] [ref=e109]: ♡
+            - generic [ref=e110]:
+              - generic [ref=e111]: Explore flavors
+              - generic [ref=e112]: Find a new favorite in the catalog.
+            - generic [aria-hidden] [ref=e113]: →
+          - link "Custom cake requests Plan a cake for your celebration." [ref=e114] [cursor=pointer]:
+            - /url: /custom-cake
+            - generic [aria-hidden] [ref=e115]: ✿
+            - generic [ref=e116]:
+              - generic [ref=e117]: Custom cake requests
+              - generic [ref=e118]: Plan a cake for your celebration.
+            - generic [aria-hidden] [ref=e119]: →
+      - region [ref=e120]:
+        - generic [ref=e122]:
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - paragraph [ref=e125]:
+                - generic [aria-hidden] [ref=e126]: ✦
+                - text: Our favorites
+              - heading "Popular Flavors" [level=2] [ref=e127]
+              - paragraph [ref=e128]: From classic scoops to signature creations, find a new favorite.
+            - link "View all" [ref=e130] [cursor=pointer]:
+              - /url: /menu?category=Ice%20Cream
+          - generic [ref=e133]:
+            - article [ref=e134]:
+              - generic [ref=e135]:
+                - img "Cookie Crunch Cone" [ref=e136]
+                - generic [ref=e137]: Popular pick
+                - generic [aria-hidden] [ref=e138]: ↗
+              - generic [ref=e139]:
+                - heading "Cookie Crunch Cone" [level=3] [ref=e140]
+                - paragraph [ref=e141]: Creamy ice cream with cookie pieces served in a waffle cone.
+                - generic [ref=e142]:
+                  - generic [ref=e143]:
+                    - paragraph [ref=e144]: Illustrative price
+                    - generic [ref=e145]: 3,500 FCFA
+                  - button "Add Cookie Crunch Cone to your bag" [ref=e146]:
+                    - text: Add
+                    - generic [aria-hidden] [ref=e147]: +
+            - article [ref=e148]:
+              - generic [ref=e149]:
+                - img "Caramel Crunch Cone" [ref=e150]
+                - generic [ref=e151]: Popular pick
+                - generic [aria-hidden] [ref=e152]: ↗
+              - generic [ref=e153]:
+                - heading "Caramel Crunch Cone" [level=3] [ref=e154]
+                - paragraph [ref=e155]: Ice cream with caramel and crunchy mix-ins in a waffle cone.
+                - generic [ref=e156]:
+                  - generic [ref=e157]:
+                    - paragraph [ref=e158]: Illustrative price
+                    - generic [ref=e159]: 3,500 FCFA
+                  - button "Add Caramel Crunch Cone to your bag" [ref=e160]:
+                    - text: Add
+                    - generic [aria-hidden] [ref=e161]: +
+            - article [ref=e162]:
+              - generic [ref=e163]:
+                - img "Signature Mix-In Cup" [ref=e164]
+                - generic [ref=e165]: Popular pick
+                - generic [aria-hidden] [ref=e166]: ↗
+              - generic [ref=e167]:
+                - heading "Signature Mix-In Cup" [level=3] [ref=e168]
+                - paragraph [ref=e169]: A cup of ice cream finished with a crunchy mix-in topping.
+                - generic [ref=e170]:
+                  - generic [ref=e171]:
+                    - paragraph [ref=e172]: Illustrative price
+                    - generic [ref=e173]: 3,500 FCFA
+                  - button "Add Signature Mix-In Cup to your bag" [ref=e174]:
+                    - text: Add
+                    - generic [aria-hidden] [ref=e175]: +
+            - article [ref=e176]:
+              - generic [ref=e177]:
+                - img "Cookie Crunch Cup" [ref=e178]
+                - generic [ref=e179]: Popular pick
+                - generic [aria-hidden] [ref=e180]: ↗
+              - generic [ref=e181]:
+                - heading "Cookie Crunch Cup" [level=3] [ref=e182]
+                - paragraph [ref=e183]: Ice cream served in a cup with cookie pieces.
+                - generic [ref=e184]:
+                  - generic [ref=e185]:
+                    - paragraph [ref=e186]: Illustrative price
+                    - generic [ref=e187]: 3,500 FCFA
+                  - button "Add Cookie Crunch Cup to your bag" [ref=e188]:
+                    - text: Add
+                    - generic [aria-hidden] [ref=e189]: +
+            - article [ref=e190]:
+              - generic [ref=e191]:
+                - img "Candy Mix-In Shake" [ref=e192]
+                - generic [ref=e193]: Popular pick
+                - generic [aria-hidden] [ref=e194]: ↗
+              - generic [ref=e195]:
+                - heading "Candy Mix-In Shake" [level=3] [ref=e196]
+                - paragraph [ref=e197]: A blended ice cream shake topped with candy pieces and whipped topping.
+                - generic [ref=e198]:
+                  - generic [ref=e199]:
+                    - paragraph [ref=e200]: Illustrative price
+                    - generic [ref=e201]: 3,500 FCFA
+                  - button "Add Candy Mix-In Shake to your bag" [ref=e202]:
+                    - text: Add
+                    - generic [aria-hidden] [ref=e203]: +
+      - region [ref=e207]:
+        - generic [ref=e208]:
+          - generic [ref=e209]:
+            - generic [ref=e210]:
+              - paragraph [ref=e211]:
+                - generic [aria-hidden] [ref=e212]: ✦
+                - text: Why choose us
+              - heading "More scoops. More smiles." [level=2] [ref=e213]
+            - paragraph [ref=e214]: A flavor for every mood
+          - generic [ref=e215]:
+            - article [ref=e216]:
+              - generic [aria-hidden] [ref=e217]: ✿
+              - heading "Natural ingredients" [level=3] [ref=e218]
+              - paragraph [ref=e219]: Only the good stuff, always.
+            - article [ref=e220]:
+              - generic [aria-hidden] [ref=e221]: ★
+              - heading "Unique flavors" [level=3] [ref=e222]
+              - paragraph [ref=e223]: Classic to creative.
+            - article [ref=e224]:
+              - generic [aria-hidden] [ref=e225]: ❄
+              - heading "Freshly made" [level=3] [ref=e226]
+              - paragraph [ref=e227]: A little joy, every day.
+            - article [ref=e228]:
+              - generic [aria-hidden] [ref=e229]: ♡
+              - heading "Happy customers" [level=3] [ref=e230]
+              - paragraph [ref=e231]: Your smile is our success.
+      - generic [ref=e234]:
+        - generic [ref=e235]:
+          - generic [ref=e236]:
+            - paragraph [ref=e237]:
+              - generic [aria-hidden] [ref=e238]: ✦
+              - text: The Cold Stone experience
+            - heading "Menu highlights" [level=2] [ref=e239]
+            - paragraph [ref=e240]: These categories appear on the global Cold Stone menu. Ask a Cameroon branch to confirm current selection.
+          - link "View menu guide" [ref=e241] [cursor=pointer]:
+            - /url: /menu
+        - generic [ref=e244]:
+          - link "Ice Cream — Browse the categories" [ref=e245] [cursor=pointer]:
+            - /url: /menu?category=Ice%20Cream
+            - generic [ref=e246]:
+              - generic [aria-hidden] [ref=e249]: 🍨
+              - generic [ref=e250]: 22 items
+            - generic [ref=e251]:
+              - generic [ref=e253]:
+                - paragraph [ref=e254]: Menu category
+                - heading "Ice Cream" [level=3] [ref=e255]
+              - paragraph [ref=e259]: Signature Creations, mix-in options and other ice cream treats.
+          - link "Cakes & Pies — Browse the categories" [ref=e260] [cursor=pointer]:
+            - /url: /menu?category=Cakes%20%26%20Pies
+            - generic [ref=e261]:
+              - generic [aria-hidden] [ref=e264]: 🎂
+              - generic [ref=e265]: 13 items
+            - generic [ref=e266]:
+              - generic [ref=e268]:
+                - paragraph [ref=e269]: Menu category
+                - heading "Cakes & Pies" [level=3] [ref=e270]
+              - paragraph [ref=e274]: Ice cream cakes for celebrations, custom designs and pies.
+          - link "Silk & Sorbet — Browse the categories" [ref=e275] [cursor=pointer]:
+            - /url: /menu?category=Silk%20%26%20Sorbet
+            - generic [ref=e276]:
+              - generic [aria-hidden] [ref=e279]: 🍧
+              - generic [ref=e280]: 2 items
+            - generic [ref=e281]:
+              - generic [ref=e283]:
+                - paragraph [ref=e284]: Menu category
+                - heading "Silk & Sorbet" [level=3] [ref=e285]
+              - paragraph [ref=e289]: Dairy-free alternatives listed on the global menu.
+          - link "Milkshakes & Smoothies — Browse the categories" [ref=e290] [cursor=pointer]:
+            - /url: /menu?category=Milkshakes%20%26%20Smoothies
+            - generic [ref=e291]:
+              - generic [aria-hidden] [ref=e294]: 🥤
+              - generic [ref=e295]: 12 items
+            - generic [ref=e296]:
+              - generic [ref=e298]:
+                - paragraph [ref=e299]: Menu category
+                - heading "Milkshakes & Smoothies" [level=3] [ref=e300]
+              - paragraph [ref=e304]: Blended-to-order milkshakes and fruit smoothies.
+          - link "Novelties — Browse the categories" [ref=e305] [cursor=pointer]:
+            - /url: /menu?category=Novelties
+            - generic [ref=e306]:
+              - generic [aria-hidden] [ref=e309]: 🧁
+              - generic [ref=e310]: 5 items
+            - generic [ref=e311]:
+              - generic [ref=e313]:
+                - paragraph [ref=e314]: Menu category
+                - heading "Novelties" [level=3] [ref=e315]
+              - paragraph [ref=e319]: Portable frozen treats from the global menu.
+          - link "Limited-Time Favorites — Browse the categories" [ref=e320] [cursor=pointer]:
+            - /url: /menu?category=Limited-Time%20Favorites
+            - generic [ref=e321]:
+              - generic [aria-hidden] [ref=e324]: ✨
+              - generic [ref=e325]: 2 items
+            - generic [ref=e326]:
+              - generic [ref=e328]:
+                - paragraph [ref=e329]: Menu category
+                - heading "Limited-Time Favorites" [level=3] [ref=e330]
+              - paragraph [ref=e334]: Rotating seasonal and limited-time treats.
+      - region [ref=e335]:
+        - generic [ref=e338]:
+          - article [ref=e339]:
+            - generic [ref=e342]:
+              - generic [ref=e343]:
+                - paragraph [ref=e344]:
+                  - generic [aria-hidden] [ref=e345]: ✦
+                  - text: Explore the menu
+                - heading "A little joy in every scoop." [level=2] [ref=e346]:
+                  - text: A little joy
+                  - generic [ref=e347]: in every scoop.
+                - paragraph [ref=e349]: Browse signature creations and treats.
+              - link "Order now" [ref=e351] [cursor=pointer]:
+                - /url: /menu?category=Ice%20Cream
+            - generic [ref=e356]:
+              - img "Ice cream cone" [ref=e357]
+              - img "Ice cream sundae" [ref=e358]
+              - generic [ref=e359]:
+                - generic [aria-hidden] [ref=e360]: ✦
+                - text: 3×
+          - article [ref=e361]:
+            - generic [ref=e362]:
+              - img "A child enjoying ice cream" [ref=e363]
+              - paragraph [ref=e364]:
+                - generic [aria-hidden] [ref=e365]: ♡
+                - text: About us
+            - generic [ref=e366]:
+              - heading "The joy is in the details." [level=2] [ref=e367]
+              - paragraph [ref=e368]: Discover Cold Stone ice cream, signature creations, and the mix-ins that make every scoop a little more special.
+              - list [ref=e369]:
+                - listitem [ref=e370]:
+                  - generic [aria-hidden] [ref=e371]: ✿
+                  - generic [ref=e372]: Freshly made
+                - listitem [ref=e373]:
+                  - generic [aria-hidden] [ref=e374]: ♡
+                  - generic [ref=e375]: Quality ingredients
+                - listitem [ref=e376]:
+                  - generic [aria-hidden] [ref=e377]: ☺
+                  - generic [ref=e378]: Happy customers
+              - link "Discover our story" [ref=e380] [cursor=pointer]:
+                - /url: /about
+      - region [ref=e383]:
+        - generic [ref=e384]:
+          - generic [ref=e385]:
+            - generic [ref=e386]:
+              - paragraph [ref=e387]:
+                - generic [aria-hidden] [ref=e388]: ✦
+                - text: What our customers are saying
+              - heading "Real Reviews" [level=2] [ref=e389]
+            - link "Explore the menu" [ref=e390] [cursor=pointer]:
+              - /url: /menu
+          - generic [ref=e393]:
+            - generic [aria-hidden] [ref=e394]: ✦
+            - paragraph [ref=e395]: No approved reviews yet.
+      - region [ref=e396]:
+        - generic [ref=e397]:
+          - generic [ref=e398]:
+            - paragraph [ref=e399]:
+              - generic [aria-hidden] [ref=e400]: ✦
+              - text: Here to help
+            - heading "Frequently Asked Questions" [level=2] [ref=e401]
+            - paragraph [ref=e402]: Find quick answers about this guide, local listings, and the information on our site.
+            - link "Contact us" [ref=e403] [cursor=pointer]:
+              - /url: /contact
+          - generic [ref=e406]:
+            - group [ref=e407]:
+              - generic "Is this the official Cold Stone Creamery Cameroon website?" [ref=e408] [cursor=pointer]:
+                - generic [aria-hidden] [ref=e409]: "?"
+            - group [ref=e414]:
+              - generic "Are the listed locations and opening hours always current?" [ref=e415] [cursor=pointer]:
+                - generic [aria-hidden] [ref=e416]: "?"
+            - group [ref=e421]:
+              - generic "Will every Cameroon location have the same menu?" [ref=e422] [cursor=pointer]:
+                - generic [aria-hidden] [ref=e423]: "?"
+            - group [ref=e428]:
+              - generic "Can I order treats through this website?" [ref=e429] [cursor=pointer]:
+                - generic [aria-hidden] [ref=e430]: "?"
+            - group [ref=e435]:
+              - generic "How can I find a location near me?" [ref=e436] [cursor=pointer]:
+                - generic [aria-hidden] [ref=e437]: "?"
+            - group [ref=e442]:
+              - generic "How can I contact this website?" [ref=e443] [cursor=pointer]:
+                - generic [aria-hidden] [ref=e444]: "?"
+      - region [ref=e449]:
+        - generic [ref=e450]:
+          - generic [ref=e451]:
+            - generic [ref=e453]:
+              - generic [aria-hidden] [ref=e454]: ◎
+              - text: Follow the fun.
+            - paragraph [ref=e455]: Sweet moments, shared.
+            - heading "A little more joy in your feed." [level=2] [ref=e456]
+            - paragraph [ref=e457]: Get a glimpse of our latest creations and sweet moments.
+            - link "Visit Instagram" [ref=e458] [cursor=pointer]:
+              - /url: https://www.instagram.com/coldstonecameroon/
+            - paragraph [ref=e461]: Follow @coldstonecameroon
+          - generic [ref=e462]:
+            - link "Ice cream treats — Visit Instagram" [ref=e463] [cursor=pointer]:
+              - /url: https://www.instagram.com/coldstonecameroon/
+              - img "Ice cream treats" [ref=e464]
+              - generic [ref=e466]:
+                - generic [aria-hidden] [ref=e467]: ◎
+                - text: "@coldstonecameroon"
+            - link "Celebration cake — Visit Instagram" [ref=e468] [cursor=pointer]:
+              - /url: https://www.instagram.com/coldstonecameroon/
+              - img "Celebration cake" [ref=e469]
+              - generic [ref=e471]:
+                - generic [aria-hidden] [ref=e472]: ◎
+                - text: "@coldstonecameroon"
+            - link "Creamy dessert — Visit Instagram" [ref=e473] [cursor=pointer]:
+              - /url: https://www.instagram.com/coldstonecameroon/
+              - img "Creamy dessert" [ref=e474]
+              - generic [ref=e476]:
+                - generic [aria-hidden] [ref=e477]: ◎
+                - text: "@coldstonecameroon"
+    - contentinfo [ref=e478]:
+      - generic [ref=e479]:
+        - generic [ref=e480]:
+          - generic [ref=e481]:
+            - link "🍦 Cold Stone Cameroon" [ref=e482] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e483]: 🍦
+              - generic [ref=e484]: Cold StoneCameroon
+            - paragraph [ref=e485]: Independent guide to publicly listed Cold Stone Creamery locations in Cameroon.
+          - navigation "Quick links" [ref=e486]:
+            - heading "Quick links" [level=2] [ref=e487]
+            - list [ref=e488]:
+              - listitem [ref=e489]:
+                - link "Menu" [ref=e490] [cursor=pointer]:
+                  - /url: /menu
+              - listitem [ref=e491]:
+                - link "About us" [ref=e492] [cursor=pointer]:
+                  - /url: /about
+              - listitem [ref=e493]:
+                - link "Locations" [ref=e494] [cursor=pointer]:
+                  - /url: /locations
+              - listitem [ref=e495]:
+                - link "Shop catalog" [ref=e496] [cursor=pointer]:
+                  - /url: /flavors
+              - listitem [ref=e497]:
+                - link "Contact us" [ref=e498] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e499]:
+                - link "Shopping cart" [ref=e500] [cursor=pointer]:
+                  - /url: /cart
+          - generic [ref=e501]:
+            - heading "Official local pages" [level=2] [ref=e502]
+            - link "Cold Stone Cameroon on Instagram" [ref=e503] [cursor=pointer]:
+              - /url: https://www.instagram.com/coldstonecameroon/
+              - generic [aria-hidden] [ref=e504]: ◎
+              - text: Cold Stone Cameroon on Instagram
+            - paragraph [ref=e507]: Independent guide — not an official Cold Stone Creamery website.
+        - generic [ref=e508]:
+          - paragraph [ref=e509]: © 2026 Independent Cameroon guide. All smiles reserved.
+          - paragraph [ref=e510]: Made for ice cream lovers in Cameroon.

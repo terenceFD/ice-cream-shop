@@ -50,7 +50,7 @@ export interface CartContextValue {
   cartTotal: number;
 }
 
-const CART_STORAGE_KEY = "antixor-icy-cart";
+const CART_STORAGE_KEY = "cold-stone-cart";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
