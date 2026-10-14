@@ -12,6 +12,14 @@ export interface LanguageContextValue {
 
 
 const french: Record<string, string> = {
+  'Flavor image': 'Image du parfum',
+  'Upload from device': 'Importer depuis l\'appareil',
+  'Replace image': 'Remplacer l\'image',
+  'Uploading…': 'Importation…',
+  'Choose a photo or drag it here. JPEG, PNG, WebP, or GIF. Large photos are resized automatically.': 'Choisissez une photo ou glissez-la ici. JPEG, PNG, WebP ou GIF. Les grandes photos sont redimensionnées automatiquement.',
+  'Or paste an image URL or path': 'Ou collez l\'URL ou le chemin d\'une image',
+  'Choose a JPEG, PNG, WebP, or GIF image.': 'Choisissez une image JPEG, PNG, WebP ou GIF.',
+  'Unable to upload the selected image.': 'Impossible d\'importer l\'image sélectionnée.',
   Home: 'Accueil',
   'A little happiness in every scoop': 'Un peu de bonheur dans chaque boule',
   'Make room for something sweet': 'Faites place à la gourmandise',

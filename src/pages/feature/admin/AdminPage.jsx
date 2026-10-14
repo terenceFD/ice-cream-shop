@@ -5,6 +5,7 @@ import { useFlavors } from "../../../flavor-context/useFlavors";
 import { useAdminAuth } from "./useAdminAuth";
 import { useCart } from "../../../useCart";
 import { formatCartMoney } from "../../../cartPricing";
+import { apiRequest } from "../../../api/api";
 
 const inputClassName =
   "mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
@@ -15,6 +16,7 @@ const LOW_STOCK_THRESHOLD = 10;
 
 const icons = {
   plus: "M12 5v14M5 12h14",
+  upload: "M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4",
   search: "m20 20-4.2-4.2M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z",
   grid: "M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z",
   list: "M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01",
@@ -101,9 +103,90 @@ function FlavorThumb({ src, alt = "", className = "size-12" }) {
   );
 }
 
+const FLAVOR_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const FLAVOR_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+const FLAVOR_IMAGE_MAX_DIMENSION = 1600;
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => (typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Could not read the selected image.")));
+    reader.onerror = () => reject(new Error("Could not read the selected image."));
+    reader.readAsDataURL(file);
+  });
+}
+
+// Phone photos are often several megabytes, so large stills are scaled down before upload.
+// GIFs are sent as they are so animations are kept.
+async function prepareFlavorImage(file) {
+  if (file.type === "image/gif" || typeof createImageBitmap !== "function") return readFileAsDataUrl(file);
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, FLAVOR_IMAGE_MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
+  if (scale === 1 && file.size <= 1.5 * 1024 * 1024) {
+    bitmap.close();
+    return readFileAsDataUrl(file);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) {
+    bitmap.close();
+    return readFileAsDataUrl(file);
+  }
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  // WebP keeps transparent backgrounds; browsers that cannot encode it fall back to JPEG.
+  const webp = canvas.toDataURL("image/webp", 0.85);
+  return webp.startsWith("data:image/webp") ? webp : canvas.toDataURL("image/jpeg", 0.85);
+}
+
 function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, error, reservedStock, t }) {
   const isEdit = mode === "edit";
   const price = Number(values.price);
+  const { sessionToken } = useAdminAuth();
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+
+  async function uploadImageFile(file) {
+    if (!file) return;
+    setUploadError("");
+    if (!FLAVOR_IMAGE_TYPES.includes(file.type)) {
+      setUploadError(t("Choose a JPEG, PNG, WebP, or GIF image."));
+      return;
+    }
+    if (file.type === "image/gif" && file.size > FLAVOR_IMAGE_MAX_BYTES) {
+      setUploadError(t("Choose an image smaller than 5 MB."));
+      return;
+    }
+    setIsUploadingImage(true);
+    try {
+      const dataUrl = await prepareFlavorImage(file);
+      const { image } = await apiRequest("/admin/uploads", {
+        method: "POST",
+        token: sessionToken,
+        body: { dataUrl },
+      });
+      onChange({ target: { name: "image", value: image } });
+    } catch (imageError) {
+      setUploadError(imageError instanceof Error ? imageError.message : t("Unable to upload the selected image."));
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }
+
+  function handleImageFileChange(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    uploadImageFile(file);
+  }
+
+  function handleImageDrop(event) {
+    event.preventDefault();
+    setIsDraggingImage(false);
+    uploadImageFile(event.dataTransfer.files?.[0]);
+  }
   return (
     <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
       <button
@@ -202,8 +285,43 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
 
             <fieldset className="space-y-4">
               <legend className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t("Presentation")}</legend>
+              <div className={labelClassName}>
+                {t("Flavor image")}
+                <div
+                  className={`mt-1.5 flex items-center gap-4 rounded-2xl border-2 border-dashed p-3 transition ${isDraggingImage ? "border-[#bd9c00] bg-[#fffbea]" : "border-[#dde4ec] bg-[#f8fafc]"}`}
+                  onDragLeave={() => setIsDraggingImage(false)}
+                  onDragOver={(event) => { event.preventDefault(); setIsDraggingImage(true); }}
+                  onDrop={handleImageDrop}
+                >
+                  <FlavorThumb className="size-16" key={values.image} src={values.image.trim()} />
+                  <div className="min-w-0 flex-1">
+                    <label
+                      className={`inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#bd9c00] ${isUploadingImage ? "pointer-events-none opacity-60" : ""}`}
+                    >
+                      <Icon path={icons.upload} />
+                      {isUploadingImage ? t("Uploading…") : t(values.image.trim() ? "Replace image" : "Upload from device")}
+                      <input
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="sr-only"
+                        disabled={isUploadingImage}
+                        onChange={handleImageFileChange}
+                        type="file"
+                      />
+                    </label>
+                    <p className="mt-1.5 text-[11px] font-medium leading-4 text-[#8190a1]">
+                      {t("Choose a photo or drag it here. JPEG, PNG, WebP, or GIF. Large photos are resized automatically.")}
+                    </p>
+                  </div>
+                </div>
+                {uploadError && (
+                  <p className="mt-2 flex items-start gap-2 text-xs font-semibold text-red-700" role="alert">
+                    <Icon className="mt-0.5 size-3.5 shrink-0" path={icons.alert} />
+                    {uploadError}
+                  </p>
+                )}
+              </div>
               <label className={labelClassName}>
-                {t("Image URL or path")}
+                {t("Or paste an image URL or path")}
                 <input className={inputClassName} name="image" onChange={onChange} placeholder="/images/flavor.jpg" required value={values.image} />
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -236,7 +354,7 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
             </button>
             <button
               className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
-              disabled={isSaving}
+              disabled={isSaving || isUploadingImage}
               type="submit"
             >
               <Icon path={isEdit ? icons.check : icons.plus} />
