@@ -74,6 +74,16 @@ import {
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
 import { storeAdminCanAccess } from './admin-access.js'
 import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, saveUploadedImage } from './storage.js'
+import {
+  buildPromotionNotification,
+  countCustomerSubscriptions,
+  isPushConfigured,
+  MAX_NOTIFICATION_MESSAGE_LENGTH,
+  normalizeNotificationMessage,
+  normalizePushSubscription,
+  pushConfiguration,
+  sendToAllCustomers,
+} from './push.js'
 import { createSeo } from './seo.js'
 import {
   adminLockRemainingMs,
@@ -704,6 +714,44 @@ app.get('/api/fulfillment/options', async (_request, response) => {
     FROM fulfillment_slots WHERE is_active = 1 ORDER BY sort_order, id
   `).all()
   response.json({ zones, slots })
+})
+
+// Promotion alerts: the browser needs the public key to subscribe, and only signed-in
+// customers can register a device.
+app.get('/api/push/public-key', (_request, response) => {
+  const config = pushConfiguration()
+  response.json({ enabled: Boolean(config), publicKey: config?.publicKey || null })
+})
+
+app.post('/api/customer/push-subscription', requireCustomer, async (request, response) => {
+  if (!isPushConfigured()) {
+    response.status(503).json({ error: 'Promotion alerts are not available right now.' })
+    return
+  }
+  const subscription = normalizePushSubscription(request.body)
+  if (!subscription) {
+    response.status(400).json({ error: 'This device could not be registered for promotion alerts.' })
+    return
+  }
+  // A device belongs to whoever turned alerts on last, so a shared phone follows its current account.
+  await database.prepare(`
+    INSERT INTO push_subscriptions (customer_id, endpoint, p256dh, auth)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(endpoint) DO UPDATE SET
+      customer_id = excluded.customer_id, p256dh = excluded.p256dh, auth = excluded.auth
+  `).run(request.customer.id, subscription.endpoint, subscription.p256dh, subscription.auth)
+  response.status(201).json({ subscribed: true })
+})
+
+app.delete('/api/customer/push-subscription', requireCustomer, async (request, response) => {
+  const endpoint = typeof request.body?.endpoint === 'string' ? request.body.endpoint.trim() : ''
+  if (!endpoint) {
+    response.status(400).json({ error: 'Provide the device to turn alerts off for.' })
+    return
+  }
+  await database.prepare('DELETE FROM push_subscriptions WHERE endpoint = ? AND customer_id = ?')
+    .run(endpoint, request.customer.id)
+  response.json({ subscribed: false })
 })
 
 app.get('/api/promotions/active', async (_request, response) => {
@@ -2897,8 +2945,25 @@ app.post('/api/admin/discount-codes', requireAdmin, ownerOnly, async (request, r
     response.status(400).json({ error: 'Provide a unique code, valid discount amount, minimum total, and optional expiry.' })
     return
   }
+  const notificationMessage = normalizeNotificationMessage(request.body.notificationMessage)
+  if (notificationMessage.length > MAX_NOTIFICATION_MESSAGE_LENGTH) {
+    response.status(400).json({ error: `Keep the notification message under ${MAX_NOTIFICATION_MESSAGE_LENGTH} characters.` })
+    return
+  }
   try {
-    response.status(201).json({ discountCode: await saveDiscountCode(code) })
+    const discountCode = await saveDiscountCode(code)
+    // Promotion alerts go out for new, active codes unless the owner unticks "Notify customers".
+    let notification = { requested: false, devices: 0 }
+    if (code.isActive && request.body.notifyCustomers !== false && isPushConfigured()) {
+      const devices = await countCustomerSubscriptions(database)
+      notification = { requested: true, devices }
+      if (devices > 0) {
+        sendToAllCustomers(database, buildPromotionNotification({ ...code, ...discountCode }, notificationMessage))
+          .then((result) => console.log(`Promotion ${code.code} alert: ${result.sent} sent, ${result.removed} expired devices removed, ${result.failed} failed.`))
+          .catch((error) => console.error(`Unable to send promotion alert for ${code.code}:`, error.message))
+      }
+    }
+    response.status(201).json({ discountCode, notification })
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'That discount code already exists.' })

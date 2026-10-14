@@ -67,6 +67,224 @@ function getPopularFlavors(categories) {
     .filter(Boolean);
 }
 
+const STAR_PATH = "M12 2.75l2.83 5.74 6.33.92-4.58 4.47 1.08 6.3L12 17.2l-5.66 2.98 1.08-6.3-4.58-4.47 6.33-.92L12 2.75Z";
+
+// Crisp SVG stars that can show part of a star, so an average such as 4.6 reads accurately.
+function StarRating({ value, className = "size-4", filledClassName = "text-[#f5b301]", emptyClassName = "text-[#e4e8ee]", label }) {
+  return (
+    <span aria-label={label} className="inline-flex items-center gap-0.5" role="img">
+      {[0, 1, 2, 3, 4].map((index) => {
+        const fill = Math.max(0, Math.min(1, value - index));
+        return (
+          <span aria-hidden="true" className={`relative inline-block ${className}`} key={index}>
+            <svg className={`absolute inset-0 size-full ${emptyClassName}`} fill="currentColor" viewBox="0 0 24 24">
+              <path d={STAR_PATH} />
+            </svg>
+            {fill > 0 && (
+              <span className="absolute inset-y-0 left-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
+                <svg className={`h-full ${className.split(" ").filter((name) => name.startsWith("size-")).join(" ")} ${filledClassName}`} fill="currentColor" viewBox="0 0 24 24">
+                  <path d={STAR_PATH} />
+                </svg>
+              </span>
+            )}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+function VerifiedIcon({ className = "size-3.5" }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path d="M12 2.5 14.4 4l2.8-.2 1.2 2.6 2.5 1.3-.2 2.8L22 13l-1.5 2.4.2 2.8-2.6 1.2-1.3 2.5-2.8-.2L12 23l-2.4-1.5-2.8.2-1.2-2.6-2.5-1.3.2-2.8L2 13l1.5-2.4-.2-2.8 2.6-1.2L7.2 4.1l2.8.2L12 2.5Z" fill="currentColor" />
+      <path d="m8.5 12.5 2.4 2.4 4.6-5" stroke="#fff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+    </svg>
+  );
+}
+
+// Review dates arrive as "2026-10-11 17:36:57" (SQLite, UTC) or an ISO string (PostgreSQL).
+function parseReviewDate(value) {
+  if (!value) return null;
+  const text = String(value);
+  const iso = /[zZ]|[+-]\d{2}:?\d{2}$/.test(text) ? text : `${text.replace(" ", "T")}Z`;
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatReviewDate(value, language) {
+  const date = parseReviewDate(value);
+  if (!date) return "";
+  const locale = language === "fr" ? "fr-FR" : "en-GB";
+  const days = Math.round((Date.now() - date.getTime()) / 86_400_000);
+  if (days < 30) {
+    const relative = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+    return days < 7 ? relative.format(-days, "day") : relative.format(-Math.round(days / 7), "week");
+  }
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(date);
+}
+
+function ReviewerAvatar({ name, picture, className }) {
+  return picture ? (
+    <img alt="" className={`shrink-0 rounded-full object-cover ${className}`} loading="lazy" src={picture} />
+  ) : (
+    <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-full bg-[#092a53] font-display font-extrabold text-[#ffdc32] ${className}`}>
+      {name.charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
+const LONG_REVIEW_LENGTH = 150;
+
+// Card order: photo with the name beside it, verified purchase, ordered item, stars, then the review.
+function ReviewCard({ review, language, t, className = "" }) {
+  const [expanded, setExpanded] = useState(false);
+  const customerName = review.customerName || t("Customer");
+  const rawText = (review.review || "").trim();
+  const text = rawText ? rawText.charAt(0).toUpperCase() + rawText.slice(1) : "";
+  const isLong = text.length > LONG_REVIEW_LENGTH;
+  const date = formatReviewDate(review.createdAt, language);
+  return (
+    <li className={`w-full sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.84rem)] lg:max-w-[400px] ${className}`}>
+      <article className="flex h-full flex-col rounded-2xl bg-white p-5 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.55)] ring-1 ring-black/5 transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_50px_-22px_rgba(0,0,0,0.6)] sm:p-6">
+        <header className="flex items-center gap-4">
+          <ReviewerAvatar className="size-16 text-xl ring-4 ring-[#fff3c4]" name={customerName} picture={review.profilePicture} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-base font-extrabold text-[#0f2340]">{customerName}</p>
+            <p className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-[#1a7f4b]">
+              <VerifiedIcon className="size-3.5" />
+              {t("Verified purchase")}
+            </p>
+            {review.itemName && (
+              <p className="mt-0.5 truncate text-xs text-[#8592a3]">
+                {t("Ordered")}: <span className="font-semibold text-[#3a4a5e]">{t(review.itemName)}</span>
+              </p>
+            )}
+          </div>
+        </header>
+
+        <div className="mt-4 flex items-center gap-2.5 border-t border-[#eef1f5] pt-4">
+          <StarRating
+            className="size-4"
+            filledClassName="text-[#f5b301]"
+            label={t("{rating} out of 5 stars", { rating: review.rating })}
+            value={Number(review.rating) || 0}
+          />
+          {date && (
+            <time className="text-xs text-[#8592a3]" dateTime={parseReviewDate(review.createdAt)?.toISOString()}>
+              {date}
+            </time>
+          )}
+        </div>
+
+        <div className="mt-3 flex-1">
+          {text ? (
+            <blockquote className={`whitespace-pre-line text-[15px] leading-relaxed text-[#3a4a5e] ${isLong && !expanded ? "line-clamp-4" : ""}`}>
+              “{text}”
+            </blockquote>
+          ) : (
+            <p className="text-[15px] italic leading-relaxed text-[#8592a3]">{t("No written comment.")}</p>
+          )}
+          {isLong && (
+            <button
+              aria-expanded={expanded}
+              className="mt-1 text-sm font-semibold text-[#0f4c8a] hover:underline focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f4c8a]"
+              onClick={() => setExpanded((current) => !current)}
+              type="button"
+            >
+              {t(expanded ? "Show less" : "Read more")}
+            </button>
+          )}
+        </div>
+      </article>
+    </li>
+  );
+}
+
+function ReviewsSection({ reviews, stats, error, language, t }) {
+  if (!reviews.length) return null;
+  const average = stats.average;
+  const roundedAverage = Math.round(average * 10) / 10;
+  const count = stats.count;
+  return (
+    <section
+      aria-labelledby="real-reviews-heading"
+      className="relative isolate overflow-hidden bg-[#092a53] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-10"
+    >
+      {/* Same backdrop as the hero: navy with a yellow glow, a blue glow and a faint dot grid. */}
+      <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[#ffdc32]/[0.12] blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[34rem] rounded-full bg-[#1c4f8a]/50 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:28px_28px]" />
+
+      <div className="mx-auto max-w-[1240px]">
+        <header className="mx-auto max-w-2xl text-center">
+          <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
+            <span aria-hidden="true" className="h-px w-8 bg-[#ffdc32]" />
+            {t("What our customers are saying")}
+            <span aria-hidden="true" className="h-px w-8 bg-[#ffdc32]" />
+          </p>
+          <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight sm:text-5xl" id="real-reviews-heading">
+            {t("Real Reviews")}
+          </h2>
+          <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-2xl bg-white/[0.08] px-5 py-2.5 ring-1 ring-white/15 backdrop-blur-sm sm:rounded-full">
+            <span className="font-display text-xl font-extrabold tabular-nums">{roundedAverage.toFixed(1)}</span>
+            <StarRating
+              className="size-4"
+              emptyClassName="text-white/20"
+              filledClassName="text-[#ffdc32]"
+              label={t("{rating} out of 5 stars", { rating: roundedAverage.toFixed(1) })}
+              value={average}
+            />
+            <span aria-hidden="true" className="hidden h-4 w-px bg-white/20 sm:block" />
+            <span className="text-sm text-white/75">
+              {t(count === 1 ? "Based on 1 review" : "Based on {count} reviews", { count })}
+            </span>
+            <span aria-hidden="true" className="hidden h-4 w-px bg-white/20 sm:block" />
+            <span className="inline-flex items-center gap-1 text-sm font-medium text-[#7fe0a9]">
+              <VerifiedIcon className="size-4" />
+              {t("Verified purchases only")}
+            </span>
+          </div>
+        </header>
+
+        {error ? (
+          <p className="mx-auto mt-12 max-w-xl rounded-2xl bg-white/[0.08] p-6 text-center text-sm text-white/80 ring-1 ring-white/15" role="status">
+            {t("Customer reviews could not be loaded")}: {error}
+          </p>
+        ) : (
+          <ul className="mt-12 flex flex-wrap justify-center gap-5">
+            {reviews.map((review, index) => (
+              <ReviewCard
+                // Phones show the three newest reviews to keep the page short.
+                className={index >= 3 ? "hidden sm:block" : ""}
+                key={`${review.createdAt}-${review.itemId || review.itemName}-${index}`}
+                language={language}
+                review={review}
+                t={t}
+              />
+            ))}
+          </ul>
+        )}
+
+        <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          <Link
+            className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+            to="/menu"
+          >
+            {t("Explore the menu")} <ArrowIcon />
+          </Link>
+          <Link
+            className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold text-white ring-1 ring-white/30 transition hover:-translate-y-0.5 hover:bg-white/10 hover:ring-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            to="/account/orders"
+          >
+            {t("Write a review")}
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function HomePage() {
   const { language, t } = useLanguage();
   const { addToCart } = useCart();
@@ -76,7 +294,7 @@ export function HomePage() {
   const [menuError, setMenuError] = useState("");
   const [cartNotice, setCartNotice] = useState("");
   const [reviews, setReviews] = useState([]);
-  const [reviewStats, setReviewStats] = useState({ count: 0, average: 0 });
+  const [reviewStats, setReviewStats] = useState({ count: 0, average: 0, distribution: {} });
   const [reviewsError, setReviewsError] = useState("");
   const [activeSlide, setActiveSlide] = useState(0);
   const [addedItemKey, setAddedItemKey] = useState(null);
@@ -108,19 +326,18 @@ export function HomePage() {
     apiRequest("/reviews")
       .then(({ reviews: approvedReviews }) => {
         if (!cancelled) {
-          setReviews(approvedReviews.slice(0, 3));
+          setReviews(approvedReviews.slice(0, 6));
+          const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+          let total = 0;
+          for (const review of approvedReviews) {
+            const rating = Math.min(5, Math.max(1, Math.round(Number(review.rating) || 0)));
+            distribution[rating] += 1;
+            total += rating;
+          }
           setReviewStats({
             count: approvedReviews.length,
-            average: approvedReviews.length
-              ? approvedReviews.reduce((total, review) => total + Number(review.rating || 0), 0) /
-                approvedReviews.length
-              : 0,
-          });
-          setReviewStats({
-            count: approvedReviews.length,
-            average: approvedReviews.length
-              ? approvedReviews.reduce((total, review) => total + Number(review.rating || 0), 0) / approvedReviews.length
-              : 0,
+            average: approvedReviews.length ? total / approvedReviews.length : 0,
+            distribution,
           });
           setReviewsError("");
         }
@@ -155,7 +372,6 @@ export function HomePage() {
 
   useEffect(() => () => window.clearTimeout(addedTimer.current), []);
 
-  const averageRating = reviewStats.average;
 
   const formatPrice = (price) =>
     `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
@@ -957,179 +1173,7 @@ export function HomePage() {
         </section>
 
         {/* Shown once there is at least one approved review, so new visitors never see an empty block. */}
-        {reviews.length > 0 && (
-        <section
-          aria-labelledby="real-reviews-heading"
-          className="relative isolate overflow-hidden bg-[#092a53] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-10 lg:py-28"
-        >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -left-40 -top-40 -z-10 size-[34rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.05] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:28px_28px]"
-          />
-          <div className="mx-auto grid max-w-[1320px] gap-12 lg:grid-cols-12 lg:gap-16">
-            {/* Summary */}
-            <div className="lg:col-span-4">
-              <div className="lg:sticky lg:top-28">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
-                  <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />
-                  {t("What our customers are saying")}
-                </p>
-                <h2
-                  className="mt-5 font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-5xl"
-                  id="real-reviews-heading"
-                >
-                  {t("Real Reviews")}
-                </h2>
-
-                {reviews.length > 0 && (
-                  <div className="mt-10 rounded-[26px] bg-white/[0.05] p-6 ring-1 ring-white/10">
-                    <div className="flex items-end gap-4">
-                      <span className="font-display text-6xl font-extrabold leading-none tabular-nums">
-                        {averageRating.toFixed(1)}
-                      </span>
-                      <div className="pb-1">
-                        <p
-                          aria-label={t("{rating} out of 5 stars", { rating: averageRating.toFixed(1) })}
-                          className="text-xl leading-none tracking-[0.12em] text-[#ffdc32]"
-                        >
-                          {"★".repeat(Math.round(averageRating))}
-                          <span className="text-white/20">{"★".repeat(5 - Math.round(averageRating))}</span>
-                        </p>
-                        <p className="mt-2 text-xs font-semibold text-white/55">
-                          {t("Based on {count} reviews", { count: reviewStats.count })}
-                        </p>
-                      </div>
-                    </div>
-                    <div aria-hidden="true" className="mt-6 flex -space-x-2.5">
-                      {reviews.map((review, index) =>
-                        review.profilePicture ? (
-                          <img
-                            alt=""
-                            className="size-10 rounded-full object-cover ring-2 ring-[#092a53]"
-                            key={`avatar-${index}`}
-                            src={review.profilePicture}
-                          />
-                        ) : (
-                          <span
-                            className="grid size-10 place-items-center rounded-full bg-[#ffdc32] font-display text-sm font-extrabold text-[#092a53] ring-2 ring-[#092a53]"
-                            key={`avatar-${index}`}
-                          >
-                            {(review.customerName || t("Customer")).charAt(0).toUpperCase()}
-                          </span>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <Link
-                  className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-7 py-4 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
-                  to="/menu"
-                >
-                  {t("Explore the menu")} <ArrowIcon />
-                </Link>
-              </div>
-            </div>
-
-            {/* Reviews */}
-            <div className="lg:col-span-8">
-              {reviewsError ? (
-                <p
-                  className="flex gap-3 rounded-[24px] bg-white/[0.05] p-6 text-sm leading-6 text-white/80 ring-1 ring-white/10"
-                  role="status"
-                >
-                  <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full bg-white/10 text-xs font-extrabold">!</span>
-                  {t("Customer reviews could not be loaded")}: {reviewsError}
-                </p>
-              ) : reviews.length ? (
-                <ul className="grid gap-5 md:grid-cols-2">
-                  {reviews.map((review, index) => {
-                    const customerName = review.customerName || t("Customer");
-                    const featured = index === 0;
-                    return (
-                      <li
-                        className={`relative flex flex-col overflow-hidden rounded-[28px] transition duration-300 hover:-translate-y-1 ${
-                          featured
-                            ? "bg-white p-8 text-[#092a53] shadow-[0_30px_70px_rgba(0,0,0,0.3)] sm:p-10 md:col-span-2"
-                            : "bg-white/[0.05] p-7 text-white ring-1 ring-white/10 hover:bg-white/[0.08] sm:p-8"
-                        } ${reviews.length === 2 && !featured ? "md:col-span-2" : ""}`}
-                        key={`${review.createdAt}-${review.itemName}-${index}`}
-                      >
-                        <svg
-                          aria-hidden="true"
-                          className={`absolute right-6 top-6 ${featured ? "size-20 text-[#ffdc32]/40 sm:size-24" : "size-12 text-white/10"}`}
-                          fill="currentColor"
-                          viewBox="0 0 32 32"
-                        >
-                          <path d="M13 7C7.5 8.6 4 13 4 18.5V25h9v-9H8.6c.4-3.2 2.4-5.6 5.4-6.7L13 7Zm15 0c-5.5 1.6-9 6-9 11.5V25h9v-9h-4.4c.4-3.2 2.4-5.6 5.4-6.7L28 7Z" />
-                        </svg>
-
-                        <p
-                          aria-label={t("{rating} out of 5 stars", { rating: review.rating })}
-                          className={`relative leading-none tracking-[0.12em] ${featured ? "text-lg text-[#d4ad00]" : "text-sm text-[#ffdc32]"}`}
-                        >
-                          {"★".repeat(review.rating)}
-                          <span className={featured ? "text-[#e2ddd0]" : "text-white/20"}>
-                            {"★".repeat(5 - review.rating)}
-                          </span>
-                        </p>
-
-                        <blockquote
-                          className={`relative mt-5 flex-1 font-display font-bold ${
-                            featured
-                              ? "pr-12 text-2xl leading-snug sm:pr-24 sm:text-3xl sm:leading-snug"
-                              : "pr-10 text-lg leading-relaxed text-white/90"
-                          }`}
-                        >
-                          “{review.review || t("No written comment.")}”
-                        </blockquote>
-
-                        <footer className={`relative mt-8 flex items-center gap-3 border-t pt-5 ${featured ? "border-[#efece3]" : "border-white/10"}`}>
-                          {review.profilePicture ? (
-                            <img
-                              alt=""
-                              className={`shrink-0 rounded-full object-cover ${featured ? "size-12 ring-4 ring-[#fff3b8]" : "size-10 ring-2 ring-white/15"}`}
-                              src={review.profilePicture}
-                            />
-                          ) : (
-                            <span
-                              aria-hidden="true"
-                              className={`grid shrink-0 place-items-center rounded-full bg-[#ffdc32] font-display font-extrabold text-[#092a53] ${featured ? "size-12 text-lg" : "size-10 text-sm"}`}
-                            >
-                              {customerName.charAt(0).toUpperCase()}
-                            </span>
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <p className={`truncate font-extrabold ${featured ? "text-base" : "text-sm"}`}>{customerName}</p>
-                            {review.itemName && (
-                              <p className={`mt-0.5 truncate text-[10px] font-extrabold uppercase tracking-[0.14em] ${featured ? "text-[#a48700]" : "text-[#ffdc32]/70"}`}>
-                                {t(review.itemName)}
-                              </p>
-                            )}
-                          </div>
-                        </footer>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <div className="flex flex-col items-center rounded-[28px] bg-white/[0.05] px-6 py-16 text-center ring-1 ring-white/10">
-                  <span aria-hidden="true" className="grid size-14 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]">
-                    <svg className="size-7" fill="none" viewBox="0 0 24 24">
-                      <path d="M5 5h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-8l-5 4v-4H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
-                    </svg>
-                  </span>
-                  <p className="mt-5 font-display text-xl font-extrabold">{t("No approved reviews yet.")}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-        )}
+        <ReviewsSection error={reviewsError} language={language} reviews={reviews} stats={reviewStats} t={t} />
 
         <section
           aria-labelledby="home-faq-heading"

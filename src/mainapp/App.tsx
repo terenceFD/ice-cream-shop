@@ -12,6 +12,7 @@ import { ScrollRevealObserver } from "../components/ScrollRevealObserver";
 import { ScrollProgress } from "../components/ScrollProgress";
 import { WebsiteLoader } from "../components/WebsiteLoader";
 import { InstallAppPrompt } from "../components/InstallAppPrompt";
+import { PromotionAlertsPrompt } from "../components/PromotionAlerts";
 import { RouteMeta } from "../seo/RouteMeta";
 
 // Each page below downloads only when a visitor opens it, so the first visit to the shop
@@ -153,6 +154,7 @@ function App() {
                 </Routes>
                 </Suspense>
                 <InstallAppPrompt />
+                <PromotionAlertsPrompt />
                 <RouteMeta />
               </AdminAuthProvider>
             </AuthProvider>

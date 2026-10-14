@@ -6,6 +6,7 @@ import { useCart } from "../../../useCart";
 import { useAuth } from "../../../authcontext/useAuth";
 import { cameroonDeliveryLocations } from "../../../data";
 import { useLanguage } from "../../../language/useLanguage";
+import { PromotionAlertsSetting } from "../../../components/PromotionAlerts";
 
 const fieldClass =
   "mt-2 w-full rounded-2xl border border-[#e3dfd3] bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-[#102c50] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#cfcabb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
@@ -1271,6 +1272,7 @@ export function CustomerOrdersPage() {
           <div className="min-w-0 scroll-mt-24" id="account-panel">
             {activeTab === "overview" && (
               <div className="space-y-8">
+                <PromotionAlertsSetting />
                 <section>
                   <SectionHeading
                     action={

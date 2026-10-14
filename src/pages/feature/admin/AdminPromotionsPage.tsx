@@ -6,6 +6,24 @@ import { useLanguage } from '../../../language/useLanguage'
 const freshForm: DiscountCodeForm = { code: '', discountType: 'percent', discountValue: '', minimumTotal: 0, maxUses: '', expiresAt: '', isActive: true }
 const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
 const labelClassName = 'block text-xs font-bold text-[#4f6379]'
+const MAX_NOTIFICATION_MESSAGE = 180
+
+// Mirrors the server's wording so the preview matches what customers receive.
+function previewNotification(form: { code: string; discountType: string; discountValue: string; minimumTotal: string | number; expiresAt: string }, message: string) {
+  const amountValue = Number(form.discountValue) || 0
+  const amount = form.discountType === 'percent' ? `${amountValue}% off` : `${amountValue.toLocaleString('en-US')} FCFA off`
+  const code = form.code || 'CODE'
+  const minimum = Number(form.minimumTotal) || 0
+  const until = form.expiresAt ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' }).format(new Date(form.expiresAt)) : ''
+  const details = [minimum > 0 ? `on orders over ${minimum.toLocaleString('en-US')} FCFA` : '', until ? `until ${until}` : ''].filter(Boolean).join(' ')
+  const cleaned = message.replace(/\s+/g, ' ').trim()
+  return {
+    title: amountValue > 0 ? `Cold Stone Creamery: ${amount}` : 'Cold Stone Creamery: New promotion',
+    body: cleaned
+      ? (cleaned.toUpperCase().includes(code.toUpperCase()) ? cleaned : `${cleaned} Code: ${code}`)
+      : `Use code ${code} at checkout${details ? ` ${details}` : ''}. Tap to order now.`,
+  }
+}
 
 type DiscountType = 'percent' | 'fixed'
 type CodeStatus = 'active' | 'inactive' | 'expired' | 'exhausted'
@@ -110,6 +128,8 @@ export function AdminPromotionsPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [copiedId, setCopiedId] = useState<number | null>(null)
+  const [notifyCustomers, setNotifyCustomers] = useState(true)
+  const [notificationMessage, setNotificationMessage] = useState('')
   const isOverlayOpen = isEditorOpen || Boolean(codeToDelete)
 
   async function refresh() {
@@ -155,6 +175,8 @@ export function AdminPromotionsPage() {
   function openCreate() {
     setEditingId(null)
     setForm(freshForm)
+    setNotifyCustomers(true)
+    setNotificationMessage('')
     setError('')
     setIsEditorOpen(true)
   }
@@ -170,18 +192,28 @@ export function AdminPromotionsPage() {
       minimumTotal: Number(form.minimumTotal),
       maxUses: form.maxUses === '' ? null : Number(form.maxUses),
       expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : '',
+      ...(editingId ? {} : { notifyCustomers, notificationMessage: notificationMessage.trim() }),
     }
     try {
-      await apiRequest(editingId ? `/admin/discount-codes/${editingId}` : '/admin/discount-codes', {
+      const result = await apiRequest<{ notification?: { requested: boolean; devices: number } }>(editingId ? `/admin/discount-codes/${editingId}` : '/admin/discount-codes', {
         method: editingId ? 'PUT' : 'POST',
         token: sessionToken,
         body: payload,
       })
       await refresh()
+      const wantedAlert = !editingId && notifyCustomers && form.isActive
       setForm(freshForm)
       setEditingId(null)
       setIsEditorOpen(false)
-      setMessage(t('Discount code saved.'))
+      setNotificationMessage('')
+      const notification = result?.notification
+      setMessage(!wantedAlert
+        ? t('Discount code saved.')
+        : !notification?.requested
+          ? t('Discount code saved. Promotion alerts are not set up on the server yet, so no notification was sent.')
+          : notification.devices > 0
+            ? t('Discount code saved. Sending the notification to {count} customer devices.', { count: notification.devices })
+            : t('Discount code saved. No customers have turned on promotion alerts yet.'))
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Unable to save discount code.')
     } finally {
@@ -578,6 +610,68 @@ export function AdminPromotionsPage() {
                   <span aria-hidden="true" className="relative h-6 w-11 shrink-0 rounded-full bg-[#cfd7e1] transition after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:bg-[#35a36b] peer-checked:after:translate-x-5" />
                 </label>
 
+                {!editingId && (
+                  <fieldset className="space-y-4 rounded-2xl p-4 ring-1 ring-[#e8edf3]">
+                    <legend className="px-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Customer notification')}</legend>
+                    <label className="flex cursor-pointer items-center gap-4 has-[:focus-visible]:rounded-lg has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00]">
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-bold text-[#102c50]">{t('Notify customers')}</span>
+                        <span className="block text-xs text-[#7b8796]">
+                          {form.isActive
+                            ? t('Sends a notification to every customer account that turned on promotion alerts.')
+                            : t('Inactive codes are saved quietly. Turn on Active to notify customers.')}
+                        </span>
+                      </span>
+                      <input checked={notifyCustomers} className="peer sr-only" disabled={!form.isActive} onChange={(event) => setNotifyCustomers(event.target.checked)} type="checkbox" />
+                      <span aria-hidden="true" className="relative h-6 w-11 shrink-0 rounded-full bg-[#cfd7e1] transition after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:bg-[#35a36b] peer-checked:after:translate-x-5 peer-disabled:opacity-50" />
+                    </label>
+
+                    {notifyCustomers && form.isActive && (
+                      <>
+                        <label className={labelClassName}>
+                          <span className="flex items-baseline justify-between gap-3">
+                            <span>{t('Notification message')}</span>
+                            <span className={`font-semibold tabular-nums ${notificationMessage.length > MAX_NOTIFICATION_MESSAGE - 20 ? 'text-[#a46200]' : 'text-[#9aa5b3]'}`}>
+                              {notificationMessage.length}/{MAX_NOTIFICATION_MESSAGE}
+                            </span>
+                          </span>
+                          <textarea
+                            className={`${inputClassName} min-h-24 resize-y leading-6`}
+                            maxLength={MAX_NOTIFICATION_MESSAGE}
+                            onChange={(event) => setNotificationMessage(event.target.value)}
+                            placeholder={t('Example: Weekend treat! 20% off every sundae until Sunday.')}
+                            value={notificationMessage}
+                          />
+                          <span className="mt-1.5 block font-medium text-[#8190a1]">
+                            {t('Optional. Leave empty to use a message written from the discount details. The code is added if your message leaves it out.')}
+                          </span>
+                        </label>
+
+                        {(() => {
+                          const preview = previewNotification(form, notificationMessage)
+                          return (
+                            <div>
+                              <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Preview on a phone')}</p>
+                              <div className="mt-2 flex gap-3 rounded-2xl bg-[#202124] p-3.5 text-white shadow-inner">
+                                <img alt="" className="size-10 shrink-0 rounded-full" height={40} src="/icons/icon-192.png" width={40} />
+                                <div className="min-w-0 flex-1">
+                                  <p className="flex items-center gap-1.5 text-[11px] text-white/55">
+                                    <span className="truncate">{window.location.host}</span>
+                                    <span aria-hidden="true">·</span>
+                                    <span>{t('now')}</span>
+                                  </p>
+                                  <p className="mt-0.5 truncate text-sm font-semibold">{preview.title}</p>
+                                  <p className="mt-0.5 line-clamp-3 break-words text-[13px] leading-5 text-white/80">{preview.body}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })()}
+                      </>
+                    )}
+                  </fieldset>
+                )}
+
                 {error && (
                   <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
                     <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
@@ -594,7 +688,7 @@ export function AdminPromotionsPage() {
                   type="submit"
                 >
                   <Icon path={editingId ? icons.check : icons.plus} />
-                  {saving ? t('Saving…') : t(editingId ? 'Save code' : 'Create code')}
+                  {saving ? t('Saving…') : t(editingId ? 'Save code' : notifyCustomers && form.isActive ? 'Create code & notify' : 'Create code')}
                 </button>
               </footer>
             </form>

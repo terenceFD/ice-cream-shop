@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { AuthContext } from "./useAuth";
 import { apiRequest, clearCustomerToken, CUSTOMER_TOKEN_KEY, getCustomerToken, setCustomerToken } from "../api/api";
+import { disablePromotionAlerts } from "../pushNotifications";
 
 interface Customer {
   id: number;
@@ -137,6 +138,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function logout() {
     try {
+      // Turn off promotion alerts for this device first, while the session can still do it.
+      if (token) {
+        await Promise.race([
+          disablePromotionAlerts(token),
+          new Promise((resolve) => window.setTimeout(resolve, 4000)),
+        ]).catch(() => {});
+      }
       if (token) await apiRequest("/auth/logout", { method: "POST", token });
     } finally {
       clearCustomerToken();
