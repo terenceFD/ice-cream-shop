@@ -1,7 +1,9 @@
 import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowIcon, Footer, Header } from '../../../components/Layout'
+import { PageHero } from '../../../components/PageHero'
 import { apiRequest } from '../../../api/api'
+import { cameroonLocations } from '../../../data'
 import { useLanguage } from '../../../language/useLanguage'
 
 const inputClassName = 'w-full rounded-2xl border border-transparent bg-[#fbfaf5] px-5 py-4 text-sm font-medium text-[#092a53] outline-none! ring-1 ring-[#ebe7dc] transition placeholder:font-normal placeholder:text-[#a5aebb] hover:ring-[#ddd6c4] focus:bg-white focus:ring-[#c9b24a]'
@@ -39,6 +41,15 @@ function PinIcon({ className = 'size-4' }: { className?: string }) {
     <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
       <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 1 1 13 0c0 5.4-6.5 11-6.5 11Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
       <circle cx="12" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  )
+}
+
+function MailIcon() {
+  return (
+    <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+      <rect height="14" rx="3" stroke="currentColor" strokeWidth="1.8" width="18" x="3" y="5" />
+      <path d="m4 7 8 6 8-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
     </svg>
   )
 }
@@ -306,54 +317,88 @@ export function ContactPage() {
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
       <main>
-        <section className="relative isolate overflow-hidden border-b border-[#ebe7dc]">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-48 -top-48 -z-10 size-[36rem] rounded-full bg-[#ffdc32]/15 blur-3xl" />
-          <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-end gap-10 px-5 pb-14 pt-14 sm:px-8 sm:pt-20 lg:grid-cols-12 lg:px-12 lg:pb-20 lg:pt-24">
-            <div className="lg:col-span-7">
-              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
-                <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                {t('We’d love to hear from you')}
-              </p>
-              <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-[#092a53] sm:text-6xl lg:text-[5.25rem]">
-                {t('Contact us')}
-              </h1>
-              <p className="mt-6 max-w-xl text-base leading-7 text-[#52647b] sm:text-lg sm:leading-8">
-                {t('Have a question for a store? Choose its branch and send a message directly to that store’s team.')}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
+        <PageHero
+          actions={
+            <>
+              <a className={PageHero.primary} href="#contact-form">
+                {t('Send us a message')} <span aria-hidden="true">↓</span>
+              </a>
+              <Link className={PageHero.secondary} to="/about">
+                {t('Read about this guide →')}
+              </Link>
+            </>
+          }
+          description={t('Have a question for a store? Choose its branch and send a message directly to that store’s team.')}
+          eyebrow={t('We’d love to hear from you')}
+          title={t('Contact us')}
+          visualClassName="flex flex-col gap-3 sm:block sm:aspect-[6/5]"
+          visual={
+            <>
+              <div aria-hidden="true" className="absolute right-[4%] top-[6%] size-[80%] rounded-full border border-dashed border-white/20 max-sm:hidden" />
+
               <a
-                className="group inline-flex items-center gap-3 rounded-full border border-[#e5e1d7] bg-white py-2 pl-2 pr-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#d9c76d]"
+                className="group relative block rounded-[28px] bg-white p-5 sm:absolute sm:left-0 sm:top-[4%] sm:w-[78%] text-[#092a53] shadow-[0_40px_80px_rgba(2,12,28,0.45)] transition duration-300 hover:-translate-y-1 sm:p-6"
+                href="#contact-form"
+              >
+                <span className="flex items-center gap-3">
+                  <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
+                    <MailIcon />
+                  </span>
+                  <span className="leading-tight">
+                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t('Contact a store')}</span>
+                    <span className="mt-0.5 block font-display text-base font-extrabold sm:text-lg">{t('Send us a message')}</span>
+                  </span>
+                </span>
+                <span aria-hidden="true" className="mt-5 block space-y-2.5">
+                  <span className="block h-9 rounded-xl bg-[#fbfaf5] ring-1 ring-[#ebe7dc]" />
+                  <span className="block h-14 rounded-xl bg-[#fbfaf5] ring-1 ring-[#ebe7dc]" />
+                </span>
+                <span aria-hidden="true" className="mt-4 flex justify-end">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-4 py-2 text-xs font-extrabold text-white transition group-hover:bg-[#163e6b]">
+                    {t('Send message')} <ArrowIcon />
+                  </span>
+                </span>
+              </a>
+
+              <a
+                className="relative flex items-center gap-3 sm:absolute sm:right-0 sm:top-[64%] sm:w-[60%] rounded-[22px] border border-white/15 bg-[#0f3a6c]/90 p-4 text-white shadow-[0_24px_50px_rgba(2,12,28,0.4)] backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-white/30"
                 href="https://www.instagram.com/coldstonecameroon/"
                 rel="noreferrer"
                 target="_blank"
               >
-                <span className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-[#ffdc32] via-[#f56586] to-[#7b4bd8] p-[2px]">
-                  <span className="grid size-full place-items-center rounded-full bg-white text-[#092a53]">
-                    <svg aria-hidden="true" className="size-[18px]" fill="none" viewBox="0 0 24 24">
+                <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#ffdc32] via-[#f56586] to-[#7b4bd8] p-[2px]">
+                  <span className="grid size-full place-items-center rounded-full bg-[#0f3a6c]">
+                    <svg className="size-[18px]" fill="none" viewBox="0 0 24 24">
                       <rect height="18" rx="5" stroke="currentColor" strokeWidth="1.8" width="18" x="3" y="3" />
                       <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.8" />
                       <circle cx="17.25" cy="6.75" fill="currentColor" r="1.1" />
                     </svg>
                   </span>
                 </span>
-                <span className="leading-tight">
-                  <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t('Local social page')}</span>
-                  <span className="block text-sm font-extrabold text-[#092a53]">@coldstonecameroon</span>
+                <span className="min-w-0 leading-tight">
+                  <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#ffdc32]">{t('Local social page')}</span>
+                  <span className="mt-0.5 block truncate text-sm font-extrabold">@coldstonecameroon</span>
                 </span>
               </a>
-              <Link
-                className="inline-flex items-center gap-2 rounded-full border border-[#e5e1d7] bg-white px-5 py-3 text-sm font-extrabold text-[#092a53] shadow-sm transition hover:-translate-y-0.5 hover:border-[#092a53]"
-                to="/about"
-              >
-                {t('Read about this guide →')}
-              </Link>
-            </div>
-          </div>
-        </section>
 
-        <section className="px-5 py-14 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
-          <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-14">
+              <Link
+                className="relative flex items-center gap-3 sm:absolute sm:bottom-[-2%] sm:left-[4%] sm:w-[52%] rounded-[22px] bg-[#ffdc32] p-4 text-[#092a53] shadow-[0_24px_50px_rgba(2,12,28,0.4)] transition duration-300 hover:-translate-y-1 hover:bg-[#ffe76c]"
+                to="/locations"
+              >
+                <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
+                  <PinIcon className="size-5" />
+                </span>
+                <span className="min-w-0 leading-tight">
+                  <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#806a00]">{t('Listed locations')}</span>
+                  <span className="mt-0.5 block truncate text-sm font-extrabold">{t('{count} public listings', { count: cameroonLocations.length })}</span>
+                </span>
+              </Link>
+            </>
+          }
+        />
+
+        <section className="pb-20 pt-10 sm:pb-24 sm:pt-14 lg:pb-28">
+          <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-start gap-10 px-5 sm:px-8 lg:grid-cols-12 lg:gap-14 lg:px-12">
             <aside className="lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300 lg:col-span-4">
               <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
                 <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
@@ -363,13 +408,13 @@ export function ContactPage() {
                 {t('Say hello')}
               </h2>
 
-              <ol className="relative mt-8 space-y-7 before:absolute before:bottom-3 before:left-[19px] before:top-3 before:w-px before:bg-[#e5e1d7]">
+              <ol className="relative mt-8 space-y-7 before:absolute before:bottom-6 before:left-[23px] before:top-6 before:w-0.5 before:bg-gradient-to-b before:from-[#ffdc32] before:to-[#ebe7dc]">
                 {steps.map((step, index) => (
-                  <li className="relative flex gap-5" key={step.title}>
-                    <span className="relative z-10 grid size-10 shrink-0 place-items-center rounded-full bg-white font-display text-sm font-extrabold tabular-nums text-[#092a53] ring-1 ring-[#e5e1d7]">
+                  <li className="group relative flex gap-5" key={step.title}>
+                    <span className="relative z-10 grid size-12 shrink-0 place-items-center rounded-2xl bg-[#092a53] font-display text-sm font-extrabold tabular-nums text-[#ffdc32] shadow-[0_10px_22px_rgba(9,42,83,0.2)] ring-4 ring-[#fbfaf5] transition duration-300 group-hover:-rotate-6 group-hover:bg-[#ffdc32] group-hover:text-[#092a53]">
                       {String(index + 1).padStart(2, '0')}
                     </span>
-                    <div className="pt-1.5">
+                    <div className="pt-2">
                       <h3 className="font-display text-lg font-extrabold text-[#092a53]">{t(step.title)}</h3>
                       <p className="mt-1 text-sm leading-6 text-[#65748a]">{t(step.detail)}</p>
                     </div>
@@ -377,17 +422,24 @@ export function ContactPage() {
                 ))}
               </ol>
 
-              <div className="mt-10 flex gap-4 rounded-[22px] border border-[#ecdfa6] bg-[#fffaf0] p-5">
-                <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 font-display text-sm font-extrabold text-[#806a00]">i</span>
-                <p className="text-xs leading-5 text-[#624f00]">
+              <div className="relative mt-10 overflow-hidden rounded-[24px] bg-[#092a53] p-6 text-white shadow-[0_20px_44px_rgba(9,42,83,0.2)]">
+                <div aria-hidden="true" className="absolute -right-12 -top-12 size-36 rounded-full border-[24px] border-white/[0.05]" />
+                <span aria-hidden="true" className="grid size-11 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]">
+                  <PinIcon className="size-5" />
+                </span>
+                <p className="mt-4 text-sm leading-6 text-white/75">
                   {t('For current store information, please contact a local branch through its public listing.')}
                 </p>
+                <Link className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffdc32]" to="/locations">
+                  {t('Browse locations')} <ArrowIcon />
+                </Link>
               </div>
             </aside>
 
             <section
               aria-labelledby="contact-form-title"
-              className="rounded-[32px] bg-white p-6 shadow-[0_1px_0_rgba(9,42,83,0.04),0_24px_60px_rgba(9,42,83,0.08)] ring-1 ring-[#ebe7dc] sm:p-10 lg:col-span-8 lg:p-12"
+              id="contact-form"
+              className="relative scroll-mt-28 overflow-hidden rounded-[32px] bg-white p-6 before:absolute before:inset-x-0 before:top-0 before:h-1.5 before:bg-gradient-to-r before:from-[#ffdc32] before:via-[#ffe76c] before:to-[#ffdc32] shadow-[0_1px_0_rgba(9,42,83,0.04),0_24px_60px_rgba(9,42,83,0.08)] ring-1 ring-[#ebe7dc] sm:p-10 lg:col-span-8 lg:p-12"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -396,11 +448,8 @@ export function ContactPage() {
                     {t('Send us a message')}
                   </h2>
                 </div>
-                <span aria-hidden="true" className="grid size-14 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]">
-                  <svg className="size-6" fill="none" viewBox="0 0 24 24">
-                    <rect height="14" rx="3" stroke="currentColor" strokeWidth="1.8" width="18" x="3" y="5" />
-                    <path d="m4 7 8 6 8-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-                  </svg>
+                <span aria-hidden="true" className="grid size-14 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32] shadow-[0_12px_26px_rgba(9,42,83,0.22)] max-sm:hidden">
+                  <MailIcon />
                 </span>
               </div>
 

@@ -28,6 +28,13 @@ const CATEGORY_IMAGE_UPDATES = [
   ["Silk & Sorbet", "/menu-images/product-5.webp", "/menu-images/silk-chocolate-shake.webp"],
   ["Novelties", "/cream/cream%201.webp", "/menu-images/sorbet-cup.webp"],
   ["Limited-Time Favorites", "/menu-images/product-3.webp", "/menu-images/limited-time-treats.webp"],
+  // Official Cold Stone photos (rows run in order, so older defaults reach these too).
+  ["Ice Cream", "/menu-images/ice-cream-signature.webp", "/menu-official/ice-cream/signature-creations/founders-favorite.webp"],
+  ["Cakes & Pies", "/cake-images/cake-1.webp", "/menu-official/cakes/birthday-cakes.webp"],
+  ["Silk & Sorbet", "/menu-images/silk-chocolate-shake.webp", "/menu-official/dairy-free-ice-cream-sorbet/sorbet.webp"],
+  ["Milkshakes & Smoothies", "/milk/mk-1.webp", "/menu-official/milkshakes-fruit-smoothies/milkshakes/very-vanilla.webp"],
+  ["Novelties", "/menu-images/sorbet-cup.webp", "/menu-official/novelties/ice-cream-cupcakes/cake-batter-delux.webp"],
+  ["Limited-Time Favorites", "/menu-images/limited-time-treats.webp", "/menu-official/limited-time-offers/the-cat-in-the-hats-cotton-candy-catastrophe.webp"],
 ];
 
 // Flavor photos that showed a different product: [flavor name, old photo, matching photo].

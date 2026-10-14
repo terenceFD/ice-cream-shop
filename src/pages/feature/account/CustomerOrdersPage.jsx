@@ -68,13 +68,23 @@ async function resizeProfilePicture(file) {
   return canvas.toDataURL("image/jpeg", 0.8);
 }
 
+// Stage codes such as "out_for_delivery" have French translations; in English
+// they fall through unchanged, so turn them into readable words.
+function stageLabel(stage, t) {
+  const label = t(stage);
+  if (label !== stage) return label;
+  const words = stage.replaceAll("_", " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
 function orderStatus(order, t) {
   if (order.status === "pending_payment") return t("Awaiting payment");
   if (order.status === "payment_failed") return t("Payment failed");
-  return t(
+  return stageLabel(
     order.deliveryStage ||
       order.fulfillmentStatus ||
       (order.status === "delivered" ? "delivered" : "preparing"),
+    t,
   );
 }
 
@@ -115,6 +125,10 @@ function formatOrderDate(value, language, t) {
         dateStyle: "medium",
         timeStyle: "short",
       });
+}
+
+function formatPoints(points) {
+  return new Intl.NumberFormat("en-US").format(points);
 }
 
 function Avatar({ customer, size = "size-20", text = "text-3xl" }) {
@@ -183,14 +197,19 @@ function OrderProgress({ order, t }) {
     order.status === "delivered"
       ? "delivered"
       : order.deliveryStage || order.fulfillmentStatus || "preparing";
-  const currentIndex = Math.max(
-    0,
-    steps.findIndex(
-      (step) =>
-        step.key === currentStage ||
-        (currentStage === "accepted" && step.key === "preparing"),
-    ),
+  const matchedIndex = steps.findIndex(
+    (step) =>
+      step.key === currentStage ||
+      (currentStage === "accepted" && step.key === "preparing"),
   );
+  // A pickup order has no delivery step; if it is marked out for delivery it has
+  // already passed "Ready", so show it there rather than back at the start.
+  const currentIndex =
+    matchedIndex >= 0
+      ? matchedIndex
+      : currentStage === "out_for_delivery"
+        ? steps.findIndex((step) => step.key === "ready")
+        : 0;
   const isDone = currentStage === "delivered";
   const fill = steps.length > 1 ? (currentIndex / (steps.length - 1)) * 100 : 100;
 
@@ -432,7 +451,7 @@ function OrderCard({
             </h3>
             <p className="mt-0.5 text-xs font-medium text-[#65748a]">
               {formatOrderDate(order.createdAt, language, t)} ·{" "}
-              {t("{count} items", { count: itemCount })}
+              {t(itemCount === 1 ? "{count} item" : "{count} items", { count: itemCount })}
             </p>
           </div>
         </div>
@@ -735,7 +754,7 @@ function RewardsCard({ points, t, compact = false }) {
             {t("Loyalty rewards")}
           </p>
           <p className="mt-2 font-display text-5xl font-extrabold leading-none">
-            {points}
+            {formatPoints(points)}
             <span className="ml-2 text-base font-bold text-white/70">{t("points")}</span>
           </p>
         </div>
@@ -1078,71 +1097,90 @@ export function CustomerOrdersPage() {
   return (
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
-      <main className="mx-auto max-w-[1320px] px-4 pb-16 pt-6 sm:px-7 sm:pt-9 lg:px-10">
+      <main>
         {/* Hero */}
-        <section className="relative isolate overflow-hidden rounded-[32px] bg-[#092a53] text-white shadow-[0_24px_60px_rgba(9,42,83,0.2)]">
-          <div aria-hidden="true" className="absolute -right-28 -top-40 -z-10 size-[30rem] rounded-full border-[64px] border-white/[0.04]" />
-          <div aria-hidden="true" className="absolute -bottom-40 left-1/3 -z-10 size-80 rounded-full bg-[#ffdc32]/[0.09] blur-3xl" />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 -z-10 opacity-[0.06] [background-image:radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(90deg,transparent,#000)]"
-          />
-
-          <div className="flex flex-col gap-8 px-6 pb-6 pt-8 sm:px-10 sm:pt-10 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex min-w-0 items-center gap-5">
-              <div className="rounded-full bg-gradient-to-br from-[#ffdc32] to-[#a48700] p-[3px] shadow-xl">
-                <div className="rounded-full bg-[#092a53] p-[3px]">
-                  <Avatar customer={customer} size="size-[76px] sm:size-24" text="text-4xl" />
-                </div>
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
-                  {t("My account")}
-                </p>
-                <h1 className="mt-1.5 break-words font-display text-3xl font-extrabold leading-[1.05] sm:text-[2.6rem]">
-                  {t("Welcome back, {name}", { name: firstName })}
-                </h1>
-                <p className="mt-1.5 truncate text-sm text-white/65">{customer.email}</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] shadow-[0_10px_24px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]"
-                to="/menu"
-              >
-                {t("Browse the menu")}
-                <Icon className="size-4" path="M5 12h14m-5-5 5 5-5 5" />
-              </Link>
-              <Link
-                className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-white ring-1 ring-white/25 transition hover:bg-white/10"
-                to="/custom-cake"
-              >
-                {t("Design a custom cake")}
-              </Link>
-            </div>
+        <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute -right-40 -top-40 size-[34rem] rounded-full bg-[#3f86d6]/30 blur-[120px]" />
+            <div className="absolute -bottom-48 -left-32 size-[30rem] rounded-full bg-[#ffdc32]/10 blur-[120px]" />
+            <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
           </div>
 
-          <dl className="grid grid-cols-2 border-t border-white/10 bg-white/[0.03] sm:grid-cols-4">
-            {[
-              { label: t("Orders"), value: orders.length },
-              { label: t("Active orders"), value: activeOrders.length },
-              { label: t("Saved favorites"), value: favorites.length },
-              { label: t("Loyalty rewards"), value: `${points} ${t("pts")}`, accent: true },
-            ].map((stat, index) => (
-              <div
-                className={`px-6 py-5 sm:px-10 ${index % 2 ? "border-l border-white/10" : ""} ${index > 1 ? "border-t border-white/10 sm:border-t-0" : ""} ${index === 2 ? "sm:border-l" : ""}`}
-                key={stat.label}
-              >
-                <dt className="text-[11px] font-bold text-white/55">{stat.label}</dt>
-                <dd
-                  className={`mt-1 font-display text-2xl font-extrabold sm:text-3xl ${stat.accent ? "text-[#ffdc32]" : ""}`}
-                >
-                  {stat.value}
-                </dd>
+          <div className="mx-auto max-w-[1320px] px-5 pb-24 pt-8 sm:px-8 sm:pb-28 sm:pt-12 lg:px-12 lg:pb-32">
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex min-w-0 items-center gap-5 sm:gap-6">
+                <div className="relative shrink-0">
+                  <div className="rounded-full bg-gradient-to-br from-[#ffdc32] to-[#a48700] p-[3px] shadow-[0_20px_44px_rgba(2,12,28,0.4)]">
+                    <div className="rounded-full bg-[#092a53] p-[3px]">
+                      <Avatar customer={customer} size="size-[76px] sm:size-28" text="text-4xl sm:text-5xl" />
+                    </div>
+                  </div>
+                  <span aria-hidden="true" className="absolute bottom-1 right-1 size-4 rounded-full bg-[#4caf50] ring-4 ring-[#092a53]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pl-2 pr-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32] backdrop-blur-sm">
+                    <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#ffdc32] text-[10px] text-[#092a53]">✦</span>
+                    {t("My account")}
+                  </p>
+                  <h1 className="mt-3 break-words font-display text-3xl font-extrabold leading-[1.05] sm:text-5xl">
+                    {t("Welcome back, {name}", { name: firstName })}
+                  </h1>
+                  <p className="mt-2 truncate text-sm text-white/65">{customer.email}</p>
+                </div>
               </div>
-            ))}
-          </dl>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] shadow-[0_12px_30px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                  to="/menu"
+                >
+                  {t("Browse the menu")}
+                  <Icon className="size-4" path="M5 12h14m-5-5 5 5-5 5" />
+                </Link>
+                <Link
+                  className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                  to="/custom-cake"
+                >
+                  {t("Design a custom cake")}
+                </Link>
+              </div>
+            </div>
+
+            <dl className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+              {[
+                { label: t("Orders"), value: orders.length, icon: "M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" },
+                { label: t("Active orders"), value: activeOrders.length, icon: "M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" },
+                { label: t("Saved favorites"), value: favorites.length, icon: "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" },
+                { label: t("Loyalty rewards"), value: `${formatPoints(points)} ${t("pts")}`, accent: true, icon: "M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" },
+              ].map((stat) => (
+                <div
+                  className={`flex items-center gap-3 rounded-2xl border p-4 backdrop-blur-sm sm:gap-4 sm:p-5 ${
+                    stat.accent ? "border-[#ffdc32]/30 bg-[#ffdc32]/10" : "border-white/10 bg-white/[0.05]"
+                  }`}
+                  key={stat.label}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`grid size-10 shrink-0 place-items-center rounded-xl sm:size-11 ${stat.accent ? "bg-[#ffdc32] text-[#092a53]" : "bg-white/10 text-[#ffdc32]"}`}
+                  >
+                    <Icon path={stat.icon} />
+                  </span>
+                  <div className="min-w-0">
+                    <dt className="text-[11px] font-bold leading-tight text-white/55">{stat.label}</dt>
+                    <dd className={`mt-0.5 truncate font-display text-xl font-extrabold tabular-nums sm:text-2xl ${stat.accent ? "text-[#ffdc32]" : ""}`}>
+                      {stat.value}
+                    </dd>
+                  </div>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <svg aria-hidden="true" className="absolute inset-x-0 -bottom-px h-10 w-full text-[#f8f7f2] sm:h-14 lg:h-20" fill="currentColor" preserveAspectRatio="none" viewBox="0 0 1440 80">
+            <path d="M0 80V42C240 4 480 0 720 22s480 44 720 4v54H0Z" />
+          </svg>
         </section>
+
+        <div className="mx-auto max-w-[1320px] px-5 pb-16 pt-2 sm:px-8 lg:px-12">
 
         {(accountError || accountNotice) && (
           <div className="mt-5 space-y-3">
@@ -1175,7 +1213,7 @@ export function CustomerOrdersPage() {
           {/* Navigation */}
           <nav
             aria-label={t("Account sections")}
-            className="relative z-10 -mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:-mx-7 sm:px-7 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+1.5rem)] lg:transition-[top] lg:duration-300 lg:mx-0 lg:overflow-visible lg:px-0"
+            className="relative z-10 -mx-5 overflow-x-auto px-5 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+1.5rem)] lg:transition-[top] lg:duration-300 lg:mx-0 lg:overflow-visible lg:px-0"
           >
             <ul className="flex w-max gap-2 lg:w-auto lg:flex-col lg:gap-1 lg:rounded-[26px] lg:bg-white lg:p-2.5 lg:shadow-[0_10px_30px_rgba(18,44,80,0.05)] lg:ring-1 lg:ring-[#ebe7dc]">
               {TABS.map((tab) => {
@@ -1280,7 +1318,7 @@ export function CustomerOrdersPage() {
                 </section>
 
                 <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                  <RewardsCard compact points={points} t={t} />
+                  <RewardsCard points={points} t={t} />
                   <div className={cardClass}>
                     <p className={eyebrowClass}>{t("Shortcuts")}</p>
                     <h2 className="mt-2 font-display text-xl font-extrabold text-[#092a53]">
@@ -1573,6 +1611,7 @@ export function CustomerOrdersPage() {
               </section>
             )}
           </div>
+        </div>
         </div>
       </main>
       <Footer />

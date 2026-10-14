@@ -26,6 +26,14 @@ function CheckIcon({ className = "size-4" }: { className?: string }) {
 
 const MAX_QUANTITY = 10;
 
+type InfoTab = "about" | "contains" | "details";
+
+// Flavor colours are stored as Tailwind classes such as "bg-[#fff1cf]"; pull out the hex for inline tinting.
+function flavorTint(color?: string) {
+  const match = color?.match(/#(?:[0-9a-f]{6}|[0-9a-f]{3})\b/i);
+  return match ? match[0] : "#fff1cf";
+}
+
 export function FlavorDetailPage() {
   const { id } = useParams();
   const { addToCart, addItemsToCart } = useCart();
@@ -34,6 +42,7 @@ export function FlavorDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [addedKey, setAddedKey] = useState<string | null>(null);
   const [cartNotice, setCartNotice] = useState("");
+  const [activeInfoTab, setActiveInfoTab] = useState<InfoTab>("about");
   const addedTimer = useRef<number | undefined>(undefined);
 
   const flavor = flavors.find((item: Flavor) => item.id === Number(id));
@@ -41,6 +50,7 @@ export function FlavorDetailPage() {
   useEffect(() => {
     setQuantity(1);
     setCartNotice("");
+    setActiveInfoTab("about");
     window.scrollTo({ top: 0 });
   }, [id]);
 
@@ -108,6 +118,12 @@ export function FlavorDetailPage() {
   const lowStock = flavor.availableQuantity <= 5;
   const allergens = flavor.allergies || [];
   const mainAdded = addedKey === `main-${flavor.id}`;
+  const tint = flavorTint(flavor.color);
+  const infoTabs: { key: InfoTab; label: string }[] = [
+    { key: "about", label: t("Description") },
+    { key: "contains", label: t("Contains") },
+    { key: "details", label: t("Details") },
+  ];
   const relatedFlavors = [
     ...flavors.filter((item: Flavor) => item.id !== flavor.id && item.availableQuantity > 0 && item.tag === flavor.tag),
     ...flavors.filter((item: Flavor) => item.id !== flavor.id && item.availableQuantity > 0 && item.tag !== flavor.tag),
@@ -129,67 +145,81 @@ export function FlavorDetailPage() {
       <Header />
 
       <main>
-        <section className="relative isolate overflow-hidden">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-48 -top-48 -z-10 size-[36rem] rounded-full bg-[#ffdc32]/15 blur-3xl" />
-          <div className="mx-auto max-w-[1320px] px-5 pb-16 pt-8 sm:px-8 sm:pb-20 sm:pt-10 lg:px-12">
-            <nav aria-label={t("Breadcrumb")} className="mb-8 flex flex-wrap items-center gap-2 text-xs font-bold text-[#7b8796]">
+        <section className="relative isolate overflow-hidden" style={{ backgroundColor: tint }}>
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute -left-24 top-0 size-[38rem] rounded-full bg-white/60 blur-3xl" />
+            <div className="absolute -bottom-40 right-0 size-[30rem] rounded-full bg-[#ffdc32]/25 blur-3xl" />
+            <div className="absolute inset-0 bg-[radial-gradient(rgba(9,42,83,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_90%)]" />
+            <p className="absolute inset-x-0 bottom-0 select-none overflow-hidden whitespace-nowrap text-center font-display text-[22vw] font-extrabold leading-[0.8] text-[#092a53]/[0.05] lg:text-[13rem]">
+              {t(flavor.name)}
+            </p>
+          </div>
+
+          <div className="mx-auto max-w-[1320px] px-5 pb-16 pt-8 sm:px-8 sm:pb-20 sm:pt-10 lg:px-12 lg:pb-24">
+            <nav aria-label={t("Breadcrumb")} className="mb-10 flex flex-wrap items-center gap-2 text-xs font-bold text-[#092a53]/60">
               <Link className="transition hover:text-[#092a53]" to="/">{t("Home")}</Link>
-              <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
+              <span aria-hidden="true" className="text-[#092a53]/30">/</span>
               <Link className="transition hover:text-[#092a53]" to="/flavors">{t("Online shop catalog")}</Link>
               {flavor.tag && (
                 <>
-                  <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
+                  <span aria-hidden="true" className="text-[#092a53]/30">/</span>
                   <Link className="transition hover:text-[#092a53]" to={`/flavors?tag=${encodeURIComponent(flavor.tag)}`}>{t(flavor.tag)}</Link>
                 </>
               )}
-              <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
+              <span aria-hidden="true" className="text-[#092a53]/30">/</span>
               <span aria-current="page" className="max-w-[14rem] truncate text-[#092a53]">{t(flavor.name)}</span>
             </nav>
 
-            <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
-              {/* Image */}
-              <div className="lg:col-span-7">
-                <div className="lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300">
-                  <div className={`relative overflow-hidden rounded-[32px] shadow-[0_30px_70px_rgba(9,42,83,0.16)] ${flavor.color}`}>
-                    <img
-                      alt={t(flavor.name)}
-                      className="aspect-square w-full object-cover"
-                      src={flavor.image}
-                    />
-                    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#061d3a]/25 via-transparent to-transparent" />
-                    {lowStock && (
-                      <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-[#092a53]/85 px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#ffdc32] backdrop-blur-sm sm:left-6 sm:top-6">
-                        <span aria-hidden="true" className="size-1.5 animate-pulse rounded-full bg-[#ffdc32]" />
-                        {t("{count} left", { count: flavor.availableQuantity })}
-                      </span>
-                    )}
-                  </div>
+            <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-12">
+              {/* Scoop photo */}
+              <div className="relative mx-auto w-full max-w-[500px] lg:col-span-6">
+                <div aria-hidden="true" className="absolute inset-[-6%] rounded-full border-2 border-dashed border-[#092a53]/15" />
+                <figure className={`relative aspect-square overflow-hidden rounded-full shadow-[0_50px_90px_rgba(9,42,83,0.25)] ring-[12px] ring-white ${flavor.color}`}>
+                  <img alt={t(flavor.name)} className="size-full object-cover" src={flavor.image} />
+                </figure>
+
+                <div aria-hidden="true" className="absolute -right-1 top-[4%] grid size-28 rotate-[10deg] place-items-center rounded-full bg-[#ffdc32] text-center text-[#092a53] shadow-[0_18px_36px_rgba(9,42,83,0.22)] ring-4 ring-white sm:right-0 sm:size-32">
+                  <span>
+                    <span className="block text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#806a00]">{t("Price per scoop")}</span>
+                    <span className="mt-1 block font-display text-lg font-extrabold leading-tight tabular-nums sm:text-xl">
+                      {formatCartMoney(flavor.price, "xaf", language)}
+                    </span>
+                  </span>
                 </div>
+
+                {flavor.tag && (
+                  <span className="absolute bottom-[8%] left-0 inline-flex items-center gap-2 rounded-full bg-[#092a53] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-white shadow-[0_14px_30px_rgba(9,42,83,0.3)] sm:-left-2">
+                    <span aria-hidden="true" className="text-[#ffdc32]">✦</span>
+                    {t(flavor.tag)}
+                  </span>
+                )}
+                {lowStock && (
+                  <span className="absolute bottom-[2%] right-[8%] inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#806a00] shadow-lg">
+                    <span aria-hidden="true" className="size-1.5 animate-pulse rounded-full bg-[#d4ad00] motion-reduce:animate-none" />
+                    {t("{count} left", { count: flavor.availableQuantity })}
+                  </span>
+                )}
               </div>
 
-              {/* Details */}
-              <div className="flex min-w-0 flex-col lg:col-span-5 lg:py-4">
+              {/* Purchase card */}
+              <div className="min-w-0 rounded-[32px] bg-white p-6 shadow-[0_30px_70px_rgba(9,42,83,0.14)] ring-1 ring-[#092a53]/5 sm:p-9 lg:col-span-6">
                 {flavor.tag && (
                   <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
                     <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                     {t(flavor.tag)}
                   </p>
                 )}
-                <h1 className="mt-5 break-words font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl lg:text-6xl">
+                <h1 className="mt-4 break-words font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-6xl">
                   {t(flavor.name)}
                 </h1>
-                <p className="mt-5 text-lg font-semibold leading-8 text-[#52647b]">
-                  {t(flavor.detail)}
-                </p>
+                <p className="mt-4 text-lg font-semibold leading-8 text-[#52647b]">{t(flavor.detail)}</p>
 
-                <div className="mt-8 flex items-end justify-between gap-4 border-y border-[#ebe7dc] py-6">
-                  <div>
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8792a0]">{t("Price per scoop")}</p>
-                    <p className="mt-1 font-display text-4xl font-extrabold tabular-nums text-[#092a53]">
-                      {formatCartMoney(flavor.price, "xaf", language)}
-                    </p>
-                  </div>
-                  <span className={`mb-1 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-extrabold ${lowStock ? "bg-[#fff6dc] text-[#806a00]" : "bg-[#f3f8ef] text-[#37632c]"}`}>
+                <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-y border-[#efebe1] py-5">
+                  <p className="font-display text-4xl font-extrabold tabular-nums text-[#092a53]">
+                    {formatCartMoney(flavor.price, "xaf", language)}
+                    <span className="ml-2 font-sans text-sm font-bold text-[#8792a0] max-sm:hidden">/ {t("Price per scoop").toLocaleLowerCase()}</span>
+                  </p>
+                  <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-extrabold ${lowStock ? "bg-[#fff6dc] text-[#806a00]" : "bg-[#f3f8ef] text-[#37632c]"}`}>
                     <span aria-hidden="true" className={`size-1.5 rounded-full ${lowStock ? "bg-[#d4ad00]" : "bg-[#4caf50]"}`} />
                     {lowStock ? t("{count} left", { count: flavor.availableQuantity }) : t("In stock")}
                   </span>
@@ -197,10 +227,10 @@ export function FlavorDetailPage() {
 
                 {/* Quantity + add */}
                 <div className="mt-6 flex gap-3">
-                  <div aria-label={t("Quantity")} className="flex shrink-0 items-center rounded-full bg-white p-1 ring-1 ring-[#e5e1d7]" role="group">
+                  <div aria-label={t("Quantity")} className="flex shrink-0 items-center rounded-full bg-[#fbfaf5] p-1 ring-1 ring-[#e5e1d7]" role="group">
                     <button
                       aria-label={t("Decrease quantity")}
-                      className="grid size-11 place-items-center rounded-full text-lg font-bold text-[#092a53] transition hover:bg-[#fbfaf5] disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
+                      className="grid size-11 place-items-center rounded-full text-lg font-bold text-[#092a53] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
                       disabled={quantity <= 1}
                       onClick={() => setQuantity((current) => Math.max(1, current - 1))}
                       type="button"
@@ -212,7 +242,7 @@ export function FlavorDetailPage() {
                     </output>
                     <button
                       aria-label={t("Increase quantity")}
-                      className="grid size-11 place-items-center rounded-full text-lg font-bold text-[#092a53] transition hover:bg-[#fbfaf5] disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
+                      className="grid size-11 place-items-center rounded-full text-lg font-bold text-[#092a53] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
                       disabled={quantity >= maxQuantity}
                       onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
                       type="button"
@@ -221,7 +251,7 @@ export function FlavorDetailPage() {
                     </button>
                   </div>
                   <button
-                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-full px-6 py-4 text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
+                    className={`inline-flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-4 text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 sm:px-6 ${
                       mainAdded
                         ? "bg-[#4caf50] text-white shadow-[0_12px_28px_rgba(76,175,80,0.3)]"
                         : "bg-[#092a53] text-white shadow-[0_12px_28px_rgba(9,42,83,0.22)] hover:-translate-y-0.5 hover:bg-[#163e6b]"
@@ -231,7 +261,12 @@ export function FlavorDetailPage() {
                   >
                     {mainAdded ? <CheckIcon /> : <BagIcon />}
                     <span aria-live="polite">
-                      {mainAdded ? t("Added") : `${t("Add to bag")} · ${formatCartMoney(flavor.price * quantity, "xaf", language)}`}
+                      {mainAdded ? t("Added") : (
+                        <>
+                          {t("Add to bag")}
+                          <span className="max-sm:hidden"> · {formatCartMoney(flavor.price * quantity, "xaf", language)}</span>
+                        </>
+                      )}
                     </span>
                   </button>
                 </div>
@@ -245,60 +280,106 @@ export function FlavorDetailPage() {
                   {t("View cart")} <ArrowIcon diagonal />
                 </Link>
 
-                {/* Facts */}
-                <dl className="mt-10 grid grid-cols-2 divide-x divide-[#ebe7dc] rounded-2xl bg-white ring-1 ring-[#ebe7dc]">
-                  <div className="p-5">
-                    <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8792a0]">{t("Origin")}</dt>
-                    <dd className="mt-1.5 font-display text-lg font-extrabold text-[#092a53]">{t(flavor.origin)}</dd>
-                  </div>
-                  <div className="p-5">
-                    <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8792a0]">{t("Servings")}</dt>
-                    <dd className="mt-1.5 font-display text-lg font-extrabold tabular-nums text-[#092a53]">{flavor.servings}</dd>
-                  </div>
-                </dl>
-
-                {/* About */}
-                <div className="mt-10">
-                  <h2 className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t("About this flavor")}</h2>
-                  <p className="mt-3 text-base leading-8 text-[#52647b]">{t(flavor.description)}</p>
-                </div>
-
+                {/* Info tabs */}
                 <div className="mt-8">
-                  <h2 className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t("Contains")}</h2>
-                  <ul className="mt-3 flex flex-wrap gap-2">
-                    {allergens.length ? (
-                      allergens.map((allergen) => (
-                        <li className="inline-flex items-center gap-1.5 rounded-full bg-[#fff6dc] px-3 py-1.5 text-xs font-bold text-[#806a00] ring-1 ring-[#ecdfa6]" key={allergen}>
-                          <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
-                          {t(allergen)}
-                        </li>
-                      ))
-                    ) : (
-                      <li className="text-sm text-[#7b8796]">{t("None listed")}</li>
-                    )}
-                  </ul>
-                </div>
+                  <div aria-label={t("Flavor details")} className="flex gap-1 rounded-full bg-[#f4f1e7] p-1" role="tablist">
+                    {infoTabs.map((tab, index) => {
+                      const selected = activeInfoTab === tab.key;
+                      return (
+                        <button
+                          aria-controls={`flavor-panel-${tab.key}`}
+                          aria-selected={selected}
+                          className={`min-w-0 flex-1 truncate rounded-full px-3 py-2.5 text-xs font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] sm:text-sm ${
+                            selected ? "bg-white text-[#092a53] shadow-[0_6px_16px_rgba(9,42,83,0.1)]" : "text-[#65748a] hover:text-[#092a53]"
+                          }`}
+                          id={`flavor-tab-${tab.key}`}
+                          key={tab.key}
+                          onClick={() => setActiveInfoTab(tab.key)}
+                          onKeyDown={(event) => {
+                            const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+                            if (!step) return;
+                            event.preventDefault();
+                            const next = infoTabs[(index + step + infoTabs.length) % infoTabs.length];
+                            setActiveInfoTab(next.key);
+                            document.getElementById(`flavor-tab-${next.key}`)?.focus();
+                          }}
+                          role="tab"
+                          tabIndex={selected ? 0 : -1}
+                          type="button"
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
 
-                <div className="mt-10 flex gap-4 rounded-2xl bg-[#092a53] p-5 text-white">
-                  <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#ffdc32] font-display text-sm font-extrabold text-[#092a53]">3×</span>
-                  <div>
-                    <p className="font-display text-base font-extrabold">{t("More scoops, more smiles")}</p>
-                    <p className="mt-1 text-xs leading-5 text-white/70">{t("Pick any three scoops and the lowest-priced one is on us.")}</p>
+                  <div
+                    aria-labelledby={`flavor-tab-${activeInfoTab}`}
+                    className="min-h-28 px-1 pt-5"
+                    id={`flavor-panel-${activeInfoTab}`}
+                    role="tabpanel"
+                    tabIndex={0}
+                  >
+                    {activeInfoTab === "about" && (
+                      <p className="text-base leading-8 text-[#52647b]">{t(flavor.description)}</p>
+                    )}
+                    {activeInfoTab === "contains" && (
+                      <ul className="flex flex-wrap gap-2">
+                        {allergens.length ? (
+                          allergens.map((allergen) => (
+                            <li className="inline-flex items-center gap-1.5 rounded-full bg-[#fff6dc] px-3 py-1.5 text-xs font-bold text-[#806a00] ring-1 ring-[#ecdfa6]" key={allergen}>
+                              <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+                              {t(allergen)}
+                            </li>
+                          ))
+                        ) : (
+                          <li className="text-sm text-[#7b8796]">{t("None listed")}</li>
+                        )}
+                      </ul>
+                    )}
+                    {activeInfoTab === "details" && (
+                      <dl className="grid grid-cols-2 gap-3">
+                        <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]">
+                          <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">{t("Origin")}</dt>
+                          <dd className="mt-1 font-display text-lg font-extrabold text-[#092a53]">{t(flavor.origin)}</dd>
+                        </div>
+                        <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]">
+                          <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">{t("Servings")}</dt>
+                          <dd className="mt-1 font-display text-lg font-extrabold tabular-nums text-[#092a53]">{flavor.servings}</dd>
+                        </div>
+                      </dl>
+                    )}
                   </div>
                 </div>
-
-                <p className="mt-6 flex gap-3 text-xs leading-5 text-[#8792a0]">
-                  <span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 text-[10px] font-extrabold text-[#806a00]">i</span>
-                  {t("Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
-                </p>
               </div>
             </div>
           </div>
         </section>
 
+        {/* Offer */}
+        <section className="mx-auto max-w-[1320px] px-5 pt-12 sm:px-8 sm:pt-16 lg:px-12">
+          <div className="relative isolate flex flex-col gap-6 overflow-hidden rounded-[28px] bg-[#ffdc32] p-6 text-[#092a53] sm:flex-row sm:items-center sm:justify-between sm:p-8">
+            <div aria-hidden="true" className="absolute -right-16 -top-20 -z-10 size-64 rounded-full border-[40px] border-white/30" />
+            <div className="flex items-center gap-5">
+              <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] font-display text-lg font-extrabold text-[#ffdc32]">3×</span>
+              <div>
+                <p className="font-display text-2xl font-extrabold">{t("More scoops, more smiles")}</p>
+                <p className="mt-1 text-sm font-semibold text-[#092a53]/70">{t("Pick any three scoops and the lowest-priced one is on us.")}</p>
+              </div>
+            </div>
+            <Link className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b]" to="/flavors">
+              {t("Browse all flavors")} <ArrowIcon />
+            </Link>
+          </div>
+          <p className="mt-4 flex gap-3 text-xs leading-5 text-[#8792a0]">
+            <span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 text-[10px] font-extrabold text-[#806a00]">i</span>
+            {t("Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
+          </p>
+        </section>
+
         {relatedFlavors.length > 0 && (
-          <section aria-labelledby="related-flavors-title" className="border-t border-[#ebe7dc] px-5 py-16 sm:px-8 sm:py-20 lg:px-12">
-            <div className="mx-auto max-w-[1320px]">
+          <section aria-labelledby="related-flavors-title" className="py-16 sm:py-20">
+            <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
               <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
@@ -313,36 +394,36 @@ export function FlavorDetailPage() {
                   {t("Browse all flavors")} <ArrowIcon />
                 </Link>
               </div>
-              <div className="grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
                 {relatedFlavors.map((relatedFlavor) => {
                   const added = addedKey === `related-${relatedFlavor.id}`;
                   return (
                     <article
-                      className="group relative flex flex-col rounded-[28px] bg-white p-2.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a]"
+                      className="group relative flex flex-col rounded-[22px] bg-white p-1.5 sm:rounded-[28px] sm:p-2.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a]"
                       key={relatedFlavor.id}
                     >
-                      <div className={`relative aspect-square overflow-hidden rounded-[22px] ${relatedFlavor.color}`}>
+                      <div className={`relative aspect-square overflow-hidden rounded-[17px] sm:rounded-[22px] ${relatedFlavor.color}`}>
                         <img alt="" className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05]" loading="lazy" src={relatedFlavor.image} />
                         {relatedFlavor.tag && (
-                          <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#52647b] shadow-sm backdrop-blur-sm">
+                          <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-white/95 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.1em] text-[#52647b] shadow-sm backdrop-blur-sm sm:left-3 sm:top-3 sm:px-3 sm:py-1.5 sm:text-[10px]">
                             {t(relatedFlavor.tag)}
                           </span>
                         )}
                       </div>
-                      <div className="@container flex flex-1 flex-col px-3 pb-3 pt-5 sm:px-4">
-                        <h3 className="font-display text-xl font-extrabold leading-snug text-[#092a53]">
+                      <div className="@container flex flex-1 flex-col px-1.5 pb-1.5 pt-3 sm:px-4 sm:pb-3 sm:pt-5">
+                        <h3 className="line-clamp-2 font-display text-[15px] font-extrabold leading-snug text-[#092a53] sm:text-xl">
                           <Link className="after:absolute after:inset-0 after:rounded-[28px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#bd9c00]" to={`/flavor/${relatedFlavor.id}`}>
                             {t(relatedFlavor.name)}
                           </Link>
                         </h3>
-                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#65748a]">{t(relatedFlavor.detail)}</p>
-                        <div className="mt-auto flex flex-col gap-3 border-t border-dashed border-[#e7e2d4] pt-4 @[16.5rem]:flex-row @[16.5rem]:items-center @[16.5rem]:justify-between">
-                          <span className="whitespace-nowrap font-display text-lg font-extrabold tabular-nums text-[#092a53]">
+                        <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[#65748a] sm:mt-2 sm:text-sm sm:leading-6">{t(relatedFlavor.detail)}</p>
+                        <div className="mt-auto flex flex-col gap-2.5 border-t border-dashed border-[#e7e2d4] pt-3 sm:gap-3 sm:pt-4 @[16.5rem]:flex-row @[16.5rem]:items-center @[16.5rem]:justify-between">
+                          <span className="whitespace-nowrap font-display text-sm font-extrabold tabular-nums text-[#092a53] sm:text-lg">
                             {formatCartMoney(relatedFlavor.price, "xaf", language)}
                           </span>
                           <button
                             aria-label={t("Add {name} to your bag", { name: t(relatedFlavor.name) })}
-                            className={`relative z-10 inline-flex w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-3 text-xs font-extrabold transition @[16.5rem]:w-auto @[16.5rem]:py-2.5 duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
+                            className={`relative z-10 inline-flex w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-extrabold transition sm:py-3 @[16.5rem]:w-auto @[16.5rem]:py-2.5 duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
                               added ? "bg-[#4caf50] text-white" : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white"
                             }`}
                             onClick={() => {

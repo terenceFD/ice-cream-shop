@@ -6,6 +6,8 @@ import { apiRequest, getCustomerToken } from "../../../api/api";
 import { useCart } from "../../../useCart";
 import { useLanguage } from "../../../language/useLanguage";
 import { useAuth } from "../../../authcontext/useAuth";
+import { PageHero } from "../../../components/PageHero";
+import { ProductImageSlider } from "../../../components/ProductImageSlider";
 
 function MenuImage({ alt, className = "", src }) {
   return (
@@ -192,60 +194,48 @@ function MenuProductCard({ category, item, onSelect, t, formatPrice }) {
   const soldOut = item.isAvailable === false || item.availableQuantity < 1;
   return (
     <button
-      className="group relative flex h-full flex-col rounded-[28px] bg-white p-2.5 text-left shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+      className="group relative flex h-full flex-col rounded-[22px] bg-white p-1.5 text-left shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] sm:rounded-[28px] sm:p-2.5"
       onClick={() => onSelect(category, item)}
       type="button"
     >
-      <div className="relative aspect-square overflow-hidden rounded-[22px] bg-gradient-to-br from-[#fff8dd] via-[#fbfaf5] to-[#f1ede2]">
+      <div className="relative aspect-square overflow-hidden rounded-[17px] bg-gradient-to-br from-[#fff8dd] via-[#fbfaf5] to-[#f1ede2] sm:rounded-[22px]">
         <MenuImage
           alt={t(item.name)}
           className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05] ${soldOut ? "opacity-70 grayscale-[70%]" : ""}`}
           src={item.image}
         />
-        {soldOut && (
-          <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 bg-white/90 py-2 text-center text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#092a53] backdrop-blur-sm">
-            {t("Sold out")}
-          </span>
-        )}
         <span
-          aria-hidden="true"
-          className="absolute bottom-3 right-3 grid size-11 translate-y-2 place-items-center rounded-full bg-[#092a53] text-white opacity-0 shadow-[0_10px_24px_rgba(9,42,83,0.3)] transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
+          className={`absolute left-2 top-2 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] shadow-sm backdrop-blur-sm sm:left-3 sm:top-3 sm:px-2.5 sm:text-[10px] ${
+            soldOut ? "text-red-700" : "text-[#37632c]"
+          }`}
         >
-          <svg className="size-[18px]" fill="none" viewBox="0 0 24 24">
-            <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-          </svg>
+          <span aria-hidden="true" className={`size-1.5 rounded-full ${soldOut ? "bg-red-500" : "bg-[#4caf50]"}`} />
+          {soldOut ? t("Sold out") : t("Available")}
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col px-3 pb-3 pt-5 sm:px-4">
-        <div className="flex items-baseline gap-2">
-          <h3 className="font-display text-lg font-extrabold leading-snug text-[#092a53] sm:text-xl">
-            {t(item.name)}
-          </h3>
-          <span
-            aria-hidden="true"
-            className="mb-1.5 min-w-4 flex-1 self-end border-b-2 border-dotted border-[#ddd6c4]"
-          />
-          <span className="shrink-0 font-display text-base font-extrabold tabular-nums text-[#a48700] sm:text-lg">
-            {formatPrice(item.priceXaf)}
-          </span>
-        </div>
-        <p className="mt-2.5 line-clamp-2 text-sm leading-6 text-[#65748a]">
+      <div className="flex flex-1 flex-col px-1.5 pb-1.5 pt-3 sm:px-3 sm:pb-2.5 sm:pt-4">
+        <h3 className="line-clamp-2 font-display text-[15px] font-extrabold leading-snug text-[#092a53] sm:text-lg">
+          {t(item.name)}
+        </h3>
+        <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[#65748a] sm:mt-2 sm:text-sm sm:leading-6">
           {t(item.detail)}
         </p>
 
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-dashed border-[#e7e2d4] pt-4 text-[11px] font-bold">
-          <span className={`inline-flex items-center gap-2 ${soldOut ? "text-red-700" : "text-[#37632c]"}`}>
-            <span aria-hidden="true" className="relative flex size-2">
-              {!soldOut && (
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#4caf50] opacity-50 motion-reduce:animate-none" />
-              )}
-              <span className={`relative inline-flex size-2 rounded-full ${soldOut ? "bg-red-500" : "bg-[#4caf50]"}`} />
-            </span>
-            {soldOut ? t("Sold out") : t("Available")}
+        <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-4">
+          <span className="font-display text-sm font-extrabold tabular-nums text-[#a48700] sm:text-lg">
+            {formatPrice(item.priceXaf)}
           </span>
-          <span className="uppercase tracking-[0.12em] text-[#8792a0] transition group-hover:text-[#092a53]">
-            {t("View details")}
+          <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#8792a0] transition group-hover:text-[#092a53]">
+            <span className="sr-only">{t("View details")}</span>
+            <span
+              aria-hidden="true"
+              className="grid size-8 place-items-center rounded-full bg-[#f4f1e7] text-[#092a53] transition duration-300 group-hover:bg-[#092a53] group-hover:text-white sm:size-9"
+            >
+              <svg className="size-4" fill="none" viewBox="0 0 24 24">
+                <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
+            </span>
           </span>
         </div>
       </div>
@@ -257,7 +247,7 @@ function SimilarProductCard({ category, item, onSelect, t, formatPrice }) {
   const soldOut = item.isAvailable === false || item.availableQuantity < 1;
   return (
     <button
-      className="group relative isolate flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-[26px] bg-[#092a53] p-5 text-left text-white shadow-[0_12px_32px_rgba(9,42,83,0.1)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_54px_rgba(9,42,83,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4 sm:p-6"
+      className="group relative isolate flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-[20px] bg-[#092a53] p-3.5 text-left text-white shadow-[0_12px_32px_rgba(9,42,83,0.1)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_54px_rgba(9,42,83,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4 sm:rounded-[26px] sm:p-6"
       onClick={() => onSelect(category, item)}
       type="button"
     >
@@ -268,33 +258,33 @@ function SimilarProductCard({ category, item, onSelect, t, formatPrice }) {
       />
       <span
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a]/95 via-[#061d3a]/40 to-transparent transition duration-500 group-hover:via-[#061d3a]/55"
+        className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a]/95 via-[#061d3a]/25 via-45% to-transparent transition duration-500 group-hover:via-[#061d3a]/45"
       />
 
-      <span className="absolute inset-x-5 top-5 flex items-start justify-between gap-3 sm:inset-x-6 sm:top-6">
-        <span className="max-w-[70%] truncate rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] backdrop-blur-md">
+      <span className="absolute inset-x-3 top-3 flex items-start justify-between gap-2 sm:inset-x-6 sm:top-6 sm:gap-3">
+        <span className="max-w-[70%] truncate rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] backdrop-blur-md max-sm:hidden">
           {t(category.title)}
         </span>
         {soldOut && (
-          <span className="rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.1em] text-red-700">
+          <span className="ml-auto rounded-full bg-white px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.1em] text-red-700 sm:px-3 sm:py-1.5 sm:text-[10px]">
             {t("Sold out")}
           </span>
         )}
       </span>
 
-      <span className="block font-display text-xl font-extrabold leading-snug sm:text-2xl">
+      <span className="line-clamp-2 font-display text-[15px] font-extrabold leading-snug sm:text-2xl">
         {t(item.name)}
       </span>
-      <span className="mt-2 line-clamp-2 max-h-0 text-sm leading-6 text-white/75 opacity-0 transition-all duration-500 group-hover:max-h-12 group-hover:opacity-100 group-focus-visible:max-h-12 group-focus-visible:opacity-100">
+      <span className="mt-2 line-clamp-2 max-h-0 text-sm leading-6 max-sm:hidden text-white/75 opacity-0 transition-all duration-500 group-hover:max-h-12 group-hover:opacity-100 group-focus-visible:max-h-12 group-focus-visible:opacity-100">
         {t(item.detail)}
       </span>
-      <span className="mt-4 flex items-center justify-between gap-3 border-t border-white/15 pt-4">
-        <span className="font-display text-lg font-extrabold tabular-nums text-[#ffdc32]">
+      <span className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/15 pt-2.5 sm:mt-4 sm:gap-3 sm:pt-4">
+        <span className="font-display text-sm font-extrabold tabular-nums text-[#ffdc32] sm:text-lg">
           {formatPrice(item.priceXaf)}
         </span>
         <span
           aria-hidden="true"
-          className="grid size-10 place-items-center rounded-full bg-white text-[#092a53] transition duration-300 group-hover:-rotate-45 group-hover:bg-[#ffdc32]"
+          className="grid size-8 shrink-0 place-items-center rounded-full bg-white text-[#092a53] transition duration-300 group-hover:-rotate-45 group-hover:bg-[#ffdc32] sm:size-10"
         >
           <ArrowIcon />
         </span>
@@ -547,102 +537,30 @@ export function MenuPage() {
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
       <main>
-        <section className="relative isolate overflow-hidden border-b border-[#ebe7dc] bg-[#fbfaf5]">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-48 -top-48 -z-10 size-[36rem] rounded-full bg-[#ffdc32]/15 blur-3xl"
-          />
-          <div className="mx-auto grid max-w-[1320px] items-center gap-12 px-5 pb-16 pt-12 sm:px-8 sm:pt-16 lg:grid-cols-12 lg:gap-10 lg:px-12 lg:pb-20 lg:pt-20">
-            <div className="lg:col-span-6">
-              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
-                <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                {t("The Cold Stone experience")}
-              </p>
-              <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-[#092a53] sm:text-6xl lg:text-7xl">
-                {t("Menu & treats")}
-              </h1>
-              <p className="mt-6 max-w-xl text-base leading-7 text-[#52647b] sm:text-lg sm:leading-8">
-                {t(
-                  "The global Cold Stone menu features these treat categories. This is not a confirmed Cameroon branch menu; local selection and prices can vary.",
-                )}
-              </p>
-              <div className="mt-9 flex flex-wrap items-center gap-3">
-                <a
-                  className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-7 py-4 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-                  href="#menu-content"
-                >
-                  {t("Explore the menu")} <span aria-hidden="true">↓</span>
-                </a>
-                <Link
-                  className="inline-flex items-center gap-2 rounded-full border border-[#d9d4c7] bg-white px-7 py-4 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:border-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-                  to="/custom-cake"
-                >
-                  {t("Request a custom cake")}
-                </Link>
-              </div>
-              <dl className="mt-12 flex gap-10 border-t border-[#e9e5da] pt-6">
-                <div>
-                  <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8792a0]">
-                    {t("Menu categories")}
-                  </dt>
-                  <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums text-[#092a53]">
-                    {categories.length}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8792a0]">
-                    {t("Menu items")}
-                  </dt>
-                  <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums text-[#092a53]">
-                    {totalMenuItems}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-
-            <div className="relative lg:col-span-6">
-              <div className="grid grid-cols-5 grid-rows-2 gap-3 sm:gap-4 [aspect-ratio:5/4]">
-                <figure className="col-span-3 row-span-2 overflow-hidden rounded-[30px] bg-[#fff3b8] shadow-[0_28px_64px_rgba(9,42,83,0.18)]">
-                  <MenuImage
-                    alt={t("Ice cream treats")}
-                    className="size-full object-cover transition duration-700 hover:scale-[1.03]"
-                    src="/ice-images/ice-4.webp"
-                  />
-                </figure>
-                <figure className="col-span-2 overflow-hidden rounded-[24px] bg-[#fff3b8] shadow-[0_16px_36px_rgba(9,42,83,0.12)]">
-                  <MenuImage
-                    alt=""
-                    className="size-full object-cover transition duration-700 hover:scale-[1.05]"
-                    src="/milk/mk-1.webp"
-                  />
-                </figure>
-                <figure className="col-span-2 overflow-hidden rounded-[24px] bg-[#fff3b8] shadow-[0_16px_36px_rgba(9,42,83,0.12)]">
-                  <MenuImage
-                    alt=""
-                    className="size-full object-cover transition duration-700 hover:scale-[1.05]"
-                    src="/cake-images/cake-1.webp"
-                  />
-                </figure>
-              </div>
-              <div className="absolute -bottom-6 left-4 flex items-center gap-3 rounded-2xl border border-[#eeeae1] bg-white/95 px-4 py-3 shadow-[0_18px_40px_rgba(9,42,83,0.14)] backdrop-blur-sm sm:left-8 sm:px-5 sm:py-4">
-                <span
-                  aria-hidden="true"
-                  className="grid size-10 place-items-center rounded-xl bg-[#ffdc32] font-display text-base font-extrabold text-[#092a53]"
-                >
-                  ✦
-                </span>
-                <div className="leading-tight">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">
-                    {t("Signature creations")}
-                  </p>
-                  <p className="mt-0.5 text-sm font-bold text-[#092a53]">
-                    {t("A treat made your way")}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <PageHero
+          actions={
+            <>
+              <a className={PageHero.primary} href="#menu-content">
+                {t("Explore the menu")} <span aria-hidden="true">↓</span>
+              </a>
+              <Link className={PageHero.secondary} to="/custom-cake">
+                {t("Request a custom cake")}
+              </Link>
+            </>
+          }
+          badge={{ mark: "✦", eyebrow: t("Signature creations"), text: t("A treat made your way") }}
+          description={t(
+            "The global Cold Stone menu features these treat categories. This is not a confirmed Cameroon branch menu; local selection and prices can vary.",
+          )}
+          eyebrow={t("The Cold Stone experience")}
+          image={{ src: "/ice-images/ice-4.webp", alt: t("Ice cream treats") }}
+          sideImages={["/milk/mk-1.webp", "/cake-images/cake-1.webp"]}
+          stats={[
+            { label: t("Menu categories"), value: categories.length },
+            { label: t("Menu items"), value: totalMenuItems, accent: true },
+          ]}
+          title={t("Menu & treats")}
+        />
 
         <div
           className="mx-auto max-w-[1320px] scroll-mt-4 px-5 py-10 sm:px-8 sm:py-14 lg:px-12"
@@ -743,19 +661,22 @@ export function MenuPage() {
                     maxPrice ? "bg-[#fff8dd] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"
                   }`}
                 >
-                  <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">
-                    {t("Maximum price (FCFA)")}
+                  <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">
+                    {t("Maximum price")}
                   </span>
-                  <input
-                    className="mt-0.5 w-full bg-transparent text-sm font-bold tabular-nums text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#a5aebb]"
-                    inputMode="numeric"
-                    min="0"
-                    onChange={(event) => setMaxPrice(event.target.value)}
-                    placeholder={t("Any")}
-                    step="500"
-                    type="number"
-                    value={maxPrice}
-                  />
+                  <span className="mt-0.5 flex items-baseline gap-1.5">
+                    <input
+                      className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#a5aebb]"
+                      inputMode="numeric"
+                      min="0"
+                      onChange={(event) => setMaxPrice(event.target.value)}
+                      placeholder={t("Any")}
+                      step="500"
+                      type="number"
+                      value={maxPrice}
+                    />
+                    <span className="shrink-0 text-[10px] font-extrabold text-[#a5aebb]">FCFA</span>
+                  </span>
                 </label>
               </div>
             </div>
@@ -792,7 +713,7 @@ export function MenuPage() {
                 </p>
               </div>
               {filteredItems.length ? (
-                <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredItems.map(({ category, item }) => (
                     <MenuProductCard
                       category={category}
@@ -840,26 +761,23 @@ export function MenuPage() {
               <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
                 <div className="lg:col-span-7">
                   <div className="lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300">
-                    <div className="relative overflow-hidden rounded-[32px] bg-[#f4f1e7] shadow-[0_30px_70px_rgba(9,42,83,0.16)]">
-                      <MenuImage
-                        alt={t(selectedItem.name)}
-                        className={`aspect-[4/3] w-full object-cover lg:aspect-[5/4] ${selectedSoldOut ? "grayscale-[60%]" : ""}`}
-                        src={selectedItem.image}
-                      />
-                      <div
-                        aria-hidden="true"
-                        className="absolute inset-0 bg-gradient-to-t from-[#061d3a]/30 via-transparent to-transparent"
-                      />
-                      <span
-                        className={`absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] shadow-sm backdrop-blur-sm sm:left-6 sm:top-6 ${selectedSoldOut ? "text-red-700" : "text-[#37632c]"}`}
-                      >
+                    <ProductImageSlider
+                      imageClassName={`aspect-[4/3] lg:aspect-[5/4] ${selectedSoldOut ? "grayscale-[60%]" : ""}`}
+                      images={[selectedItem.image, ...(selectedItem.gallery || [])]}
+                      name={t(selectedItem.name)}
+                      overlay={
                         <span
-                          aria-hidden="true"
-                          className={`size-1.5 rounded-full ${selectedSoldOut ? "bg-red-500" : "bg-[#4caf50]"}`}
-                        />
-                        {selectedSoldOut ? t("Sold out") : t("Available")}
-                      </span>
-                    </div>
+                          className={`absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] shadow-sm backdrop-blur-sm sm:left-6 sm:top-6 ${selectedSoldOut ? "text-red-700" : "text-[#37632c]"}`}
+                        >
+                          <span
+                            aria-hidden="true"
+                            className={`size-1.5 rounded-full ${selectedSoldOut ? "bg-red-500" : "bg-[#4caf50]"}`}
+                          />
+                          {selectedSoldOut ? t("Sold out") : t("Available")}
+                        </span>
+                      }
+                      resetKey={selectedItem.id || selectedItem.name}
+                    />
                   </div>
                 </div>
 
@@ -1098,7 +1016,7 @@ export function MenuPage() {
                     {t("Back to category")}: {t(activeCategory.title)}
                   </button>
                 </div>
-                <div className="grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
                   {similarItems.map(({ category, item }) => (
                     <SimilarProductCard
                       category={category}
@@ -1253,7 +1171,7 @@ export function MenuPage() {
                   {t("Prices shown are illustrative estimates only.")}
                 </p>
               </div>
-              <div className="grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
                 {activeCategory.items.map((item) => (
                   <MenuProductCard
                     category={activeCategory}

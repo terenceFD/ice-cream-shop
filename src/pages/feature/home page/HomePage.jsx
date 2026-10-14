@@ -414,93 +414,143 @@ export function HomePage() {
               </Link>
             </div>
 
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
+            <div className="mt-12 grid gap-5 lg:grid-cols-12 lg:gap-6">
               {popularFlavors.map((item, index) => {
                 const soldOut = item.isAvailable === false || item.availableQuantity < 1;
                 const featured = index === 0;
                 const itemKey = item.id || item.name;
                 const added = addedItemKey === itemKey;
-                return (
-                  <article
-                    className={`group relative flex flex-col rounded-[28px] bg-white p-2.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] ${
-                      featured ? "sm:col-span-2 lg:row-span-2" : ""
-                    }`}
-                    key={itemKey}
-                  >
-                    <div
-                      className={`relative overflow-hidden rounded-[22px] ${featured ? "aspect-[4/3] lg:aspect-auto lg:min-h-0 lg:flex-1" : "aspect-[4/3]"}`}
+                const rank = String(index + 1).padStart(2, "0");
+                const itemLink = `/menu?category=${encodeURIComponent("Ice Cream")}`;
+                const bagIcon = added ? (
+                  <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                    <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+                  </svg>
+                ) : !soldOut ? (
+                  <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                    <path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+                    <path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                  </svg>
+                ) : null;
+                const image = (
+                  <img
+                    alt=""
+                    className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06] ${soldOut ? "grayscale-[60%]" : ""}`}
+                    loading="lazy"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = "/images/hero-ice-cream.jpg";
+                    }}
+                    src={item.image}
+                  />
+                );
+
+                if (featured) {
+                  return (
+                    <article
+                      className="group relative isolate flex min-h-[460px] flex-col justify-end overflow-hidden rounded-[32px] p-6 text-white shadow-[0_30px_70px_rgba(9,42,83,0.22)] sm:min-h-[520px] sm:p-8 lg:col-span-5 lg:row-span-4 lg:min-h-0"
+                      key={itemKey}
                       style={{ backgroundColor: popularFlavorColors[index] }}
                     >
-                      <img
-                        alt=""
-                        className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05] ${featured ? "lg:absolute lg:inset-0" : ""} ${soldOut ? "grayscale-[60%]" : ""}`}
-                        loading="lazy"
-                        onError={(event) => {
-                          event.currentTarget.onerror = null;
-                          event.currentTarget.src = "/images/hero-ice-cream.jpg";
-                        }}
-                        src={item.image}
-                      />
-                      <span className="absolute left-3 top-3 flex items-center gap-2 sm:left-4 sm:top-4">
-                        <span className={`grid place-items-center rounded-full bg-[#092a53] font-display font-extrabold tabular-nums text-[#ffdc32] shadow-md ${featured ? "size-12 text-base" : "size-9 text-xs"}`}>
-                          {String(index + 1).padStart(2, "0")}
+                      <div className="absolute inset-0 -z-20">{image}</div>
+                      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] via-[#061d3a]/55 via-40% to-transparent" />
+                      <span className="absolute left-6 top-6 flex items-center gap-2 sm:left-8 sm:top-8">
+                        <span className="grid size-12 place-items-center rounded-2xl bg-[#ffdc32] font-display text-base font-extrabold tabular-nums text-[#092a53] shadow-lg">
+                          {rank}
                         </span>
-                        {(featured || soldOut) && (
-                          <span className={`rounded-full px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.1em] shadow-sm backdrop-blur-sm ${soldOut ? "bg-white/95 text-red-700" : "bg-white/95 text-[#092a53]"}`}>
-                            {soldOut ? t("Sold out") : t("Popular pick")}
-                          </span>
-                        )}
+                        <span className={`rounded-full px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] shadow-sm backdrop-blur-sm ${soldOut ? "bg-white/95 text-red-700" : "bg-white/90 text-[#092a53]"}`}>
+                          {soldOut ? t("Sold out") : t("Popular pick")}
+                        </span>
                       </span>
-                    </div>
 
-                    <div className={`@container flex flex-col ${featured ? "px-3 pb-3 pt-6 sm:px-5 sm:pb-4" : "flex-1 px-3 pb-3 pt-5"}`}>
-                      <h3 className={`font-display font-extrabold leading-snug text-[#092a53] ${featured ? "text-2xl sm:text-3xl" : "text-lg"}`}>
+                      <h3 className="font-display text-3xl font-extrabold leading-tight sm:text-4xl">
                         <Link
-                          className="after:absolute after:inset-0 after:rounded-[28px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#bd9c00]"
-                          to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
+                          className="after:absolute after:inset-0 after:rounded-[32px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#ffdc32]"
+                          to={itemLink}
                         >
                           {t(item.name)}
                         </Link>
                       </h3>
-                      <p className={`mt-2 text-sm leading-6 text-[#65748a] ${featured ? "line-clamp-2 sm:text-base sm:leading-7" : "line-clamp-2"}`}>
-                        {t(item.detail)}
-                      </p>
-                      <div className="mt-auto pt-5">
-                        <div className="flex flex-col gap-3 border-t border-dashed border-[#e7e2d4] pt-4 @[16.5rem]:flex-row @[16.5rem]:items-center @[16.5rem]:justify-between">
-                          <div>
-                            <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">
-                              {t("Illustrative price")}
-                            </p>
-                            <p className={`mt-0.5 whitespace-nowrap font-display font-extrabold tabular-nums text-[#092a53] ${featured ? "text-2xl" : "text-lg"}`}>
-                              {formatPrice(item.priceXaf)}
-                            </p>
-                          </div>
-                          <button
-                            aria-label={soldOut ? t("Sold out") : t("Add {name} to your bag", { name: t(item.name) })}
-                            className={`relative z-10 inline-flex w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 py-3 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#8792a0] @[16.5rem]:w-auto ${
-                              added
-                                ? "bg-[#4caf50] text-white"
-                                : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white"
-                            }`}
-                            disabled={soldOut}
-                            onClick={() => handleAddToCart(item)}
-                            type="button"
-                          >
-                            {added ? (
-                              <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                                <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
-                              </svg>
-                            ) : !soldOut ? (
-                              <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                                <path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
-                                <path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-                              </svg>
-                            ) : null}
-                            {soldOut ? t("Sold out") : added ? t("Added") : t("Add to bag")}
-                          </button>
+                      <p className="mt-2 max-w-md text-sm leading-6 text-white/75 sm:text-base sm:leading-7">{t(item.detail)}</p>
+                      <div className="mt-6 flex flex-wrap items-end justify-between gap-4 border-t border-white/15 pt-5">
+                        <div>
+                          <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-white/55">{t("Illustrative price")}</p>
+                          <p className="mt-0.5 whitespace-nowrap font-display text-2xl font-extrabold tabular-nums text-[#ffdc32] sm:text-3xl">
+                            {formatPrice(item.priceXaf)}
+                          </p>
                         </div>
+                        <button
+                          aria-label={soldOut ? t("Sold out") : t("Add {name} to your bag", { name: t(item.name) })}
+                          className={`relative z-10 inline-flex items-center gap-2 whitespace-nowrap rounded-full px-6 py-3.5 text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/60 ${
+                            added ? "bg-[#4caf50] text-white" : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-white"
+                          }`}
+                          disabled={soldOut}
+                          onClick={() => handleAddToCart(item)}
+                          type="button"
+                        >
+                          {bagIcon}
+                          {soldOut ? t("Sold out") : added ? t("Added") : t("Add to bag")}
+                        </button>
                       </div>
+                    </article>
+                  );
+                }
+
+                return (
+                  <article
+                    className="group relative flex items-center gap-4 rounded-[24px] bg-white p-3 pr-4 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_44px_rgba(9,42,83,0.12)] hover:ring-[#e2d39a] sm:gap-5 sm:p-4 sm:pr-5 lg:col-span-7"
+                    key={itemKey}
+                  >
+                    <span aria-hidden="true" className="hidden w-10 shrink-0 text-center font-display text-3xl font-extrabold tabular-nums text-[#092a53]/15 transition group-hover:text-[#bd9c00] sm:block">
+                      {rank}
+                    </span>
+                    <div
+                      className="relative size-20 shrink-0 overflow-hidden rounded-[18px] sm:size-24"
+                      style={{ backgroundColor: popularFlavorColors[index] }}
+                    >
+                      {image}
+                      <span aria-hidden="true" className="absolute left-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-[#092a53] font-display text-[10px] font-extrabold tabular-nums text-[#ffdc32] sm:hidden">
+                        {index + 1}
+                      </span>
                     </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-display text-base font-extrabold leading-snug text-[#092a53] sm:text-lg">
+                        <Link
+                          className="after:absolute after:inset-0 after:rounded-[24px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#bd9c00]"
+                          to={itemLink}
+                        >
+                          {t(item.name)}
+                        </Link>
+                      </h3>
+                      <p className="mt-1 line-clamp-1 text-xs leading-5 text-[#65748a] sm:text-sm sm:leading-6">{t(item.detail)}</p>
+                      <p className="mt-1.5 whitespace-nowrap font-display text-sm font-extrabold tabular-nums text-[#a48700] sm:hidden">
+                        {soldOut ? t("Sold out") : formatPrice(item.priceXaf)}
+                      </p>
+                    </div>
+                    <div className="hidden shrink-0 text-right sm:block">
+                      <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">
+                        {soldOut ? t("Sold out") : t("Illustrative price")}
+                      </p>
+                      <p className="mt-0.5 whitespace-nowrap font-display text-lg font-extrabold tabular-nums text-[#092a53]">
+                        {formatPrice(item.priceXaf)}
+                      </p>
+                    </div>
+                    <button
+                      aria-label={soldOut ? t("Sold out") : added ? t("Added") : t("Add {name} to your bag", { name: t(item.name) })}
+                      className={`relative z-10 grid size-11 shrink-0 place-items-center rounded-full transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#8792a0] sm:size-12 ${
+                        added ? "bg-[#4caf50] text-white" : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white"
+                      }`}
+                      disabled={soldOut}
+                      onClick={() => handleAddToCart(item)}
+                      title={soldOut ? t("Sold out") : t("Add to bag")}
+                      type="button"
+                    >
+                      {bagIcon || (
+                        <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                          <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                        </svg>
+                      )}
+                    </button>
                   </article>
                 );
               })}
