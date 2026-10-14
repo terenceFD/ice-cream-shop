@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
-import { ImageStorageConfigurationError, imageStorageOrigin, saveUploadedImage } from './storage.js'
+import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, normalizeSupabaseUrl, saveUploadedImage } from './storage.js'
 
 const image = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 
@@ -68,4 +68,29 @@ test('uploads to a public Supabase Storage bucket and returns its public address
     } finally {
       globalThis.fetch = realFetch
     }
+  }))
+
+test('accepts the Supabase project address in the forms people usually paste', () => {
+  for (const value of [
+    'https://abcd1234.supabase.co',
+    'https://abcd1234.supabase.co/',
+    'abcd1234.supabase.co',
+    '"https://abcd1234.supabase.co"',
+    ' https://abcd1234.supabase.co/rest/v1/ ',
+    'http://abcd1234.supabase.co',
+  ]) {
+    assert.equal(normalizeSupabaseUrl(value), 'https://abcd1234.supabase.co', value)
+  }
+  assert.equal(normalizeSupabaseUrl('postgresql://user:pass@db.abcd1234.supabase.co:5432/postgres'), null)
+  assert.equal(normalizeSupabaseUrl('not a url'), null)
+})
+
+test('an invalid SUPABASE_URL disables uploads with a clear message instead of crashing', () =>
+  withEnvironment({ SUPABASE_URL: 'postgresql://user:pass@host/db', SUPABASE_SERVICE_ROLE_KEY: 'key' }, async () => {
+    assert.equal(imageStorageOrigin(), null)
+    assert.equal(imageStorageStatus(), 'invalid-supabase-url')
+    await assert.rejects(
+      saveUploadedImage({ buffer: image, filename: 'c.png', contentType: 'image/png', uploadDirectory: tmpdir(), isProduction: true }),
+      /not a valid Supabase Project URL/,
+    )
   }))

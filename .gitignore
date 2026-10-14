@@ -29,3 +29,5 @@ server/uploads/
 *.njsproj
 *.sln
 *.sw?
+# Browser automation snapshots
+.playwright-cli/
