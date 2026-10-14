@@ -1,54 +1,62 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect, type ComponentType } from "react";
 import { CartProvider } from "../CartContext";
 import { HomePage } from "../pages/feature/home page/HomePage";
-import { FlavorsPage } from "../pages/feature/flavors/FlavorsPage";
-import { FlavorDetailPage } from "../pages/feature/flavors/FlavorDetailPage";
-import { CartPage } from "../pages/feature/cart/CartPage";
 import { NotFoundPage } from "../pages/feature/notfound/NotFoundPage";
-import { AuthPage } from "../pages/feature/authorization/AuthPage";
-import { AdminPage } from "../pages/feature/admin/AdminPage";
-import { AdminMenuPage } from "../pages/feature/admin/AdminMenuPage";
 import { FlavorProvider } from "../flavor-context/FlavorContext";
 import { AdminAuthProvider } from "../pages/feature/admin/AdminAuthContext";
-import { AdminLoginPage } from "../pages/feature/admin/AdminLoginPage";
 import { AdminRoute } from "../components/AdminRoute";
-import { CheckoutPage } from "../pages/feature/checkout/CheckoutPage";
-import { PaymentPage } from "../pages/feature/payment page/PaymentPage";
-import { AdminManagementPage } from "../pages/feature/admin/AdminManagementPage";
-import { AdminCustomersPage } from "../pages/feature/admin/AdminCustomersPage";
 import { AuthProvider } from "../authcontext/AuthContext";
-import { AboutPage } from "../pages/feature/about/AboutPage";
-import { ContactPage } from "../pages/feature/contact/ContactPage";
-import { LocationsPage } from "../pages/feature/locations/LocationsPage";
-import { MenuPage } from "../pages/feature/menu/MenuPage";
-import { CustomerOrdersPage } from "../pages/feature/account/CustomerOrdersPage";
-import { AdminInventoryPage } from "../pages/feature/admin/AdminInventoryPage";
-import { AdminCategoriesPage } from "../pages/feature/admin/AdminCategoriesPage";
-import { AdminPromotionsPage } from "../pages/feature/admin/AdminPromotionsPage";
-import { AdminReportsPage } from "../pages/feature/admin/AdminReportsPage";
-import { AdminLayout } from "../components/AdminLayout";
-import { AdminNotificationsPage } from "../pages/feature/admin/AdminNotificationsPage";
-import { CustomCakeRequestPage } from "../pages/feature/cakes/CustomCakeRequestPage";
-import { AdminStoreOverviewPage } from "../pages/feature/admin/AdminStoreOverviewPage";
-import {
-  AdminActivityPage,
-  AdminCakeRequestsPage,
-  AdminFulfillmentPage,
-  AdminReviewsPage,
-  AdminStockAlertsPage,
-} from "../pages/feature/admin/AdminNewFeaturesPages";
-import {
-  AdminDeliveredPage,
-  AdminOrdersPage,
-  AdminPaymentsPage,
-} from "../pages/feature/admin/AdminSalesPages";
 import { LanguageProvider } from "../language/LanguageContext";
 import { ScrollRevealObserver } from "../components/ScrollRevealObserver";
 import { ScrollProgress } from "../components/ScrollProgress";
 import { WebsiteLoader } from "../components/WebsiteLoader";
 import { InstallAppPrompt } from "../components/InstallAppPrompt";
 import { RouteMeta } from "../seo/RouteMeta";
+
+// Each page below downloads only when a visitor opens it, so the first visit to the shop
+// does not carry the admin dashboard, checkout and other pages' code.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function lazyPage<M extends Record<string, ComponentType<any>>>(load: () => Promise<M>, name: keyof M) {
+  return lazy(async () => ({ default: (await load())[name] }));
+}
+
+const FlavorsPage = lazyPage(() => import("../pages/feature/flavors/FlavorsPage"), "FlavorsPage");
+const FlavorDetailPage = lazyPage(() => import("../pages/feature/flavors/FlavorDetailPage"), "FlavorDetailPage");
+const CartPage = lazyPage(() => import("../pages/feature/cart/CartPage"), "CartPage");
+const AuthPage = lazyPage(() => import("../pages/feature/authorization/AuthPage"), "AuthPage");
+const AdminPage = lazyPage(() => import("../pages/feature/admin/AdminPage"), "AdminPage");
+const AdminMenuPage = lazyPage(() => import("../pages/feature/admin/AdminMenuPage"), "AdminMenuPage");
+const AdminLoginPage = lazyPage(() => import("../pages/feature/admin/AdminLoginPage"), "AdminLoginPage");
+const CheckoutPage = lazyPage(() => import("../pages/feature/checkout/CheckoutPage"), "CheckoutPage");
+const PaymentPage = lazyPage(() => import("../pages/feature/payment page/PaymentPage"), "PaymentPage");
+const AdminManagementPage = lazyPage(() => import("../pages/feature/admin/AdminManagementPage"), "AdminManagementPage");
+const AdminCustomersPage = lazyPage(() => import("../pages/feature/admin/AdminCustomersPage"), "AdminCustomersPage");
+const AboutPage = lazyPage(() => import("../pages/feature/about/AboutPage"), "AboutPage");
+const ContactPage = lazyPage(() => import("../pages/feature/contact/ContactPage"), "ContactPage");
+const LocationsPage = lazyPage(() => import("../pages/feature/locations/LocationsPage"), "LocationsPage");
+const MenuPage = lazyPage(() => import("../pages/feature/menu/MenuPage"), "MenuPage");
+const CustomerOrdersPage = lazyPage(() => import("../pages/feature/account/CustomerOrdersPage"), "CustomerOrdersPage");
+const AdminInventoryPage = lazyPage(() => import("../pages/feature/admin/AdminInventoryPage"), "AdminInventoryPage");
+const AdminCategoriesPage = lazyPage(() => import("../pages/feature/admin/AdminCategoriesPage"), "AdminCategoriesPage");
+const AdminPromotionsPage = lazyPage(() => import("../pages/feature/admin/AdminPromotionsPage"), "AdminPromotionsPage");
+const AdminReportsPage = lazyPage(() => import("../pages/feature/admin/AdminReportsPage"), "AdminReportsPage");
+const AdminNotificationsPage = lazyPage(() => import("../pages/feature/admin/AdminNotificationsPage"), "AdminNotificationsPage");
+const CustomCakeRequestPage = lazyPage(() => import("../pages/feature/cakes/CustomCakeRequestPage"), "CustomCakeRequestPage");
+const AdminStoreOverviewPage = lazyPage(() => import("../pages/feature/admin/AdminStoreOverviewPage"), "AdminStoreOverviewPage");
+const AdminActivityPage = lazyPage(() => import("../pages/feature/admin/AdminNewFeaturesPages"), "AdminActivityPage");
+const AdminCakeRequestsPage = lazyPage(() => import("../pages/feature/admin/AdminNewFeaturesPages"), "AdminCakeRequestsPage");
+const AdminFulfillmentPage = lazyPage(() => import("../pages/feature/admin/AdminNewFeaturesPages"), "AdminFulfillmentPage");
+const AdminReviewsPage = lazyPage(() => import("../pages/feature/admin/AdminNewFeaturesPages"), "AdminReviewsPage");
+const AdminStockAlertsPage = lazyPage(() => import("../pages/feature/admin/AdminNewFeaturesPages"), "AdminStockAlertsPage");
+const AdminDeliveredPage = lazyPage(() => import("../pages/feature/admin/AdminSalesPages"), "AdminDeliveredPage");
+const AdminOrdersPage = lazyPage(() => import("../pages/feature/admin/AdminSalesPages"), "AdminOrdersPage");
+const AdminPaymentsPage = lazyPage(() => import("../pages/feature/admin/AdminSalesPages"), "AdminPaymentsPage");
+const AdminLayout = lazyPage(() => import("../components/AdminLayout"), "AdminLayout");
+
+function PageLoading() {
+  return <div aria-busy="true" className="min-h-[60vh]" role="status" />;
+}
 
 function SkipToMainContent() {
   const location = useLocation();
@@ -83,6 +91,7 @@ function App() {
             <SkipToMainContent />
             <AuthProvider>
               <AdminAuthProvider>
+                <Suspense fallback={<PageLoading />}>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/flavors" element={<FlavorsPage />} />
@@ -142,6 +151,7 @@ function App() {
                   </Route>
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
+                </Suspense>
                 <InstallAppPrompt />
                 <RouteMeta />
               </AdminAuthProvider>
