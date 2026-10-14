@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../pages/feature/admin/useAdminAuth'
 import { apiRequest, ADMIN_WELCOME_KEY } from '../api/api'
@@ -762,7 +762,9 @@ export function AdminLayout() {
         </aside>
 
         <main data-scroll-reveal="skip" className="min-h-[60vh] min-w-0 rounded-[22px] border border-[#e2e8f0] bg-white p-4 shadow-[0_8px_28px_rgba(16,44,80,0.04)] sm:p-6 lg:p-8">
-          <Outlet />
+          <Suspense fallback={<div aria-busy="true" className="min-h-[50vh]" role="status" />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

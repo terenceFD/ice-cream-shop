@@ -3107,7 +3107,22 @@ const seo = createSeo({ templatePath: frontendEntry, listFlavors, siteUrl: proce
 app.get('/robots.txt', seo.robots)
 app.get('/sitemap.xml', seo.sitemap)
 if (existsSync(frontendEntry)) {
-  app.use(express.static(frontendDirectory, { index: false }))
+  app.use(express.static(frontendDirectory, {
+    index: false,
+    setHeaders(response, filePath) {
+      const name = filePath.replaceAll('\\', '/')
+      if (name.includes('/assets/')) {
+        // Vite gives these files a new name whenever their content changes.
+        response.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+      } else if (/\/(sw\.js|manifest\.webmanifest)$/.test(name)) {
+        // The browser must always see the latest service worker and app manifest.
+        response.setHeader('Cache-Control', 'no-cache')
+      } else if (/\.(?:webp|jpe?g|png|gif|svg|ico|avif|woff2?)$/i.test(name)) {
+        // Photos and icons rarely change; reuse them for a week and refresh quietly after that.
+        response.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=2592000')
+      }
+    },
+  }))
   // Every app page gets its own title, description and link-preview tags in the HTML itself,
   // and addresses the app does not have answer 404 so search engines drop them.
   app.use((request, response, next) => {
