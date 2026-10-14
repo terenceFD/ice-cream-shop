@@ -10,8 +10,6 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 import Stripe from 'stripe'
 import { createHmac, randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
-import { mkdir, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   addCustomerFavorite,
@@ -75,6 +73,7 @@ import {
 } from './email.js'
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
 import { storeAdminCanAccess } from './admin-access.js'
+import { ImageStorageConfigurationError, imageStorageOrigin, saveUploadedImage } from './storage.js'
 import { createSeo } from './seo.js'
 import {
   adminLockRemainingMs,
@@ -105,7 +104,7 @@ const frontendOrigins = [
   .map((origin) => new URL(origin).origin)
 const uploadDirectory = fileURLToPath(new URL('./uploads/', import.meta.url))
 const contentSecurityDirectives = helmet.contentSecurityPolicy.getDefaultDirectives()
-contentSecurityDirectives['img-src'] = ["'self'", 'data:', 'https://images.unsplash.com']
+contentSecurityDirectives['img-src'] = ["'self'", 'data:', 'https://images.unsplash.com', ...(imageStorageOrigin() ? [imageStorageOrigin()] : [])]
 contentSecurityDirectives['style-src'] = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com']
 contentSecurityDirectives['font-src'] = ["'self'", 'data:', 'https://fonts.gstatic.com']
 
@@ -2851,10 +2850,14 @@ app.post('/api/admin/uploads', requireAdmin, ownerOnly, async (request, response
     return
   }
   const extension = match[1] === 'jpeg' ? '.jpg' : `.${match[1]}`
-  await mkdir(uploadDirectory, { recursive: true })
-  const filename = `${randomUUID()}${extension}`
-  await writeFile(join(uploadDirectory, filename), buffer, { flag: 'wx' })
-  response.status(201).json({ image: `/uploads/${filename}` })
+  const image = await saveUploadedImage({
+    buffer,
+    filename: `${randomUUID()}${extension}`,
+    contentType: `image/${match[1]}`,
+    uploadDirectory,
+    isProduction,
+  })
+  response.status(201).json({ image })
 })
 
 app.get('/api/admin/discount-codes', requireAdmin, ownerOnly, async (_request, response) => {
@@ -3131,6 +3134,11 @@ app.use((error, _request, response, _next) => {
   }
   if (error instanceof EmailConfigurationError) {
     response.status(503).json({ error: 'Email delivery is not configured. Contact the store owner to finish setting up email delivery.' })
+    return
+  }
+  if (error instanceof ImageStorageConfigurationError) {
+    console.error(error.message)
+    response.status(503).json({ error: error.message })
     return
   }
   if (error instanceof CorsOriginError) {
