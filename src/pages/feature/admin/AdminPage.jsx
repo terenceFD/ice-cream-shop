@@ -7,12 +7,12 @@ import { useCart } from "../../../useCart";
 import { formatCartMoney } from "../../../cartPricing";
 import { apiRequest } from "../../../api/api";
 import { prepareImageForUpload, UPLOAD_IMAGE_TYPES, UPLOAD_MAX_BYTES } from "../../../prepareUploadImage";
+import { stockBarPercent } from "./stockMeter";
+import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from "./adminTable";
 
 const inputClassName =
   "mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
 const labelClassName = "block text-xs font-bold text-[#4f6379]";
-const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024;
-const PROFILE_IMAGE_DIMENSION = 256;
 const LOW_STOCK_THRESHOLD = 10;
 
 const icons = {
@@ -30,7 +30,6 @@ const icons = {
   alert: "M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z",
   scoop: "M7 10a5 5 0 0 1 10 0M6 10h12l-6 11-6-11Z",
   box: "M4 8l8-4 8 4v8l-8 4-8-4V8Zm0 0 8 4m0 0 8-4m-8 4v8",
-  camera: "M4 8h3l2-3h6l2 3h3v11H4V8Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z",
   image: "M4 5h16v14H4V5Zm0 11 4.5-4.5L13 16m-2-2 2.5-2.5L20 18M15.5 9.5h.01",
 };
 
@@ -66,15 +65,13 @@ function StockBadge({ flavor, t }) {
 
 function StockMeter({ flavor, t }) {
   const style = stockStyles[stockState(flavor)];
-  const total = Math.max(flavor.stock || 0, flavor.availableQuantity, 1);
-  const percent = Math.min(100, Math.round((flavor.availableQuantity / total) * 100));
+  const percent = stockBarPercent(flavor.availableQuantity, LOW_STOCK_THRESHOLD);
   return (
     <div className="min-w-[7.5rem]">
       <div className="flex items-baseline justify-between gap-2 text-xs">
         <span className="font-extrabold tabular-nums text-[#102c50]">{flavor.availableQuantity}</span>
         <span className="text-[11px] text-[#8190a1]">
-          / {flavor.stock}
-          {flavor.reservedStock ? ` · ${flavor.reservedStock} ${t("reserved")}` : ""}
+          {flavor.reservedStock ? `${flavor.reservedStock} ${t("reserved")}` : t("Alert at {count}", { count: LOW_STOCK_THRESHOLD })}
         </span>
       </div>
       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#edf1f5]">
@@ -330,32 +327,6 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
   );
 }
 
-async function resizeProfilePicture(file) {
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Choose an image file for the profile picture.");
-  }
-  if (file.size > MAX_PROFILE_IMAGE_SIZE) {
-    throw new Error("Choose an image smaller than 5 MB.");
-  }
-
-  const image = await createImageBitmap(file);
-  const scale = Math.min(
-    1,
-    PROFILE_IMAGE_DIMENSION / Math.max(image.width, image.height),
-  );
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(image.width * scale));
-  canvas.height = Math.max(1, Math.round(image.height * scale));
-  const context = canvas.getContext("2d");
-  if (!context) {
-    image.close();
-    throw new Error("Your browser could not prepare the profile picture.");
-  }
-  context.drawImage(image, 0, 0, canvas.width, canvas.height);
-  image.close();
-  return canvas.toDataURL("image/jpeg", 0.8);
-}
-
 const initialForm = {
   name: "",
   detail: "",
@@ -376,7 +347,6 @@ export function AdminPage() {
     deleteFlavor,
     updateFlavor,
   } = useFlavors();
-  const { currentAdmin, updateProfilePicture } = useAdminAuth();
   const { t } = useLanguage();
   const { removeFromCart, updateCartFlavor } = useCart();
   const [form, setForm] = useState(initialForm);
@@ -393,10 +363,7 @@ export function AdminPage() {
   const [stockFilter, setStockFilter] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [view, setView] = useState("table");
-  const [profilePicture, setProfilePicture] = useState("");
-  const [profilePictureError, setProfilePictureError] = useState("");
-  const [profilePictureMessage, setProfilePictureMessage] = useState("");
-  const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false);
+
   const flavorTags = [
     ...new Set(flavors.map((flavor) => flavor.tag).filter(Boolean)),
   ].sort((a, b) => a.localeCompare(b));
@@ -458,50 +425,6 @@ export function AdminPage() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOverlayOpen]);
-
-  async function handleProfilePictureChange(event) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-
-    setProfilePictureError("");
-    setProfilePictureMessage("");
-    try {
-      setProfilePicture(await resizeProfilePicture(file));
-    } catch (imageError) {
-      console.error("Unable to prepare admin profile picture.", imageError);
-      setProfilePicture("");
-      setProfilePictureError(
-        t(
-          imageError instanceof Error
-            ? imageError.message
-            : "Could not load this profile picture.",
-        ),
-      );
-    }
-  }
-
-  async function handleProfilePictureSave() {
-    if (!profilePicture) return;
-    setProfilePictureError("");
-    setProfilePictureMessage("");
-    setIsSavingProfilePicture(true);
-    try {
-      await updateProfilePicture(profilePicture);
-      setProfilePicture("");
-      setProfilePictureMessage(t("Profile picture updated."));
-    } catch (saveError) {
-      setProfilePictureError(
-        t(
-          saveError instanceof Error
-            ? saveError.message
-            : "Unable to update profile picture.",
-        ),
-      );
-    } finally {
-      setIsSavingProfilePicture(false);
-    }
-  }
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -674,69 +597,20 @@ export function AdminPage() {
       {/* Page header */}
       <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex min-w-0 items-center gap-4">
-          <div className="group relative shrink-0">
-            {profilePicture || currentAdmin?.profilePicture ? (
-              <img decoding="async" loading="lazy"
-                alt=""
-                className="size-16 rounded-2xl object-cover ring-1 ring-[#e2e8f0]"
-                src={profilePicture || currentAdmin.profilePicture}
-              />
-            ) : (
-              <span
-                aria-hidden="true"
-                className="grid size-16 place-items-center rounded-2xl bg-[#ffdc32] font-display text-2xl font-extrabold text-[#092a53]"
-              >
-                {currentAdmin?.name?.charAt(0).toUpperCase()}
-              </span>
-            )}
-            <label
-              className="absolute -bottom-1.5 -right-1.5 grid size-7 cursor-pointer place-items-center rounded-full bg-[#092a53] text-white ring-[3px] ring-white transition hover:bg-[#163e6b] focus-within:outline-2 focus-within:outline-[#bd9c00]"
-              title={t(currentAdmin?.profilePicture ? "Change profile picture" : "Add profile picture")}
-            >
-              <span className="sr-only">
-                {t(currentAdmin?.profilePicture ? "Change profile picture" : "Add profile picture")}
-              </span>
-              <Icon className="size-3.5" path={icons.camera} />
-              <input accept="image/*" className="sr-only" onChange={handleProfilePictureChange} type="file" />
-            </label>
-          </div>
+          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
+            <Icon className="size-7" path={icons.scoop} />
+          </span>
           <div className="min-w-0">
             <nav aria-label={t("Breadcrumb")} className="text-[11px] font-bold text-[#8190a1]">
               {t("Catalog")} <span aria-hidden="true" className="mx-1">/</span>
               <span className="text-[#8a7000]">{t("Flavors")}</span>
             </nav>
             <h1 className="mt-1 truncate font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">
-              {t("Welcome, {name}", { name: currentAdmin?.name || "Admin" })}
+              {t("Flavors")}
             </h1>
             <p className="mt-0.5 text-sm text-[#65748a]">
               {t("Add a flavor and manage the list of flavors available in your shop.")}
             </p>
-            {profilePicture && (
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <button
-                  className="inline-flex min-h-8 items-center gap-1.5 rounded-lg bg-[#ffdc32] px-3 text-xs font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] disabled:cursor-wait disabled:opacity-60"
-                  disabled={isSavingProfilePicture}
-                  onClick={handleProfilePictureSave}
-                  type="button"
-                >
-                  <Icon className="size-3.5" path={icons.check} />
-                  {t(isSavingProfilePicture ? "Saving…" : "Save profile picture")}
-                </button>
-                <button
-                  className="min-h-8 rounded-lg px-3 text-xs font-bold text-[#65748a] transition hover:bg-[#f1f4f8]"
-                  onClick={() => setProfilePicture("")}
-                  type="button"
-                >
-                  {t("Cancel")}
-                </button>
-              </div>
-            )}
-            {profilePictureError && (
-              <p className="mt-1.5 text-xs font-semibold text-red-700" role="alert">{profilePictureError}</p>
-            )}
-            {profilePictureMessage && (
-              <p className="mt-1.5 text-xs font-semibold text-[#2c7a4f]" role="status">{profilePictureMessage}</p>
-            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2.5">
@@ -779,7 +653,7 @@ export function AdminPage() {
       )}
 
       {/* Metrics */}
-      <section aria-label={t("Flavor inventory overview")} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t("Flavor inventory overview")} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => {
           const isActive = stockFilter === metric.filter && metric.filter !== "all";
           return (
@@ -869,7 +743,7 @@ export function AdminPage() {
               <input
                 className={`${inputClassName} mt-0 pl-10`}
                 onChange={(event) => setFlavorSearch(event.target.value)}
-                placeholder={t("Search by flavor name or description")}
+                placeholder={t("Search flavors")}
                 type="search"
                 value={flavorSearch}
               />
@@ -975,18 +849,18 @@ export function AdminPage() {
                   <th className="px-3 py-3 text-right font-extrabold" scope="col">{t("Price")}</th>
                   <th className="px-3 py-3 font-extrabold" scope="col">{t("Stock")}</th>
                   <th className="px-3 py-3 font-extrabold" scope="col">{t("Status")}</th>
-                  <th className="px-5 py-3 text-right font-extrabold" scope="col"><span className="sr-only">{t("Actions")}</span></th>
+                  <th className={`px-5 py-3 text-right font-extrabold ${PINNED_ACTION_HEAD}`} scope="col"><span className="sr-only">{t("Actions")}</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f0f3f7]">
                 {filteredFlavors.map((flavor) => (
-                  <tr className="transition hover:bg-[#fafbfd]" key={flavor.id}>
+                  <tr className="group transition hover:bg-[#fafbfd]" key={flavor.id}>
                     <td className="px-5 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <FlavorThumb alt="" src={flavor.image} />
                         <div className="min-w-0">
                           <p className="truncate font-bold text-[#102c50]">{flavor.name}</p>
-                          <p className="max-w-[18rem] truncate text-xs text-[#7b8796]">{flavor.detail}</p>
+                          <p className="max-w-[14rem] truncate text-xs text-[#7b8796]">{flavor.detail}</p>
                         </div>
                       </div>
                     </td>
@@ -1004,7 +878,7 @@ export function AdminPage() {
                     </td>
                     <td className="px-3 py-3"><StockMeter flavor={flavor} t={t} /></td>
                     <td className="px-3 py-3"><StockBadge flavor={flavor} t={t} /></td>
-                    <td className="px-5 py-3">{rowActions(flavor)}</td>
+                    <td className={`px-5 py-3 ${PINNED_ACTION_CELL}`}>{rowActions(flavor)}</td>
                   </tr>
                 ))}
               </tbody>

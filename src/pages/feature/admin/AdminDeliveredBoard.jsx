@@ -290,7 +290,7 @@ export function AdminDeliveredBoard() {
         </p>
       )}
 
-      <section aria-label={t("Delivery overview")} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t("Delivery overview")} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => (
           <article className="rounded-2xl border border-[#e5ebf3] bg-white p-4 sm:p-5" key={metric.label}>
             <span className={`grid size-9 place-items-center rounded-xl ${metric.accent}`}><Icon path={metric.icon} /></span>
@@ -358,7 +358,7 @@ export function AdminDeliveredBoard() {
             <label className="relative block">
               <span className="sr-only">{t("Search delivered orders")}</span>
               <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
-              <input className={`${inputClassName} pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t("Search by customer, item, or order number")} type="search" value={search} />
+              <input className={`${inputClassName} pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t("Search orders")} type="search" value={search} />
             </label>
             {isOwner && (
               <label className="block">

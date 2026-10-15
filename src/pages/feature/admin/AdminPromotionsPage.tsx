@@ -406,7 +406,7 @@ export function AdminPromotionsPage() {
           </div>
         </div>
         <button
-          className="inline-flex min-h-10 items-center gap-2 self-start rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] xl:self-auto"
+          className="inline-flex min-h-10 shrink-0 items-center gap-2 self-start whitespace-nowrap rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] xl:self-auto"
           onClick={openCreate}
           type="button"
         >
@@ -440,7 +440,7 @@ export function AdminPromotionsPage() {
         </p>
       )}
 
-      <section aria-label={t('Promotion overview')} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t('Promotion overview')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => {
           const isActive = metric.filter !== null && metric.filter !== 'all' && statusFilter === metric.filter
           const body = (

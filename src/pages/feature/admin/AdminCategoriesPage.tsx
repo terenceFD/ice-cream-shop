@@ -271,7 +271,7 @@ export function AdminCategoriesPage() {
         </p>
       )}
 
-      <section aria-label={t('Category overview')} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section aria-label={t('Category overview')} className="admin-stats grid grid-cols-2 gap-3 lg:grid-cols-4">
         {metrics.map((metric) => {
           const isActive = typeFilter === metric.filter && metric.filter !== 'all'
           return (

@@ -54,8 +54,9 @@ export function AdminLoginPage() {
     }
   }, []);
 
+  // Admins start on the store overview (today's orders and what needs attention).
   if (isAdmin) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/admin/overview" replace />;
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -65,7 +66,7 @@ export function AdminLoginPage() {
     try {
       await login(email, password);
       const from = location.state?.from;
-      const destination = from?.pathname ? `${from.pathname}${from.search || ""}${from.hash || ""}` : "/admin";
+      const destination = from?.pathname ? `${from.pathname}${from.search || ""}${from.hash || ""}` : "/admin/overview";
       navigate(destination, { replace: true });
     } catch (loginError) {
       setError(t(loginError instanceof Error ? loginError.message : "Unable to sign in."));

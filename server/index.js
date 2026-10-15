@@ -171,6 +171,7 @@ import {
   getCamPayTransaction,
   isCamPayMobileMoneyEnabled,
 } from './campay.js'
+import { BOOT_LOADER_SCRIPT_HASH } from '../shared/bootLoader.js'
 
 const app = express()
 app.set('trust proxy', 1)
@@ -191,6 +192,8 @@ const contentSecurityDirectives = helmet.contentSecurityPolicy.getDefaultDirecti
 contentSecurityDirectives['img-src'] = ["'self'", 'data:', 'https://images.unsplash.com', ...(imageStorageOrigin() ? [imageStorageOrigin()] : [])]
 contentSecurityDirectives['style-src'] = ["'self'", "'unsafe-inline'"]
 contentSecurityDirectives['font-src'] = ["'self'", 'data:']
+// The only inline script is the website loader's (shared/bootLoader.js), allowed by its hash.
+contentSecurityDirectives['script-src'] = ["'self'", BOOT_LOADER_SCRIPT_HASH]
 
 // Tokens are only ever signed with HS256; refuse any other algorithm a forged token might claim.
 const JWT_VERIFY_OPTIONS = { algorithms: ['HS256'] }

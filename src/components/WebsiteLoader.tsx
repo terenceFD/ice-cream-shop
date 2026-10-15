@@ -1,71 +1,39 @@
-import { useEffect, useState } from 'react'
-import { useLanguage } from '../language/useLanguage'
+import { useEffect } from 'react'
 
-const MIN_VISIBLE_MS = 900
-const MAX_VISIBLE_MS = 2500
-const EXIT_MS = 700
+// The loader itself is plain HTML in index.html (shared/bootLoader.js), so it shows before any
+// JavaScript arrives. This removes it as soon as the page has something on screen, with no
+// minimum time, and fades it out. It renders nothing itself.
+const FADE_MS = 350
+const GIVE_UP_MS = 6000
 
 export function WebsiteLoader() {
-  const { t } = useLanguage()
-  const [isLeaving, setIsLeaving] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
-
   useEffect(() => {
-    const startedAt = performance.now()
-    let exitTimer = 0
-    let removeTimer = 0
-
-    const leave = () => {
-      if (exitTimer) return
-      const wait = Math.max(0, MIN_VISIBLE_MS - (performance.now() - startedAt))
-      exitTimer = window.setTimeout(() => {
-        setIsLeaving(true)
-        removeTimer = window.setTimeout(() => setIsVisible(false), EXIT_MS)
-      }, wait)
+    const loader = document.getElementById('boot-loader')
+    if (!loader) return undefined
+    if (document.documentElement.classList.contains('boot-skip')) {
+      loader.remove()
+      return undefined
     }
 
-    if (document.readyState === 'complete') leave()
-    else window.addEventListener('load', leave, { once: true })
-    const safetyTimer = window.setTimeout(leave, MAX_VISIBLE_MS)
+    const startedAt = performance.now()
+    let frame = 0
+    let removeTimer = 0
+    const finish = () => {
+      loader.classList.add('boot-loader--done')
+      removeTimer = window.setTimeout(() => loader.remove(), FADE_MS)
+    }
+    // Lazy pages render their <main> a moment after the app starts; wait for it.
+    const check = () => {
+      if (document.querySelector('main') || performance.now() - startedAt > GIVE_UP_MS) finish()
+      else frame = window.requestAnimationFrame(check)
+    }
+    check()
 
     return () => {
-      window.removeEventListener('load', leave)
-      window.clearTimeout(safetyTimer)
-      window.clearTimeout(exitTimer)
+      window.cancelAnimationFrame(frame)
       window.clearTimeout(removeTimer)
     }
   }, [])
 
-  if (!isVisible) return null
-
-  return (
-    <div
-      aria-label={t('Loading your sweet moments')}
-      className={`website-loader${isLeaving ? ' website-loader--leaving' : ''}`}
-      role="status"
-    >
-      <div aria-hidden="true" className="website-loader__dots-bg" />
-      <div aria-hidden="true" className="website-loader__halo" />
-
-      <div className="website-loader__content">
-        <div aria-hidden="true" className="website-loader__mark">
-          <svg className="website-loader__ring" viewBox="0 0 120 120">
-            <circle className="website-loader__ring-track" cx="60" cy="60" r="54" />
-            <circle className="website-loader__ring-progress" cx="60" cy="60" r="54" />
-          </svg>
-          <img decoding="async" loading="eager" alt="" className="website-loader__logo" height={88} src="/logo.png" width={88} />
-        </div>
-
-        <p aria-hidden="true" className="website-loader__wordmark">
-          Cold Stone
-          <span>Creamery</span>
-        </p>
-        <p className="website-loader__message">{t('A little sweetness is on its way')}</p>
-
-        <div aria-hidden="true" className="website-loader__bar">
-          <span />
-        </div>
-      </div>
-    </div>
-  )
+  return null
 }

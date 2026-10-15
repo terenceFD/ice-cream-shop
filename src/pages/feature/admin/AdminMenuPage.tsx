@@ -4,6 +4,8 @@ import { apiRequest } from '../../../api/api'
 import { prepareImageForUpload, UPLOAD_IMAGE_TYPES, UPLOAD_MAX_BYTES } from '../../../prepareUploadImage'
 import { useAdminAuth } from './useAdminAuth'
 import { useLanguage } from '../../../language/useLanguage'
+import { stockBarPercent } from './stockMeter'
+import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from './adminTable'
 
 const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
 const labelClassName = 'block text-xs font-bold text-[#4f6379]'
@@ -328,13 +330,12 @@ export function AdminMenuPage() {
 
   const StockMeter = ({ item }: { item: MenuItem }) => {
     const style = statusStyles[itemStatus(item)]
-    const total = Math.max(item.stock || 0, item.availableQuantity, 1)
-    const percent = Math.min(100, Math.round((Math.max(0, item.availableQuantity) / total) * 100))
+    const percent = stockBarPercent(item.availableQuantity, LOW_STOCK_THRESHOLD)
     return (
       <div className="min-w-[7rem]">
         <div className="flex items-baseline justify-between gap-2 text-xs">
           <span className="font-extrabold tabular-nums text-[#102c50]">{item.availableQuantity}</span>
-          <span className="text-[11px] text-[#8190a1]">/ {item.stock}</span>
+          <span className="text-[11px] text-[#8190a1]">{t('Alert at {count}', { count: LOW_STOCK_THRESHOLD })}</span>
         </div>
         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#edf1f5]">
           <div className={`h-full rounded-full ${style.bar}`} style={{ width: `${percent}%` }} />
@@ -420,7 +421,7 @@ export function AdminMenuPage() {
         </div>
       )}
 
-      <section aria-label={t('Menu inventory overview')} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t('Menu inventory overview')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => {
           const isActive = statusFilter === metric.filter && metric.filter !== 'all'
           return (
@@ -499,7 +500,7 @@ export function AdminMenuPage() {
               <input
                 className={`${inputClassName} mt-0 pl-10`}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder={t('Search by name, description or category')}
+                placeholder={t('Search menu items')}
                 type="search"
                 value={search}
               />
@@ -606,18 +607,18 @@ export function AdminMenuPage() {
                   <th className="px-3 py-3 text-right font-extrabold" scope="col">{t('Price')}</th>
                   <th className="px-3 py-3 font-extrabold" scope="col">{t('Stock')}</th>
                   <th className="px-3 py-3 font-extrabold" scope="col">{t('Status')}</th>
-                  <th className="px-5 py-3" scope="col"><span className="sr-only">{t('Actions')}</span></th>
+                  <th className={`px-5 py-3 ${PINNED_ACTION_HEAD}`} scope="col"><span className="sr-only">{t('Actions')}</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f0f3f7]">
                 {filteredItems.map((item) => (
-                  <tr className={`transition hover:bg-[#fafbfd] ${deletingItemId === item.id ? 'opacity-50' : ''}`} key={item.id}>
+                  <tr className={`group transition hover:bg-[#fafbfd] ${deletingItemId === item.id ? 'opacity-50' : ''}`} key={item.id}>
                     <td className="px-5 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <Thumb src={item.image} />
                         <div className="min-w-0">
                           <p className="truncate font-bold text-[#102c50]">{item.name}</p>
-                          <p className="max-w-[20rem] truncate text-xs text-[#7b8796]">{item.detail}</p>
+                          <p className="max-w-[14rem] truncate text-xs text-[#7b8796]">{item.detail}</p>
                         </div>
                       </div>
                     </td>
@@ -629,7 +630,7 @@ export function AdminMenuPage() {
                     <td className="whitespace-nowrap px-3 py-3 text-right font-bold tabular-nums text-[#102c50]">{formatPrice(item.priceXaf)}</td>
                     <td className="px-3 py-3"><StockMeter item={item} /></td>
                     <td className="px-3 py-3"><StatusBadge item={item} /></td>
-                    <td className="px-5 py-3">{rowActions(item)}</td>
+                    <td className={`px-5 py-3 ${PINNED_ACTION_CELL}`}>{rowActions(item)}</td>
                   </tr>
                 ))}
               </tbody>

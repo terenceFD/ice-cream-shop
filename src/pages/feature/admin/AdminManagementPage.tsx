@@ -269,7 +269,7 @@ export function AdminManagementPage() {
         </p>
       )}
 
-      <section aria-label={t("Admin overview")} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t("Admin overview")} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => (
           <article className="rounded-2xl border border-[#e5ebf3] bg-white p-4 sm:p-5" key={metric.label}>
             <span className={`grid size-9 place-items-center rounded-xl ${metric.accent}`}><Icon path={metric.icon} /></span>

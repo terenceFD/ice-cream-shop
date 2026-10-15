@@ -278,7 +278,7 @@ export function AdminCakeRequestsBoard() {
         </p>
       )}
 
-      <section aria-label={t('Request overview')} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t('Request overview')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => {
           const isActive = statusFilter === metric.key
           const meta = statusMeta[metric.key]
@@ -334,7 +334,7 @@ export function AdminCakeRequestsBoard() {
             <label className="relative block">
               <span className="sr-only">{t('Search requests')}</span>
               <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
-              <input className={`${inputClassName} pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search by customer, flavor, or request number')} type="search" value={search} />
+              <input className={`${inputClassName} pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search cake requests')} type="search" value={search} />
             </label>
             <label className="block">
               <span className="sr-only">{t('Sort by')}</span>

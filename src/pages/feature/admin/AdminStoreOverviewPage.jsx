@@ -294,7 +294,7 @@ export function AdminStoreOverviewPage() {
           </section>
 
           {/* KPIs */}
-          <section aria-label={t("Today")} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <section aria-label={t("Today")} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
             {[
               { label: t("Orders today"), value: view.todaysOrders.length.toLocaleString(locale), hint: t("{count} delivered", { count: view.deliveredToday.length }), icon: icons.receipt, accent: "bg-[#e9f1fa] text-[#315982]" },
               { label: t("Sales today"), value: money(view.todaySales), hint: t("Paid orders"), icon: icons.money, accent: "bg-[#e5f4ea] text-[#2c7a4f]" },
@@ -324,9 +324,9 @@ export function AdminStoreOverviewPage() {
                 <ol className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-4 sm:px-5">
                   {Object.keys(stageLabels).map((stage, index) => (
                     <li className="rounded-xl bg-[#f7f9fc] px-3 py-2.5 ring-1 ring-[#eef2f6]" key={stage}>
-                      <p className="flex items-center gap-1.5 text-[11px] font-bold text-[#65748a]">
-                        <span className="grid size-5 place-items-center rounded-md bg-white text-[10px] font-extrabold text-[#355777] ring-1 ring-[#e3e9f0]">{index + 1}</span>
-                        <span className="truncate">{t(stageLabels[stage])}</span>
+                      <p className="flex items-start gap-1.5 text-[11px] font-bold leading-tight text-[#65748a]">
+                        <span className="grid size-5 shrink-0 place-items-center rounded-md bg-white text-[10px] font-extrabold text-[#355777] ring-1 ring-[#e3e9f0]">{index + 1}</span>
+                        <span className="pt-0.5">{t(stageLabels[stage])}</span>
                       </p>
                       <p className="mt-1.5 font-display text-2xl font-extrabold text-[#092a53]">{view.stageCounts[stage] || 0}</p>
                     </li>

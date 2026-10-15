@@ -3,6 +3,8 @@ import { apiRequest } from '../../../api/api'
 import { useAdminAuth } from './useAdminAuth'
 import { useLanguage } from '../../../language/useLanguage'
 import { thumbnail } from '../../../thumbnails'
+import { stockBarPercent } from './stockMeter'
+import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from './adminTable'
 
 const dietaryOptions = ['vegetarian', 'vegan', 'dairy-free', 'gluten-free', 'nut-free']
 const DEFAULT_THRESHOLD = 5
@@ -292,7 +294,7 @@ export function AdminInventoryPage() {
         </p>
       )}
 
-      <section aria-label={t('Inventory overview')} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t('Inventory overview')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => {
           const isActive = inventoryFilter === metric.filter && metric.filter !== 'all'
           return (
@@ -347,7 +349,7 @@ export function AdminInventoryPage() {
             <label className="relative block">
               <span className="sr-only">{t('Search')}</span>
               <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
-              <input className={`${inputClassName} mt-0 pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search by name or category')} type="search" value={search} />
+              <input className={`${inputClassName} mt-0 pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search items')} type="search" value={search} />
             </label>
             <label className="block">
               <span className="sr-only">{t('Category')}</span>
@@ -423,15 +425,14 @@ export function AdminInventoryPage() {
                   <th className="px-3 py-3 font-extrabold" scope="col">{t('Dietary needs')}</th>
                   <th className="px-3 py-3 font-extrabold" scope="col">{t('Status')}</th>
                   <th className="px-3 py-3 text-center font-extrabold" scope="col">{t('On sale')}</th>
-                  <th className="px-5 py-3" scope="col"><span className="sr-only">{t('Action')}</span></th>
+                  <th className={`px-5 py-3 ${PINNED_ACTION_HEAD}`} scope="col"><span className="sr-only">{t('Action')}</span></th>
                 </tr>
               </thead>
               <tbody>
                 {filteredItems.map((item, index) => {
                   const status = itemStatus(item)
                   const style = statusStyles[status]
-                  const total = Math.max(item.stock, item.availableQuantity, 1)
-                  const percent = Math.min(100, Math.round((Math.max(0, item.availableQuantity) / total) * 100))
+                  const percent = stockBarPercent(item.availableQuantity, threshold(item))
                   const showGroupHeader = isGrouped && (index === 0 || filteredItems[index - 1].categoryTitle !== item.categoryTitle)
                   const groupCount = showGroupHeader ? filteredItems.filter((other) => other.categoryTitle === item.categoryTitle).length : 0
                   return (
@@ -444,11 +445,11 @@ export function AdminInventoryPage() {
                           </th>
                         </tr>
                       )}
-                      <tr className={`border-b border-[#f0f3f7] transition hover:bg-[#fafbfd] ${savingId === item.id ? 'opacity-60' : ''}`}>
+                      <tr className={`group border-b border-[#f0f3f7] transition hover:bg-[#fafbfd] ${savingId === item.id ? 'opacity-60' : ''}`}>
                         <td className="px-5 py-3">
                           <div className="flex min-w-0 items-center gap-3">
                             <Thumb src={item.image} />
-                            <span className="max-w-[16rem] truncate font-bold text-[#102c50]">{item.name}</span>
+                            <span className="max-w-[13rem] truncate font-bold text-[#102c50]">{item.name}</span>
                           </div>
                         </td>
                         {!isGrouped && (
@@ -460,7 +461,7 @@ export function AdminInventoryPage() {
                           <div className="w-32">
                             <div className="flex items-baseline justify-between gap-2 text-xs">
                               <span className="font-extrabold tabular-nums text-[#102c50]">{item.availableQuantity}</span>
-                              <span className="text-[11px] text-[#8190a1]">/ {item.stock}</span>
+                              <span className="text-[11px] text-[#8190a1]">{t('{count} in stock', { count: item.stock })}</span>
                             </div>
                             <div className="relative mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#edf1f5]">
                               <div className={`h-full rounded-full ${style.bar}`} style={{ width: `${percent}%` }} />
@@ -497,7 +498,7 @@ export function AdminInventoryPage() {
                             onChange={(checked) => saveItem({ ...item, isAvailable: checked })}
                           />
                         </td>
-                        <td className="px-5 py-3 text-right">
+                        <td className={`px-5 py-3 text-right ${PINNED_ACTION_CELL}`}>
                           <button
                             aria-label={`${t('Edit')} ${item.name}`}
                             className="inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-[#355777] transition hover:bg-[#eef2f7] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-[#bd9c00]"

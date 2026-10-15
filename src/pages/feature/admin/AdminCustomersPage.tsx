@@ -410,7 +410,7 @@ export function AdminCustomersPage() {
         </section>
       )}
 
-      <section aria-label={t('Customer overview')} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t('Customer overview')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => {
           const isActive = statusFilter === metric.key && metric.key !== 'all'
           return (

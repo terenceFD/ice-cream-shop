@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { apiRequest } from '../../../api/api'
 import { useAdminAuth } from './useAdminAuth'
 import { useLanguage } from '../../../language/useLanguage'
+import { niceAxis } from './chartScale'
 
 interface AdminReport {
   summary: {
@@ -169,14 +170,22 @@ export function AdminReportsPage() {
   const bestDay = series.reduce((best, day) => (day.sales > best.sales ? day : best), series[0])
   const completion = report.summary.orderCount ? Math.round((report.summary.placedCount / report.summary.orderCount) * 100) : 0
 
+  // One bar per day on a round axis (a line drew a few sales days as sharp spikes).
   const values = series.map((day) => (chartMetric === 'sales' ? day.sales : day.orders))
-  const maxValue = Math.max(1, ...values)
+  const axis = niceAxis(Math.max(0, ...values), { integer: chartMetric === 'orders' })
   const chartWidth = 720
   const chartHeight = 220
-  const stepX = chartWidth / (series.length - 1)
-  const points = values.map((value, index) => [index * stepX, chartHeight - (value / maxValue) * (chartHeight - 16) - 4] as const)
-  const linePath = points.map(([x, y], index) => `${index ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
-  const areaPath = `${linePath} L${chartWidth},${chartHeight} L0,${chartHeight} Z`
+  const slotWidth = chartWidth / series.length
+  const barWidth = Math.max(2, slotWidth - 4)
+  const barHeight = (value: number) => (value / axis.max) * chartHeight
+  // Bar with 4px rounded top corners resting on the baseline.
+  const barPath = (index: number, value: number) => {
+    const height = barHeight(value)
+    const x = index * slotWidth + (slotWidth - barWidth) / 2
+    const radius = Math.min(4, barWidth / 2, height)
+    const top = chartHeight - height
+    return `M${x},${chartHeight} V${top + radius} Q${x},${top} ${x + radius},${top} H${x + barWidth - radius} Q${x + barWidth},${top} ${x + barWidth},${top + radius} V${chartHeight} Z`
+  }
   const hovered = hoverIndex !== null ? series[hoverIndex] : null
   const gridLines = [0.25, 0.5, 0.75, 1]
 
@@ -187,7 +196,7 @@ export function AdminReportsPage() {
     { label: t('Paid sales'), value: formatXaf(report.summary.sales, language), hint: weekChange === null ? t('All time') : t('{change}% vs. previous week', { change: weekChange > 0 ? `+${weekChange}` : weekChange }), trend: weekChange, icon: icons.money, accent: 'bg-[#e5f4ea] text-[#2c7a4f]' },
     { label: t('Total orders'), value: report.summary.orderCount.toLocaleString(locale), hint: t('{count} in the last 30 days', { count: periodOrders }), trend: null, icon: icons.receipt, accent: 'bg-[#e9f1fa] text-[#315982]' },
     { label: t('Average paid order'), value: formatXaf(report.summary.averageOrder, language), hint: t('Per paid order'), trend: null, icon: icons.basket, accent: 'bg-[#fff4c2] text-[#8a6f00]' },
-    { label: t('Orders placed'), value: report.summary.placedCount.toLocaleString(locale), hint: t('{rate}% of orders completed payment', { rate: completion }), trend: null, icon: icons.check, accent: 'bg-[#efe9fb] text-[#5b3fa0]' },
+    { label: t('Orders placed'), value: report.summary.placedCount.toLocaleString(locale), hint: t('{rate}% of orders paid', { rate: completion }), trend: null, icon: icons.check, accent: 'bg-[#efe9fb] text-[#5b3fa0]' },
   ]
 
   return (
@@ -226,7 +235,7 @@ export function AdminReportsPage() {
         </div>
       </header>
 
-      <section aria-label={t('Summary')} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t('Summary')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {kpis.map((kpi) => (
           <article className="rounded-2xl border border-[#e5ebf3] bg-white p-4 sm:p-5" key={kpi.label}>
             <span className={`grid size-9 place-items-center rounded-xl ${kpi.accent}`}><Icon path={kpi.icon} /></span>
@@ -270,7 +279,7 @@ export function AdminReportsPage() {
         <div className="relative mt-6">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex w-12 flex-col justify-between pb-6 text-right text-[10px] font-semibold text-[#a3b0bf]">
             {[...gridLines].reverse().map((ratio) => (
-              <span key={ratio}>{chartMetric === 'sales' ? compactXaf(maxValue * ratio, language) : Math.round(maxValue * ratio)}</span>
+              <span key={ratio}>{chartMetric === 'sales' ? compactXaf(axis.max * ratio, language) : Math.round(axis.max * ratio)}</span>
             ))}
             <span>0</span>
           </div>
@@ -282,38 +291,33 @@ export function AdminReportsPage() {
               onMouseMove={(event) => {
                 const rect = event.currentTarget.getBoundingClientRect()
                 const ratio = (event.clientX - rect.left) / rect.width
-                setHoverIndex(Math.max(0, Math.min(series.length - 1, Math.round(ratio * (series.length - 1)))))
+                setHoverIndex(Math.max(0, Math.min(series.length - 1, Math.floor(ratio * series.length))))
               }}
               preserveAspectRatio="none"
               role="img"
               viewBox={`0 0 ${chartWidth} ${chartHeight}`}
             >
-              <defs>
-                <linearGradient id="report-area" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#ffdc32" stopOpacity="0.45" />
-                  <stop offset="100%" stopColor="#ffdc32" stopOpacity="0" />
-                </linearGradient>
-              </defs>
               {gridLines.map((ratio) => (
-                <line key={ratio} stroke="#eef2f6" strokeWidth="1" vectorEffect="non-scaling-stroke" x1="0" x2={chartWidth} y1={chartHeight - ratio * (chartHeight - 16) - 4} y2={chartHeight - ratio * (chartHeight - 16) - 4} />
+                <line key={ratio} stroke="#eef2f6" strokeWidth="1" vectorEffect="non-scaling-stroke" x1="0" x2={chartWidth} y1={chartHeight - ratio * chartHeight} y2={chartHeight - ratio * chartHeight} />
               ))}
-              <line stroke="#dde4ec" strokeWidth="1" vectorEffect="non-scaling-stroke" x1="0" x2={chartWidth} y1={chartHeight} y2={chartHeight} />
-              <path d={areaPath} fill="url(#report-area)" />
-              <path d={linePath} fill="none" stroke="#092a53" strokeLinejoin="round" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
               {hoverIndex !== null && (
-                <line stroke="#092a53" strokeDasharray="4 4" strokeOpacity="0.35" strokeWidth="1" vectorEffect="non-scaling-stroke" x1={points[hoverIndex][0]} x2={points[hoverIndex][0]} y1="0" y2={chartHeight} />
+                <rect fill="#092a53" fillOpacity="0.05" height={chartHeight} width={slotWidth} x={hoverIndex * slotWidth} y="0" />
               )}
+              {values.map((value, index) => value > 0 && (
+                <path
+                  d={barPath(index, value)}
+                  fill="#092a53"
+                  fillOpacity={hoverIndex === null || hoverIndex === index ? 1 : 0.55}
+                  key={series[index].date.toISOString()}
+                />
+              ))}
+              <line stroke="#c9d3de" strokeWidth="1" vectorEffect="non-scaling-stroke" x1="0" x2={chartWidth} y1={chartHeight} y2={chartHeight} />
             </svg>
             {hoverIndex !== null && hovered && (
               <>
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#092a53] shadow"
-                  style={{ left: `${(hoverIndex / (series.length - 1)) * 100}%`, top: `${(points[hoverIndex][1] / chartHeight) * 100}%` }}
-                />
                 <div
                   className="pointer-events-none absolute -top-2 z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-xl bg-[#092a53] px-3 py-2 text-xs text-white shadow-lg"
-                  style={{ left: `${Math.min(88, Math.max(12, (hoverIndex / (series.length - 1)) * 100))}%` }}
+                  style={{ left: `${Math.min(88, Math.max(12, ((hoverIndex + 0.5) / series.length) * 100))}%` }}
                 >
                   <p className="font-bold">{hovered.date.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })}</p>
                   <p className="mt-0.5 text-white/75">{formatXaf(hovered.sales, language)} · {t('{count} orders', { count: hovered.orders })}</p>

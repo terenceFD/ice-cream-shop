@@ -255,7 +255,7 @@ export function AdminReviewsBoard() {
         </p>
       )}
 
-      <section aria-label={t('Review overview')} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t('Review overview')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => {
           const body = (
             <>
@@ -364,7 +364,7 @@ export function AdminReviewsBoard() {
               <label className="relative block">
                 <span className="sr-only">{t('Search reviews')}</span>
                 <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
-                <input className={`${inputClassName} pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search by product, customer, or order')} type="search" value={search} />
+                <input className={`${inputClassName} pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search reviews')} type="search" value={search} />
               </label>
               <label className="block">
                 <span className="sr-only">{t('Sort by')}</span>

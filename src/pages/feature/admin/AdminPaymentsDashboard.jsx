@@ -228,13 +228,13 @@ export function AdminPaymentsDashboard() {
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t("Payments")}</h1>
             <p className="mt-0.5 text-sm text-[#65748a]">{t("Payment records confirmed by Stripe and CamPay for customer orders.")}</p>
+            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#eaf6ee] px-3 py-1 text-[11px] font-bold text-[#246a46]">
+              <Icon className="size-3.5" path={icons.shield} />
+              {t("Payments securely processed by payment providers")}
+            </span>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2.5">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eaf6ee] px-3 py-1.5 text-[11px] font-bold text-[#246a46]">
-            <Icon className="size-3.5" path={icons.shield} />
-            {t("Payments securely processed by payment providers")}
-          </span>
+        <div className="flex shrink-0 flex-wrap items-center gap-2.5">
           <button
             className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53] disabled:opacity-50"
             disabled={!visiblePayments.length}
@@ -263,7 +263,7 @@ export function AdminPaymentsDashboard() {
         </p>
       )}
 
-      <section aria-label={t("Payment overview")} className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t("Payment overview")} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => {
           const isActive = metric.filter && activeFilter === metric.filter;
           const content = (

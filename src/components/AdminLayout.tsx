@@ -106,6 +106,11 @@ export function AdminLayout() {
   const location = useLocation()
   const isOwner = currentAdmin?.role === 'owner'
   const profilePictureInput = useRef<HTMLInputElement>(null)
+  const sidebarNavRef = useRef<HTMLElement>(null)
+  // Keep the current page's link visible when the sidebar list is taller than the screen.
+  useEffect(() => {
+    sidebarNavRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: 'center' })
+  }, [location.pathname])
   const storeNavItems = navItems.filter((item) => [
     '/admin/overview',
     '/admin/orders',
@@ -646,14 +651,14 @@ export function AdminLayout() {
               </label>
             )}
 
-            <nav aria-label={t('Admin dashboard')} className={`min-w-0 overflow-y-auto px-3 pb-3 pt-1 lg:min-h-0 lg:flex-1 [scrollbar-color:rgba(255,255,255,0.15)_transparent] [scrollbar-width:thin] ${isSidebarCollapsed ? 'lg:px-2' : ''}`}>
+            <nav aria-label={t('Admin dashboard')} ref={sidebarNavRef} className={`min-w-0 overflow-y-auto px-3 pb-3 pt-1 lg:min-h-0 lg:flex-1 lg:pb-8 lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)] [scrollbar-color:rgba(255,255,255,0.15)_transparent] [scrollbar-width:thin] ${isSidebarCollapsed ? 'lg:px-2' : ''}`}>
               {navGroups.filter((group) => visibleNavItems.some((item) => item.group === group)).map((group) => {
                 const query = navQuery.trim().toLowerCase()
                 const groupItems = visibleNavItems.filter((item) => item.group === group && (!query || t(item.label).toLowerCase().includes(query)))
                 if (!groupItems.length) return null
                 return (
                   <section key={group}>
-                    <h2 className={`flex items-center gap-2 px-3 pb-1.5 pt-4 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/40 ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}>
+                    <h2 className={`flex items-center gap-2 px-3 pb-1.5 pt-4 text-[10px] lg:pb-1 lg:pt-3 font-extrabold uppercase tracking-[0.16em] text-white/40 ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}>
                       <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>{t(group)}</span>
                       <span aria-hidden="true" className={`h-px flex-1 bg-white/[0.08] ${isSidebarCollapsed ? 'lg:max-w-6' : ''}`} />
                     </h2>
@@ -680,7 +685,7 @@ export function AdminLayout() {
                           <li key={item.to}>
                             <NavLink
                               aria-label={isSidebarCollapsed ? `${t(item.label)}${count ? ` (${count})` : ''}` : undefined}
-                              className={`group relative flex min-h-10 min-w-0 items-center gap-3 rounded-xl px-2.5 py-1.5 text-[13px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#ffdc32] ${
+                              className={`group relative flex min-h-10 min-w-0 items-center gap-3 rounded-xl px-2.5 py-1.5 text-[13px] lg:min-h-9 lg:py-1 font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#ffdc32] ${
                                 isActive
                                   ? 'bg-white text-[#092a53] shadow-[0_6px_16px_rgba(0,0,0,0.18)]'
                                   : 'text-white/70 hover:bg-white/[0.08] hover:text-white'
@@ -690,7 +695,7 @@ export function AdminLayout() {
                               to={item.to}
                             >
                               {isActive && <span aria-hidden="true" className="absolute -left-3 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[#ffdc32]" />}
-                              <span className={`relative grid size-8 shrink-0 place-items-center rounded-lg transition ${
+                              <span className={`relative grid size-8 shrink-0 place-items-center rounded-lg transition lg:size-7 ${
                                 isActive ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/[0.06] text-white/60 group-hover:bg-white/[0.12] group-hover:text-white'
                               }`}>
                                 <svg aria-hidden="true" className="size-[17px]" fill="none" viewBox="0 0 24 24">
@@ -732,9 +737,9 @@ export function AdminLayout() {
               </p>
             )}
 
-            <div className={`shrink-0 space-y-1 border-t border-white/[0.08] bg-black/10 p-3 ${isSidebarCollapsed ? 'lg:px-2' : ''}`}>
+            <div className={`grid shrink-0 grid-cols-2 gap-1 border-t border-white/[0.08] bg-black/10 p-2 ${isSidebarCollapsed ? 'lg:grid-cols-1 lg:px-2' : ''}`}>
               <Link
-                className={`flex min-h-10 items-center gap-3 rounded-xl px-2.5 text-[13px] font-semibold text-white/65 transition hover:bg-white/[0.08] hover:text-white ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
+                className={`flex min-h-10 min-w-0 items-center gap-2 rounded-xl px-2 text-[12px] font-semibold text-white/65 transition hover:bg-white/[0.08] hover:text-white ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
                 title={isSidebarCollapsed ? t('View storefront') : undefined}
                 to="/flavors"
               >
@@ -743,10 +748,10 @@ export function AdminLayout() {
                     <path d="M14 4h6v6m0-6L10 14M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
                   </svg>
                 </span>
-                <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>{t('View storefront')}</span>
+                <span className={`truncate ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>{t('Storefront')}</span>
               </Link>
               <button
-                className={`flex min-h-10 w-full items-center gap-3 rounded-xl px-2.5 text-left text-[13px] font-semibold text-white/65 transition hover:bg-red-500/15 hover:text-red-100 disabled:opacity-60 ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
+                className={`flex min-h-10 w-full min-w-0 items-center gap-2 rounded-xl px-2 text-left text-[12px] font-semibold text-white/65 transition hover:bg-red-500/15 hover:text-red-100 disabled:opacity-60 ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
                 disabled={isLoggingOut}
                 onClick={handleLogout}
                 title={isSidebarCollapsed ? t('Log out') : undefined}
@@ -757,7 +762,7 @@ export function AdminLayout() {
                     <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
                   </svg>
                 </span>
-                <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>{isLoggingOut ? t('Signing out…') : t('Log out')}</span>
+                <span className={`truncate ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>{isLoggingOut ? t('Signing out…') : t('Log out')}</span>
               </button>
             </div>
             {logoutError && <p className="mx-3 mb-3 rounded-lg bg-red-500/15 px-3 py-2 text-xs text-red-100" role="alert">{logoutError}</p>}
