@@ -378,6 +378,7 @@ const french: Record<string, string> = {
   'Ice cream treat': 'Gourmandise glacée',
   'Loading your sweet moments': 'Chargement de vos instants gourmands',
   'A little sweetness is on its way': 'Une petite douceur arrive bientôt',
+  'Mixed fresh, just for you': 'Préparée minute, rien que pour vous',
   'Your next favorite': 'Votre prochain favori',
   'starts here.': 'commence ici.',
   'Browse signature creations, explore the online catalog, and discover publicly listed locations across Cameroon.': 'Parcourez les créations Signature, explorez le catalogue en ligne et découvrez les adresses répertoriées au Cameroun.',

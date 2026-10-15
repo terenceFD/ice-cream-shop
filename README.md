@@ -6,7 +6,7 @@ Live site: https://ice-cream-shop-20eg.onrender.com
 
 This website is not an official Cold Stone Creamery website and does not claim affiliation. Public branch listings and global menu categories are informational only. Local branch hours, current operations, menu, product availability, and prices require confirmation with the relevant store. The separate website catalog and checkout are managed by this site's operator; catalog items and prices are not verified Cold Stone Cameroon products or prices.
 
-The `/locations` page lists publicly indexed areas in Bonanjo, Bonamoussadi, Bonabéri, and Ange Raphaël in Douala, and Bastos in Yaoundé. Listings are subject to change and include map-search links for confirmation. On `/menu`, customers browse image-led categories and product examples from the global brand menu, including Signature Creations. Selecting a product shows its details, an illustrative FCFA estimate, and similar products. These are not a confirmed Cameroon branch menu or prices; local availability, recipes, and prices may differ.
+The `/locations` page lists publicly indexed areas in Bonanjo, Bonamoussadi, Bonabéri, and Ange Raphaël in Douala, and Bastos in Yaoundé. Listings are subject to change and include map-search links for confirmation. On `/menu`, customers browse image-led categories and product examples from the global brand menu, including Signature Creations; `/menu/all` lists every product on one page. Selecting a product shows its details, its FCFA price, a quantity selector with **Add to bag**, and similar products. These are not a confirmed Cameroon branch menu or prices; local availability, recipes, and prices may differ.
 
 Research references:
 - [Cold Stone Creamery global menu](https://www.coldstonecreamery.com/menu/)
@@ -16,7 +16,8 @@ Research references:
 ## Features at a glance
 
 **For customers**
-- Browse the menu and shop catalog with search, category, dietary, availability ("In stock only") and maximum-price filters, and sort by price or name.
+- Browse the menu and shop catalog with search, category, dietary, availability ("In stock only") and maximum-price filters, and sort by price or name. On phones the filters fold away behind a **Filters** button. **All menu** (`/menu/all`) shows every product on one page, and products added in admin appear there and on **Flavors** automatically.
+- Add any quantity of a product or flavor to the bag from its page and keep shopping.
 - Order online for pickup or delivery from a chosen store, and pay by card (Stripe) or Mobile Money (CamPay).
 - Customer accounts: order history with live progress, saved delivery details, favorites, one-tap reorder, loyalty points, and reviews of purchased items.
 - **Notifications on their device** (with the site's logo and name): order updates (confirmed, being prepared, out for delivery, delivered) and new promotions. Customers turn them on from a small invitation, the account page, or the payment confirmation page.
@@ -27,7 +28,7 @@ Research references:
 - Installable app (web app manifest and service worker) that works offline for browsing.
 
 **For the shop**
-- Admin dashboard for flavors, menu, categories, inventory and low-stock alerts, orders, deliveries, payments, promotions, reports, customer accounts, reviews, cake requests, event orders, contact messages, pickup and delivery settings, admin accounts, and an activity log.
+- Admin dashboard for flavors, menu, categories, inventory and low-stock alerts, orders, deliveries, payments, promotions, reports, customer accounts, reviews, cake requests, event orders, contact messages, pickup and delivery settings, admin accounts, and an activity log. Admins land on **Store overview** after signing in. See [Admin dashboard](#admin-dashboard).
 - Promotions can notify every customer who turned on notifications, with an optional custom message and a phone preview; existing promotions can be re-sent.
 - Order and event details include a one-tap **WhatsApp** button with the customer's update already written.
 - Store admins see and manage only their own store's data.
@@ -86,7 +87,8 @@ If the frontend and API must be hosted separately, set `VITE_API_URL` to the API
 - The fonts (DM Sans and Fredoka) are served from `public/fonts/` and preloaded, so pages never wait on Google before showing text.
 - Uploaded images are resized on the server to at most 1200 px and saved as WebP (GIFs are kept as they are), see `server/images.js`.
 - Pages load their own code only when opened, so first-time visitors don't download the admin dashboard.
-- Files under `/assets/` are cached by browsers for a year (their names change with every build); photos and icons for a week. `sw.js` and the web app manifest are never cached, so updates reach visitors immediately.
+- Files under `/assets/` are cached by browsers for a year (their names change with every build); photos and icons for a week. `sw.js` and the web app manifest are never cached, so updates reach visitors immediately. Raise `CACHE_NAME` in `public/sw.js` when the offline copy of the page should be refreshed.
+- On phones and tablets (below 1024 px), the shopping pages (Menu, Flavors, All menu) leave out the photo collage in their header, so products start on the first screen. The breakpoint is `COMPACT_HERO_MEDIA` in `src/photoSizes.js`, shared with the server's photo preload.
 
 ### Supabase
 
@@ -113,6 +115,12 @@ An owner account has access to all stores and can create a store admin from **Ad
 ### Menu products
 
 Built-in menu products live in `src/data.js`. A product's ID is built from its category and name, and stock, orders, favorites and reviews are saved under that ID. To rename a product, change `name` and add `idName` with the old name, so the ID stays the same (`scripts/menu-ids.test.js` checks this, and that no two products share an ID or a photo). The server adds stock rows for new products at start-up.
+
+Built-in category descriptions are stored in the database. To change one for existing sites, add a row to `CATEGORY_DESCRIPTION_UPDATES` in `server/database.js` (old text, new text): the server updates it at start-up only if the old text is still there, so a description an admin has edited is kept. Category photos work the same way with `CATEGORY_IMAGE_UPDATES`.
+
+### Flavor tags
+
+Each flavor has one tag, shown on its card and used as a filter on `/flavors`. A tag only becomes a filter button when two or more flavors share it, so give flavors a small set of family tags (for example **Classics**, **Fruity**, **Chocolate**, **Caramel & coffee**) rather than a different tag each. French names for tags go in `src/language/french.ts`.
 
 ## Payments and order management
 
@@ -185,7 +193,23 @@ When a reply cannot be sent, the dashboard shows the mail server's reason in pla
 
 ## About, contact and the activity log
 
-`/about` shares the shop story and `/contact` sends visitor messages to the selected store; replies are sent from the admin **Notifications** page. The **Activity log** (owners only) records every successful change made in the dashboard by any admin, with the admin's name, the action and the time (the latest 200 entries); page views are not recorded.
+`/about` shares the shop story and `/contact` sends visitor messages to the selected store; replies are sent from the admin **Notifications** page. The **Activity log** (owners only) records every successful change made in the dashboard by any admin, with the admin's name, the action and the time (the latest 200 entries); page views are not recorded. Entries read as plain sentences ("Marked order #54 delivered"), are grouped by day, and can be filtered by person and by area.
+
+## Admin dashboard
+
+The dashboard pages share a few building blocks in `src/pages/feature/admin/`:
+
+| File | What it does |
+|---|---|
+| `AdminPageHeader.jsx`, `adminIcons.js` | Page header (icon, breadcrumb, title, actions), stat cards, notices and on/off switches in the dashboard style |
+| `adminTable.js` | Keeps the Edit/Delete column of wide tables pinned to the right, so it stays visible when a table scrolls sideways |
+| `stockMeter.js` | Stock bars: full at four times the low-stock alert level or more, shrinking as stock runs down (`scripts/stock-meter.test.js`) |
+| `chartScale.js` | Round chart axes (2K, 4K, 6K…) for the Reports bar chart (`scripts/chart-scale.test.js`) |
+| `describeAdminActivity.js` | The plain-English sentence for each admin action in the activity log |
+
+**Adding an admin action:** when you add a new `POST`, `PUT`, `PATCH` or `DELETE` route under `/api/admin`, add its sentence to `describeAdminActivity.js`. `scripts/admin-activity.test.js` fails if any admin route is missing one, so it never shows up in the log as "Made a change".
+
+On phones, the stat cards at the top of each page become one row that scrolls sideways (the `.admin-stats` class in `src/index.css`), so the page's list starts on the first screen. The admin profile picture is changed from the account menu at the top right.
 
 ## Settings reference
 
@@ -213,4 +237,4 @@ npm test
 npm run build
 ```
 
-`npm test` runs every server test with temporary databases; it never touches your development or live data.
+`npm test` runs every server test with temporary databases, plus the checks in `scripts/*.test.js` (menu IDs, photo sizes, similar items, admin activity sentences, stock bars, and chart axes); it never touches your development or live data.
