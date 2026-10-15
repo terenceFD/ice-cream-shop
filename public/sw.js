@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cold-stone-shell-v7'
+const CACHE_NAME = 'cold-stone-shell-v8'
 // Caches from before the site was renamed are removed on activation too.
 const CACHE_PREFIXES = ['cold-stone-shell-', 'antixor-icy-shell-']
 const SHELL_URLS = ['/', '/index.html', '/logo.png', '/favicon.ico', '/favicon-32.png', '/icons/icon-192.png']
@@ -41,9 +41,9 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Files under /assets/ get a new name whenever they change, so a saved copy is always current.
+  // Files under /assets/ get a new name whenever they change, and fonts never change, so a saved copy is always current.
   // Using it straight away avoids waiting on the network before every page load.
-  if (url.pathname.startsWith('/assets/')) {
+  if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/fonts/')) {
     event.respondWith(
       caches.match(request).then((cached) => cached || fetch(request).then((response) => {
         if (response.ok) {

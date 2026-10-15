@@ -390,7 +390,7 @@ export function AdminStoreOverviewPage() {
                             style={{ height: `${day.sales ? Math.max(6, (day.sales / view.weekMax) * 100) : 0}%` }}
                           />
                         </span>
-                        <span className={`text-[11px] font-bold ${isToday ? "text-[#a48700]" : "text-[#a3b0bf]"}`}>
+                        <span className={`text-[11px] font-bold ${isToday ? "text-[#8a7000]" : "text-[#a3b0bf]"}`}>
                           {day.date.toLocaleDateString(locale, { weekday: "short", timeZone: "UTC" })}
                         </span>
                       </li>
@@ -405,7 +405,7 @@ export function AdminStoreOverviewPage() {
               <section aria-labelledby="pickups-title" className="rounded-[20px] border border-[#e5ebf3] bg-white">
                 <header className="flex items-center justify-between gap-3 border-b border-[#edf1f5] p-4 sm:px-5">
                   <h2 className="flex items-center gap-2 font-display text-lg font-extrabold text-[#092a53]" id="pickups-title">
-                    <Icon className="size-5 text-[#a48700]" path={icons.cake} />
+                    <Icon className="size-5 text-[#8a7000]" path={icons.cake} />
                     {t("Cake pickups this week")}
                   </h2>
                   <Link className="text-xs font-bold text-[#355777] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/cake-requests">{t("View all")}</Link>
@@ -466,7 +466,7 @@ export function AdminStoreOverviewPage() {
               {/* Reviews waiting */}
               {data.reviews.length > 0 && (
                 <Link className="group flex items-center gap-4 rounded-[20px] border border-[#e5ebf3] bg-white p-4 transition hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] sm:px-5" to="/admin/reviews">
-                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#fff4c2] text-[#a48700]">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#fff4c2] text-[#8a7000]">
                     <svg aria-hidden="true" className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
                   </span>
                   <span className="min-w-0 flex-1">

@@ -8,18 +8,20 @@ import { useLanguage } from "../../../language/useLanguage";
 import { useAuth } from "../../../authcontext/useAuth";
 import { PageHero } from "../../../components/PageHero";
 import { ProductImageSlider } from "../../../components/ProductImageSlider";
+import { photoErrorHandler, photoSrcSet, thumbnail } from "../../../thumbnails";
 
-function MenuImage({ alt, className = "", src }) {
+// small: always the small copy (tiny pictures). sizes: lets the browser choose the small copy
+// or the full photo for the space the picture fills.
+function MenuImage({ alt, className = "", sizes, small = false, src }) {
   return (
     <img decoding="async"
       alt={alt}
       className={className}
       loading="lazy"
-      onError={(event) => {
-        event.currentTarget.onerror = null;
-        event.currentTarget.src = "/images/hero-ice-cream.jpg";
-      }}
-      src={src}
+      onError={photoErrorHandler(src, "/images/hero-ice-cream.jpg")}
+      sizes={!small && sizes ? sizes : undefined}
+      src={small ? thumbnail(src) : src}
+      srcSet={!small && sizes ? photoSrcSet(src) : undefined}
     />
   );
 }
@@ -119,7 +121,7 @@ function FilterSelect({ label, onChange, options, value }) {
       >
         <span className="min-w-0">
           <span
-            className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]"
+            className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]"
             id={`${id}-label`}
           >
             {label}
@@ -133,7 +135,7 @@ function FilterSelect({ label, onChange, options, value }) {
         </span>
         <svg
           aria-hidden="true"
-          className={`size-4 shrink-0 text-[#8792a0] transition duration-200 ${open ? "rotate-180 text-[#092a53]" : ""}`}
+          className={`size-4 shrink-0 text-[#65748a] transition duration-200 ${open ? "rotate-180 text-[#092a53]" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
         >
@@ -202,6 +204,7 @@ function MenuProductCard({ category, item, onSelect, t, formatPrice }) {
         <MenuImage
           alt={t(item.name)}
           className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05] ${soldOut ? "opacity-70 grayscale-[70%]" : ""}`}
+          sizes="(min-width: 1024px) 25vw, 50vw"
           src={item.image}
         />
         <span
@@ -223,10 +226,10 @@ function MenuProductCard({ category, item, onSelect, t, formatPrice }) {
         </p>
 
         <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-4">
-          <span className="font-display text-sm font-extrabold tabular-nums text-[#a48700] sm:text-lg">
+          <span className="font-display text-sm font-extrabold tabular-nums text-[#8a7000] sm:text-lg">
             {formatPrice(item.priceXaf)}
           </span>
-          <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#8792a0] transition group-hover:text-[#092a53]">
+          <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#65748a] transition group-hover:text-[#092a53]">
             <span className="sr-only">{t("View details")}</span>
             <span
               aria-hidden="true"
@@ -254,6 +257,7 @@ function SimilarProductCard({ category, item, onSelect, t, formatPrice }) {
       <MenuImage
         alt=""
         className={`absolute inset-0 -z-20 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.07] ${soldOut ? "grayscale-[60%]" : ""}`}
+        sizes="(min-width: 1024px) 25vw, 50vw"
         src={item.image}
       />
       <span
@@ -594,7 +598,7 @@ export function MenuPage() {
                 <span className="sr-only">{t("Search menu")}</span>
                 <svg
                   aria-hidden="true"
-                  className="pointer-events-none absolute left-5 size-5 text-[#8792a0] transition group-focus-within:text-[#092a53]"
+                  className="pointer-events-none absolute left-5 size-5 text-[#65748a] transition group-focus-within:text-[#092a53]"
                   fill="none"
                   viewBox="0 0 24 24"
                 >
@@ -602,7 +606,7 @@ export function MenuPage() {
                   <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
                 </svg>
                 <input
-                  className="w-full bg-transparent py-4 pl-14 pr-12 text-base font-semibold text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#8792a0]"
+                  className="w-full bg-transparent py-4 pl-14 pr-12 text-base font-semibold text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#65748a]"
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder={t("Search menu")}
                   type="search"
@@ -611,7 +615,7 @@ export function MenuPage() {
                 {search && (
                   <button
                     aria-label={t("Clear search")}
-                    className="absolute right-3 grid size-8 place-items-center rounded-full text-[#8792a0] transition hover:bg-[#efece3] hover:text-[#092a53]"
+                    className="absolute right-3 grid size-8 place-items-center rounded-full text-[#65748a] transition hover:bg-[#efece3] hover:text-[#092a53]"
                     onClick={() => setSearch("")}
                     type="button"
                   >
@@ -681,7 +685,7 @@ export function MenuPage() {
                     maxPrice ? "bg-[#fff8dd] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"
                   }`}
                 >
-                  <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">
+                  <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">
                     {t("Maximum price")}
                   </span>
                   <span className="mt-0.5 flex items-baseline gap-1.5">
@@ -802,7 +806,7 @@ export function MenuPage() {
                 </div>
 
                 <div className="flex min-w-0 flex-col lg:col-span-5 lg:py-4">
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                     <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                     {t(activeCategory.title)}
                   </p>
@@ -856,7 +860,7 @@ export function MenuPage() {
                   )}
 
                   <div className="mt-8 border-y border-[#ebe7dc] py-6">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8792a0]">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#65748a]">
                       {t("Illustrative price")}
                     </p>
                     <p className="mt-1 font-display text-4xl font-extrabold tabular-nums text-[#092a53]">
@@ -871,7 +875,7 @@ export function MenuPage() {
 
                   <div className="mt-6 flex gap-3">
                     <button
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[#092a53] px-7 py-4 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.22)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-[#e7e3d9] disabled:text-[#8792a0] disabled:shadow-none"
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[#092a53] px-7 py-4 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.22)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-[#e7e3d9] disabled:text-[#65748a] disabled:shadow-none"
                       disabled={selectedSoldOut}
                       onClick={orderSelectedItem}
                       type="button"
@@ -918,7 +922,7 @@ export function MenuPage() {
                   <ul className="mt-8 grid grid-cols-3 divide-x divide-[#ebe7dc] rounded-2xl border border-[#ebe7dc] bg-white">
                     {["Mixed to order", "Made to your taste", "Freshly made"].map((label, index) => (
                       <li className="flex flex-col items-center gap-1.5 px-2 py-4 text-center" key={label}>
-                        <span aria-hidden="true" className="font-display text-xs font-extrabold tabular-nums text-[#c9b24a]">
+                        <span aria-hidden="true" className="font-display text-xs font-extrabold tabular-nums text-[#8a7000]">
                           {String(index + 1).padStart(2, "0")}
                         </span>
                         <span className="text-xs font-bold leading-4 text-[#092a53]">{t(label)}</span>
@@ -936,7 +940,7 @@ export function MenuPage() {
                 >
                   <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
                     <div className="lg:col-span-4">
-                      <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                      <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                         <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                         {t("What our customers are saying")}
                       </p>
@@ -1017,7 +1021,7 @@ export function MenuPage() {
               >
                 <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
                   <div>
-                    <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                    <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                       <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                       {t("You may also like")}
                     </p>
@@ -1178,7 +1182,7 @@ export function MenuPage() {
                 id="menu-category-items"
               >
                 <div>
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                     <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                     {t(activeCategory.title)}
                   </p>
@@ -1210,7 +1214,7 @@ export function MenuPage() {
             <section aria-labelledby="menu-categories-title">
               <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                     <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                     {t("Browse the categories")}
                   </p>
@@ -1242,6 +1246,7 @@ export function MenuPage() {
                         <MenuImage
                           alt=""
                           className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06]"
+                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                           src={category.image}
                         />
                         <span
@@ -1261,6 +1266,7 @@ export function MenuPage() {
                                 alt=""
                                 className="size-10 rounded-full border-2 border-white object-cover shadow-md"
                                 key={item.name}
+                                small
                                 src={item.image}
                               />
                             ))}
@@ -1278,10 +1284,10 @@ export function MenuPage() {
                         <div className="mt-auto flex items-center justify-between gap-3 pt-6">
                           {lowestPrice !== null ? (
                             <span>
-                              <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">
+                              <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">
                                 {t("Starting from")}
                               </span>
-                              <span className="mt-0.5 block font-display text-lg font-extrabold tabular-nums text-[#a48700]">
+                              <span className="mt-0.5 block font-display text-lg font-extrabold tabular-nums text-[#8a7000]">
                                 {formatPrice(lowestPrice)}
                               </span>
                             </span>
@@ -1303,7 +1309,7 @@ export function MenuPage() {
                   );
                 })}
               </div>
-              <p className="mt-6 text-xs text-[#8792a0]">
+              <p className="mt-6 text-xs text-[#65748a]">
                 {t("Prices shown are illustrative estimates only.")}
               </p>
             </section>

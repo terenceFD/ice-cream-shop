@@ -109,7 +109,7 @@ export function LocationsPage() {
         <section aria-labelledby="listed-locations-heading" className="mx-auto max-w-[1320px] scroll-mt-4 px-5 py-14 sm:px-8 sm:py-16 lg:px-12" id="listed-locations">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
-              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                 <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                 {t('Explore by city')}
               </p>
@@ -170,7 +170,7 @@ export function LocationsPage() {
                     </div>
 
                     <div className="flex flex-1 flex-col px-5 pb-5 pt-10 sm:px-6 sm:pb-6">
-                      <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">{t('Public listing')}</p>
+                      <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Public listing')}</p>
                       <h3 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]">{t(location.area)}</h3>
 
                       <dl className="mt-5 space-y-3">

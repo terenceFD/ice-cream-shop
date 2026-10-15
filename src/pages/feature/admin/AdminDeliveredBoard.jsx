@@ -244,7 +244,7 @@ export function AdminDeliveredBoard() {
           <div className="min-w-0">
             <nav aria-label={t("Breadcrumb")} className="text-[11px] font-bold text-[#8190a1]">
               {t("Sales")} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#a48700]">{t("Delivered")}</span>
+              <span className="text-[#8a7000]">{t("Delivered")}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t("Delivered orders")}</h1>
             <p className="mt-0.5 text-sm text-[#65748a]">{t("Orders confirmed as delivered.")}</p>
@@ -326,7 +326,7 @@ export function AdminDeliveredBoard() {
                     style={{ height: `${height}%` }}
                   />
                 </span>
-                <span className={`text-[10px] font-bold ${isToday ? "text-[#a48700]" : "text-[#a3b0bf]"} ${index % 2 && !isToday ? "max-sm:invisible" : ""}`}>
+                <span className={`text-[10px] font-bold ${isToday ? "text-[#8a7000]" : "text-[#a3b0bf]"} ${index % 2 && !isToday ? "max-sm:invisible" : ""}`}>
                   {day.date.toLocaleDateString(locale, { day: "numeric" })}
                 </span>
               </li>

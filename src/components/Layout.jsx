@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { photoErrorHandler, photoSrcSet, thumbnail } from "../thumbnails";
 import { Link, useLocation } from "react-router-dom";
 import { apiRequest } from "../api/api";
 import { useCart } from "../useCart";
@@ -79,7 +80,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                 to={feature.to}
               >
                 {feature.image && (
-                  <img decoding="async" alt="" className="absolute inset-0 -z-20 size-full object-cover transition duration-700 group-hover/feature:scale-[1.06]" loading="lazy" src={feature.image} />
+                  <img decoding="async" alt="" className="absolute inset-0 -z-20 size-full object-cover transition duration-700 group-hover/feature:scale-[1.06]" loading="lazy" onError={photoErrorHandler(feature.image)} src={thumbnail(feature.image)} />
                 )}
                 <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] via-[#061d3a]/60 to-[#061d3a]/10" />
                 <span className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{label}</span>
@@ -92,7 +93,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
             )}
 
             <div className="p-2 sm:p-3">
-              <p className="px-2 pb-2 pt-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8792a0]">{feature?.listTitle || label}</p>
+              <p className="px-2 pb-2 pt-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#65748a]">{feature?.listTitle || label}</p>
               <ul className={`grid gap-1 ${links.length > 4 ? "sm:grid-cols-2" : ""}`}>
                 {links.map((link) => (
                   <li key={link.to}>
@@ -102,15 +103,15 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                       to={link.to}
                     >
                       {link.image ? (
-                        <img decoding="async" alt="" aria-hidden="true" className="size-12 shrink-0 rounded-xl object-cover ring-1 ring-black/5 transition duration-300 group-hover/link:scale-[1.04]" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/images/hero-ice-cream.jpg"; }} src={link.image} />
+                        <img decoding="async" alt="" aria-hidden="true" className="size-12 shrink-0 rounded-xl object-cover ring-1 ring-black/5 transition duration-300 group-hover/link:scale-[1.04]" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image)} />
                       ) : (
                         <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#fff3b8] text-lg">{link.icon || "✦"}</span>
                       )}
                       <span className="min-w-0 flex-1">
                         <span className="line-clamp-2 block text-sm font-extrabold leading-snug text-[#092a53]">{link.label}</span>
-                        {link.meta && <span className="mt-0.5 block truncate text-xs font-semibold text-[#8792a0]">{link.meta}</span>}
+                        {link.meta && <span className="mt-0.5 block truncate text-xs font-semibold text-[#65748a]">{link.meta}</span>}
                       </span>
-                      <span aria-hidden="true" className="grid size-7 shrink-0 -translate-x-1 place-items-center rounded-full text-[#a48700] opacity-0 transition group-hover/link:translate-x-0 group-hover/link:opacity-100 group-focus-visible/link:translate-x-0 group-focus-visible/link:opacity-100">
+                      <span aria-hidden="true" className="grid size-7 shrink-0 -translate-x-1 place-items-center rounded-full text-[#8a7000] opacity-0 transition group-hover/link:translate-x-0 group-hover/link:opacity-100 group-focus-visible/link:translate-x-0 group-focus-visible/link:opacity-100">
                         <ArrowIcon />
                       </span>
                     </Link>
@@ -150,8 +151,8 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
           {!mobile && (
             <div className="mb-2 flex items-center justify-between gap-3 border-b border-[#eeeae1] px-2 pb-3 pt-1">
               <div>
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-[#a48700]">{label}</p>
-                {subtitle && <p className="mt-1 text-xs text-[#8792a0]">{subtitle}</p>}
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-[#8a7000]">{label}</p>
+                {subtitle && <p className="mt-1 text-xs text-[#65748a]">{subtitle}</p>}
               </div>
               <span aria-hidden="true" className="grid size-9 place-items-center rounded-xl bg-[#fff3b8] text-[#806a00]">{icon}</span>
             </div>
@@ -172,7 +173,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                 to={link.to}
               >
                 {link.image ? (
-                  <img decoding="async" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-xl object-cover ring-1 ring-white/10" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/images/hero-ice-cream.jpg"; }} src={link.image} />
+                  <img decoding="async" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-xl object-cover ring-1 ring-white/10" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image)} />
                 ) : (
                   <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/10 text-sm font-extrabold text-[#ffdc32]">
                     {link.icon || String(index + 1).padStart(2, "0")}
@@ -182,7 +183,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                   <span className="block truncate font-semibold">{link.label}</span>
                   {link.meta && <span className="mt-0.5 block truncate text-xs text-white/50">{link.meta}</span>}
                 </span>
-                {!mobile && <span aria-hidden="true" className="translate-x-[-3px] text-[#a48700] opacity-0 transition group-hover/link:translate-x-0 group-hover/link:opacity-100">→</span>}
+                {!mobile && <span aria-hidden="true" className="translate-x-[-3px] text-[#8a7000] opacity-0 transition group-hover/link:translate-x-0 group-hover/link:opacity-100">→</span>}
               </Link>
             ))}
           </div>
@@ -240,13 +241,13 @@ function LanguageDropdown({ language, setLanguage, t }) {
       <div className="invisible absolute right-0 top-full z-30 w-72 translate-y-2 pt-3 opacity-0 transition duration-200 ease-out group-open:visible group-open:translate-y-0 group-open:opacity-100">
         <div className="overflow-hidden rounded-[22px] bg-white p-2 text-sm text-[#092a53] shadow-[0_30px_80px_rgba(6,29,58,0.35),0_2px_8px_rgba(6,29,58,0.08)] ring-1 ring-black/[0.04]">
           <div className="flex items-center gap-3 px-3 pb-3 pt-2">
-            <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#fbf6e3] text-[#a48700]">
+            <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#fbf6e3] text-[#8a7000]">
               <svg className="size-4" fill="none" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
                 <path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" stroke="currentColor" strokeWidth="1.8" />
               </svg>
             </span>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8792a0]">{t("Select language")}</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#65748a]">{t("Select language")}</p>
           </div>
           <div className="grid gap-1" role="group" aria-label={t("Select language")}>
             {languages.map(({ value, nativeLabel, code, region }) => {
@@ -271,7 +272,7 @@ function LanguageDropdown({ language, setLanguage, t }) {
                   }`}>{code}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-extrabold">{nativeLabel}</span>
-                    <span className={`mt-0.5 block text-[11px] font-semibold ${selected ? "text-white/60" : "text-[#8792a0]"}`}>{region}</span>
+                    <span className={`mt-0.5 block text-[11px] font-semibold ${selected ? "text-white/60" : "text-[#65748a]"}`}>{region}</span>
                   </span>
                   <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full ring-2 ${selected ? "bg-[#ffdc32] ring-[#ffdc32]" : "ring-[#ddd6c4]"}`}>
                     {selected && <span className="size-2 rounded-full bg-[#092a53]" />}
@@ -389,7 +390,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
                           <svg className="size-[18px]" fill="none" viewBox="0 0 24 24">{item.icon}</svg>
                         </span>
                         <span className="flex-1 font-extrabold">{item.label}</span>
-                        <span aria-hidden="true" className="-translate-x-1 text-[#a48700] opacity-0 transition group-hover/item:translate-x-0 group-hover/item:opacity-100">
+                        <span aria-hidden="true" className="-translate-x-1 text-[#8a7000] opacity-0 transition group-hover/item:translate-x-0 group-hover/item:opacity-100">
                           <ArrowIcon />
                         </span>
                       </Link>
@@ -489,7 +490,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
                 : <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53]">{(customer.name || "A").charAt(0).toUpperCase()}</span>}
               <div className="min-w-0">
                 <p className={`truncate text-sm font-extrabold ${mobile ? "text-white" : "text-[#092a53]"}`}>{customerName || t("Account")}</p>
-                <p className={`truncate text-[10px] ${mobile ? "text-white/60" : "text-[#8792a0]"}`}>{customer.email}</p>
+                <p className={`truncate text-[10px] ${mobile ? "text-white/60" : "text-[#65748a]"}`}>{customer.email}</p>
               </div>
             </div>
           )}
@@ -1074,7 +1075,7 @@ export function InstagramSection() {
       <div className="mx-auto max-w-[1320px]">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
-            <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+            <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
               <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
               {t("Sweet moments, shared.")}
             </p>
@@ -1102,7 +1103,7 @@ export function InstagramSection() {
                 </span>
               </span>
               <span className="leading-tight">
-                <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t("Follow the fun.")}</span>
+                <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">{t("Follow the fun.")}</span>
                 <span className="block text-sm font-extrabold text-[#092a53]">@coldstonecameroon</span>
               </span>
             </a>
@@ -1134,7 +1135,10 @@ export function InstagramSection() {
                 alt={t(image.alt)}
                 className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06]"
                 loading="lazy"
+                onError={photoErrorHandler(image.src)}
+                sizes={index === 0 ? "(min-width: 1024px) 50vw, 100vw" : "(min-width: 1024px) 25vw, 50vw"}
                 src={image.src}
+                srcSet={photoSrcSet(image.src)}
               />
               <span
                 aria-hidden="true"

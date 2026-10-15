@@ -14,7 +14,7 @@ const labelClass = "block text-xs font-extrabold text-[#52647b]";
 const cardClass =
   "rounded-[26px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:p-7";
 const eyebrowClass =
-  "flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#a48700] before:h-px before:w-5 before:bg-[#d6bd4a]";
+  "flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#8a7000] before:h-px before:w-5 before:bg-[#d6bd4a]";
 const primaryButton =
   "inline-flex items-center justify-center gap-2 rounded-full bg-[#092a53] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-wait disabled:opacity-55";
 const ghostButton =
@@ -171,7 +171,7 @@ function SectionHeading({ eyebrow, title, description, action }) {
 function EmptyState({ icon, title, body, children }) {
   return (
     <div className="rounded-[26px] border border-dashed border-[#dcd6c4] bg-[#fdfcf7] px-6 py-12 text-center">
-      <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-white text-[#a48700] shadow-sm ring-1 ring-[#ece6d2]">
+      <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-white text-[#8a7000] shadow-sm ring-1 ring-[#ece6d2]">
         <Icon className="size-6" path={icon} />
       </span>
       <h3 className="mt-4 font-display text-xl font-extrabold text-[#092a53]">
@@ -376,7 +376,7 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
     <details className="group/review mt-5 scroll-mt-28 rounded-2xl ring-1 ring-[#ece8dc] open:bg-[#fdfcf7]" ref={detailsRef}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-4 py-3.5 text-sm font-extrabold text-[#102c50] transition hover:bg-[#fbfaf5] [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-xl bg-[#fff6cc] text-[#a48700]">
+          <span className="grid size-8 place-items-center rounded-xl bg-[#fff6cc] text-[#8a7000]">
             <Icon className="size-4" path="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" />
           </span>
           {t("Review a purchased item")}
@@ -1347,7 +1347,7 @@ export function CustomerOrdersPage() {
                           key={action.to}
                           to={action.to}
                         >
-                          <span className="grid size-10 place-items-center rounded-xl bg-white text-[#a48700] ring-1 ring-[#ece8dc] transition group-hover:bg-[#ffdc32] group-hover:text-[#092a53] group-hover:ring-transparent">
+                          <span className="grid size-10 place-items-center rounded-xl bg-white text-[#8a7000] ring-1 ring-[#ece8dc] transition group-hover:bg-[#ffdc32] group-hover:text-[#092a53] group-hover:ring-transparent">
                             <Icon path={action.icon} />
                           </span>
                           {action.label}
@@ -1472,7 +1472,7 @@ export function CustomerOrdersPage() {
                         return (
                           <li className={`${cardClass} flex flex-col sm:p-6`} key={savedCart.id}>
                             <div className="flex items-start gap-3.5">
-                              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#a48700]">
+                              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#8a7000]">
                                 <Icon path="M6 4h12v16l-6-4-6 4V4Z" />
                               </span>
                               <div className="min-w-0 flex-1">

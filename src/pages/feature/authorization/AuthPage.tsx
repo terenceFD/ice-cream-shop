@@ -112,7 +112,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const benefits = ['Track your orders', 'Save your favorites', 'Faster checkout']
   const inputShellClass = 'group relative mt-2 flex items-center rounded-2xl bg-white ring-1 ring-[#e5e1d7] transition hover:ring-[#d6cfbd] focus-within:ring-[#c9b24a]'
   const inputClass = 'w-full rounded-2xl bg-transparent py-3.5 pl-12 pr-4 text-sm font-semibold text-[#092a53] outline-none! placeholder:font-normal placeholder:text-[#a5aebb]'
-  const iconClass = 'pointer-events-none absolute left-4 size-[18px] text-[#8792a0] transition group-focus-within:text-[#092a53]'
+  const iconClass = 'pointer-events-none absolute left-4 size-[18px] text-[#65748a] transition group-focus-within:text-[#092a53]'
   const labelClass = 'text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]'
 
   return (
@@ -209,7 +209,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                     )}
                     <div className="min-w-0 flex-1">
                       <p className={labelClass}>{t('Profile picture')}</p>
-                      <p className="mt-1 text-xs leading-5 text-[#8792a0]">{t('Optional. Image will be resized before saving (5 MB max).')}</p>
+                      <p className="mt-1 text-xs leading-5 text-[#65748a]">{t('Optional. Image will be resized before saving (5 MB max).')}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#ffdc32] px-3.5 py-1.5 text-xs font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-within:ring-2 focus-within:ring-[#092a53]">
                           {profilePicture ? t('Change photo') : t('Upload photo')}
@@ -267,7 +267,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                           <span className={`h-1 rounded-full transition-colors ${passwordScore >= step ? strengthColors[passwordScore] : 'bg-[#e5e1d7]'}`} key={step} />
                         ))}
                       </span>
-                      <span className="mt-1.5 flex justify-between text-[11px] font-semibold text-[#8792a0]">
+                      <span className="mt-1.5 flex justify-between text-[11px] font-semibold text-[#65748a]">
                         <span>{t('At least 8 characters')}</span>
                         {passwordScore > 0 && <span className="text-[#52647b]">{t('Password strength')}: {t(strengthLabels[passwordScore])}</span>}
                       </span>

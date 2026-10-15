@@ -256,7 +256,7 @@ function CreatePinStep({ onCreated, onCancel, onBusyChange }: { onCreated: () =>
     <form noValidate onSubmit={handleSubmit}>
       <div className="space-y-5 px-6 py-6">
         <div className="text-center">
-          <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#fff6d6] text-[#a48700]">
+          <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#fff6d6] text-[#8a7000]">
             <Icon className="size-6" path={iconPaths.key} />
           </span>
           <p className="mt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8190a1]">
@@ -728,7 +728,7 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
               <Icon className="size-5" path={iconPaths.shield} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t('Owner account')}</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t('Owner account')}</p>
               <h2 className="mt-0.5 font-display text-xl font-extrabold text-[#092a53]" id="account-security-title">{t('Account security')}</h2>
               <p className="mt-0.5 truncate text-xs text-[#65748a]">{currentAdmin?.email}</p>
             </div>

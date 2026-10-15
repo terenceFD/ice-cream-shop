@@ -206,7 +206,7 @@ export function AdminReviewsBoard() {
   const metrics = [
     { label: 'Awaiting approval', value: pendingReviews.length.toLocaleString(), icon: icons.clock, accent: 'bg-[#fff1dc] text-[#a86a00]', onClick: () => setShowApproved(false), active: !showApproved },
     { label: 'Published', value: approvedReviews.length.toLocaleString(), icon: icons.check, accent: 'bg-[#e5f4ea] text-[#2c7a4f]', onClick: () => setShowApproved(true), active: showApproved },
-    { label: 'Average rating', value: approvedReviews.length ? publishedAverage.toFixed(1) : '—', icon: STAR_PATH, accent: 'bg-[#fff4c2] text-[#a48700]', hint: t('Published reviews') },
+    { label: 'Average rating', value: approvedReviews.length ? publishedAverage.toFixed(1) : '—', icon: STAR_PATH, accent: 'bg-[#fff4c2] text-[#8a7000]', hint: t('Published reviews') },
     { label: '5-star reviews', value: approvedReviews.length ? `${fiveStarShare}%` : '—', icon: icons.chat, accent: 'bg-[#e9f1fa] text-[#315982]', hint: t('Of published reviews') },
   ]
 
@@ -223,7 +223,7 @@ export function AdminReviewsBoard() {
           <div className="min-w-0">
             <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
               {t('Review management')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#a48700]">{t('Customer reviews')}</span>
+              <span className="text-[#8a7000]">{t('Customer reviews')}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Customer reviews')}</h1>
             <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">{t('Review customer feedback, approve what is ready to publish, and manage live reviews.')}</p>

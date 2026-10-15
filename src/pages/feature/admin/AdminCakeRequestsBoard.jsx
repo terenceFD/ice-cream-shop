@@ -221,7 +221,7 @@ export function AdminCakeRequestsBoard() {
               <h3 className="mt-0.5 truncate font-display text-base font-extrabold text-[#092a53]">{item.size} {t('Cake')}</h3>
               <p className="truncate text-xs font-semibold text-[#65748a]">{item.flavor}</p>
             </div>
-            <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#fff6cc] text-[#a48700]"><Icon path={icons.cake} /></span>
+            <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#fff6cc] text-[#8a7000]"><Icon path={icons.cake} /></span>
           </div>
           <div className={`mt-3 flex flex-wrap items-center gap-1.5 text-xs font-bold ${pickup.tone}`}>
             <Icon className="size-3.5" path={icons.calendar} />
@@ -254,7 +254,7 @@ export function AdminCakeRequestsBoard() {
           <div className="min-w-0">
             <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
               {t('Customers')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#a48700]">{t('Cake requests')}</span>
+              <span className="text-[#8a7000]">{t('Cake requests')}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Custom cake requests')}</h1>
             <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">{t('Review each celebration, get in touch with the customer, and keep every request moving.')}</p>
@@ -369,7 +369,7 @@ export function AdminCakeRequestsBoard() {
           </div>
         ) : !requests.length ? (
           <div className="px-6 py-14 text-center">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#fff6cc] text-[#a48700]"><Icon className="size-5" path={icons.cake} /></span>
+            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#fff6cc] text-[#8a7000]"><Icon className="size-5" path={icons.cake} /></span>
             <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t('No custom cake requests yet.')}</p>
             <p className="mx-auto mt-1 max-w-sm text-sm text-[#8190a1]">{t('New cake requests from the storefront will appear here.')}</p>
           </div>
@@ -422,7 +422,7 @@ export function AdminCakeRequestsBoard() {
                     <tr className={`cursor-pointer transition hover:bg-[#fafbfd] ${updatingId === item.id ? 'opacity-60' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)}>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#fff6cc] text-[#a48700]"><Icon path={icons.cake} /></span>
+                          <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#fff6cc] text-[#8a7000]"><Icon path={icons.cake} /></span>
                           <div className="min-w-0">
                             <p className="font-bold text-[#102c50]">{item.size} {t('Cake')} <span className="text-xs font-semibold text-[#a3b0bf]">#{item.id}</span></p>
                             <p className="max-w-[12rem] truncate text-xs text-[#7b8796]">{item.flavor}</p>
@@ -462,9 +462,9 @@ export function AdminCakeRequestsBoard() {
           <section aria-labelledby="cake-drawer-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[32rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
             <header className="flex items-start justify-between gap-4 border-b border-[#edf1f5] px-6 py-5">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#a48700]"><Icon className="size-6" path={icons.cake} /></span>
+                <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#8a7000]"><Icon className="size-6" path={icons.cake} /></span>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t('Cake request #{id}', { id: selected.id })}</p>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t('Cake request #{id}', { id: selected.id })}</p>
                   <h2 className="truncate font-display text-xl font-extrabold text-[#092a53]" id="cake-drawer-title">{selected.size} {t('Cake')}</h2>
                 </div>
               </div>

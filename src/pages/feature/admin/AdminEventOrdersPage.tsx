@@ -154,7 +154,7 @@ export function AdminEventOrdersPage() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t("Parties & events")}</p>
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t("Parties & events")}</p>
         <h1 className="mt-1 font-display text-3xl font-extrabold text-[#092a53]">{t("Event orders")}</h1>
         <p className="mt-1 text-sm text-[#65748a]">{t("Review requests, send quotes with a deposit, and confirm events once the deposit is paid.")}</p>
       </header>
@@ -220,7 +220,7 @@ export function AdminEventOrdersPage() {
           <section aria-labelledby="event-drawer-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[34rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
             <header className="flex items-start justify-between gap-4 border-b border-[#edf1f5] px-6 py-5">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t(EVENT_TYPE_LABELS[selected.eventType] || "Event")}</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t(EVENT_TYPE_LABELS[selected.eventType] || "Event")}</p>
                 <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="event-drawer-title">{t("Event order #{id}", { id: selected.id })}</h2>
                 <span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${(STATUS[selected.status] || STATUS.new).className}`}>{t((STATUS[selected.status] || STATUS.new).label)}</span>
               </div>

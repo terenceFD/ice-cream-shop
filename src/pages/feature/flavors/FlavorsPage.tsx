@@ -7,6 +7,7 @@ import { ArrowIcon, Footer, Header } from "../../../components/Layout";
 import { PageHero } from "../../../components/PageHero";
 import { useLanguage } from "../../../language/useLanguage";
 import { formatCartMoney } from "../../../cartPricing";
+import { photoErrorHandler, photoSrcSet } from "../../../thumbnails";
 
 function BagIcon({ className = "size-4" }: { className?: string }) {
   return (
@@ -125,7 +126,7 @@ export function FlavorsPage() {
           <section aria-labelledby="shop-products-heading" className="scroll-mt-4" id="shop-products">
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                   <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                   {t("Find your flavors")}
                 </p>
@@ -145,12 +146,12 @@ export function FlavorsPage() {
               <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
               <label className="group relative flex flex-1 items-center rounded-[20px] bg-[#fbfaf5] transition focus-within:bg-white focus-within:ring-1 focus-within:ring-[#c9b24a]">
                 <span className="sr-only">{t("Search flavors")}</span>
-                <svg aria-hidden="true" className="pointer-events-none absolute left-5 size-5 text-[#8792a0] transition group-focus-within:text-[#092a53]" fill="none" viewBox="0 0 24 24">
+                <svg aria-hidden="true" className="pointer-events-none absolute left-5 size-5 text-[#65748a] transition group-focus-within:text-[#092a53]" fill="none" viewBox="0 0 24 24">
                   <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
                   <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
                 </svg>
                 <input
-                  className="w-full bg-transparent py-4 pl-14 pr-12 text-base font-semibold text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#8792a0] [&::-webkit-search-cancel-button]:hidden"
+                  className="w-full bg-transparent py-4 pl-14 pr-12 text-base font-semibold text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#65748a] [&::-webkit-search-cancel-button]:hidden"
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder={t("Search by flavor name or description")}
                   type="search"
@@ -159,7 +160,7 @@ export function FlavorsPage() {
                 {search && (
                   <button
                     aria-label={t("Clear search")}
-                    className="absolute right-3 grid size-8 place-items-center rounded-full text-[#8792a0] transition hover:bg-[#efece3] hover:text-[#092a53]"
+                    className="absolute right-3 grid size-8 place-items-center rounded-full text-[#65748a] transition hover:bg-[#efece3] hover:text-[#092a53]"
                     onClick={() => setSearch("")}
                     type="button"
                   >
@@ -171,7 +172,7 @@ export function FlavorsPage() {
               </label>
                 <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-none">
                   <label className={`relative flex flex-col justify-center rounded-[20px] px-4 py-2.5 ring-1 transition lg:w-[170px] ${maxPrice ? "bg-[#fff8dd] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"}`}>
-                    <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">{t("Maximum price")}</span>
+                    <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Maximum price")}</span>
                     <span className="mt-0.5 flex items-baseline gap-1.5">
                       <input
                         className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#a5aebb]"
@@ -187,7 +188,7 @@ export function FlavorsPage() {
                     </span>
                   </label>
                   <label className={`relative flex flex-col justify-center rounded-[20px] px-4 py-2.5 ring-1 transition lg:w-[190px] ${sortBy !== "recommended" ? "bg-[#fff8dd] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"}`}>
-                    <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">{t("Sort by")}</span>
+                    <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Sort by")}</span>
                     <select
                       className="mt-0.5 w-full min-w-0 cursor-pointer appearance-none bg-transparent pr-5 text-sm font-bold text-[#092a53] outline-none!"
                       onChange={(event) => setSortBy(event.target.value)}
@@ -198,7 +199,7 @@ export function FlavorsPage() {
                       <option value="price-desc">{t("Price: high to low")}</option>
                       <option value="name">{t("Name: A to Z")}</option>
                     </select>
-                    <svg aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 size-4 text-[#8792a0]" fill="none" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeWidth="2" /></svg>
+                    <svg aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 size-4 text-[#65748a]" fill="none" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeWidth="2" /></svg>
                   </label>
                 </div>
               </div>
@@ -213,7 +214,7 @@ export function FlavorsPage() {
 
               {flavorTags.length > 0 && (
                 <div className="mt-3 flex items-center gap-3 px-1">
-                  <span className="hidden shrink-0 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0] sm:inline">{t("Flavor tag")}</span>
+                  <span className="hidden shrink-0 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a] sm:inline">{t("Flavor tag")}</span>
                   <div aria-label={t("Flavor tag")} className="-my-1 flex flex-1 gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group">
                     {["", ...flavorTags].map((tag) => {
                       const active = selectedTag === tag;
@@ -265,7 +266,10 @@ export function FlavorsPage() {
                       <img decoding="async" loading="lazy"
                         alt=""
                         className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05]"
+                        onError={photoErrorHandler(flavor.image)}
+                        sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, 50vw"
                         src={flavor.image}
+                        srcSet={photoSrcSet(flavor.image)}
                       />
                       {flavor.tag && (
                         <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-white/95 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.1em] text-[#52647b] shadow-sm backdrop-blur-sm sm:left-3 sm:top-3 sm:px-3 sm:py-1.5 sm:text-[10px]">
@@ -324,7 +328,7 @@ export function FlavorsPage() {
             )}
             {!loading && !error && availableFlavors.length > 0 && filteredFlavors.length === 0 && (
               <div className="flex flex-col items-center rounded-[28px] bg-white px-6 py-16 text-center ring-1 ring-[#ebe7dc]">
-                <span aria-hidden="true" className="grid size-14 place-items-center rounded-full bg-[#fbfaf5] text-[#8792a0] ring-1 ring-[#ebe7dc]">
+                <span aria-hidden="true" className="grid size-14 place-items-center rounded-full bg-[#fbfaf5] text-[#65748a] ring-1 ring-[#ebe7dc]">
                   <svg className="size-6" fill="none" viewBox="0 0 24 24">
                     <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
                     <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
@@ -363,7 +367,7 @@ export function FlavorsPage() {
               </p>
             )}
 
-            <p className="mt-8 flex gap-3 text-xs leading-5 text-[#8792a0]">
+            <p className="mt-8 flex gap-3 text-xs leading-5 text-[#65748a]">
               <span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 text-[10px] font-extrabold text-[#806a00]">i</span>
               {t("Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
             </p>

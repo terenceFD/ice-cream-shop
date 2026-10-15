@@ -173,7 +173,7 @@ function StoreSelect({
         <span
           aria-hidden="true"
           className={`grid size-10 shrink-0 place-items-center rounded-xl transition ${
-            selected ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-white text-[#8792a0] ring-1 ring-[#ebe7dc]'
+            selected ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-white text-[#65748a] ring-1 ring-[#ebe7dc]'
           }`}
         >
           <PinIcon />
@@ -190,7 +190,7 @@ function StoreSelect({
         </span>
         <svg
           aria-hidden="true"
-          className={`size-4 shrink-0 text-[#8792a0] transition duration-200 ${open ? 'rotate-180 text-[#092a53]' : ''}`}
+          className={`size-4 shrink-0 text-[#65748a] transition duration-200 ${open ? 'rotate-180 text-[#092a53]' : ''}`}
           fill="none"
           viewBox="0 0 24 24"
         >
@@ -227,7 +227,7 @@ function StoreSelect({
               <span
                 aria-hidden="true"
                 className={`grid size-9 shrink-0 place-items-center rounded-lg transition ${
-                  isSelected ? 'bg-[#092a53] text-[#ffdc32]' : isActive ? 'bg-white text-[#a48700]' : 'bg-[#fbfaf5] text-[#8792a0]'
+                  isSelected ? 'bg-[#092a53] text-[#ffdc32]' : isActive ? 'bg-white text-[#8a7000]' : 'bg-[#fbfaf5] text-[#65748a]'
                 }`}
               >
                 <PinIcon />
@@ -236,7 +236,7 @@ function StoreSelect({
                 <span className={`block truncate text-sm ${isSelected ? 'font-extrabold text-[#092a53]' : 'font-bold text-[#24405f]'}`}>
                   {store.name}
                 </span>
-                <span className="mt-0.5 block truncate text-xs font-semibold text-[#8792a0]">{store.location}</span>
+                <span className="mt-0.5 block truncate text-xs font-semibold text-[#65748a]">{store.location}</span>
               </span>
               <span
                 aria-hidden="true"
@@ -345,7 +345,7 @@ export function ContactPage() {
                     <MailIcon />
                   </span>
                   <span className="leading-tight">
-                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t('Contact a store')}</span>
+                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">{t('Contact a store')}</span>
                     <span className="mt-0.5 block font-display text-base font-extrabold sm:text-lg">{t('Send us a message')}</span>
                   </span>
                 </span>
@@ -400,7 +400,7 @@ export function ContactPage() {
         <section className="pb-20 pt-10 sm:pb-24 sm:pt-14 lg:pb-28">
           <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-start gap-10 px-5 sm:px-8 lg:grid-cols-12 lg:gap-14 lg:px-12">
             <aside className="lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300 lg:col-span-4">
-              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                 <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                 {t('How it works')}
               </p>
@@ -443,7 +443,7 @@ export function ContactPage() {
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">{t('Contact a store')}</p>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">{t('Contact a store')}</p>
                   <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl" id="contact-form-title">
                     {t('Send us a message')}
                   </h2>
@@ -525,7 +525,7 @@ export function ContactPage() {
                   {error && <p className="flex gap-3 rounded-2xl bg-red-50 px-5 py-4 text-sm text-red-700" role="alert"><span aria-hidden="true" className="font-extrabold">!</span>{error}</p>}
 
                   <div className="flex flex-col-reverse gap-4 border-t border-[#efece3] pt-6 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-xs leading-5 text-[#8792a0]">{t('Please complete all required fields before sending.')}</p>
+                    <p className="text-xs leading-5 text-[#65748a]">{t('Please complete all required fields before sending.')}</p>
                     <button
                       className="inline-flex items-center justify-center gap-2 rounded-full bg-[#092a53] px-8 py-4 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.22)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] disabled:translate-y-0 disabled:cursor-wait disabled:opacity-60"
                       disabled={isSubmitting || isLoadingStores || stores.length === 0}

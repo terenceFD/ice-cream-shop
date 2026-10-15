@@ -6,6 +6,7 @@ import { useAdminAuth } from "./useAdminAuth";
 import { useCart } from "../../../useCart";
 import { formatCartMoney } from "../../../cartPricing";
 import { apiRequest } from "../../../api/api";
+import { prepareImageForUpload, UPLOAD_IMAGE_TYPES, UPLOAD_MAX_BYTES } from "../../../prepareUploadImage";
 
 const inputClassName =
   "mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
@@ -103,44 +104,6 @@ function FlavorThumb({ src, alt = "", className = "size-12" }) {
   );
 }
 
-const FLAVOR_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const FLAVOR_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
-const FLAVOR_IMAGE_MAX_DIMENSION = 1600;
-
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => (typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Could not read the selected image.")));
-    reader.onerror = () => reject(new Error("Could not read the selected image."));
-    reader.readAsDataURL(file);
-  });
-}
-
-// Phone photos are often several megabytes, so large stills are scaled down before upload.
-// GIFs are sent as they are so animations are kept.
-async function prepareFlavorImage(file) {
-  if (file.type === "image/gif" || typeof createImageBitmap !== "function") return readFileAsDataUrl(file);
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, FLAVOR_IMAGE_MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
-  if (scale === 1 && file.size <= 1.5 * 1024 * 1024) {
-    bitmap.close();
-    return readFileAsDataUrl(file);
-  }
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-  const context = canvas.getContext("2d");
-  if (!context) {
-    bitmap.close();
-    return readFileAsDataUrl(file);
-  }
-  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  // WebP keeps transparent backgrounds; browsers that cannot encode it fall back to JPEG.
-  const webp = canvas.toDataURL("image/webp", 0.85);
-  return webp.startsWith("data:image/webp") ? webp : canvas.toDataURL("image/jpeg", 0.85);
-}
-
 function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, error, reservedStock, t }) {
   const isEdit = mode === "edit";
   const price = Number(values.price);
@@ -152,17 +115,17 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
   async function uploadImageFile(file) {
     if (!file) return;
     setUploadError("");
-    if (!FLAVOR_IMAGE_TYPES.includes(file.type)) {
+    if (!UPLOAD_IMAGE_TYPES.includes(file.type)) {
       setUploadError(t("Choose a JPEG, PNG, WebP, or GIF image."));
       return;
     }
-    if (file.type === "image/gif" && file.size > FLAVOR_IMAGE_MAX_BYTES) {
+    if (file.type === "image/gif" && file.size > UPLOAD_MAX_BYTES) {
       setUploadError(t("Choose an image smaller than 5 MB."));
       return;
     }
     setIsUploadingImage(true);
     try {
-      const dataUrl = await prepareFlavorImage(file);
+      const dataUrl = await prepareImageForUpload(file);
       const { image } = await apiRequest("/admin/uploads", {
         method: "POST",
         token: sessionToken,
@@ -204,7 +167,7 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
       >
         <header className="flex items-start justify-between gap-4 border-b border-[#edf1f5] px-6 py-5">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">
               {t(isEdit ? "Edit flavor" : "Catalog setup")}
             </p>
             <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="flavor-drawer-title">
@@ -740,7 +703,7 @@ export function AdminPage() {
           <div className="min-w-0">
             <nav aria-label={t("Breadcrumb")} className="text-[11px] font-bold text-[#8190a1]">
               {t("Catalog")} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#a48700]">{t("Flavors")}</span>
+              <span className="text-[#8a7000]">{t("Flavors")}</span>
             </nav>
             <h1 className="mt-1 truncate font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">
               {t("Welcome, {name}", { name: currentAdmin?.name || "Admin" })}

@@ -238,7 +238,7 @@ export function AdminCategoriesPage() {
           <div className="min-w-0">
             <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
               {t('Catalog organization')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#a48700]">{t('Categories')}</span>
+              <span className="text-[#8a7000]">{t('Categories')}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Menu categories')}</h1>
             <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">
@@ -434,7 +434,7 @@ export function AdminCategoriesPage() {
           <section aria-labelledby="category-drawer-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[32rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
             <header className="flex items-start justify-between gap-4 border-b border-[#edf1f5] px-6 py-5">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t(editingId ? 'Edit category' : 'Category setup')}</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t(editingId ? 'Edit category' : 'Category setup')}</p>
                 <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="category-drawer-title">{t(editingId ? 'Edit category' : 'Add category')}</h2>
                 <p className="mt-1 text-sm text-[#65748a]">{t('Define the name, visual identity, and order customers will see.')}</p>
               </div>

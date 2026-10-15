@@ -10,6 +10,7 @@ import { useCart } from "../../../useCart";
 import { apiRequest } from "../../../api/api";
 import { coldStoneMenuCategories, getMenuItemId } from "../../../data";
 import { useLanguage } from "../../../language/useLanguage";
+import { photoErrorHandler, photoSrcSet, thumbnail } from "../../../thumbnails";
 
 const popularFlavorNames = [
   "Cookie Crunch Cone",
@@ -539,21 +540,24 @@ export function HomePage() {
                         onClick={() => setActiveSlide(index)}
                         type="button"
                       >
-                        <img decoding="async" loading="lazy" alt="" className="size-full object-cover" src={slide.image} />
+                        <img decoding="async" loading="lazy" alt="" className="size-full object-cover" onError={photoErrorHandler(slide.image)} src={thumbnail(slide.image)} />
                       </button>
                     );
                   })}
                 </div>
-                <div aria-label={t("Choose a featured slide")} className="mt-4 flex justify-center gap-2 sm:hidden" role="group">
+                <div aria-label={t("Choose a featured slide")} className="mt-2 flex justify-center sm:hidden" role="group">
+                  {/* The dots stay small, but each one has a finger-sized (32px) tap area. */}
                   {homeSlides.map((slide, index) => (
                     <button
                       aria-current={activeSlide === index ? "true" : undefined}
                       aria-label={t("Show slide {number}", { number: index + 1 })}
-                      className={`h-2 rounded-full transition-all ${activeSlide === index ? "w-8 bg-[#ffdc32]" : "w-2 bg-white/35"}`}
+                      className="grid h-8 min-w-8 place-items-center px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] rounded-full"
                       key={slide.image}
                       onClick={() => setActiveSlide(index)}
                       type="button"
-                    />
+                    >
+                      <span aria-hidden="true" className={`h-2 rounded-full transition-all ${activeSlide === index ? "w-8 bg-[#ffdc32]" : "w-2 bg-white/35"}`} />
+                    </button>
                   ))}
                 </div>
               </div>
@@ -608,7 +612,7 @@ export function HomePage() {
           <div className="mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                   <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                   {t("Our favorites")}
                 </p>
@@ -653,11 +657,10 @@ export function HomePage() {
                     alt=""
                     className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06] ${soldOut ? "grayscale-[60%]" : ""}`}
                     loading="lazy"
-                    onError={(event) => {
-                      event.currentTarget.onerror = null;
-                      event.currentTarget.src = "/images/hero-ice-cream.jpg";
-                    }}
+                    onError={photoErrorHandler(item.image, "/images/hero-ice-cream.jpg")}
+                    sizes={featured ? "(min-width: 1024px) 40vw, 100vw" : "(min-width: 1024px) 25vw, 50vw"}
                     src={item.image}
+                    srcSet={photoSrcSet(item.image)}
                   />
                 );
 
@@ -739,12 +742,12 @@ export function HomePage() {
                         </Link>
                       </h3>
                       <p className="mt-1 line-clamp-1 text-xs leading-5 text-[#65748a] sm:text-sm sm:leading-6">{t(item.detail)}</p>
-                      <p className="mt-1.5 whitespace-nowrap font-display text-sm font-extrabold tabular-nums text-[#a48700] sm:hidden">
+                      <p className="mt-1.5 whitespace-nowrap font-display text-sm font-extrabold tabular-nums text-[#8a7000] sm:hidden">
                         {soldOut ? t("Sold out") : formatPrice(item.priceXaf)}
                       </p>
                     </div>
                     <div className="hidden shrink-0 text-right sm:block">
-                      <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">
+                      <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">
                         {soldOut ? t("Sold out") : t("Illustrative price")}
                       </p>
                       <p className="mt-0.5 whitespace-nowrap font-display text-lg font-extrabold tabular-nums text-[#092a53]">
@@ -753,7 +756,7 @@ export function HomePage() {
                     </div>
                     <button
                       aria-label={soldOut ? t("Sold out") : added ? t("Added") : t("Add {name} to your bag", { name: t(item.name) })}
-                      className={`relative z-10 grid size-11 shrink-0 place-items-center rounded-full transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#8792a0] sm:size-12 ${
+                      className={`relative z-10 grid size-11 shrink-0 place-items-center rounded-full transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] sm:size-12 ${
                         added ? "bg-[#4caf50] text-white" : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white"
                       }`}
                       disabled={soldOut}
@@ -828,7 +831,7 @@ export function HomePage() {
                     </svg>
                   </span>
                   <span className="leading-tight">
-                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t("Signature creations")}</span>
+                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">{t("Signature creations")}</span>
                     <span className="mt-0.5 block text-sm font-bold">{t("A treat made your way")}</span>
                   </span>
                 </div>
@@ -920,7 +923,7 @@ export function HomePage() {
           <div className="mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                   <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                   {t("The Cold Stone experience")}
                 </p>
@@ -967,7 +970,10 @@ export function HomePage() {
                       aria-hidden="true"
                       className="absolute inset-0 -z-20 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06]"
                       loading="lazy"
+                      onError={photoErrorHandler(category.image)}
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                       src={category.image}
+                      srcSet={photoSrcSet(category.image)}
                     />
                     <div
                       aria-hidden="true"
@@ -1051,7 +1057,8 @@ export function HomePage() {
                       alt={t("Ice cream cupcake")}
                       className="size-full object-cover transition duration-700 hover:scale-[1.05]"
                       loading="lazy"
-                      src="/cream/cream%203.webp"
+                      onError={photoErrorHandler("/cream/cream%203.webp")}
+                      src={thumbnail("/cream/cream%203.webp")}
                     />
                   </figure>
                   <figure className="relative col-span-2 row-span-3 overflow-hidden rounded-[22px] bg-[#fff3b8] shadow-[0_14px_34px_rgba(9,42,83,0.12)]">
@@ -1059,7 +1066,8 @@ export function HomePage() {
                       alt={t("Chocolate ice cream cupcake")}
                       className="size-full object-cover transition duration-700 hover:scale-[1.05]"
                       loading="lazy"
-                      src="/cream/cream%205.webp"
+                      onError={photoErrorHandler("/cream/cream%205.webp")}
+                      src={thumbnail("/cream/cream%205.webp")}
                     />
                   </figure>
                 </div>
@@ -1071,12 +1079,13 @@ export function HomePage() {
                         className="size-9 rounded-full border-2 border-white object-cover"
                         key={src}
                         loading="lazy"
-                        src={src}
+                        onError={photoErrorHandler(src)}
+                        src={thumbnail(src)}
                       />
                     ))}
                   </div>
                   <div className="leading-tight">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">
                       {t("Happy customers")}
                     </p>
                     <p className="mt-0.5 text-sm font-bold text-[#092a53]">
@@ -1087,7 +1096,7 @@ export function HomePage() {
               </div>
 
               <div className="lg:col-span-6 lg:pl-4">
-                <p className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#a48700]">
+                <p className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#8a7000]">
                   <span aria-hidden="true" className="h-px w-8 bg-[#a48700]" />
                   {t("About us")}
                 </p>
@@ -1103,28 +1112,28 @@ export function HomePage() {
                   )}
                 </p>
 
-                <dl className="mt-8 divide-y divide-[#e9e5da] border-y border-[#e9e5da]">
+                <ul className="mt-8 divide-y divide-[#e9e5da] border-y border-[#e9e5da]">
                   {[
                     { number: "01", label: "Pickup or delivery", detail: "Choose what suits your day." },
                     { number: "02", label: "Loyalty rewards", detail: "Earn points on every order." },
                     { number: "03", label: "Custom cakes", detail: "Plan a cake for any celebration." },
                   ].map((item) => (
-                    <div className="group flex items-baseline gap-5 py-4 sm:py-5" key={item.label}>
+                    <li className="group flex items-baseline gap-5 py-4 sm:py-5" key={item.label}>
                       <span
                         aria-hidden="true"
-                        className="font-display text-sm font-extrabold tabular-nums text-[#c9b24a] transition-colors group-hover:text-[#a48700]"
+                        className="font-display text-sm font-extrabold tabular-nums text-[#8a7000] transition-colors group-hover:text-[#092a53]"
                       >
                         {item.number}
                       </span>
                       <div className="flex flex-1 flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-                        <dt className="font-display text-lg font-extrabold text-[#092a53]">
+                        <p className="font-display text-lg font-extrabold text-[#092a53]">
                           {t(item.label)}
-                        </dt>
-                        <dd className="text-sm text-[#65748a]">{t(item.detail)}</dd>
+                        </p>
+                        <p className="text-sm text-[#65748a]">{t(item.detail)}</p>
                       </div>
-                    </div>
+                    </li>
                   ))}
-                </dl>
+                </ul>
 
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <Link
@@ -1186,7 +1195,7 @@ export function HomePage() {
           <div className="mx-auto grid max-w-[1240px] gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5">
               <div className="lg:sticky lg:top-28">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                   <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                   {t("Here to help")}
                 </p>
@@ -1289,7 +1298,7 @@ export function HomePage() {
                     <summary className="flex cursor-pointer list-none items-start gap-5 py-6 marker:content-none focus-visible:outline-none sm:gap-7 sm:py-7 [&::-webkit-details-marker]:hidden">
                       <span
                         aria-hidden="true"
-                        className="pt-1 font-display text-sm font-extrabold tabular-nums text-[#c9b24a] transition-colors group-open:text-[#a48700]"
+                        className="pt-1 font-display text-sm font-extrabold tabular-nums text-[#8a7000] transition-colors group-open:text-[#092a53]"
                       >
                         {String(index + 1).padStart(2, "0")}
                       </span>

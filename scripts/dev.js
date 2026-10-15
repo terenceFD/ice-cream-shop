@@ -1,6 +1,10 @@
 import { spawn } from 'node:child_process'
 import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
+import { makeThumbnails } from './make-thumbnails.mjs'
+
+// Small photo copies (public/thumbs) are refreshed whenever a photo changed.
+await makeThumbnails().catch((error) => console.error('Unable to make photo thumbnails:', error.message))
 
 const backend = spawn(process.execPath, [fileURLToPath(new URL('../server/index.js', import.meta.url))], {
   stdio: 'inherit',

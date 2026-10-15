@@ -80,6 +80,7 @@ import {
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
 import { storeAdminCanAccess } from './admin-access.js'
 import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, saveUploadedImage } from './storage.js'
+import { optimizeUploadedImage, UnreadableImageError } from './images.js'
 import {
   buildPromotionNotification,
   countCustomerSubscriptions,
@@ -188,8 +189,8 @@ const frontendOrigins = [
 const uploadDirectory = fileURLToPath(new URL('./uploads/', import.meta.url))
 const contentSecurityDirectives = helmet.contentSecurityPolicy.getDefaultDirectives()
 contentSecurityDirectives['img-src'] = ["'self'", 'data:', 'https://images.unsplash.com', ...(imageStorageOrigin() ? [imageStorageOrigin()] : [])]
-contentSecurityDirectives['style-src'] = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com']
-contentSecurityDirectives['font-src'] = ["'self'", 'data:', 'https://fonts.gstatic.com']
+contentSecurityDirectives['style-src'] = ["'self'", "'unsafe-inline'"]
+contentSecurityDirectives['font-src'] = ["'self'", 'data:']
 
 // Tokens are only ever signed with HS256; refuse any other algorithm a forged token might claim.
 const JWT_VERIFY_OPTIONS = { algorithms: ['HS256'] }
@@ -3004,11 +3005,19 @@ app.post('/api/admin/uploads', requireAdmin, ownerOnly, async (request, response
     response.status(400).json({ error: 'The uploaded file does not match its image type.' })
     return
   }
-  const extension = match[1] === 'jpeg' ? '.jpg' : `.${match[1]}`
+  // Big photos are resized and saved as WebP, so they never slow the pages that show them.
+  let optimized
+  try {
+    optimized = await optimizeUploadedImage(buffer, match[1])
+  } catch (error) {
+    if (!(error instanceof UnreadableImageError)) throw error
+    response.status(400).json({ error: error.message })
+    return
+  }
   const image = await saveUploadedImage({
-    buffer,
-    filename: `${randomUUID()}${extension}`,
-    contentType: `image/${match[1]}`,
+    buffer: optimized.buffer,
+    filename: `${randomUUID()}${optimized.extension}`,
+    contentType: optimized.contentType,
     uploadDirectory,
     isProduction,
   })
@@ -3301,7 +3310,7 @@ if (existsSync(frontendEntry)) {
     index: false,
     setHeaders(response, filePath) {
       const name = filePath.replaceAll('\\', '/')
-      if (name.includes('/assets/')) {
+      if (name.includes('/assets/') || name.includes('/fonts/')) {
         // Vite gives these files a new name whenever their content changes.
         response.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
       } else if (/\/(sw\.js|manifest\.webmanifest)$/.test(name)) {

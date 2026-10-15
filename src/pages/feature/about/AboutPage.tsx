@@ -100,7 +100,7 @@ export function AboutPage() {
                   </svg>
                 </span>
                 <span className="min-w-0">
-                  <span aria-hidden="true" className="block text-[10px] font-extrabold tabular-nums tracking-[0.18em] text-[#a48700]">{item.value}</span>
+                  <span aria-hidden="true" className="block text-[10px] font-extrabold tabular-nums tracking-[0.18em] text-[#8a7000]">{item.value}</span>
                   <span className="mt-0.5 block font-display text-base font-extrabold leading-snug text-[#092a53] sm:text-lg">{t(item.label)}</span>
                 </span>
               </li>
@@ -120,14 +120,14 @@ export function AboutPage() {
               <div className="absolute -bottom-6 right-4 flex items-center gap-3 rounded-2xl bg-white p-3 pr-5 shadow-[0_20px_44px_rgba(9,42,83,0.18)] ring-1 ring-[#eeeae1] sm:-right-6 sm:bottom-10 sm:p-4 sm:pr-6">
                 <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#092a53] font-display text-base font-extrabold text-[#ffdc32]">✦</span>
                 <div className="leading-tight">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t('Mixed to order')}</p>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">{t('Mixed to order')}</p>
                   <p className="mt-1 font-display text-sm font-extrabold text-[#092a53] sm:text-base">{t('On a frozen granite stone')}</p>
                 </div>
               </div>
             </div>
 
             <div className="lg:col-span-7">
-              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                 <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                 {t('About this guide')}
               </p>
@@ -217,7 +217,7 @@ export function AboutPage() {
           <div className="mx-auto max-w-[1200px]">
             <div className="flex flex-wrap items-end justify-between gap-6">
               <div className="max-w-2xl">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                   <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                   {t('What you’ll find here')}
                 </p>
@@ -258,7 +258,7 @@ export function AboutPage() {
                           <path d={section.icon} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                         </svg>
                       </span>
-                      <p className={`mt-8 text-[10px] font-extrabold uppercase tracking-[0.16em] ${featured ? 'text-[#ffdc32]' : 'text-[#a48700]'}`}>{t(section.eyebrow)}</p>
+                      <p className={`mt-8 text-[10px] font-extrabold uppercase tracking-[0.16em] ${featured ? 'text-[#ffdc32]' : 'text-[#8a7000]'}`}>{t(section.eyebrow)}</p>
                       <h3 className="mt-3 font-display text-2xl font-extrabold leading-tight">{t(section.title)}</h3>
                       <p className={`mt-3 text-sm leading-6 ${featured ? 'text-white/70' : 'text-[#65748a]'}`}>{t(section.description)}</p>
                       <span className={`mt-auto flex items-center justify-between gap-3 border-t pt-5 text-sm font-extrabold ${featured ? 'border-white/15' : 'border-[#efebe1]'}`}>

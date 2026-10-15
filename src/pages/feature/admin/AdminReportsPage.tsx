@@ -200,7 +200,7 @@ export function AdminReportsPage() {
           <div className="min-w-0">
             <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
               {t('Store analytics')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#a48700]">{t('Reports')}</span>
+              <span className="text-[#8a7000]">{t('Reports')}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Sales and inventory reports')}</h1>
             <p className="mt-0.5 text-sm text-[#65748a]">{t('Track performance, demand, and stock health across your store in one place.')}</p>

@@ -9,7 +9,7 @@
     "dev:server": "node server/index.js",
     "start": "node server/index.js",
     "typecheck": "tsc --noEmit",
-    "build": "npm run typecheck && vite build",
+    "build": "npm run typecheck && node scripts/make-thumbnails.mjs && vite build",
     "lint": "oxlint",
     "test": "node --test \"server/*.test.js\" \"scripts/*.test.js\"",
     "test:migration": "node --test scripts/sqlite-postgres-schema.test.js server/postgres.test.js",
@@ -31,6 +31,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4",
+    "sharp": "^0.34.4",
     "stripe": "^23.0.0",
     "web-push": "^3.6.7"
   },

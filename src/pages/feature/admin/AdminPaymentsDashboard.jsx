@@ -224,7 +224,7 @@ export function AdminPaymentsDashboard() {
           <div className="min-w-0">
             <nav aria-label={t("Breadcrumb")} className="text-[11px] font-bold text-[#8190a1]">
               {t("Sales")} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#a48700]">{t("Payments")}</span>
+              <span className="text-[#8a7000]">{t("Payments")}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t("Payments")}</h1>
             <p className="mt-0.5 text-sm text-[#65748a]">{t("Payment records confirmed by Stripe and CamPay for customer orders.")}</p>
@@ -488,7 +488,7 @@ export function AdminPaymentsDashboard() {
               <div className="flex items-center gap-3">
                 <ProviderMark provider={selectedPayment.provider} size="size-11" />
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{providerInfo(selectedPayment.provider).label}</p>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{providerInfo(selectedPayment.provider).label}</p>
                   <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="payment-drawer-title">{t("Order #{id}", { id: selectedPayment.orderId })}</h2>
                 </div>
               </div>

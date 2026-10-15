@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { apiRequest } from '../../../api/api'
 import { useAdminAuth } from './useAdminAuth'
 import { useLanguage } from '../../../language/useLanguage'
+import { thumbnail } from '../../../thumbnails'
 
 const dietaryOptions = ['vegetarian', 'vegan', 'dairy-free', 'gluten-free', 'nut-free']
 const DEFAULT_THRESHOLD = 5
@@ -78,7 +79,7 @@ function Thumb({ src }: { src?: string }) {
       </span>
     )
   }
-  return <img decoding="async" alt="" className="size-10 shrink-0 rounded-xl bg-[#f1f4f8] object-cover" loading="lazy" onError={() => setFailed(true)} src={src} />
+  return <img decoding="async" alt="" className="size-10 shrink-0 rounded-xl bg-[#f1f4f8] object-cover" loading="lazy" onError={() => setFailed(true)} src={thumbnail(src)} />
 }
 
 function Switch({ checked, disabled, label, onChange }: { checked: boolean; disabled?: boolean; label: string; onChange: (checked: boolean) => void }) {
@@ -259,7 +260,7 @@ export function AdminInventoryPage() {
           <div className="min-w-0">
             <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
               {t('Catalog')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#a48700]">{t('Menu inventory')}</span>
+              <span className="text-[#8a7000]">{t('Menu inventory')}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Menu inventory')}</h1>
             <p className="mt-0.5 text-sm text-[#65748a]">{t('Set stock, availability, and dietary tags for every menu item.')}</p>
@@ -530,7 +531,7 @@ export function AdminInventoryPage() {
               <div className="flex min-w-0 items-center gap-3">
                 <Thumb src={draft.image} />
                 <div className="min-w-0">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t(draft.categoryTitle)}</p>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t(draft.categoryTitle)}</p>
                   <h2 className="truncate font-display text-xl font-extrabold text-[#092a53]" id="inventory-drawer-title">{draft.name}</h2>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest } from '../../../api/api'
+import { prepareImageForUpload, UPLOAD_IMAGE_TYPES, UPLOAD_MAX_BYTES } from '../../../prepareUploadImage'
 import { useAdminAuth } from './useAdminAuth'
 import { useLanguage } from '../../../language/useLanguage'
 
@@ -204,22 +205,14 @@ export function AdminMenuPage() {
     const file = event.target.files?.[0]
     if (!file) return
     setError('')
-    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+    if (!UPLOAD_IMAGE_TYPES.includes(file.type) || (file.type === 'image/gif' && file.size > UPLOAD_MAX_BYTES)) {
       setError(t('Choose a JPEG, PNG, WebP, or GIF image smaller than 5 MB.'))
       event.target.value = ''
       return
     }
     setIsUploading(true)
     try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => {
-          if (typeof reader.result === 'string') resolve(reader.result)
-          else reject(new Error('Could not read the selected image.'))
-        }
-        reader.onerror = () => reject(new Error('Could not read the selected image.'))
-        reader.readAsDataURL(file)
-      })
+      const dataUrl = await prepareImageForUpload(file)
       const { image } = await apiRequest<{ image: string }>('/admin/uploads', {
         method: 'POST',
         token: sessionToken,
@@ -385,7 +378,7 @@ export function AdminMenuPage() {
           <div className="min-w-0">
             <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
               {t('Store management')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#a48700]">{t('Menu')}</span>
+              <span className="text-[#8a7000]">{t('Menu')}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">
               {t('Menu management')}
@@ -692,7 +685,7 @@ export function AdminMenuPage() {
           >
             <header className="flex items-start justify-between gap-4 border-b border-[#edf1f5] px-6 py-5">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t(editingItemId ? 'Edit menu item' : 'Menu editor')}</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t(editingItemId ? 'Edit menu item' : 'Menu editor')}</p>
                 <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="menu-drawer-title">
                   {t(editingItemId ? 'Edit menu item' : 'Add a menu item')}
                 </h2>

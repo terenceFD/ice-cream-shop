@@ -115,7 +115,7 @@ export function CustomCakeRequestPage() {
                 <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
                 <span aria-current="page" className="text-[#092a53]">{t('Custom cake request')}</span>
               </nav>
-              <p className="mt-8 inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+              <p className="mt-8 inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                 <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                 {t('Made for your celebration')}
               </p>
@@ -164,7 +164,7 @@ export function CustomCakeRequestPage() {
                   </svg>
                 </span>
                 <div className="leading-tight">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{t('A treat made your way')}</p>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">{t('A treat made your way')}</p>
                   <p className="mt-1 text-xs font-bold leading-4 text-[#092a53]">{t('Share your ideas and we’ll help bring your celebration cake to life.')}</p>
                 </div>
               </div>
@@ -180,7 +180,7 @@ export function CustomCakeRequestPage() {
               id="cake-request-form"
               onSubmit={submitRequest}
             >
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">{t('A few details to get started')}</p>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">{t('A few details to get started')}</p>
               <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl">{t('Tell us about your cake')}</h2>
               <p className="mt-2 text-sm text-[#65748a]">{t('Fields marked with an asterisk are required.')}</p>
 
@@ -202,7 +202,7 @@ export function CustomCakeRequestPage() {
                           key={option.label}
                         >
                           <input checked={checked} className="sr-only" name="size" onChange={() => setSize(option.label)} type="radio" value={value} />
-                          <svg aria-hidden="true" className={`${option.icon} ${checked ? 'text-[#ffdc32]' : 'text-[#a48700]'}`} fill="none" viewBox="0 0 24 24">
+                          <svg aria-hidden="true" className={`${option.icon} ${checked ? 'text-[#ffdc32]' : 'text-[#8a7000]'}`} fill="none" viewBox="0 0 24 24">
                             <path d="M4 20h16M5 20v-6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6M5 16c2 1 3-1 4.7 0s2.6 1 4.6 0 3 1 4.7 0M12 12V8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" />
                           </svg>
                           <span className="text-sm font-extrabold">{value}</span>
@@ -282,7 +282,7 @@ export function CustomCakeRequestPage() {
               <section aria-labelledby="cake-pickup-heading" className="mt-10 border-t border-[#efece3] pt-8">
                 {stepHeading('2', 'Pickup details', 'cake-pickup-heading')}
                 <fieldset className="mt-6">
-                  <legend className={labelClass}>{t('Selected store')} <span className="text-[#a48700]">*</span></legend>
+                  <legend className={labelClass}>{t('Selected store')} <span className="text-[#8a7000]">*</span></legend>
                   <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {stores.map((store) => {
                       const checked = String(store.storeId) === selectedStoreId
@@ -294,7 +294,7 @@ export function CustomCakeRequestPage() {
                           key={store.storeId}
                         >
                           <input checked={checked} className="sr-only" name="storeId" onChange={() => setSelectedStoreId(String(store.storeId))} required type="radio" value={store.storeId} />
-                          <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-xl transition ${checked ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#f4f1e8] text-[#8792a0]'}`}>
+                          <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-xl transition ${checked ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#f4f1e8] text-[#65748a]'}`}>
                             <svg className="size-[18px]" fill="none" viewBox="0 0 24 24">
                               <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 1 1 13 0c0 5.4-6.5 11-6.5 11Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
                               <circle cx="12" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.8" />
@@ -302,7 +302,7 @@ export function CustomCakeRequestPage() {
                           </span>
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-sm font-extrabold text-[#092a53]">{t(store.storeName)}</span>
-                            <span className="mt-0.5 block truncate text-xs font-semibold text-[#8792a0]">{t(store.storeAddress || store.location)}</span>
+                            <span className="mt-0.5 block truncate text-xs font-semibold text-[#65748a]">{t(store.storeAddress || store.location)}</span>
                           </span>
                           <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full ring-2 ${checked ? 'bg-[#092a53] ring-[#092a53]' : 'ring-[#ddd6c4]'}`}>
                             {checked && <span className="size-2 rounded-full bg-[#ffdc32]" />}
@@ -313,7 +313,7 @@ export function CustomCakeRequestPage() {
                   </div>
                 </fieldset>
                 <label className="mt-6 block sm:max-w-xs">
-                  <span className={labelClass}>{t('Pickup date')} <span className="text-[#a48700]">*</span></span>
+                  <span className={labelClass}>{t('Pickup date')} <span className="text-[#8a7000]">*</span></span>
                   <input className={fieldClass} max={maxPickupDate} min={minPickupDate} name="pickupDate" onChange={(event) => setPickupDate(event.target.value)} required type="date" />
                 </label>
               </section>
@@ -323,15 +323,15 @@ export function CustomCakeRequestPage() {
                 {stepHeading('3', 'Your contact details', 'cake-contact-heading')}
                 <div className="mt-6 grid gap-5 sm:grid-cols-2">
                   <label className="block">
-                    <span className={labelClass}>{t('Full name')} <span className="text-[#a48700]">*</span></span>
+                    <span className={labelClass}>{t('Full name')} <span className="text-[#8a7000]">*</span></span>
                     <input autoComplete="name" className={fieldClass} defaultValue={customer?.name || ''} maxLength={100} name="name" required />
                   </label>
                   <label className="block">
-                    <span className={labelClass}>{t('Email address')} <span className="text-[#a48700]">*</span></span>
+                    <span className={labelClass}>{t('Email address')} <span className="text-[#8a7000]">*</span></span>
                     <input autoComplete="email" className={fieldClass} defaultValue={customer?.email || ''} maxLength={254} name="email" required type="email" />
                   </label>
                   <label className="block sm:col-span-2">
-                    <span className={labelClass}>{t('Phone number')} <span className="text-[#a48700]">*</span></span>
+                    <span className={labelClass}>{t('Phone number')} <span className="text-[#8a7000]">*</span></span>
                     <input autoComplete="tel" className={fieldClass} defaultValue={customer?.phone || ''} maxLength={40} name="phone" required type="tel" />
                   </label>
                 </div>
@@ -356,7 +356,7 @@ export function CustomCakeRequestPage() {
               )}
 
               <div className="mt-8 flex flex-col-reverse gap-4 border-t border-[#efece3] pt-6 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs leading-5 text-[#8792a0]">{t('We’ll be in touch to confirm your request.')}</p>
+                <p className="text-xs leading-5 text-[#65748a]">{t('We’ll be in touch to confirm your request.')}</p>
                 <button
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-[#092a53] px-8 py-4 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.22)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isSubmitting || !stores.length || Boolean(storeError)}
@@ -399,7 +399,7 @@ export function CustomCakeRequestPage() {
                   { title: 'We’ll confirm the details', detail: 'The store will contact you before your request is confirmed.' },
                 ].map((step, index) => (
                   <li className="flex gap-3" key={step.title}>
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#fbf6e3] font-display text-xs font-extrabold tabular-nums text-[#a48700]">{String(index + 1).padStart(2, '0')}</span>
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#fbf6e3] font-display text-xs font-extrabold tabular-nums text-[#8a7000]">{String(index + 1).padStart(2, '0')}</span>
                     <div>
                       <h3 className="text-sm font-extrabold text-[#092a53]">{t(step.title)}</h3>
                       <p className="mt-0.5 text-xs leading-5 text-[#65748a]">{t(step.detail)}</p>

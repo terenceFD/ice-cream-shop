@@ -259,7 +259,7 @@ export function CheckoutPage() {
         <div className="mx-auto max-w-[1240px] px-5 py-8 sm:px-8 sm:py-12 lg:px-12">
           {!customer && !isLoading && (
             <div className="mb-6 flex flex-col gap-4 rounded-[24px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#efe0a0] sm:flex-row sm:items-center sm:p-6">
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#a48700]">
+              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#8a7000]">
                 <Icon className="size-6" path={icons.user} />
               </span>
               <div className="min-w-0 flex-1">

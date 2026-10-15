@@ -237,7 +237,7 @@ export function AdminManagementPage() {
           <div className="min-w-0">
             <nav aria-label={t("Breadcrumb")} className="text-[11px] font-bold text-[#8190a1]">
               {t("Workspace")} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#a48700]">{t("Admin accounts")}</span>
+              <span className="text-[#8a7000]">{t("Admin accounts")}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t("Manage admin accounts")}</h1>
             <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">{t("Create a store-specific admin login and choose which branch it can access.")}</p>
@@ -447,7 +447,7 @@ export function AdminManagementPage() {
           <section aria-labelledby="add-admin-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[32rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
             <header className="flex items-start justify-between gap-4 border-b border-[#edf1f5] px-6 py-5">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#a48700]">{t("Admin access")}</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t("Admin access")}</p>
                 <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="add-admin-title">{t("Add an admin")}</h2>
                 <p className="mt-1 text-sm text-[#65748a]">{t("Assign this login to one store. It can only access that store’s operational data.")}</p>
               </div>

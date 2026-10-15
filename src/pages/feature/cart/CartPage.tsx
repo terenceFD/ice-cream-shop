@@ -131,7 +131,7 @@ export function CartPage() {
               <section aria-labelledby="cart-items-heading" className="min-w-0 space-y-5">
                 {scoopCount > 0 && (
                   <div className="flex flex-col gap-4 rounded-[24px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:flex-row sm:items-center sm:p-6">
-                    <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#a48700]">
+                    <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#8a7000]">
                       <Icon className="size-6" path={icons.gift} />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -196,7 +196,7 @@ export function CartPage() {
                       </span>
                     ) : (
                       <button
-                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-[#8792a0] transition hover:bg-red-50 hover:text-red-700"
+                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-[#65748a] transition hover:bg-red-50 hover:text-red-700"
                         onClick={() => setConfirmClear(true)}
                         type="button"
                       >
@@ -226,7 +226,7 @@ export function CartPage() {
                           <div className="flex min-w-0 flex-1 flex-col gap-4">
                             <div className="flex min-w-0 items-start justify-between gap-3">
                               <div className="min-w-0">
-                                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">
+                                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">
                                   {t(item.itemType === 'menu' ? 'Menu' : 'Flavors')}
                                 </p>
                                 <Link

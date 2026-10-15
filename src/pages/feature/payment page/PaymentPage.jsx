@@ -533,7 +533,7 @@ export function PaymentPage() {
                     <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:p-8">
                       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#a48700] before:h-px before:w-5 before:bg-[#d6bd4a]">
+                          <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#8a7000] before:h-px before:w-5 before:bg-[#d6bd4a]">
                             {t("Delivery details")}
                           </p>
                           <h2 className="mt-2 font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
@@ -596,7 +596,7 @@ export function PaymentPage() {
                   <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:p-8">
                     <fieldset>
                       <legend className="w-full">
-                        <span className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#a48700] before:h-px before:w-5 before:bg-[#d6bd4a]">
+                        <span className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#8a7000] before:h-px before:w-5 before:bg-[#d6bd4a]">
                           {t("Payment method")}
                         </span>
                         <span className="mt-2 block font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">

@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { photoErrorHandler, thumbnail } from "../thumbnails";
 
 const FALLBACK_IMAGE = "/images/hero-ice-cream.jpg";
 
@@ -34,18 +35,15 @@ interface PageHeroProps {
   curveClassName?: string;
 }
 
-function HeroImage({ src, alt, className, position }: { src: string; alt: string; className: string; position?: string }) {
+function HeroImage({ src, alt, className, position, small = false }: { src: string; alt: string; className: string; position?: string; small?: boolean }) {
   return (
-    <img fetchPriority="high" loading="eager"
+    <img fetchPriority={small ? "auto" : "high"} loading="eager"
       alt={alt}
       aria-hidden={alt ? undefined : true}
       className={className}
       decoding="async"
-      onError={(event) => {
-        event.currentTarget.onerror = null;
-        event.currentTarget.src = FALLBACK_IMAGE;
-      }}
-      src={src}
+      onError={photoErrorHandler(src, FALLBACK_IMAGE)}
+      src={small ? thumbnail(src) : src}
       style={position ? { objectPosition: position } : undefined}
     />
   );
@@ -104,10 +102,10 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
               </figure>
 
               <figure className="absolute left-[4%] top-[6%] size-[30%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-[#092a53]">
-                <HeroImage alt="" className="size-full object-cover" src={sideImages[0]} />
+                <HeroImage alt="" className="size-full object-cover" small src={sideImages[0]} />
               </figure>
               <figure className="absolute bottom-[10%] left-[18%] size-[24%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-[#092a53]">
-                <HeroImage alt="" className="size-full object-cover" src={sideImages[1]} />
+                <HeroImage alt="" className="size-full object-cover" small src={sideImages[1]} />
               </figure>
             </>
           )}
@@ -118,7 +116,7 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
                 {badge.mark}
               </span>
               <div className="leading-tight">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#a48700]">{badge.eyebrow}</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">{badge.eyebrow}</p>
                 <p className="mt-1 text-xs font-bold leading-4 sm:text-sm sm:leading-5">{badge.text}</p>
               </div>
             </div>

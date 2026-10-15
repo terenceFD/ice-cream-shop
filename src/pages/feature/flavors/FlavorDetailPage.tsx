@@ -97,7 +97,7 @@ export function FlavorDetailPage() {
         <Header />
         <main className="grid flex-1 place-items-center px-5 py-20">
           <div className="flex max-w-md flex-col items-center text-center">
-            <span aria-hidden="true" className="grid size-16 place-items-center rounded-full bg-white font-display text-2xl font-extrabold text-[#a48700] ring-1 ring-[#ebe7dc]">?</span>
+            <span aria-hidden="true" className="grid size-16 place-items-center rounded-full bg-white font-display text-2xl font-extrabold text-[#8a7000] ring-1 ring-[#ebe7dc]">?</span>
             <h1 className="mt-6 font-display text-4xl font-extrabold tracking-tight text-[#092a53]">
               {error ? t(error) : t("Flavor not found")}
             </h1>
@@ -213,7 +213,7 @@ export function FlavorDetailPage() {
               {/* Purchase card */}
               <div className="min-w-0 rounded-[32px] bg-white p-6 shadow-[0_30px_70px_rgba(9,42,83,0.14)] ring-1 ring-[#092a53]/5 sm:p-9 lg:col-span-6">
                 {flavor.tag && (
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                     <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                     {t(flavor.tag)}
                   </p>
@@ -226,7 +226,7 @@ export function FlavorDetailPage() {
                 <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-y border-[#efebe1] py-5">
                   <p className="font-display text-4xl font-extrabold tabular-nums text-[#092a53]">
                     {formatCartMoney(flavor.price, "xaf", language)}
-                    <span className="ml-2 font-sans text-sm font-bold text-[#8792a0] max-sm:hidden">/ {t("Price per scoop").toLocaleLowerCase()}</span>
+                    <span className="ml-2 font-sans text-sm font-bold text-[#65748a] max-sm:hidden">/ {t("Price per scoop").toLocaleLowerCase()}</span>
                   </p>
                   <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-extrabold ${lowStock ? "bg-[#fff6dc] text-[#806a00]" : "bg-[#f3f8ef] text-[#37632c]"}`}>
                     <span aria-hidden="true" className={`size-1.5 rounded-full ${lowStock ? "bg-[#d4ad00]" : "bg-[#4caf50]"}`} />
@@ -349,11 +349,11 @@ export function FlavorDetailPage() {
                     {activeInfoTab === "details" && (
                       <dl className="grid grid-cols-2 gap-3">
                         <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]">
-                          <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">{t("Origin")}</dt>
+                          <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Origin")}</dt>
                           <dd className="mt-1 font-display text-lg font-extrabold text-[#092a53]">{t(flavor.origin)}</dd>
                         </div>
                         <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]">
-                          <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">{t("Servings")}</dt>
+                          <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Servings")}</dt>
                           <dd className="mt-1 font-display text-lg font-extrabold tabular-nums text-[#092a53]">{flavor.servings}</dd>
                         </div>
                       </dl>
@@ -380,7 +380,7 @@ export function FlavorDetailPage() {
               {t("Browse all flavors")} <ArrowIcon />
             </Link>
           </div>
-          <p className="mt-4 flex gap-3 text-xs leading-5 text-[#8792a0]">
+          <p className="mt-4 flex gap-3 text-xs leading-5 text-[#65748a]">
             <span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 text-[10px] font-extrabold text-[#806a00]">i</span>
             {t("Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
           </p>
@@ -391,7 +391,7 @@ export function FlavorDetailPage() {
             <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
               <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#a48700]">
+                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                     <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                     {t("Explore more flavors")}
                   </p>
