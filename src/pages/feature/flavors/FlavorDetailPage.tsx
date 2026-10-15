@@ -166,8 +166,9 @@ export function FlavorDetailPage() {
             <div className="absolute -left-24 top-0 size-[38rem] rounded-full bg-white/60 blur-3xl" />
             <div className="absolute -bottom-40 right-0 size-[30rem] rounded-full bg-[#ffdc32]/25 blur-3xl" />
             <div className="absolute inset-0 bg-[radial-gradient(rgba(9,42,83,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_90%)]" />
-            <p className="absolute inset-x-0 bottom-0 select-none overflow-hidden whitespace-nowrap text-center font-display text-[22vw] font-extrabold leading-[0.8] text-[#092a53]/[0.05] lg:text-[13rem]">
-              {t(flavor.name)}
+            {/* First word only, fading out at both edges, so the backdrop never looks cut off mid-word. */}
+            <p className="absolute inset-x-0 bottom-0 select-none overflow-hidden whitespace-nowrap text-center font-display text-[22vw] font-extrabold leading-[0.8] text-[#092a53]/[0.05] [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)] lg:text-[13rem]">
+              {t(flavor.name).split(/\s+/)[0]}
             </p>
           </div>
 
@@ -186,29 +187,14 @@ export function FlavorDetailPage() {
               <span aria-current="page" className="max-w-[14rem] truncate text-[#092a53]">{t(flavor.name)}</span>
             </nav>
 
-            <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-12">
-              {/* Scoop photo */}
-              <div className="relative mx-auto w-full max-w-[500px] lg:col-span-6">
+            <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
+              {/* Scoop photo: smaller on phones and tablets so the price and "Add to bag" show without scrolling. */}
+              <div className="relative mx-auto w-full max-w-[240px] sm:max-w-[320px] lg:col-span-6 lg:max-w-[500px]">
                 <div aria-hidden="true" className="absolute inset-[-6%] rounded-full border-2 border-dashed border-[#092a53]/15" />
                 <figure className={`relative aspect-square overflow-hidden rounded-full shadow-[0_50px_90px_rgba(9,42,83,0.25)] ring-[12px] ring-white ${flavor.color}`}>
                   <img decoding="async" fetchPriority="high" loading="eager" alt={t(flavor.name)} className="size-full object-cover" onError={photoErrorHandler(flavor.image)} sizes={FLAVOR_PHOTO_SIZES} src={flavor.image} srcSet={photoSrcSet(flavor.image)} />
                 </figure>
 
-                <div aria-hidden="true" className="absolute -right-1 top-[4%] grid size-28 rotate-[10deg] place-items-center rounded-full bg-[#ffdc32] text-center text-[#092a53] shadow-[0_18px_36px_rgba(9,42,83,0.22)] ring-4 ring-white sm:right-0 sm:size-32">
-                  <span>
-                    <span className="block text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#5a4a00]">{t("Price per scoop")}</span>
-                    <span className="mt-1 block font-display text-lg font-extrabold leading-tight tabular-nums sm:text-xl">
-                      {formatCartMoney(flavor.price, "xaf", language)}
-                    </span>
-                  </span>
-                </div>
-
-                {flavor.tag && (
-                  <span className="absolute bottom-[8%] left-0 inline-flex items-center gap-2 rounded-full bg-[#092a53] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-white shadow-[0_14px_30px_rgba(9,42,83,0.3)] sm:-left-2">
-                    <span aria-hidden="true" className="text-[#ffdc32]">✦</span>
-                    {t(flavor.tag)}
-                  </span>
-                )}
                 {lowStock && (
                   <span className="absolute bottom-[2%] right-[8%] inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#806a00] shadow-lg">
                     <span aria-hidden="true" className="size-1.5 animate-pulse rounded-full bg-[#d4ad00] motion-reduce:animate-none" />
@@ -383,8 +369,8 @@ export function FlavorDetailPage() {
                 <p className="mt-1 text-sm font-semibold text-[#092a53]/70">{t("Pick any three scoops and the lowest-priced one is on us.")}</p>
               </div>
             </div>
-            <Link className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b]" to="/flavors">
-              {t("Browse all flavors")} <ArrowIcon />
+            <Link className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b]" to="/cart">
+              <BagIcon /> {t("Go to your bag")}
             </Link>
           </div>
         </section>

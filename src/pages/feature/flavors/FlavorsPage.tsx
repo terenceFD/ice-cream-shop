@@ -32,9 +32,16 @@ export function FlavorsPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState("recommended");
   const selectedTag = searchParams.get("tag") || "";
-  const flavorTags = [
-    ...new Set(availableFlavors.map((flavor) => flavor.tag).filter(Boolean)),
-  ].sort((a, b) => a.localeCompare(b));
+  // A tag only becomes a filter when it groups two or more flavors; a button that finds a
+  // single flavor is noise. A tag opened from a link (?tag=) is always shown so it can be cleared.
+  const tagCounts = new Map<string, number>();
+  for (const flavor of availableFlavors) {
+    if (flavor.tag) tagCounts.set(flavor.tag, (tagCounts.get(flavor.tag) || 0) + 1);
+  }
+  const flavorTags = [...tagCounts]
+    .filter(([tag, count]) => count > 1 || tag === selectedTag)
+    .map(([tag]) => tag)
+    .sort((a, b) => a.localeCompare(b));
   const filteredFlavors = availableFlavors.filter((flavor: Flavor) => {
     const searchText = search.trim().toLocaleLowerCase();
     const matchesSearch =
@@ -105,7 +112,7 @@ export function FlavorsPage() {
               <span aria-current="page" className="text-white">{t("Flavors")}</span>
             </nav>
           }
-          description={t("Pick your favorite flavors by the scoop and order online for pickup or delivery. Buy any three scoops and the lowest-priced one is free.")}
+          description={t("Pick your favorite flavors by the scoop and order online for pickup or delivery.")}
           eyebrow={t("Order by the scoop")}
           image={{ src: "/images/hero-ice-cream.jpg", alt: t("Colorful ice cream scoops ready to share") }}
           sideImages={["/ice-images/ice-3.webp", "/ice-images/ice-6.webp"]}
@@ -113,7 +120,6 @@ export function FlavorsPage() {
             !loading && !error && availableFlavors.length > 0
               ? [
                   { label: t("Flavors"), value: availableFlavors.length },
-                  { label: t("Tags"), value: flavorTags.length },
                   ...(lowestPrice !== null
                     ? [{ label: t("Starting from"), value: formatCartMoney(lowestPrice, "xaf", language), accent: true }]
                     : []),
@@ -154,7 +160,7 @@ export function FlavorsPage() {
                 <input
                   className="w-full bg-transparent py-4 pl-14 pr-12 text-base font-semibold text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#65748a] [&::-webkit-search-cancel-button]:hidden"
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder={t("Search by flavor name or description")}
+                  placeholder={t("Search flavors")}
                   type="search"
                   value={search}
                 />
@@ -216,7 +222,8 @@ export function FlavorsPage() {
               {flavorTags.length > 0 && (
                 <div className="mt-3 flex items-center gap-3 px-1">
                   <span className="hidden shrink-0 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a] sm:inline">{t("Flavor tag")}</span>
-                  <div aria-label={t("Flavor tag")} className="-my-1 flex flex-1 gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group">
+                  {/* The faded right edge shows the row scrolls when the tags do not all fit. */}
+                  <div aria-label={t("Flavor tag")} className="-my-1 flex min-w-0 flex-1 gap-2 overflow-x-auto py-1 pr-8 [mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group">
                     {["", ...flavorTags].map((tag) => {
                       const active = selectedTag === tag;
                       return (
@@ -378,7 +385,7 @@ export function FlavorsPage() {
               <div className="flex items-start gap-5">
                 <span aria-hidden="true" className="hidden size-16 shrink-0 place-items-center rounded-2xl bg-[#ffdc32] font-display text-xl font-extrabold text-[#092a53] sm:grid">3×</span>
                 <div>
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t("This promotion applies only to this website's online catalog.")}</p>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t("Scoop deal")}</p>
                   <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">{t("More scoops, more smiles")}</h2>
                   <p className="mt-2 max-w-lg text-sm leading-6 text-white/70">{t("Pick any three scoops and the lowest-priced one is on us.")}</p>
                 </div>
