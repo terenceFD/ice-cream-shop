@@ -170,6 +170,105 @@ export async function sendOrderStatusUpdate({
   })
 }
 
+export async function sendReviewReminder({ to, recipientName, orderId, items = [], reviewUrl }) {
+  const { transporter, from } = createTransporter()
+  const itemNames = [...new Set(items.map((item) => item.flavorName).filter(Boolean))]
+  await transporter.sendMail({
+    from,
+    to,
+    subject: `How was your Cold Stone Creamery order #${orderId}?`,
+    text: [
+      `Hello ${recipientName},`,
+      '',
+      `We hope you enjoyed order #${orderId}${itemNames.length ? ` (${itemNames.join(', ')})` : ''}.`,
+      'Would you rate it? It takes about 10 seconds and helps other customers choose their treats.',
+      '',
+      `Rate your order: ${reviewUrl}`,
+      '',
+      'Thank you,',
+      'Cold Stone Creamery',
+    ].join('\n'),
+  })
+}
+
+const formatXaf = (amount) => `${new Intl.NumberFormat('en-US').format(Number(amount) || 0)} FCFA`
+const eventItemLines = (order) => (order.items || []).map((item) => `- ${item.quantity} × ${item.name} (${formatXaf(item.lineTotal)})`)
+const eventSummary = (order) => [
+  `Event: ${order.eventType} on ${order.eventDate} at ${order.eventTime}`,
+  `Guests: ${order.guestCount}`,
+  `${order.fulfillmentType === 'pickup' ? 'Pickup at' : 'Delivery from'}: ${order.storeName || 'store'}${order.deliveryAddress ? ` to ${order.deliveryAddress}` : ''}`,
+]
+
+export async function sendEventRequestNotification({ recipients, order, adminUrl }) {
+  if (!recipients.length) return
+  const { transporter, from } = createTransporter()
+  await transporter.sendMail({
+    from,
+    to: recipients,
+    subject: `New event order request #${order.id} for ${order.eventDate}`,
+    text: [
+      `${order.customerName} requested an event order.`,
+      '',
+      ...eventSummary(order),
+      `Contact: ${order.customerEmail}, ${order.customerPhone}`,
+      '',
+      'Items:',
+      ...eventItemLines(order),
+      `Estimated total: ${formatXaf(order.estimatedTotal)}`,
+      ...(order.notes ? ['', `Notes: ${order.notes}`] : []),
+      '',
+      `Review it and send a quote: ${adminUrl}`,
+    ].join('\n'),
+  })
+}
+
+export async function sendEventQuote({ to, order, payUrl }) {
+  const { transporter, from } = createTransporter()
+  await transporter.sendMail({
+    from,
+    to,
+    subject: `Your Cold Stone Creamery event quote #${order.id}`,
+    text: [
+      `Hello ${order.customerName},`,
+      '',
+      `Thank you for your event order request. Here is your quote:`,
+      '',
+      ...eventSummary(order),
+      '',
+      ...eventItemLines(order),
+      '',
+      `Total: ${formatXaf(order.quotedTotal)}`,
+      `Deposit to book your date: ${formatXaf(order.depositAmount)}`,
+      ...(order.adminNote ? ['', `Note from the store: ${order.adminNote}`] : []),
+      '',
+      `Pay the deposit to confirm: ${payUrl}`,
+      '',
+      'The rest is paid on the day of the event.',
+      '',
+      'Thank you,',
+      'Cold Stone Creamery',
+    ].join('\n'),
+  })
+}
+
+export async function sendEventDepositReceived({ recipients, order, adminUrl }) {
+  if (!recipients.length) return
+  const { transporter, from } = createTransporter()
+  await transporter.sendMail({
+    from,
+    to: recipients,
+    subject: `Deposit received for event order #${order.id}`,
+    text: [
+      `${order.customerName} paid the ${formatXaf(order.depositAmount)} deposit for event order #${order.id}.`,
+      '',
+      ...eventSummary(order),
+      `Total agreed: ${formatXaf(order.quotedTotal)}`,
+      '',
+      `Confirm the event: ${adminUrl}`,
+    ].join('\n'),
+  })
+}
+
 export async function sendCakeRequestNotification({
   recipients,
   requestId,

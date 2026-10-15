@@ -11,6 +11,7 @@ import {
 import { apiRequest, getCustomerToken } from "../../../api/api";
 import { useLanguage } from "../../../language/useLanguage";
 import { useAuth } from "../../../authcontext/useAuth";
+import { PromotionAlertsSetting } from "../../../components/PromotionAlerts";
 
 const CHECKOUT_DETAILS_KEY = "cold-stone-checkout-details";
 const PAYMENT_PENDING_MESSAGE = "Stripe has not confirmed this payment yet.";
@@ -356,7 +357,7 @@ export function PaymentPage() {
                       {[
                         { title: t("Payment confirmed"), body: t("A receipt is on its way to your inbox."), done: true },
                         { title: t("Preparing"), body: t("The store starts on your treats.") },
-                        { title: t(isPickup ? "Ready" : "Out for delivery"), body: t("Follow every step live from your account.") },
+                        { title: t(isPickup ? "Ready" : "Out for delivery"), body: t("Follow every step live from your account, or get a notification at each step.") },
                       ].map((step, index) => (
                         <li className="flex items-start gap-3" key={step.title}>
                           <span
@@ -373,6 +374,10 @@ export function PaymentPage() {
                         </li>
                       ))}
                     </ol>
+                  </div>
+
+                  <div className="mt-6">
+                    <PromotionAlertsSetting />
                   </div>
 
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row">

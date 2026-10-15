@@ -13,6 +13,7 @@ import { ScrollProgress } from "../components/ScrollProgress";
 import { WebsiteLoader } from "../components/WebsiteLoader";
 import { InstallAppPrompt } from "../components/InstallAppPrompt";
 import { PromotionAlertsPrompt } from "../components/PromotionAlerts";
+import { WhatsAppButton } from "../components/WhatsAppButton";
 import { RouteMeta } from "../seo/RouteMeta";
 
 // Each page below downloads only when a visitor opens it, so the first visit to the shop
@@ -54,6 +55,8 @@ const AdminDeliveredPage = lazyPage(() => import("../pages/feature/admin/AdminSa
 const AdminOrdersPage = lazyPage(() => import("../pages/feature/admin/AdminSalesPages"), "AdminOrdersPage");
 const AdminPaymentsPage = lazyPage(() => import("../pages/feature/admin/AdminSalesPages"), "AdminPaymentsPage");
 const AdminLayout = lazyPage(() => import("../components/AdminLayout"), "AdminLayout");
+const EventOrdersPage = lazyPage(() => import("../pages/feature/events/EventOrdersPage"), "EventOrdersPage");
+const AdminEventOrdersPage = lazyPage(() => import("../pages/feature/admin/AdminEventOrdersPage"), "AdminEventOrdersPage");
 
 function PageLoading() {
   return <div aria-busy="true" className="min-h-[60vh]" role="status" />;
@@ -98,6 +101,7 @@ function App() {
                   <Route path="/flavors" element={<FlavorsPage />} />
                   <Route path="/menu" element={<MenuPage />} />
                   <Route path="/custom-cake" element={<CustomCakeRequestPage />} />
+                  <Route path="/events" element={<EventOrdersPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/locations" element={<LocationsPage />} />
                   <Route path="/contact" element={<ContactPage />} />
@@ -128,6 +132,7 @@ function App() {
                     <Route path="/admin/reports" element={<AdminReportsPage />} />
                     <Route path="/admin/reviews" element={<AdminReviewsPage />} />
                     <Route path="/admin/cake-requests" element={<AdminCakeRequestsPage />} />
+                    <Route path="/admin/events" element={<AdminEventOrdersPage />} />
                     <Route path="/admin/orders" element={<AdminOrdersPage />} />
                     <Route
                       path="/admin/delivered"
@@ -155,6 +160,7 @@ function App() {
                 </Suspense>
                 <InstallAppPrompt />
                 <PromotionAlertsPrompt />
+                <WhatsAppButton />
                 <RouteMeta />
               </AdminAuthProvider>
             </AuthProvider>

@@ -48,6 +48,7 @@ const navItems = [
   { to: '/admin/customers', label: 'Customer accounts', group: 'Customers', icon: 'customers' },
   { to: '/admin/reviews', label: 'Customer reviews', group: 'Customers', icon: 'reviews' },
   { to: '/admin/cake-requests', label: 'Cake requests', group: 'Customers', icon: 'cakes' },
+  { to: '/admin/events', label: 'Event orders', group: 'Customers', icon: 'events' },
   { to: '/admin/fulfillment', label: 'Pickup & delivery', group: 'Workspace', icon: 'fulfillment' },
   { to: '/admin/admins', label: 'Admin accounts', group: 'Workspace', icon: 'admins' },
   { to: '/admin/activity', label: 'Activity log', group: 'Workspace', icon: 'activity' },
@@ -70,6 +71,7 @@ const navIconPaths: Record<string, string> = {
   customers: 'M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20m17 0v-1.5a4 4 0 0 0-3-3.87M14 3.2a4 4 0 0 1 0 7.6M9.5 10.8a3.8 3.8 0 1 0 0-7.6 3.8 3.8 0 0 0 0 7.6Z',
   reviews: 'm12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z',
   cakes: 'M4 11h16v9H4zm0 0 2-6h12l2 6m-9 0v3m3-3v3M8 5V3m8 2V3',
+  events: 'M5 5h14v15H5zM5 9h14M9 3v4m6-4v4m-6 6h2m2 0h2m-6 3h2',
   notifications: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4',
   admins: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 9a7 7 0 0 1 14 0m-1-15 2 2 2-2',
   alerts: 'M12 9v4m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
@@ -114,6 +116,7 @@ export function AdminLayout() {
     '/admin/customers',
     '/admin/reviews',
     '/admin/cake-requests',
+    '/admin/events',
   ].includes(item.to))
   const visibleNavItems = isOwner ? navItems : storeNavItems
   const [logoutError, setLogoutError] = useState('')

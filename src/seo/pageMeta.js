@@ -27,6 +27,10 @@ export const PUBLIC_PAGES = {
     title: 'Custom ice cream cake requests',
     description: 'Request a custom ice cream cake for birthdays and celebrations: choose a size, flavor, toppings and a pickup date.',
   },
+  '/events': {
+    title: 'Party and event ice cream orders',
+    description: 'Order ice cream in bulk for birthdays, office events and weddings in Cameroon. Get a quote, pay a deposit online, and we deliver or you pick up.',
+  },
   '/about': {
     title: 'About this guide',
     description:

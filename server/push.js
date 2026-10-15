@@ -133,6 +133,76 @@ export function buildPromotionNotification(code, customMessage = '') {
   }
 }
 
+// What the customer sees at each step of an order. Pickup and delivery orders word "ready" differently.
+const ORDER_STATUS_MESSAGES = {
+  confirmed: { title: 'confirmed', body: "Payment received. We'll let you know as soon as the store starts on your treats." },
+  accepted: { title: 'accepted', body: 'The store has accepted your order and will start on it shortly.' },
+  preparing: { title: 'is being prepared', body: 'The store is preparing your treats right now.' },
+  ready: {
+    title: 'is ready',
+    pickupBody: (store) => `Your treats are ready for pickup${store ? ` at ${store}` : ''}.`,
+    body: 'Your treats are packed and waiting for the rider.',
+  },
+  out_for_delivery: { title: 'is out for delivery', body: 'Your rider is on the way. Keep your phone close.' },
+  delivered: {
+    title: 'has been delivered',
+    pickupTitle: 'has been picked up',
+    body: 'Enjoy your treats! Tap to rate your order.',
+  },
+}
+
+export const ORDER_NOTIFICATION_STATUSES = Object.keys(ORDER_STATUS_MESSAGES)
+
+/** The notification for one step of one order. Returns null for a status customers aren't told about. */
+export function buildOrderStatusNotification({ orderId, status, fulfillmentType, storeName }) {
+  const message = ORDER_STATUS_MESSAGES[status]
+  if (!message) return null
+  const isPickup = fulfillmentType === 'pickup'
+  const title = (isPickup && message.pickupTitle) || message.title
+  const body = isPickup && message.pickupBody ? message.pickupBody(storeName) : message.body
+  return {
+    title: `Order #${orderId} ${title}`,
+    body,
+    icon: NOTIFICATION_ICON,
+    badge: NOTIFICATION_BADGE,
+    // One notification per order: each update replaces the previous one.
+    tag: `order-${orderId}`,
+    url: '/account/orders?tab=orders',
+  }
+}
+
+/** Updates about a party or event order. */
+export function buildEventOrderNotification({ eventOrderId, kind }) {
+  const messages = {
+    quoted: ['Your event quote is ready', 'Pay the deposit to book your date. Tap to see the quote.'],
+    deposit_paid: ['Deposit received', "Thank you! The store will confirm your event shortly."],
+    confirmed: ['Your event is confirmed', "We're getting ready for your celebration."],
+    declined: ['About your event request', 'The store could not take this event. Tap for details.'],
+    cancelled: ['Event order cancelled', 'Tap for details.'],
+  }
+  const [title, body] = messages[kind] || ['Event order update', 'Tap to see your event order.']
+  return {
+    title: `${title} (event #${eventOrderId})`,
+    body,
+    icon: NOTIFICATION_ICON,
+    badge: NOTIFICATION_BADGE,
+    tag: `event-${eventOrderId}`,
+    url: `/events?event=${eventOrderId}`,
+  }
+}
+
+/** Sent a day after delivery to ask for a star rating. Opens that order's review form. */
+export function buildReviewReminderNotification({ orderId }) {
+  return {
+    title: `How was order #${orderId}?`,
+    body: 'Tap to rate your treats. It takes 10 seconds and helps other customers choose.',
+    icon: NOTIFICATION_ICON,
+    badge: NOTIFICATION_BADGE,
+    tag: `review-${orderId}`,
+    url: `/account/orders?tab=orders&review=${orderId}`,
+  }
+}
+
 async function runWithConcurrency(items, limit, worker) {
   let index = 0
   const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
@@ -148,13 +218,28 @@ async function runWithConcurrency(items, limit, worker) {
  * Sends one notification to every device of every customer account that turned alerts on.
  * Devices the browser reports as gone are removed so they are not tried again.
  */
-export async function sendToAllCustomers(database, notification, { send = webpush.sendNotification } = {}) {
+export async function sendToAllCustomers(database, notification, options = {}) {
   if (!pushConfiguration()) return { sent: 0, removed: 0, failed: 0, skipped: true }
   const subscriptions = await database.prepare(`
     SELECT s.id, s.endpoint, s.p256dh, s.auth
     FROM push_subscriptions s JOIN customers c ON c.id = s.customer_id
     WHERE COALESCE(c.is_banned, 0) = 0
   `).all()
+  return sendToSubscriptions(database, subscriptions, notification, options)
+}
+
+/** Sends a notification to every device of one customer, such as an update about their order. */
+export async function sendToCustomer(database, customerId, notification, options = {}) {
+  if (!pushConfiguration() || !Number.isSafeInteger(customerId)) return { devices: 0, sent: 0, removed: 0, failed: 0, skipped: true, errors: [] }
+  const subscriptions = await database.prepare(`
+    SELECT s.id, s.endpoint, s.p256dh, s.auth
+    FROM push_subscriptions s JOIN customers c ON c.id = s.customer_id
+    WHERE s.customer_id = ? AND COALESCE(c.is_banned, 0) = 0
+  `).all(customerId)
+  return sendToSubscriptions(database, subscriptions, notification, options)
+}
+
+async function sendToSubscriptions(database, subscriptions, notification, { send = webpush.sendNotification } = {}) {
   const payload = JSON.stringify(notification)
   const result = { devices: subscriptions.length, sent: 0, removed: 0, failed: 0, skipped: false, errors: [] }
   await runWithConcurrency(subscriptions, SEND_CONCURRENCY, async (subscription) => {

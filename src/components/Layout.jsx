@@ -851,6 +851,9 @@ export function Header() {
               <Link className={mobileLinkClassName(location.pathname === "/custom-cake")} onClick={() => setIsMobileMenuOpen(false)} to="/custom-cake">
                 {t("Custom cake request")}
               </Link>
+              <Link className={mobileLinkClassName(location.pathname === "/events")} onClick={() => setIsMobileMenuOpen(false)} to="/events">
+                {t("Parties & events")}
+              </Link>
               <div className="mt-3 border-t border-white/10 pt-3">
                 <AccountDropdown
                   customer={customer}
@@ -1160,6 +1163,7 @@ export function Footer() {
         { label: t("Shop catalog"), to: "/flavors" },
         { label: t("Locations"), to: "/locations" },
         { label: t("Custom cake requests"), to: "/custom-cake" },
+        { label: t("Parties & events"), to: "/events" },
       ],
     },
     {

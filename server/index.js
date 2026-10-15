@@ -67,6 +67,11 @@ import {
 import {
   describeEmailError,
   EmailConfigurationError,
+  isEmailDeliveryConfigured,
+  sendReviewReminder,
+  sendEventRequestNotification,
+  sendEventQuote,
+  sendEventDepositReceived,
   sendCakeRequestNotification,
   sendContactReply,
   sendNewOrderNotification,
@@ -85,7 +90,31 @@ import {
   pushConfiguration,
   pushStatus,
   sendToAllCustomers,
+  buildOrderStatusNotification,
+  buildReviewReminderNotification,
+  buildEventOrderNotification,
+  sendToCustomer,
 } from './push.js'
+import { registerEventOrderRoutes } from './event-orders.js'
+
+// Tells the customer who placed an order about its new status on every device where they turned
+// notifications on. Runs in the background so staff never wait on it, and never throws.
+function notifyCustomerOfOrderStatus(orderId, status) {
+  ;(async () => {
+    const order = await database.prepare(`
+      SELECT o.customer_id AS "customerId", o.fulfillment_type AS "fulfillmentType", s.name AS "storeName"
+      FROM orders o LEFT JOIN stores s ON s.id = o.store_id
+      WHERE o.id = ?
+    `).get(orderId)
+    if (!order?.customerId) return
+    const notification = buildOrderStatusNotification({ orderId, status, ...order, customerId: undefined })
+    if (!notification) return
+    const result = await sendToCustomer(database, Number(order.customerId), notification)
+    if (result.devices > 0) {
+      console.log(`Order #${orderId} ${status} alert: ${result.sent} sent, ${result.removed} expired devices removed, ${result.failed} failed.`)
+    }
+  })().catch((error) => console.error(`Unable to send order alert for #${orderId}:`, error.message))
+}
 
 // Sends a promotion alert and waits briefly, so the owner sees whether it was delivered.
 async function sendPromotionAlert(code, message) {
@@ -275,6 +304,7 @@ async function recordPaidCheckout(session, provider = 'stripe') {
     : { id: reference, transactionId: session.reference }
   const { paymentRecorded, earnedPoints } = await finalizePaidCheckout(orderId, paymentDetails, provider)
   if (!paymentRecorded) return false
+  notifyCustomerOfOrderStatus(orderId, 'confirmed')
 
   const order = await database.prepare(`
     SELECT customer_email AS "customerEmail", customer_name AS "customerName",
@@ -400,9 +430,11 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
   }
 
   try {
+    const isEventDeposit = Boolean(event.data.object?.metadata?.eventOrderId)
     if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
-      await recordPaidCheckout(event.data.object)
-    } else if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
+      if (isEventDeposit) await eventOrderRoutes?.onStripeDepositPaid(event.data.object)
+      else await recordPaidCheckout(event.data.object)
+    } else if (!isEventDeposit && (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed')) {
       await recordFailedCheckout(event.data.object)
     }
     response.json({ received: true })
@@ -413,6 +445,11 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 })
 
 app.use(express.json({ limit: '8mb' }))
+
+app.get('/api/site/contact', (_request, response) => {
+  const digits = (process.env.WHATSAPP_NUMBER || '').replace(/\D/g, '').replace(/^00/, '')
+  response.json({ whatsappNumber: /^\d{8,15}$/.test(digits) ? digits : null })
+})
 
 app.get('/api/payment/methods', (_request, response) => {
   response.json({
@@ -1048,6 +1085,7 @@ app.post('/api/checkout/session', requireCustomer, checkoutLimiter, async (reque
     }
     if (totalCents === 0) {
       await finalizeZeroAmountCheckout(orderId, orderItems)
+      notifyCustomerOfOrderStatus(orderId, 'confirmed')
       await notifyAdmins('Paid with loyalty points')
       const receiptOrder = await database.prepare(`
         SELECT customer_email AS "customerEmail", customer_name AS "customerName",
@@ -2373,6 +2411,7 @@ async function updateOrderFulfillment(id, fulfillmentStatus, response, admin) {
     return
   }
 
+  notifyCustomerOfOrderStatus(id, fulfillmentStatus)
   const order = await database.prepare(`
     SELECT customer_email AS "customerEmail", customer_name AS "customerName"
     FROM orders WHERE id = ?
@@ -2653,6 +2692,29 @@ app.get('/api/admin/activity', requireAdmin, ownerOnly, async (_request, respons
     FROM admin_activity ORDER BY id DESC LIMIT 200
   `).all()
   response.json({ activity })
+})
+
+// Party and event orders (see server/event-orders.js).
+const eventOrderRoutes = registerEventOrderRoutes(app, {
+  database,
+  requireCustomer,
+  requireAdmin,
+  getStripe,
+  isCamPayMobileMoneyEnabled,
+  createCamPayPaymentLink,
+  getCamPayTransaction,
+  normalizeCameroonPhone,
+  resolveItem: resolveFavoriteItem,
+  publicSiteUrl,
+  sendToCustomer,
+  buildNotification: buildEventOrderNotification,
+  describeEmailError,
+  email: {
+    isConfigured: isEmailDeliveryConfigured,
+    sendEventRequestNotification,
+    sendEventQuote,
+    sendEventDepositReceived,
+  },
 })
 
 app.get('/api/admin/cake-requests', requireAdmin, async (request, response) => {
@@ -3291,9 +3353,78 @@ app.use((error, _request, response, _next) => {
   if (!response.headersSent) response.status(500).json({ error: debugMessage })
 })
 
+// Review reminders: a day after delivery, ask the customer to rate their order once, by phone
+// notification and email. Orders older than a week, already reviewed, or already reminded are skipped.
+const REVIEW_REMINDER_DELAY_HOURS = Math.max(0, Number(process.env.REVIEW_REMINDER_DELAY_HOURS ?? 24) || 0)
+const REVIEW_REMINDER_WINDOW_DAYS = 7
+let isSendingReviewReminders = false
+
+function sqlTimestamp(date) {
+  return date.toISOString().replace('T', ' ').slice(0, 19)
+}
+
+function publicSiteUrl() {
+  return (process.env.FRONTEND_URL?.trim()
+    || process.env.RENDER_EXTERNAL_URL?.trim()
+    || (process.env.RENDER_EXTERNAL_HOSTNAME ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME.trim()}` : '')
+    || frontendOrigins[0] || '').replace(/\/+$/, '')
+}
+
+async function sendDueReviewReminders() {
+  if (isSendingReviewReminders) return
+  isSendingReviewReminders = true
+  try {
+    const now = Date.now()
+    const dueBefore = sqlTimestamp(new Date(now - REVIEW_REMINDER_DELAY_HOURS * 3_600_000))
+    const notOlderThan = sqlTimestamp(new Date(now - REVIEW_REMINDER_WINDOW_DAYS * 86_400_000))
+    const orders = await database.prepare(`
+      SELECT o.id, o.customer_id AS "customerId", o.customer_email AS "customerEmail", o.customer_name AS "customerName"
+      FROM orders o JOIN customers c ON c.id = o.customer_id
+      WHERE o.status = 'delivered' AND o.review_reminder_sent_at IS NULL
+        AND o.delivered_at IS NOT NULL AND o.delivered_at <= ? AND o.delivered_at >= ?
+        AND COALESCE(c.is_banned, 0) = 0
+        AND NOT EXISTS (SELECT 1 FROM menu_reviews r WHERE r.order_id = o.id)
+      ORDER BY o.id LIMIT 50
+    `).all(dueBefore, notOlderThan)
+    for (const order of orders) {
+      // Claim the order first, so a reminder is never sent twice even if two servers run this.
+      const claim = await database.prepare(
+        'UPDATE orders SET review_reminder_sent_at = ? WHERE id = ? AND review_reminder_sent_at IS NULL',
+      ).run(new Date().toISOString(), order.id)
+      if (!claim.changes) continue
+      const push = await sendToCustomer(database, Number(order.customerId), buildReviewReminderNotification({ orderId: order.id }))
+        .catch((error) => ({ sent: 0, failed: 1, errors: [error.message] }))
+      let emailed = false
+      if (isEmailDeliveryConfigured() && order.customerEmail) {
+        const items = await database.prepare('SELECT flavor_name AS "flavorName" FROM order_items WHERE order_id = ? ORDER BY id').all(order.id)
+        try {
+          await sendReviewReminder({
+            to: order.customerEmail,
+            recipientName: order.customerName,
+            orderId: order.id,
+            items,
+            reviewUrl: `${publicSiteUrl()}/account/orders?tab=orders&review=${order.id}`,
+          })
+          emailed = true
+        } catch (error) {
+          console.error(`Unable to email review reminder for order #${order.id}:`, describeEmailError(error))
+        }
+      }
+      console.log(`Review reminder for order #${order.id}: ${push.sent || 0} notifications sent, email ${emailed ? 'sent' : 'not sent'}.`)
+    }
+  } catch (error) {
+    console.error('Unable to send review reminders:', error.message)
+  } finally {
+    isSendingReviewReminders = false
+  }
+}
+
 const server = app.listen(port, () => {
   console.log(`cold stone API listening on http://localhost:${port}`)
   console.log(`Image uploads are stored in: ${imageStorageStatus()}`)
+  // Check for due review reminders a minute after start-up, then every hour.
+  setTimeout(() => { sendDueReviewReminders() }, 60_000)
+  setInterval(() => { sendDueReviewReminders() }, 60 * 60 * 1000)
   reconcileStaleCheckouts().catch((error) => {
     console.error('Unable to reconcile expired checkouts:', error.message)
   })

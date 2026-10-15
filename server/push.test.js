@@ -9,6 +9,7 @@ process.env.VAPID_PUBLIC_KEY = keys.publicKey
 process.env.VAPID_PRIVATE_KEY = keys.privateKey
 process.env.VAPID_SUBJECT = 'https://example.test'
 const {
+  buildOrderStatusNotification,
   buildPromotionNotification,
   countCustomerSubscriptions,
   isPushConfigured,
@@ -17,6 +18,7 @@ const {
   publicKeyForPrivateKey,
   pushStatus,
   sendToAllCustomers,
+  sendToCustomer,
 } = await import('./push.js')
 
 const validKeys = {
@@ -123,4 +125,34 @@ test('reports the set-up as ready when the keys are a matching pair', () => {
 test('detects a public and private key that do not belong together', () => {
   const other = webpush.generateVAPIDKeys()
   assert.notEqual(publicKeyForPrivateKey(other.privateKey), keys.publicKey)
+})
+
+test('order notifications describe each step and replace each other', () => {
+  const preparing = buildOrderStatusNotification({ orderId: 12, status: 'preparing', fulfillmentType: 'delivery' })
+  assert.equal(preparing.title, 'Order #12 is being prepared')
+  assert.equal(preparing.tag, 'order-12')
+  assert.equal(preparing.url, '/account/orders?tab=orders')
+  assert.equal(preparing.icon, '/icons/icon-192.png')
+  assert.equal(buildOrderStatusNotification({ orderId: 12, status: 'out_for_delivery', fulfillmentType: 'delivery' }).title, 'Order #12 is out for delivery')
+  assert.equal(buildOrderStatusNotification({ orderId: 12, status: 'delivered', fulfillmentType: 'delivery' }).title, 'Order #12 has been delivered')
+  assert.equal(buildOrderStatusNotification({ orderId: 12, status: 'confirmed' }).title, 'Order #12 confirmed')
+  assert.equal(buildOrderStatusNotification({ orderId: 12, status: 'nonsense' }), null)
+})
+
+test('pickup orders are worded for pickup', () => {
+  const ready = buildOrderStatusNotification({ orderId: 7, status: 'ready', fulfillmentType: 'pickup', storeName: 'Bonapriso' })
+  assert.equal(ready.body, 'Your treats are ready for pickup at Bonapriso.')
+  assert.equal(buildOrderStatusNotification({ orderId: 7, status: 'delivered', fulfillmentType: 'pickup' }).title, 'Order #7 has been picked up')
+})
+
+test("order updates go only to that customer's devices", async () => {
+  const db = memoryDatabase()
+  const delivered = []
+  const result = await sendToCustomer(db, 1, { title: 'Order #1 is being prepared', body: 'b', tag: 'order-1' }, {
+    send: async (subscription) => { delivered.push(subscription.endpoint) },
+  })
+  assert.equal(result.sent, 2)
+  assert.deepEqual(delivered.sort(), ['https://push.example/ada-laptop', 'https://push.example/ada-phone'])
+  const banned = await sendToCustomer(db, 3, { title: 't', body: 'b' }, { send: async () => {} })
+  assert.equal(banned.devices, 0)
 })

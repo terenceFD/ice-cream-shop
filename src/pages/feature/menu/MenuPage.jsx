@@ -308,6 +308,7 @@ export function MenuPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [dietaryFilter, setDietaryFilter] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState("");
+  const [sortBy, setSortBy] = useState("recommended");
   const [favoriteIds, setFavoriteIds] = useState(new Set());
   const [favoriteError, setFavoriteError] = useState("");
   const [reviews, setReviews] = useState({
@@ -392,6 +393,14 @@ export function MenuPage() {
       )
       .map((item) => ({ category, item })),
   );
+  // Sorting only reorders the matches.
+  if (sortBy !== "recommended") {
+    filteredItems.sort((a, b) => {
+      if (sortBy === "price-asc") return a.item.priceXaf - b.item.priceXaf;
+      if (sortBy === "price-desc") return b.item.priceXaf - a.item.priceXaf;
+      return t(a.item.name).localeCompare(t(b.item.name));
+    });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -613,7 +622,7 @@ export function MenuPage() {
                 )}
               </label>
 
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:flex lg:flex-none">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex lg:flex-none">
                 {[
                   {
                     label: "Category",
@@ -639,8 +648,19 @@ export function MenuPage() {
                     onChange: setAvailabilityFilter,
                     options: [
                       ["", "Any"],
-                      ["available", "Available"],
+                      ["available", "In stock only"],
                       ["sold-out", "Sold out"],
+                    ],
+                  },
+                  {
+                    label: "Sort by",
+                    value: sortBy,
+                    onChange: setSortBy,
+                    options: [
+                      ["recommended", "Recommended"],
+                      ["price-asc", "Price: low to high"],
+                      ["price-desc", "Price: high to low"],
+                      ["name", "Name: A to Z"],
                     ],
                   },
                 ].map((filter) => (
