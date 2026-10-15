@@ -37,7 +37,7 @@ function SearchIcon({ className = "size-5" }) {
 function MenuItemCard({ category, item, formatPrice, onAdd, added, showCategory, t }) {
   const soldOut = isSoldOut(item);
   return (
-    <li className="group relative flex flex-col rounded-[24px] bg-white p-2 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_52px_rgba(9,42,83,0.13)] hover:ring-[#e2d39a] sm:rounded-[28px] sm:p-2.5">
+    <li className="group relative flex flex-col rounded-[24px] bg-white p-2 [content-visibility:auto] [contain-intrinsic-size:auto_420px] shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_52px_rgba(9,42,83,0.13)] hover:ring-[#e2d39a] sm:rounded-[28px] sm:p-2.5">
       <div className="relative aspect-square overflow-hidden rounded-[18px] bg-gradient-to-br from-[#fff8dd] via-[#fbfaf5] to-[#f1ede2] sm:rounded-[22px]">
         <img
           alt=""
@@ -322,8 +322,10 @@ export function AllMenuPage() {
             </div>
           ) : grouped ? (
             <div className="space-y-16">
-              {sections.map(({ category, entries }) => (
-                <section aria-labelledby={`all-menu-${getMenuItemId(category.title, "section")}`} key={category.title}>
+              {sections.map(({ category, entries }, index) => (
+                // Sections further down are laid out only when they come near the screen, which keeps
+                // the first view quick with 90+ products on the page.
+                <section aria-labelledby={`all-menu-${getMenuItemId(category.title, "section")}`} className={index > 0 ? "[content-visibility:auto] [contain-intrinsic-size:auto_1400px]" : undefined} key={category.title}>
                   <header className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-[#ebe7dc] pb-5">
                     <div className="flex items-center gap-4">
                       <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-2xl shadow-[0_10px_24px_rgba(9,42,83,0.2)]">{category.icon}</span>
@@ -338,7 +340,7 @@ export function AllMenuPage() {
                       <span className="rounded-full bg-[#fff3b8] px-3 py-1 text-xs font-extrabold text-[#806a00]">
                         {t(entries.length === 1 ? "1 item" : "{count} items", { count: entries.length })}
                       </span>
-                      <Link className="inline-flex items-center gap-1.5 text-sm font-extrabold text-[#092a53] underline-offset-4 hover:underline" to={`/menu?${new URLSearchParams({ category: category.title })}`}>
+                      <Link className="-my-2 inline-flex items-center gap-1.5 py-3 text-sm font-extrabold text-[#092a53] underline-offset-4 hover:underline" to={`/menu?${new URLSearchParams({ category: category.title })}`}>
                         {t("Open category")} <span aria-hidden="true">→</span>
                       </Link>
                     </div>

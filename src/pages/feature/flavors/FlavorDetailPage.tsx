@@ -196,7 +196,7 @@ export function FlavorDetailPage() {
 
                 <div aria-hidden="true" className="absolute -right-1 top-[4%] grid size-28 rotate-[10deg] place-items-center rounded-full bg-[#ffdc32] text-center text-[#092a53] shadow-[0_18px_36px_rgba(9,42,83,0.22)] ring-4 ring-white sm:right-0 sm:size-32">
                   <span>
-                    <span className="block text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#806a00]">{t("Price per scoop")}</span>
+                    <span className="block text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#5a4a00]">{t("Price per scoop")}</span>
                     <span className="mt-1 block font-display text-lg font-extrabold leading-tight tabular-nums sm:text-xl">
                       {formatCartMoney(flavor.price, "xaf", language)}
                     </span>
