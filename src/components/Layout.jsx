@@ -39,6 +39,9 @@ function closeOtherDropdowns(event) {
   });
 }
 
+// How many flavor categories the "Shop catalog" dropdown lists after "All flavors".
+const SHOP_DROPDOWN_TAG_LIMIT = 4;
+
 function NavigationDropdown({ active, label, links, mobile = false, onNavigate, subtitle, icon = '✦', feature }) {
   const detailsRef = useRef(null);
   const activeClass = active
@@ -620,7 +623,7 @@ export function Header() {
   const isAdminPage = location.pathname.startsWith("/admin");
   const isShopActive =
     location.pathname === "/flavors" || location.pathname.startsWith("/flavor/");
-  const isMenuActive = location.pathname === "/menu";
+  const isMenuActive = location.pathname === "/menu" || location.pathname === "/menu/all";
   const shopFlavors = flavors.filter((flavor) => flavor.availableQuantity > 0);
   const shopLinks = [
     {
@@ -630,7 +633,10 @@ export function Header() {
       image: shopFlavors[0]?.image,
       meta: t(shopFlavors.length === 1 ? "1 flavor" : "{count} flavors", { count: shopFlavors.length }),
     },
-    ...[...new Set(shopFlavors.map((flavor) => flavor.tag).filter(Boolean))]
+    // The dropdown keeps a short list: the labels of the longest-standing flavors (lowest ids).
+    // Newer flavors are listed on the "All flavors" page, not as extra dropdown links.
+    ...[...new Set([...shopFlavors].sort((first, second) => first.id - second.id).map((flavor) => flavor.tag).filter(Boolean))]
+      .slice(0, SHOP_DROPDOWN_TAG_LIMIT)
       .sort((first, second) => first.localeCompare(second))
       .map((tag) => {
         const tagged = shopFlavors.filter((flavor) => flavor.tag === tag);
@@ -642,13 +648,23 @@ export function Header() {
         };
       }),
   ];
-  const menuLinks = coldStoneMenuCategories.map((category) => ({
-    label: t(category.title),
-    icon: category.icon,
-    image: category.image,
-    meta: t("{count} items", { count: category.items.length }),
-    to: `/menu?category=${encodeURIComponent(category.title)}`,
-  }));
+  const menuLinks = [
+    {
+      label: t("All menu"),
+      icon: "🍽️",
+      image: "/menu-official/ice-cream/signature-creations/founders-favorite.webp",
+      // No count here: admin-added products are on the page but not in the built-in list.
+      meta: t("Every item on one page"),
+      to: "/menu/all",
+    },
+    ...coldStoneMenuCategories.map((category) => ({
+      label: t(category.title),
+      icon: category.icon,
+      image: category.image,
+      meta: t("{count} items", { count: category.items.length }),
+      to: `/menu?category=${encodeURIComponent(category.title)}`,
+    })),
+  ];
   const shopFeature = {
     to: "/flavors",
     image: "/ice-images/ice-4.webp",

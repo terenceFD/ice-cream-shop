@@ -9,6 +9,7 @@ import { useAuth } from "../../../authcontext/useAuth";
 import { PageHero } from "../../../components/PageHero";
 import { ProductImageSlider } from "../../../components/ProductImageSlider";
 import { photoErrorHandler, photoSrcSet, thumbnail } from "../../../thumbnails";
+import { rankSimilar } from "../../../similarItems";
 
 // small: always the small copy (tiny pictures). sizes: lets the browser choose the small copy
 // or the full photo for the space the picture fills.
@@ -343,6 +344,20 @@ export function MenuPage() {
       : null;
   const formatPrice = (price) =>
     `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
+
+  // Links such as /menu?category=…&item=… (from the All menu page) open that product once the
+  // live menu (with stock) has loaded; the item is then dropped from the address.
+  const requestedItemName = searchParams.get("item");
+  const liveMenuLoaded = categories !== coldStoneMenuCategories || Boolean(menuError);
+  useEffect(() => {
+    if (!requestedItemName || !activeCategory || !liveMenuLoaded) return;
+    const item = activeCategory.items.find((entry) => entry.name === requestedItemName);
+    if (item) {
+      setSelectedItemState({ categoryTitle: activeCategory.title, item });
+      window.scrollTo({ top: 0 });
+    }
+    setSearchParams({ category: activeCategory.title }, { replace: true });
+  }, [requestedItemName, activeCategory, liveMenuLoaded, setSearchParams]);
   const hasFilters = Boolean(
     search.trim() ||
     categoryFilter ||
@@ -521,18 +536,16 @@ export function MenuPage() {
     }
   }
 
+  // Eight suggestions: the same category first, then products sharing ingredients.
   const similarItems =
     selectedItem && activeCategory
-      ? [
-          ...activeCategory.items
-            .filter((item) => item.name !== selectedItem.name)
-            .map((item) => ({ category: activeCategory, item })),
-          ...categories
-            .filter((category) => category.title !== activeCategory.title)
-            .flatMap((category) =>
-              category.items.map((item) => ({ category, item })),
-            ),
-        ].slice(0, 4)
+      ? rankSimilar(
+          { key: `${activeCategory.title}:${selectedItem.name}`, group: activeCategory.title, text: `${selectedItem.name} ${selectedItem.detail || ""}` },
+          categories.flatMap((category) =>
+            category.items.map((item) => ({ key: `${category.title}:${item.name}`, group: category.title, text: `${item.name} ${item.detail || ""}`, category, item })),
+          ),
+          8,
+        )
       : [];
   const selectedSoldOut = Boolean(
     selectedItem &&

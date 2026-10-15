@@ -10,6 +10,7 @@ import { metaForFlavor, metaForPath } from "../../../seo/pageMeta.js";
 import { useDocumentMeta } from "../../../seo/useDocumentMeta";
 import { photoErrorHandler, photoSrcSet } from "../../../thumbnails";
 import { FLAVOR_PHOTO_SIZES } from "../../../photoSizes.js";
+import { rankSimilar } from "../../../similarItems";
 
 function BagIcon({ className = "size-4" }: { className?: string }) {
   return (
@@ -135,10 +136,14 @@ export function FlavorDetailPage() {
     { key: "contains", label: t("Contains") },
     { key: "details", label: t("Details") },
   ];
-  const relatedFlavors = [
-    ...flavors.filter((item: Flavor) => item.id !== flavor.id && item.availableQuantity > 0 && item.tag === flavor.tag),
-    ...flavors.filter((item: Flavor) => item.id !== flavor.id && item.availableQuantity > 0 && item.tag !== flavor.tag),
-  ].slice(0, 4);
+  // Eight in-stock flavors: same label first, then flavors sharing ingredients (chocolate, berry…).
+  const relatedFlavors: Flavor[] = rankSimilar(
+    { key: String(flavor.id), group: flavor.tag, text: `${flavor.name} ${flavor.detail}` },
+    flavors
+      .filter((item: Flavor) => item.id === flavor.id || item.availableQuantity > 0)
+      .map((item: Flavor) => ({ key: String(item.id), group: item.tag, text: `${item.name} ${item.detail}`, flavor: item })),
+    8,
+  ).map((candidate: { flavor: Flavor }) => candidate.flavor);
 
   const addSelected = () => {
     setCartNotice("");

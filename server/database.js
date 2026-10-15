@@ -743,6 +743,15 @@ export async function verifyDatabaseSchema() {
   await database.prepare(`
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_notification_sent_at TEXT
   `).run();
+  // Built-in menu products need a stock row before they can be ordered; products added to the
+  // menu in src/data.js get theirs here (existing rows and their stock are left untouched).
+  for (const category of coldStoneMenuCategories) {
+    for (const item of category.items) {
+      await database
+        .prepare("INSERT INTO menu_inventory (item_id) VALUES (?) ON CONFLICT (item_id) DO NOTHING")
+        .run(getMenuItemId(category.title, item.name));
+    }
+  }
   await database.prepare(`
     CREATE TABLE IF NOT EXISTS event_orders (
       id SERIAL PRIMARY KEY,

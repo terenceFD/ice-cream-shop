@@ -22,6 +22,12 @@ export const PUBLIC_PAGES = {
       'Browse Cold Stone treat categories: signature ice cream creations, cakes and pies, milkshakes and smoothies, sorbet and seasonal favorites.',
     photo: { src: '/ice-images/ice-4.webp', sizes: HERO_PHOTO_SIZES },
   },
+  '/menu/all': {
+    title: 'All menu items',
+    description:
+      'Every Cold Stone treat on one page: signature ice cream creations, ice cream cakes and pies, milkshakes, smoothies, novelties and seasonal favorites, with prices in FCFA.',
+    photo: { src: '/menu-official/ice-cream/signature-creations/founders-favorite.webp', sizes: HERO_PHOTO_SIZES },
+  },
   '/flavors': {
     title: 'Online shop catalog',
     description:

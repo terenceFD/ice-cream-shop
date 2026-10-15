@@ -38,6 +38,7 @@ const AboutPage = lazyPage(() => import("../pages/feature/about/AboutPage"), "Ab
 const ContactPage = lazyPage(() => import("../pages/feature/contact/ContactPage"), "ContactPage");
 const LocationsPage = lazyPage(() => import("../pages/feature/locations/LocationsPage"), "LocationsPage");
 const MenuPage = lazyPage(() => import("../pages/feature/menu/MenuPage"), "MenuPage");
+const AllMenuPage = lazyPage(() => import("../pages/feature/menu/AllMenuPage"), "AllMenuPage");
 const CustomerOrdersPage = lazyPage(() => import("../pages/feature/account/CustomerOrdersPage"), "CustomerOrdersPage");
 const AdminInventoryPage = lazyPage(() => import("../pages/feature/admin/AdminInventoryPage"), "AdminInventoryPage");
 const AdminCategoriesPage = lazyPage(() => import("../pages/feature/admin/AdminCategoriesPage"), "AdminCategoriesPage");
@@ -100,6 +101,7 @@ function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/flavors" element={<FlavorsPage />} />
                   <Route path="/menu" element={<MenuPage />} />
+                  <Route path="/menu/all" element={<AllMenuPage />} />
                   <Route path="/custom-cake" element={<CustomCakeRequestPage />} />
                   <Route path="/events" element={<EventOrdersPage />} />
                   <Route path="/about" element={<AboutPage />} />
