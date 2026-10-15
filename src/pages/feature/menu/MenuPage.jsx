@@ -718,7 +718,7 @@ export function MenuPage() {
                       type="number"
                       value={maxPrice}
                     />
-                    <span className="shrink-0 text-[10px] font-extrabold text-[#a5aebb]">FCFA</span>
+                    <span className="shrink-0 text-[10px] font-extrabold text-[#65748a]">FCFA</span>
                   </span>
                 </label>
               </div>

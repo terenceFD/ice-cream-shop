@@ -127,7 +127,7 @@ export function FlavorsPage() {
           <section aria-labelledby="shop-products-heading" className="scroll-mt-4" id="shop-products">
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#6f5a00]">
                   <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
                   {t("Find your flavors")}
                 </p>
@@ -185,7 +185,7 @@ export function FlavorsPage() {
                         type="number"
                         value={maxPrice}
                       />
-                      <span className="shrink-0 text-[10px] font-extrabold text-[#a5aebb]">FCFA</span>
+                      <span className="shrink-0 text-[10px] font-extrabold text-[#65748a]">FCFA</span>
                     </span>
                   </label>
                   <label className={`relative flex flex-col justify-center rounded-[20px] px-4 py-2.5 ring-1 transition lg:w-[190px] ${sortBy !== "recommended" ? "bg-[#fff8dd] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"}`}>
