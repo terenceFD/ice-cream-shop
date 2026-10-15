@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { getCustomerToken } from "../api/api";
-import { useAuth } from "../authcontext/useAuth";
+import { useAuth } from "../context/useAuth";
 import { useLanguage } from "../language/useLanguage";
 import {
   disablePromotionAlerts,
@@ -10,7 +10,7 @@ import {
   PROMOTION_ALERTS_CHANGED_EVENT,
   syncPromotionAlerts,
   type PromotionAlertState,
-} from "../pushNotifications";
+} from "../lib/pushNotifications";
 
 const SNOOZE_KEY = "cold-stone-promotion-alerts-snoozed";
 const SNOOZE_MS = 30 * 24 * 60 * 60 * 1000;

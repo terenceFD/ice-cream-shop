@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
-import { Header, Footer, ArrowIcon } from "../../../components/Layout";
-import { useCart } from "../../../useCart";
-import { type Flavor } from "../../../flavor-context/FlavorContext";
-import { useFlavors } from "../../../flavor-context/useFlavors";
-import { useLanguage } from "../../../language/useLanguage";
-import { formatCartMoney } from "../../../cartPricing";
-import { metaForFlavor, metaForPath } from "../../../seo/pageMeta.js";
-import { useDocumentMeta } from "../../../seo/useDocumentMeta";
-import { photoErrorHandler, photoSrcSet } from "../../../thumbnails";
-import { FLAVOR_PHOTO_SIZES } from "../../../photoSizes.js";
-import { rankSimilar } from "../../../similarItems";
+import { Header, Footer, ArrowIcon } from "../../components/Layout";
+import { useCart } from "../../context/useCart";
+import { type Flavor } from "../../context/FlavorContext";
+import { useFlavors } from "../../context/useFlavors";
+import { useLanguage } from "../../language/useLanguage";
+import { formatCartMoney } from "../../lib/cartPricing";
+import { metaForFlavor, metaForPath } from "../../seo/pageMeta.js";
+import { useDocumentMeta } from "../../seo/useDocumentMeta";
+import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
+import { FLAVOR_PHOTO_SIZES } from "../../../shared/photoSizes.js";
+import { rankSimilar } from "../../lib/similarItems";
 
 function BagIcon({ className = "size-4" }: { className?: string }) {
   return (
@@ -163,8 +163,8 @@ export function FlavorDetailPage() {
       <main>
         <section className="relative isolate overflow-hidden" style={{ backgroundColor: tint }}>
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute -left-24 top-0 size-[38rem] rounded-full bg-white/60 blur-3xl" />
-            <div className="absolute -bottom-40 right-0 size-[30rem] rounded-full bg-[#ffdc32]/25 blur-3xl" />
+            <div className="absolute -left-24 top-0 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_255_255/0.6),rgb(255_255_255/0.6)_35%,transparent)]" />
+            <div className="absolute -bottom-40 right-0 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.25),rgb(255_220_50/0.25)_35%,transparent)]" />
             <div className="absolute inset-0 bg-[radial-gradient(rgba(9,42,83,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_90%)]" />
             {/* First word only, fading out at both edges, so the backdrop never looks cut off mid-word. */}
             <p className="absolute inset-x-0 bottom-0 select-none overflow-hidden whitespace-nowrap text-center font-display text-[22vw] font-extrabold leading-[0.8] text-[#092a53]/[0.05] [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)] lg:text-[13rem]">

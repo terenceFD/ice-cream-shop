@@ -1,4 +1,4 @@
-export { USD_TO_XAF } from "../shared/currency.js";
+export { USD_TO_XAF } from "../../shared/currency.js";
 
 export interface CartPricingItem {
   itemType?: string
@@ -49,9 +49,18 @@ export function getCartPricing(items: CartPricingItem[]): CartPricing {
   };
 }
 
+// Creating a number formatter is slow, and pages format dozens of prices on every render, so
+// each locale's formatter is made once and reused.
+const numberFormatters = new Map<string, Intl.NumberFormat>();
+export function numberFormatter(locale: string): Intl.NumberFormat {
+  let formatter = numberFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale);
+    numberFormatters.set(locale, formatter);
+  }
+  return formatter;
+}
+
 export function formatCartMoney(amount: number, _currency = "xaf", language = "en"): string {
-  const formattedAmount = new Intl.NumberFormat(
-    language === "fr" ? "fr-CM" : "en-CM",
-  ).format(Math.round(amount));
-  return `${formattedAmount} FCFA`;
+  return `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(Math.round(amount))} FCFA`;
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { rankSimilar } from '../src/similarItems.js'
+import { rankSimilar } from '../src/lib/similarItems.js'
 
 const items = [
   { key: 'a', group: 'Ice Cream', text: 'Cookie Mintster Mint Ice Cream with chocolate sandwich cookies' },

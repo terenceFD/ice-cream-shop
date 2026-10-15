@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { apiRequest } from "../../../api/api";
+import { apiRequest } from "../../api/api";
 import { useAdminAuth } from "./useAdminAuth";
-import { useLanguage } from "../../../language/useLanguage";
-import { formatCartMoney, USD_TO_XAF } from "../../../cartPricing";
+import { useLanguage } from "../../language/useLanguage";
+import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
 
 const REFRESH_MS = 60_000;
 const STAR_PATH = "M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z";

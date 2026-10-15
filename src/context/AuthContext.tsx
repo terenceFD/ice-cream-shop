@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { AuthContext } from "./useAuth";
 import { apiRequest, clearCustomerToken, CUSTOMER_TOKEN_KEY, getCustomerToken, setCustomerToken } from "../api/api";
-import { disablePromotionAlerts } from "../pushNotifications";
+import { disablePromotionAlerts } from "../lib/pushNotifications";
 
 interface Customer {
   id: number;

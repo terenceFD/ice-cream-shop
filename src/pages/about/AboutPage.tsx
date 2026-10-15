@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import { photoSrcSet } from '../../../thumbnails'
-import { ArrowIcon, Footer, Header } from '../../../components/Layout'
-import { PageHero } from '../../../components/PageHero'
-import { useLanguage } from '../../../language/useLanguage'
+import { photoSrcSet } from '../../lib/thumbnails'
+import { ArrowIcon, Footer, Header } from '../../components/Layout'
+import { PageHero } from '../../components/PageHero'
+import { useLanguage } from '../../language/useLanguage'
 
 const experienceSteps: { number: string; title: string; description: string; image: string }[] = [
   {
@@ -111,7 +111,7 @@ export function AboutPage() {
 
         {/* Story */}
         <section aria-labelledby="about-guide-heading" className="relative isolate overflow-hidden px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-32">
-          <div aria-hidden="true" className="absolute -left-40 top-1/3 -z-10 size-[28rem] rounded-full bg-[#ffdc32]/10 blur-3xl" />
+          <div aria-hidden="true" className="absolute -left-40 top-1/3 -z-10 size-[28rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]" />
           <div className="mx-auto grid max-w-[1200px] items-center gap-14 lg:grid-cols-12 lg:gap-16">
             <div className="relative mx-auto w-full max-w-[500px] lg:col-span-5 lg:max-w-none">
               <div aria-hidden="true" className="absolute -left-3 -top-3 h-full w-full rotate-[-4deg] rounded-[36px] bg-[#ffdc32] sm:-left-5 sm:-top-5" />
@@ -163,8 +163,8 @@ export function AboutPage() {
         {/* Signature experience */}
         <section aria-labelledby="signature-experience-heading" className="relative isolate overflow-hidden bg-[#092a53] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-12 lg:py-28">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute -right-32 -top-32 size-[30rem] rounded-full bg-[#3f86d6]/30 blur-[120px]" />
-            <div className="absolute -bottom-40 -left-24 size-[26rem] rounded-full bg-[#ffdc32]/10 blur-[110px]" />
+            <div className="absolute -right-32 -top-32 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(63_134_214/0.3),rgb(63_134_214/0.3)_35%,transparent)]" />
+            <div className="absolute -bottom-40 -left-24 size-[26rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]" />
             <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]" />
           </div>
           <div className="mx-auto max-w-[1200px]">

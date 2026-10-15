@@ -1,15 +1,16 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowIcon, Footer, Header, InstagramSection } from "../../../components/Layout";
-import { coldStoneMenuCategories, getMenuItemId } from "../../../data";
-import { apiRequest, getCustomerToken } from "../../../api/api";
-import { useCart } from "../../../useCart";
-import { useLanguage } from "../../../language/useLanguage";
-import { useAuth } from "../../../authcontext/useAuth";
-import { PageHero } from "../../../components/PageHero";
-import { ProductImageSlider } from "../../../components/ProductImageSlider";
-import { photoErrorHandler, photoSrcSet, thumbnail } from "../../../thumbnails";
-import { rankSimilar } from "../../../similarItems";
+import { ArrowIcon, Footer, Header, InstagramSection } from "../../components/Layout";
+import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
+import { apiRequest, getCustomerToken } from "../../api/api";
+import { useCart } from "../../context/useCart";
+import { useLanguage } from "../../language/useLanguage";
+import { useAuth } from "../../context/useAuth";
+import { PageHero } from "../../components/PageHero";
+import { ProductImageSlider } from "../../components/ProductImageSlider";
+import { photoErrorHandler, photoSrcSet, thumbnail } from "../../lib/thumbnails";
+import { rankSimilar } from "../../lib/similarItems";
+import { numberFormatter } from "../../lib/cartPricing";
 
 const MAX_QUANTITY = 10;
 
@@ -369,7 +370,7 @@ export function MenuPage() {
       ? selectedItemState.item
       : null;
   const formatPrice = (price) =>
-    `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
+    `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
 
   // Links such as /menu?category=…&item=… (from the All menu page) open that product once the
   // live menu (with stock) has loaded; the item is then dropped from the address.

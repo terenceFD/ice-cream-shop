@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
-import { PasswordField } from './PasswordField'
-import { passwordStrength } from './passwordStrength'
-import { useAdminAuth } from '../pages/feature/admin/useAdminAuth'
-import { useLanguage } from '../language/useLanguage'
+import { PasswordField } from '../PasswordField'
+import { passwordStrength } from '../passwordStrength'
+import { useAdminAuth } from '../../pages/admin/useAdminAuth'
+import { useLanguage } from '../../language/useLanguage'
 
 const MIN_LENGTH = 8
 const MAX_LENGTH = 128

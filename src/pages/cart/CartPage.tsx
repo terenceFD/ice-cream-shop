@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Header, Footer } from '../../../components/Layout'
-import { type CartItem } from '../../../CartContext'
-import { useCart } from '../../../useCart'
-import { formatCartMoney, getCartPricing } from '../../../cartPricing'
-import { useLanguage } from '../../../language/useLanguage'
+import { Header, Footer } from '../../components/Layout'
+import { type CartItem } from '../../context/CartContext'
+import { useCart } from '../../context/useCart'
+import { formatCartMoney, getCartPricing } from '../../lib/cartPricing'
+import { useLanguage } from '../../language/useLanguage'
 
 function Icon({ path, className = 'size-[18px]' }: { path: string; className?: string }) {
   return (
@@ -49,7 +49,7 @@ export function CartPage() {
       <main>
         <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-12 pt-9 text-white sm:px-8 sm:pb-16 sm:pt-12 lg:px-12">
           <div aria-hidden="true" className="absolute -right-32 -top-44 -z-10 size-[30rem] rounded-full border-[64px] border-white/[0.04]" />
-          <div aria-hidden="true" className="absolute -bottom-40 left-[15%] -z-10 size-80 rounded-full bg-[#ffdc32]/[0.08] blur-3xl" />
+          <div aria-hidden="true" className="absolute -bottom-40 left-[15%] -z-10 size-80 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.08),rgb(255_220_50/0.08)_35%,transparent)]" />
           <div className="mx-auto max-w-[1240px]">
             <nav aria-label={t('Breadcrumb')} className="text-xs font-semibold text-white/55">
               <Link className="transition hover:text-[#ffdc32]" to="/">{t('Home')}</Link>

@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { apiRequest } from '../../../api/api'
+import { apiRequest } from '../../api/api'
 import { useAdminAuth } from './useAdminAuth'
-import { useLanguage } from '../../../language/useLanguage'
+import { useLanguage } from '../../language/useLanguage'
 
 const freshForm: DiscountCodeForm = { code: '', discountType: 'percent', discountValue: '', minimumTotal: 0, maxUses: '', expiresAt: '', isActive: true }
 const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
@@ -55,7 +55,7 @@ function previewNotification(form: { code: string; discountType: string; discoun
   const code = form.code || 'CODE'
   const minimum = Number(form.minimumTotal) || 0
   const until = form.expiresAt ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' }).format(new Date(form.expiresAt)) : ''
-  const details = [minimum > 0 ? `on orders over ${minimum.toLocaleString('en-US')} FCFA` : '', until ? `until ${until}` : ''].filter(Boolean).join(' ')
+  const details = [minimum > 0 ? `on orders of ${minimum.toLocaleString('en-US')}+ items` : '', until ? `until ${until}` : ''].filter(Boolean).join(' ')
   const cleaned = message.replace(/\s+/g, ' ').trim()
   return {
     title: amountValue > 0 ? `Cold Stone Creamery: ${amount}` : 'Cold Stone Creamery: New promotion',
@@ -556,7 +556,7 @@ export function AdminPromotionsPage() {
                     </div>
                     <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
                       <dt className="text-[#8190a1]">{t('Minimum order')}</dt>
-                      <dd className="text-right font-bold text-[#355777]">{Number(code.minimumTotal) ? `${numberFormat.format(code.minimumTotal)} FCFA` : t('None')}</dd>
+                      <dd className="text-right font-bold text-[#355777]">{Number(code.minimumTotal) ? `${numberFormat.format(code.minimumTotal)} ${t('items')}` : t('None')}</dd>
                       <dt className="text-[#8190a1]">{t('Expires at')}</dt>
                       <dd className="truncate text-right font-bold text-[#355777]" title={expiry || undefined}>{expiry || t('No expiry')}</dd>
                     </dl>
@@ -619,7 +619,7 @@ export function AdminPromotionsPage() {
                     <p className="mt-1 truncate font-mono text-lg font-extrabold tracking-wide text-[#102c50]">{form.code || t('Your code')}</p>
                     <p className="mt-1 text-xs text-[#65748a]">
                       {previewValue} {t('off')}
-                      {Number(form.minimumTotal) ? ` · ${t('Minimum order')} ${numberFormat.format(Number(form.minimumTotal))} FCFA` : ''}
+                      {Number(form.minimumTotal) ? ` · ${t('Minimum order')} ${numberFormat.format(Number(form.minimumTotal))} ${t('items')}` : ''}
                     </p>
                   </div>
                 </div>
@@ -673,8 +673,8 @@ export function AdminPromotionsPage() {
                   <label className={labelClassName}>
                     {t('Minimum order')}
                     <span className="relative block">
-                      <input className={`${inputClassName} pr-14`} min="0" onChange={(event) => setField('minimumTotal', event.target.value)} type="number" value={form.minimumTotal} />
-                      <span className="pointer-events-none absolute right-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-[11px] font-extrabold text-[#8190a1]">FCFA</span>
+                      <input className={`${inputClassName} pr-14`} min="0" onChange={(event) => setField('minimumTotal', event.target.value)} step="1" type="number" value={form.minimumTotal} />
+                      <span className="pointer-events-none absolute right-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-[11px] font-extrabold text-[#8190a1]">{t('items')}</span>
                     </span>
                   </label>
                   <label className={labelClassName}>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { apiRequest } from '../../../api/api'
+import { apiRequest } from '../../api/api'
 import { useAdminAuth } from './useAdminAuth'
-import { useLanguage } from '../../../language/useLanguage'
+import { useLanguage } from '../../language/useLanguage'
 import { niceAxis } from './chartScale'
 
 interface AdminReport {

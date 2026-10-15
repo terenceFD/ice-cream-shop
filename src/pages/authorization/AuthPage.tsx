@@ -1,12 +1,12 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { ArrowIcon, Header } from '../../../components/Layout'
-import { PasswordField } from '../../../components/PasswordField'
-import { useAuth } from '../../../authcontext/useAuth'
-import { getCustomerToken } from '../../../api/api'
-import { enablePromotionAlerts, isPushSupported } from '../../../pushNotifications'
-import { photoSrcSet } from '../../../thumbnails'
-import { useLanguage } from '../../../language/useLanguage'
+import { ArrowIcon, Header } from '../../components/Layout'
+import { PasswordField } from '../../components/PasswordField'
+import { useAuth } from '../../context/useAuth'
+import { getCustomerToken } from '../../api/api'
+import { enablePromotionAlerts, isPushSupported } from '../../lib/pushNotifications'
+import { photoSrcSet } from '../../lib/thumbnails'
+import { useLanguage } from '../../language/useLanguage'
 
 const PROFILE_IMAGE_DIMENSION = 256
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024

@@ -6,7 +6,7 @@ import {
   cameroonDeliveryLocations,
   coldStoneMenuCategories,
   getMenuItemId,
-} from "../src/data.js";
+} from "../shared/data.js";
 
 const databasePath =
   process.env.DATABASE_PATH ||
@@ -756,7 +756,7 @@ export async function verifyDatabaseSchema() {
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_notification_sent_at TEXT
   `).run();
   // Built-in menu products need a stock row before they can be ordered; products added to the
-  // menu in src/data.js get theirs here (existing rows and their stock are left untouched).
+  // menu in shared/data.js get theirs here (existing rows and their stock are left untouched).
   for (const category of coldStoneMenuCategories) {
     for (const item of category.items) {
       await database
@@ -1440,7 +1440,8 @@ export async function deleteDiscountCode(id) {
   );
 }
 
-export async function getValidDiscountCode(code, subtotal) {
+// minimum_total holds the minimum number of items in the order, not an amount.
+export async function getValidDiscountCode(code, itemCount) {
   const discount = await database
     .prepare(
       `
@@ -1453,7 +1454,7 @@ export async function getValidDiscountCode(code, subtotal) {
   `,
     )
     .get(code);
-  if (!discount || subtotal < discount.minimumTotal) return null;
+  if (!discount || itemCount < discount.minimumTotal) return null;
   return discount;
 }
 

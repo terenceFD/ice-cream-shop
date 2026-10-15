@@ -1,9 +1,9 @@
 import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "./useAdminAuth";
-import { PasswordField } from "../../../components/PasswordField";
-import { useLanguage } from "../../../language/useLanguage";
-import { IDLE_SIGN_OUT_KEY } from "../../../components/AdminIdleGuard";
+import { PasswordField } from "../../components/PasswordField";
+import { useLanguage } from "../../language/useLanguage";
+import { IDLE_SIGN_OUT_KEY } from "../../components/admin/AdminIdleGuard";
 
 const icons = {
   mail: "M4 6h16v12H4V6Zm0 0 8 7 8-7",

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { useLanguage } from "../../../language/useLanguage";
+import { useLanguage } from "../../language/useLanguage";
 import { Link } from "react-router-dom";
-import { useFlavors } from "../../../flavor-context/useFlavors";
+import { useFlavors } from "../../context/useFlavors";
 import { useAdminAuth } from "./useAdminAuth";
-import { useCart } from "../../../useCart";
-import { formatCartMoney } from "../../../cartPricing";
-import { apiRequest } from "../../../api/api";
-import { prepareImageForUpload, UPLOAD_IMAGE_TYPES, UPLOAD_MAX_BYTES } from "../../../prepareUploadImage";
+import { useCart } from "../../context/useCart";
+import { formatCartMoney } from "../../lib/cartPricing";
+import { apiRequest } from "../../api/api";
+import { prepareImageForUpload, UPLOAD_IMAGE_TYPES, UPLOAD_MAX_BYTES } from "../../lib/prepareUploadImage";
 import { stockBarPercent } from "./stockMeter";
 import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from "./adminTable";
 

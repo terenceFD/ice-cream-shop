@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useSearchParams } from "react-router-dom";
-import { Footer, Header } from "../../../components/Layout";
-import { useCart } from "../../../useCart";
-import { useFlavors } from "../../../flavor-context/useFlavors";
+import { Footer, Header } from "../../components/Layout";
+import { useCart } from "../../context/useCart";
+import { useFlavors } from "../../context/useFlavors";
 import {
   formatCartMoney,
   getCartPricing,
   USD_TO_XAF,
-} from "../../../cartPricing";
-import { apiRequest, getCustomerToken } from "../../../api/api";
-import { useLanguage } from "../../../language/useLanguage";
-import { useAuth } from "../../../authcontext/useAuth";
-import { PromotionAlertsSetting } from "../../../components/PromotionAlerts";
+} from "../../lib/cartPricing";
+import { apiRequest, getCustomerToken } from "../../api/api";
+import { useLanguage } from "../../language/useLanguage";
+import { useAuth } from "../../context/useAuth";
+import { PromotionAlertsSetting } from "../../components/PromotionAlerts";
 
 const CHECKOUT_DETAILS_KEY = "cold-stone-checkout-details";
 const PAYMENT_PENDING_MESSAGE = "Stripe has not confirmed this payment yet.";
@@ -303,7 +303,7 @@ export function PaymentPage() {
               <>
                 <div className="relative isolate overflow-hidden bg-[#092a53] px-6 pb-10 pt-12 text-white sm:px-10">
                   <div aria-hidden="true" className="absolute -right-20 -top-28 -z-10 size-72 rounded-full border-[48px] border-white/[0.05]" />
-                  <div aria-hidden="true" className="absolute -bottom-28 -left-10 -z-10 size-64 rounded-full bg-[#ffdc32]/10 blur-3xl" />
+                  <div aria-hidden="true" className="absolute -bottom-28 -left-10 -z-10 size-64 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]" />
                   <span className="relative mx-auto grid size-20 place-items-center">
                     <span aria-hidden="true" className="absolute inset-0 animate-ping rounded-full bg-[#8cbc5f]/30 [animation-iteration-count:2] motion-reduce:hidden" />
                     <span className="relative grid size-20 place-items-center rounded-full bg-[#6c9c45] text-white shadow-[0_0_0_8px_rgba(108,156,69,0.2)]">
@@ -466,7 +466,7 @@ export function PaymentPage() {
           <>
             <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-12 pt-9 text-white sm:px-8 sm:pb-16 sm:pt-12 lg:px-12">
               <div aria-hidden="true" className="absolute -right-32 -top-44 -z-10 size-[30rem] rounded-full border-[64px] border-white/[0.04]" />
-              <div aria-hidden="true" className="absolute -bottom-40 left-[15%] -z-10 size-80 rounded-full bg-[#ffdc32]/[0.08] blur-3xl" />
+              <div aria-hidden="true" className="absolute -bottom-40 left-[15%] -z-10 size-80 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.08),rgb(255_220_50/0.08)_35%,transparent)]" />
               <div className="mx-auto max-w-[1240px]">
                 <nav aria-label={t("Breadcrumb")} className="text-xs font-semibold text-white/55">
                   <Link className="transition hover:text-[#ffdc32]" to="/cart">{t("Shopping bag")}</Link>

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { Footer, Header } from '../../../components/Layout'
-import { useCart } from '../../../useCart'
-import { formatCartMoney, getCartPricing } from '../../../cartPricing'
-import { useLanguage } from '../../../language/useLanguage'
-import { apiRequest } from '../../../api/api'
-import { useAuth } from '../../../authcontext/useAuth'
-import { getCameroonDate } from '../../../../shared/cameroonDate'
+import { Footer, Header } from '../../components/Layout'
+import { useCart } from '../../context/useCart'
+import { formatCartMoney, getCartPricing } from '../../lib/cartPricing'
+import { useLanguage } from '../../language/useLanguage'
+import { apiRequest } from '../../api/api'
+import { useAuth } from '../../context/useAuth'
+import { getCameroonDate } from '../../../shared/cameroonDate'
 
 const inputClassName = 'mt-2 w-full rounded-2xl border border-[#e3dfd3] bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-[#102c50] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#cfcabb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
 const labelClassName = 'block text-xs font-extrabold text-[#52647b]'
@@ -169,7 +169,7 @@ export function CheckoutPage() {
     try {
       const result = await apiRequest('/discount-codes/validate', {
         method: 'POST',
-        body: { code: discountInput, subtotal },
+        body: { code: discountInput, subtotal, itemCount: cartCount },
       })
       setDiscountCode(result.code)
       setDiscountAmount(result.discountCents)
@@ -198,7 +198,7 @@ export function CheckoutPage() {
       <main>
         <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-12 pt-9 text-white sm:px-8 sm:pb-16 sm:pt-12 lg:px-12">
           <div aria-hidden="true" className="absolute -right-32 -top-44 -z-10 size-[30rem] rounded-full border-[64px] border-white/[0.04]" />
-          <div aria-hidden="true" className="absolute -bottom-40 left-[15%] -z-10 size-80 rounded-full bg-[#ffdc32]/[0.08] blur-3xl" />
+          <div aria-hidden="true" className="absolute -bottom-40 left-[15%] -z-10 size-80 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.08),rgb(255_220_50/0.08)_35%,transparent)]" />
           <div className="mx-auto max-w-[1240px]">
             <nav aria-label={t('Breadcrumb')} className="text-xs font-semibold text-white/55">
               <Link className="transition hover:text-[#ffdc32]" to="/">{t('Home')}</Link>

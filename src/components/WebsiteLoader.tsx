@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useLanguage } from '../language/useLanguage'
 
-const MIN_VISIBLE_MS = 900
+// It leaves as soon as the page's content is drawn (not after every image has loaded), staying
+// just long enough not to flash. MAX_VISIBLE_MS is a safety net if a page never draws <main>.
+const MIN_VISIBLE_MS = 350
 const MAX_VISIBLE_MS = 2500
-const EXIT_MS = 850
+const EXIT_MS = 650
 
 // Opening screen in the style of the navy page headers (PageHero): soft blue glows, dot
 // pattern, the ✦ eyebrow pill, a dashed ring around the logo, and the yellow hand-drawn
@@ -18,6 +20,7 @@ export function WebsiteLoader() {
     const startedAt = performance.now()
     let exitTimer = 0
     let removeTimer = 0
+    let frame = 0
 
     const leave = () => {
       if (exitTimer) return
@@ -28,12 +31,16 @@ export function WebsiteLoader() {
       }, wait)
     }
 
-    if (document.readyState === 'complete') leave()
-    else window.addEventListener('load', leave, { once: true })
+    // Pages are loaded on demand, so their <main> appears a moment after the app starts.
+    const waitForContent = () => {
+      if (document.querySelector('main')) leave()
+      else frame = window.requestAnimationFrame(waitForContent)
+    }
+    waitForContent()
     const safetyTimer = window.setTimeout(leave, MAX_VISIBLE_MS)
 
     return () => {
-      window.removeEventListener('load', leave)
+      window.cancelAnimationFrame(frame)
       window.clearTimeout(safetyTimer)
       window.clearTimeout(exitTimer)
       window.clearTimeout(removeTimer)

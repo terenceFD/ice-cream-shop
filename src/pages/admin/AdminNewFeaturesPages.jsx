@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { apiRequest } from '../../../api/api'
-import { useLanguage } from '../../../language/useLanguage'
+import { apiRequest } from '../../api/api'
+import { useLanguage } from '../../language/useLanguage'
 import { useAdminAuth } from './useAdminAuth'
 import { AdminReviewsBoard } from './AdminReviewsBoard'
 import { AdminCakeRequestsBoard } from './AdminCakeRequestsBoard'

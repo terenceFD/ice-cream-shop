@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { apiRequest } from "../../../api/api";
-import { useLanguage } from "../../../language/useLanguage";
+import { apiRequest } from "../../api/api";
+import { useLanguage } from "../../language/useLanguage";
 import { useAdminAuth } from "./useAdminAuth";
-import { whatsappLink } from "../../../whatsapp";
-import { WhatsAppIcon } from "../../../components/WhatsAppIcon";
+import { whatsappLink } from "../../lib/whatsapp";
+import { WhatsAppIcon } from "../../components/WhatsAppIcon";
 
 interface EventOrderItem {
   itemId: string;

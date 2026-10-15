@@ -118,7 +118,7 @@ export function buildPromotionNotification(code, customMessage = '') {
     ? `${code.discountValue}% off`
     : `${numberFormat.format(code.discountValue)} FCFA off`
   const details = [
-    code.minimumTotal > 0 ? `on orders over ${numberFormat.format(code.minimumTotal)} FCFA` : '',
+    code.minimumTotal > 0 ? `on orders of ${numberFormat.format(code.minimumTotal)}+ items` : '',
     code.expiresAt ? `until ${formatShortDate(code.expiresAt)}` : '',
   ].filter(Boolean).join(' ')
   return {

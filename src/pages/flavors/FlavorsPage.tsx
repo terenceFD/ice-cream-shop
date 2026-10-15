@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { useCart } from "../../../useCart";
-import { type Flavor } from "../../../flavor-context/FlavorContext";
-import { useFlavors } from "../../../flavor-context/useFlavors";
-import { ArrowIcon, Footer, Header } from "../../../components/Layout";
-import { PageHero } from "../../../components/PageHero";
-import { useLanguage } from "../../../language/useLanguage";
-import { formatCartMoney } from "../../../cartPricing";
-import { photoErrorHandler, photoSrcSet } from "../../../thumbnails";
+import { useCart } from "../../context/useCart";
+import { type Flavor } from "../../context/FlavorContext";
+import { useFlavors } from "../../context/useFlavors";
+import { ArrowIcon, Footer, Header } from "../../components/Layout";
+import { PageHero } from "../../components/PageHero";
+import { useLanguage } from "../../language/useLanguage";
+import { formatCartMoney } from "../../lib/cartPricing";
+import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
 
 function BagIcon({ className = "size-4" }: { className?: string }) {
   return (

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { apiRequest } from "../api/api";
 import { useLanguage } from "../language/useLanguage";
-import { whatsappLink } from "../whatsapp";
+import { whatsappLink } from "../lib/whatsapp";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 
 // Admin, checkout and payment pages stay free of extra buttons.

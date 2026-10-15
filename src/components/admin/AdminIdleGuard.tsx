@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAdminAuth } from '../pages/feature/admin/useAdminAuth'
-import { useLanguage } from '../language/useLanguage'
+import { useAdminAuth } from '../../pages/admin/useAdminAuth'
+import { useLanguage } from '../../language/useLanguage'
 
 // Signs an admin out after a stretch without activity, so a dashboard left open on a shop
 // computer does not stay usable by whoever walks up to it.

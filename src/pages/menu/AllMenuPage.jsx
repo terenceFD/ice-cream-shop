@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Footer, Header } from "../../../components/Layout";
-import { PageHero } from "../../../components/PageHero";
-import { coldStoneMenuCategories, getMenuItemId } from "../../../data";
-import { apiRequest } from "../../../api/api";
-import { useCart } from "../../../useCart";
-import { useLanguage } from "../../../language/useLanguage";
-import { photoErrorHandler, photoSrcSet } from "../../../thumbnails";
+import { Footer, Header } from "../../components/Layout";
+import { PageHero } from "../../components/PageHero";
+import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
+import { apiRequest } from "../../api/api";
+import { useCart } from "../../context/useCart";
+import { useLanguage } from "../../language/useLanguage";
+import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
+import { numberFormatter } from "../../lib/cartPricing";
 
 const FALLBACK_IMAGE = "/images/hero-ice-cream.jpg";
 const SORTS = [
@@ -131,7 +132,7 @@ export function AllMenuPage() {
 
   const requestedCategory = searchParams.get("category") || "";
   const activeCategory = categories.some((category) => category.title === requestedCategory) ? requestedCategory : "";
-  const formatPrice = (price) => `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
+  const formatPrice = (price) => `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
   const allItems = categories.flatMap((category) => category.items.map((item) => ({ category, item })));
   const prices = allItems.map(({ item }) => item.priceXaf).filter((price) => Number.isFinite(price));
   const query = search.trim().toLowerCase();

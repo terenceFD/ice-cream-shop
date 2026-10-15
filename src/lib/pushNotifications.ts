@@ -1,6 +1,6 @@
 // Promotion alerts: lets a signed-in customer receive the shop's promotion notifications on this
 // device, even when the site is closed. The browser shows them with the site's name and logo.
-import { apiRequest } from "./api/api";
+import { apiRequest } from "../api/api";
 import { isAppleMobileDevice, isRunningAsInstalledApp } from "./installPrompt";
 
 export type PromotionAlertState =

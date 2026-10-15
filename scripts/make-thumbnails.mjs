@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { PHOTO_WIDTHS } from '../src/photoSizes.js'
+import { PHOTO_WIDTHS } from '../shared/photoSizes.js'
 
 const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url))
 const thumbsDirectory = join(publicDirectory, 'thumbs')

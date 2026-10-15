@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Footer, Header } from '../../../components/Layout'
-import { useLanguage } from '../../../language/useLanguage'
+import { Footer, Header } from '../../components/Layout'
+import { useLanguage } from '../../language/useLanguage'
 
 export function NotFoundPage() {
   const { t } = useLanguage()

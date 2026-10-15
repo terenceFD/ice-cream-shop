@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { niceAxis } from '../src/pages/feature/admin/chartScale.js'
+import { niceAxis } from '../src/pages/admin/chartScale.js'
 
 test('chart axes end on round numbers', () => {
   assert.deepEqual(niceAxis(7000), { max: 8000, step: 2000 })

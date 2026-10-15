@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { apiRequest, getCustomerToken } from "../../../api/api";
-import { useAuth } from "../../../authcontext/useAuth";
-import { Footer, Header } from "../../../components/Layout";
-import { useLanguage } from "../../../language/useLanguage";
+import { apiRequest, getCustomerToken } from "../../api/api";
+import { useAuth } from "../../context/useAuth";
+import { Footer, Header } from "../../components/Layout";
+import { useLanguage } from "../../language/useLanguage";
+import { numberFormatter } from "../../lib/cartPricing";
 
 interface EventConfig {
   eventTypes: string[];
@@ -78,7 +79,7 @@ const fieldClass =
 const labelClass = "block text-xs font-bold text-[#4f6379]";
 
 function formatXaf(amount: number, language: string) {
-  return `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-US").format(Math.round(amount || 0))} FCFA`;
+  return `${numberFormatter(language === "fr" ? "fr-CM" : "en-US").format(Math.round(amount || 0))} FCFA`;
 }
 
 function suggestedDeposit(total: number, percent: number) {
@@ -281,8 +282,8 @@ export function EventOrdersPage() {
       <Header />
       <main>
         <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-16 pt-14 text-white sm:px-8 lg:px-12 lg:pb-20 lg:pt-20">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[#ffdc32]/[0.12] blur-3xl" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[34rem] rounded-full bg-[#1c4f8a]/50 blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220_50/0.12)_35%,transparent)]" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.5),rgb(28_79_138/0.5)_35%,transparent)]" />
           <div className="mx-auto max-w-[1200px]">
             <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
               <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />

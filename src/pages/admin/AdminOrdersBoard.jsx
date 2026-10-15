@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { apiRequest } from "../../../api/api";
+import { apiRequest } from "../../api/api";
 import { useAdminAuth } from "./useAdminAuth";
-import { useLanguage } from "../../../language/useLanguage";
-import { formatCartMoney, USD_TO_XAF } from "../../../cartPricing";
-import { orderUpdateMessage, whatsappLink } from "../../../whatsapp";
-import { WhatsAppIcon } from "../../../components/WhatsAppIcon";
+import { useLanguage } from "../../language/useLanguage";
+import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
+import { orderUpdateMessage, whatsappLink } from "../../lib/whatsapp";
+import { WhatsAppIcon } from "../../components/WhatsAppIcon";
 
 const AUTO_REFRESH_MS = 30_000;
 const STALE_PAYMENT_MS = 3 * 60 * 1000;

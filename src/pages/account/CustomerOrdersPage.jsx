@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { apiRequest, getCustomerToken } from "../../../api/api";
-import { Footer, Header } from "../../../components/Layout";
-import { useCart } from "../../../useCart";
-import { useAuth } from "../../../authcontext/useAuth";
-import { cameroonDeliveryLocations } from "../../../data";
-import { useLanguage } from "../../../language/useLanguage";
-import { PromotionAlertsSetting } from "../../../components/PromotionAlerts";
+import { apiRequest, getCustomerToken } from "../../api/api";
+import { Footer, Header } from "../../components/Layout";
+import { useCart } from "../../context/useCart";
+import { useAuth } from "../../context/useAuth";
+import { cameroonDeliveryLocations } from "../../../shared/data";
+import { useLanguage } from "../../language/useLanguage";
+import { PromotionAlertsSetting } from "../../components/PromotionAlerts";
+import { numberFormatter } from "../../lib/cartPricing";
 
 const fieldClass =
   "mt-2 w-full rounded-2xl border border-[#e3dfd3] bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-[#102c50] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#cfcabb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
@@ -756,7 +757,7 @@ function RewardsCard({ points, t, compact = false }) {
   return (
     <div className="relative isolate overflow-hidden rounded-[26px] bg-gradient-to-br from-[#0d3566] via-[#092a53] to-[#061d3a] p-6 text-white shadow-[0_18px_40px_rgba(9,42,83,0.22)] sm:p-7">
       <div aria-hidden="true" className="absolute -right-16 -top-20 -z-10 size-56 rounded-full border-[40px] border-white/[0.05]" />
-      <div aria-hidden="true" className="absolute -bottom-24 -left-10 -z-10 size-56 rounded-full bg-[#ffdc32]/10 blur-3xl" />
+      <div aria-hidden="true" className="absolute -bottom-24 -left-10 -z-10 size-56 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]" />
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">
@@ -901,7 +902,7 @@ export function CustomerOrdersPage() {
   if (!customer) return <Navigate replace state={{ from: "/account/orders" }} to="/login" />;
 
   const formatPrice = (amount) =>
-    `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-CM").format(amount)} FCFA`;
+    `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(amount)} FCFA`;
   const points = loyalty?.points ?? customer.loyaltyPoints ?? 0;
   const firstName = (customer.name || "").trim().split(/\s+/)[0] || customer.name;
   const activeOrders = orders.filter(isActive);
@@ -1111,8 +1112,8 @@ export function CustomerOrdersPage() {
         {/* Hero */}
         <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute -right-40 -top-40 size-[34rem] rounded-full bg-[#3f86d6]/30 blur-[120px]" />
-            <div className="absolute -bottom-48 -left-32 size-[30rem] rounded-full bg-[#ffdc32]/10 blur-[120px]" />
+            <div className="absolute -right-40 -top-40 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(63_134_214/0.3),rgb(63_134_214/0.3)_35%,transparent)]" />
+            <div className="absolute -bottom-48 -left-32 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]" />
             <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
           </div>
 

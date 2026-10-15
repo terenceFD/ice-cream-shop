@@ -1,8 +1,8 @@
 import { Suspense, useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { useAdminAuth } from '../pages/feature/admin/useAdminAuth'
-import { apiRequest, ADMIN_WELCOME_KEY } from '../api/api'
-import { useLanguage } from '../language/useLanguage'
+import { useAdminAuth } from '../../pages/admin/useAdminAuth'
+import { apiRequest, ADMIN_WELCOME_KEY } from '../../api/api'
+import { useLanguage } from '../../language/useLanguage'
 import { AdminAccountSecurityDialog, type AccountSecurityTab } from './AdminAccountSecurityDialog'
 import { AdminIdleGuard } from './AdminIdleGuard'
 

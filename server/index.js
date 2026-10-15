@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import compression from 'compression'
 // Native bcrypt hashes on background threads, so a rush of sign-ins does not freeze the API.
 // It reads the hashes bcryptjs created, so existing accounts keep working.
 import bcrypt from 'bcrypt'
@@ -77,7 +78,7 @@ import {
   sendNewOrderNotification,
   sendOrderStatusUpdate,
 } from './email.js'
-import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
+import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../shared/data.js'
 import { storeAdminCanAccess } from './admin-access.js'
 import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, saveUploadedImage } from './storage.js'
 import { optimizeUploadedImage, UnreadableImageError } from './images.js'
@@ -233,6 +234,9 @@ app.use(helmet({
     directives: contentSecurityDirectives,
   },
 }))
+// Pages, scripts, styles and API answers are sent compressed (about a quarter of the size).
+// Render's CDN also compresses, but the site should not depend on its host doing it.
+app.use(compression())
 // The site never needs these browser features, so embedded or injected content cannot ask for them.
 app.use((_request, response, next) => {
   response.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), usb=(), payment=(), interest-cohort=()')
@@ -837,8 +841,8 @@ app.delete('/api/customer/push-subscription', requireCustomer, async (request, r
   response.json({ subscribed: false })
 })
 
-app.get('/api/promotions/active', async (_request, response) => {
-  const promotion = await database.prepare(`
+async function getActivePromotion() {
+  return await database.prepare(`
     SELECT code, discount_type AS "discountType",
       discount_value AS "discountValue", minimum_total AS "minimumTotal",
       expires_at AS "expiresAt"
@@ -849,19 +853,23 @@ app.get('/api/promotions/active', async (_request, response) => {
     ORDER BY datetime(expires_at), id DESC
     LIMIT 1
   `).get() || null
-  response.json({ promotion })
+}
+
+app.get('/api/promotions/active', async (_request, response) => {
+  response.json({ promotion: await getActivePromotion() })
 })
 
 app.post('/api/discount-codes/validate', async (request, response) => {
   const codeText = typeof request.body.code === 'string' ? request.body.code.trim() : ''
   const subtotal = Number(request.body.subtotal)
-  if (!codeText || !Number.isSafeInteger(subtotal) || subtotal < 0) {
+  const itemCount = Number(request.body.itemCount)
+  if (!codeText || !Number.isSafeInteger(subtotal) || subtotal < 0 || !Number.isSafeInteger(itemCount) || itemCount < 0) {
     response.status(400).json({ error: 'Enter a discount code and a valid order subtotal.' })
     return
   }
-  const code = await getValidDiscountCode(codeText, subtotal)
+  const code = await getValidDiscountCode(codeText, itemCount)
   if (!code) {
-    response.status(400).json({ error: 'That discount code is invalid, expired, inactive, or does not meet its minimum order total.' })
+    response.status(400).json({ error: 'That discount code is invalid, expired, inactive, or does not meet its minimum number of items.' })
     return
   }
   const discountCents = code.discountType === 'percent'
@@ -1009,9 +1017,10 @@ app.post('/api/checkout/session', requireCustomer, checkoutLimiter, async (reque
   let discountCode = null
   let codeDiscountCents = 0
   if (discountCodeText) {
-    discountCode = await getValidDiscountCode(discountCodeText, subtotalCents)
+    const itemCount = orderItems.reduce((total, item) => total + item.quantity, 0)
+    discountCode = await getValidDiscountCode(discountCodeText, itemCount)
     if (!discountCode) {
-      response.status(400).json({ error: 'That discount code is invalid, expired, inactive, or does not meet its minimum order total.' })
+      response.status(400).json({ error: 'That discount code is invalid, expired, inactive, or does not meet its minimum number of items.' })
       return
     }
     codeDiscountCents = discountCode.discountType === 'percent'
@@ -3302,7 +3311,7 @@ app.delete('/api/admin/flavors/:id', requireAdmin, ownerOnly, async (request, re
 
 const frontendDirectory = fileURLToPath(new URL('../dist/', import.meta.url))
 const frontendEntry = fileURLToPath(new URL('../dist/index.html', import.meta.url))
-const seo = createSeo({ templatePath: frontendEntry, listFlavors, siteUrl: process.env.SITE_URL })
+const seo = createSeo({ templatePath: frontendEntry, listFlavors, getActivePromotion, siteUrl: process.env.SITE_URL })
 app.get('/robots.txt', seo.robots)
 app.get('/sitemap.xml', seo.sitemap)
 if (existsSync(frontendEntry)) {

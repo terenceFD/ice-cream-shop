@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { AdminAuthContext } from './useAdminAuth'
-import { apiRequest, ADMIN_TOKEN_KEY, ADMIN_WELCOME_KEY } from '../../../api/api'
+import { apiRequest, ADMIN_TOKEN_KEY, ADMIN_WELCOME_KEY } from '../../api/api'
 
 export interface AdminAccount {
   id: number;

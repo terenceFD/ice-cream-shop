@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { apiRequest } from "../../../api/api";
-import { formatCartMoney, USD_TO_XAF } from "../../../cartPricing";
-import { useLanguage } from "../../../language/useLanguage";
+import { apiRequest } from "../../api/api";
+import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
+import { useLanguage } from "../../language/useLanguage";
 import { useAdminAuth } from "./useAdminAuth";
 
 const inputClassName =

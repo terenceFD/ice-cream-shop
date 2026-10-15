@@ -5,13 +5,14 @@ import {
   Header,
   ArrowIcon,
   InstagramSection,
-} from "../../../components/Layout";
-import { useCart } from "../../../useCart";
-import { apiRequest } from "../../../api/api";
-import { coldStoneMenuCategories, getMenuItemId } from "../../../data";
-import { useLanguage } from "../../../language/useLanguage";
-import { photoErrorHandler, photoSrcSet, thumbnail } from "../../../thumbnails";
-import { HOME_SLIDE_SIZES } from "../../../photoSizes.js";
+} from "../../components/Layout";
+import { useCart } from "../../context/useCart";
+import { apiRequest } from "../../api/api";
+import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
+import { useLanguage } from "../../language/useLanguage";
+import { photoErrorHandler, photoSrcSet, thumbnail } from "../../lib/thumbnails";
+import { HOME_SLIDE_SIZES } from "../../../shared/photoSizes.js";
+import { numberFormatter } from "../../lib/cartPricing";
 
 const popularFlavorNames = [
   "Cookie Mintster",
@@ -270,8 +271,8 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
       className="relative isolate overflow-hidden bg-[#092a53] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-10"
     >
       {/* Same backdrop as the hero: navy with a yellow glow, a blue glow and a faint dot grid. */}
-      <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[#ffdc32]/[0.12] blur-3xl" />
-      <div aria-hidden="true" className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[34rem] rounded-full bg-[#1c4f8a]/50 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220_50/0.12)_35%,transparent)]" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.5),rgb(28_79_138/0.5)_35%,transparent)]" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:28px_28px]" />
 
       <div className="mx-auto max-w-[1240px]">
@@ -466,7 +467,7 @@ export function HomePage() {
 
 
   const formatPrice = (price) =>
-    `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
+    `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
 
   return (
     <div className="min-h-screen overflow-clip bg-[#fbfaf5] text-[#102c50]">
@@ -478,11 +479,11 @@ export function HomePage() {
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[#ffdc32]/[0.12] blur-3xl"
+            className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220_50/0.12)_35%,transparent)]"
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[34rem] rounded-full bg-[#1c4f8a]/50 blur-3xl"
+            className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.5),rgb(28_79_138/0.5)_35%,transparent)]"
           />
           <div
             aria-hidden="true"
@@ -704,7 +705,7 @@ export function HomePage() {
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -left-40 top-20 -z-10 size-[30rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
+            className="pointer-events-none absolute -left-40 top-20 -z-10 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]"
           />
           <div className="mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
@@ -890,7 +891,7 @@ export function HomePage() {
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[34rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
+            className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]"
           />
           <div
             aria-hidden="true"
@@ -1015,7 +1016,7 @@ export function HomePage() {
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -right-40 top-10 -z-10 size-[30rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
+            className="pointer-events-none absolute -right-40 top-10 -z-10 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]"
           />
           <div className="mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
@@ -1131,7 +1132,7 @@ export function HomePage() {
           />
           <div
             aria-hidden="true"
-            className="absolute -right-40 top-1/3 -z-10 size-[28rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
+            className="absolute -right-40 top-1/3 -z-10 size-[28rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]"
           />
           <div className="mx-auto max-w-[1320px]">
             <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
@@ -1262,7 +1263,7 @@ export function HomePage() {
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -left-40 top-24 -z-10 size-[30rem] rounded-full bg-[#ffdc32]/10 blur-3xl"
+            className="pointer-events-none absolute -left-40 top-24 -z-10 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]"
           />
           <div className="mx-auto grid max-w-[1240px] gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5">

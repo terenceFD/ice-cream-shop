@@ -8,7 +8,7 @@ import {
   INSTALL_AVAILABLE_EVENT,
   isAppleMobileDevice,
   isRunningAsInstalledApp,
-} from '../installPrompt'
+} from '../lib/installPrompt'
 
 const DISMISSED_KEY = 'cold-stone-install-dismissed'
 const SNOOZE_MS = 14 * 24 * 60 * 60 * 1000

@@ -1,4 +1,4 @@
-import { AdminNotifications } from "../../../components/AdminNotifications";
+import { AdminNotifications } from "../../components/admin/AdminNotifications";
 
 export function AdminNotificationsPage() {
   return <AdminNotifications />;

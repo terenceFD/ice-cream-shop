@@ -33,6 +33,25 @@ Research references:
 - Order and event details include a one-tap **WhatsApp** button with the customer's update already written.
 - Store admins see and manage only their own store's data.
 
+## Project folders
+
+```
+src/
+  app/          App routes and the entry point (main.tsx)
+  pages/        One folder per page: home, menu, flavors, cart, checkout, payment, admin, …
+  components/   Shared UI pieces; admin/ holds the dashboard layout, guards and notifications
+  context/      Cart, customer sign-in and flavor providers with their hooks
+  lib/          Small helpers (cart pricing, thumbnails, WhatsApp links, push, image upload)
+  language/     French translations and the language switcher
+  seo/          Page titles and meta tags
+  api/          Calls to the server
+shared/         Code used by both the site and the server (menu data, photo sizes, currency, dates)
+server/         Express API, database, payments, email and push notifications
+scripts/        Dev runner, thumbnail maker, migrations and tests for shared code
+public/         Photos, icons and fonts served as-is
+assets/original-photos/   Original photos kept for reference (not served)
+```
+
 ## Getting started
 
 Install dependencies and create a local environment file:
@@ -82,13 +101,18 @@ If the frontend and API must be hosted separately, set `VITE_API_URL` to the API
 ### Performance
 
 - Photos in `public/` are compressed (at most 1200 px on the longest side).
-- Every photo in `public/` also gets smaller WebP copies (160, 480 and 800 px) under `public/thumbs/<width>/`, made by `scripts/make-thumbnails.mjs` before each build and dev start (not committed). The size rules are in `src/photoSizes.js`: pages use `srcset`/`sizes` so the browser downloads the smallest copy that is still sharp, and tiny pictures use the 160 px copy. Unsplash photos are resized by Unsplash the same way.
+- Every photo in `public/` also gets smaller WebP copies (160, 480 and 800 px) under `public/thumbs/<width>/`, made by `scripts/make-thumbnails.mjs` before each build and dev start (not committed). The size rules are in `shared/photoSizes.js`: pages use `srcset`/`sizes` so the browser downloads the smallest copy that is still sharp, and tiny pictures use the 160 px copy. Unsplash photos are resized by Unsplash the same way.
 - The server adds a preload tag for each page's main photo (home slider, page headers, flavor pages) so it downloads straight away instead of after the app's code. The home slider downloads only the slide on screen and the next one.
 - The fonts (DM Sans and Fredoka) are served from `public/fonts/` and preloaded, so pages never wait on Google before showing text.
 - Uploaded images are resized on the server to at most 1200 px and saved as WebP (GIFs are kept as they are), see `server/images.js`.
 - Pages load their own code only when opened, so first-time visitors don't download the admin dashboard.
 - Files under `/assets/` are cached by browsers for a year (their names change with every build); photos and icons for a week. `sw.js` and the web app manifest are never cached, so updates reach visitors immediately. Raise `CACHE_NAME` in `public/sw.js` when the offline copy of the page should be refreshed.
-- On phones and tablets (below 1024 px), the shopping pages (Menu, Flavors, All menu) leave out the photo collage in their header, so products start on the first screen. The breakpoint is `COMPACT_HERO_MEDIA` in `src/photoSizes.js`, shared with the server's photo preload.
+- On phones and tablets (below 1024 px), the shopping pages (Menu, Flavors, All menu) leave out the photo collage in their header, so products start on the first screen. The breakpoint is `COMPACT_HERO_MEDIA` in `shared/photoSizes.js`, shared with the server's photo preload.
+- The server compresses pages, scripts, styles and API answers itself (`compression`), so they stay small even on a host without a CDN.
+- The active promotion is sent with each page as a JSON block (`id="initial-promotion"`, added in `server/seo.js` and cached for 30 seconds), so the yellow promotion bar is there from the first paint instead of pushing the page down when it arrives.
+- The website loader (`src/components/WebsiteLoader.tsx`) leaves as soon as the page's content is drawn, after at least 0.35 seconds, rather than waiting for every image.
+- Sections already on screen are shown straight away; only content further down fades in as it scrolls into view. `src/components/ScrollRevealObserver.tsx` learns where elements are from `IntersectionObserver`, because measuring them directly forces extra page layouts.
+- Decorative glows are soft radial gradients rather than blurred shapes, which are slow to draw on phones. Prices are formatted with one shared, reused formatter (`numberFormatter` in `src/lib/cartPricing.ts`).
 
 ### Supabase
 
@@ -114,7 +138,7 @@ An owner account has access to all stores and can create a store admin from **Ad
 
 ### Menu products
 
-Built-in menu products live in `src/data.js`. A product's ID is built from its category and name, and stock, orders, favorites and reviews are saved under that ID. To rename a product, change `name` and add `idName` with the old name, so the ID stays the same (`scripts/menu-ids.test.js` checks this, and that no two products share an ID or a photo). The server adds stock rows for new products at start-up.
+Built-in menu products live in `shared/data.js`. A product's ID is built from its category and name, and stock, orders, favorites and reviews are saved under that ID. To rename a product, change `name` and add `idName` with the old name, so the ID stays the same (`scripts/menu-ids.test.js` checks this, and that no two products share an ID or a photo). The server adds stock rows for new products at start-up.
 
 Built-in category descriptions are stored in the database. To change one for existing sites, add a row to `CATEGORY_DESCRIPTION_UPDATES` in `server/database.js` (old text, new text): the server updates it at start-up only if the old text is still there, so a description an admin has edited is kept. Category photos work the same way with `CATEGORY_IMAGE_UPDATES`.
 
@@ -197,7 +221,7 @@ When a reply cannot be sent, the dashboard shows the mail server's reason in pla
 
 ## Admin dashboard
 
-The dashboard pages share a few building blocks in `src/pages/feature/admin/`:
+The dashboard pages share a few building blocks in `src/pages/admin/`:
 
 | File | What it does |
 |---|---|

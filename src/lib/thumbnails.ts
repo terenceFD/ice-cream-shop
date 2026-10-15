@@ -1,7 +1,7 @@
 // Helpers for showing photos at the right size; the size rules live in photoSizes.js, which the
 // server shares. Use thumbnail() for small pictures and photoSrcSet() (with a sizes attribute)
 // for pictures whose size depends on the screen.
-import { photoAt, photoSrcSet as srcSetFor } from "./photoSizes.js";
+import { photoAt, photoSrcSet as srcSetFor } from "../../shared/photoSizes.js";
 
 /** "tiny" (160px) for icons-sized pictures up to about 80px, "small" (480px) for up to about 240px. */
 export type ThumbnailSize = "tiny" | "small";

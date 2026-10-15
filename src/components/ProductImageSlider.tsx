@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useLanguage } from "../language/useLanguage";
-import { photoErrorHandler, photoSrcSet, thumbnail } from "../thumbnails";
+import { photoErrorHandler, photoSrcSet, thumbnail } from "../lib/thumbnails";
 
 const SWIPE_DISTANCE = 40;
 const FALLBACK_IMAGE = "/images/hero-ice-cream.jpg";

@@ -1,9 +1,9 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { apiRequest } from '../../../api/api'
-import { prepareImageForUpload, UPLOAD_IMAGE_TYPES, UPLOAD_MAX_BYTES } from '../../../prepareUploadImage'
+import { apiRequest } from '../../api/api'
+import { prepareImageForUpload, UPLOAD_IMAGE_TYPES, UPLOAD_MAX_BYTES } from '../../lib/prepareUploadImage'
 import { useAdminAuth } from './useAdminAuth'
-import { useLanguage } from '../../../language/useLanguage'
+import { useLanguage } from '../../language/useLanguage'
 import { stockBarPercent } from './stockMeter'
 import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from './adminTable'
 

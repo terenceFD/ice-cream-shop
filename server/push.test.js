@@ -62,11 +62,11 @@ test('accepts a real browser subscription and rejects unsafe ones', () => {
 })
 
 test('builds the promotion notification with the site name, logo and code', () => {
-  const code = { code: 'SUMMER20', discountType: 'percent', discountValue: 20, minimumTotal: 5000, expiresAt: '' }
+  const code = { code: 'SUMMER20', discountType: 'percent', discountValue: 20, minimumTotal: 3, expiresAt: '' }
   const automatic = buildPromotionNotification(code)
   assert.equal(automatic.title, 'Cold Stone Creamery: 20% off')
   assert.match(automatic.body, /SUMMER20/)
-  assert.match(automatic.body, /5,000 FCFA/)
+  assert.match(automatic.body, /orders of 3\+ items/)
   assert.equal(automatic.icon, '/icons/icon-192.png')
   assert.equal(automatic.url, '/menu')
 

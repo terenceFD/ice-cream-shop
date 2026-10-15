@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { apiRequest } from "../../../api/api";
+import { apiRequest } from "../../api/api";
 import { useAdminAuth } from "./useAdminAuth";
-import { useLanguage } from "../../../language/useLanguage";
-import { formatCartMoney, USD_TO_XAF } from "../../../cartPricing";
+import { useLanguage } from "../../language/useLanguage";
+import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
 
 const CHART_DAYS = 14;
 const inputClassName =

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { stockBarPercent } from '../src/pages/feature/admin/stockMeter.js'
+import { stockBarPercent } from '../src/pages/admin/stockMeter.js'
 
 test('a stock bar is full well above the alert level and shrinks towards it', () => {
   assert.equal(stockBarPercent(100, 10), 100)

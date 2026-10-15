@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { photoErrorHandler, photoSrcSet, thumbnail } from "../thumbnails";
+import { photoErrorHandler, photoSrcSet, thumbnail } from "../lib/thumbnails";
 import { Link, useLocation } from "react-router-dom";
 import { apiRequest } from "../api/api";
-import { useCart } from "../useCart";
-import { useAuth } from "../authcontext/useAuth";
-import { useFlavors } from "../flavor-context/useFlavors";
+import { useCart } from "../context/useCart";
+import { useAuth } from "../context/useAuth";
+import { useFlavors } from "../context/useFlavors";
 import { useLanguage } from "../language/useLanguage";
-import { coldStoneMenuCategories } from "../data";
+import { coldStoneMenuCategories } from "../../shared/data";
 
 function ArrowIcon({ diagonal = false }) {
   return (
@@ -918,10 +918,21 @@ export function Header() {
 
 const PROMOTION_DISMISSED_KEY = "cold-stone-promotion-dismissed";
 
+// The server sends the active promotion with the page (server/seo.js), so the bar is there from
+// the first paint instead of pushing the page down a moment later.
+function readInitialPromotion() {
+  try {
+    const data = document.getElementById("initial-promotion")?.textContent;
+    return data ? JSON.parse(data).promotion || null : null;
+  } catch {
+    return null;
+  }
+}
+
 function PromotionCountdown() {
   const { language, t } = useLanguage();
-  const [promotion, setPromotion] = useState(null);
-  const [now, setNow] = useState(null);
+  const [promotion, setPromotion] = useState(readInitialPromotion);
+  const [now, setNow] = useState(() => (promotion ? Date.now() : null));
   const [copied, setCopied] = useState(false);
   const [dismissedCode, setDismissedCode] = useState(() => {
     try {
@@ -1012,7 +1023,7 @@ function PromotionCountdown() {
             {discount}
             {promotion.minimumTotal > 0 && (
               <span className="hidden font-semibold text-[#092a53]/70 md:inline">
-                {" · "}{t("Minimum order: {amount}", { amount: numberFormat.format(promotion.minimumTotal) })}
+                {" · "}{t("Minimum order: {count} items", { count: numberFormat.format(promotion.minimumTotal) })}
               </span>
             )}
           </p>
@@ -1087,7 +1098,7 @@ export function InstagramSection() {
       aria-labelledby="instagram-heading"
       className="relative isolate overflow-hidden border-t border-[#eeeae1] bg-[#fbfaf5] py-20 sm:py-24"
     >
-      <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[32rem] rounded-full bg-[#ffdc32]/15 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[32rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.15),rgb(255_220_50/0.15)_35%,transparent)]" />
       {/* Same width and side padding as the page content above, so the edges line up. */}
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
@@ -1200,7 +1211,7 @@ export function Footer() {
 
   return (
     <footer className="relative isolate overflow-hidden bg-[#061f40] text-white">
-      <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[34rem] rounded-full bg-[#ffdc32]/[0.08] blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.08),rgb(255_220_50/0.08)_35%,transparent)]" />
       <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#ffdc32] via-[#ffdc32]/60 to-transparent" />
 
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">

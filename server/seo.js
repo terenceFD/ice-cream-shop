@@ -8,7 +8,7 @@ import {
   metaForPath,
   pageTitle,
 } from '../src/seo/pageMeta.js'
-import { photoSrcSet } from '../src/photoSizes.js'
+import { photoSrcSet } from '../shared/photoSizes.js'
 
 // index.html marks the default head tags with <!--seo--> … <!--/seo--> so each page can swap in its own.
 const SEO_BLOCK = /<!--seo-->[\s\S]*?<!--\/seo-->/
@@ -72,9 +72,32 @@ function headTags(meta, base, structuredData) {
   return tags.filter(Boolean).join('\n    ')
 }
 
-export function createSeo({ templatePath, listFlavors, siteUrl }) {
+// The promotion bar sits above the header. Sending the active promotion with the page lets the
+// bar be drawn with the first paint, instead of pushing the whole page down once the app has
+// asked the API for it. A JSON data block is never run, so the Content-Security-Policy still holds.
+const PROMOTION_CACHE_MS = 30 * 1000
+
+function promotionDataTag(promotion) {
+  const json = JSON.stringify({ promotion: promotion || null }).replace(/</g, '\\u003c')
+  return `<script type="application/json" id="initial-promotion">${json}</script>`
+}
+
+export function createSeo({ templatePath, listFlavors, getActivePromotion, siteUrl }) {
   let template = null
   let flavorCache = { at: 0, flavors: [] }
+  let promotionCache = { at: 0, promotion: null }
+
+  async function getPromotion() {
+    if (!getActivePromotion) return undefined
+    if (Date.now() - promotionCache.at < PROMOTION_CACHE_MS) return promotionCache.promotion
+    try {
+      promotionCache = { at: Date.now(), promotion: await getActivePromotion() }
+    } catch (error) {
+      console.warn('Could not load the active promotion for the page:', error.message)
+      return undefined
+    }
+    return promotionCache.promotion
+  }
 
   async function getTemplate() {
     template ??= await readFile(templatePath, 'utf8')
@@ -144,9 +167,12 @@ export function createSeo({ templatePath, listFlavors, siteUrl }) {
 
       const html = await getTemplate()
       const tags = headTags(meta, base, structuredData)
-      const page = SEO_BLOCK.test(html)
+      let page = SEO_BLOCK.test(html)
         ? html.replace(SEO_BLOCK, tags)
         : html.replace(/<title>[\s\S]*?<\/title>/, '').replace('</head>', `  ${tags}\n  </head>`)
+      // Admin pages have no promotion bar. When the database cannot answer, the app asks the API as before.
+      const promotion = request.path.startsWith('/admin') ? undefined : await getPromotion()
+      if (promotion !== undefined) page = page.replace('</head>', `  ${promotionDataTag(promotion)}\n  </head>`)
 
       response
         .status(meta.found ? 200 : 404)

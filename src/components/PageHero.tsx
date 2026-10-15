@@ -1,6 +1,6 @@
 import { useSyncExternalStore, type ReactNode } from "react";
-import { photoErrorHandler, photoSrcSet } from "../thumbnails";
-import { COMPACT_HERO_MEDIA, HERO_PHOTO_SIZES } from "../photoSizes.js";
+import { photoErrorHandler, photoSrcSet } from "../lib/thumbnails";
+import { COMPACT_HERO_MEDIA, HERO_PHOTO_SIZES } from "../../shared/photoSizes.js";
 
 const FALLBACK_IMAGE = "/images/hero-ice-cream.jpg";
 
@@ -74,8 +74,8 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
   return (
     <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -right-40 -top-40 size-[34rem] rounded-full bg-[#3f86d6]/30 blur-[120px]" />
-        <div className="absolute -bottom-48 -left-32 size-[30rem] rounded-full bg-[#2d6aa8]/35 blur-[120px]" />
+        <div className="absolute -right-40 -top-40 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(63_134_214/0.3),rgb(63_134_214/0.3)_35%,transparent)]" />
+        <div className="absolute -bottom-48 -left-32 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(45_106_168/0.35),rgb(45_106_168/0.35)_35%,transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
       </div>
 

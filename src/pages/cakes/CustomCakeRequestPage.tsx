@@ -1,11 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { photoSrcSet } from '../../../thumbnails'
+import { photoSrcSet } from '../../lib/thumbnails'
 import { Link } from 'react-router-dom'
-import { apiRequest, getCustomerToken } from '../../../api/api'
-import { useAuth } from '../../../authcontext/useAuth'
-import { ArrowIcon, Footer, Header } from '../../../components/Layout'
-import { useLanguage } from '../../../language/useLanguage'
-import { getCameroonDate } from '../../../../shared/cameroonDate'
+import { apiRequest, getCustomerToken } from '../../api/api'
+import { useAuth } from '../../context/useAuth'
+import { ArrowIcon, Footer, Header } from '../../components/Layout'
+import { useLanguage } from '../../language/useLanguage'
+import { getCameroonDate } from '../../../shared/cameroonDate'
 
 const toppingOptions = ['Sprinkles', 'Chocolate chips', 'Fresh fruit', 'Cookie pieces', 'Whipped cream']
 
@@ -108,7 +108,7 @@ export function CustomCakeRequestPage() {
       <main>
         {/* Hero */}
         <section className="relative isolate overflow-hidden border-b border-[#ebe7dc]">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-48 -top-48 -z-10 size-[36rem] rounded-full bg-[#ffdc32]/15 blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -right-48 -top-48 -z-10 size-[36rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.15),rgb(255_220_50/0.15)_35%,transparent)]" />
           <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-12 px-5 pb-16 pt-10 sm:px-8 sm:pt-14 lg:grid-cols-12 lg:gap-10 lg:px-12 lg:pb-20 lg:pt-16">
             <div className="lg:col-span-6">
               <nav aria-label={t('Breadcrumb')} className="flex items-center gap-2 text-xs font-bold text-[#7b8796]">

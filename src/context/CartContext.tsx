@@ -6,10 +6,10 @@ import {
   type ReactNode,
 } from "react";
 import { CartContext } from "./useCart";
-import { type Flavor } from "./flavor-context/FlavorContext";
-import { useFlavors } from "./flavor-context/useFlavors";
-import { findMenuItem } from "./data";
-import { USD_TO_XAF } from "./cartPricing";
+import { type Flavor } from "./FlavorContext";
+import { useFlavors } from "./useFlavors";
+import { findMenuItem } from "../../shared/data";
+import { USD_TO_XAF } from "../lib/cartPricing";
 
 export interface CartItem {
   id: string | number;

@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useState } from 'react'
-import { apiRequest } from '../../../api/api'
+import { apiRequest } from '../../api/api'
 import { useAdminAuth } from './useAdminAuth'
-import { useLanguage } from '../../../language/useLanguage'
-import { thumbnail } from '../../../thumbnails'
+import { useLanguage } from '../../language/useLanguage'
+import { thumbnail } from '../../lib/thumbnails'
 import { stockBarPercent } from './stockMeter'
 import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from './adminTable'
 

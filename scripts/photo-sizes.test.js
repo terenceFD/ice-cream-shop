@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { photoAt, photoSrcSet, PHOTO_WIDTHS } from '../src/photoSizes.js'
+import { photoAt, photoSrcSet, PHOTO_WIDTHS } from '../shared/photoSizes.js'
 import { thumbnailPathFor } from './make-thumbnails.mjs'
 
 const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url))

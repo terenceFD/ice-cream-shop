@@ -1,7 +1,7 @@
 // Page titles and descriptions for search engines and link previews.
 // Shared by the browser (updates the page head while navigating) and the server
 // (writes the head into the HTML it sends, so crawlers that do not run JavaScript see it too).
-import { COMPACT_HERO_MEDIA, FLAVOR_PHOTO_SIZES, HERO_PHOTO_SIZES, HOME_SLIDE_SIZES } from '../photoSizes.js'
+import { COMPACT_HERO_MEDIA, FLAVOR_PHOTO_SIZES, HERO_PHOTO_SIZES, HOME_SLIDE_SIZES } from '../../shared/photoSizes.js'
 
 export const SITE_NAME = 'Cold Stone Creamery Cameroon'
 export const DEFAULT_DESCRIPTION =

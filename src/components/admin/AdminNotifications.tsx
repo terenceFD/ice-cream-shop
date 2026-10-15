@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { apiRequest } from '../api/api'
-import { useAdminAuth } from '../pages/feature/admin/useAdminAuth'
-import { useLanguage } from '../language/useLanguage'
+import { apiRequest } from '../../api/api'
+import { useAdminAuth } from '../../pages/admin/useAdminAuth'
+import { useLanguage } from '../../language/useLanguage'
 
 interface ContactMessage {
   id: number

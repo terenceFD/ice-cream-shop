@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { describeAdminActivity } from '../src/pages/feature/admin/describeAdminActivity.js'
+import { describeAdminActivity } from '../src/pages/admin/describeAdminActivity.js'
 
 test('admin activity entries read as plain sentences', () => {
   assert.deepEqual(describeAdminActivity('POST', '/api/admin/uploads'), { label: 'Uploaded a photo', id: null, area: 'catalog', known: true })

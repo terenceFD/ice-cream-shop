@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../src/data.js'
+import { coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../shared/data.js'
 
 test('renamed products keep the ID their stock, orders and favorites were saved under', () => {
   assert.equal(getMenuItemId('Milkshakes & Smoothies', 'Very Vanilla Shake'), 'menu:milkshakes-smoothies:milkshake-1')

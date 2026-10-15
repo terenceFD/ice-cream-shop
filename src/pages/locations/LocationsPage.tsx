@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowIcon, Footer, Header } from '../../../components/Layout'
-import { PageHero } from '../../../components/PageHero'
-import { cameroonLocations } from '../../../data'
-import { useLanguage } from '../../../language/useLanguage'
+import { ArrowIcon, Footer, Header } from '../../components/Layout'
+import { PageHero } from '../../components/PageHero'
+import { cameroonLocations } from '../../../shared/data'
+import { useLanguage } from '../../language/useLanguage'
 
 type CameroonLocation = (typeof cameroonLocations)[number]
 
