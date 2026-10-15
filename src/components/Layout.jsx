@@ -79,7 +79,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                 to={feature.to}
               >
                 {feature.image && (
-                  <img alt="" className="absolute inset-0 -z-20 size-full object-cover transition duration-700 group-hover/feature:scale-[1.06]" loading="lazy" src={feature.image} />
+                  <img decoding="async" alt="" className="absolute inset-0 -z-20 size-full object-cover transition duration-700 group-hover/feature:scale-[1.06]" loading="lazy" src={feature.image} />
                 )}
                 <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] via-[#061d3a]/60 to-[#061d3a]/10" />
                 <span className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{label}</span>
@@ -102,7 +102,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                       to={link.to}
                     >
                       {link.image ? (
-                        <img alt="" aria-hidden="true" className="size-12 shrink-0 rounded-xl object-cover ring-1 ring-black/5 transition duration-300 group-hover/link:scale-[1.04]" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/images/hero-ice-cream.jpg"; }} src={link.image} />
+                        <img decoding="async" alt="" aria-hidden="true" className="size-12 shrink-0 rounded-xl object-cover ring-1 ring-black/5 transition duration-300 group-hover/link:scale-[1.04]" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/images/hero-ice-cream.jpg"; }} src={link.image} />
                       ) : (
                         <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#fff3b8] text-lg">{link.icon || "✦"}</span>
                       )}
@@ -172,7 +172,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                 to={link.to}
               >
                 {link.image ? (
-                  <img alt="" aria-hidden="true" className="size-10 shrink-0 rounded-xl object-cover ring-1 ring-white/10" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/images/hero-ice-cream.jpg"; }} src={link.image} />
+                  <img decoding="async" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-xl object-cover ring-1 ring-white/10" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/images/hero-ice-cream.jpg"; }} src={link.image} />
                 ) : (
                   <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/10 text-sm font-extrabold text-[#ffdc32]">
                     {link.icon || String(index + 1).padStart(2, "0")}
@@ -306,7 +306,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
 
   const avatar = (size) =>
     customer?.profilePicture ? (
-      <img alt="" className={`${size} shrink-0 rounded-full object-cover`} src={customer.profilePicture} />
+      <img decoding="async" loading="lazy" alt="" className={`${size} shrink-0 rounded-full object-cover`} src={customer.profilePicture} />
     ) : (
       <span aria-hidden="true" className={`${size} grid shrink-0 place-items-center rounded-full bg-[#ffdc32] font-display font-extrabold text-[#092a53]`}>
         {(customer?.name || "A").charAt(0).toUpperCase()}
@@ -460,13 +460,13 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
       >
         {customer && !mobile && (
           customer.profilePicture
-            ? <img alt="" className="size-8 rounded-full border border-white/30 object-cover" src={customer.profilePicture} />
+            ? <img decoding="async" loading="lazy" alt="" className="size-8 rounded-full border border-white/30 object-cover" src={customer.profilePicture} />
             : <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#ffdc32] text-xs font-extrabold text-[#092a53]">{(customer.name || "A").charAt(0).toUpperCase()}</span>
         )}
         <span className={mobile ? "hidden" : "hidden md:inline"}>{t("Account")}</span>
         {mobile && <span className="flex min-w-0 items-center gap-2">
           {customer && (customer.profilePicture
-            ? <img alt="" className="size-8 rounded-full border border-white/30 object-cover" src={customer.profilePicture} />
+            ? <img decoding="async" loading="lazy" alt="" className="size-8 rounded-full border border-white/30 object-cover" src={customer.profilePicture} />
             : <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#ffdc32] text-xs font-extrabold text-[#092a53]">{(customer.name || "A").charAt(0).toUpperCase()}</span>)}
           <span className="truncate">{customer ? customerName || t("Account") : t("Account")}</span>
         </span>}
@@ -485,7 +485,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
               : "mb-1 flex min-w-0 items-center gap-3 rounded-xl bg-[#f8f7f2] px-3 py-3"
             }>
               {customer.profilePicture
-                ? <img alt="" className="size-10 shrink-0 rounded-full object-cover" src={customer.profilePicture} />
+                ? <img decoding="async" loading="lazy" alt="" className="size-10 shrink-0 rounded-full object-cover" src={customer.profilePicture} />
                 : <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53]">{(customer.name || "A").charAt(0).toUpperCase()}</span>}
               <div className="min-w-0">
                 <p className={`truncate text-sm font-extrabold ${mobile ? "text-white" : "text-[#092a53]"}`}>{customerName || t("Account")}</p>
@@ -536,7 +536,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
 
 function BrandMark({ compact = false }) {
   return (
-    <img
+    <img decoding="async" loading="eager"
       alt=""
       aria-hidden="true"
       className={`shrink-0 rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.3)] transition-all group-hover:rotate-[-6deg] ${compact ? "size-11" : "size-12"}`}
@@ -723,7 +723,7 @@ export function Header() {
           </Link>
 
           {!isAdminPage && (
-            <nav aria-label={t("Main navigation")} className="hidden flex-1 items-center justify-center lg:flex">
+            <nav aria-label={t("Main navigation")} className="hidden flex-1 items-center justify-center xl:flex">
               <div className="flex items-center gap-1 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10">
                 <Link className={desktopLinkClassName(isHome)} to="/#home">
                   {t("Home")}
@@ -740,13 +740,13 @@ export function Header() {
             </nav>
           )}
 
-          <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5 lg:ml-0">
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5 xl:ml-0">
             <div className="hidden sm:block">
               <LanguageDropdown language={language} setLanguage={setLanguage} t={t} />
             </div>
             {!isAdminPage && (
               <>
-                <div className="hidden lg:block">
+                <div className="hidden xl:block">
                   <AccountDropdown
                     customer={customer}
                     customerName={customerSecondName}
@@ -782,7 +782,7 @@ export function Header() {
                   aria-controls="mobile-navigation"
                   aria-expanded={isMobileMenuOpen}
                   aria-label={t(isMobileMenuOpen ? "Close menu" : "Open menu")}
-                  className="grid size-11 place-items-center rounded-full bg-white/[0.08] text-white ring-1 ring-white/10 transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] lg:hidden"
+                  className="grid size-11 place-items-center rounded-full bg-white/[0.08] text-white ring-1 ring-white/10 transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] xl:hidden"
                   onClick={(event) => {
                     closeOtherDropdowns(event);
                     setIsMobileMenuOpen((open) => !open);
@@ -809,7 +809,7 @@ export function Header() {
       </div>
 
       {!isAdminPage && isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] lg:hidden" role="presentation">
+        <div className="fixed inset-0 z-[60] xl:hidden" role="presentation">
           <button aria-label={t("Close menu")} className="site-drawer-backdrop absolute inset-0 bg-[#05162e]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} tabIndex={-1} type="button" />
           <nav
             aria-label={t("Mobile navigation")}
@@ -1130,7 +1130,7 @@ export function InstagramSection() {
               rel="noreferrer"
               target="_blank"
             >
-              <img
+              <img decoding="async"
                 alt={t(image.alt)}
                 className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06]"
                 loading="lazy"
@@ -1219,7 +1219,7 @@ export function Footer() {
               className="inline-flex items-center gap-3 rounded-2xl transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-4 focus-visible:ring-offset-[#061f40]"
               to="/"
             >
-              <img alt="" aria-hidden="true" className="size-14 shrink-0 rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.3)]" height={56} src="/logo.png" width={56} />
+              <img decoding="async" loading="eager" alt="" aria-hidden="true" className="size-14 shrink-0 rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.3)]" height={56} src="/logo.png" width={56} />
               <span className="font-display text-xl font-extrabold leading-[0.95]">
                 Cold Stone
                 <br />

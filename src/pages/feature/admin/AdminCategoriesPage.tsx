@@ -52,7 +52,7 @@ function Icon({ path, className = 'size-4' }: { path: string; className?: string
 function CategoryVisual({ category, className }: { category: Pick<MenuCategory, 'image' | 'icon'>; className: string }) {
   const [failed, setFailed] = useState(false)
   if (category.image && !failed) {
-    return <img alt="" className={`${className} object-cover`} loading="lazy" onError={() => setFailed(true)} src={category.image} />
+    return <img decoding="async" alt="" className={`${className} object-cover`} loading="lazy" onError={() => setFailed(true)} src={category.image} />
   }
   return (
     <span aria-hidden="true" className={`${className} grid place-items-center bg-gradient-to-br from-[#fff8dd] to-[#ffeaa0] text-2xl`}>

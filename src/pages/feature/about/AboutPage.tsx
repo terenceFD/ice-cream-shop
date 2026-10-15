@@ -115,7 +115,7 @@ export function AboutPage() {
             <div className="relative mx-auto w-full max-w-[500px] lg:col-span-5 lg:max-w-none">
               <div aria-hidden="true" className="absolute -left-3 -top-3 h-full w-full rotate-[-4deg] rounded-[36px] bg-[#ffdc32] sm:-left-5 sm:-top-5" />
               <figure className="relative overflow-hidden rounded-[32px] bg-[#fff3b8] shadow-[0_30px_70px_rgba(9,42,83,0.18)]">
-                <img alt={t('Ice cream treats')} className="aspect-[4/3] w-full object-cover sm:aspect-[4/5]" loading="lazy" src="/images/hero-ice-cream.jpg" />
+                <img decoding="async" alt={t('Ice cream treats')} className="aspect-[4/3] w-full object-cover sm:aspect-[4/5]" loading="lazy" src="/images/hero-ice-cream.jpg" />
               </figure>
               <div className="absolute -bottom-6 right-4 flex items-center gap-3 rounded-2xl bg-white p-3 pr-5 shadow-[0_20px_44px_rgba(9,42,83,0.18)] ring-1 ring-[#eeeae1] sm:-right-6 sm:bottom-10 sm:p-4 sm:pr-6">
                 <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#092a53] font-display text-base font-extrabold text-[#ffdc32]">✦</span>
@@ -186,7 +186,7 @@ export function AboutPage() {
               {experienceSteps.map((step, index) => (
                 <li className="group relative flex flex-col rounded-[28px] border border-white/10 bg-white/[0.04] p-3 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-white/25 hover:bg-white/[0.07]" key={step.number}>
                   <figure className="relative overflow-hidden rounded-[22px] bg-white/5">
-                    <img alt="" aria-hidden="true" className="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-[1.05]" loading="lazy" src={step.image} />
+                    <img decoding="async" alt="" aria-hidden="true" className="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-[1.05]" loading="lazy" src={step.image} />
                     <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#061d3a]/50 via-transparent to-transparent" />
                   </figure>
                   <span

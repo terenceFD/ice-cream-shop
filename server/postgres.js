@@ -35,6 +35,11 @@ const pool = new Pool({
   // When every connection is busy, requests queue for a free one. Give up after a while so a
   // stalled database surfaces as a "busy, try again" reply instead of requests hanging forever.
   connectionTimeoutMillis: Number(process.env.DATABASE_CONNECT_TIMEOUT_MS || 15000),
+  // Opening a new TLS connection to Supabase costs several round trips (about a second from Render).
+  // pg closes idle connections after 10 seconds by default, so most visitors paid that cost;
+  // keeping them for 5 minutes (with TCP keep-alive) lets requests reuse a warm connection.
+  idleTimeoutMillis: Number(process.env.DATABASE_IDLE_TIMEOUT_MS || 300000),
+  keepAlive: true,
   ssl: postgresSslConfig(),
   application_name: 'ice-cream-site',
 })

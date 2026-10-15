@@ -53,7 +53,7 @@ export function WebsiteLoader() {
             <circle className="website-loader__ring-track" cx="60" cy="60" r="54" />
             <circle className="website-loader__ring-progress" cx="60" cy="60" r="54" />
           </svg>
-          <img alt="" className="website-loader__logo" height={88} src="/logo.png" width={88} />
+          <img decoding="async" loading="eager" alt="" className="website-loader__logo" height={88} src="/logo.png" width={88} />
         </div>
 
         <p aria-hidden="true" className="website-loader__wordmark">

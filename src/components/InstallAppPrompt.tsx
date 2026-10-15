@@ -119,7 +119,7 @@ export function InstallAppPrompt() {
 
         <div className="relative p-5 sm:p-6">
           <div className="flex items-center gap-3.5 pr-8">
-            <img alt="" className="size-14 shrink-0 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.3)] ring-1 ring-white/15" height={56} src="/icons/icon-192.png" width={56} />
+            <img decoding="async" loading="lazy" alt="" className="size-14 shrink-0 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.3)] ring-1 ring-white/15" height={56} src="/icons/icon-192.png" width={56} />
             <div className="min-w-0">
               <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t('Free app')}</p>
               <h2 className="mt-0.5 font-display text-lg font-extrabold leading-tight" id="install-app-title">

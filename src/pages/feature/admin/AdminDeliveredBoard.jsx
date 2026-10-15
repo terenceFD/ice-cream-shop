@@ -396,7 +396,7 @@ export function AdminDeliveredBoard() {
               ))}
             </div>
           </div>
-          <div aria-label={t("Fulfillment type")} className="flex w-fit rounded-xl bg-[#f1f4f8] p-1" role="group">
+          <div aria-label={t("Fulfillment type")} className="flex w-fit max-w-full overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
             {[
               { key: "all", label: t("All"), count: orders.length },
               { key: "delivery", label: t("Home delivery"), count: summary.delivery },

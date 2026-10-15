@@ -93,7 +93,7 @@ function FlavorThumb({ src, alt = "", className = "size-12" }) {
     );
   }
   return (
-    <img
+    <img decoding="async"
       alt={alt}
       className={`${className} shrink-0 rounded-xl bg-[#f1f4f8] object-cover`}
       loading="lazy"
@@ -713,7 +713,7 @@ export function AdminPage() {
         <div className="flex min-w-0 items-center gap-4">
           <div className="group relative shrink-0">
             {profilePicture || currentAdmin?.profilePicture ? (
-              <img
+              <img decoding="async" loading="lazy"
                 alt=""
                 className="size-16 rounded-2xl object-cover ring-1 ring-[#e2e8f0]"
                 src={profilePicture || currentAdmin.profilePicture}
@@ -1055,7 +1055,7 @@ export function AdminPage() {
                 key={flavor.id}
               >
                 <div className="relative h-40 overflow-hidden bg-[#f1f4f7]">
-                  <img
+                  <img decoding="async"
                     alt={flavor.name}
                     className="size-full object-cover transition duration-300 group-hover:scale-[1.03]"
                     loading="lazy"

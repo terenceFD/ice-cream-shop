@@ -109,10 +109,10 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
         <div className="grid w-full max-w-[1160px] gap-8 lg:grid-cols-12 lg:gap-12">
           {/* Brand panel */}
           <aside className="relative isolate hidden min-h-[640px] flex-col justify-between overflow-hidden rounded-[36px] bg-[#092a53] p-10 text-white shadow-[0_30px_70px_rgba(9,42,83,0.22)] lg:col-span-6 lg:flex xl:p-12">
-            <img alt="" className="absolute inset-0 -z-20 size-full object-cover" src={isSignup ? '/ice-images/ice-5.webp' : '/ice-images/ice-4.webp'} />
+            <img decoding="async" loading="lazy" alt="" className="absolute inset-0 -z-20 size-full object-cover" src={isSignup ? '/ice-images/ice-5.webp' : '/ice-images/ice-4.webp'} />
             <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] via-[#061d3a]/70 to-[#061d3a]/25" />
             <Link aria-label={t('Back to home')} className="inline-flex w-fit items-center gap-3 rounded-2xl bg-white/10 py-2 pl-2 pr-4 ring-1 ring-white/15 backdrop-blur-md transition hover:bg-white/15" to="/">
-              <img alt="" aria-hidden="true" className="size-10 rounded-full" height={40} src="/logo.png" width={40} />
+              <img decoding="async" loading="eager" alt="" aria-hidden="true" className="size-10 rounded-full" height={40} src="/logo.png" width={40} />
               <span className="font-display text-base font-extrabold leading-tight">Cold Stone<br /><span className="text-[#ffdc32]">Creamery</span></span>
             </Link>
 
@@ -183,7 +183,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 {isSignup && (
                   <div className="flex items-center gap-4 rounded-2xl bg-white p-4 ring-1 ring-[#ebe7dc]">
                     {profilePicture ? (
-                      <img alt={t('Profile preview')} className="size-16 shrink-0 rounded-full object-cover ring-4 ring-[#fff3b8]" src={profilePicture} />
+                      <img decoding="async" loading="lazy" alt={t('Profile preview')} className="size-16 shrink-0 rounded-full object-cover ring-4 ring-[#fff3b8]" src={profilePicture} />
                     ) : (
                       <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-full bg-[#f4f1e8] font-display text-xl font-extrabold text-[#a5aebb]">
                         {name.trim() ? name.trim().charAt(0).toUpperCase() : (

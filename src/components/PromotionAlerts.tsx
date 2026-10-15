@@ -139,7 +139,7 @@ export function PromotionAlertsPrompt() {
         <div className="relative p-5 sm:p-6">
           <div className="flex items-center gap-3.5 pr-8">
             <span className="relative shrink-0">
-              <img alt="" className="size-12 rounded-2xl ring-1 ring-white/15" height={48} src="/icons/icon-192.png" width={48} />
+              <img decoding="async" loading="lazy" alt="" className="size-12 rounded-2xl ring-1 ring-white/15" height={48} src="/icons/icon-192.png" width={48} />
               <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] ring-2 ring-[#0d3566]">
                 <BellIcon className="size-3.5" />
               </span>

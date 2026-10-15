@@ -89,14 +89,14 @@ export function AdminLoginPage() {
     <div className="min-h-screen bg-[#f3f6fa] text-[#102c50] lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
       {/* Brand panel */}
       <aside className="relative isolate hidden overflow-hidden bg-[#092a53] text-white lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
-        <img alt="" className="absolute inset-0 -z-30 size-full object-cover opacity-25" src="/images/hero-ice-cream.jpg" />
+        <img decoding="async" loading="lazy" alt="" className="absolute inset-0 -z-30 size-full object-cover opacity-25" src="/images/hero-ice-cream.jpg" />
         <div aria-hidden="true" className="absolute inset-0 -z-20 bg-gradient-to-br from-[#061d3c] via-[#092a53]/95 to-[#123e6c]/90" />
         <div aria-hidden="true" className="absolute -right-32 -top-32 -z-10 size-[28rem] rounded-full border-[70px] border-white/[0.04]" />
         <div aria-hidden="true" className="absolute -bottom-40 left-10 -z-10 size-96 rounded-full bg-[#ffdc32]/10 blur-3xl" />
         <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-[0.05] [background-image:radial-gradient(#fff_1px,transparent_1px)] [background-size:22px_22px]" />
 
         <Link aria-label={t("Return to the shop")} className="group inline-flex w-fit items-center gap-3" to="/">
-          <img alt="" aria-hidden="true" className="size-12 rounded-full shadow-[0_10px_24px_rgba(0,0,0,0.3)] transition group-hover:rotate-[-6deg]" height={48} src="/logo.png" width={48} />
+          <img decoding="async" loading="eager" alt="" aria-hidden="true" className="size-12 rounded-full shadow-[0_10px_24px_rgba(0,0,0,0.3)] transition group-hover:rotate-[-6deg]" height={48} src="/logo.png" width={48} />
           <span>
             <span className="block font-display text-lg font-extrabold leading-tight">Cold Stone <span className="text-[#ffdc32]">Creamery</span></span>
             <span className="block text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/55">{t("Admin portal")}</span>
@@ -178,7 +178,7 @@ export function AdminLoginPage() {
 
         <div className="flex flex-1 items-center justify-center py-10">
           <div className="w-full max-w-[26rem]">
-            <img alt="" aria-hidden="true" className="size-16 rounded-full shadow-[0_12px_28px_rgba(9,42,83,0.25)]" height={64} src="/logo.png" width={64} />
+            <img decoding="async" loading="eager" alt="" aria-hidden="true" className="size-16 rounded-full shadow-[0_12px_28px_rgba(9,42,83,0.25)]" height={64} src="/logo.png" width={64} />
             <h1 className="mt-6 font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-[2.25rem]">{t("Welcome back")}</h1>
             <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("Sign in to the admin portal to manage your store.")}</p>
 

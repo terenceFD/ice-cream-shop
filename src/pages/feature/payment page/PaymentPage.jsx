@@ -693,7 +693,7 @@ export function PaymentPage() {
                         {cartItems.map((item) => (
                           <li className="flex items-center gap-3.5" key={item.id}>
                             <span className="relative shrink-0">
-                              <img alt="" className={`size-14 rounded-2xl object-cover ring-1 ring-black/5 ${item.color || "bg-[#f4f1e7]"}`} src={item.image} />
+                              <img decoding="async" loading="lazy" alt="" className={`size-14 rounded-2xl object-cover ring-1 ring-black/5 ${item.color || "bg-[#f4f1e7]"}`} src={item.image} />
                               <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#092a53] px-1 text-[10px] font-extrabold text-white ring-2 ring-white">
                                 {item.quantity}
                               </span>

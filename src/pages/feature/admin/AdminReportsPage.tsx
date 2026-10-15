@@ -329,7 +329,7 @@ export function AdminReportsPage() {
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <section aria-labelledby="best-sellers-title" className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">

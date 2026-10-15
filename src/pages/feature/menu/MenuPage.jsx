@@ -11,7 +11,7 @@ import { ProductImageSlider } from "../../../components/ProductImageSlider";
 
 function MenuImage({ alt, className = "", src }) {
   return (
-    <img
+    <img decoding="async"
       alt={alt}
       className={className}
       loading="lazy"
@@ -308,7 +308,7 @@ export function MenuPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [dietaryFilter, setDietaryFilter] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState("");
-  const [sortBy, setSortBy] = useState("recommended");
+  const [sortBy, setSortBy] = useState("");
   const [favoriteIds, setFavoriteIds] = useState(new Set());
   const [favoriteError, setFavoriteError] = useState("");
   const [reviews, setReviews] = useState({
@@ -394,7 +394,7 @@ export function MenuPage() {
       .map((item) => ({ category, item })),
   );
   // Sorting only reorders the matches.
-  if (sortBy !== "recommended") {
+  if (sortBy) {
     filteredItems.sort((a, b) => {
       if (sortBy === "price-asc") return a.item.priceXaf - b.item.priceXaf;
       if (sortBy === "price-desc") return b.item.priceXaf - a.item.priceXaf;
@@ -589,7 +589,7 @@ export function MenuPage() {
             aria-label={t("Search and filter menu")}
             className="relative z-40 mb-12 rounded-[28px] bg-white p-3 shadow-[0_1px_0_rgba(9,42,83,0.04),0_14px_40px_rgba(9,42,83,0.07)] ring-1 ring-[#ebe7dc] sm:p-4"
           >
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-stretch">
               <label className="group relative flex flex-1 items-center rounded-[20px] bg-[#fbfaf5] ring-1 ring-transparent transition focus-within:bg-white">
                 <span className="sr-only">{t("Search menu")}</span>
                 <svg
@@ -622,7 +622,7 @@ export function MenuPage() {
                 )}
               </label>
 
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex lg:flex-none">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:flex xl:flex-none">
                 {[
                   {
                     label: "Category",
@@ -657,7 +657,7 @@ export function MenuPage() {
                     value: sortBy,
                     onChange: setSortBy,
                     options: [
-                      ["recommended", "Recommended"],
+                      ["", "Recommended"],
                       ["price-asc", "Price: low to high"],
                       ["price-desc", "Price: high to low"],
                       ["name", "Name: A to Z"],
@@ -677,7 +677,7 @@ export function MenuPage() {
                 ))}
 
                 <label
-                  className={`relative flex flex-col justify-center rounded-[20px] px-4 py-2.5 ring-1 transition lg:w-[170px] ${
+                  className={`relative flex flex-col justify-center rounded-[20px] px-4 py-2.5 ring-1 transition xl:w-[170px] ${
                     maxPrice ? "bg-[#fff8dd] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"
                   }`}
                 >
@@ -987,7 +987,7 @@ export function MenuPage() {
                           )}
                           <div className="mt-auto flex items-center gap-3 pt-5">
                             {review.profilePicture ? (
-                              <img
+                              <img decoding="async" loading="lazy"
                                 alt=""
                                 className="size-9 rounded-full object-cover"
                                 src={review.profilePicture}

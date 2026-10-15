@@ -148,13 +148,13 @@ export function CustomCakeRequestPage() {
             <div className="relative lg:col-span-6">
               <div className="grid grid-cols-5 grid-rows-2 gap-3 sm:gap-4 [aspect-ratio:5/4]">
                 <figure className="col-span-3 row-span-2 overflow-hidden rounded-[30px] bg-[#fff3b8] shadow-[0_28px_64px_rgba(9,42,83,0.18)]">
-                  <img alt={t('Custom celebration cake')} className="size-full object-cover" src="/cake-images/cake-1.webp" />
+                  <img decoding="async" loading="lazy" alt={t('Custom celebration cake')} className="size-full object-cover" src="/cake-images/cake-1.webp" />
                 </figure>
                 <figure className="col-span-2 overflow-hidden rounded-[24px] bg-[#fff3b8] shadow-[0_16px_36px_rgba(9,42,83,0.12)]">
-                  <img alt="" aria-hidden="true" className="size-full object-cover" src="/cake-images/cake-3.webp" />
+                  <img decoding="async" loading="lazy" alt="" aria-hidden="true" className="size-full object-cover" src="/cake-images/cake-3.webp" />
                 </figure>
                 <figure className="col-span-2 overflow-hidden rounded-[24px] bg-[#fff3b8] shadow-[0_16px_36px_rgba(9,42,83,0.12)]">
-                  <img alt="" aria-hidden="true" className="size-full object-cover" src="/cake-images/cake-5.webp" />
+                  <img decoding="async" loading="lazy" alt="" aria-hidden="true" className="size-full object-cover" src="/cake-images/cake-5.webp" />
                 </figure>
               </div>
               <div className="absolute -bottom-6 left-4 flex max-w-[320px] items-center gap-3 rounded-2xl border border-[#eeeae1] bg-white/95 p-4 shadow-[0_18px_40px_rgba(9,42,83,0.14)] backdrop-blur-sm sm:left-8">

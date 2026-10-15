@@ -84,7 +84,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
           style={{ transform: `translateX(-${current * 100}%)` }}
         >
           {images.map((image, index) => (
-            <img
+            <img decoding="async"
               alt={index === 0 ? name : t("{name}, photo {number} of {total}", { name, number: index + 1, total: images.length })}
               aria-hidden={index !== current}
               className={`w-full shrink-0 select-none object-cover ${imageClassName}`}
@@ -156,7 +156,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
                 onClick={() => setActive(index)}
                 type="button"
               >
-                <img alt="" className="size-16 object-cover sm:size-20" loading="lazy" src={image} />
+                <img decoding="async" alt="" className="size-16 object-cover sm:size-20" loading="lazy" src={image} />
               </button>
             </li>
           ))}

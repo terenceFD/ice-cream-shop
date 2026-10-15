@@ -36,7 +36,7 @@ interface PageHeroProps {
 
 function HeroImage({ src, alt, className, position }: { src: string; alt: string; className: string; position?: string }) {
   return (
-    <img
+    <img fetchPriority="high" loading="eager"
       alt={alt}
       aria-hidden={alt ? undefined : true}
       className={className}

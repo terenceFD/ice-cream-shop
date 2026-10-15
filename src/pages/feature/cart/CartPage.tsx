@@ -216,7 +216,7 @@ export function CartPage() {
                             className={`relative size-24 shrink-0 overflow-hidden rounded-[20px] ring-1 ring-black/5 ${item.color} sm:size-32`}
                             to={itemPath(item)}
                           >
-                            <img
+                            <img decoding="async" loading="lazy"
                               alt={t(item.name)}
                               className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                               src={item.image}

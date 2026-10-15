@@ -276,7 +276,7 @@ export function AdminLayout() {
         <div aria-hidden="true" className="h-[3px] bg-gradient-to-r from-[#092a53] via-[#1d4f80] to-[#ffdc32]" />
         <div className="mx-auto flex h-[68px] max-w-[1600px] items-center gap-3 px-4 sm:gap-4 sm:px-6 lg:px-8">
           <Link aria-label={t('Admin portal')} className="group flex min-w-0 shrink-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#bd9c00]" to={isOwner ? '/admin' : '/admin/overview'}>
-            <img alt="" aria-hidden="true" className="size-10 shrink-0 rounded-full shadow-[0_6px_14px_rgba(9,42,83,0.22)] transition group-hover:rotate-[-6deg]" height={40} src="/logo.png" width={40} />
+            <img decoding="async" loading="eager" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-full shadow-[0_6px_14px_rgba(9,42,83,0.22)] transition group-hover:rotate-[-6deg]" height={40} src="/logo.png" width={40} />
             <span className="hidden min-w-0 sm:block">
               <span className="block truncate font-display text-[15px] font-extrabold leading-tight text-[#092a53]">
                 Cold Stone <span className="text-[#bd9c00]">Creamery</span>
@@ -368,7 +368,7 @@ export function AdminLayout() {
               >
                 <span className="relative">
                   {currentAdmin?.profilePicture ? (
-                    <img alt="" className="size-9 rounded-full object-cover ring-2 ring-white shadow-sm" src={currentAdmin.profilePicture} />
+                    <img decoding="async" loading="lazy" alt="" className="size-9 rounded-full object-cover ring-2 ring-white shadow-sm" src={currentAdmin.profilePicture} />
                   ) : (
                     <span aria-hidden="true" className="grid size-9 place-items-center rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53] ring-2 ring-white">{currentAdmin?.name?.charAt(0).toUpperCase()}</span>
                   )}
@@ -391,7 +391,7 @@ export function AdminLayout() {
                 >
                   <div className="flex items-center gap-3 bg-gradient-to-br from-[#0d3566] to-[#092a53] p-4 text-white">
                     {currentAdmin?.profilePicture ? (
-                      <img alt="" className="size-11 rounded-xl object-cover ring-2 ring-white/25" src={currentAdmin.profilePicture} />
+                      <img decoding="async" loading="lazy" alt="" className="size-11 rounded-xl object-cover ring-2 ring-white/25" src={currentAdmin.profilePicture} />
                     ) : (
                       <span aria-hidden="true" className="grid size-11 place-items-center rounded-xl bg-[#ffdc32] font-display text-lg font-extrabold text-[#092a53]">{currentAdmin?.name?.charAt(0).toUpperCase()}</span>
                     )}
@@ -500,7 +500,7 @@ export function AdminLayout() {
           <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-12 size-36 rounded-full bg-[#ffdc32]/15 blur-2xl" />
           <div className="relative flex items-start gap-3.5 p-4 pr-3">
             {currentAdmin.profilePicture ? (
-              <img alt="" className="size-12 shrink-0 rounded-xl object-cover ring-2 ring-[#ffdc32]/60" src={currentAdmin.profilePicture} />
+              <img decoding="async" loading="lazy" alt="" className="size-12 shrink-0 rounded-xl object-cover ring-2 ring-[#ffdc32]/60" src={currentAdmin.profilePicture} />
             ) : (
               <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#ffdc32] font-display text-xl font-extrabold text-[#092a53]">
                 {currentAdmin.name?.charAt(0).toUpperCase()}
@@ -562,7 +562,7 @@ export function AdminLayout() {
               type="button"
             >
               {currentAdmin?.profilePicture ? (
-                <img alt="" className="size-11 rounded-xl object-cover ring-2 ring-white/15" src={currentAdmin.profilePicture} />
+                <img decoding="async" loading="lazy" alt="" className="size-11 rounded-xl object-cover ring-2 ring-white/15" src={currentAdmin.profilePicture} />
               ) : (
                 <span className="grid size-11 place-items-center rounded-xl bg-[#ffdc32] font-display text-lg font-extrabold text-[#092a53]">{currentAdmin?.name?.charAt(0).toUpperCase()}</span>
               )}

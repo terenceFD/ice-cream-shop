@@ -78,7 +78,7 @@ function Thumb({ src }: { src?: string }) {
       </span>
     )
   }
-  return <img alt="" className="size-10 shrink-0 rounded-xl bg-[#f1f4f8] object-cover" loading="lazy" onError={() => setFailed(true)} src={src} />
+  return <img decoding="async" alt="" className="size-10 shrink-0 rounded-xl bg-[#f1f4f8] object-cover" loading="lazy" onError={() => setFailed(true)} src={src} />
 }
 
 function Switch({ checked, disabled, label, onChange }: { checked: boolean; disabled?: boolean; label: string; onChange: (checked: boolean) => void }) {

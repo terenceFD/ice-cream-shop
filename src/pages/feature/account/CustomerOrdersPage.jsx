@@ -134,7 +134,7 @@ function formatPoints(points) {
 
 function Avatar({ customer, size = "size-20", text = "text-3xl" }) {
   return customer.profilePicture ? (
-    <img
+    <img decoding="async" loading="lazy"
       alt={customer.name || ""}
       className={`${size} shrink-0 rounded-full object-cover`}
       src={customer.profilePicture}
@@ -1072,7 +1072,7 @@ export function CustomerOrdersPage() {
           className="group flex items-center gap-3.5 rounded-[20px] bg-white p-3 ring-1 ring-[#ebe7dc] transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(18,44,80,0.08)]"
           key={favorite.itemId}
         >
-          <img
+          <img decoding="async" loading="lazy"
             alt=""
             className="size-16 shrink-0 rounded-2xl bg-[#f4f1e7] object-cover"
             src={favorite.item.image}

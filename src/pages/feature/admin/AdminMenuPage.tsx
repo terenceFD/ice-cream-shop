@@ -86,7 +86,7 @@ function Thumb({ src, className = 'size-12' }: { src: string; className?: string
     )
   }
   return (
-    <img
+    <img decoding="async"
       alt=""
       className={`${className} shrink-0 rounded-xl bg-[#f1f4f8] object-cover`}
       loading="lazy"
@@ -650,7 +650,7 @@ export function AdminMenuPage() {
                 key={item.id}
               >
                 <div className="relative aspect-[1.75] overflow-hidden bg-[#f1f4f7]">
-                  <img
+                  <img decoding="async"
                     alt={item.name}
                     className="size-full object-cover transition duration-500 group-hover:scale-[1.03]"
                     loading="lazy"

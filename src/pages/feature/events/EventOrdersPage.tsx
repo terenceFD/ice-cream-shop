@@ -294,7 +294,7 @@ export function EventOrdersPage() {
             <p className="mt-4 max-w-xl text-base leading-7 text-white/75">
               {t("Order in bulk for your event. We prepare everything and deliver it, or you pick it up from your nearest store.")}
             </p>
-            <ol className="mt-10 grid gap-4 sm:grid-cols-3">
+            <ol className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
               {steps.map((step, index) => (
                 <li className="rounded-2xl bg-white/[0.07] p-5 ring-1 ring-white/10" key={step.title}>
                   <span className="grid size-8 place-items-center rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53]">{index + 1}</span>
@@ -323,7 +323,7 @@ export function EventOrdersPage() {
             </div>
           ) : customer ? (
             <>
-              <form className="grid gap-8 lg:grid-cols-12" onSubmit={submit}>
+              <form className="grid grid-cols-1 gap-8 lg:grid-cols-12" onSubmit={submit}>
                 <div className="space-y-8 lg:col-span-8">
                   <section className="rounded-[24px] bg-white p-6 shadow-[0_14px_40px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:p-7">
                     <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t("Your event")}</h2>
@@ -341,7 +341,7 @@ export function EventOrdersPage() {
                         </button>
                       ))}
                     </div>
-                    <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                    <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
                       <label className={labelClass}>
                         {t("Date")}
                         <input className={fieldClass} max={config?.maxDate} min={config?.minDate} onChange={(event) => setEventDate(event.target.value)} required type="date" value={eventDate} />
@@ -372,7 +372,7 @@ export function EventOrdersPage() {
                         </button>
                       ))}
                     </div>
-                    <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <label className={labelClass}>
                         {t("Store")}
                         <select className={fieldClass} onChange={(event) => setStoreId(event.target.value)} required value={storeId}>
@@ -403,7 +403,7 @@ export function EventOrdersPage() {
                       </div>
                       <input className={`${fieldClass} mt-0 sm:w-64`} onChange={(event) => setItemSearch(event.target.value)} placeholder={t("Search treats")} type="search" value={itemSearch} />
                     </div>
-                    <ul className="mt-5 grid gap-2.5 sm:grid-cols-2">
+                    <ul className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                       {visibleCatalog.map((item) => {
                         const quantity = quantities[item.itemId] || 0;
                         return (
@@ -462,7 +462,7 @@ export function EventOrdersPage() {
                 {!eventOrders.length ? (
                   <p className="mt-3 text-sm text-[#65748a]">{t("Your requests will appear here.")}</p>
                 ) : (
-                  <ul className="mt-5 grid gap-4 md:grid-cols-2">
+                  <ul className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
                     {eventOrders.map((order) => {
                       const status = STATUS_STYLES[order.status] || STATUS_STYLES.new;
                       const total = order.quotedTotal ?? order.estimatedTotal;

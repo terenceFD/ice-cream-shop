@@ -126,7 +126,7 @@ function formatReviewDate(value, language) {
 
 function ReviewerAvatar({ name, picture, className }) {
   return picture ? (
-    <img alt="" className={`shrink-0 rounded-full object-cover ${className}`} loading="lazy" src={picture} />
+    <img decoding="async" alt="" className={`shrink-0 rounded-full object-cover ${className}`} loading="lazy" src={picture} />
   ) : (
     <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-full bg-[#092a53] font-display font-extrabold text-[#ffdc32] ${className}`}>
       {name.charAt(0).toUpperCase()}
@@ -465,7 +465,7 @@ export function HomePage() {
                   {homeSlides.map((slide, index) => {
                     const isActive = activeSlide === index;
                     return (
-                      <img
+                      <img decoding="async"
                         alt={isActive ? t(slide.alt) : ""}
                         aria-hidden={!isActive}
                         className={`home-slide-image absolute inset-0 size-full object-cover object-center ${
@@ -539,7 +539,7 @@ export function HomePage() {
                         onClick={() => setActiveSlide(index)}
                         type="button"
                       >
-                        <img alt="" className="size-full object-cover" src={slide.image} />
+                        <img decoding="async" loading="lazy" alt="" className="size-full object-cover" src={slide.image} />
                       </button>
                     );
                   })}
@@ -649,7 +649,7 @@ export function HomePage() {
                   </svg>
                 ) : null;
                 const image = (
-                  <img
+                  <img decoding="async"
                     alt=""
                     className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06] ${soldOut ? "grayscale-[60%]" : ""}`}
                     loading="lazy"
@@ -814,7 +814,7 @@ export function HomePage() {
 
               <div className="relative mt-10">
                 <figure className="overflow-hidden rounded-[30px] shadow-[0_30px_70px_rgba(0,0,0,0.3)] ring-1 ring-white/10">
-                  <img
+                  <img decoding="async"
                     alt=""
                     className="aspect-[16/10] w-full object-cover"
                     loading="lazy"
@@ -962,7 +962,7 @@ export function HomePage() {
                     key={category.title}
                     to={`/menu?category=${encodeURIComponent(category.title)}`}
                   >
-                    <img
+                    <img decoding="async"
                       alt=""
                       aria-hidden="true"
                       className="absolute inset-0 -z-20 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06]"
@@ -1035,7 +1035,7 @@ export function HomePage() {
               <div className="relative lg:col-span-6">
                 <div className="grid grid-cols-6 grid-rows-6 gap-3 sm:gap-4 [aspect-ratio:1/1] sm:[aspect-ratio:6/5]">
                   <figure className="relative col-span-4 row-span-6 overflow-hidden rounded-[28px] bg-[#fff3b8] shadow-[0_24px_60px_rgba(9,42,83,0.16)]">
-                    <img
+                    <img decoding="async"
                       alt={t("A child enjoying ice cream")}
                       className="size-full object-cover object-[58%_30%] transition duration-700 hover:scale-[1.03]"
                       loading="lazy"
@@ -1047,7 +1047,7 @@ export function HomePage() {
                     />
                   </figure>
                   <figure className="relative col-span-2 row-span-3 overflow-hidden rounded-[22px] bg-[#fff3b8] shadow-[0_14px_34px_rgba(9,42,83,0.12)]">
-                    <img
+                    <img decoding="async"
                       alt={t("Ice cream cupcake")}
                       className="size-full object-cover transition duration-700 hover:scale-[1.05]"
                       loading="lazy"
@@ -1055,7 +1055,7 @@ export function HomePage() {
                     />
                   </figure>
                   <figure className="relative col-span-2 row-span-3 overflow-hidden rounded-[22px] bg-[#fff3b8] shadow-[0_14px_34px_rgba(9,42,83,0.12)]">
-                    <img
+                    <img decoding="async"
                       alt={t("Chocolate ice cream cupcake")}
                       className="size-full object-cover transition duration-700 hover:scale-[1.05]"
                       loading="lazy"
@@ -1066,7 +1066,7 @@ export function HomePage() {
                 <div className="absolute -bottom-6 left-4 flex items-center gap-3 rounded-2xl border border-[#eeeae1] bg-white/95 px-4 py-3 shadow-[0_18px_40px_rgba(9,42,83,0.14)] backdrop-blur-sm sm:left-8 sm:px-5 sm:py-4">
                   <div aria-hidden="true" className="flex -space-x-2.5">
                     {["/cream/cream%201.webp", "/ice-images/ice-7.webp", "/milk/mk-2.webp"].map((src) => (
-                      <img
+                      <img decoding="async"
                         alt=""
                         className="size-9 rounded-full border-2 border-white object-cover"
                         key={src}

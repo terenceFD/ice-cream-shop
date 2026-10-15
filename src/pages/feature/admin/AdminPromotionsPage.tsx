@@ -472,13 +472,13 @@ export function AdminPromotionsPage() {
             <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="promo-library-title">{t('Current codes')}</h2>
             <p className="mt-0.5 text-xs text-[#65748a]">{t('{count} codes', { count: visibleCodes.length })}</p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <label className="relative block sm:w-60">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
+            <label className="relative block shrink-0 sm:w-60">
               <span className="sr-only">{t('Search')}</span>
               <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
               <input className={`${inputClassName} mt-0 pl-10 font-mono uppercase placeholder:font-sans placeholder:normal-case`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search codes')} type="search" value={search} />
             </label>
-            <div aria-label={t('Status')} className="flex overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
+            <div aria-label={t('Status')} className="flex min-w-0 overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
               {([
                 { key: 'all', label: t('All') },
                 { key: 'active', label: t('Active') },
@@ -756,7 +756,7 @@ export function AdminPromotionsPage() {
                             <div>
                               <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Preview on a phone')}</p>
                               <div className="mt-2 flex gap-3 rounded-2xl bg-[#202124] p-3.5 text-white shadow-inner">
-                                <img alt="" className="size-10 shrink-0 rounded-full" height={40} src="/icons/icon-192.png" width={40} />
+                                <img decoding="async" loading="lazy" alt="" className="size-10 shrink-0 rounded-full" height={40} src="/icons/icon-192.png" width={40} />
                                 <div className="min-w-0 flex-1">
                                   <p className="flex items-center gap-1.5 text-[11px] text-white/55">
                                     <span className="truncate">{window.location.host}</span>
@@ -832,7 +832,7 @@ export function AdminPromotionsPage() {
                 />
               </label>
               <div className="mt-3 flex gap-3 rounded-2xl bg-[#202124] p-3.5 text-white">
-                <img alt="" className="size-10 shrink-0 rounded-full" height={40} src="/icons/icon-192.png" width={40} />
+                <img decoding="async" loading="lazy" alt="" className="size-10 shrink-0 rounded-full" height={40} src="/icons/icon-192.png" width={40} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{preview.title}</p>
                   <p className="mt-0.5 line-clamp-3 break-words text-[13px] leading-5 text-white/80">{preview.body}</p>

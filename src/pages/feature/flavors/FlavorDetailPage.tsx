@@ -184,7 +184,7 @@ export function FlavorDetailPage() {
               <div className="relative mx-auto w-full max-w-[500px] lg:col-span-6">
                 <div aria-hidden="true" className="absolute inset-[-6%] rounded-full border-2 border-dashed border-[#092a53]/15" />
                 <figure className={`relative aspect-square overflow-hidden rounded-full shadow-[0_50px_90px_rgba(9,42,83,0.25)] ring-[12px] ring-white ${flavor.color}`}>
-                  <img alt={t(flavor.name)} className="size-full object-cover" src={flavor.image} />
+                  <img decoding="async" loading="lazy" alt={t(flavor.name)} className="size-full object-cover" src={flavor.image} />
                 </figure>
 
                 <div aria-hidden="true" className="absolute -right-1 top-[4%] grid size-28 rotate-[10deg] place-items-center rounded-full bg-[#ffdc32] text-center text-[#092a53] shadow-[0_18px_36px_rgba(9,42,83,0.22)] ring-4 ring-white sm:right-0 sm:size-32">
@@ -412,7 +412,7 @@ export function FlavorDetailPage() {
                       key={relatedFlavor.id}
                     >
                       <div className={`relative aspect-square overflow-hidden rounded-[17px] sm:rounded-[22px] ${relatedFlavor.color}`}>
-                        <img alt="" className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05]" loading="lazy" src={relatedFlavor.image} />
+                        <img decoding="async" alt="" className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05]" loading="lazy" src={relatedFlavor.image} />
                         {relatedFlavor.tag && (
                           <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-white/95 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.1em] text-[#52647b] shadow-sm backdrop-blur-sm sm:left-3 sm:top-3 sm:px-3 sm:py-1.5 sm:text-[10px]">
                             {t(relatedFlavor.tag)}

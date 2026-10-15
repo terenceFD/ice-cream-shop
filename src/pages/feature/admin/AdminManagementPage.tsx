@@ -63,7 +63,7 @@ async function resizeProfilePicture(file: File): Promise<string> {
 }
 
 function Avatar({ name, picture, className = "size-10", highlight = false }: { name: string; picture?: string | null; className?: string; highlight?: boolean }) {
-  if (picture) return <img alt="" className={`${className} shrink-0 rounded-xl object-cover ring-1 ring-black/5`} src={picture} />;
+  if (picture) return <img decoding="async" loading="lazy" alt="" className={`${className} shrink-0 rounded-xl object-cover ring-1 ring-black/5`} src={picture} />;
   return (
     <span aria-hidden="true" className={`${className} grid shrink-0 place-items-center rounded-xl font-display text-sm font-extrabold ${highlight ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#eaf0f7] text-[#24496f]"}`}>
       {name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join("") || "?"}

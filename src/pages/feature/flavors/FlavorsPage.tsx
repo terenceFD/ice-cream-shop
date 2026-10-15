@@ -262,7 +262,7 @@ export function FlavorsPage() {
                       tabIndex={-1}
                       to={`/flavor/${flavor.id}`}
                     >
-                      <img
+                      <img decoding="async" loading="lazy"
                         alt=""
                         className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05]"
                         src={flavor.image}

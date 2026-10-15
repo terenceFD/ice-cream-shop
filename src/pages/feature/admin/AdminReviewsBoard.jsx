@@ -330,7 +330,7 @@ export function AdminReviewsBoard() {
         <section aria-labelledby="review-queue-title" className="min-w-0 rounded-[20px] border border-[#e5ebf3] bg-white">
           <div className="flex flex-col gap-4 border-b border-[#edf1f5] p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div aria-label={t('Review publication status')} className="inline-flex rounded-xl bg-[#f1f4f8] p-1" role="group">
+              <div aria-label={t('Review publication status')} className="inline-flex max-w-full overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
                 {[false, true].map((approved) => (
                   <button
                     aria-pressed={showApproved === approved}
