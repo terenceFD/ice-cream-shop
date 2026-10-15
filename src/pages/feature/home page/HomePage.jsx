@@ -38,6 +38,17 @@ const homeSlides = [
     caption: "The signature experience",
   },
   {
+    eyebrow: "Ice cream cakes for every celebration",
+    title: "Celebrate with",
+    accent: "a cake to remember.",
+    description:
+      "Layers of cake and creamy ice cream, finished with rich chocolate. Order one for birthdays, parties and every reason in between.",
+    image: "/cake-images/cake-11.webp",
+    thumbnailSide: "right",
+    alt: "A chocolate ice cream cake held up for a celebration",
+    caption: "Made for celebrations",
+  },
+  {
     eyebrow: "Make room for something sweet",
     title: "Make every moment",
     accent: "a little sweeter.",
@@ -48,6 +59,28 @@ const homeSlides = [
     caption: "A treat worth sharing",
   },
   {
+    eyebrow: "Cool, creamy and full of crunch",
+    title: "Fresh mint,",
+    accent: "loaded with cookies.",
+    description:
+      "Mint ice cream mixed with chocolate cookies and fudge, served in a waffle cone. A Signature Creation made right in front of you.",
+    image: "/menu-official/ice-cream/signature-creations/cookie-mintster.webp",
+    thumbnailSide: "right",
+    alt: "Mint ice cream with chocolate cookies and fudge in a waffle cone",
+    caption: "Mixed on a frozen stone",
+  },
+  {
+    eyebrow: "Cake meets ice cream",
+    title: "Every slice",
+    accent: "a sweet surprise.",
+    description:
+      "Soft cake layered with ice cream and topped with fresh raspberries. Choose a signature cake or request your own design.",
+    image: "/cake-images/cake-2.webp",
+    thumbnailSide: "right",
+    alt: "A raspberry ice cream cake with a slice cut out",
+    caption: "Cake and ice cream, layered",
+  },
+  {
     eyebrow: "Find your new favorite",
     title: "A world of flavor",
     accent: "is waiting.",
@@ -56,6 +89,27 @@ const homeSlides = [
     image: "/ice-images/ice-10.jpg",
     alt: "A colorful ice cream creation",
     caption: "Choose. Mix. Make it yours.",
+  },
+  {
+    eyebrow: "Bright, fruity and fresh",
+    title: "Berries on top,",
+    accent: "sweetness in every bite.",
+    description:
+      "Creamy ice cream piled with raspberries and blueberries in a crisp waffle cone. A fruity favorite for sunny days.",
+    image: "/menu-official/ice-cream/signature-creations/berry-berry-berry-good.webp",
+    thumbnailSide: "right",
+    alt: "Ice cream topped with raspberries and blueberries in a waffle cone",
+    caption: "Fresh fruit, real flavor",
+  },
+  {
+    eyebrow: "Rich chocolate meets pistachio",
+    title: "A little luxury",
+    accent: "in every scoop.",
+    description:
+      "Chocolate ice cream with chocolate shavings and a pistachio crunch, served in a waffle cone. Our Dubai Chocolate Creation, made to order.",
+    image: "/menu-official/ice-cream/signature-creations/our-dubai-chocolate-creation.webp",
+    alt: "Chocolate ice cream with chocolate shavings and pistachio in a waffle cone",
+    caption: "Chocolate, pistachio, pure joy",
   },
 ];
 
@@ -383,7 +437,7 @@ export function HomePage() {
       <main>
         <section
           id="home"
-          className="relative isolate w-full overflow-hidden bg-[#092a53] text-white"
+          className="relative isolate w-full overflow-clip bg-[#092a53] text-white"
         >
           <div
             aria-hidden="true"
@@ -521,13 +575,18 @@ export function HomePage() {
                   </div>
                 </div>
 
-                {/* Thumbnails */}
+                {/* Thumbnails: the first slides on the left, the cake and ice cream slides marked thumbnailSide "right" on the right. */}
+                {["left", "right"].map((side) => (
                 <div
                   aria-label={t("Choose a featured slide")}
-                  className="absolute -left-4 top-1/2 hidden -translate-y-1/2 flex-col gap-3 rounded-[22px] bg-white/10 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/15 backdrop-blur-md sm:flex lg:-left-10"
+                  className={`absolute top-1/2 hidden -translate-y-1/2 flex-col gap-3 rounded-[22px] bg-white/10 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/15 backdrop-blur-md sm:flex ${
+                    side === "left" ? "-left-4 lg:-left-10" : "-right-4 lg:-right-10"
+                  }`}
+                  key={side}
                   role="group"
                 >
                   {homeSlides.map((slide, index) => {
+                    if ((slide.thumbnailSide || "left") !== side) return null;
                     const isActive = activeSlide === index;
                     return (
                       <button
@@ -545,6 +604,7 @@ export function HomePage() {
                     );
                   })}
                 </div>
+                ))}
                 <div aria-label={t("Choose a featured slide")} className="mt-2 flex justify-center sm:hidden" role="group">
                   {/* The dots stay small, but each one has a finger-sized (32px) tap area. */}
                   {homeSlides.map((slide, index) => (

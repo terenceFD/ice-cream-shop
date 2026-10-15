@@ -81,6 +81,9 @@ If the frontend and API must be hosted separately, set `VITE_API_URL` to the API
 ### Performance
 
 - Photos in `public/` are compressed (at most 1200 px on the longest side).
+- Every photo in `public/` also gets a small copy (480 px, WebP) under `public/thumbs/`, made by `scripts/make-thumbnails.mjs` before each build and dev start (not committed). Small pictures use it through `src/thumbnails.ts`; cards let the browser choose between the small copy and the full photo.
+- The fonts (DM Sans and Fredoka) are served from `public/fonts/` and preloaded, so pages never wait on Google before showing text.
+- Uploaded images are resized on the server to at most 1200 px and saved as WebP (GIFs are kept as they are), see `server/images.js`.
 - Pages load their own code only when opened, so first-time visitors don't download the admin dashboard.
 - Files under `/assets/` are cached by browsers for a year (their names change with every build); photos and icons for a week. `sw.js` and the web app manifest are never cached, so updates reach visitors immediately.
 
@@ -100,7 +103,7 @@ Both the migration and the application verify the PostgreSQL server certificate.
 
 ### Image uploads
 
-Admin image uploads (menu items and flavors, including "Upload from device" in the flavor form) are stored in **Supabase Storage** when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set; a public bucket named `menu-images` (or `SUPABASE_STORAGE_BUCKET`) is created on the first upload. Hosts such as Render wipe the server disk on every deploy, so the live site refuses uploads with a clear message when storage is not configured. Locally, without these settings, uploads are saved to `server/uploads/`. Large photos are resized in the browser before upload. The server log shows `Image uploads are stored in: supabase | local-disk | invalid-supabase-url` at start-up.
+Admin image uploads (menu items and flavors, including "Upload from device" in the flavor form) are stored in **Supabase Storage** when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set; a public bucket named `menu-images` (or `SUPABASE_STORAGE_BUCKET`) is created on the first upload. Hosts such as Render wipe the server disk on every deploy, so the live site refuses uploads with a clear message when storage is not configured. Locally, without these settings, uploads are saved to `server/uploads/`. Large photos are resized in the browser before upload, and the server then shrinks every upload to at most 1200 px WebP. The server log shows `Image uploads are stored in: supabase | local-disk | invalid-supabase-url` at start-up.
 
 ### Store admin access
 
