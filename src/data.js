@@ -128,7 +128,7 @@ export const coldStoneMenuCategories = [
   {
     icon: '🍧',
     title: 'Silk & Sorbet',
-    description: 'Dairy-free alternatives listed on the global menu.',
+    description: 'Creamy dairy-free scoops and fruity sorbets.',
     image: '/menu-official/dairy-free-ice-cream-sorbet/sorbet.webp',
     items: [
       { name: 'Silk Chocolate Almondmilk Frozen Dessert', detail: 'A chocolate frozen dessert made with almondmilk.', image: '/menu-official/dairy-free-ice-cream-sorbet/silk.webp', priceXaf: 3200 },
@@ -158,7 +158,7 @@ export const coldStoneMenuCategories = [
   {
     icon: '🧁',
     title: 'Novelties',
-    description: 'Portable frozen treats from the global menu.',
+    description: 'Grab-and-go frozen treats: ice cream cupcakes and cookie sandwiches.',
     image: '/menu-official/novelties/ice-cream-cupcakes/cake-batter-delux.webp',
     items: [
       { name: 'Sweet Cream Cupcake', idName: 'Cupcake Design 1', detail: 'Sweet cream ice cream in a chocolate cup, topped with whipped frosting and wafer rolls.', image: '/menu-official/novelties/ice-cream-cupcakes/sweet-cream.webp', priceXaf: 2800 },

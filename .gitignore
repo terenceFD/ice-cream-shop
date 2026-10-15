@@ -34,3 +34,4 @@ server/uploads/
 
 # Small photo copies, made by scripts/make-thumbnails.mjs on every build
 public/thumbs/
+screenshots/

@@ -1,6 +1,6 @@
 import { useSyncExternalStore, type ReactNode } from "react";
 import { photoErrorHandler, photoSrcSet } from "../thumbnails";
-import { HERO_PHOTO_SIZES } from "../photoSizes.js";
+import { COMPACT_HERO_MEDIA, HERO_PHOTO_SIZES } from "../photoSizes.js";
 
 const FALLBACK_IMAGE = "/images/hero-ice-cream.jpg";
 
@@ -34,12 +34,12 @@ interface PageHeroProps {
   badge?: { mark: ReactNode; eyebrow: string; text: string };
   /** Text colour class matching the section below, used for the curved edge. */
   curveClassName?: string;
-  /** Shopping pages: on phones, leave out the photo group so products start right below the title. */
+  /** Shopping pages: on phones and tablets, leave out the photo group so products start right below the title. */
   compactOnMobile?: boolean;
 }
 
-// Same width as the server's preload media query for compact headers (src/photoSizes.js).
-const WIDE_SCREEN = "(min-width: 640px)";
+// Shared with the server's preload media query for compact headers.
+const WIDE_SCREEN = COMPACT_HERO_MEDIA;
 function subscribeToWidth(onChange: () => void) {
   const query = window.matchMedia(WIDE_SCREEN);
   query.addEventListener("change", onChange);

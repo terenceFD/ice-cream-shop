@@ -36,6 +36,12 @@ const CATEGORY_IMAGE_UPDATES = [
   ["Novelties", "/menu-images/sorbet-cup.webp", "/menu-official/novelties/ice-cream-cupcakes/cake-batter-delux.webp"],
   ["Limited-Time Favorites", "/menu-images/limited-time-treats.webp", "/menu-official/limited-time-offers/the-cat-in-the-hats-cotton-candy-catastrophe.webp"],
 ];
+// Same idea for built-in category descriptions: only rows still showing the old text change,
+// so a description an admin has edited is kept.
+const CATEGORY_DESCRIPTION_UPDATES = [
+  ["Silk & Sorbet", "Dairy-free alternatives listed on the global menu.", "Creamy dairy-free scoops and fruity sorbets."],
+  ["Novelties", "Portable frozen treats from the global menu.", "Grab-and-go frozen treats: ice cream cupcakes and cookie sandwiches."],
+];
 
 // Flavor photos that showed a different product: [flavor name, old photo, matching photo].
 // vanilla.jpg shows a strawberry scoop and strawberry.jpg shows vanilla scoops, so they swap.
@@ -583,6 +589,12 @@ if (configuredDatabaseBackend === "postgres") {
   for (const [baseTitle, previousImage, image] of CATEGORY_IMAGE_UPDATES) {
     refreshDefaultCategoryImage.run(image, baseTitle, previousImage);
   }
+  const refreshDefaultCategoryDescription = sqliteDatabase.prepare(
+    "UPDATE menu_categories SET description = ? WHERE base_title = ? AND description = ?",
+  );
+  for (const [baseTitle, previousDescription, description] of CATEGORY_DESCRIPTION_UPDATES) {
+    refreshDefaultCategoryDescription.run(description, baseTitle, previousDescription);
+  }
   sqliteDatabase.transaction(() => {
     const updateFlavorImage = sqliteDatabase.prepare(
       "UPDATE flavors SET image = ? WHERE name = ? AND image = ?",
@@ -804,6 +816,11 @@ export async function verifyDatabaseSchema() {
     await database.prepare(
       "UPDATE menu_categories SET image = ? WHERE base_title = ? AND image = ?",
     ).run(image, baseTitle, previousImage);
+  }
+  for (const [baseTitle, previousDescription, description] of CATEGORY_DESCRIPTION_UPDATES) {
+    await database.prepare(
+      "UPDATE menu_categories SET description = ? WHERE base_title = ? AND description = ?",
+    ).run(description, baseTitle, previousDescription);
   }
   // One transaction, so the vanilla/strawberry swap never leaves both on the same photo.
   await database.transaction(async () => {

@@ -41,8 +41,9 @@ export function photoSrcSet(src) {
 // The large photo in the navy page header (menu, flavors, about): about 360px wide on
 // computers and 60% of the screen on phones. The server preloads it with these same values.
 export const HERO_PHOTO_SIZES = "(min-width: 1024px) 360px, 60vw";
-// Compact headers (shopping pages) show their photo only from this width up.
-export const COMPACT_HERO_MEDIA = "(min-width: 640px)";
+// Compact headers (shopping pages) show their photo only from this width up: on phones and
+// tablets it would sit below the text and push the products a whole screen down.
+export const COMPACT_HERO_MEDIA = "(min-width: 1024px)";
 // Home page slider: about 600px wide on computers, nearly the whole screen on phones.
 export const HOME_SLIDE_SIZES = "(min-width: 1024px) 600px, 92vw";
 // Round scoop photo on a flavor's own page: at most 500px wide.

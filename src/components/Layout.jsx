@@ -1085,10 +1085,11 @@ export function InstagramSection() {
   return (
     <section
       aria-labelledby="instagram-heading"
-      className="relative isolate overflow-hidden border-t border-[#eeeae1] bg-[#fbfaf5] px-5 py-20 sm:px-8 sm:py-24 lg:px-10"
+      className="relative isolate overflow-hidden border-t border-[#eeeae1] bg-[#fbfaf5] py-20 sm:py-24"
     >
       <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[32rem] rounded-full bg-[#ffdc32]/15 blur-3xl" />
-      <div className="mx-auto max-w-[1320px]">
+      {/* Same width and side padding as the page content above, so the edges line up. */}
+      <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
             <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">

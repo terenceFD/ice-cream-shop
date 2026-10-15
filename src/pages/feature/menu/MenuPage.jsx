@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowIcon, Footer, Header, InstagramSection } from "../../../components/Layout";
 import { coldStoneMenuCategories, getMenuItemId } from "../../../data";
 import { apiRequest, getCustomerToken } from "../../../api/api";
@@ -10,6 +10,25 @@ import { PageHero } from "../../../components/PageHero";
 import { ProductImageSlider } from "../../../components/ProductImageSlider";
 import { photoErrorHandler, photoSrcSet, thumbnail } from "../../../thumbnails";
 import { rankSimilar } from "../../../similarItems";
+
+const MAX_QUANTITY = 10;
+
+function BagIcon() {
+  return (
+    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+      <path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+      <path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+      <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+    </svg>
+  );
+}
 
 // small: always the small copy (tiny pictures). sizes: lets the browser choose the small copy
 // or the full photo for the space the picture fills.
@@ -247,7 +266,8 @@ function MenuProductCard({ category, item, onSelect, t, formatPrice }) {
   );
 }
 
-function SimilarProductCard({ category, item, onSelect, t, formatPrice }) {
+// showCategory: only when the suggestion comes from another category than the product shown.
+function SimilarProductCard({ category, item, onSelect, showCategory, t, formatPrice }) {
   const soldOut = item.isAvailable === false || item.availableQuantity < 1;
   return (
     <button
@@ -263,13 +283,15 @@ function SimilarProductCard({ category, item, onSelect, t, formatPrice }) {
       />
       <span
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a]/95 via-[#061d3a]/25 via-45% to-transparent transition duration-500 group-hover:via-[#061d3a]/45"
+        className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] from-15% via-[#061d3a]/60 via-50% to-transparent to-75% transition duration-500 group-hover:via-[#061d3a]/70"
       />
 
       <span className="absolute inset-x-3 top-3 flex items-start justify-between gap-2 sm:inset-x-6 sm:top-6 sm:gap-3">
-        <span className="max-w-[70%] truncate rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] backdrop-blur-md max-sm:hidden">
-          {t(category.title)}
-        </span>
+        {showCategory && (
+          <span className="max-w-[80%] truncate rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#092a53] shadow-sm max-sm:hidden">
+            {t(category.title)}
+          </span>
+        )}
         {soldOut && (
           <span className="ml-auto rounded-full bg-white px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.1em] text-red-700 sm:px-3 sm:py-1.5 sm:text-[10px]">
             {t("Sold out")}
@@ -277,7 +299,7 @@ function SimilarProductCard({ category, item, onSelect, t, formatPrice }) {
         )}
       </span>
 
-      <span className="line-clamp-2 font-display text-[15px] font-extrabold leading-snug sm:text-2xl">
+      <span className="line-clamp-2 font-display text-[15px] font-extrabold leading-snug [text-shadow:0_1px_12px_rgba(6,29,58,0.6)] sm:text-2xl">
         {t(item.name)}
       </span>
       <span className="mt-2 line-clamp-2 max-h-0 text-sm leading-6 max-sm:hidden text-white/75 opacity-0 transition-all duration-500 group-hover:max-h-12 group-hover:opacity-100 group-focus-visible:max-h-12 group-focus-visible:opacity-100">
@@ -299,9 +321,8 @@ function SimilarProductCard({ category, item, onSelect, t, formatPrice }) {
 }
 
 export function MenuPage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { addToCart } = useCart();
+  const { addItemsToCart } = useCart();
   const { customer } = useAuth();
   const { language, t } = useLanguage();
   const [categories, setCategories] = useState(coldStoneMenuCategories);
@@ -309,6 +330,10 @@ export function MenuPage() {
   const [selectedItemState, setSelectedItemState] = useState(null);
   const productRef = useRef(null);
   const [cartNotice, setCartNotice] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [justAdded, setJustAdded] = useState(false);
+  const addedTimer = useRef(undefined);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -370,6 +395,8 @@ export function MenuPage() {
     dietaryFilter,
     availabilityFilter,
   ].filter(Boolean).length;
+  // Filters chosen behind the phone "Filters" button (search is always visible).
+  const optionFilterCount = activeFilterCount - (search.trim() ? 1 : 0);
   const totalMenuItems = categories.reduce(
     (total, category) => total + category.items.length,
     0,
@@ -473,6 +500,8 @@ export function MenuPage() {
 
   const openedProductName = selectedItemState?.item?.name;
   useEffect(() => {
+    setQuantity(1);
+    setJustAdded(false);
     if (!openedProductName) return undefined;
     const frame = window.requestAnimationFrame(() => productRef.current?.scrollIntoView({ block: "start" }));
     return () => window.cancelAnimationFrame(frame);
@@ -496,17 +525,25 @@ export function MenuPage() {
     setAvailabilityFilter("");
   };
 
-  const orderSelectedItem = () => {
-    const added = addToCart({
+  useEffect(() => () => window.clearTimeout(addedTimer.current), []);
+
+  // Adds the chosen quantity and stays on the page, so customers can keep shopping.
+  const addSelectedItem = () => {
+    setCartNotice("");
+    const added = addItemsToCart([{
       ...selectedItem,
       id:
         selectedItem.id ||
         getMenuItemId(activeCategory.title, selectedItem.name),
       itemType: "menu",
       categoryTitle: activeCategory.title,
-    });
-    if (added) {
-      navigate("/cart");
+      quantity,
+    }]);
+    if (added > 0) {
+      setQuantity(1);
+      setJustAdded(true);
+      window.clearTimeout(addedTimer.current);
+      addedTimer.current = window.setTimeout(() => setJustAdded(false), 1800);
     } else {
       setCartNotice(
         t("This item could not be added to your bag. Please try again."),
@@ -556,6 +593,7 @@ export function MenuPage() {
     selectedItem &&
       (selectedItem.isAvailable === false || selectedItem.availableQuantity < 1),
   );
+  const maxQuantity = Math.max(1, Math.min(MAX_QUANTITY, selectedItem?.availableQuantity ?? MAX_QUANTITY));
   const selectedIsFavorite = Boolean(
     selectedItem &&
       activeCategory &&
@@ -610,10 +648,11 @@ export function MenuPage() {
 
           <section
             aria-label={t("Search and filter menu")}
-            className="relative z-40 mb-12 rounded-[28px] bg-white p-3 shadow-[0_1px_0_rgba(9,42,83,0.04),0_14px_40px_rgba(9,42,83,0.07)] ring-1 ring-[#ebe7dc] sm:p-4"
+            className="relative z-40 mb-8 rounded-[28px] sm:mb-12 bg-white p-3 shadow-[0_1px_0_rgba(9,42,83,0.04),0_14px_40px_rgba(9,42,83,0.07)] ring-1 ring-[#ebe7dc] sm:p-4"
           >
             <div className="flex flex-col gap-3 xl:flex-row xl:items-stretch">
-              <label className="group relative flex flex-1 items-center rounded-[20px] bg-[#fbfaf5] ring-1 ring-transparent transition focus-within:bg-white">
+              <div className="flex flex-1 gap-2">
+              <label className="group relative flex min-w-0 flex-1 items-center rounded-[20px] bg-[#fbfaf5] ring-1 ring-transparent transition focus-within:bg-white">
                 <span className="sr-only">{t("Search menu")}</span>
                 <svg
                   aria-hidden="true"
@@ -644,8 +683,32 @@ export function MenuPage() {
                   </button>
                 )}
               </label>
+              {/* Phones: the filters fold away behind this button so food shows sooner. */}
+              <button
+                aria-controls="menu-filter-options"
+                aria-expanded={filtersOpen}
+                className={`relative inline-flex shrink-0 items-center gap-2 rounded-[20px] px-4 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] sm:hidden ${
+                  filtersOpen ? "bg-[#092a53] text-white" : "bg-[#fbfaf5] text-[#092a53] ring-1 ring-[#e5e1d7]"
+                }`}
+                onClick={() => setFiltersOpen((open) => !open)}
+                type="button"
+              >
+                <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                  <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                </svg>
+                {t("Filters")}
+                {optionFilterCount > 0 && (
+                  <span className="grid size-5 place-items-center rounded-full bg-[#ffdc32] text-[10px] tabular-nums text-[#092a53]">
+                    {optionFilterCount}
+                  </span>
+                )}
+              </button>
+              </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:flex xl:flex-none">
+              <div
+                className={`grid-cols-2 gap-3 sm:grid sm:grid-cols-3 xl:flex xl:flex-none ${filtersOpen ? "grid" : "hidden"}`}
+                id="menu-filter-options"
+              >
                 {[
                   {
                     label: "Category",
@@ -885,14 +948,52 @@ export function MenuPage() {
                   </div>
 
                   <div className="mt-6 flex gap-3">
+                    {!selectedSoldOut && (
+                      <div aria-label={t("Quantity")} className="flex shrink-0 items-center rounded-full bg-white p-1 ring-1 ring-[#e5e1d7]" role="group">
+                        <button
+                          aria-label={t("Decrease quantity")}
+                          className="grid size-11 place-items-center rounded-full text-lg font-bold text-[#092a53] transition hover:bg-[#fbfaf5] disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
+                          disabled={quantity <= 1}
+                          onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+                          type="button"
+                        >
+                          −
+                        </button>
+                        <output aria-live="polite" className="w-8 text-center font-display text-lg font-extrabold tabular-nums text-[#092a53]">
+                          {quantity}
+                        </output>
+                        <button
+                          aria-label={t("Increase quantity")}
+                          className="grid size-11 place-items-center rounded-full text-lg font-bold text-[#092a53] transition hover:bg-[#fbfaf5] disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
+                          disabled={quantity >= maxQuantity}
+                          onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
+                          type="button"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
                     <button
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[#092a53] px-7 py-4 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.22)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-[#e7e3d9] disabled:text-[#65748a] disabled:shadow-none"
+                      className={`inline-flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-4 text-sm font-extrabold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-[#e7e3d9] disabled:text-[#65748a] disabled:shadow-none sm:px-6 ${
+                        justAdded
+                          ? "bg-[#3d8b40] shadow-[0_12px_28px_rgba(61,139,64,0.3)]"
+                          : "bg-[#092a53] shadow-[0_12px_28px_rgba(9,42,83,0.22)] hover:-translate-y-0.5 hover:bg-[#163e6b]"
+                      }`}
                       disabled={selectedSoldOut}
-                      onClick={orderSelectedItem}
+                      onClick={addSelectedItem}
                       type="button"
                     >
-                      {selectedSoldOut ? t("Sold out") : t("Order now")}
-                      {!selectedSoldOut && <ArrowIcon />}
+                      {selectedSoldOut ? t("Sold out") : justAdded ? <CheckIcon /> : <BagIcon />}
+                      {!selectedSoldOut && (
+                        <span aria-live="polite">
+                          {justAdded ? t("Added") : (
+                            <>
+                              {t("Add to bag")}
+                              <span className="max-sm:hidden"> · {formatPrice(selectedItem.priceXaf * quantity)}</span>
+                            </>
+                          )}
+                        </span>
+                      )}
                     </button>
                     {customer && (
                       <button
@@ -924,6 +1025,12 @@ export function MenuPage() {
                       {cartNotice}
                     </p>
                   )}
+                  <Link
+                    className="mt-4 inline-flex w-fit items-center gap-2 text-sm font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 transition hover:decoration-[#092a53]"
+                    to="/cart"
+                  >
+                    {t("View cart")} <ArrowIcon />
+                  </Link>
                   {favoriteError && (
                     <p className="mt-3 text-xs leading-5 text-red-700" role="alert">
                       {favoriteError}
@@ -1059,6 +1166,7 @@ export function MenuPage() {
                       item={item}
                       key={item.name}
                       onSelect={selectItem}
+                      showCategory={category.title !== activeCategory.title}
                       t={t}
                     />
                   ))}
@@ -1085,14 +1193,17 @@ export function MenuPage() {
               </nav>
 
               <div className="relative isolate overflow-hidden rounded-[32px] bg-[#092a53] text-white shadow-[0_24px_60px_rgba(9,42,83,0.18)]">
+                {/* The square category photo only fills the right side on wider screens,
+                    so it is not blown up (and blurred) across the whole banner. */}
                 <MenuImage
                   alt=""
-                  className="absolute inset-0 -z-20 size-full object-cover"
+                  className="absolute inset-y-0 right-0 -z-20 h-full w-full object-cover md:w-[58%]"
+                  sizes="(min-width: 768px) 720px, 100vw"
                   src={activeCategory.image}
                 />
                 <div
                   aria-hidden="true"
-                  className="absolute inset-0 -z-10 bg-gradient-to-r from-[#061d3a] via-[#061d3a]/85 to-[#061d3a]/20"
+                  className="absolute inset-0 -z-10 bg-gradient-to-r from-[#061d3a] via-[#061d3a]/85 to-[#061d3a]/20 md:from-[#061d3a] md:from-42% md:via-[#061d3a]/70 md:via-55% md:to-transparent md:to-80%"
                 />
                 <div
                   aria-hidden="true"
@@ -1236,7 +1347,8 @@ export function MenuPage() {
                   {t("{count} categories", { count: categories.length })}
                 </p>
               </div>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
+              {/* Phones: compact rows (photo beside the text). Larger screens: tall cards. */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-7">
                 {categories.map((category, index) => {
                   const lowestPrice = category.items.length
                     ? Math.min(...category.items.map((item) => item.priceXaf))
@@ -1244,30 +1356,30 @@ export function MenuPage() {
                   const previews = category.items.slice(0, 3);
                   return (
                     <button
-                      className="group flex flex-col rounded-[30px] bg-white p-2.5 text-left shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_30px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                      className="group flex flex-row rounded-[24px] bg-white p-2 text-left sm:flex-col sm:rounded-[30px] sm:p-2.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_30px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
                       key={category.title}
                       onClick={() => showCategory(category)}
                       type="button"
                     >
-                      <div className="relative aspect-[5/4] overflow-hidden rounded-[24px] bg-[#f4f1e7]">
+                      <div className="relative aspect-square w-28 shrink-0 overflow-hidden rounded-[18px] bg-[#f4f1e7] sm:aspect-[5/4] sm:w-auto sm:rounded-[24px]">
                         <MenuImage
                           alt=""
                           className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06]"
-                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 112px"
                           src={category.image}
                         />
                         <span
                           aria-hidden="true"
-                          className="absolute inset-0 bg-gradient-to-t from-[#061d3a]/55 via-transparent to-[#061d3a]/10"
+                          className="absolute inset-0 bg-gradient-to-t from-[#061d3a]/55 via-transparent to-[#061d3a]/10 max-sm:hidden"
                         />
-                        <span className="absolute left-4 top-4 font-display text-sm font-extrabold tabular-nums text-white drop-shadow">
+                        <span className="absolute left-4 top-4 font-display text-sm font-extrabold tabular-nums text-white drop-shadow max-sm:hidden">
                           {String(index + 1).padStart(2, "0")}
                         </span>
-                        <span className="absolute right-4 top-4 rounded-full border border-white/30 bg-white/20 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white backdrop-blur-md">
+                        <span className="absolute right-4 top-4 rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#092a53] shadow-sm max-sm:hidden">
                           {t("{count} items", { count: category.items.length })}
                         </span>
                         {previews.length > 0 && (
-                          <span aria-hidden="true" className="absolute bottom-4 left-4 flex -space-x-2.5">
+                          <span aria-hidden="true" className="absolute bottom-4 left-4 flex -space-x-2.5 max-sm:hidden">
                             {previews.map((item) => (
                               <MenuImage
                                 alt=""
@@ -1281,20 +1393,23 @@ export function MenuPage() {
                         )}
                       </div>
 
-                      <div className="flex flex-1 flex-col px-4 pb-4 pt-6 sm:px-5">
-                        <h3 className="font-display text-2xl font-extrabold leading-tight tracking-tight text-[#092a53]">
+                      <div className="flex min-w-0 flex-1 flex-col px-3 py-1 sm:px-5 sm:pb-4 sm:pt-6">
+                        <h3 className="font-display text-lg font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-2xl">
                           {t(category.title)}
+                          <span className="ml-2 align-middle text-[11px] font-bold text-[#65748a] sm:hidden">
+                            {t("{count} items", { count: category.items.length })}
+                          </span>
                         </h3>
-                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#65748a]">
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#65748a] sm:mt-2 sm:text-sm sm:leading-6">
                           {t(category.description)}
                         </p>
-                        <div className="mt-auto flex items-center justify-between gap-3 pt-6">
+                        <div className="mt-auto flex items-center justify-between gap-3 pt-2 sm:pt-6">
                           {lowestPrice !== null ? (
                             <span>
                               <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">
                                 {t("Starting from")}
                               </span>
-                              <span className="mt-0.5 block font-display text-lg font-extrabold tabular-nums text-[#8a7000]">
+                              <span className="mt-0.5 block font-display text-base font-extrabold tabular-nums text-[#8a7000] sm:text-lg">
                                 {formatPrice(lowestPrice)}
                               </span>
                             </span>
@@ -1305,7 +1420,7 @@ export function MenuPage() {
                             <span className="hidden sm:inline">{t("Browse items")}</span>
                             <span
                               aria-hidden="true"
-                              className="grid size-11 place-items-center rounded-full bg-[#092a53] text-white transition duration-300 group-hover:-rotate-45 group-hover:bg-[#ffdc32] group-hover:text-[#092a53]"
+                              className="grid size-9 place-items-center sm:size-11 rounded-full bg-[#092a53] text-white transition duration-300 group-hover:-rotate-45 group-hover:bg-[#ffdc32] group-hover:text-[#092a53]"
                             >
                               <ArrowIcon />
                             </span>
