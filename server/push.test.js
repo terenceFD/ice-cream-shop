@@ -11,6 +11,7 @@ process.env.VAPID_SUBJECT = 'https://example.test'
 const {
   buildOrderStatusNotification,
   buildPromotionNotification,
+  buildWelcomeNotification,
   countCustomerSubscriptions,
   isPushConfigured,
   normalizeNotificationMessage,
@@ -71,6 +72,15 @@ test('builds the promotion notification with the site name, logo and code', () =
 
   const fixed = buildPromotionNotification({ ...code, discountType: 'fixed', discountValue: 1000, minimumTotal: 0 })
   assert.equal(fixed.title, 'Cold Stone Creamery: 1,000 FCFA off')
+})
+
+test('builds the welcome notification with the site name, logo and first name', () => {
+  const welcome = buildWelcomeNotification({ name: '  Agnes Forbi ' })
+  assert.equal(welcome.title, 'Welcome to Cold Stone Creamery, Agnes!')
+  assert.match(welcome.body, /account was created successfully/)
+  assert.equal(welcome.icon, '/icons/icon-192.png')
+  assert.equal(welcome.tag, 'welcome')
+  assert.equal(buildWelcomeNotification({ name: '' }).title, 'Welcome to Cold Stone Creamery!')
 })
 
 test("uses the owner's message and adds the code only when it is missing", () => {

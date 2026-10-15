@@ -192,6 +192,19 @@ export function buildEventOrderNotification({ eventOrderId, kind }) {
 }
 
 /** Sent a day after delivery to ask for a star rating. Opens that order's review form. */
+/** Sent once to a new account on the first device where notifications are turned on. */
+export function buildWelcomeNotification({ name } = {}) {
+  const firstName = String(name || '').trim().split(/\s+/)[0]?.slice(0, 40) || ''
+  return {
+    title: firstName ? `Welcome to ${SITE_NAME}, ${firstName}!` : `Welcome to ${SITE_NAME}!`,
+    body: 'Your account was created successfully. Order updates and sweet deals will appear here.',
+    icon: NOTIFICATION_ICON,
+    badge: NOTIFICATION_BADGE,
+    tag: 'welcome',
+    url: '/menu',
+  }
+}
+
 export function buildReviewReminderNotification({ orderId }) {
   return {
     title: `How was order #${orderId}?`,

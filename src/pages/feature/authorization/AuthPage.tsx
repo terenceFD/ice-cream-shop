@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowIcon, Header } from '../../../components/Layout'
 import { PasswordField } from '../../../components/PasswordField'
 import { useAuth } from '../../../authcontext/useAuth'
+import { getCustomerToken } from '../../../api/api'
+import { enablePromotionAlerts, isPushSupported } from '../../../pushNotifications'
 import { useLanguage } from '../../../language/useLanguage'
 
 const PROFILE_IMAGE_DIMENSION = 256
@@ -49,6 +51,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const [profilePicture, setProfilePicture] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const canNotify = isSignup && isPushSupported() && Notification.permission !== 'denied'
+  const [wantsNotifications, setWantsNotifications] = useState(true)
 
   async function handleProfilePictureChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -72,10 +76,19 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
       return
     }
 
+    // Browsers only show the permission prompt during the visitor's own tap, so ask now and
+    // link this device once the account exists (the server then sends the welcome notification).
+    const notificationPermission = canNotify && wantsNotifications
+      ? (Notification.permission === 'granted' ? Promise.resolve('granted') : Notification.requestPermission().catch(() => 'default'))
+      : null
+
     setIsSubmitting(true)
     try {
       if (isSignup) {
         await signup({ name, email, password, profilePicture })
+        notificationPermission
+          ?.then((permission) => (permission === 'granted' ? enablePromotionAlerts(getCustomerToken()) : null))
+          .catch((alertError) => console.error('Unable to turn on notifications after sign-up.', alertError))
       } else {
         await login({ email, password })
       }
@@ -283,6 +296,22 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                       </span>
                     )}
                   </PasswordField>
+                )}
+
+                {canNotify && (
+                  <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-white px-4 py-3.5 text-sm leading-5 text-[#52647b] ring-1 ring-[#e5e1d7] transition hover:ring-[#d6cfbd]">
+                    <input
+                      checked={wantsNotifications}
+                      className="mt-0.5 size-4 shrink-0 accent-[#092a53]"
+                      name="notifications"
+                      onChange={(event) => setWantsNotifications(event.target.checked)}
+                      type="checkbox"
+                    />
+                    <span>
+                      <span className="block font-bold text-[#092a53]">{t('Notify me on this device')}</span>
+                      {t('Get a welcome message, order updates and sweet deals as notifications.')}
+                    </span>
+                  </label>
                 )}
 
                 {error && (

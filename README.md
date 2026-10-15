@@ -124,6 +124,7 @@ Customers with an account can turn on notifications. They then receive, on that 
 
 | When | Notification |
 |---|---|
+| Account created (sign-up form's "Notify me on this device", ticked by default) | "Welcome to Cold Stone Creamery, Agnes!", sent once, only to accounts under 7 days old |
 | Payment confirmed | "Order #12 confirmed" |
 | Staff update the order | accepted · being prepared · ready (or ready for pickup at the store) · out for delivery · delivered |
 | A day after delivery | "How was order #12?" review reminder |

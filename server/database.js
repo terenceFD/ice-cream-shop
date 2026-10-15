@@ -536,6 +536,7 @@ if (configuredDatabaseBackend === "postgres") {
 
   addColumnIfMissing("customers", "profile_picture", "TEXT NOT NULL DEFAULT ''");
   addColumnIfMissing("orders", "review_reminder_sent_at", "TEXT");
+  addColumnIfMissing("customers", "welcome_notification_sent_at", "TEXT");
   addColumnIfMissing("admins", "role", "TEXT NOT NULL DEFAULT 'owner'");
   addColumnIfMissing("admins", "security_pin_hash", "TEXT");
   // The site was renamed from "Antixor Icy"; flavors that used the old default origin follow.
@@ -738,6 +739,9 @@ export async function verifyDatabaseSchema() {
   `).run();
   await database.prepare(`
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS review_reminder_sent_at TEXT
+  `).run();
+  await database.prepare(`
+    ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_notification_sent_at TEXT
   `).run();
   await database.prepare(`
     CREATE TABLE IF NOT EXISTS event_orders (

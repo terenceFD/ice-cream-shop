@@ -1,6 +1,8 @@
 // French translations, keyed by the English text. Loaded on demand (see languageLoader.ts),
 // so visitors reading in English never download it.
 const french: Record<string, string> = {
+  'Notify me on this device': 'M’avertir sur cet appareil',
+  'Get a welcome message, order updates and sweet deals as notifications.': 'Recevez un message de bienvenue, le suivi de vos commandes et nos offres en notifications.',
   'Hello Cold Stone Creamery! I have a question.': 'Bonjour Cold Stone Creamery ! J\'ai une question.',
   'Chat with us on WhatsApp': 'Discutez avec nous sur WhatsApp',
   'Chat with us': 'Discutons',

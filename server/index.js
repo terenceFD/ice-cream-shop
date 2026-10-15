@@ -93,6 +93,7 @@ import {
   buildOrderStatusNotification,
   buildReviewReminderNotification,
   buildEventOrderNotification,
+  buildWelcomeNotification,
   sendToCustomer,
 } from './push.js'
 import { registerEventOrderRoutes } from './event-orders.js'
@@ -114,6 +115,28 @@ function notifyCustomerOfOrderStatus(orderId, status) {
       console.log(`Order #${orderId} ${status} alert: ${result.sent} sent, ${result.removed} expired devices removed, ${result.failed} failed.`)
     }
   })().catch((error) => console.error(`Unable to send order alert for #${orderId}:`, error.message))
+}
+
+// New accounts get one "account created" notification, on the first device where they turn
+// notifications on (usually straight after signing up). Older accounts never get it.
+const WELCOME_NOTIFICATION_WINDOW_DAYS = 7
+function sendWelcomeNotification(customerId) {
+  ;(async () => {
+    const createdAfter = sqlTimestamp(new Date(Date.now() - WELCOME_NOTIFICATION_WINDOW_DAYS * 86_400_000))
+    // Claim it first, so two devices subscribing at once never both get a welcome.
+    const claim = await database.prepare(`
+      UPDATE customers SET welcome_notification_sent_at = ?
+      WHERE id = ? AND welcome_notification_sent_at IS NULL AND created_at >= ?
+    `).run(new Date().toISOString(), customerId, createdAfter)
+    if (!claim.changes) return
+    const customer = await database.prepare('SELECT name FROM customers WHERE id = ?').get(customerId)
+    const result = await sendToCustomer(database, Number(customerId), buildWelcomeNotification({ name: customer?.name }))
+    console.log(`Welcome alert for customer ${customerId}: ${result.sent} sent, ${result.failed} failed.${result.errors?.length ? ` ${result.errors.join(' ')}` : ''}`)
+    if (!result.sent) {
+      // Nothing arrived, so let the next device that turns notifications on try again.
+      await database.prepare('UPDATE customers SET welcome_notification_sent_at = NULL WHERE id = ?').run(customerId)
+    }
+  })().catch((error) => console.error(`Unable to send the welcome notification to customer ${customerId}:`, error.message))
 }
 
 // Sends a promotion alert and waits briefly, so the owner sees whether it was delivered.
@@ -799,6 +822,7 @@ app.post('/api/customer/push-subscription', requireCustomer, async (request, res
       customer_id = excluded.customer_id, p256dh = excluded.p256dh, auth = excluded.auth
   `).run(request.customer.id, subscription.endpoint, subscription.p256dh, subscription.auth)
   response.status(201).json({ subscribed: true })
+  sendWelcomeNotification(request.customer.id)
 })
 
 app.delete('/api/customer/push-subscription', requireCustomer, async (request, response) => {
