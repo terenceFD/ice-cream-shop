@@ -1,6 +1,7 @@
 // Page titles and descriptions for search engines and link previews.
 // Shared by the browser (updates the page head while navigating) and the server
 // (writes the head into the HTML it sends, so crawlers that do not run JavaScript see it too).
+import { FLAVOR_PHOTO_SIZES, HERO_PHOTO_SIZES, HOME_SLIDE_SIZES } from '../photoSizes.js'
 
 export const SITE_NAME = 'Cold Stone Creamery Cameroon'
 export const DEFAULT_DESCRIPTION =
@@ -12,16 +13,20 @@ export const PUBLIC_PAGES = {
   '/': {
     title: SITE_NAME,
     description: DEFAULT_DESCRIPTION,
+    // First slide of the home page slider (HomePage.jsx).
+    photo: { src: '/ice-images/ice-9.jpg', sizes: HOME_SLIDE_SIZES },
   },
   '/menu': {
     title: 'Menu & treats',
     description:
       'Browse Cold Stone treat categories: signature ice cream creations, cakes and pies, milkshakes and smoothies, sorbet and seasonal favorites.',
+    photo: { src: '/ice-images/ice-4.webp', sizes: HERO_PHOTO_SIZES },
   },
   '/flavors': {
     title: 'Online shop catalog',
     description:
       'Order ice cream flavors online in Cameroon. Prices in FCFA, with pickup or delivery from listed stores and a three-scoop offer.',
+    photo: { src: '/images/hero-ice-cream.jpg', sizes: HERO_PHOTO_SIZES },
   },
   '/custom-cake': {
     title: 'Custom ice cream cake requests',
@@ -35,6 +40,7 @@ export const PUBLIC_PAGES = {
     title: 'About this guide',
     description:
       'Learn about the Cold Stone signature experience, ice cream mixed to order on a frozen granite stone, and what this independent guide covers.',
+    photo: { src: '/ice-images/about-child.jpg', sizes: HERO_PHOTO_SIZES },
   },
   '/locations': {
     title: 'Cold Stone locations in Cameroon',
@@ -96,6 +102,7 @@ export function metaForFlavor(flavor) {
     title: `${flavor.name} ice cream`,
     description: clip(summary || DEFAULT_DESCRIPTION),
     image: flavor.image || DEFAULT_IMAGE,
+    photo: flavor.image ? { src: flavor.image, sizes: FLAVOR_PHOTO_SIZES } : undefined,
     index: true,
     found: true,
     path: `/flavor/${flavor.id}`,

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useLanguage } from "../language/useLanguage";
-import { photoErrorHandler, thumbnail } from "../thumbnails";
+import { photoErrorHandler, photoSrcSet, thumbnail } from "../thumbnails";
 
 const SWIPE_DISTANCE = 40;
 const FALLBACK_IMAGE = "/images/hero-ice-cream.jpg";
@@ -92,6 +92,8 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
               draggable={false}
               key={image}
               loading={index === 0 ? "eager" : "lazy"}
+              sizes="(min-width: 1024px) 600px, 100vw"
+              srcSet={photoSrcSet(image)}
               onError={(event) => {
                 event.currentTarget.onerror = null;
                 event.currentTarget.src = FALLBACK_IMAGE;
@@ -157,7 +159,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
                 onClick={() => setActive(index)}
                 type="button"
               >
-                <img decoding="async" alt="" className="size-16 object-cover sm:size-20" loading="lazy" onError={photoErrorHandler(image)} src={thumbnail(image)} />
+                <img decoding="async" alt="" className="size-16 object-cover sm:size-20" loading="lazy" onError={photoErrorHandler(image)} src={thumbnail(image, "tiny")} />
               </button>
             </li>
           ))}

@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
-import { photoErrorHandler, thumbnail } from "../thumbnails";
+import { photoErrorHandler, photoSrcSet } from "../thumbnails";
+import { HERO_PHOTO_SIZES } from "../photoSizes.js";
 
 const FALLBACK_IMAGE = "/images/hero-ice-cream.jpg";
 
@@ -43,7 +44,9 @@ function HeroImage({ src, alt, className, position, small = false }: { src: stri
       className={className}
       decoding="async"
       onError={photoErrorHandler(src, FALLBACK_IMAGE)}
-      src={small ? thumbnail(src) : src}
+      sizes={small ? "(min-width: 1024px) 170px, 30vw" : HERO_PHOTO_SIZES}
+      src={src}
+      srcSet={photoSrcSet(src)}
       style={position ? { objectPosition: position } : undefined}
     />
   );

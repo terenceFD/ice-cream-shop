@@ -103,7 +103,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                       to={link.to}
                     >
                       {link.image ? (
-                        <img decoding="async" alt="" aria-hidden="true" className="size-12 shrink-0 rounded-xl object-cover ring-1 ring-black/5 transition duration-300 group-hover/link:scale-[1.04]" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image)} />
+                        <img decoding="async" alt="" aria-hidden="true" className="size-12 shrink-0 rounded-xl object-cover ring-1 ring-black/5 transition duration-300 group-hover/link:scale-[1.04]" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image, "tiny")} />
                       ) : (
                         <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#fff3b8] text-lg">{link.icon || "✦"}</span>
                       )}
@@ -173,7 +173,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                 to={link.to}
               >
                 {link.image ? (
-                  <img decoding="async" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-xl object-cover ring-1 ring-white/10" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image)} />
+                  <img decoding="async" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-xl object-cover ring-1 ring-white/10" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image, "tiny")} />
                 ) : (
                   <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/10 text-sm font-extrabold text-[#ffdc32]">
                     {link.icon || String(index + 1).padStart(2, "0")}

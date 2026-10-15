@@ -81,7 +81,8 @@ If the frontend and API must be hosted separately, set `VITE_API_URL` to the API
 ### Performance
 
 - Photos in `public/` are compressed (at most 1200 px on the longest side).
-- Every photo in `public/` also gets a small copy (480 px, WebP) under `public/thumbs/`, made by `scripts/make-thumbnails.mjs` before each build and dev start (not committed). Small pictures use it through `src/thumbnails.ts`; cards let the browser choose between the small copy and the full photo.
+- Every photo in `public/` also gets smaller WebP copies (160, 480 and 800 px) under `public/thumbs/<width>/`, made by `scripts/make-thumbnails.mjs` before each build and dev start (not committed). The size rules are in `src/photoSizes.js`: pages use `srcset`/`sizes` so the browser downloads the smallest copy that is still sharp, and tiny pictures use the 160 px copy. Unsplash photos are resized by Unsplash the same way.
+- The server adds a preload tag for each page's main photo (home slider, page headers, flavor pages) so it downloads straight away instead of after the app's code. The home slider downloads only the slide on screen and the next one.
 - The fonts (DM Sans and Fredoka) are served from `public/fonts/` and preloaded, so pages never wait on Google before showing text.
 - Uploaded images are resized on the server to at most 1200 px and saved as WebP (GIFs are kept as they are), see `server/images.js`.
 - Pages load their own code only when opened, so first-time visitors don't download the admin dashboard.

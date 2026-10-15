@@ -1,33 +1,23 @@
-// Every photo in public/ also has a small copy under /thumbs (480px wide, WebP), made by
-// scripts/make-thumbnails.mjs before each build. Use it wherever a photo is shown small, so
-// phones do not download a full-size photo for a little picture.
-const THUMBNAIL_WIDTH = 480;
-const FULL_WIDTH = 900;
+// Helpers for showing photos at the right size; the size rules live in photoSizes.js, which the
+// server shares. Use thumbnail() for small pictures and photoSrcSet() (with a sizes attribute)
+// for pictures whose size depends on the screen.
+import { photoAt, photoSrcSet as srcSetFor } from "./photoSizes.js";
 
-function isSitePhoto(src: string | null | undefined): src is string {
-  return typeof src === "string"
-    && src.startsWith("/")
-    && !src.startsWith("//")
-    && !src.startsWith("/thumbs/")
-    && !src.startsWith("/uploads/")
-    && !src.startsWith("/icons/")
-    && /^\/[^/]+\/.+\.(webp|jpe?g|png)$/i.test(src.split("?")[0]);
+/** "tiny" (160px) for icons-sized pictures up to about 80px, "small" (480px) for up to about 240px. */
+export type ThumbnailSize = "tiny" | "small";
+
+export function thumbnail(src: string, size?: ThumbnailSize): string;
+export function thumbnail(src: string | null | undefined, size?: ThumbnailSize): string | null | undefined;
+export function thumbnail(src: string | null | undefined, size: ThumbnailSize = "small") {
+  return src ? photoAt(src, size === "tiny" ? 160 : 480) : src;
 }
 
-/** The small copy of a site photo; any other address (uploads, other sites) is returned unchanged. */
-export function thumbnail(src: string): string;
-export function thumbnail(src: string | null | undefined): string | null | undefined;
-export function thumbnail(src: string | null | undefined) {
-  return isSitePhoto(src) ? `/thumbs${src.split("?")[0].replace(/\.(jpe?g|png|webp)$/i, ".webp")}` : src;
-}
-
-/** srcSet that lets the browser pick the small copy when it is sharp enough, or the full photo. */
-export function photoSrcSet(src: string | null | undefined) {
-  return isSitePhoto(src) ? `${thumbnail(src)} ${THUMBNAIL_WIDTH}w, ${src} ${FULL_WIDTH}w` : undefined;
+export function photoSrcSet(src: string | null | undefined): string | undefined {
+  return srcSetFor(src);
 }
 
 /**
- * onError handler: if the small copy is ever missing, show the full photo; if that fails too,
+ * onError handler: if a smaller copy is ever missing, show the full photo; if that fails too,
  * show `finalFallback` (when given) instead of a broken image.
  */
 export function photoErrorHandler(src: string | null | undefined, finalFallback?: string) {

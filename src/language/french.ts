@@ -1,6 +1,9 @@
 // French translations, keyed by the English text. Loaded on demand (see languageLoader.ts),
 // so visitors reading in English never download it.
 const french: Record<string, string> = {
+  'No reviews yet': 'Aucun avis pour le moment',
+  'Be the first to share your experience': 'Soyez le premier à partager votre expérience',
+  'Reviews come only from customers who ordered and received their treats. After your order is delivered, rate it from your orders page and your review will appear here.': 'Les avis proviennent uniquement de clients qui ont commandé et reçu leurs douceurs. Une fois votre commande livrée, notez-la depuis la page de vos commandes et votre avis apparaîtra ici.',
   'Rich chocolate meets pistachio': 'Le chocolat riche rencontre la pistache',
   'A little luxury': 'Un peu de luxe',
   'Chocolate ice cream with chocolate shavings and a pistachio crunch, served in a waffle cone. Our Dubai Chocolate Creation, made to order.': 'Une glace au chocolat avec des copeaux de chocolat et un croquant à la pistache, servie dans un cornet gaufré. Notre Création au chocolat de Dubaï, préparée à la commande.',

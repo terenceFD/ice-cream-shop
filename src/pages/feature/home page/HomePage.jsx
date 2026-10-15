@@ -11,6 +11,7 @@ import { apiRequest } from "../../../api/api";
 import { coldStoneMenuCategories, getMenuItemId } from "../../../data";
 import { useLanguage } from "../../../language/useLanguage";
 import { photoErrorHandler, photoSrcSet, thumbnail } from "../../../thumbnails";
+import { HOME_SLIDE_SIZES } from "../../../photoSizes.js";
 
 const popularFlavorNames = [
   "Cookie Crunch Cone",
@@ -256,8 +257,10 @@ function ReviewCard({ review, language, t, className = "" }) {
   );
 }
 
-function ReviewsSection({ reviews, stats, error, language, t }) {
-  if (!reviews.length) return null;
+function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
+  // Wait for the answer, so the "no reviews yet" message never flashes before real reviews.
+  if (!isLoaded) return null;
+  const hasReviews = reviews.length > 0;
   const average = stats.average;
   const roundedAverage = Math.round(average * 10) / 10;
   const count = stats.count;
@@ -281,6 +284,7 @@ function ReviewsSection({ reviews, stats, error, language, t }) {
           <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight sm:text-5xl" id="real-reviews-heading">
             {t("Real Reviews")}
           </h2>
+          {hasReviews && (
           <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-2xl bg-white/[0.08] px-5 py-2.5 ring-1 ring-white/15 backdrop-blur-sm sm:rounded-full">
             <span className="font-display text-xl font-extrabold tabular-nums">{roundedAverage.toFixed(1)}</span>
             <StarRating
@@ -300,12 +304,31 @@ function ReviewsSection({ reviews, stats, error, language, t }) {
               {t("Verified purchases only")}
             </span>
           </div>
+          )}
         </header>
 
         {error ? (
           <p className="mx-auto mt-12 max-w-xl rounded-2xl bg-white/[0.08] p-6 text-center text-sm text-white/80 ring-1 ring-white/15" role="status">
             {t("Customer reviews could not be loaded")}: {error}
           </p>
+        ) : !hasReviews ? (
+          <div className="mx-auto mt-12 max-w-xl rounded-[28px] bg-white/[0.07] px-6 py-10 text-center ring-1 ring-white/15 backdrop-blur-sm sm:px-10">
+            <StarRating
+              className="size-7"
+              emptyClassName="text-[#ffdc32]/35"
+              filledClassName="text-[#ffdc32]"
+              label={t("No reviews yet")}
+              value={0}
+            />
+            <h3 className="mt-5 font-display text-2xl font-extrabold">{t("Be the first to share your experience")}</h3>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/75">
+              {t("Reviews come only from customers who ordered and received their treats. After your order is delivered, rate it from your orders page and your review will appear here.")}
+            </p>
+            <p className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-[#7fe0a9]">
+              <VerifiedIcon className="size-4" />
+              {t("Verified purchases only")}
+            </p>
+          </div>
         ) : (
           <ul className="mt-12 flex flex-wrap justify-center gap-5">
             {reviews.map((review, index) => (
@@ -351,10 +374,21 @@ export function HomePage() {
   const [reviews, setReviews] = useState([]);
   const [reviewStats, setReviewStats] = useState({ count: 0, average: 0, distribution: {} });
   const [reviewsError, setReviewsError] = useState("");
+  const [reviewsLoaded, setReviewsLoaded] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [loadedSlides, setLoadedSlides] = useState([0]);
   const [addedItemKey, setAddedItemKey] = useState(null);
   const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
   const addedTimer = useRef(undefined);
+
+  // Slide photos download only when needed: the one on screen, then the next one shortly before it
+  // appears. Opening the page no longer downloads every slide photo at once.
+  useEffect(() => {
+    const show = (index) => setLoadedSlides((current) => (current.includes(index) ? current : [...current, index]));
+    show(activeSlide);
+    const timer = window.setTimeout(() => show((activeSlide + 1) % homeSlides.length), 3000);
+    return () => window.clearTimeout(timer);
+  }, [activeSlide]);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -399,6 +433,9 @@ export function HomePage() {
       })
       .catch((error) => {
         if (!cancelled) setReviewsError(error.message);
+      })
+      .finally(() => {
+        if (!cancelled) setReviewsLoaded(true);
       });
     return () => {
       cancelled = true;
@@ -518,6 +555,7 @@ export function HomePage() {
                   role="group"
                 >
                   {homeSlides.map((slide, index) => {
+                    if (!loadedSlides.includes(index)) return null;
                     const isActive = activeSlide === index;
                     return (
                       <img decoding="async"
@@ -529,7 +567,9 @@ export function HomePage() {
                         fetchPriority={index === 0 ? "high" : "auto"}
                         key={slide.image}
                         loading={index === 0 ? "eager" : "lazy"}
+                        sizes={HOME_SLIDE_SIZES}
                         src={slide.image}
+                        srcSet={photoSrcSet(slide.image)}
                       />
                     );
                   })}
@@ -599,7 +639,7 @@ export function HomePage() {
                         onClick={() => setActiveSlide(index)}
                         type="button"
                       >
-                        <img decoding="async" loading="lazy" alt="" className="size-full object-cover" onError={photoErrorHandler(slide.image)} src={thumbnail(slide.image)} />
+                        <img decoding="async" loading="lazy" alt="" className="size-full object-cover" onError={photoErrorHandler(slide.image)} src={thumbnail(slide.image, "tiny")} />
                       </button>
                     );
                   })}
@@ -1105,7 +1145,9 @@ export function HomePage() {
                       alt={t("A child enjoying ice cream")}
                       className="size-full object-cover object-[58%_30%] transition duration-700 hover:scale-[1.03]"
                       loading="lazy"
+                      sizes="(min-width: 1024px) 400px, 66vw"
                       src="/ice-images/about-child.jpg"
+                      srcSet={photoSrcSet("/ice-images/about-child.jpg")}
                     />
                     <div
                       aria-hidden="true"
@@ -1140,7 +1182,7 @@ export function HomePage() {
                         key={src}
                         loading="lazy"
                         onError={photoErrorHandler(src)}
-                        src={thumbnail(src)}
+                        src={thumbnail(src, "tiny")}
                       />
                     ))}
                   </div>
@@ -1242,7 +1284,7 @@ export function HomePage() {
         </section>
 
         {/* Shown once there is at least one approved review, so new visitors never see an empty block. */}
-        <ReviewsSection error={reviewsError} language={language} reviews={reviews} stats={reviewStats} t={t} />
+        <ReviewsSection error={reviewsError} isLoaded={reviewsLoaded} language={language} reviews={reviews} stats={reviewStats} t={t} />
 
         <section
           aria-labelledby="home-faq-heading"

@@ -20,7 +20,7 @@ function MenuImage({ alt, className = "", sizes, small = false, src }) {
       loading="lazy"
       onError={photoErrorHandler(src, "/images/hero-ice-cream.jpg")}
       sizes={!small && sizes ? sizes : undefined}
-      src={small ? thumbnail(src) : src}
+      src={small ? thumbnail(src, "tiny") : src}
       srcSet={!small && sizes ? photoSrcSet(src) : undefined}
     />
   );

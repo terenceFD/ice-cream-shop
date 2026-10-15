@@ -8,6 +8,7 @@ import {
   metaForPath,
   pageTitle,
 } from '../src/seo/pageMeta.js'
+import { photoSrcSet } from '../src/photoSizes.js'
 
 // index.html marks the default head tags with <!--seo--> … <!--/seo--> so each page can swap in its own.
 const SEO_BLOCK = /<!--seo-->[\s\S]*?<!--\/seo-->/
@@ -35,6 +36,13 @@ function absolute(base, path) {
   return /^https?:\/\//i.test(path) ? path : `${base}${path.startsWith('/') ? '' : '/'}${path}`
 }
 
+function preloadPhotoTag({ src, sizes }) {
+  const srcSet = photoSrcSet(src)
+  return srcSet
+    ? `<link rel="preload" as="image" href="${escapeHtml(src)}" imagesrcset="${escapeHtml(srcSet)}" imagesizes="${escapeHtml(sizes)}" fetchpriority="high" />`
+    : `<link rel="preload" as="image" href="${escapeHtml(src)}" fetchpriority="high" />`
+}
+
 function headTags(meta, base, structuredData) {
   const url = absolute(base, meta.path)
   const image = absolute(base, meta.image || DEFAULT_IMAGE)
@@ -56,6 +64,8 @@ function headTags(meta, base, structuredData) {
     `<meta name="twitter:title" content="${escapeHtml(title)}" />`,
     `<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`,
     `<meta name="twitter:image" content="${escapeHtml(image)}" />`,
+    // The page's main photo is otherwise found only after the app's code has run.
+    meta.photo && preloadPhotoTag(meta.photo),
     ...structuredData.map(jsonLd),
   ]
   return tags.filter(Boolean).join('\n    ')
