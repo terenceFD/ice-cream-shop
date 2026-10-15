@@ -1339,7 +1339,7 @@ export function CustomerOrdersPage() {
                       {[
                         { label: t("Browse the menu"), to: "/menu", icon: "M4 6h16M4 12h16M4 18h10" },
                         { label: t("Design a custom cake"), to: "/custom-cake", icon: "M4 20h16M5 20v-7h14v7M8 13V9h8v4M12 9V5" },
-                        { label: t("Shop catalog"), to: "/flavors", icon: "M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" },
+                        { label: t("Flavors"), to: "/flavors", icon: "M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" },
                         { label: t("Contact us"), to: "/contact", icon: "M4 6h16v12H4V6Zm0 0 8 7 8-7" },
                       ].map((action) => (
                         <Link

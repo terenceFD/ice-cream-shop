@@ -110,6 +110,10 @@ Admin image uploads (menu items and flavors, including "Upload from device" in t
 
 An owner account has access to all stores and can create a store admin from **Admin accounts**, assigning that login to one branch. Store admins can access only that branch's orders, payments, related customer accounts, order reviews, custom-cake requests, event orders, contact messages, and sales reports; the server enforces the same scope for reads and updates. Catalog, inventory, discounts, promotion notifications, and fulfillment configuration remain owner-managed.
 
+### Menu products
+
+Built-in menu products live in `src/data.js`. A product's ID is built from its category and name, and stock, orders, favorites and reviews are saved under that ID. To rename a product, change `name` and add `idName` with the old name, so the ID stays the same (`scripts/menu-ids.test.js` checks this, and that no two products share an ID or a photo). The server adds stock rows for new products at start-up.
+
 ## Payments and order management
 
 Checkout offers card payments through Stripe and Cameroon Mobile Money through CamPay when configured. Use a Stripe test-mode key (`sk_test_…`) while developing and the live key (`sk_live_…`) on the live site. To enable CamPay, set `CAMPAY_ENVIRONMENT` (`DEV` for the sandbox, `PROD` only after CamPay has approved the merchant account), `CAMPAY_APP_USERNAME`, `CAMPAY_APP_PASSWORD`, and `CAMPAY_MOBILE_MONEY_ENABLED=true`. CamPay's hosted page handles payment authorization; this website never collects Mobile Money PINs or OTPs. Card details are entered on Stripe and never stored by this app.

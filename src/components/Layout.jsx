@@ -39,7 +39,7 @@ function closeOtherDropdowns(event) {
   });
 }
 
-// How many flavor categories the "Shop catalog" dropdown lists after "All flavors".
+// How many flavor categories the "Flavors" dropdown lists after "All flavors".
 const SHOP_DROPDOWN_TAG_LIMIT = 4;
 
 function NavigationDropdown({ active, label, links, mobile = false, onNavigate, subtitle, icon = '✦', feature }) {
@@ -668,7 +668,7 @@ export function Header() {
   const shopFeature = {
     to: "/flavors",
     image: "/ice-images/ice-4.webp",
-    title: t("Online shop catalog"),
+    title: t("Ice cream by the scoop"),
     cta: t("Browse all flavors"),
     listTitle: t("Flavor tag"),
   };
@@ -745,7 +745,7 @@ export function Header() {
                 <Link className={desktopLinkClassName(isHome)} to="/#home">
                   {t("Home")}
                 </Link>
-                <NavigationDropdown active={isShopActive} feature={shopFeature} icon="▤" label={t("Shop catalog")} links={shopLinks} subtitle={t("Browse signature creations and treats.")} />
+                <NavigationDropdown active={isShopActive} feature={shopFeature} icon="▤" label={t("Flavors")} links={shopLinks} subtitle={t("Browse signature creations and treats.")} />
                 <NavigationDropdown active={isMenuActive} feature={menuFeature} icon="🍦" label={t("Menu")} links={menuLinks} subtitle={t("Browse signature creations and treats.")} />
                 <Link className={desktopLinkClassName(location.pathname === "/about")} to="/about">
                   {t("About us")}
@@ -857,7 +857,7 @@ export function Header() {
               <Link className={mobileLinkClassName(isHome)} onClick={() => setIsMobileMenuOpen(false)} to="/#home">
                 {t("Home")}
               </Link>
-              <NavigationDropdown active={isShopActive} label={t("Shop catalog")} links={shopLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />
+              <NavigationDropdown active={isShopActive} label={t("Flavors")} links={shopLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />
               <NavigationDropdown active={isMenuActive} label={t("Menu")} links={menuLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />
               <Link className={mobileLinkClassName(location.pathname === "/about")} onClick={() => setIsMobileMenuOpen(false)} to="/about">
                 {t("About us")}
@@ -1180,7 +1180,7 @@ export function Footer() {
       title: t("Explore"),
       links: [
         { label: t("Menu"), to: "/menu" },
-        { label: t("Shop catalog"), to: "/flavors" },
+        { label: t("Flavors"), to: "/flavors" },
         { label: t("Locations"), to: "/locations" },
         { label: t("Custom cake requests"), to: "/custom-cake" },
         { label: t("Parties & events"), to: "/events" },
@@ -1247,7 +1247,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="mt-6 max-w-sm text-sm leading-6 text-white/60">
-              {t("Independent guide to publicly listed Cold Stone Creamery locations in Cameroon.")}
+              {t("Ice cream mixed to order on a frozen stone. Order online for pickup or delivery in Douala and Yaoundé.")}
             </p>
             <a
               className="group mt-6 inline-flex items-center gap-3 rounded-full bg-white/[0.06] py-1.5 pl-1.5 pr-4 ring-1 ring-white/10 transition hover:bg-white/10 hover:ring-[#ffdc32]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
@@ -1288,17 +1288,20 @@ export function Footer() {
 
           <div className="sm:col-span-2 lg:col-span-3">
             <div className="rounded-[22px] bg-white/[0.04] p-5 ring-1 ring-white/10">
-              <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#ffdc32]/15 font-display text-sm font-extrabold text-[#ffdc32]">i</span>
+              <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#ffdc32]/15 font-display text-sm font-extrabold text-[#ffdc32]">✦</span>
               <p className="mt-3 text-xs leading-5 text-white/60">
-                {t("Independent guide — not an official Cold Stone Creamery website.")}
+                {t("Freshly made treats for pickup or delivery. Questions about an order? We are happy to help.")}
               </p>
+              <Link className="mt-3 inline-flex items-center gap-1.5 text-xs font-extrabold text-[#ffdc32] hover:underline" to="/contact">
+                {t("Contact us")} <span aria-hidden="true">→</span>
+              </Link>
             </div>
           </div>
         </div>
 
         {/* Bottom bar */}
         <div className="flex flex-col gap-4 border-t border-white/10 py-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 {t("Independent Cameroon guide")}. {t("All smiles reserved.")}</p>
+          <p>© 2026 Cold Stone Creamery Cameroon. {t("All smiles reserved.")}</p>
           <button
             className="group inline-flex w-fit items-center gap-2 rounded-full px-3 py-2 font-bold text-white/70 transition hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
             onClick={() => window.scrollTo({ top: 0 })}

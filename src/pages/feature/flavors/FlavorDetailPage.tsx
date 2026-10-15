@@ -175,7 +175,7 @@ export function FlavorDetailPage() {
             <nav aria-label={t("Breadcrumb")} className="mb-10 flex flex-wrap items-center gap-2 text-xs font-bold text-[#092a53]/60">
               <Link className="transition hover:text-[#092a53]" to="/">{t("Home")}</Link>
               <span aria-hidden="true" className="text-[#092a53]/30">/</span>
-              <Link className="transition hover:text-[#092a53]" to="/flavors">{t("Online shop catalog")}</Link>
+              <Link className="transition hover:text-[#092a53]" to="/flavors">{t("Flavors")}</Link>
               {flavor.tag && (
                 <>
                   <span aria-hidden="true" className="text-[#092a53]/30">/</span>
@@ -387,10 +387,6 @@ export function FlavorDetailPage() {
               {t("Browse all flavors")} <ArrowIcon />
             </Link>
           </div>
-          <p className="mt-4 flex gap-3 text-xs leading-5 text-[#65748a]">
-            <span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 text-[10px] font-extrabold text-[#806a00]">i</span>
-            {t("Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
-          </p>
         </section>
 
         {relatedFlavors.length > 0 && (

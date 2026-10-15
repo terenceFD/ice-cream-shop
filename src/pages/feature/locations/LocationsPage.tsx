@@ -95,8 +95,8 @@ export function LocationsPage() {
               </Link>
             </>
           }
-          badge={{ mark: 'i', eyebrow: t('Please verify before visiting'), text: t('Public listings are independently gathered and should be confirmed before travelling.') }}
-          description={t('Public listings currently point to locations in Douala and Yaounde. Details can change; check the map listing or local pages before you travel.')}
+          badge={{ mark: '✦', eyebrow: t('Come say hello'), text: t('Branches in Douala and Yaoundé') }}
+          description={t('Find Cold Stone Creamery in Douala and Yaoundé. Open the map for directions and call ahead for opening hours.')}
           eyebrow={t('Cameroon branch listings')}
           stats={[
             { label: t('Listings'), value: cameroonLocations.length },

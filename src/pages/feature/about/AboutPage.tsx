@@ -79,8 +79,8 @@ export function AboutPage() {
           }
           badge={{ mark: '✦', eyebrow: t('The signature experience'), text: t('A treat made your way') }}
           curveClassName="text-white"
-          description={t('An independent guide to Cold Stone’s signature ice cream experience and publicly listed locations in Cameroon.')}
-          eyebrow={t('Independent brand guide')}
+          description={t('Ice cream mixed to order on a frozen granite stone with the mix-ins you love, at our branches in Douala and Yaoundé.')}
+          eyebrow={t('Our story')}
           image={{ src: '/ice-images/about-child.jpg', alt: t('A child enjoying ice cream'), position: '74% 40%' }}
           sideImages={['/ice-images/ice-10.jpg', '/ice-images/ice-1.jpg']}
           subtitle={t('The joy is in the mix.')}
@@ -130,7 +130,7 @@ export function AboutPage() {
             <div className="lg:col-span-7">
               <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                 <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                {t('About this guide')}
+                {t('About us')}
               </p>
               <h2 className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl" id="about-guide-heading">
                 {t('A little more joy in every scoop.')}
@@ -145,7 +145,7 @@ export function AboutPage() {
               </figure>
 
               <p className="mt-8 text-base leading-8 text-[#52647b] sm:text-lg sm:leading-9">
-                {t('This independent website gathers information about the brand’s global treat categories and publicly listed locations in Cameroon. Local menus, availability, branch details and prices may differ or change.')}
+                {t('Choose your ice cream, pick your mix-ins and watch it all come together on the frozen stone. Visit us in Douala or Yaoundé, or order online for pickup or delivery.')}
               </p>
               <Link
                 className="group mt-8 inline-flex items-center gap-3 rounded-full bg-[#092a53] py-2 pl-6 pr-2 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.2)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
@@ -228,7 +228,7 @@ export function AboutPage() {
               </div>
               <span className="inline-flex items-center gap-2 rounded-full border border-[#ebe7dc] bg-white px-4 py-2 text-xs font-bold text-[#65748a]">
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-[#ffdc32]" />
-                {t('Independent brand guide')}
+                {t('Our story')}
               </span>
             </div>
 

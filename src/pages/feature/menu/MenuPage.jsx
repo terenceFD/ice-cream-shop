@@ -307,6 +307,7 @@ export function MenuPage() {
   const [categories, setCategories] = useState(coldStoneMenuCategories);
   const [menuError, setMenuError] = useState("");
   const [selectedItemState, setSelectedItemState] = useState(null);
+  const productRef = useRef(null);
   const [cartNotice, setCartNotice] = useState("");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -352,10 +353,7 @@ export function MenuPage() {
   useEffect(() => {
     if (!requestedItemName || !activeCategory || !liveMenuLoaded) return;
     const item = activeCategory.items.find((entry) => entry.name === requestedItemName);
-    if (item) {
-      setSelectedItemState({ categoryTitle: activeCategory.title, item });
-      window.scrollTo({ top: 0 });
-    }
+    if (item) setSelectedItemState({ categoryTitle: activeCategory.title, item });
     setSearchParams({ category: activeCategory.title }, { replace: true });
   }, [requestedItemName, activeCategory, liveMenuLoaded, setSearchParams]);
   const hasFilters = Boolean(
@@ -473,6 +471,13 @@ export function MenuPage() {
     };
   }, [activeCategory, selectedItem]);
 
+  const openedProductName = selectedItemState?.item?.name;
+  useEffect(() => {
+    if (!openedProductName) return undefined;
+    const frame = window.requestAnimationFrame(() => productRef.current?.scrollIntoView({ block: "start" }));
+    return () => window.cancelAnimationFrame(frame);
+  }, [openedProductName]);
+
   const showCategory = (category) => {
     setSearchParams({ category: category.title });
     setSelectedItemState(null);
@@ -564,6 +569,7 @@ export function MenuPage() {
       <Header />
       <main>
         <PageHero
+          compactOnMobile
           actions={
             <>
               <a className={PageHero.primary} href="#menu-content">
@@ -576,7 +582,7 @@ export function MenuPage() {
           }
           badge={{ mark: "✦", eyebrow: t("Signature creations"), text: t("A treat made your way") }}
           description={t(
-            "The global Cold Stone menu features these treat categories. This is not a confirmed Cameroon branch menu; local selection and prices can vary.",
+            "Signature creations, ice cream cakes and pies, shakes, smoothies and seasonal treats, made fresh for you. Order online for pickup or delivery.",
           )}
           eyebrow={t("The Cold Stone experience")}
           image={{ src: "/ice-images/ice-4.webp", alt: t("Ice cream treats") }}
@@ -745,9 +751,6 @@ export function MenuPage() {
                 <h2 className="font-display text-2xl font-bold">
                   {t("Matching menu items")} ({filteredItems.length})
                 </h2>
-                <p className="text-xs text-[#65748a]">
-                  {t("Prices shown are illustrative estimates only.")}
-                </p>
               </div>
               {filteredItems.length ? (
                 <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
@@ -769,7 +772,7 @@ export function MenuPage() {
               )}
             </section>
           ) : selectedItem && activeCategory ? (
-            <section aria-labelledby="menu-product-title">
+            <section aria-labelledby="menu-product-title" className="scroll-mt-24" ref={productRef}>
               <nav
                 aria-label={t("Breadcrumb")}
                 className="mb-8 flex flex-wrap items-center gap-2 text-xs font-bold text-[#7b8796]"
@@ -874,15 +877,10 @@ export function MenuPage() {
 
                   <div className="mt-8 border-y border-[#ebe7dc] py-6">
                     <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#65748a]">
-                      {t("Illustrative price")}
+                      {t("Price")}
                     </p>
                     <p className="mt-1 font-display text-4xl font-extrabold tabular-nums text-[#092a53]">
                       {formatPrice(selectedItem.priceXaf)}
-                    </p>
-                    <p className="mt-3 text-xs leading-5 text-[#7b8796]">
-                      {t(
-                        "This is an example price for illustration only, not a verified Cameroon price or an item for sale on this website.",
-                      )}
                     </p>
                   </div>
 
@@ -1203,10 +1201,6 @@ export function MenuPage() {
                     {t("Menu items")}
                   </h3>
                 </div>
-                <p className="inline-flex items-center gap-2 rounded-full border border-[#ebe7dc] bg-white px-4 py-2 text-xs font-semibold text-[#65748a]">
-                  <span aria-hidden="true" className="grid size-4 place-items-center rounded-full bg-[#ffdc32]/50 text-[9px] font-extrabold text-[#806a00]">i</span>
-                  {t("Prices shown are illustrative estimates only.")}
-                </p>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
                 {activeCategory.items.map((item) => (
@@ -1322,9 +1316,6 @@ export function MenuPage() {
                   );
                 })}
               </div>
-              <p className="mt-6 text-xs text-[#65748a]">
-                {t("Prices shown are illustrative estimates only.")}
-              </p>
             </section>
           )}
         </div>

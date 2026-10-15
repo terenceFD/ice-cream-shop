@@ -86,6 +86,7 @@ export function FlavorsPage() {
       <main>
         {/* Hero */}
         <PageHero
+          compactOnMobile
           actions={
             <>
               <a className={PageHero.primary} href="#shop-products">
@@ -101,11 +102,11 @@ export function FlavorsPage() {
             <nav aria-label={t("Breadcrumb")} className="flex items-center gap-2">
               <Link className="transition hover:text-white" to="/">{t("Home")}</Link>
               <span aria-hidden="true" className="text-white/30">/</span>
-              <span aria-current="page" className="text-white">{t("Online shop catalog")}</span>
+              <span aria-current="page" className="text-white">{t("Flavors")}</span>
             </nav>
           }
-          description={t("Browse products entered by this website's operator. This catalog is separate from Cold Stone Creamery Cameroon and is not a confirmed local menu or price list.")}
-          eyebrow={t("This website's catalog")}
+          description={t("Pick your favorite flavors by the scoop and order online for pickup or delivery. Buy any three scoops and the lowest-priced one is free.")}
+          eyebrow={t("Order by the scoop")}
           image={{ src: "/images/hero-ice-cream.jpg", alt: t("Colorful ice cream scoops ready to share") }}
           sideImages={["/ice-images/ice-3.webp", "/ice-images/ice-6.webp"]}
           stats={
@@ -119,7 +120,7 @@ export function FlavorsPage() {
                 ]
               : []
           }
-          title={t("Online shop catalog")}
+          title={t("Ice cream flavors")}
         />
 
         <div className="mx-auto max-w-[1320px] px-5 py-12 sm:px-8 sm:py-16 lg:px-12">
@@ -367,10 +368,6 @@ export function FlavorsPage() {
               </p>
             )}
 
-            <p className="mt-8 flex gap-3 text-xs leading-5 text-[#65748a]">
-              <span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 text-[10px] font-extrabold text-[#806a00]">i</span>
-              {t("Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
-            </p>
           </section>
 
           {/* Promo */}

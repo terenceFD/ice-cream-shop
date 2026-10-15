@@ -75,7 +75,6 @@ export function CheckoutPage() {
   const { t, language } = useLanguage()
   const { cartCount, currency, subtotal, freeScoops, discount, total } = getCartPricing(cartItems)
   const money = (amount) => formatCartMoney(amount, currency, language)
-  const hasMenuItems = cartItems.some((item) => item.itemType === 'menu')
   const [fulfillment, setFulfillment] = useState({ zones: [], slots: [] })
   const [fulfillmentError, setFulfillmentError] = useState('')
   const [fulfillmentType, setFulfillmentType] = useState('pickup')
@@ -531,10 +530,7 @@ export function CheckoutPage() {
                 <Icon className="mt-0.5 size-4 shrink-0" path={icons.info} />
                 <span>
                   {t('Your delivery details are stored with the order so we can prepare and deliver it.')}{' '}
-                  {customer && t('Your contact and delivery details are saved to your account for future orders.')}{' '}
-                  {t(hasMenuItems
-                    ? 'Menu items and FCFA prices are illustrative examples, not confirmed local menu items or prices. Orders are handled by this independent website.'
-                    : "Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
+                  {customer && t('Your contact and delivery details are saved to your account for future orders.')}
                 </span>
               </p>
             </form>

@@ -14,11 +14,11 @@ import { photoErrorHandler, photoSrcSet, thumbnail } from "../../../thumbnails";
 import { HOME_SLIDE_SIZES } from "../../../photoSizes.js";
 
 const popularFlavorNames = [
-  "Cookie Crunch Cone",
-  "Caramel Crunch Cone",
-  "Signature Mix-In Cup",
-  "Cookie Crunch Cup",
-  "Candy Mix-In Shake",
+  "Cookie Mintster",
+  "Our Dubai Chocolate Creation",
+  "Founder’s Favorite",
+  "Birthday Cake Remix",
+  "Peanut Butter Cup Perfection",
 ];
 const popularFlavorColors = [
   "#e9f6dd",
@@ -536,9 +536,6 @@ export function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-5 text-[11px] leading-5 text-white/45">
-                  {t("Independent information guide — not an official Cold Stone Creamery website.")}
-                </p>
               </div>
 
               {/* Carousel */}
@@ -720,10 +717,10 @@ export function HomePage() {
                   className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
                   id="popular-flavors-heading"
                 >
-                  {t("Popular Flavors")}
+                  {t("Fan favorites")}
                 </h2>
                 <p className="mt-4 max-w-xl text-base leading-7 text-[#52647b]">
-                  {t("From classic scoops to signature creations, find a new favorite.")}
+                  {t("Our most-loved signature creations, mixed to order on the frozen stone.")}
                 </p>
               </div>
               <Link
@@ -793,7 +790,7 @@ export function HomePage() {
                       <p className="mt-2 max-w-md text-sm leading-6 text-white/75 sm:text-base sm:leading-7">{t(item.detail)}</p>
                       <div className="mt-6 flex flex-wrap items-end justify-between gap-4 border-t border-white/15 pt-5">
                         <div>
-                          <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-white/55">{t("Illustrative price")}</p>
+                          <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-white/55">{t("Price")}</p>
                           <p className="mt-0.5 whitespace-nowrap font-display text-2xl font-extrabold tabular-nums text-[#ffdc32] sm:text-3xl">
                             {formatPrice(item.priceXaf)}
                           </p>
@@ -848,7 +845,7 @@ export function HomePage() {
                     </div>
                     <div className="hidden shrink-0 text-right sm:block">
                       <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">
-                        {soldOut ? t("Sold out") : t("Illustrative price")}
+                        {soldOut ? t("Sold out") : t("Price")}
                       </p>
                       <p className="mt-0.5 whitespace-nowrap font-display text-lg font-extrabold tabular-nums text-[#092a53]">
                         {formatPrice(item.priceXaf)}
@@ -939,32 +936,32 @@ export function HomePage() {
             </div>
 
             <div className="lg:col-span-7">
-              <ul className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+              <ul className="grid grid-cols-2 gap-3 sm:gap-5">
                 {[
                   {
-                    title: "Natural ingredients",
-                    detail: "Only the good stuff, always.",
+                    title: "Mixed on a frozen stone",
+                    detail: "Your ice cream and mix-ins are folded together right in front of you.",
                     icon: (
                       <path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Zm0 0 7-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                     ),
                   },
                   {
-                    title: "Unique flavors",
-                    detail: "Classic to creative.",
+                    title: "Made your way",
+                    detail: "Choose your flavor and mix-ins, or pick a signature creation.",
                     icon: (
                       <path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
                     ),
                   },
                   {
-                    title: "Freshly made",
-                    detail: "A little joy, every day.",
+                    title: "Cakes for every celebration",
+                    detail: "Ice cream cakes and pies for birthdays, parties and events.",
                     icon: (
                       <path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.8 12 6.5l2.5-1.7M9.5 19.2 12 17.5l2.5 1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                     ),
                   },
                   {
-                    title: "Happy customers",
-                    detail: "Your smile is our success.",
+                    title: "Pickup or delivery",
+                    detail: "Order online in Douala and Yaoundé at a time that suits you.",
                     icon: (
                       <>
                         <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
@@ -974,7 +971,7 @@ export function HomePage() {
                   },
                 ].map((benefit, index) => (
                   <li
-                    className={`group relative flex flex-col rounded-[26px] bg-white/[0.04] p-7 ring-1 ring-white/10 transition duration-300 hover:-translate-y-1 hover:bg-white/[0.07] hover:ring-[#ffdc32]/40 sm:p-8 ${
+                    className={`group relative flex flex-col rounded-[22px] bg-white/[0.04] p-4 ring-1 ring-white/10 sm:rounded-[26px] transition duration-300 hover:-translate-y-1 hover:bg-white/[0.07] hover:ring-[#ffdc32]/40 sm:p-8 ${
                       index % 2 === 1 ? "sm:translate-y-8 sm:hover:translate-y-7" : ""
                     }`}
                     key={benefit.title}
@@ -982,7 +979,7 @@ export function HomePage() {
                     <div className="flex items-start justify-between">
                       <span
                         aria-hidden="true"
-                        className="grid size-14 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53] shadow-[0_10px_24px_rgba(255,220,50,0.2)] transition duration-300 group-hover:-rotate-6 group-hover:scale-105"
+                        className="grid size-11 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53] shadow-[0_10px_24px_rgba(255,220,50,0.2)] sm:size-14 transition duration-300 group-hover:-rotate-6 group-hover:scale-105"
                       >
                         <svg className="size-6" fill="none" viewBox="0 0 24 24">{benefit.icon}</svg>
                       </span>
@@ -990,10 +987,10 @@ export function HomePage() {
                         {String(index + 1).padStart(2, "0")}
                       </span>
                     </div>
-                    <h3 className="mt-8 font-display text-2xl font-extrabold leading-tight">
+                    <h3 className="mt-5 font-display text-base font-extrabold leading-tight sm:mt-8 sm:text-2xl">
                       {t(benefit.title)}
                     </h3>
-                    <p className="mt-2 text-sm leading-6 text-white/60">
+                    <p className="mt-2 text-xs leading-5 text-white/60 sm:text-sm sm:leading-6">
                       {t(benefit.detail)}
                     </p>
                   </li>
@@ -1253,37 +1250,10 @@ export function HomePage() {
                 </div>
               </div>
             </div>
-
-            <div className="relative isolate mt-20 overflow-hidden rounded-[28px] bg-[#ffdc32] px-6 py-8 text-[#092a53] shadow-[0_18px_46px_rgba(121,99,0,0.14)] sm:px-10 sm:py-10 lg:mt-24">
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 -z-10 bg-gradient-to-r from-[#ffe76c] via-[#ffdc32] to-[#f2c900]"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute -right-16 -top-20 -z-10 size-56 rounded-full border-[36px] border-white/25"
-              />
-              <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#092a53]/75">
-                    {t("Browse signature creations and treats.")}
-                  </p>
-                  <p className="mt-2 font-display text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
-                    {t("Ready for your next scoop?")}
-                  </p>
-                </div>
-                <Link
-                  className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-[#ffdc32] md:self-auto"
-                  to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
-                >
-                  {t("Order now")} <ArrowIcon />
-                </Link>
-              </div>
-            </div>
           </div>
         </section>
 
-        {/* Shown once there is at least one approved review, so new visitors never see an empty block. */}
+        {/* Always shown: the reviews, or an invitation to write the first one. */}
         <ReviewsSection error={reviewsError} isLoaded={reviewsLoaded} language={language} reviews={reviews} stats={reviewStats} t={t} />
 
         <section
@@ -1309,7 +1279,7 @@ export function HomePage() {
                 </h2>
                 <p className="mt-5 max-w-md text-base leading-7 text-[#52647b]">
                   {t(
-                    "Find quick answers about this guide, local listings, and the information on our site.",
+                    "Quick answers about ordering, delivery, payment and our branches.",
                   )}
                 </p>
 
@@ -1336,7 +1306,7 @@ export function HomePage() {
                     {t("Still have questions?")}
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-white/70">
-                    {t("Use the Contact page to send a message to the operator of this independent guide.")}
+                    {t("Send us a message and our team will get back to you, or find your nearest branch.")}
                   </p>
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Link
@@ -1360,36 +1330,34 @@ export function HomePage() {
               <div className="border-t border-[#e5e1d7]">
                 {[
                   {
-                    question:
-                      "Is this the official Cold Stone Creamery Cameroon website?",
+                    question: "How do I place an order?",
                     answer:
-                      "No. This is an independent information guide and is not affiliated with or operated by Cold Stone Creamery.",
+                      "Choose your treats from the menu or pick flavors by the scoop, add them to your bag and check out. You choose pickup or delivery and a time that suits you.",
                   },
                   {
-                    question:
-                      "Are the listed locations and opening hours always current?",
+                    question: "How can I pay?",
                     answer:
-                      "Public business details can change. Please confirm a location and its hours through a current local listing before visiting.",
+                      "Pay securely online with a bank card or with Mobile Money. Your payment details are entered on the secure payment page and never stored on our site.",
                   },
                   {
-                    question: "Will every Cameroon location have the same menu?",
+                    question: "Do you deliver?",
                     answer:
-                      "Menus, flavors, and availability may vary by location. Contact your preferred shop to check what is currently available.",
+                      "Yes. Choose delivery at checkout and we bring your order to your door, or pick it up at your nearest branch. The delivery fee is shown before you pay.",
                   },
                   {
-                    question: "Can I order treats through this website?",
+                    question: "Can I order a cake or ice cream for an event?",
                     answer:
-                      "This site has a separate online catalog and checkout managed by its operator. Those products and prices are not confirmed as Cold Stone Cameroon offerings.",
+                      "Yes. Request a custom ice cream cake for a birthday or celebration, or order in bulk for parties, offices and weddings from the Parties & events page.",
                   },
                   {
-                    question: "How can I find a location near me?",
+                    question: "Where are your branches?",
                     answer:
-                      "Use the Locations page to browse the public listings and available address details for Cameroon.",
+                      "We are in Douala and Yaoundé. Open the Locations page for addresses, phone numbers and directions.",
                   },
                   {
-                    question: "How can I contact this website?",
+                    question: "How can I contact you?",
                     answer:
-                      "Use the Contact page to send a message to the operator of this independent guide.",
+                      "Send us a message from the Contact page or chat with us on WhatsApp. We reply as soon as we can.",
                   },
                 ].map(({ question, answer }, index) => (
                   <details

@@ -1,11 +1,11 @@
 // Page titles and descriptions for search engines and link previews.
 // Shared by the browser (updates the page head while navigating) and the server
 // (writes the head into the HTML it sends, so crawlers that do not run JavaScript see it too).
-import { FLAVOR_PHOTO_SIZES, HERO_PHOTO_SIZES, HOME_SLIDE_SIZES } from '../photoSizes.js'
+import { COMPACT_HERO_MEDIA, FLAVOR_PHOTO_SIZES, HERO_PHOTO_SIZES, HOME_SLIDE_SIZES } from '../photoSizes.js'
 
 export const SITE_NAME = 'Cold Stone Creamery Cameroon'
 export const DEFAULT_DESCRIPTION =
-  'An independent guide to Cold Stone Creamery in Cameroon: publicly listed branches in Douala and Yaoundé, the global treat menu, and an online ice cream shop.'
+  'Cold Stone Creamery Cameroon: ice cream mixed to order, signature creations, ice cream cakes and shakes. Order online for pickup or delivery in Douala and Yaoundé.'
 export const DEFAULT_IMAGE = '/images/og-image.jpg'
 
 /** Pages search engines should list. */
@@ -20,19 +20,19 @@ export const PUBLIC_PAGES = {
     title: 'Menu & treats',
     description:
       'Browse Cold Stone treat categories: signature ice cream creations, cakes and pies, milkshakes and smoothies, sorbet and seasonal favorites.',
-    photo: { src: '/ice-images/ice-4.webp', sizes: HERO_PHOTO_SIZES },
+    photo: { src: '/ice-images/ice-4.webp', sizes: HERO_PHOTO_SIZES, media: COMPACT_HERO_MEDIA },
   },
   '/menu/all': {
     title: 'All menu items',
     description:
       'Every Cold Stone treat on one page: signature ice cream creations, ice cream cakes and pies, milkshakes, smoothies, novelties and seasonal favorites, with prices in FCFA.',
-    photo: { src: '/menu-official/ice-cream/signature-creations/founders-favorite.webp', sizes: HERO_PHOTO_SIZES },
+    photo: { src: '/menu-official/ice-cream/signature-creations/founders-favorite.webp', sizes: HERO_PHOTO_SIZES, media: COMPACT_HERO_MEDIA },
   },
   '/flavors': {
-    title: 'Online shop catalog',
+    title: 'Ice cream flavors',
     description:
       'Order ice cream flavors online in Cameroon. Prices in FCFA, with pickup or delivery from listed stores and a three-scoop offer.',
-    photo: { src: '/images/hero-ice-cream.jpg', sizes: HERO_PHOTO_SIZES },
+    photo: { src: '/images/hero-ice-cream.jpg', sizes: HERO_PHOTO_SIZES, media: COMPACT_HERO_MEDIA },
   },
   '/custom-cake': {
     title: 'Custom ice cream cake requests',
@@ -43,9 +43,9 @@ export const PUBLIC_PAGES = {
     description: 'Order ice cream in bulk for birthdays, office events and weddings in Cameroon. Get a quote, pay a deposit online, and we deliver or you pick up.',
   },
   '/about': {
-    title: 'About this guide',
+    title: 'About us',
     description:
-      'Learn about the Cold Stone signature experience, ice cream mixed to order on a frozen granite stone, and what this independent guide covers.',
+      'The Cold Stone signature experience: ice cream mixed to order on a frozen granite stone, at our branches in Douala and Yaoundé.',
     photo: { src: '/ice-images/about-child.jpg', sizes: HERO_PHOTO_SIZES },
   },
   '/locations': {

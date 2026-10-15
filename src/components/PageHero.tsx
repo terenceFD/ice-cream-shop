@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import { photoErrorHandler, photoSrcSet } from "../thumbnails";
 import { HERO_PHOTO_SIZES } from "../photoSizes.js";
 
@@ -34,6 +34,19 @@ interface PageHeroProps {
   badge?: { mark: ReactNode; eyebrow: string; text: string };
   /** Text colour class matching the section below, used for the curved edge. */
   curveClassName?: string;
+  /** Shopping pages: on phones, leave out the photo group so products start right below the title. */
+  compactOnMobile?: boolean;
+}
+
+// Same width as the server's preload media query for compact headers (src/photoSizes.js).
+const WIDE_SCREEN = "(min-width: 640px)";
+function subscribeToWidth(onChange: () => void) {
+  const query = window.matchMedia(WIDE_SCREEN);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+function useWideScreen() {
+  return useSyncExternalStore(subscribeToWidth, () => window.matchMedia(WIDE_SCREEN).matches, () => true);
 }
 
 function HeroImage({ src, alt, className, position, small = false }: { src: string; alt: string; className: string; position?: string; small?: boolean }) {
@@ -52,9 +65,12 @@ function HeroImage({ src, alt, className, position, small = false }: { src: stri
   );
 }
 
-// Navy hero shared by the menu and the shop catalog. It continues the navy header,
+// Navy hero shared by the menu and the flavors page. It continues the navy header,
 // with the copy on the left and an arch-framed photo group on the right.
-export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, actions, stats = [], image, sideImages, visual, visualClassName = "aspect-[6/5]", badge, curveClassName = "text-[#fbfaf5]" }: PageHeroProps) {
+export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, actions, stats = [], image, sideImages, visual, visualClassName = "aspect-[6/5]", badge, curveClassName = "text-[#fbfaf5]", compactOnMobile = false }: PageHeroProps) {
+  const isWideScreen = useWideScreen();
+  // Not rendered at all on phones (a hidden image would still download).
+  const showVisual = !compactOnMobile || isWideScreen;
   return (
     <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
@@ -63,14 +79,14 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
         <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
       </div>
 
-      <div className="mx-auto grid max-w-[1320px] items-center gap-12 px-5 pb-24 pt-8 sm:px-8 sm:pb-28 sm:pt-12 lg:grid-cols-12 lg:gap-8 lg:px-12 lg:pb-32 lg:pt-14">
+      <div className={`mx-auto grid max-w-[1320px] items-center gap-12 px-5 pt-8 ${compactOnMobile ? "pb-16" : "pb-24"} sm:px-8 sm:pb-28 sm:pt-12 lg:grid-cols-12 lg:gap-8 lg:px-12 lg:pb-32 lg:pt-14`}>
         <div className="lg:col-span-6">
           {breadcrumb && <div className="mb-8 text-xs font-bold text-white/55">{breadcrumb}</div>}
           <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pl-2 pr-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32] backdrop-blur-sm">
             <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#ffdc32] text-[10px] text-[#092a53]">✦</span>
             {eyebrow}
           </p>
-          <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl">
+          <h1 className={`mt-6 font-display font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl ${compactOnMobile ? "text-4xl" : "text-5xl"}`}>
             {title}
             {subtitle && <span className="mt-3 block text-[0.58em] leading-[1.05] text-[#ffdc32]">{subtitle}</span>}
           </h1>
@@ -78,9 +94,9 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
             <path d="M2 9C40 3 90 1.5 198 6" stroke="currentColor" strokeLinecap="round" strokeWidth="4" />
           </svg>
           <p className="mt-6 max-w-xl text-base leading-7 text-white/70 sm:text-lg sm:leading-8">{description}</p>
-          {actions && <div className="mt-9 flex flex-wrap items-center gap-3">{actions}</div>}
+          {actions && <div className={`mt-9 flex-wrap items-center gap-3 ${compactOnMobile ? "hidden sm:flex" : "flex"}`}>{actions}</div>}
           {stats.length > 0 && (
-            <dl className="mt-10 grid w-fit grid-flow-col divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[0.05] backdrop-blur-sm">
+            <dl className={`mt-10 w-fit grid-flow-col divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[0.05] backdrop-blur-sm ${compactOnMobile ? "hidden sm:grid" : "grid"}`}>
               {stats.map((stat) => (
                 <div className="px-5 py-4 sm:px-7" key={stat.label}>
                   <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/50">{stat.label}</dt>
@@ -93,7 +109,7 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
           )}
         </div>
 
-        <div className={`relative mx-auto w-full max-w-[560px] lg:col-span-6 lg:mr-0 ${visualClassName}`}>
+        {showVisual && <div className={`relative mx-auto w-full max-w-[560px] lg:col-span-6 lg:mr-0 ${visualClassName}`}>
           {visual}
           {!visual && image && sideImages && (
             <>
@@ -124,7 +140,7 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
               </div>
             </div>
           )}
-        </div>
+        </div>}
       </div>
 
       <svg aria-hidden="true" className={`absolute inset-x-0 -bottom-px h-10 w-full sm:h-14 lg:h-20 ${curveClassName}`} fill="currentColor" preserveAspectRatio="none" viewBox="0 0 1440 80">

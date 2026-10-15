@@ -114,7 +114,6 @@ export function PaymentPage() {
   const { t, language } = useLanguage();
   const { customer, isLoading } = useAuth();
   const { currency, subtotal, freeScoops, discount, total } = getCartPricing(cartItems);
-  const hasMenuItems = cartItems.some((item) => item.itemType === "menu");
   const hasUnavailableItems = cartItems.some(
     (item) => item.availableQuantity < item.quantity,
   );
@@ -675,9 +674,7 @@ export function PaymentPage() {
 
                   <p className="flex gap-3 rounded-2xl bg-[#fffbea] px-4 py-3.5 text-xs leading-5 text-[#6b5800] ring-1 ring-[#f0e2a0] sm:px-5">
                     <Icon className="mt-0.5 size-4 shrink-0" path={icons.info} />
-                    {t(hasMenuItems
-                      ? "Menu items and FCFA prices are illustrative examples, not confirmed local menu items or prices. Orders are handled by this independent website."
-                      : "Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
+                    {t("Your treats are prepared fresh once your payment is confirmed.")}
                   </p>
                 </div>
 

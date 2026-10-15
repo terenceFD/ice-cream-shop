@@ -36,11 +36,12 @@ function absolute(base, path) {
   return /^https?:\/\//i.test(path) ? path : `${base}${path.startsWith('/') ? '' : '/'}${path}`
 }
 
-function preloadPhotoTag({ src, sizes }) {
+function preloadPhotoTag({ src, sizes, media }) {
   const srcSet = photoSrcSet(src)
+  const mediaAttribute = media ? ` media="${escapeHtml(media)}"` : ''
   return srcSet
-    ? `<link rel="preload" as="image" href="${escapeHtml(src)}" imagesrcset="${escapeHtml(srcSet)}" imagesizes="${escapeHtml(sizes)}" fetchpriority="high" />`
-    : `<link rel="preload" as="image" href="${escapeHtml(src)}" fetchpriority="high" />`
+    ? `<link rel="preload" as="image" href="${escapeHtml(src)}" imagesrcset="${escapeHtml(srcSet)}" imagesizes="${escapeHtml(sizes)}"${mediaAttribute} fetchpriority="high" />`
+    : `<link rel="preload" as="image" href="${escapeHtml(src)}"${mediaAttribute} fetchpriority="high" />`
 }
 
 function headTags(meta, base, structuredData) {

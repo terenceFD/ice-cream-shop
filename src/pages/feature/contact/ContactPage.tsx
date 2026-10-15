@@ -324,7 +324,7 @@ export function ContactPage() {
                 {t('Send us a message')} <span aria-hidden="true">↓</span>
               </a>
               <Link className={PageHero.secondary} to="/about">
-                {t('Read about this guide →')}
+                {t('About us →')}
               </Link>
             </>
           }

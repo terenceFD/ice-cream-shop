@@ -199,6 +199,7 @@ export function AllMenuPage() {
       <Header />
       <main>
         <PageHero
+          compactOnMobile
           actions={
             <>
               <a className={PageHero.primary} href="#all-menu-items">
@@ -352,10 +353,6 @@ export function AllMenuPage() {
           ) : (
             renderGrid(sorted, true)
           )}
-
-          <p className="mt-14 text-center text-xs text-[#65748a]">
-            {t("Prices shown are illustrative estimates only.")}
-          </p>
         </div>
       </main>
       <Footer />

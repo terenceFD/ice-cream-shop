@@ -316,9 +316,7 @@ export function CartPage() {
 
                 <p className="flex gap-3 rounded-2xl bg-[#fffbea] px-4 py-3.5 text-xs leading-5 text-[#6b5800] ring-1 ring-[#f0e2a0] sm:px-5">
                   <Icon className="mt-0.5 size-4 shrink-0" path={icons.info} />
-                  {t(hasMenuItems
-                    ? 'Menu items and FCFA prices are illustrative examples, not confirmed local menu items or prices. Orders are handled by this independent website.'
-                    : "Items and prices in the online catalog are set in FCFA by this website's operator and are not verified Cold Stone Cameroon products, menu prices or promotions.")}
+                  {t("Prices are in FCFA. Any delivery fee is shown at checkout before you pay.")}
                 </p>
               </section>
 
