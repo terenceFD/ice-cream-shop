@@ -24,7 +24,7 @@ export function describeEmailError(error) {
     return 'The mail server refused the sender address. Verify the SMTP_FROM address as a sender in Brevo (Senders, domains & dedicated IPs).'
   }
   if (['ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNREFUSED', 'ENOTFOUND', 'EDNS'].includes(error?.code)) {
-    return 'The website server could not reach the mail server. Check SMTP_HOST and SMTP_PORT (smtp-relay.brevo.com and 587).'
+    return "The website server could not reach the mail server. Some hosts, including Render's free plan, block ports 25, 465 and 587. Set SMTP_PORT to 2525 (Brevo supports it) and SMTP_SECURE to false, and check that SMTP_HOST is smtp-relay.brevo.com."
   }
   if (code) return `The mail server refused the message (code ${code}).`
   return 'The mail server could not be reached.'
