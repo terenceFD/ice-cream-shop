@@ -28,6 +28,8 @@ export function FlavorsPage() {
     (flavor: Flavor) => flavor.availableQuantity > 0,
   );
   const [search, setSearch] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [sortBy, setSortBy] = useState("recommended");
   const selectedTag = searchParams.get("tag") || "";
   const flavorTags = [
     ...new Set(availableFlavors.map((flavor) => flavor.tag).filter(Boolean)),
@@ -41,14 +43,24 @@ export function FlavorsPage() {
           value.toLocaleLowerCase().includes(searchText) ||
           t(value).toLocaleLowerCase().includes(searchText),
       );
-    return matchesSearch && (!selectedTag || flavor.tag === selectedTag);
+    const withinPrice = !maxPrice || flavor.price <= Number(maxPrice);
+    return matchesSearch && withinPrice && (!selectedTag || flavor.tag === selectedTag);
   });
+  // Sorting never changes which flavors match, only their order.
+  const sortedFlavors = sortBy === "recommended"
+    ? filteredFlavors
+    : [...filteredFlavors].sort((a, b) => {
+      if (sortBy === "price-asc") return a.price - b.price;
+      if (sortBy === "price-desc") return b.price - a.price;
+      return t(a.name).localeCompare(t(b.name));
+    });
   const lowestPrice = availableFlavors.length
     ? Math.min(...availableFlavors.map((flavor) => flavor.price))
     : null;
-  const hasFilters = Boolean(search.trim() || selectedTag);
+  const hasFilters = Boolean(search.trim() || selectedTag || maxPrice);
   const clearFilters = () => {
     setSearch("");
+    setMaxPrice("");
     setSearchParams({}, { replace: true });
   };
   const selectTag = (tag: string) => {
@@ -130,7 +142,8 @@ export function FlavorsPage() {
 
             {/* Search + tags */}
             <div className="relative z-30 mb-10 rounded-[28px] bg-white p-3 shadow-[0_1px_0_rgba(9,42,83,0.04),0_14px_40px_rgba(9,42,83,0.07)] ring-1 ring-[#ebe7dc] sm:p-4">
-              <label className="group relative flex items-center rounded-[20px] bg-[#fbfaf5] transition focus-within:bg-white focus-within:ring-1 focus-within:ring-[#c9b24a]">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
+              <label className="group relative flex flex-1 items-center rounded-[20px] bg-[#fbfaf5] transition focus-within:bg-white focus-within:ring-1 focus-within:ring-[#c9b24a]">
                 <span className="sr-only">{t("Search flavors")}</span>
                 <svg aria-hidden="true" className="pointer-events-none absolute left-5 size-5 text-[#8792a0] transition group-focus-within:text-[#092a53]" fill="none" viewBox="0 0 24 24">
                   <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
@@ -156,6 +169,47 @@ export function FlavorsPage() {
                   </button>
                 )}
               </label>
+                <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-none">
+                  <label className={`relative flex flex-col justify-center rounded-[20px] px-4 py-2.5 ring-1 transition lg:w-[170px] ${maxPrice ? "bg-[#fff8dd] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"}`}>
+                    <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">{t("Maximum price")}</span>
+                    <span className="mt-0.5 flex items-baseline gap-1.5">
+                      <input
+                        className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#a5aebb]"
+                        inputMode="numeric"
+                        min="0"
+                        onChange={(event) => setMaxPrice(event.target.value)}
+                        placeholder={t("Any")}
+                        step="500"
+                        type="number"
+                        value={maxPrice}
+                      />
+                      <span className="shrink-0 text-[10px] font-extrabold text-[#a5aebb]">FCFA</span>
+                    </span>
+                  </label>
+                  <label className={`relative flex flex-col justify-center rounded-[20px] px-4 py-2.5 ring-1 transition lg:w-[190px] ${sortBy !== "recommended" ? "bg-[#fff8dd] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"}`}>
+                    <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8792a0]">{t("Sort by")}</span>
+                    <select
+                      className="mt-0.5 w-full min-w-0 cursor-pointer appearance-none bg-transparent pr-5 text-sm font-bold text-[#092a53] outline-none!"
+                      onChange={(event) => setSortBy(event.target.value)}
+                      value={sortBy}
+                    >
+                      <option value="recommended">{t("Recommended")}</option>
+                      <option value="price-asc">{t("Price: low to high")}</option>
+                      <option value="price-desc">{t("Price: high to low")}</option>
+                      <option value="name">{t("Name: A to Z")}</option>
+                    </select>
+                    <svg aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 size-4 text-[#8792a0]" fill="none" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeWidth="2" /></svg>
+                  </label>
+                </div>
+              </div>
+
+              {!flavorTags.length && hasFilters && (
+                <div className="mt-3 flex justify-end px-1">
+                  <button className="text-xs font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4" onClick={clearFilters} type="button">
+                    {t("Clear filters")}
+                  </button>
+                </div>
+              )}
 
               {flavorTags.length > 0 && (
                 <div className="mt-3 flex items-center gap-3 px-1">
@@ -195,7 +249,7 @@ export function FlavorsPage() {
 
             {/* Products */}
             <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredFlavors.map((flavor) => {
+              {sortedFlavors.map((flavor) => {
                 const added = addedId === flavor.id;
                 return (
                   <article

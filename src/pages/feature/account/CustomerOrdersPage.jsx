@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { apiRequest, getCustomerToken } from "../../../api/api";
 import { Footer, Header } from "../../../components/Layout";
@@ -332,7 +332,8 @@ function StarRating({ value, onChange, t }) {
   );
 }
 
-function OrderReviewForm({ order, token, t }) {
+function OrderReviewForm({ order, token, t, autoOpen = false }) {
+  const detailsRef = useRef(null);
   const [itemId, setItemId] = useState(
     order.items.find((item) => item.productId)?.productId || "",
   );
@@ -342,6 +343,13 @@ function OrderReviewForm({ order, token, t }) {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const items = order.items.filter((item) => item.productId);
+
+  // Arriving from a review reminder opens this order's form and brings it into view.
+  useEffect(() => {
+    if (!autoOpen || !detailsRef.current) return;
+    detailsRef.current.open = true;
+    detailsRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [autoOpen]);
 
   if (!items.length) return null;
 
@@ -365,7 +373,7 @@ function OrderReviewForm({ order, token, t }) {
   }
 
   return (
-    <details className="group/review mt-5 rounded-2xl ring-1 ring-[#ece8dc] open:bg-[#fdfcf7]">
+    <details className="group/review mt-5 scroll-mt-28 rounded-2xl ring-1 ring-[#ece8dc] open:bg-[#fdfcf7]" ref={detailsRef}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-4 py-3.5 text-sm font-extrabold text-[#102c50] transition hover:bg-[#fbfaf5] [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2.5">
           <span className="grid size-8 place-items-center rounded-xl bg-[#fff6cc] text-[#a48700]">
@@ -1047,6 +1055,7 @@ export function CustomerOrdersPage() {
         />
         {!isPaymentIssue(order) && (
           <OrderReviewForm
+            autoOpen={Number(searchParams.get("review")) === order.id}
             order={order}
             t={t}
             token={getCustomerToken()}

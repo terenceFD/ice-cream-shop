@@ -491,6 +491,37 @@ if (configuredDatabaseBackend === "postgres") {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Party and event orders: request, quote, deposit, confirmation.
+    CREATE TABLE IF NOT EXISTS event_orders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+      store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL,
+      event_type TEXT NOT NULL,
+      event_date TEXT NOT NULL,
+      event_time TEXT NOT NULL,
+      guest_count INTEGER NOT NULL,
+      fulfillment_type TEXT NOT NULL,
+      delivery_address TEXT NOT NULL DEFAULT '',
+      items_json TEXT NOT NULL,
+      notes TEXT NOT NULL DEFAULT '',
+      customer_name TEXT NOT NULL,
+      customer_email TEXT NOT NULL,
+      customer_phone TEXT NOT NULL,
+      estimated_total INTEGER NOT NULL,
+      quoted_total INTEGER,
+      deposit_amount INTEGER,
+      status TEXT NOT NULL DEFAULT 'new',
+      admin_note TEXT NOT NULL DEFAULT '',
+      deposit_provider TEXT,
+      deposit_reference TEXT,
+      deposit_external_reference TEXT,
+      deposit_paid_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_event_orders_customer ON event_orders(customer_id);
+    CREATE INDEX IF NOT EXISTS idx_event_orders_store_date ON event_orders(store_id, event_date);
+
     -- Devices where a signed-in customer turned on promotion alerts.
     CREATE TABLE IF NOT EXISTS push_subscriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -504,6 +535,7 @@ if (configuredDatabaseBackend === "postgres") {
   `);
 
   addColumnIfMissing("customers", "profile_picture", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing("orders", "review_reminder_sent_at", "TEXT");
   addColumnIfMissing("admins", "role", "TEXT NOT NULL DEFAULT 'owner'");
   addColumnIfMissing("admins", "security_pin_hash", "TEXT");
   // The site was renamed from "Antixor Icy"; flavors that used the old default origin follow.
@@ -703,6 +735,44 @@ export async function verifyDatabaseSchema() {
   `).run();
   await database.prepare(`
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS security_pin_hash TEXT
+  `).run();
+  await database.prepare(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS review_reminder_sent_at TEXT
+  `).run();
+  await database.prepare(`
+    CREATE TABLE IF NOT EXISTS event_orders (
+      id SERIAL PRIMARY KEY,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+      store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL,
+      event_type TEXT NOT NULL,
+      event_date TEXT NOT NULL,
+      event_time TEXT NOT NULL,
+      guest_count INTEGER NOT NULL,
+      fulfillment_type TEXT NOT NULL,
+      delivery_address TEXT NOT NULL DEFAULT '',
+      items_json TEXT NOT NULL,
+      notes TEXT NOT NULL DEFAULT '',
+      customer_name TEXT NOT NULL,
+      customer_email TEXT NOT NULL,
+      customer_phone TEXT NOT NULL,
+      estimated_total INTEGER NOT NULL,
+      quoted_total INTEGER,
+      deposit_amount INTEGER,
+      status TEXT NOT NULL DEFAULT 'new',
+      admin_note TEXT NOT NULL DEFAULT '',
+      deposit_provider TEXT,
+      deposit_reference TEXT,
+      deposit_external_reference TEXT,
+      deposit_paid_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  `).run();
+  await database.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_event_orders_customer ON event_orders(customer_id)
+  `).run();
+  await database.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_event_orders_store_date ON event_orders(store_id, event_date)
   `).run();
   await database.prepare(`
     CREATE TABLE IF NOT EXISTS push_subscriptions (

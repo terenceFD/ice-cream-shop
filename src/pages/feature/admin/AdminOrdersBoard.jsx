@@ -4,6 +4,8 @@ import { apiRequest } from "../../../api/api";
 import { useAdminAuth } from "./useAdminAuth";
 import { useLanguage } from "../../../language/useLanguage";
 import { formatCartMoney, USD_TO_XAF } from "../../../cartPricing";
+import { orderUpdateMessage, whatsappLink } from "../../../whatsapp";
+import { WhatsAppIcon } from "../../../components/WhatsAppIcon";
 
 const AUTO_REFRESH_MS = 30_000;
 const STALE_PAYMENT_MS = 3 * 60 * 1000;
@@ -711,6 +713,18 @@ export function AdminOrdersBoard() {
                     <a className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-[#355777] hover:underline" href={`tel:${selectedOrder.customerPhone}`}>
                       <Icon className="size-3.5 shrink-0" path={icons.phone} />
                       {selectedOrder.customerPhone}
+                    </a>
+                  )}
+                  {whatsappLink(selectedOrder.customerPhone, "") && (
+                    <a
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#25d366] px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-[#1ebe5a]"
+                      href={whatsappLink(selectedOrder.customerPhone, orderUpdateMessage(selectedOrder, currentStage(selectedOrder)))}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      title={t("Opens WhatsApp with this order's update ready to send")}
+                    >
+                      <WhatsAppIcon className="size-4" />
+                      {t("Send update on WhatsApp")}
                     </a>
                   )}
                 </div>

@@ -60,7 +60,7 @@ function BellIcon({ className = "size-5" }: { className?: string }) {
   );
 }
 
-/** Invites signed-in customers to get promotion alerts on this device. Shown once per month at most. */
+/** Invites signed-in customers to get order updates and promotions on this device. Shown once per month at most. */
 export function PromotionAlertsPrompt() {
   const { customer } = useAuth();
   const { t } = useLanguage();
@@ -109,10 +109,10 @@ export function PromotionAlertsPrompt() {
     try {
       const next = await enablePromotionAlerts(getCustomerToken());
       if (next === "on") setIsVisible(false);
-      else if (next === "denied") setError(t("Notifications are blocked for this site. Allow them in your browser settings to get promotion alerts."));
+      else if (next === "denied") setError(t("Notifications are blocked for this site. Allow them in your browser settings to get order updates and promotions."));
       else snooze();
     } catch (alertError) {
-      setError(alertError instanceof Error ? alertError.message : t("Promotion alerts could not be turned on. Please try again."));
+      setError(alertError instanceof Error ? t(alertError.message) : t("Notifications could not be turned on. Please try again."));
     } finally {
       setIsWorking(false);
     }
@@ -145,14 +145,14 @@ export function PromotionAlertsPrompt() {
               </span>
             </span>
             <div className="min-w-0">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t("Members only")}</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t("Stay in the loop")}</p>
               <h2 className="mt-0.5 font-display text-lg font-extrabold leading-tight" id="promotion-alerts-title">
-                {t("Never miss a sweet deal")}
+                {t("Order updates and sweet deals")}
               </h2>
             </div>
           </div>
           <p className="mt-3 text-[13px] leading-5 text-white/75">
-            {t("Get a notification on this device whenever we launch a new promotion or discount code.")}
+            {t("Get a notification on this device when your order is being prepared, out for delivery or delivered, and when we launch a new promotion.")}
           </p>
           {error && <p className="mt-3 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-[#ffd4d4]" role="alert">{error}</p>}
           <div className="mt-5 grid grid-cols-[auto_1fr] gap-2.5">
@@ -170,7 +170,7 @@ export function PromotionAlertsPrompt() {
               type="button"
             >
               <BellIcon className="size-4" />
-              {isWorking ? t("Turning on…") : t("Turn on alerts")}
+              {isWorking ? t("Turning on…") : t("Turn on notifications")}
             </button>
           </div>
         </div>
@@ -179,7 +179,7 @@ export function PromotionAlertsPrompt() {
   );
 }
 
-/** On/off switch for the customer's account page. */
+/** On/off switch for the account page and the order confirmation page. */
 export function PromotionAlertsSetting() {
   const { customer } = useAuth();
   const { t } = useLanguage();
@@ -192,8 +192,8 @@ export function PromotionAlertsSetting() {
   const isOn = state === "on";
   const canToggle = state === "on" || state === "off";
   const help = {
-    on: t("You'll get a notification on this device when we launch a new promotion."),
-    off: t("Turn on to get a notification on this device when we launch a new promotion."),
+    on: t("You'll get a notification on this device at each step of your orders and when we launch a new promotion."),
+    off: t("Turn on to follow your orders (preparing, out for delivery, delivered) and hear about new promotions on this device."),
     denied: t("Notifications are blocked for this site. Allow them in your browser settings, then come back here."),
     "needs-install": t("On iPhone and iPad, add this site to your Home Screen first, then open it from there to turn on alerts."),
     unsupported: t("This browser can't show notifications from websites."),
@@ -206,7 +206,7 @@ export function PromotionAlertsSetting() {
       const token = getCustomerToken();
       setState(isOn ? await disablePromotionAlerts(token) : await enablePromotionAlerts(token));
     } catch (alertError) {
-      setError(alertError instanceof Error ? alertError.message : t("Promotion alerts could not be updated. Please try again."));
+      setError(alertError instanceof Error ? t(alertError.message) : t("Notifications could not be updated. Please try again."));
     } finally {
       setIsWorking(false);
     }
@@ -218,7 +218,7 @@ export function PromotionAlertsSetting() {
         <BellIcon />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="font-bold text-[#092a53]" id="promotion-alerts-setting">{t("Promotion alerts")}</p>
+        <p className="font-bold text-[#092a53]" id="promotion-alerts-setting">{t("Order updates and promotions")}</p>
         <p className="mt-1 text-sm leading-6 text-[#65748a]">{help}</p>
         {error && <p className="mt-2 text-sm font-semibold text-red-700" role="alert">{error}</p>}
       </div>
