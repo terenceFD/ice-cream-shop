@@ -65,6 +65,7 @@ import {
   deleteCustomMenuItem,
 } from './database.js'
 import {
+  describeEmailError,
   EmailConfigurationError,
   sendCakeRequestNotification,
   sendContactReply,
@@ -2529,8 +2530,8 @@ app.post('/api/admin/notifications/:id/reply', requireAdmin, contactReplyLimiter
       response.status(503).json({ error: error.message })
       return
     }
-    console.error('Unable to deliver admin reply email:', error.message)
-    response.status(502).json({ error: 'The reply could not be sent. Check the email server settings and try again.' })
+    console.error('Unable to deliver admin reply email:', error.responseCode || error.code || '', error.message)
+    response.status(502).json({ error: `The reply could not be sent. ${describeEmailError(error)}` })
   }
 })
 

@@ -7,6 +7,29 @@ export class EmailConfigurationError extends Error {
   }
 }
 
+/**
+ * Explains why the mail server refused a message, in words an owner can act on.
+ * Never includes the password or SMTP key.
+ */
+export function describeEmailError(error) {
+  const code = Number(error?.responseCode) || 0
+  const text = `${error?.response || ''} ${error?.message || ''}`
+  if (code === 525 || /unauthori[sz]ed ip/i.test(text)) {
+    return "Brevo blocked the website server's IP address. In Brevo, open Settings > Security > Authorized IPs and turn off blocking for SMTP keys, or authorize the server's outbound IP addresses."
+  }
+  if (code === 535 || error?.code === 'EAUTH') {
+    return 'The mail server rejected the login. Check that SMTP_USER is your Brevo SMTP login and SMTP_PASSWORD is a current Brevo SMTP key (not your account password).'
+  }
+  if (/sender|from address|not (a )?valid|unverified|not verified/i.test(text) && code >= 500) {
+    return 'The mail server refused the sender address. Verify the SMTP_FROM address as a sender in Brevo (Senders, domains & dedicated IPs).'
+  }
+  if (['ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNREFUSED', 'ENOTFOUND', 'EDNS'].includes(error?.code)) {
+    return 'The website server could not reach the mail server. Check SMTP_HOST and SMTP_PORT (smtp-relay.brevo.com and 587).'
+  }
+  if (code) return `The mail server refused the message (code ${code}).`
+  return 'The mail server could not be reached.'
+}
+
 export function isEmailDeliveryConfigured() {
   const host = process.env.SMTP_HOST?.trim()
   const port = Number(process.env.SMTP_PORT || 587)
