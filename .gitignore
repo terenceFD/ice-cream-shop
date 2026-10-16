@@ -31,6 +31,8 @@ server/uploads/
 *.sw?
 # Browser automation snapshots
 .playwright-cli/
+.claude
+
 
 # Small photo copies, made by scripts/make-thumbnails.mjs on every build
 public/thumbs/
