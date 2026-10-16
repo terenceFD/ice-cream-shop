@@ -48,6 +48,7 @@ const AdminReportsPage = lazyPage(() => import("../pages/admin/AdminReportsPage"
 const AdminNotificationsPage = lazyPage(() => import("../pages/admin/AdminNotificationsPage"), "AdminNotificationsPage");
 const CustomCakeRequestPage = lazyPage(() => import("../pages/cakes/CustomCakeRequestPage"), "CustomCakeRequestPage");
 const AdminStoreOverviewPage = lazyPage(() => import("../pages/admin/AdminStoreOverviewPage"), "AdminStoreOverviewPage");
+const AdminStoresPage = lazyPage(() => import("../pages/admin/AdminStoresPage"), "AdminStoresPage");
 const AdminActivityPage = lazyPage(() => import("../pages/admin/AdminNewFeaturesPages"), "AdminActivityPage");
 const AdminCakeRequestsPage = lazyPage(() => import("../pages/admin/AdminNewFeaturesPages"), "AdminCakeRequestsPage");
 const AdminFulfillmentPage = lazyPage(() => import("../pages/admin/AdminNewFeaturesPages"), "AdminFulfillmentPage");
@@ -126,6 +127,7 @@ function App() {
                   >
                     <Route path="/admin" element={<AdminPage />} />
                     <Route path="/admin/overview" element={<AdminStoreOverviewPage />} />
+                    <Route path="/admin/stores" element={<AdminStoresPage />} />
                     <Route path="/admin/menu" element={<AdminMenuPage />} />
                     <Route path="/admin/inventory" element={<AdminInventoryPage />} />
                     <Route path="/admin/categories" element={<AdminCategoriesPage />} />

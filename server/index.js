@@ -2492,12 +2492,71 @@ app.get('/api/admin/stores', requireAdmin, async (request, response) => {
     : town ? 'WHERE s.town = ?' : ''
   const parameters = !hasTownScopedData(request.admin) ? [request.admin.storeId] : town ? [town] : []
   const stores = (await database.prepare(`
-    SELECT s.id, s.name, s.town, s.area, s.address,
-      z.location, z.is_active AS "isActive"
+    SELECT s.id, s.name, s.town, s.area, s.address, s.phone,
+      z.location, z.is_active AS "isActive",
+      z.pickup_enabled AS "pickupEnabled", z.delivery_enabled AS "deliveryEnabled",
+      z.delivery_fee AS "deliveryFee",
+      COALESCE(o."orderCount", 0) AS "orderCount",
+      COALESCE(o."paidOrderCount", 0) AS "paidOrderCount",
+      COALESCE(o."openOrderCount", 0) AS "openOrderCount",
+      COALESCE(o.sales, 0) AS sales,
+      COALESCE(o."customerCount", 0) AS "customerCount",
+      o."lastOrderAt" AS "lastOrderAt",
+      COALESCE(e."eventOrderCount", 0) AS "eventOrderCount",
+      COALESCE(e."eventNeedsActionCount", 0) AS "eventNeedsActionCount",
+      COALESCE(c."cakeRequestCount", 0) AS "cakeRequestCount",
+      COALESCE(c."newCakeRequestCount", 0) AS "newCakeRequestCount",
+      COALESCE(r."reviewCount", 0) AS "reviewCount",
+      COALESCE(r."pendingReviewCount", 0) AS "pendingReviewCount",
+      COALESCE(r."averageRating", 0) AS "averageRating"
     FROM stores s JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
+    LEFT JOIN (
+      SELECT store_id,
+        COUNT(*) AS "orderCount",
+        SUM(CASE WHEN status IN ('processing', 'delivered') THEN 1 ELSE 0 END) AS "paidOrderCount",
+        SUM(CASE WHEN status IN ('pending_payment', 'processing') THEN 1 ELSE 0 END) AS "openOrderCount",
+        SUM(CASE WHEN status IN ('processing', 'delivered') THEN total_cents ELSE 0 END) AS sales,
+        COUNT(DISTINCT customer_id) AS "customerCount",
+        MAX(created_at) AS "lastOrderAt"
+      FROM orders GROUP BY store_id
+    ) o ON o.store_id = s.id
+    LEFT JOIN (
+      SELECT store_id, COUNT(*) AS "eventOrderCount",
+        SUM(CASE WHEN status IN ('new', 'deposit_paid') THEN 1 ELSE 0 END) AS "eventNeedsActionCount"
+      FROM event_orders GROUP BY store_id
+    ) e ON e.store_id = s.id
+    LEFT JOIN (
+      SELECT store_id, COUNT(*) AS "cakeRequestCount",
+        SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) AS "newCakeRequestCount"
+      FROM cake_requests GROUP BY store_id
+    ) c ON c.store_id = s.id
+    LEFT JOIN (
+      SELECT o.store_id, COUNT(*) AS "reviewCount",
+        SUM(CASE WHEN mr.is_approved = 0 THEN 1 ELSE 0 END) AS "pendingReviewCount",
+        AVG(mr.rating) AS "averageRating"
+      FROM menu_reviews mr JOIN orders o ON o.id = mr.order_id
+      GROUP BY o.store_id
+    ) r ON r.store_id = s.id
     ${storeFilter}
     ORDER BY s.town, s.area
-  `).all(...parameters)).map((store) => ({ ...store, isActive: Boolean(store.isActive) }))
+  `).all(...parameters)).map((store) => ({
+    ...store,
+    isActive: Boolean(store.isActive),
+    pickupEnabled: Boolean(store.pickupEnabled),
+    deliveryEnabled: Boolean(store.deliveryEnabled),
+    orderCount: Number(store.orderCount),
+    paidOrderCount: Number(store.paidOrderCount),
+    openOrderCount: Number(store.openOrderCount),
+    sales: Number(store.sales),
+    customerCount: Number(store.customerCount),
+    eventOrderCount: Number(store.eventOrderCount),
+    eventNeedsActionCount: Number(store.eventNeedsActionCount),
+    cakeRequestCount: Number(store.cakeRequestCount),
+    newCakeRequestCount: Number(store.newCakeRequestCount),
+    reviewCount: Number(store.reviewCount),
+    pendingReviewCount: Number(store.pendingReviewCount),
+    averageRating: Number(store.averageRating),
+  }))
   response.json({ stores })
 })
 

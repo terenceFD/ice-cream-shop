@@ -34,6 +34,7 @@ async function resizeProfilePicture(file: File): Promise<string> {
 
 const navItems = [
   { to: '/admin/overview', label: 'Store overview', group: 'Overview', icon: 'overview' },
+  { to: '/admin/stores', label: 'Stores', group: 'Overview', icon: 'store' },
   { to: '/admin', label: 'Flavors', group: 'Catalog', icon: 'icecream', end: true },
   { to: '/admin/menu', label: 'Menu management', group: 'Catalog', icon: 'menu' },
   { to: '/admin/inventory', label: 'Menu inventory', group: 'Catalog', icon: 'inventory' },
@@ -59,6 +60,7 @@ const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed'
 
 const navIconPaths: Record<string, string> = {
   overview: 'M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z',
+  store: 'M4 10h16l-1.5-5h-13L4 10Zm0 0v10h16V10M9 20v-5h6v5',
   icecream: 'M12 3a6 6 0 0 0-3.55 10.84L12 21l3.55-7.16A6 6 0 0 0 12 3Zm-3.5 7h7',
   menu: 'M4 6h16M4 12h16M4 18h16',
   inventory: 'M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9ZM4 7.5l8 4.5m0 0 8-4.5m-8 4.5V21',
@@ -119,6 +121,7 @@ export function AdminLayout() {
   }, [location.pathname])
   const storeNavItems = navItems.filter((item) => [
     '/admin/overview',
+    '/admin/stores',
     '/admin/orders',
     '/admin/delivered',
     '/admin/payments',
@@ -142,6 +145,7 @@ export function AdminLayout() {
   const [selectedBranch, setSelectedBranch] = useState(() => {
     try {
       const savedBranch = sessionStorage.getItem(ADMIN_STORE_TOWN_KEY)
+      if (savedBranch === 'all') return 'ALL'
       return savedBranch === 'Yaoundé' ? 'Yaoundé' : 'Douala'
     } catch {
       return 'Douala'
@@ -233,7 +237,13 @@ export function AdminLayout() {
 
   useEffect(() => {
     const branch = isOwner ? selectedBranch : isBranchAdmin ? currentAdmin?.branchTown : null
-    if (branch === 'Douala' || branch === 'Yaoundé') {
+    if (branch === 'ALL' && isOwner) {
+      try {
+        sessionStorage.setItem(ADMIN_STORE_TOWN_KEY, 'all')
+      } catch {
+        // The all-branches view remains selected for this page view.
+      }
+    } else if (branch === 'Douala' || branch === 'Yaoundé') {
       try {
         sessionStorage.setItem(ADMIN_STORE_TOWN_KEY, branch)
       } catch {
@@ -250,7 +260,8 @@ export function AdminLayout() {
   }, [currentAdmin?.branchTown, isBranchAdmin, isOwner, selectedBranch])
 
   const refreshNavigationCounts = useCallback(async () => {
-    const branchQuery = hasTownScope ? `?storeTown=${encodeURIComponent(selectedBranch)}` : ''
+    const selectedStoreTown = selectedBranch === 'ALL' ? 'all' : selectedBranch
+    const branchQuery = hasTownScope ? `?storeTown=${encodeURIComponent(selectedStoreTown)}` : ''
     const failures = await Promise.all([
       refreshNavigationCount(
         'Orders',
@@ -408,7 +419,7 @@ export function AdminLayout() {
                     role="menu"
                   >
                     <p className="px-3 pb-1.5 pt-2 text-[9px] font-extrabold uppercase tracking-[0.13em] text-[#91a0b1]">{t('Choose a branch')}</p>
-                    {(['Douala', 'Yaoundé'] as const).map((branch) => {
+                    {(isOwner ? ['ALL', 'Douala', 'Yaoundé'] as const : ['Douala', 'Yaoundé'] as const).map((branch) => {
                       const isSelected = selectedBranch === branch
                       return (
                         <button
@@ -421,7 +432,7 @@ export function AdminLayout() {
                           onClick={() => {
                             if (!isOwner) return
                             try {
-                              sessionStorage.setItem(ADMIN_STORE_TOWN_KEY, branch)
+                              sessionStorage.setItem(ADMIN_STORE_TOWN_KEY, branch === 'ALL' ? 'all' : branch)
                             } catch {
                               // The branch remains selected for this page view.
                             }
@@ -439,7 +450,7 @@ export function AdminLayout() {
                           </span>
                           <span className="flex-1">
                             <span className="block text-xs font-bold">{t(branch)}</span>
-                            <span className="mt-0.5 block text-[10px] text-[#91a0b1]">{t('Shop Branch')}</span>
+                            <span className="mt-0.5 block text-[10px] text-[#91a0b1]">{t(branch === 'ALL' ? 'All branches' : 'Shop Branch')}</span>
                           </span>
                           {isSelected && (
                             <svg aria-hidden="true" className="size-4 text-[#2c7a4f]" fill="none" viewBox="0 0 24 24">
@@ -858,8 +869,19 @@ export function AdminLayout() {
                                 <svg aria-hidden="true" className="size-[17px]" fill="none" viewBox="0 0 24 24">
                                   <path d={navIconPaths[item.icon]} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
                                 </svg>
-                                {isSidebarCollapsed && count !== null && count > 0 && (
-                                  <span aria-hidden="true" className="absolute -right-1 -top-1 hidden size-2.5 rounded-full bg-[#ff6b5e] ring-2 ring-[#0b2e57] lg:block" />
+                                {isSidebarCollapsed && count !== null && (
+                                  item.label === 'Event orders'
+                                    ? (
+                                      <span
+                                        aria-hidden="true"
+                                        className="absolute -right-2 -top-1 hidden min-w-4 rounded-full bg-[#ffdc32] px-1 text-center text-[9px] font-extrabold leading-4 text-[#092a53] ring-2 ring-[#0b2e57] lg:block"
+                                      >
+                                        {count > 99 ? '99+' : count}
+                                      </span>
+                                    )
+                                    : count > 0 && (
+                                      <span aria-hidden="true" className="absolute -right-1 -top-1 hidden size-2.5 rounded-full bg-[#ff6b5e] ring-2 ring-[#0b2e57] lg:block" />
+                                    )
                                 )}
                               </span>
                               <span className={`min-w-0 flex-1 truncate ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>{t(item.label)}</span>
