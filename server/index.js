@@ -45,6 +45,7 @@ import {
   markContactMessageRead,
   markContactMessageReplied,
   createMenuReview,
+  deleteMenuReview,
   registerCustomer,
   removeCustomerFavorite,
   rollbackCheckoutOrder,
@@ -2823,6 +2824,21 @@ app.patch('/api/admin/reviews/:id/approval', requireAdmin, async (request, respo
     return
   }
   response.json({ id, isApproved: request.body.isApproved })
+})
+
+app.delete('/api/admin/reviews/:id', requireAdmin, async (request, response) => {
+  const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Provide a valid review.' })
+    return
+  }
+  const storeId = request.admin.role === 'owner' ? null : request.admin.storeId
+  const result = await deleteMenuReview(id, storeId)
+  if (!result) {
+    response.status(404).json({ error: 'Review not found.' })
+    return
+  }
+  response.json({ id })
 })
 
 app.get('/api/admin/stock-alerts', requireAdmin, ownerOnly, async (_request, response) => {

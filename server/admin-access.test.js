@@ -14,6 +14,7 @@ test('permits store-scoped operations only', () => {
     ['DELETE', '/orders/42/stale-payment'],
     ['DELETE', '/orders/delivered'],
     ['PATCH', '/reviews/7/approval'],
+    ['DELETE', '/reviews/7'],
     ['PATCH', '/cake-requests/12/status'],
     ['PATCH', '/notifications/14/read'],
     ['POST', '/notifications/14/reply'],

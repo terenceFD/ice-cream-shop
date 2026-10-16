@@ -2102,6 +2102,17 @@ export async function setReviewApproval(id, isApproved) {
   })()
 }
 
+export async function deleteMenuReview(id, storeId = null) {
+  const storeFilter = storeId === null
+    ? ''
+    : ' AND EXISTS (SELECT 1 FROM orders WHERE orders.id = menu_reviews.order_id AND orders.store_id = ?)'
+  const parameters = storeId === null ? [id] : [id, storeId]
+  const result = await database.prepare(`DELETE FROM menu_reviews WHERE id = ?${storeFilter}`)
+    .run(...parameters)
+  if (!result.changes) return null
+  return { id }
+}
+
 export async function addCustomerFavorite(customerId, itemId) {
   const result = await database.prepare(
     'INSERT OR IGNORE INTO customer_favorites (customer_id, item_id) VALUES (?, ?)',

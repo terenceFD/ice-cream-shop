@@ -13,6 +13,7 @@ export function storeAdminCanAccess(method, path) {
   if (normalizedMethod === 'DELETE' && normalizedPath === '/orders/delivered') return true
   if (normalizedMethod === 'DELETE' && /^\/orders\/\d+\/stale-payment$/.test(normalizedPath)) return true
   if (normalizedMethod === 'PATCH' && /^\/reviews\/\d+\/approval$/.test(normalizedPath)) return true
+  if (normalizedMethod === 'DELETE' && /^\/reviews\/\d+$/.test(normalizedPath)) return true
   if (normalizedMethod === 'PATCH' && /^\/cake-requests\/\d+\/status$/.test(normalizedPath)) return true
   if (normalizedMethod === 'GET' && normalizedPath === '/event-orders') return true
   if (normalizedMethod === 'PATCH' && /^\/event-orders\/\d+$/.test(normalizedPath)) return true

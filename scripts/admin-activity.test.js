@@ -9,6 +9,7 @@ test('admin activity entries read as plain sentences', () => {
   assert.equal(describeAdminActivity('PATCH', '/api/admin/orders/54/delivered').label, 'Marked order #{id} delivered')
   assert.equal(describeAdminActivity('DELETE', '/api/admin/orders/delivered').label, 'Cleared delivered orders')
   assert.equal(describeAdminActivity('DELETE', '/api/admin/orders/7').label, 'Deleted order #{id}')
+  assert.equal(describeAdminActivity('DELETE', '/api/admin/reviews/7').label, 'Rejected and deleted review #{id}')
 })
 
 test('an unknown request still gets a readable fallback', () => {

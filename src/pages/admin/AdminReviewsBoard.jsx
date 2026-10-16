@@ -14,6 +14,7 @@ const icons = {
   clock: 'M12 7v5l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
   check: 'm5 12.5 4.5 4.5L19 7.5',
   checks: 'm2 12.5 4.5 4.5L16 7.5m-2 9.5 1 1L22 7.5',
+  trash: 'M4 7h16m-10 4v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3',
   eyeOff: 'M3 3l18 18M10.6 5.1A9.7 9.7 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-2.6 3.4M6.6 6.6C3.9 8.3 2.5 12 2.5 12S6 19 12 19a9 9 0 0 0 4.4-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2',
   alert: 'M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
   close: 'M6 6l12 12M18 6 6 18',
@@ -89,6 +90,8 @@ export function AdminReviewsBoard() {
   const [sortBy, setSortBy] = useState('newest')
   const [bulkProgress, setBulkProgress] = useState(null)
   const [isConfirmingBulk, setIsConfirmingBulk] = useState(false)
+  const [reviewToReject, setReviewToReject] = useState(null)
+  const [deletingReviewId, setDeletingReviewId] = useState(null)
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true)
@@ -150,6 +153,25 @@ export function AdminReviewsBoard() {
       setError(updateError.message)
     } finally {
       setUpdatingIds((current) => current.filter((id) => id !== review.id))
+    }
+  }
+
+  async function rejectReview() {
+    if (!reviewToReject) return
+    const review = reviewToReject
+    setError('')
+    setMessage('')
+    setDeletingReviewId(review.id)
+    try {
+      await request(`/admin/reviews/${review.id}`, { method: 'DELETE' })
+      setPendingReviews((current) => current.filter((entry) => entry.id !== review.id))
+      setApprovedReviews((current) => current.filter((entry) => entry.id !== review.id))
+      setReviewToReject(null)
+      setMessage(t('Review rejected and deleted.'))
+    } catch (deleteError) {
+      setError(deleteError.message)
+    } finally {
+      setDeletingReviewId(null)
     }
   }
 
@@ -448,15 +470,26 @@ export function AdminReviewsBoard() {
                             {isUpdating ? t('Saving…') : t('Unpublish review')}
                           </button>
                         ) : (
-                          <button
-                            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#35a36b] px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#2c8a59] disabled:cursor-wait"
-                            disabled={isUpdating || bulkProgress !== null}
-                            onClick={() => setApproval(review, true)}
-                            type="button"
-                          >
-                            <Icon path={icons.check} />
-                            {isUpdating ? t('Saving…') : t('Approve review')}
-                          </button>
+                          <>
+                            <button
+                              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#35a36b] px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#2c8a59] disabled:cursor-wait"
+                              disabled={isUpdating || bulkProgress !== null}
+                              onClick={() => setApproval(review, true)}
+                              type="button"
+                            >
+                              <Icon path={icons.check} />
+                              {isUpdating ? t('Saving…') : t('Approve review')}
+                            </button>
+                            <button
+                              className="inline-flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-lg border border-[#f1d5d2] bg-[#fffafa] px-3.5 text-xs font-bold text-[#a53f37] shadow-sm transition duration-150 hover:border-[#e8b8b3] hover:bg-[#fff1ef] hover:shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d2544b] active:scale-[0.98] disabled:cursor-wait disabled:opacity-60"
+                              disabled={isUpdating || bulkProgress !== null}
+                              onClick={() => { setError(''); setMessage(''); setReviewToReject(review) }}
+                              type="button"
+                            >
+                              <Icon path={icons.trash} />
+                              {t('Reject')}
+                            </button>
+                          </>
                         )}
                       </div>
                     </article>
@@ -507,6 +540,54 @@ export function AdminReviewsBoard() {
               <button className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#35a36b] px-4 text-sm font-bold text-white transition hover:bg-[#2c8a59]" onClick={approveAllVisible} type="button">
                 <Icon path={icons.checks} />
                 {t('Approve')}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+      {reviewToReject && (
+        <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
+          <button
+            aria-label={t('Cancel')}
+            className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]"
+            disabled={deletingReviewId === reviewToReject.id}
+            onClick={() => setReviewToReject(null)}
+            tabIndex={-1}
+            type="button"
+          />
+          <section
+            aria-labelledby="reject-review-title"
+            aria-modal="true"
+            className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]"
+            role="dialog"
+          >
+            <span className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600">
+              <Icon className="size-6" path={icons.trash} />
+            </span>
+            <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="reject-review-title">
+              {t('Reject and delete this review?')}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#65748a]">
+              {t('This will permanently delete the review from {name}. This cannot be undone.', { name: reviewToReject.customerName })}
+            </p>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
+            <div className="mt-6 flex justify-end gap-2.5">
+              <button
+                className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] disabled:opacity-60"
+                disabled={deletingReviewId === reviewToReject.id}
+                onClick={() => setReviewToReject(null)}
+                type="button"
+              >
+                {t('Cancel')}
+              </button>
+              <button
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                disabled={deletingReviewId === reviewToReject.id}
+                onClick={rejectReview}
+                type="button"
+              >
+                <Icon path={icons.trash} />
+                {deletingReviewId === reviewToReject.id ? t('Deleting…') : t('Reject review')}
               </button>
             </div>
           </section>
