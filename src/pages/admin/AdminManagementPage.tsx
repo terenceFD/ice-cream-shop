@@ -313,13 +313,10 @@ export function AdminManagementPage() {
   const towns = ["Douala", "Yaoundé"].filter((town) => stores.some((store) => store.town === town));
   const coverage = useMemo(() => stores.map((store) => ({
     store,
-    admins: admins.filter((admin) => (
-      admin.role === "store_admin" && admin.storeId === store.id
-    ) || (
-      admin.role === "branch_admin" && admin.branchTown === store.town
-    )),
+    storeAdmins: admins.filter((admin) => admin.role === "store_admin" && admin.storeId === store.id),
+    branchAdmins: admins.filter((admin) => admin.role === "branch_admin" && admin.branchTown === store.town),
   })), [admins, stores]);
-  const uncoveredCount = coverage.filter((entry) => !entry.admins.length).length;
+  const uncoveredCount = coverage.filter((entry) => !entry.storeAdmins.length && !entry.branchAdmins.length).length;
 
   const visibleAdmins = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -437,12 +434,14 @@ export function AdminManagementPage() {
     {
       label: "Individual stores",
       choices: stores.map((store) => {
-        const assigned = coverage.find((entry) => entry.store.id === store.id)?.admins.length || 0;
+        const storeCoverage = coverage.find((entry) => entry.store.id === store.id);
+        const assignedStoreAdmins = storeCoverage?.storeAdmins.length || 0;
+        const hasBranchAdmin = (storeCoverage?.branchAdmins.length || 0) > 0;
         return {
           value: `store:${store.id}`,
           title: store.name,
           description: store.town,
-          badge: assigned ? `${assigned} admins` : "No admin yet",
+          badge: assignedStoreAdmins ? `${assignedStoreAdmins} admins` : hasBranchAdmin ? "Branch access only" : "No admin yet",
           kind: "store",
         };
       }),
@@ -641,36 +640,45 @@ export function AdminManagementPage() {
             </div>
           )}
           <ul className="mt-4 space-y-2">
-            {coverage.map(({ store, admins: storeAdmins }) => (
-              <li className={`flex items-center gap-3 rounded-xl p-3 ring-1 ${storeAdmins.length ? "bg-[#fafbfd] ring-[#eef2f6]" : "bg-[#fffafa] ring-[#f6dcd8]"}`} key={store.id}>
-                <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${storeAdmins.length ? "bg-[#e5f4ea] text-[#2c7a4f]" : "bg-[#fdecea] text-[#b2433a]"}`}>
-                  <Icon path={storeAdmins.length ? icons.store : icons.alert} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-[#102c50]">{t(store.name)}</p>
-                  <p className="truncate text-[11px] text-[#8190a1]">{t(store.town)}</p>
-                </div>
-                {storeAdmins.length ? (
-                  <div className="flex -space-x-2">
-                    {storeAdmins.slice(0, 3).map((admin) => (
-                      <span className="rounded-xl ring-2 ring-white" key={admin.id} title={admin.name}>
-                        <Avatar className="size-7" name={admin.name} picture={admin.profilePicture} />
-                      </span>
-                    ))}
-                    {storeAdmins.length > 3 && <span className="grid size-7 place-items-center rounded-xl bg-[#f1f4f8] text-[10px] font-extrabold text-[#65748a] ring-2 ring-white">+{storeAdmins.length - 3}</span>}
+            {coverage.map(({ store, storeAdmins, branchAdmins }) => {
+              const hasAdminCoverage = storeAdmins.length > 0 || branchAdmins.length > 0;
+              const branchAdminNames = branchAdmins.map((admin) => admin.name).join(", ");
+              return (
+                <li className={`flex items-center gap-3 rounded-xl p-3 ring-1 ${hasAdminCoverage ? "bg-[#fafbfd] ring-[#eef2f6]" : "bg-[#fffafa] ring-[#f6dcd8]"}`} key={store.id}>
+                  <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${hasAdminCoverage ? "bg-[#e5f4ea] text-[#2c7a4f]" : "bg-[#fdecea] text-[#b2433a]"}`}>
+                    <Icon path={hasAdminCoverage ? icons.store : icons.alert} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-[#102c50]">{t(store.name)}</p>
+                    <p className="truncate text-[11px] text-[#8190a1]">{t(store.town)}</p>
+                    {branchAdmins.length > 0 && (
+                      <p className="mt-1 truncate text-[10px] font-semibold text-[#8a7000]" title={`${t("Branch admin")}: ${branchAdminNames}`}>
+                        {t("Branch admin")}: {branchAdminNames}
+                      </p>
+                    )}
                   </div>
-                ) : (
-                  <button
-                    className="inline-flex min-h-8 shrink-0 items-center gap-1 rounded-lg bg-[#092a53] px-2.5 text-[11px] font-bold text-white transition hover:bg-[#163e6b]"
-                    onClick={() => openForm(store.id)}
-                    type="button"
-                  >
-                    <Icon className="size-3.5" path={icons.plus} />
-                    {t("Assign")}
-                  </button>
-                )}
-              </li>
-            ))}
+                  {storeAdmins.length ? (
+                    <div className="flex -space-x-2">
+                      {storeAdmins.slice(0, 3).map((admin) => (
+                        <span className="rounded-xl ring-2 ring-white" key={admin.id} title={admin.name}>
+                          <Avatar className="size-7" name={admin.name} picture={admin.profilePicture} />
+                        </span>
+                      ))}
+                      {storeAdmins.length > 3 && <span className="grid size-7 place-items-center rounded-xl bg-[#f1f4f8] text-[10px] font-extrabold text-[#65748a] ring-2 ring-white">+{storeAdmins.length - 3}</span>}
+                    </div>
+                  ) : (
+                    <button
+                      className="inline-flex min-h-8 shrink-0 items-center gap-1 rounded-lg bg-[#092a53] px-2.5 text-[11px] font-bold text-white transition hover:bg-[#163e6b]"
+                      onClick={() => openForm(store.id)}
+                      type="button"
+                    >
+                      <Icon className="size-3.5" path={icons.plus} />
+                      {t("Assign")}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
             {!stores.length && !isLoadingAdmins && <li className="rounded-xl bg-[#f7f9fc] p-4 text-center text-sm text-[#8190a1]">{t("No stores found.")}</li>}
           </ul>
         </aside>

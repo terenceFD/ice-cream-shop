@@ -134,7 +134,7 @@ Admin image uploads (menu items and flavors, including "Upload from device" in t
 
 ### Store admin access
 
-An owner account has access to all stores and can create a store admin from **Admin accounts**, assigning that login to one branch. Store admins can access only that branch's orders, payments, related customer accounts, order reviews, custom-cake requests, event orders, contact messages, and sales reports; the server enforces the same scope for reads and updates. Catalog, inventory, discounts, promotion notifications, and fulfillment configuration remain owner-managed.
+An owner account has access to all stores. From **Admin accounts**, the owner can assign a branch admin to a whole town or assign a store admin to one store. Branch admins can see and manage operational data across **all stores in their assigned town**—including orders, payments, related customer accounts, order reviews, custom-cake requests, event orders, contact messages, and sales reports. Adding a store admin does not narrow or replace the branch admin's town-wide access. Store admins remain limited to their individually assigned store. The server enforces these scopes for reads and updates. Catalog, inventory, discounts, promotion notifications, and fulfillment configuration remain owner-managed.
 
 ### Menu products
 
