@@ -13,6 +13,7 @@ process.env.DATABASE_PATH = join(directory, 'scope.sqlite')
 const {
   createCakeRequest,
   createContactMessage,
+  createAdminAccount,
   database,
   deleteContactMessage,
   deleteContactMessages,
@@ -62,6 +63,62 @@ test('cake requests and status updates are scoped to one store while an unscoped
     id: second.id,
     status: 'confirmed',
   })
+})
+
+test('branch-scoped cake and contact-message actions stay within the selected town', async () => {
+  const branches = database.prepare(`
+    SELECT MIN(id) AS id, town FROM stores GROUP BY town ORDER BY town
+  `).all()
+  assert.deepEqual(new Set(branches.map(({ town }) => town)), new Set(['Douala', 'Yaoundé']))
+
+  const requests = await Promise.all(branches.map(({ id }, index) => createCakeRequest({
+    customerId: null,
+    storeId: id,
+    customerName: `Branch ${index}`,
+    customerEmail: `branch-${index}@example.com`,
+    customerPhone: '000000000',
+    size: 'Medium',
+    flavor: 'Vanilla',
+    message: '',
+    toppings: [],
+    pickupDate: '2026-12-01',
+  })))
+
+  for (const [index, branch] of branches.entries()) {
+    const branchRequests = await listCakeRequests(null, branch.town)
+    assert.ok(branchRequests.some(({ id }) => id === requests[index].id))
+    const otherRequest = requests[1 - index]
+    assert.equal(await setCakeRequestStatus(otherRequest.id, 'contacted', null, branch.town), null)
+    assert.equal(database.prepare('SELECT status FROM cake_requests WHERE id = ?').get(otherRequest.id).status, 'new')
+  }
+
+  const messages = await Promise.all(branches.map(({ id, town }) => createContactMessage({
+    name: town,
+    email: `${town.toLowerCase()}@example.com`,
+    phone: '',
+    subject: town,
+    message: `Message for ${town}`,
+    storeId: id,
+  })))
+  assert.equal(await markContactMessageRead(messages[1].messageId, null, false, branches[0].town), false)
+  assert.equal(await markContactMessageRead(messages[0].messageId, null, false, branches[0].town), true)
+  assert.equal(await deleteContactMessages(null, false, branches[0].town), 1)
+  assert.ok(database.prepare('SELECT id FROM contact_messages WHERE id = ?').get(messages[1].messageId))
+  assert.equal(await deleteContactMessage(messages[1].messageId), true)
+})
+
+test('branch administrator accounts are assigned to a town rather than a single store', async () => {
+  const admin = await createAdminAccount({
+    name: 'Douala Manager',
+    email: 'douala-manager@example.com',
+    passwordHash: 'test-password-hash',
+    branchTown: 'Douala',
+  })
+
+  assert.equal(admin.role, 'branch_admin')
+  assert.equal(admin.branchTown, 'Douala')
+  assert.equal(admin.storeId, null)
+  assert.equal(admin.storeName, null)
 })
 
 test('store-scoped contact-message actions cannot affect another store, while owner actions are unscoped', async () => {

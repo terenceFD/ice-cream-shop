@@ -16,6 +16,7 @@ test('permits store-scoped operations only', () => {
     ['PATCH', '/reviews/7/approval'],
     ['DELETE', '/reviews/7'],
     ['PATCH', '/cake-requests/12/status'],
+    ['DELETE', '/event-orders/42'],
     ['PATCH', '/notifications/14/read'],
     ['POST', '/notifications/14/reply'],
     ['DELETE', '/notifications/14'],
@@ -51,6 +52,7 @@ test('blocks access to business-wide records and settings', () => {
     ['GET', '/orders/43/status'],
     ['POST', '/notifications'],
     ['GET', '/notifications/14'],
+    ['DELETE', '/event-orders/not-a-number'],
   ]) {
     assert.equal(storeAdminCanAccess(method, path), false, `${method} ${path}`)
   }

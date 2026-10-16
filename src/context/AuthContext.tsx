@@ -30,7 +30,8 @@ export interface AuthContextValue {
   customer: Customer | null;
   isLoading: boolean;
   sessionError: string;
-  signup: (credentials: { name: string; email: string; password: string; profilePicture?: string }) => Promise<Customer>;
+  requestSignupVerification: (credentials: { name: string; email: string; password: string; profilePicture?: string }) => Promise<{ verificationId: string; expiresInSeconds: number }>;
+  signup: (credentials: { verificationId: string; code: string }) => Promise<Customer>;
   login: (credentials: { email: string; password: string }) => Promise<Customer>;
   logout: () => Promise<void>;
   updateProfile: (profile: CustomerProfile) => Promise<Customer>;
@@ -108,8 +109,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result.customer;
   }
 
-  function signup({ name, email, password, profilePicture = "" }: { name: string; email: string; password: string; profilePicture?: string }) {
-    return authenticate("/auth/register", { name, email, password, profilePicture });
+  function requestSignupVerification(credentials: { name: string; email: string; password: string; profilePicture?: string }) {
+    return apiRequest<{ verificationId: string; expiresInSeconds: number }>("/auth/register/request-verification", {
+      method: "POST",
+      body: credentials,
+    });
+  }
+
+  function signup({ verificationId, code }: { verificationId: string; code: string }) {
+    return authenticate("/auth/register/verify", { verificationId, code });
   }
 
   async function login({ email, password }: { email: string; password: string }): Promise<Customer> {
@@ -155,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ customer, isLoading, sessionError, signup, login, logout, updateProfile }}
+      value={{ customer, isLoading, sessionError, requestSignupVerification, signup, login, logout, updateProfile }}
     >
       {children}
     </AuthContext.Provider>

@@ -71,6 +71,7 @@ if (configuredDatabaseBackend === "postgres") {
       profile_picture TEXT NOT NULL DEFAULT '',
       role TEXT NOT NULL DEFAULT 'owner',
       store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL,
+      branch_town TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -84,6 +85,18 @@ if (configuredDatabaseBackend === "postgres") {
       delivery_city TEXT NOT NULL DEFAULT '',
       delivery_residence TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS pending_customer_signups (
+      email TEXT PRIMARY KEY COLLATE NOCASE,
+      verification_id TEXT NOT NULL UNIQUE,
+      code_hash TEXT NOT NULL,
+      name TEXT NOT NULL,
+      password_hash TEXT NOT NULL,
+      profile_picture TEXT NOT NULL DEFAULT '',
+      attempts INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      expires_at TEXT NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS flavors (
@@ -552,6 +565,7 @@ if (configuredDatabaseBackend === "postgres") {
     "store_id",
     "INTEGER REFERENCES stores(id) ON DELETE SET NULL",
   );
+  addColumnIfMissing("admins", "branch_town", "TEXT");
   addColumnIfMissing(
     "cake_requests",
     "store_id",
@@ -703,6 +717,20 @@ if (configuredDatabaseBackend === "postgres") {
 export async function verifyDatabaseSchema() {
   if (databaseKind !== "postgres") return;
 
+  await database.prepare(`
+    CREATE TABLE IF NOT EXISTS pending_customer_signups (
+      email TEXT PRIMARY KEY,
+      verification_id TEXT NOT NULL UNIQUE,
+      code_hash TEXT NOT NULL,
+      name TEXT NOT NULL,
+      password_hash TEXT NOT NULL,
+      profile_picture TEXT NOT NULL DEFAULT '',
+      attempts INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      expires_at TEXT NOT NULL
+    )
+  `).run();
+
   const requiredTables = [
     "admins",
     "admin_activity",
@@ -722,6 +750,7 @@ export async function verifyDatabaseSchema() {
     "menu_reviews",
     "order_items",
     "orders",
+    "pending_customer_signups",
     "payments",
     "stores",
   ];
@@ -745,6 +774,9 @@ export async function verifyDatabaseSchema() {
   `).run();
   await database.prepare(`
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
+  `).run();
+  await database.prepare(`
+    ALTER TABLE admins ADD COLUMN IF NOT EXISTS branch_town TEXT
   `).run();
   await database.prepare(`
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS security_pin_hash TEXT
@@ -1884,7 +1916,8 @@ export async function updateAdminProfilePicture(adminId, profilePicture) {
         .run(profilePicture, adminId);
       return database.prepare(`
         SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
-          a.role, a.store_id AS "storeId", s.name AS "storeName"
+          a.role, a.store_id AS "storeId", s.name AS "storeName",
+          s.town AS "storeTown", a.branch_town AS "branchTown"
         FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
       `).get(adminId);
     });
@@ -1894,7 +1927,8 @@ export async function updateAdminProfilePicture(adminId, profilePicture) {
     database.prepare('UPDATE admins SET profile_picture = ? WHERE id = ?').run(profilePicture, adminId)
     return database.prepare(`
       SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
-        a.role, a.store_id AS "storeId", s.name AS "storeName"
+        a.role, a.store_id AS "storeId", s.name AS "storeName",
+        s.town AS "storeTown", a.branch_town AS "branchTown"
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(adminId)
   })()
@@ -1918,9 +1952,9 @@ export async function setCustomerBanStatus(id, isBanned) {
   })()
 }
 
-export async function clearDeliveredOrders(storeId = null) {
-  const storeFilter = storeId === null ? '' : ' AND store_id = ?'
-  const parameters = storeId === null ? [] : [storeId]
+export async function clearDeliveredOrders(storeId = null, storeTown = null) {
+  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}`
+  const parameters = [...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const count = Number((await database.prepare(
@@ -1947,16 +1981,18 @@ export async function clearDeliveredOrders(storeId = null) {
   })()
 }
 
-export async function createAdminAccount({ name, email, passwordHash, profilePicture = '', storeId }) {
+export async function createAdminAccount({ name, email, passwordHash, profilePicture = '', storeId = null, branchTown = null }) {
+  const role = branchTown === null ? 'store_admin' : 'branch_admin'
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const result = await database.prepare(`
-        INSERT INTO admins (name, email, password_hash, profile_picture, role, store_id)
-        VALUES (?, ?, ?, ?, 'store_admin', ?)
-      `).run(name, email, passwordHash, profilePicture, storeId);
+        INSERT INTO admins (name, email, password_hash, profile_picture, role, store_id, branch_town)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(name, email, passwordHash, profilePicture, role, storeId, branchTown);
       return database.prepare(`
         SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
-          a.role, a.store_id AS "storeId", s.name AS "storeName"
+          a.role, a.store_id AS "storeId", s.name AS "storeName",
+          s.town AS "storeTown", a.branch_town AS "branchTown"
         FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
       `).get(Number(result.lastInsertRowid));
     });
@@ -1964,12 +2000,13 @@ export async function createAdminAccount({ name, email, passwordHash, profilePic
 
   return database.transaction(() => {
     const result = database.prepare(`
-      INSERT INTO admins (name, email, password_hash, profile_picture, role, store_id)
-      VALUES (?, ?, ?, ?, 'store_admin', ?)
-    `).run(name, email, passwordHash, profilePicture, storeId)
+      INSERT INTO admins (name, email, password_hash, profile_picture, role, store_id, branch_town)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(name, email, passwordHash, profilePicture, role, storeId, branchTown)
     return database.prepare(`
       SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
-        a.role, a.store_id AS "storeId", s.name AS "storeName"
+        a.role, a.store_id AS "storeId", s.name AS "storeName",
+        s.town AS "storeTown", a.branch_town AS "branchTown"
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(Number(result.lastInsertRowid))
   })()
@@ -2049,8 +2086,9 @@ export async function updateFulfillmentSlots(slots) {
   })()
 }
 
-export async function listCakeRequests(storeId = null) {
-  const storeFilter = storeId === null ? '' : 'WHERE r.store_id = ?'
+export async function listCakeRequests(storeId = null, storeTown = null) {
+  const storeFilter = `${storeTown === null ? '' : 'WHERE s.town = ?'}${storeId === null ? '' : `${storeTown === null ? 'WHERE' : 'AND'} r.store_id = ?`}`
+  const parameters = [...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
   const requests = await database.prepare(`
     SELECT r.id, r.customer_name AS "customerName", r.customer_email AS "customerEmail",
       r.customer_phone AS "customerPhone", r.size, r.flavor, r.message, r.toppings,
@@ -2058,13 +2096,13 @@ export async function listCakeRequests(storeId = null) {
       s.name AS "storeName", r.created_at AS "createdAt"
     FROM cake_requests r LEFT JOIN stores s ON s.id = r.store_id
     ${storeFilter} ORDER BY r.id DESC LIMIT 200
-  `).all(...(storeId === null ? [] : [storeId]))
+  `).all(...parameters)
   return requests.map((request) => ({ ...request, toppings: JSON.parse(request.toppings) }))
 }
 
-export async function setCakeRequestStatus(id, status, storeId = null) {
-  const storeFilter = storeId === null ? '' : ' AND store_id = ?'
-  const parameters = storeId === null ? [status, id] : [status, id, storeId]
+export async function setCakeRequestStatus(id, status, storeId = null, storeTown = null) {
+  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}`
+  const parameters = [status, id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const result = await database.prepare(
@@ -2084,29 +2122,29 @@ export async function setCakeRequestStatus(id, status, storeId = null) {
   })()
 }
 
-export async function setReviewApproval(id, isApproved) {
+export async function setReviewApproval(id, isApproved, storeId = null, storeTown = null) {
+  const storeFilter = `${storeTown === null ? '' : ' AND EXISTS (SELECT 1 FROM orders JOIN stores ON stores.id = orders.store_id WHERE orders.id = menu_reviews.order_id AND stores.town = ?)'}${storeId === null ? '' : ' AND EXISTS (SELECT 1 FROM orders WHERE orders.id = menu_reviews.order_id AND orders.store_id = ?)'}`
+  const parameters = [isApproved ? 1 : 0, id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const result = await database.prepare("UPDATE menu_reviews SET is_approved = ? WHERE id = ?")
-        .run(isApproved ? 1 : 0, id);
+      const result = await database.prepare(`UPDATE menu_reviews SET is_approved = ? WHERE id = ?${storeFilter}`)
+        .run(...parameters);
       if (!result.changes) return null;
       return { id, isApproved };
     });
   }
 
   return database.transaction(() => {
-    const result = database.prepare('UPDATE menu_reviews SET is_approved = ? WHERE id = ?')
-      .run(isApproved ? 1 : 0, id)
+    const result = database.prepare(`UPDATE menu_reviews SET is_approved = ? WHERE id = ?${storeFilter}`)
+      .run(...parameters)
     if (!result.changes) return null
     return { id, isApproved }
   })()
 }
 
-export async function deleteMenuReview(id, storeId = null) {
-  const storeFilter = storeId === null
-    ? ''
-    : ' AND EXISTS (SELECT 1 FROM orders WHERE orders.id = menu_reviews.order_id AND orders.store_id = ?)'
-  const parameters = storeId === null ? [id] : [id, storeId]
+export async function deleteMenuReview(id, storeId = null, storeTown = null) {
+  const storeFilter = `${storeTown === null ? '' : ' AND EXISTS (SELECT 1 FROM orders JOIN stores ON stores.id = orders.store_id WHERE orders.id = menu_reviews.order_id AND stores.town = ?)'}${storeId === null ? '' : ' AND EXISTS (SELECT 1 FROM orders WHERE orders.id = menu_reviews.order_id AND orders.store_id = ?)'}`
+  const parameters = [id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
   const result = await database.prepare(`DELETE FROM menu_reviews WHERE id = ?${storeFilter}`)
     .run(...parameters)
   if (!result.changes) return null
@@ -2237,18 +2275,16 @@ export async function createContactMessage({ name, email, phone, subject, messag
   return { messageId: Number(result.lastInsertRowid) }
 }
 
-export async function markContactMessageRead(id, storeId = null, unassignedOnly = false) {
-  const result = storeId !== null
-    ? await database.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ? AND store_id = ?').run(id, storeId)
-    : unassignedOnly
-      ? await database.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ? AND store_id IS NULL').run(id)
-      : await database.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ?').run(id)
+export async function markContactMessageRead(id, storeId = null, unassignedOnly = false, storeTown = null) {
+  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}${storeTown === null && storeId === null && unassignedOnly ? ' AND store_id IS NULL' : ''}`
+  const parameters = [id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
+  const result = await database.prepare(`UPDATE contact_messages SET is_read = 1 WHERE id = ?${storeFilter}`).run(...parameters)
   return result.changes > 0
 }
 
-export async function deleteContactMessage(id, storeId = null, unassignedOnly = false) {
-  const storeFilter = storeId !== null ? ' AND store_id = ?' : unassignedOnly ? ' AND store_id IS NULL' : ''
-  const parameters = storeId !== null ? [id, storeId] : [id]
+export async function deleteContactMessage(id, storeId = null, unassignedOnly = false, storeTown = null) {
+  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}${storeTown === null && storeId === null && unassignedOnly ? ' AND store_id IS NULL' : ''}`
+  const parameters = [id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
   const result = await database.prepare(`
     DELETE FROM contact_messages WHERE id = ?
     ${storeFilter}
@@ -2256,16 +2292,17 @@ export async function deleteContactMessage(id, storeId = null, unassignedOnly = 
   return result.changes > 0
 }
 
-export async function deleteContactMessages(storeId = null, unassignedOnly = false) {
-  const storeFilter = storeId !== null ? ' WHERE store_id = ?' : unassignedOnly ? ' WHERE store_id IS NULL' : ''
-  const parameters = storeId !== null ? [storeId] : []
+export async function deleteContactMessages(storeId = null, unassignedOnly = false, storeTown = null) {
+  const hasScope = storeTown !== null || storeId !== null
+  const storeFilter = `${hasScope ? ' WHERE' : unassignedOnly ? ' WHERE store_id IS NULL' : ''}${storeTown === null ? '' : ' store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeTown !== null && storeId !== null ? ' AND' : ''}${storeId === null ? '' : ' store_id = ?'}`
+  const parameters = [...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
   const result = await database.prepare(`DELETE FROM contact_messages${storeFilter}`).run(...parameters)
   return result.changes
 }
 
-export async function markContactMessageReplied(id, storeId = null, unassignedOnly = false) {
-  const storeFilter = storeId !== null ? ' AND store_id = ?' : unassignedOnly ? ' AND store_id IS NULL' : ''
-  const parameters = storeId !== null ? [id, storeId] : [id]
+export async function markContactMessageReplied(id, storeId = null, unassignedOnly = false, storeTown = null) {
+  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}${storeTown === null && storeId === null && unassignedOnly ? ' AND store_id IS NULL' : ''}`
+  const parameters = [id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
   const result = await database.prepare(
     `UPDATE contact_messages SET is_read = 1, replied_at = CURRENT_TIMESTAMP WHERE id = ?${storeFilter}`,
   ).run(...parameters)

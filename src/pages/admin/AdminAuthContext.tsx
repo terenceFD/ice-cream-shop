@@ -7,9 +7,11 @@ export interface AdminAccount {
   name: string;
   email: string;
   profilePicture?: string;
-  role: 'owner' | 'store_admin';
+  role: 'owner' | 'store_admin' | 'branch_admin';
   storeId: number | null;
   storeName: string | null;
+  storeTown?: string | null;
+  branchTown?: string | null;
 }
 
 export interface AdminAuthContextValue {
@@ -20,7 +22,7 @@ export interface AdminAuthContextValue {
   sessionToken: string;
   login: (email: string, password: string) => Promise<AdminAccount>;
   refreshAdmins: () => Promise<AdminAccount[]>;
-  createAdmin: (details: { name: string; email: string; password: string; profilePicture: string; storeId: number }) => Promise<AdminAccount>;
+  createAdmin: (details: { name: string; email: string; password: string; profilePicture: string; storeId?: number; branchTown?: string }) => Promise<AdminAccount>;
   removeAdmin: (id: number) => Promise<void>;
   updateProfilePicture: (profilePicture: string) => Promise<AdminAccount>;
   getSecurityPinStatus: () => Promise<boolean>;
@@ -95,11 +97,11 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     return result.admins
   }, [sessionToken])
 
-  async function createAdmin({ name, email, password, profilePicture, storeId }: { name: string; email: string; password: string; profilePicture: string; storeId: number }) {
+  async function createAdmin({ name, email, password, profilePicture, storeId, branchTown }: { name: string; email: string; password: string; profilePicture: string; storeId?: number; branchTown?: string }) {
     const result = await apiRequest<{ admin: AdminAccount }>('/admin/admins', {
       method: 'POST',
       token: sessionToken,
-      body: { name, email, password, profilePicture, storeId },
+      body: { name, email, password, profilePicture, storeId, branchTown },
     })
     setAdmins((currentAdmins) => [...currentAdmins, result.admin])
     return result.admin

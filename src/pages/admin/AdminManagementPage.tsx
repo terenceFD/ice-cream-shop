@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { PasswordField } from "../../components/PasswordField";
 import { passwordStrength } from "../../components/passwordStrength";
 import { useAdminAuth } from "./useAdminAuth";
@@ -71,11 +71,192 @@ function Avatar({ name, picture, className = "size-10", highlight = false }: { n
   );
 }
 
+type AssignmentChoice = {
+  value: string;
+  title: string;
+  description: string;
+  badge: string;
+  kind: "branch" | "store";
+};
+
+type AssignmentGroup = {
+  label: string;
+  choices: AssignmentChoice[];
+};
+
+function AssignmentPicker({
+  value,
+  groups,
+  onChange,
+  t,
+}: {
+  value: string;
+  groups: AssignmentGroup[];
+  onChange: (value: string) => void;
+  t: (value: string) => string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const choices = groups.flatMap((group) => group.choices);
+  const selectedChoice = choices.find((choice) => choice.value === value);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    function handlePointerDown(event: PointerEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) setIsOpen(false);
+    }
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [isOpen]);
+
+  function handleOptionKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    const option = (event.target as HTMLElement).closest<HTMLElement>("[role='option']");
+    if (!option) return;
+    const currentIndex = Number(option.dataset.index);
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowDown") nextIndex = (currentIndex + 1) % choices.length;
+    if (event.key === "ArrowUp") nextIndex = (currentIndex - 1 + choices.length) % choices.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = choices.length - 1;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      setIsOpen(false);
+      triggerRef.current?.focus();
+      return;
+    }
+    if (nextIndex !== null) {
+      event.preventDefault();
+      containerRef.current?.querySelector<HTMLElement>(`[data-index="${nextIndex}"]`)?.focus();
+      return;
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onChange(choices[currentIndex].value);
+      setIsOpen(false);
+      triggerRef.current?.focus();
+    }
+  }
+
+  let optionIndex = 0;
+  return (
+    <div className="relative mt-1.5" ref={containerRef}>
+      <button
+        aria-controls="admin-assignment-options"
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-labelledby="admin-assignment-label"
+        aria-required="true"
+        className={`group flex min-h-[4.25rem] w-full items-center gap-3 rounded-2xl border bg-white px-4 py-3 text-left shadow-sm transition duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffdc32]/25 ${
+          isOpen ? "border-[#bd9c00] shadow-[0_0_0_1px_#bd9c00]" : "border-[#dbe3ec] hover:border-[#aebdcd] hover:shadow-md"
+        }`}
+        onClick={() => setIsOpen((open) => !open)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            setIsOpen(true);
+            window.setTimeout(() => {
+              const selectedIndex = choices.findIndex((choice) => choice.value === value);
+              const targetIndex = selectedIndex >= 0 ? selectedIndex : 0;
+              containerRef.current?.querySelector<HTMLElement>(`[data-index="${targetIndex}"]`)?.focus();
+            }, 0);
+          }
+        }}
+        ref={triggerRef}
+        type="button"
+      >
+        <span className={`grid size-10 shrink-0 place-items-center rounded-xl transition ${
+          selectedChoice?.kind === "branch" ? "bg-[#fff5c4] text-[#8a7000]" : "bg-[#eaf1f9] text-[#245281]"
+        }`}>
+          <Icon className="size-[1.15rem]" path={selectedChoice?.kind === "branch" ? icons.shield : icons.store} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-bold text-[#102c50]">
+            {selectedChoice ? t(selectedChoice.title) : t("Choose a store or branch")}
+          </span>
+          <span className="mt-0.5 block truncate text-xs text-[#718198]">
+            {selectedChoice ? t(selectedChoice.description) : t("Choose where this admin can access")}
+          </span>
+        </span>
+        {selectedChoice && (
+          <span className="hidden shrink-0 rounded-full bg-[#f1f5f9] px-2.5 py-1 text-[10px] font-bold text-[#526780] sm:inline-flex">
+            {t(selectedChoice.badge)}
+          </span>
+        )}
+        <svg aria-hidden="true" className={`size-4 shrink-0 text-[#718198] transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 20 20">
+          <path d="m5 7.5 5 5 5-5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-2xl border border-[#e3e9f0] bg-white shadow-[0_18px_48px_rgba(9,42,83,0.18)] ring-1 ring-black/[0.03]">
+          <div className="border-b border-[#edf1f5] bg-[#fafbfd] px-4 py-3">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t("Choose access scope")}</p>
+            <p className="mt-0.5 text-xs text-[#65748a]">{t("Select a main branch or an individual store.")}</p>
+          </div>
+          <div
+            aria-label={t("Assigned store or branch")}
+            className="max-h-72 overflow-y-auto p-2"
+            id="admin-assignment-options"
+            onKeyDown={handleOptionKeyDown}
+            role="listbox"
+          >
+            {groups.map((group) => (
+              group.choices.length > 0 && (
+                <div className="py-1" key={group.label}>
+                  <p className="px-2.5 pb-1.5 pt-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8794a4]">{t(group.label)}</p>
+                  <div className="space-y-1">
+                    {group.choices.map((choice) => {
+                      const index = optionIndex++;
+                      const isSelected = choice.value === value;
+                      return (
+                        <div
+                          aria-selected={isSelected}
+                          className={`flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2.5 outline-none transition focus-visible:ring-2 focus-visible:ring-[#bd9c00] ${
+                            isSelected ? "bg-[#f1f6fb]" : "hover:bg-[#f7f9fc]"
+                          }`}
+                          data-index={index}
+                          id={`admin-assignment-option-${index}`}
+                          key={choice.value}
+                          onClick={() => {
+                            onChange(choice.value);
+                            setIsOpen(false);
+                            triggerRef.current?.focus();
+                          }}
+                          role="option"
+                          tabIndex={-1}
+                        >
+                          <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${
+                            choice.kind === "branch" ? "bg-[#fff5c4] text-[#8a7000]" : "bg-[#eaf1f9] text-[#245281]"
+                          }`}>
+                            <Icon className="size-4" path={choice.kind === "branch" ? icons.shield : icons.store} />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-bold text-[#102c50]">{t(choice.title)}</span>
+                            <span className="mt-0.5 block truncate text-xs text-[#718198]">{t(choice.description)}</span>
+                          </span>
+                          <span className="shrink-0 text-[10px] font-semibold text-[#718198]">{t(choice.badge)}</span>
+                          {isSelected && <Icon className="size-4 shrink-0 text-[#26744b]" path={icons.check} />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AdminManagementPage() {
   const { t } = useLanguage();
   const { admins, currentAdmin, createAdmin, removeAdmin, refreshAdmins, sessionToken } = useAdminAuth();
   const [stores, setStores] = useState<{ id: number; name: string; town: string; area: string }[]>([]);
-  const [storeId, setStoreId] = useState("");
+  const [assignment, setAssignment] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -89,16 +270,16 @@ export function AdminManagementPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [adminToRemove, setAdminToRemove] = useState<(typeof admins)[number] | null>(null);
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"all" | "owner" | "store_admin">("all");
+  const [roleFilter, setRoleFilter] = useState<"all" | "owner" | "store_admin" | "branch_admin">("all");
   const isOverlayOpen = isFormOpen || Boolean(adminToRemove);
 
   useEffect(() => {
     Promise.all([
       refreshAdmins(),
-      apiRequest<{ stores: typeof stores }>("/admin/stores", { token: sessionToken }),
+      apiRequest<{ stores: typeof stores }>("/admin/stores?storeTown=all", { token: sessionToken }),
     ]).then(([, result]) => {
       setStores(result.stores);
-      setStoreId(String(result.stores[0]?.id || ""));
+      setAssignment(result.stores[0] ? `store:${result.stores[0].id}` : "");
     }).catch((loadError: unknown) => {
       setError(t(loadError instanceof Error ? loadError.message : "Unable to load admin accounts."));
     }).finally(() => setIsLoadingAdmins(false));
@@ -114,7 +295,7 @@ export function AdminManagementPage() {
     if (!isOverlayOpen) return undefined;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    function handleKeyDown(event: KeyboardEvent) {
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
       if (event.key !== "Escape") return;
       setIsFormOpen(false);
       setAdminToRemove(null);
@@ -127,10 +308,16 @@ export function AdminManagementPage() {
   }, [isOverlayOpen]);
 
   const ownerCount = admins.filter((admin) => admin.role === "owner").length;
-  const storeAdminCount = admins.length - ownerCount;
+  const storeAdminCount = admins.filter((admin) => admin.role === "store_admin").length;
+  const branchAdminCount = admins.filter((admin) => admin.role === "branch_admin").length;
+  const towns = ["Douala", "Yaoundé"].filter((town) => stores.some((store) => store.town === town));
   const coverage = useMemo(() => stores.map((store) => ({
     store,
-    admins: admins.filter((admin) => admin.role !== "owner" && admin.storeId === store.id),
+    admins: admins.filter((admin) => (
+      admin.role === "store_admin" && admin.storeId === store.id
+    ) || (
+      admin.role === "branch_admin" && admin.branchTown === store.town
+    )),
   })), [admins, stores]);
   const uncoveredCount = coverage.filter((entry) => !entry.admins.length).length;
 
@@ -138,14 +325,16 @@ export function AdminManagementPage() {
     const query = search.trim().toLowerCase();
     return admins
       .filter((admin) => roleFilter === "all" || admin.role === roleFilter)
-      .filter((admin) => !query || [admin.name, admin.email, admin.storeName].some((value) => String(value || "").toLowerCase().includes(query)))
-      .sort((a, b) => (a.role === b.role ? a.name.localeCompare(b.name) : a.role === "owner" ? -1 : 1));
+      .filter((admin) => !query || [admin.name, admin.email, admin.storeName, admin.branchTown].some((value) => String(value || "").toLowerCase().includes(query)))
+      .sort((a, b) => (a.role === b.role
+        ? a.name.localeCompare(b.name)
+        : a.role === "owner" ? -1 : b.role === "owner" ? 1 : a.role === "branch_admin" ? -1 : 1));
   }, [admins, roleFilter, search]);
 
   function openForm(presetStoreId?: number) {
     setError("");
     setMessage("");
-    if (presetStoreId) setStoreId(String(presetStoreId));
+    if (presetStoreId) setAssignment(`store:${presetStoreId}`);
     setIsFormOpen(true);
   }
 
@@ -168,6 +357,10 @@ export function AdminManagementPage() {
     event.preventDefault();
     setMessage("");
     setError("");
+    if (!assignment) {
+      setError(t("Choose a store or branch."));
+      return;
+    }
     if (password !== confirmPassword) {
       setError(t("The passwords do not match."));
       return;
@@ -175,14 +368,21 @@ export function AdminManagementPage() {
 
     setIsSaving(true);
     try {
-      await createAdmin({ name, email, password, profilePicture, storeId: Number(storeId) });
+      const [assignmentType, assignmentValue] = assignment.split(":", 2);
+      await createAdmin({
+        name,
+        email,
+        password,
+        profilePicture,
+        ...(assignmentType === "branch" ? { branchTown: assignmentValue } : { storeId: Number(assignmentValue) }),
+      });
 
       setName("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
       setProfilePicture("");
-      setStoreId(String(stores[0]?.id || ""));
+      setAssignment(stores[0] ? `store:${stores[0].id}` : "");
       setIsFormOpen(false);
       setMessage(t("Admin account created. They can sign in with their email and password."));
     } catch (creationError) {
@@ -218,12 +418,41 @@ export function AdminManagementPage() {
     { label: t("Strong"), color: "bg-[#1f7a46]" },
   ][password ? strength : 0];
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
-  const selectedStore = stores.find((store) => String(store.id) === storeId);
+  const [assignmentType, assignmentValue] = assignment.split(":", 2);
+  const selectedStore = assignmentType === "store"
+    ? stores.find((store) => String(store.id) === assignmentValue)
+    : null;
+  const selectedBranch = assignmentType === "branch" ? assignmentValue : "";
+  const assignmentGroups: AssignmentGroup[] = [
+    {
+      label: "Main branches",
+      choices: towns.map((town) => ({
+        value: `branch:${town}`,
+        title: town,
+        description: "All stores in town",
+        badge: `${stores.filter((store) => store.town === town).length} stores`,
+        kind: "branch",
+      })),
+    },
+    {
+      label: "Individual stores",
+      choices: stores.map((store) => {
+        const assigned = coverage.find((entry) => entry.store.id === store.id)?.admins.length || 0;
+        return {
+          value: `store:${store.id}`,
+          title: store.name,
+          description: store.town,
+          badge: assigned ? `${assigned} admins` : "No admin yet",
+          kind: "store",
+        };
+      }),
+    },
+  ];
 
   const metrics = [
     { label: "Admin accounts", value: admins.length, icon: icons.users, accent: "bg-[#e9f1fa] text-[#315982]" },
     { label: "Owners", value: ownerCount, icon: icons.crown, accent: "bg-[#fff4c2] text-[#8a6f00]" },
-    { label: "Store admins", value: storeAdminCount, icon: icons.store, accent: "bg-[#e5f4ea] text-[#2c7a4f]" },
+    { label: "Branch and store admins", value: storeAdminCount + branchAdminCount, icon: icons.store, accent: "bg-[#e5f4ea] text-[#2c7a4f]" },
     { label: "Stores without an admin", value: uncoveredCount, icon: icons.alert, accent: uncoveredCount ? "bg-[#fdecea] text-[#b2433a]" : "bg-[#f1f4f8] text-[#65748a]" },
   ];
 
@@ -240,7 +469,7 @@ export function AdminManagementPage() {
               <span className="text-[#8a7000]">{t("Admin accounts")}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t("Manage admin accounts")}</h1>
-            <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">{t("Create a store-specific admin login and choose which branch it can access.")}</p>
+            <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">{t("Create separate branch or store admin logins and assign their access.")}</p>
           </div>
         </div>
         <button
@@ -296,6 +525,7 @@ export function AdminManagementPage() {
                 {([
                   { key: "all", label: t("All"), count: admins.length },
                   { key: "owner", label: t("Owners"), count: ownerCount },
+                  { key: "branch_admin", label: t("Branch admins"), count: branchAdminCount },
                   { key: "store_admin", label: t("Store admins"), count: storeAdminCount },
                 ] as const).map((option) => (
                   <button
@@ -336,7 +566,7 @@ export function AdminManagementPage() {
                   <tr className="border-b border-[#edf1f5] text-[11px] uppercase tracking-[0.08em] text-[#8190a1]">
                     <th className="px-5 py-3 font-extrabold" scope="col">{t("Admin")}</th>
                     <th className="px-3 py-3 font-extrabold" scope="col">{t("Role")}</th>
-                    <th className="px-3 py-3 font-extrabold" scope="col">{t("Assigned store")}</th>
+                    <th className="px-3 py-3 font-extrabold" scope="col">{t("Assigned store or branch")}</th>
                     <th className="px-5 py-3" scope="col"><span className="sr-only">{t("Action")}</span></th>
                   </tr>
                 </thead>
@@ -344,6 +574,7 @@ export function AdminManagementPage() {
                   {visibleAdmins.map((admin) => {
                     const isCurrentAdmin = admin.email === currentAdmin?.email;
                     const isOwnerAccount = admin.role === "owner";
+                    const isBranchAccount = admin.role === "branch_admin";
                     return (
                       <tr className={`transition hover:bg-[#fafbfd] ${isCurrentAdmin ? "bg-[#fffdf3]" : ""} ${removingAdminId === admin.id ? "opacity-50" : ""}`} key={admin.id}>
                         <td className="px-5 py-3.5">
@@ -364,11 +595,15 @@ export function AdminManagementPage() {
                         <td className="px-3 py-3.5">
                           <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ${isOwnerAccount ? "bg-[#fff6cc] text-[#7a6300] ring-[#efdc85]" : "bg-[#e9f1fa] text-[#245281] ring-[#cfe0f2]"}`}>
                             <Icon className="size-3.5" path={isOwnerAccount ? icons.crown : icons.store} />
-                            {t(isOwnerAccount ? "Owner" : "Store admin")}
+                            {t(isOwnerAccount ? "Owner" : isBranchAccount ? "Branch admin" : "Store admin")}
                           </span>
                         </td>
                         <td className="px-3 py-3.5 text-xs font-semibold text-[#4f6379]">
-                          {isOwnerAccount ? t("All stores") : admin.storeName ? t(admin.storeName) : <span className="text-[#b2433a]">{t("No store assigned")}</span>}
+                          {isOwnerAccount
+                            ? t("All stores")
+                            : isBranchAccount
+                              ? t(admin.branchTown || "No branch assigned")
+                              : admin.storeName ? t(admin.storeName) : <span className="text-[#b2433a]">{t("No store assigned")}</span>}
                         </td>
                         <td className="px-5 py-3.5 text-right">
                           {!isOwnerAccount && !isCurrentAdmin ? (
@@ -449,7 +684,7 @@ export function AdminManagementPage() {
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t("Admin access")}</p>
                 <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="add-admin-title">{t("Add an admin")}</h2>
-                <p className="mt-1 text-sm text-[#65748a]">{t("Assign this login to one store. It can only access that store’s operational data.")}</p>
+                <p className="mt-1 text-sm text-[#65748a]">{t("Assign a login to a whole branch or to one store. Branch admins can access only stores in their assigned town.")}</p>
               </div>
               <button aria-label={t("Close")} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f1f4f8] hover:text-[#092a53]" onClick={() => setIsFormOpen(false)} type="button">
                 <Icon className="size-5" path={icons.close} />
@@ -472,21 +707,17 @@ export function AdminManagementPage() {
                     <p className="truncate text-xs text-[#65748a]">{email || t("Email address")}</p>
                     <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#e9f1fa] px-2 py-0.5 text-[10px] font-bold text-[#245281]">
                       <Icon className="size-3" path={icons.store} />
-                      {selectedStore ? t(selectedStore.name) : t("Store admin")}
+                      {selectedStore ? t(selectedStore.name) : selectedBranch ? t(selectedBranch) : t("Store admin")}
                     </span>
                   </div>
                 </div>
                 <p className="-mt-2 text-[11px] text-[#8190a1]">{t("Optional. Image will be resized before saving (5 MB max).")}</p>
 
-                <label className={labelClassName}>
-                  {t("Assigned store")}
-                  <select className={inputClassName} onChange={(event) => setStoreId(event.target.value)} required value={storeId}>
-                    {stores.map((store) => {
-                      const assigned = coverage.find((entry) => entry.store.id === store.id)?.admins.length || 0;
-                      return <option key={store.id} value={store.id}>{t(store.name)} · {t(store.town)}{assigned ? "" : ` — ${t("No admin yet")}`}</option>;
-                    })}
-                  </select>
-                </label>
+                <div>
+                  <span className={labelClassName} id="admin-assignment-label">{t("Assigned store or branch")}</span>
+                  <AssignmentPicker groups={assignmentGroups} onChange={setAssignment} t={t} value={assignment} />
+                  <p className="mt-2 text-[11px] leading-4 text-[#8190a1]">{t("Branch admins can access every store in the selected town.")}</p>
+                </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className={labelClassName}>
                     {t("Full name")}
