@@ -181,7 +181,11 @@ export function AdminStoreOverviewPage() {
   const greeting = t(hour < 12 ? "Good morning, {name}" : hour < 18 ? "Good afternoon, {name}" : "Good evening, {name}", {
     name: (currentAdmin?.name || "").split(/\s+/)[0] || "Admin",
   });
-  const storeName = isOwner ? t("All stores") : t(currentAdmin?.storeName || "Store admin");
+  const storeDisplayName = currentAdmin?.role === "store_admin"
+    ? currentAdmin.storeName?.replace(/\s+branch$/i, "").trim()
+    : currentAdmin?.storeName;
+  const storeName = isOwner ? t("All stores") : t(currentAdmin?.branchTown || storeDisplayName || "Store admin");
+  const storeTown = currentAdmin?.role === "store_admin" ? currentAdmin.storeTown : null;
 
   if (isLoading) {
     return (
@@ -230,7 +234,10 @@ export function AdminStoreOverviewPage() {
             <h1 className="mt-3 font-display text-3xl font-extrabold leading-tight sm:text-[2.4rem]">{greeting}</h1>
             <p className="mt-2 flex items-center gap-2 text-sm text-white/70">
               <Icon className="size-4" path={icons.store} />
-              <span className="font-bold text-white">{storeName}</span>
+              <span className="flex flex-col leading-tight">
+                <span className="font-bold text-white">{storeName}</span>
+                {storeTown && <span className="mt-0.5 text-xs uppercase text-white/55">{t("Branch: {branch}", { branch: storeTown })}</span>}
+              </span>
               <span aria-hidden="true">·</span>
               {openTasks.length
                 ? t("{count} things need your attention today.", { count: openTasks.reduce((sum, task) => sum + task.count, 0) })

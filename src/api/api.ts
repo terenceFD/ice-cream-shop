@@ -11,6 +11,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
 const ADMIN_TOKEN_KEY = 'cold-stone-admin-token'
 const CUSTOMER_TOKEN_KEY = 'cold-stone-customer-token'
 const ADMIN_WELCOME_KEY = 'cold-stone-admin-welcome'
+const ADMIN_STORE_TOWN_KEY = 'cold-stone-admin-store-town'
 
 // The customer token lives in localStorage so the sign-in survives reloads, new tabs and browser restarts.
 export function getCustomerToken(): string {
@@ -51,9 +52,21 @@ export async function apiRequest<T = any>(path: string, { body, token, ...option
   if (body !== undefined) headers.set('Content-Type', 'application/json')
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
+  let requestPath = path
+  if (token && path.startsWith('/admin/') && !/[?&]storeTown=/.test(path)) {
+    try {
+      const storeTown = sessionStorage.getItem(ADMIN_STORE_TOWN_KEY)
+      if (storeTown) {
+        requestPath += `${path.includes('?') ? '&' : '?'}storeTown=${encodeURIComponent(storeTown)}`
+      }
+    } catch {
+      // Requests can still use the server's unfiltered owner scope when session storage is unavailable.
+    }
+  }
+
   let response
   try {
-    response = await fetch(`${API_BASE_URL}/api${path}`, {
+    response = await fetch(`${API_BASE_URL}/api${requestPath}`, {
       ...options,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -68,7 +81,7 @@ export async function apiRequest<T = any>(path: string, { body, token, ...option
     result = await response.json()
   } catch {
     if (!response.ok) {
-      const endpoint = new URL(`${API_BASE_URL}/api${path}`, window.location.origin).pathname
+      const endpoint = new URL(`${API_BASE_URL}/api${requestPath}`, window.location.origin).pathname
       throw new Error(`API request failed (${response.status}) for ${options.method || 'GET'} ${endpoint}.`)
     }
     throw new Error('The API server returned an invalid response.')
@@ -86,10 +99,10 @@ export async function apiRequest<T = any>(path: string, { body, token, ...option
       }
     }
     if (result.error) throw new Error(result.error)
-    const endpoint = new URL(`${API_BASE_URL}/api${path}`, window.location.origin).pathname
+    const endpoint = new URL(`${API_BASE_URL}/api${requestPath}`, window.location.origin).pathname
     throw new Error(`API request failed (${response.status}) for ${options.method || 'GET'} ${endpoint}.`)
   }
   return result as T
 }
 
-export { ADMIN_TOKEN_KEY, ADMIN_WELCOME_KEY, CUSTOMER_TOKEN_KEY }
+export { ADMIN_TOKEN_KEY, ADMIN_STORE_TOWN_KEY, ADMIN_WELCOME_KEY, CUSTOMER_TOKEN_KEY }

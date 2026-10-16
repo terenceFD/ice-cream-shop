@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../../pages/admin/useAdminAuth'
-import { apiRequest, ADMIN_WELCOME_KEY } from '../../api/api'
+import { apiRequest, ADMIN_STORE_TOWN_KEY, ADMIN_WELCOME_KEY } from '../../api/api'
 import { useLanguage } from '../../language/useLanguage'
 import { AdminAccountSecurityDialog, type AccountSecurityTab } from './AdminAccountSecurityDialog'
 import { AdminIdleGuard } from './AdminIdleGuard'
@@ -84,6 +84,7 @@ interface NavigationCounts {
   notificationCount: number
   cakeRequestCount: number
   reviewCount: number
+  eventOrderCount: number
 }
 
 async function refreshNavigationCount<T>(
@@ -105,6 +106,11 @@ export function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const isOwner = currentAdmin?.role === 'owner'
+  const isBranchAdmin = currentAdmin?.role === 'branch_admin'
+  const hasTownScope = isOwner || isBranchAdmin
+  const storeDisplayName = currentAdmin?.role === 'store_admin'
+    ? currentAdmin.storeName?.replace(/\s+branch$/i, '').trim()
+    : currentAdmin?.storeName
   const profilePictureInput = useRef<HTMLInputElement>(null)
   const sidebarNavRef = useRef<HTMLElement>(null)
   // Keep the current page's link visible when the sidebar list is taller than the screen.
@@ -126,14 +132,24 @@ export function AdminLayout() {
   const visibleNavItems = isOwner ? navItems : storeNavItems
   const [logoutError, setLogoutError] = useState('')
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [navigationCounts, setNavigationCounts] = useState<NavigationCounts>({ orderCount: 0, notificationCount: 0, cakeRequestCount: 0, reviewCount: 0 })
+  const [navigationCounts, setNavigationCounts] = useState<NavigationCounts>({ orderCount: 0, notificationCount: 0, cakeRequestCount: 0, reviewCount: 0, eventOrderCount: 0 })
   const [countsError, setCountsError] = useState('')
   const [profilePictureError, setProfilePictureError] = useState('')
   const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false)
   const [profilePictureSaved, setProfilePictureSaved] = useState(false)
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
+  const [isBranchMenuOpen, setIsBranchMenuOpen] = useState(false)
+  const [selectedBranch, setSelectedBranch] = useState(() => {
+    try {
+      const savedBranch = sessionStorage.getItem(ADMIN_STORE_TOWN_KEY)
+      return savedBranch === 'Yaoundé' ? 'Yaoundé' : 'Douala'
+    } catch {
+      return 'Douala'
+    }
+  })
   const [securityDialogTab, setSecurityDialogTab] = useState<AccountSecurityTab | null>(null)
   const accountMenuRef = useRef<HTMLDivElement>(null)
+  const branchMenuRef = useRef<HTMLDivElement>(null)
   const currentNavItem = navItems.find((item) => item.to === location.pathname)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     try {
@@ -199,16 +215,51 @@ export function AdminLayout() {
     }
   }, [isAccountMenuOpen])
 
+  useEffect(() => {
+    if (!isBranchMenuOpen) return undefined
+    function handlePointerDown(event: PointerEvent) {
+      if (!branchMenuRef.current?.contains(event.target as Node)) setIsBranchMenuOpen(false)
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setIsBranchMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isBranchMenuOpen])
+
+  useEffect(() => {
+    const branch = isOwner ? selectedBranch : isBranchAdmin ? currentAdmin?.branchTown : null
+    if (branch === 'Douala' || branch === 'Yaoundé') {
+      try {
+        sessionStorage.setItem(ADMIN_STORE_TOWN_KEY, branch)
+      } catch {
+        // The branch remains selected for this page view.
+      }
+      if (selectedBranch !== branch) setSelectedBranch(branch)
+    } else {
+      try {
+        sessionStorage.removeItem(ADMIN_STORE_TOWN_KEY)
+      } catch {
+        // Store-admin access is fixed by the server.
+      }
+    }
+  }, [currentAdmin?.branchTown, isBranchAdmin, isOwner, selectedBranch])
+
   const refreshNavigationCounts = useCallback(async () => {
+    const branchQuery = hasTownScope ? `?storeTown=${encodeURIComponent(selectedBranch)}` : ''
     const failures = await Promise.all([
       refreshNavigationCount(
         'Orders',
-        apiRequest<{ orders: unknown[] }>('/admin/orders', { token: sessionToken }),
+        apiRequest<{ orders: unknown[] }>(`/admin/orders${branchQuery}`, { token: sessionToken }),
         (result) => setNavigationCounts((counts) => ({ ...counts, orderCount: result.orders.length })),
       ),
       refreshNavigationCount(
         'Cake requests',
-        apiRequest<{ requests: { status: string }[] }>('/admin/cake-requests', { token: sessionToken }),
+        apiRequest<{ requests: { status: string }[] }>(`/admin/cake-requests${branchQuery}`, { token: sessionToken }),
         (result) => setNavigationCounts((counts) => ({
           ...counts,
           cakeRequestCount: result.requests.filter((request) => request.status === 'new').length,
@@ -216,17 +267,22 @@ export function AdminLayout() {
       ),
       refreshNavigationCount(
         'Customer reviews',
-        apiRequest<{ pendingCount: number }>('/admin/reviews?countOnly=true', { token: sessionToken }),
+        apiRequest<{ pendingCount: number }>(`/admin/reviews${branchQuery ? `${branchQuery}&` : '?'}countOnly=true`, { token: sessionToken }),
         (result) => setNavigationCounts((counts) => ({ ...counts, reviewCount: result.pendingCount })),
       ),
       refreshNavigationCount(
         'Notifications',
-        apiRequest<{ unreadCount: number }>('/admin/notifications', { token: sessionToken }),
+        apiRequest<{ unreadCount: number }>(`/admin/notifications${branchQuery}`, { token: sessionToken }),
         (result) => setNavigationCounts((counts) => ({ ...counts, notificationCount: result.unreadCount })),
+      ),
+      refreshNavigationCount(
+        'Event orders',
+        apiRequest<{ count: number }>(`/admin/event-orders?countOnly=true${branchQuery ? `&${branchQuery.slice(1)}` : ''}`, { token: sessionToken }),
+        (result) => setNavigationCounts((counts) => ({ ...counts, eventOrderCount: result.count })),
       ),
     ])
     setCountsError(failures.filter(Boolean).join(' · '))
-  }, [sessionToken])
+  }, [hasTownScope, selectedBranch, sessionToken])
 
   useEffect(() => {
     refreshNavigationCounts()
@@ -289,8 +345,13 @@ export function AdminLayout() {
               <span className="mt-0.5 block max-w-52 truncate text-[10px] font-bold uppercase tracking-[0.14em] text-[#8190a1]">
                 {isOwner
                   ? t('Administration workspace')
-                  : t('Store: {store}', { store: currentAdmin?.storeName || t('Store admin') })}
+                  : isBranchAdmin
+                    ? t('Branch admin: {branch}', { branch: currentAdmin.branchTown || '' })
+                    : t('Store: {store}', { store: storeDisplayName || t('Store admin') })}
               </span>
+              {currentAdmin?.role === 'store_admin' && currentAdmin.storeTown && (
+                <span className="block max-w-52 truncate text-[9px] font-semibold uppercase text-[#91a0b1]">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</span>
+              )}
             </span>
           </Link>
 
@@ -313,6 +374,86 @@ export function AdminLayout() {
           )}
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2.5">
+            {hasTownScope && (
+              <div className="relative" ref={branchMenuRef}>
+                <button
+                  aria-controls="admin-branch-menu"
+                  aria-expanded={isBranchMenuOpen}
+                  aria-haspopup="menu"
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl border px-3 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:gap-2.5 sm:px-3.5 ${
+                    isBranchMenuOpen
+                      ? 'border-[#b9c9d9] bg-[#f7f9fc] shadow-sm'
+                      : 'border-[#e3e9f0] bg-white hover:border-[#cbd6e2] hover:bg-[#f9fbfd]'
+                  }`}
+                  onClick={() => setIsBranchMenuOpen((open) => !open)}
+                  type="button"
+                >
+                  <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-[#edf3f9] text-[#355777]">
+                    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                      <path d="M4 10h16l-1.5-5h-13L4 10Zm0 0v10h16V10M9 20v-5h6v5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+                    </svg>
+                  </span>
+                  <span className="min-w-0 text-left">
+                    <span className="block text-[9px] font-bold uppercase tracking-[0.12em] text-[#8190a1]">{t('Shop Branch')}</span>
+                    <span className="block max-w-16 truncate text-[10px] font-extrabold text-[#173654] sm:max-w-32 sm:text-xs">{t(selectedBranch)}</span>
+                  </span>
+                  <svg aria-hidden="true" className={`size-3.5 text-[#8190a1] transition ${isBranchMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24">
+                    <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                  </svg>
+                </button>
+                {isBranchMenuOpen && (
+                  <div
+                    className="admin-modal-panel absolute right-0 top-[calc(100%+10px)] z-50 w-60 overflow-hidden rounded-2xl border border-[#e3e9f0] bg-white p-1.5 shadow-[0_20px_50px_rgba(9,42,83,0.16)]"
+                    id="admin-branch-menu"
+                    role="menu"
+                  >
+                    <p className="px-3 pb-1.5 pt-2 text-[9px] font-extrabold uppercase tracking-[0.13em] text-[#91a0b1]">{t('Choose a branch')}</p>
+                    {(['Douala', 'Yaoundé'] as const).map((branch) => {
+                      const isSelected = selectedBranch === branch
+                      return (
+                        <button
+                          aria-current={isSelected ? 'true' : undefined}
+                          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] ${
+                            isSelected ? 'bg-[#f2f6fa] text-[#092a53]' : 'text-[#4f6379] hover:bg-[#f7f9fc] hover:text-[#092a53]'
+                          } ${isBranchAdmin ? 'disabled:cursor-not-allowed' : 'disabled:cursor-default'} disabled:opacity-80`}
+                          disabled={isSelected || isBranchAdmin}
+                          key={branch}
+                          onClick={() => {
+                            if (!isOwner) return
+                            try {
+                              sessionStorage.setItem(ADMIN_STORE_TOWN_KEY, branch)
+                            } catch {
+                              // The branch remains selected for this page view.
+                            }
+                            setSelectedBranch(branch)
+                            setIsBranchMenuOpen(false)
+                          }}
+                          role="menuitem"
+                          type="button"
+                        >
+                          <span className={`grid size-8 place-items-center rounded-lg ${isSelected ? 'bg-[#e2ebf4] text-[#244f79]' : 'bg-[#f1f4f8] text-[#8190a1]'}`}>
+                            <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                              <path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+                              <circle cx="12" cy="9" r="2.2" stroke="currentColor" strokeWidth="1.7" />
+                            </svg>
+                          </span>
+                          <span className="flex-1">
+                            <span className="block text-xs font-bold">{t(branch)}</span>
+                            <span className="mt-0.5 block text-[10px] text-[#91a0b1]">{t('Shop Branch')}</span>
+                          </span>
+                          {isSelected && (
+                            <svg aria-hidden="true" className="size-4 text-[#2c7a4f]" fill="none" viewBox="0 0 24 24">
+                              <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                            </svg>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div aria-label={t('Select language')} className="inline-flex items-center rounded-full bg-[#f1f5f9] p-1" role="group">
               {(['en', 'fr'] as const).map((option) => (
                 <button
@@ -381,7 +522,10 @@ export function AdminLayout() {
                 </span>
                 <span className="hidden min-w-0 text-left lg:block">
                   <span className="block max-w-36 truncate text-xs font-extrabold text-[#173654]">{currentAdmin?.name}</span>
-                  <span className="mt-0.5 block max-w-36 truncate text-[10px] font-semibold text-[#8190a1]">{isOwner ? t('Owner · all stores') : t(currentAdmin?.storeName || 'Store admin')}</span>
+                  <span className="mt-0.5 block max-w-36 truncate text-[10px] font-semibold text-[#8190a1]">{isOwner ? t('Owner · all stores') : t(storeDisplayName || currentAdmin?.branchTown || 'Store admin')}</span>
+                  {currentAdmin?.role === 'store_admin' && currentAdmin.storeTown && (
+                    <span className="block max-w-36 truncate text-[9px] font-medium uppercase text-[#91a0b1]">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</span>
+                  )}
                 </span>
                 <svg aria-hidden="true" className={`hidden size-4 text-[#8190a1] transition sm:block ${isAccountMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24">
                   <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
@@ -404,8 +548,14 @@ export function AdminLayout() {
                       <p className="truncate text-sm font-extrabold">{currentAdmin?.name}</p>
                       <p className="truncate text-[11px] text-white/65">{currentAdmin?.email}</p>
                       <span className="mt-1.5 inline-flex rounded-full bg-[#ffdc32] px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#092a53]">
-                        {isOwner ? t('Owner') : t('Store admin')}
+                        {isOwner ? t('Owner') : t(isBranchAdmin ? 'Branch admin' : 'Store admin')}
                       </span>
+                      {!isOwner && currentAdmin?.storeName && (
+                        <p className="mt-1 truncate text-[10px] font-semibold text-white/75">{t(storeDisplayName || currentAdmin.storeName)}</p>
+                      )}
+                      {currentAdmin?.role === 'store_admin' && currentAdmin.storeTown && (
+                        <p className="truncate text-[9px] font-medium uppercase text-white/55">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</p>
+                      )}
                     </div>
                   </div>
                   <div className="p-1.5">
@@ -519,7 +669,7 @@ export function AdminLayout() {
               <p className="mt-1 text-xs leading-5 text-white/70">
                 {isOwner
                   ? t('You are signed in as the owner, with access to every store.')
-                  : t('You are signed in to {store}. You can manage this store’s orders and customers.', { store: t(currentAdmin.storeName || 'your store') })}
+                  : t('You are signed in to {store}. You can manage this store’s orders and customers.', { store: t(storeDisplayName || currentAdmin.storeName || 'your store') })}
               </p>
             </div>
             <button
@@ -586,10 +736,13 @@ export function AdminLayout() {
               <p className="truncate text-sm font-bold">{currentAdmin?.name}</p>
               <p className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-white/60">
                 <span className={`inline-flex rounded px-1 py-px text-[9px] font-extrabold uppercase tracking-wide ${isOwner ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/15 text-white'}`}>
-                  {isOwner ? t('Owner') : t('Store admin')}
+                  {isOwner ? t('Owner') : t(isBranchAdmin ? 'Branch admin' : 'Store admin')}
                 </span>
-                <span className="truncate">{isOwner ? t('All stores') : t(currentAdmin?.storeName || 'Store admin')}</span>
+                {!isOwner && <span className="truncate">{t(storeDisplayName || currentAdmin?.branchTown || 'Store admin')}</span>}
               </p>
+              {currentAdmin?.role === 'store_admin' && currentAdmin.storeTown && (
+                <p className="truncate pl-1 text-[10px] uppercase text-white/45">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</p>
+              )}
             </div>
             <button
               aria-expanded={!isSidebarCollapsed}
@@ -670,6 +823,8 @@ export function AdminLayout() {
                             ? navigationCounts.reviewCount
                             : item.label === 'Notifications'
                               ? navigationCounts.notificationCount
+                              : item.label === 'Event orders'
+                                ? navigationCounts.eventOrderCount
                               : item.label === 'Cake requests'
                                 ? navigationCounts.cakeRequestCount
                                 : null
@@ -679,6 +834,8 @@ export function AdminLayout() {
                             ? t('{count} pending customer reviews', { count: count || 0 })
                             : item.label === 'Notifications'
                               ? t('{count} unread notifications', { count: count || 0 })
+                              : item.label === 'Event orders'
+                                ? t('{count} event orders that need action', { count: count || 0 })
                               : t('{count} new cake requests', { count: count || 0 })
                         const isActive = location.pathname === item.to
                         return (
@@ -771,7 +928,7 @@ export function AdminLayout() {
 
         <main data-scroll-reveal="skip" className="min-h-[60vh] min-w-0 rounded-[22px] border border-[#e2e8f0] bg-white p-4 shadow-[0_8px_28px_rgba(16,44,80,0.04)] sm:p-6 lg:p-8">
           <Suspense fallback={<div aria-busy="true" className="min-h-[50vh]" role="status" />}>
-            <Outlet />
+            <Outlet key={selectedBranch} />
           </Suspense>
         </main>
       </div>

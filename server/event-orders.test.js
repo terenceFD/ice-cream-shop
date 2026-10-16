@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { suggestedDeposit, validateEventRequest } from './event-orders.js'
+import { registerEventOrderRoutes, suggestedDeposit, validateEventRequest } from './event-orders.js'
 
 const day = 86_400_000
 const doualaDate = (offsetDays) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Douala' }).format(new Date(Date.now() + offsetDays * day))
@@ -66,4 +66,58 @@ test('refuses stores that do not offer the chosen service, and unknown items', a
 test('ignores any price sent by the browser', async () => {
   const { value } = await validateEventRequest({ ...valid(), items: [{ itemId: 'flavor:1', quantity: 10, unitPrice: 1 }] }, deps)
   assert.equal(value.estimatedTotal, 15_000)
+})
+
+test('only deletes declined event orders within the admin store or branch scope', async () => {
+  let order = { status: 'declined', storeId: 1, storeTown: 'Douala' }
+  let deleted = false
+  const routes = new Map()
+  const app = Object.fromEntries(['get', 'post', 'patch', 'delete'].map((method) => [
+    method,
+    (path, _middleware, handler) => routes.set(`${method.toUpperCase()} ${path}`, handler),
+  ]))
+  registerEventOrderRoutes(app, {
+    database: {
+      prepare: (query) => ({
+        get: async () => query.includes('FROM event_orders') ? {
+          ...order,
+          itemsJson: '[]',
+          guestCount: 10,
+          estimatedTotal: 1000,
+          quotedTotal: null,
+          depositAmount: null,
+        } : null,
+        run: async () => {
+          deleted = true
+          return { changes: 1 }
+        },
+      }),
+    },
+  })
+  const remove = routes.get('DELETE /api/admin/event-orders/:id')
+  const requestFor = (admin) => ({ params: { id: '7' }, admin })
+  const responseFor = () => ({
+    statusCode: 200,
+    status(code) { this.statusCode = code; return this },
+    json(body) { this.body = body; return this },
+    end() { this.ended = true; return this },
+  })
+
+  const wrongBranchResponse = responseFor()
+  await remove(requestFor({ role: 'branch_admin', branchTown: 'Yaoundé' }), wrongBranchResponse)
+  assert.equal(wrongBranchResponse.statusCode, 404)
+  assert.equal(deleted, false)
+
+  order = { status: 'confirmed', storeId: 1, storeTown: 'Douala' }
+  const activeResponse = responseFor()
+  await remove(requestFor({ role: 'store_admin', storeId: 1 }), activeResponse)
+  assert.equal(activeResponse.statusCode, 409)
+  assert.equal(deleted, false)
+
+  order = { status: 'declined', storeId: 1, storeTown: 'Douala' }
+  const declinedResponse = responseFor()
+  await remove(requestFor({ role: 'store_admin', storeId: 1 }), declinedResponse)
+  assert.equal(declinedResponse.statusCode, 204)
+  assert.equal(declinedResponse.ended, true)
+  assert.equal(deleted, true)
 })

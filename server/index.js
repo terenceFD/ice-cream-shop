@@ -9,7 +9,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 import Stripe from 'stripe'
-import { createHmac, randomUUID } from 'node:crypto'
+import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import {
@@ -76,6 +76,7 @@ import {
   sendEventDepositReceived,
   sendCakeRequestNotification,
   sendContactReply,
+  sendCustomerVerificationCode,
   sendNewOrderNotification,
   sendOrderStatusUpdate,
 } from './email.js'
@@ -529,7 +530,23 @@ const signupLimiter = rateLimit({
   limit: 30,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  message: { error: 'Too many accounts were created from this network. Try again in an hour.' },
+  message: { error: 'Too many sign-up attempts from this network. Try again in an hour.' },
+})
+
+const signupVerificationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many verification codes were requested. Wait 15 minutes and try again.' },
+})
+
+const signupCodeAttemptLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many verification attempts. Wait 15 minutes and try again.' },
 })
 
 const contactLimiter = rateLimit({
@@ -607,7 +624,8 @@ async function requireAdmin(request, response, next) {
   }
   const account = await database.prepare(`
     SELECT a.id, a.name, a.email, a.profile_picture, a.role, a.password_hash AS "passwordHash",
-      a.store_id AS "storeId", s.name AS "storeName"
+      a.store_id AS "storeId", s.name AS "storeName", s.town AS "storeTown",
+      a.branch_town AS "branchTown"
     FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
   `).get(payload.sub)
   if (!account) {
@@ -619,8 +637,17 @@ async function requireAdmin(request, response, next) {
     response.status(401).json({ error: 'Your password was changed. Sign in again with the new password.' })
     return
   }
-  if (admin.role !== 'owner' && (!Number.isSafeInteger(admin.storeId) || !admin.storeName)) {
+  if (!['owner', 'store_admin', 'branch_admin'].includes(admin.role)) {
+    response.status(403).json({ error: 'This admin account has an unsupported access role.' })
+    return
+  }
+  if (admin.role === 'store_admin' && (!Number.isSafeInteger(admin.storeId) || !admin.storeName)) {
     response.status(403).json({ error: 'This store admin account is not assigned to an active store.' })
+    return
+  }
+  if (admin.role === 'branch_admin' && (!admin.branchTown
+    || !await database.prepare('SELECT 1 FROM stores WHERE town = ?').get(admin.branchTown))) {
+    response.status(403).json({ error: 'This branch admin account is not assigned to an active branch.' })
     return
   }
 
@@ -696,9 +723,13 @@ function normalizeFlavor(body, existing = {}) {
   }
 }
 
-async function listOrders({ deliveredOnly = false, storeId = null } = {}) {
+async function listOrders({ deliveredOnly = false, storeId = null, storeTown = null } = {}) {
   const conditions = [deliveredOnly ? "status = 'delivered'" : "status != 'delivered'"]
   const parameters = []
+  if (storeTown !== null) {
+    conditions.push('store_id IN (SELECT id FROM stores WHERE town = ?)')
+    parameters.push(storeTown)
+  }
   if (storeId !== null) {
     conditions.push("store_id = ?")
     parameters.push(storeId)
@@ -1092,8 +1123,11 @@ app.post('/api/checkout/session', requireCustomer, checkoutLimiter, async (reque
     const notifyAdmins = async (paymentStatus) => {
       try {
         const admins = await database.prepare(`
-          SELECT email FROM admins WHERE role = 'owner' OR store_id = ? ORDER BY id
-        `).all(store.id)
+          SELECT email FROM admins
+          WHERE role = 'owner' OR store_id = ?
+            OR (role = 'branch_admin' AND branch_town = (SELECT town FROM stores WHERE id = ?))
+          ORDER BY id
+        `).all(store.id, store.id)
         const orderUrl = new URL('/admin/orders', frontendUrl)
         orderUrl.searchParams.set('order', String(orderId))
         // The dashboard link is for staff only, so never send it to the address that placed the order.
@@ -1398,7 +1432,7 @@ app.post('/api/contact', contactLimiter, async (request, response, next) => {
   }
 })
 
-app.post('/api/auth/register', signupLimiter, async (request, response, next) => {
+app.post('/api/auth/register/request-verification', signupLimiter, signupVerificationLimiter, async (request, response, next) => {
   try {
     const name = typeof request.body.name === 'string' ? request.body.name.trim() : ''
     const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
@@ -1416,12 +1450,111 @@ app.post('/api/auth/register', signupLimiter, async (request, response, next) =>
       return
     }
 
+    if (!isEmailDeliveryConfigured()) {
+      response.status(503).json({ error: 'Email verification is temporarily unavailable. Please try again later.' })
+      return
+    }
+    if (await database.prepare('SELECT id FROM customers WHERE email = ? COLLATE NOCASE').get(email)) {
+      response.status(409).json({ error: 'An account already uses that email address.' })
+      return
+    }
+
+    const now = new Date()
+    const createdAt = now.toISOString()
+    const expiresAt = new Date(now.getTime() + 10 * 60 * 1000).toISOString()
+    await database.prepare('DELETE FROM pending_customer_signups WHERE expires_at <= ?').run(createdAt)
+    const pending = await database.prepare('SELECT created_at AS "createdAt" FROM pending_customer_signups WHERE email = ?').get(email)
+    if (pending && now.getTime() - Date.parse(pending.createdAt) < 60 * 1000) {
+      response.status(429).json({ error: 'A verification code was just sent. Wait a minute before requesting another.' })
+      return
+    }
+
+    const verificationId = randomUUID()
+    const code = String(randomInt(0, 1_000_000)).padStart(6, '0')
+    const codeHash = createHmac('sha256', jwtSecret).update(`${verificationId}:${code}`).digest('hex')
     const passwordHash = await bcrypt.hash(password, 12)
+    await database.prepare('DELETE FROM pending_customer_signups WHERE email = ?').run(email)
+    await database.prepare(`
+      INSERT INTO pending_customer_signups (
+        email, verification_id, code_hash, name, password_hash, profile_picture, attempts, created_at, expires_at
+      ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
+    `).run(email, verificationId, codeHash, name, passwordHash, profilePicture, createdAt, expiresAt)
+
+    try {
+      await sendCustomerVerificationCode({ to: email, code })
+    } catch (emailError) {
+      await database.prepare('DELETE FROM pending_customer_signups WHERE verification_id = ?').run(verificationId)
+      console.error('Unable to send customer signup verification code:', describeEmailError(emailError))
+      response.status(502).json({ error: 'We could not send your verification code. Please try again shortly.' })
+      return
+    }
+
+    response.status(201).json({ verificationId, expiresInSeconds: 600 })
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.post('/api/auth/register/verify', signupLimiter, signupCodeAttemptLimiter, async (request, response, next) => {
+  try {
+    const verificationId = typeof request.body.verificationId === 'string' ? request.body.verificationId : ''
+    const code = typeof request.body.code === 'string' ? request.body.code : ''
+    if (!/^[0-9a-f-]{36}$/i.test(verificationId) || !/^\d{6}$/.test(code)) {
+      response.status(400).json({ error: 'Enter the 6-digit verification code sent to your email.' })
+      return
+    }
+
+    const pending = await database.prepare(`
+      SELECT email, verification_id AS "verificationId", code_hash AS "codeHash",
+        name, password_hash AS "passwordHash", profile_picture AS "profilePicture",
+        attempts, created_at AS "createdAt", expires_at AS "expiresAt"
+      FROM pending_customer_signups WHERE verification_id = ?
+    `).get(verificationId)
+    if (!pending) {
+      response.status(410).json({ error: 'This verification code has expired. Request a new code to continue.' })
+      return
+    }
+    if (Date.parse(pending.expiresAt) <= Date.now()) {
+      await database.prepare('DELETE FROM pending_customer_signups WHERE verification_id = ?').run(verificationId)
+      response.status(410).json({ error: 'This verification code has expired. Request a new code to continue.' })
+      return
+    }
+    if (Number(pending.attempts) >= 5) {
+      await database.prepare('DELETE FROM pending_customer_signups WHERE verification_id = ?').run(verificationId)
+      response.status(429).json({ error: 'Too many incorrect codes. Request a new verification code.' })
+      return
+    }
+
+    const submittedHash = createHmac('sha256', jwtSecret).update(`${verificationId}:${code}`).digest()
+    const expectedHash = Buffer.from(pending.codeHash, 'hex')
+    const codeMatches = submittedHash.length === expectedHash.length && timingSafeEqual(submittedHash, expectedHash)
+    if (!codeMatches) {
+      const attempts = Number(pending.attempts) + 1
+      if (attempts >= 5) {
+        await database.prepare('DELETE FROM pending_customer_signups WHERE verification_id = ?').run(verificationId)
+        response.status(429).json({ error: 'Too many incorrect codes. Request a new verification code.' })
+        return
+      }
+      await database.prepare('UPDATE pending_customer_signups SET attempts = ? WHERE verification_id = ?')
+        .run(attempts, verificationId)
+      response.status(400).json({ error: 'That code is not correct. Check the email and try again.' })
+      return
+    }
+
+    const consumed = await database.prepare(`
+      DELETE FROM pending_customer_signups
+      WHERE verification_id = ? AND code_hash = ? AND expires_at > ? AND attempts < 5
+    `).run(verificationId, pending.codeHash, new Date().toISOString())
+    if (!consumed.changes) {
+      response.status(409).json({ error: 'This verification request has changed. Request a new code and try again.' })
+      return
+    }
+
     const customer = await registerCustomer({
-      name,
-      email,
-      passwordHash,
-      profilePicture,
+      name: pending.name,
+      email: pending.email,
+      passwordHash: pending.passwordHash,
+      profilePicture: pending.profilePicture,
     })
     const token = jwt.sign({ sub: customer.id, type: 'customer' }, jwtSecret, { expiresIn: '8h' })
     response.status(201).json({
@@ -1880,8 +2013,11 @@ app.post('/api/cake-requests', contactLimiter, async (request, response) => {
     pickupDate,
   })
   const admins = await database.prepare(`
-    SELECT email FROM admins WHERE role = 'store_admin' AND store_id = ? ORDER BY id
-  `).all(store.id)
+    SELECT email FROM admins
+    WHERE (role = 'store_admin' AND store_id = ?)
+      OR (role = 'branch_admin' AND branch_town = (SELECT town FROM stores WHERE id = ?))
+    ORDER BY id
+  `).all(store.id, store.id)
   try {
     await sendCakeRequestNotification({
       recipients: admins.map((admin) => admin.email),
@@ -1921,7 +2057,8 @@ app.use('/api/admin', async (request, response, next) => {
   try {
     const account = await database.prepare(`
       SELECT a.id, a.name, a.email, a.profile_picture, a.role, a.password_hash AS "passwordHash",
-        a.store_id AS "storeId", s.name AS "storeName"
+        a.store_id AS "storeId", s.name AS "storeName", s.town AS "storeTown",
+        a.branch_town AS "branchTown"
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(payload.sub)
     if (!account) {
@@ -1933,9 +2070,29 @@ app.use('/api/admin', async (request, response, next) => {
       response.status(401).json({ error: 'Your password was changed. Sign in again with the new password.' })
       return
     }
-    if (admin.role !== 'owner' && (!Number.isSafeInteger(admin.storeId) || !admin.storeName)) {
+    if (!['owner', 'store_admin', 'branch_admin'].includes(admin.role)) {
+      response.status(403).json({ error: 'This admin account has an unsupported access role.' })
+      return
+    }
+    if (admin.role === 'store_admin' && (!Number.isSafeInteger(admin.storeId) || !admin.storeName)) {
       response.status(403).json({ error: 'This store admin account is not assigned to an active store.' })
       return
+    }
+    if (admin.role === 'branch_admin' && (!admin.branchTown
+      || !await database.prepare('SELECT 1 FROM stores WHERE town = ?').get(admin.branchTown))) {
+      response.status(403).json({ error: 'This branch admin account is not assigned to an active branch.' })
+      return
+    }
+    if (admin.role === 'owner' && request.query.storeTown !== undefined) {
+      const town = request.query.storeTown
+      if (town === 'all') {
+        admin.selectedStoreTown = null
+      } else if (typeof town !== 'string' || !await database.prepare('SELECT 1 FROM stores WHERE town = ?').get(town)) {
+        response.status(400).json({ error: 'Choose a valid shop branch.' })
+        return
+      } else {
+        admin.selectedStoreTown = town
+      }
     }
     request.admin = admin
     if (admin.role !== 'owner' && !storeAdminCanAccess(request.method, request.path)) {
@@ -1965,6 +2122,27 @@ app.use('/api/admin', async (request, response, next) => {
     next(error)
   }
 })
+
+function selectedStoreTown(admin) {
+  if (admin.role === 'branch_admin') return admin.branchTown
+  return admin.role === 'owner' ? admin.selectedStoreTown || null : null
+}
+
+function hasTownScopedData(admin) {
+  return admin.role === 'owner' || admin.role === 'branch_admin'
+}
+
+async function adminCanAccessOrder(order, admin) {
+  if (!order) return false
+  if (admin.role === 'store_admin') return Number(order.storeId) === Number(admin.storeId)
+  if (admin.role === 'branch_admin') {
+    return Boolean(await database.prepare('SELECT 1 FROM stores WHERE id = ? AND town = ?')
+      .get(order.storeId, admin.branchTown))
+  }
+  const town = selectedStoreTown(admin)
+  if (!town) return true
+  return Boolean(await database.prepare('SELECT 1 FROM stores WHERE id = ? AND town = ?').get(order.storeId, town))
+}
 
 function lockedAdminMessage(remainingMs) {
   const minutes = Math.max(1, Math.ceil(remainingMs / 60000))
@@ -2000,7 +2178,8 @@ app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
     const token = signAdminToken(admin.id, admin.password_hash)
     const identity = await database.prepare(`
       SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture", a.role,
-        a.store_id AS "storeId", s.name AS "storeName"
+        a.store_id AS "storeId", s.name AS "storeName", s.town AS "storeTown",
+        a.branch_town AS "branchTown"
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(admin.id)
     response.json({
@@ -2022,6 +2201,8 @@ app.get('/api/admin/me', requireAdmin, (request, response) => {
       role: request.admin.role,
       storeId: request.admin.storeId,
       storeName: request.admin.storeName,
+      storeTown: request.admin.storeTown,
+      branchTown: request.admin.branchTown,
     },
   })
 })
@@ -2180,7 +2361,8 @@ app.put('/api/admin/email', passwordChangeLimiter, requireAdmin, async (request,
     await database.prepare('UPDATE admins SET email = ? WHERE id = ?').run(newEmail, request.admin.id)
     const admin = await database.prepare(`
       SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture", a.role,
-        a.store_id AS "storeId", s.name AS "storeName"
+        a.store_id AS "storeId", s.name AS "storeName", s.town AS "storeTown",
+        a.branch_town AS "branchTown"
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(request.admin.id)
     response.json({ admin })
@@ -2197,7 +2379,8 @@ app.get('/api/admin/admins', requireAdmin, async (request, response) => {
   if (!requireOwner(request, response)) return
   const admins = await database.prepare(`
     SELECT a.id, a.name, a.email, a.role, a.store_id AS "storeId",
-      s.name AS "storeName", a.profile_picture AS "profilePicture", a.created_at AS "createdAt"
+      s.name AS "storeName", s.town AS "storeTown", a.branch_town AS "branchTown",
+      a.profile_picture AS "profilePicture", a.created_at AS "createdAt"
     FROM admins a LEFT JOIN stores s ON s.id = a.store_id ORDER BY a.id
   `).all()
   response.json({ admins })
@@ -2216,7 +2399,7 @@ app.delete('/api/admin/admins/:id', requireAdmin, async (request, response) => {
   }
 
   const result = await database.prepare(`
-    DELETE FROM admins WHERE id = ? AND role = 'store_admin'
+    DELETE FROM admins WHERE id = ? AND role IN ('store_admin', 'branch_admin')
   `).run(id)
   if (!result.changes) {
     const admin = await database.prepare('SELECT role FROM admins WHERE id = ?').get(id)
@@ -2232,8 +2415,11 @@ app.delete('/api/admin/admins/:id', requireAdmin, async (request, response) => {
 
 app.get('/api/admin/customers', requireAdmin, async (_request, response) => {
   const admin = _request.admin
-  const storeFilter = admin.role === 'owner' ? '' : 'JOIN orders o ON o.customer_id = c.id WHERE o.store_id = ?'
-  const parameters = admin.role === 'owner' ? [] : [admin.storeId]
+  const town = selectedStoreTown(admin)
+  const storeFilter = hasTownScopedData(admin)
+    ? town ? 'JOIN orders o ON o.customer_id = c.id JOIN stores s ON s.id = o.store_id WHERE s.town = ?' : ''
+    : 'JOIN orders o ON o.customer_id = c.id WHERE o.store_id = ?'
+  const parameters = hasTownScopedData(admin) ? town ? [town] : [] : [admin.storeId]
   const customers = (await database.prepare(`
     SELECT DISTINCT c.id, c.name, c.email, c.phone, c.delivery_city AS "deliveryCity",
       c.created_at AS "createdAt", c.is_banned AS "isBanned"
@@ -2247,6 +2433,14 @@ app.patch('/api/admin/customers/:id/ban', requireAdmin, ownerOnly, async (reques
   const isBanned = request.body.isBanned
   if (!Number.isSafeInteger(id) || id < 1 || typeof isBanned !== 'boolean') {
     response.status(400).json({ error: 'Provide a valid customer and ban status.' })
+    return
+  }
+  const town = selectedStoreTown(request.admin)
+  if (town && !await database.prepare(`
+    SELECT 1 FROM orders o JOIN stores s ON s.id = o.store_id
+    WHERE o.customer_id = ? AND s.town = ?
+  `).get(id, town)) {
+    response.status(404).json({ error: 'Customer account not found.' })
     return
   }
   const result = await setCustomerBanStatus(id, isBanned)
@@ -2267,53 +2461,65 @@ app.get('/api/admin/orders', requireAdmin, async (request, response) => {
   let storeId = requestedStoreId === undefined
     ? null
     : typeof requestedStoreId === 'string' ? Number(requestedStoreId) : NaN
-  if (request.admin.role !== 'owner') storeId = request.admin.storeId
+  if (request.admin.role === 'store_admin') storeId = request.admin.storeId
+  const storeTown = selectedStoreTown(request.admin)
   const storeExists = storeId === null
     ? true
     : Number.isSafeInteger(storeId) && storeId > 0
-      && Boolean(await database.prepare('SELECT 1 FROM stores WHERE id = ?').get(storeId))
-  if (!storeExists) {
+      && Boolean(await database.prepare(
+        `SELECT 1 FROM stores WHERE id = ?${storeTown === null ? '' : ' AND town = ?'}`,
+      ).get(...(storeTown === null ? [storeId] : [storeId, storeTown])))
+  if (!storeExists || (storeTown !== null && !await database.prepare('SELECT 1 FROM stores WHERE town = ?').get(storeTown))) {
     response.status(400).json({ error: 'Choose a valid store to filter orders.' })
     return
   }
-  const orders = await listOrders({ deliveredOnly, storeId })
+  const orders = await listOrders({ deliveredOnly, storeId, storeTown })
   const count = deliveredOnly
     ? (await database.prepare(`
       SELECT COUNT(*) AS count FROM orders
-      WHERE status = 'delivered' ${storeId === null ? '' : 'AND store_id = ?'}
-    `).get(...(storeId === null ? [] : [storeId]))).count
+      WHERE status = 'delivered'
+        ${storeTown === null ? '' : 'AND store_id IN (SELECT id FROM stores WHERE town = ?)'}
+        ${storeId === null ? '' : 'AND store_id = ?'}
+    `).get(...[...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])])).count
     : undefined
   response.json({ orders, ...(deliveredOnly ? { count } : {}) })
 })
 
 app.get('/api/admin/stores', requireAdmin, async (request, response) => {
-  const storeFilter = request.admin.role === 'owner' ? '' : 'WHERE s.id = ?'
+  const town = selectedStoreTown(request.admin)
+  const storeFilter = !hasTownScopedData(request.admin)
+    ? 'WHERE s.id = ?'
+    : town ? 'WHERE s.town = ?' : ''
+  const parameters = !hasTownScopedData(request.admin) ? [request.admin.storeId] : town ? [town] : []
   const stores = (await database.prepare(`
     SELECT s.id, s.name, s.town, s.area, s.address,
       z.location, z.is_active AS "isActive"
     FROM stores s JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
     ${storeFilter}
     ORDER BY s.town, s.area
-  `).all(...(request.admin.role === 'owner' ? [] : [request.admin.storeId]))).map((store) => ({ ...store, isActive: Boolean(store.isActive) }))
+  `).all(...parameters)).map((store) => ({ ...store, isActive: Boolean(store.isActive) }))
   response.json({ stores })
 })
 
 app.delete('/api/admin/orders/delivered', requireAdmin, async (request, response) => {
   const requestedStoreId = request.query.storeId
-  const storeId = request.admin.role === 'owner'
+  const storeId = request.admin.role !== 'store_admin'
     ? requestedStoreId === undefined
       ? null
       : typeof requestedStoreId === 'string' ? Number(requestedStoreId) : NaN
     : request.admin.storeId
+  const storeTown = selectedStoreTown(request.admin)
   if (
     storeId !== null
     && (!Number.isSafeInteger(storeId) || storeId < 1
-      || !await database.prepare('SELECT 1 FROM stores WHERE id = ?').get(storeId))
+      || !await database.prepare(
+        `SELECT 1 FROM stores WHERE id = ?${storeTown === null ? '' : ' AND town = ?'}`,
+      ).get(...(storeTown === null ? [storeId] : [storeId, storeTown])))
   ) {
     response.status(400).json({ error: 'Choose a valid store to clear delivered orders.' })
     return
   }
-  const result = await clearDeliveredOrders(storeId)
+  const result = await clearDeliveredOrders(storeId, storeTown)
 
   if (!result.deleted) {
     response.status(409).json({
@@ -2339,7 +2545,7 @@ app.delete('/api/admin/orders/:id/stale-payment', requireAdmin, async (request, 
     FROM orders o LEFT JOIN payments p ON p.order_id = o.id
     WHERE o.id = ?
   `).get(id)
-  if (!order || (request.admin.role !== 'owner' && order.storeId !== request.admin.storeId)) {
+  if (!await adminCanAccessOrder(order, request.admin)) {
     response.status(404).json({ error: 'Order not found.' })
     return
   }
@@ -2409,12 +2615,10 @@ app.delete('/api/admin/orders/:id', requireAdmin, async (request, response) => {
     return
   }
 
-  if (request.admin.role !== 'owner') {
-    const order = await database.prepare('SELECT store_id AS "storeId" FROM orders WHERE id = ?').get(id)
-    if (!order || order.storeId !== request.admin.storeId) {
-      response.status(404).json({ error: 'Order not found.' })
-      return
-    }
+  const order = await database.prepare('SELECT store_id AS "storeId" FROM orders WHERE id = ?').get(id)
+  if (!await adminCanAccessOrder(order, request.admin)) {
+    response.status(404).json({ error: 'Order not found.' })
+    return
   }
   const deleteResult = await deleteFailedOrder(id)
   if (deleteResult === 'not_found') {
@@ -2429,12 +2633,10 @@ app.delete('/api/admin/orders/:id', requireAdmin, async (request, response) => {
 })
 
 async function updateOrderFulfillment(id, fulfillmentStatus, response, admin) {
-  if (admin.role !== 'owner') {
-    const order = await database.prepare('SELECT store_id AS "storeId" FROM orders WHERE id = ?').get(id)
-    if (!order || order.storeId !== admin.storeId) {
-      response.status(404).json({ error: 'Order not found.' })
-      return
-    }
+  const scopedOrder = await database.prepare('SELECT store_id AS "storeId" FROM orders WHERE id = ?').get(id)
+  if (!await adminCanAccessOrder(scopedOrder, admin)) {
+    response.status(404).json({ error: 'Order not found.' })
+    return
   }
   const result = await updateOrderFulfillmentStatus(id, fulfillmentStatus)
   if (!result.changed) {
@@ -2488,7 +2690,10 @@ app.patch('/api/admin/orders/:id/delivered', requireAdmin, async (request, respo
 })
 
 app.get('/api/admin/payments', requireAdmin, async (request, response) => {
-  const storeFilter = request.admin.role === 'owner' ? '' : 'WHERE o.store_id = ?'
+  const town = selectedStoreTown(request.admin)
+  const storeFilter = hasTownScopedData(request.admin)
+    ? town ? 'WHERE EXISTS (SELECT 1 FROM stores s WHERE s.id = o.store_id AND s.town = ?)' : ''
+    : 'WHERE o.store_id = ?'
   const payments = await database.prepare(`
     SELECT p.id, p.order_id AS "orderId", p.payment_provider AS "provider",
       COALESCE(p.provider_transaction_id, p.stripe_payment_intent_id) AS "transactionId",
@@ -2497,14 +2702,15 @@ app.get('/api/admin/payments', requireAdmin, async (request, response) => {
     FROM payments p JOIN orders o ON o.id = p.order_id
     ${storeFilter}
     ORDER BY p.id DESC LIMIT 500
-  `).all(...(request.admin.role === 'owner' ? [] : [request.admin.storeId]))
+  `).all(...(hasTownScopedData(request.admin) ? town ? [town] : [] : [request.admin.storeId]))
   response.json({ payments })
 })
 
 app.get('/api/admin/notifications', requireAdmin, async (_request, response) => {
-  const isOwner = _request.admin.role === 'owner'
-  const storeFilter = isOwner ? '' : 'WHERE cm.store_id = ?'
-  const parameters = isOwner ? [] : [_request.admin.storeId]
+  const isTownScoped = hasTownScopedData(_request.admin)
+  const town = selectedStoreTown(_request.admin)
+  const storeFilter = isTownScoped ? town ? 'WHERE s.town = ?' : '' : 'WHERE cm.store_id = ?'
+  const parameters = isTownScoped ? town ? [town] : [] : [_request.admin.storeId]
   const messages = (await database.prepare(`
     SELECT cm.id, cm.name, cm.email, cm.phone, cm.subject, cm.message,
       cm.is_read AS "isRead", cm.created_at AS "createdAt",
@@ -2524,9 +2730,10 @@ app.patch('/api/admin/notifications/:id/read', requireAdmin, async (request, res
     response.status(400).json({ error: 'Notification ID is invalid.' })
     return
   }
-  const isOwner = request.admin.role === 'owner'
-  const storeId = isOwner ? null : request.admin.storeId
-  const updated = await markContactMessageRead(id, storeId)
+  const isTownScoped = hasTownScopedData(request.admin)
+  const town = selectedStoreTown(request.admin)
+  const storeId = isTownScoped ? null : request.admin.storeId
+  const updated = await markContactMessageRead(id, storeId, false, town)
   if (!updated) {
     response.status(404).json({ error: 'Notification not found.' })
     return
@@ -2535,9 +2742,10 @@ app.patch('/api/admin/notifications/:id/read', requireAdmin, async (request, res
 })
 
 app.delete('/api/admin/notifications', requireAdmin, async (request, response) => {
-  const isOwner = request.admin.role === 'owner'
-  const storeId = isOwner ? null : request.admin.storeId
-  const deletedCount = await deleteContactMessages(storeId)
+  const isTownScoped = hasTownScopedData(request.admin)
+  const town = selectedStoreTown(request.admin)
+  const storeId = isTownScoped ? null : request.admin.storeId
+  const deletedCount = await deleteContactMessages(storeId, false, town)
   response.json({ deletedCount })
 })
 
@@ -2548,12 +2756,15 @@ app.delete('/api/admin/notifications/:id', requireAdmin, async (request, respons
     return
   }
 
-  const isOwner = request.admin.role === 'owner'
-  const storeId = isOwner ? null : request.admin.storeId
-  const deleted = await deleteContactMessage(id, storeId)
+  const isTownScoped = hasTownScopedData(request.admin)
+  const town = selectedStoreTown(request.admin)
+  const storeId = isTownScoped ? null : request.admin.storeId
+  const deleted = await deleteContactMessage(id, storeId, false, town)
   if (!deleted) {
-    const storeFilter = isOwner ? '' : ' AND store_id = ?'
-    const parameters = isOwner ? [id] : [id, storeId]
+    const storeFilter = town
+      ? ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'
+      : isTownScoped ? '' : ' AND store_id = ?'
+    const parameters = town ? [id, town] : isTownScoped ? [id] : [id, storeId]
     const message = await database.prepare(`SELECT id FROM contact_messages WHERE id = ?${storeFilter}`).get(...parameters)
     if (!message) {
       response.status(404).json({ error: 'Notification not found.' })
@@ -2571,10 +2782,13 @@ app.post('/api/admin/notifications/:id/reply', requireAdmin, contactReplyLimiter
     return
   }
 
-  const isOwner = request.admin.role === 'owner'
-  const storeId = isOwner ? null : request.admin.storeId
-  const storeFilter = isOwner ? '' : ' AND store_id = ?'
-  const parameters = isOwner ? [id] : [id, storeId]
+  const isTownScoped = hasTownScopedData(request.admin)
+  const town = selectedStoreTown(request.admin)
+  const storeId = isTownScoped ? null : request.admin.storeId
+  const storeFilter = town
+    ? ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'
+    : isTownScoped ? '' : ' AND store_id = ?'
+  const parameters = town ? [id, town] : isTownScoped ? [id] : [id, storeId]
   const contact = await database.prepare(`
     SELECT id, name, email, subject FROM contact_messages WHERE id = ?${storeFilter}
   `).get(...parameters)
@@ -2591,7 +2805,7 @@ app.post('/api/admin/notifications/:id/reply', requireAdmin, contactReplyLimiter
       reply,
       adminName: request.admin.name,
     })
-    const result = await markContactMessageReplied(id, storeId)
+    const result = await markContactMessageReplied(id, storeId, false, town)
     if (!result) {
       response.status(404).json({ error: 'Contact message not found.' })
       return
@@ -2613,13 +2827,17 @@ app.post('/api/admin/admins', requireAdmin, async (request, response, next) => {
   if (!requireOwner(request, response)) return
   try {
     const { name, email, password, profilePicture = '' } = request.body
-    const storeId = Number(request.body.storeId)
+    const storeId = request.body.storeId === undefined ? null : Number(request.body.storeId)
+    const branchTown = typeof request.body.branchTown === 'string' ? request.body.branchTown : null
+    const hasStoreAssignment = Number.isSafeInteger(storeId) && storeId > 0
+    const hasBranchAssignment = branchTown !== null && branchTown.length > 0
     if (typeof name !== 'string' || !name.trim() || typeof email !== 'string'
       || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
       || typeof password !== 'string' || password.length < 8 || password.length > 128
-      || !Number.isSafeInteger(storeId) || storeId < 1
-      || !await database.prepare('SELECT 1 FROM stores WHERE id = ?').get(storeId)) {
-      response.status(400).json({ error: 'Provide a name, valid email, password of 8 to 128 characters, and a valid store.' })
+      || hasStoreAssignment === hasBranchAssignment
+      || (hasStoreAssignment && !await database.prepare('SELECT 1 FROM stores WHERE id = ?').get(storeId))
+      || (hasBranchAssignment && !await database.prepare('SELECT 1 FROM stores WHERE town = ?').get(branchTown))) {
+      response.status(400).json({ error: 'Provide a name, valid email, password of 8 to 128 characters, and either a valid store or branch.' })
       return
     }
     if (typeof profilePicture !== 'string' || (profilePicture
@@ -2638,7 +2856,8 @@ app.post('/api/admin/admins', requireAdmin, async (request, response, next) => {
       email: email.trim().toLowerCase(),
       passwordHash,
       profilePicture,
-      storeId,
+      storeId: hasStoreAssignment ? storeId : null,
+      branchTown: hasBranchAssignment ? branchTown : null,
     })
     response.status(201).json({ admin })
   } catch (error) {
@@ -2753,8 +2972,9 @@ const eventOrderRoutes = registerEventOrderRoutes(app, {
 })
 
 app.get('/api/admin/cake-requests', requireAdmin, async (request, response) => {
-  const storeId = request.admin.role === 'owner' ? null : request.admin.storeId
-  response.json({ requests: await listCakeRequests(storeId) })
+  const town = selectedStoreTown(request.admin)
+  const storeId = request.admin.role === 'store_admin' ? request.admin.storeId : null
+  response.json({ requests: await listCakeRequests(storeId, town) })
 })
 
 app.patch('/api/admin/cake-requests/:id/status', requireAdmin, async (request, response) => {
@@ -2765,8 +2985,9 @@ app.patch('/api/admin/cake-requests/:id/status', requireAdmin, async (request, r
     response.status(400).json({ error: 'Choose a valid cake request and status.' })
     return
   }
-  const storeId = request.admin.role === 'owner' ? null : request.admin.storeId
-  const result = await setCakeRequestStatus(id, status, storeId)
+  const town = selectedStoreTown(request.admin)
+  const storeId = request.admin.role === 'store_admin' ? request.admin.storeId : null
+  const result = await setCakeRequestStatus(id, status, storeId, town)
   if (!result) {
     response.status(404).json({ error: 'Custom cake request not found.' })
     return
@@ -2775,9 +2996,15 @@ app.patch('/api/admin/cake-requests/:id/status', requireAdmin, async (request, r
 })
 
 app.get('/api/admin/reviews', requireAdmin, async (request, response) => {
-  const storeJoin = request.admin.role === 'owner' ? '' : 'JOIN orders o ON o.id = r.order_id'
-  const storeFilter = request.admin.role === 'owner' ? '' : 'AND o.store_id = ?'
-  const storeParameters = request.admin.role === 'owner' ? [] : [request.admin.storeId]
+  const town = selectedStoreTown(request.admin)
+  const isTownScoped = hasTownScopedData(request.admin)
+  const storeJoin = isTownScoped && !town
+    ? ''
+    : 'JOIN orders o ON o.id = r.order_id JOIN stores s ON s.id = o.store_id'
+  const storeFilter = isTownScoped
+    ? town ? 'AND s.town = ?' : ''
+    : 'AND o.store_id = ?'
+  const storeParameters = isTownScoped ? town ? [town] : [] : [request.admin.storeId]
   if (request.query.countOnly === 'true') {
     const { count } = await database.prepare(`
       SELECT COUNT(*) AS count FROM menu_reviews r ${storeJoin}
@@ -2808,7 +3035,8 @@ app.patch('/api/admin/reviews/:id/approval', requireAdmin, async (request, respo
     response.status(400).json({ error: 'Provide a valid review and approval status.' })
     return
   }
-  if (request.admin.role !== 'owner') {
+  const town = selectedStoreTown(request.admin)
+  if (request.admin.role === 'store_admin') {
     const assigned = await database.prepare(`
       SELECT 1 FROM menu_reviews r JOIN orders o ON o.id = r.order_id
       WHERE r.id = ? AND o.store_id = ?
@@ -2817,8 +3045,22 @@ app.patch('/api/admin/reviews/:id/approval', requireAdmin, async (request, respo
       response.status(404).json({ error: 'Review not found.' })
       return
     }
+  } else if (town) {
+    const assigned = await database.prepare(`
+      SELECT 1 FROM menu_reviews r JOIN orders o ON o.id = r.order_id
+      JOIN stores s ON s.id = o.store_id WHERE r.id = ? AND s.town = ?
+    `).get(id, town)
+    if (!assigned) {
+      response.status(404).json({ error: 'Review not found.' })
+      return
+    }
   }
-  const result = await setReviewApproval(id, request.body.isApproved)
+  const result = await setReviewApproval(
+    id,
+    request.body.isApproved,
+    request.admin.role === 'store_admin' ? request.admin.storeId : null,
+    town,
+  )
   if (!result) {
     response.status(404).json({ error: 'Review not found.' })
     return
@@ -2832,8 +3074,9 @@ app.delete('/api/admin/reviews/:id', requireAdmin, async (request, response) => 
     response.status(400).json({ error: 'Provide a valid review.' })
     return
   }
-  const storeId = request.admin.role === 'owner' ? null : request.admin.storeId
-  const result = await deleteMenuReview(id, storeId)
+  const town = selectedStoreTown(request.admin)
+  const storeId = request.admin.role === 'store_admin' ? request.admin.storeId : null
+  const result = await deleteMenuReview(id, storeId, town)
   if (!result) {
     response.status(404).json({ error: 'Review not found.' })
     return
@@ -3164,8 +3407,12 @@ app.delete('/api/admin/discount-codes/:id', requireAdmin, ownerOnly, async (requ
 })
 
 app.get('/api/admin/reports', requireAdmin, async (request, response) => {
-  const storeFilter = request.admin.role === 'owner' ? '' : 'WHERE store_id = ?'
-  const storeParameters = request.admin.role === 'owner' ? [] : [request.admin.storeId]
+  const town = selectedStoreTown(request.admin)
+  const isTownScoped = hasTownScopedData(request.admin)
+  const storeFilter = isTownScoped
+    ? town ? 'WHERE store_id IN (SELECT id FROM stores WHERE town = ?)' : ''
+    : 'WHERE store_id = ?'
+  const storeParameters = isTownScoped ? town ? [town] : [] : [request.admin.storeId]
   const summary = await database.prepare(`
     SELECT COUNT(*) AS "orderCount",
       COALESCE(SUM(CASE WHEN status IN ('processing', 'delivered') THEN total_cents ELSE 0 END), 0) AS sales,
@@ -3177,7 +3424,9 @@ app.get('/api/admin/reports', requireAdmin, async (request, response) => {
     SELECT flavor_name AS name, SUM(quantity) AS quantity, SUM(line_total_cents) AS sales
     FROM order_items oi JOIN orders o ON o.id = oi.order_id
     WHERE o.status IN ('processing', 'delivered')
-      ${request.admin.role === 'owner' ? '' : 'AND o.store_id = ?'}
+      ${isTownScoped
+    ? town ? 'AND o.store_id IN (SELECT id FROM stores WHERE town = ?)' : ''
+    : 'AND o.store_id = ?'}
     GROUP BY flavor_name ORDER BY quantity DESC LIMIT 10
   `).all(...storeParameters)
   const lowStock = request.admin.role === 'owner' ? await database.prepare(`
@@ -3196,7 +3445,9 @@ app.get('/api/admin/reports', requireAdmin, async (request, response) => {
   const recentSales = await database.prepare(`
     SELECT date(created_at) AS date, SUM(total_cents) AS sales, COUNT(*) AS orders
     FROM orders WHERE status IN ('processing', 'delivered')
-      ${request.admin.role === 'owner' ? '' : 'AND store_id = ?'}
+      ${isTownScoped
+    ? town ? 'AND store_id IN (SELECT id FROM stores WHERE town = ?)' : ''
+    : 'AND store_id = ?'}
       AND created_at >= datetime('now', '-30 days')
     GROUP BY date(created_at) ORDER BY date
   `).all(...storeParameters)
@@ -3360,11 +3611,20 @@ if (existsSync(frontendEntry)) {
 
 try {
   await verifyDatabaseSchema()
+  await database.prepare('DELETE FROM pending_customer_signups WHERE expires_at <= ?')
+    .run(new Date().toISOString())
 } catch (error) {
   console.error('Database schema verification failed:', error)
   await database.close()
   throw error
 }
+
+setInterval(() => {
+  Promise.resolve()
+    .then(() => database.prepare('DELETE FROM pending_customer_signups WHERE expires_at <= ?')
+      .run(new Date().toISOString()))
+    .catch((error) => console.error('Unable to clean up expired signup verifications:', error.message))
+}, 15 * 60 * 1000).unref()
 
 app.use((error, _request, response, _next) => {
   if (error.type === 'entity.too.large') {

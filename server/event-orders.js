@@ -13,6 +13,7 @@ const CURRENCY = 'xaf'
 
 const SELECT_EVENT_ORDER = `
   SELECT e.id, e.customer_id AS "customerId", e.store_id AS "storeId", s.name AS "storeName",
+    s.town AS "storeTown",
     e.event_type AS "eventType", e.event_date AS "eventDate", e.event_time AS "eventTime",
     e.guest_count AS "guestCount", e.fulfillment_type AS "fulfillmentType",
     e.delivery_address AS "deliveryAddress", e.items_json AS "itemsJson", e.notes,
@@ -142,7 +143,12 @@ export function registerEventOrderRoutes(app, deps) {
   }
 
   async function adminEmails(storeId) {
-    const rows = await database.prepare(`SELECT email FROM admins WHERE role = 'owner' OR store_id = ? ORDER BY id`).all(storeId)
+    const rows = await database.prepare(`
+      SELECT email FROM admins
+      WHERE role = 'owner' OR store_id = ?
+        OR (role = 'branch_admin' AND branch_town = (SELECT town FROM stores WHERE id = ?))
+      ORDER BY id
+    `).all(storeId, storeId)
     return rows.map((row) => row.email)
   }
 
@@ -336,16 +342,62 @@ export function registerEventOrderRoutes(app, deps) {
   })
 
   app.get('/api/admin/event-orders', requireAdmin, async (request, response) => {
-    const storeFilter = request.admin.role === 'owner' ? '' : 'WHERE e.store_id = ?'
+    const isTownScoped = request.admin.role === 'owner' || request.admin.role === 'branch_admin'
+    const town = request.admin.role === 'branch_admin'
+      ? request.admin.branchTown
+      : request.admin.selectedStoreTown || null
+    const storeFilter = isTownScoped
+      ? town ? 'WHERE s.town = ?' : ''
+      : 'WHERE e.store_id = ?'
+    const parameters = isTownScoped ? town ? [town] : [] : [request.admin.storeId]
+    if (request.query.countOnly === 'true') {
+      const statusFilter = `${storeFilter}${storeFilter ? ' AND' : ' WHERE'} e.status IN ('new', 'deposit_paid')`
+      const result = await database.prepare(`
+        SELECT COUNT(*) AS count
+        FROM event_orders e LEFT JOIN stores s ON s.id = e.store_id
+        ${statusFilter}
+      `).get(...parameters)
+      response.json({ count: Number(result.count) })
+      return
+    }
     const rows = await database.prepare(`${SELECT_EVENT_ORDER} ${storeFilter} ORDER BY e.event_date ASC, e.id DESC LIMIT 300`)
-      .all(...(request.admin.role === 'owner' ? [] : [request.admin.storeId]))
+      .all(...parameters)
     response.json({ eventOrders: rows.map(present) })
+  })
+
+  app.delete('/api/admin/event-orders/:id', requireAdmin, async (request, response) => {
+    const id = Number(request.params.id)
+    const order = Number.isSafeInteger(id) ? await getEventOrder(id) : null
+    if (!order
+      || (request.admin.role === 'store_admin' && Number(order.storeId) !== Number(request.admin.storeId))
+      || (request.admin.role === 'branch_admin' && order.storeTown !== request.admin.branchTown)
+      || (request.admin.role === 'owner' && request.admin.selectedStoreTown
+        && order.storeTown !== request.admin.selectedStoreTown)) {
+      response.status(404).json({ error: 'Event order not found.' })
+      return
+    }
+    if (order.status !== 'declined') {
+      response.status(409).json({ error: 'Only declined event orders can be deleted.' })
+      return
+    }
+    const result = await database.prepare(`
+      DELETE FROM event_orders WHERE id = ? AND status = 'declined'
+    `).run(id)
+    if (!result.changes) {
+      response.status(409).json({ error: 'This event order has changed. Refresh and try again.' })
+      return
+    }
+    response.status(204).end()
   })
 
   app.patch('/api/admin/event-orders/:id', requireAdmin, async (request, response) => {
     const id = Number(request.params.id)
     const order = Number.isSafeInteger(id) ? await getEventOrder(id) : null
-    if (!order || (request.admin.role !== 'owner' && Number(order.storeId) !== Number(request.admin.storeId))) {
+    if (!order
+      || (request.admin.role === 'store_admin' && Number(order.storeId) !== Number(request.admin.storeId))
+      || (request.admin.role === 'branch_admin' && order.storeTown !== request.admin.branchTown)
+      || (request.admin.role === 'owner' && request.admin.selectedStoreTown
+        && order.storeTown !== request.admin.selectedStoreTown)) {
       response.status(404).json({ error: 'Event order not found.' })
       return
     }

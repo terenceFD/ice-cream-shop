@@ -77,6 +77,8 @@ export function AdminEventOrdersPage() {
   const [message, setMessage] = useState("");
   const [filter, setFilter] = useState("open");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [quotedTotal, setQuotedTotal] = useState("");
   const [depositAmount, setDepositAmount] = useState("");
   const [adminNote, setAdminNote] = useState("");
@@ -148,6 +150,30 @@ export function AdminEventOrdersPage() {
       setActionError(actError instanceof Error ? actError.message : t("The change could not be saved."));
     } finally {
       setWorking(false);
+    }
+  }
+
+  async function deleteDeclinedOrder() {
+    if (!selected || selected.status !== "declined") return;
+    setIsDeleting(true);
+    setActionError("");
+    try {
+      await apiRequest(`/admin/event-orders/${selected.id}`, {
+        method: "DELETE",
+        token: sessionToken,
+      });
+      setIsDeleteConfirmOpen(false);
+      setSelectedId(null);
+      setMessage(t("Declined event order #{id} deleted.", { id: selected.id }));
+      try {
+        await refresh();
+      } catch (refreshError) {
+        setError(refreshError instanceof Error ? refreshError.message : t("Unable to load event orders."));
+      }
+    } catch (deleteError) {
+      setActionError(deleteError instanceof Error ? deleteError.message : t("The event order could not be deleted."));
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -294,6 +320,11 @@ export function AdminEventOrdersPage() {
               {actionError && <p className="rounded-xl bg-red-50 px-3 py-2.5 font-semibold text-red-700" role="alert">{actionError}</p>}
             </div>
             <footer className="flex flex-wrap justify-end gap-2.5 border-t border-[#edf1f5] bg-[#fafbfd] px-6 py-4">
+              {selected.status === "declined" && (
+                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-60" disabled={working || isDeleting} onClick={() => setIsDeleteConfirmOpen(true)} type="button">
+                  {t("Delete order")}
+                </button>
+              )}
               {["new", "quoted", "deposit_paid", "confirmed"].includes(selected.status) && (
                 <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-red-700 hover:bg-red-50" disabled={working} onClick={() => act(["new", "quoted"].includes(selected.status) ? "decline" : "cancel")} type="button">
                   {t(["new", "quoted"].includes(selected.status) ? "Decline" : "Cancel event")}
@@ -311,6 +342,27 @@ export function AdminEventOrdersPage() {
                 <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#092a53] ring-1 ring-[#d5dde8] hover:ring-[#092a53] disabled:opacity-60" disabled={working} onClick={() => act("complete")} type="button">{t("Mark completed")}</button>
               )}
             </footer>
+          </section>
+        </div>
+      )}
+      {isDeleteConfirmOpen && selected?.status === "declined" && (
+        <div className="fixed inset-0 z-[60] grid place-items-center px-5" role="presentation">
+          <button aria-label={t("Cancel")} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/55 backdrop-blur-[2px]" disabled={isDeleting} onClick={() => setIsDeleteConfirmOpen(false)} tabIndex={-1} type="button" />
+          <section aria-labelledby="delete-event-order-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
+            <span className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600">
+              <svg aria-hidden="true" className="size-6" fill="none" viewBox="0 0 24 24">
+                <path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+              </svg>
+            </span>
+            <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="delete-event-order-title">
+              {t("Delete declined event order #{id}?", { id: selected.id })}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("This permanently deletes the declined event order. This cannot be undone.")}</p>
+            {actionError && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{actionError}</p>}
+            <div className="mt-6 flex justify-end gap-2.5">
+              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] disabled:opacity-60" disabled={isDeleting} onClick={() => setIsDeleteConfirmOpen(false)} type="button">{t("Cancel")}</button>
+              <button className="min-h-10 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60" disabled={isDeleting} onClick={deleteDeclinedOrder} type="button">{isDeleting ? t("Deleting…") : t("Delete")}</button>
+            </div>
           </section>
         </div>
       )}
