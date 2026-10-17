@@ -381,6 +381,7 @@ export function HomePage() {
   const [addedItemKey, setAddedItemKey] = useState(null);
   const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
   const addedTimer = useRef(undefined);
+  const reviewsSentinel = useRef(null);
 
   // Slide photos download only when needed: the one on screen, then the next one shortly before it
   // appears. Opening the page no longer downloads every slide photo at once.
@@ -403,43 +404,63 @@ export function HomePage() {
 
   useEffect(() => {
     let cancelled = false;
-    apiRequest("/menu")
-      .then(({ categories }) => {
-        if (!cancelled) {
-          setPopularFlavors(getPopularFlavors(categories));
-          setMenuError("");
-        }
-      })
-      .catch((error) => {
-        if (!cancelled) setMenuError(error.message);
-      });
-    apiRequest("/reviews")
-      .then(({ reviews: approvedReviews }) => {
-        if (!cancelled) {
-          setReviews(approvedReviews.slice(0, 6));
-          const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-          let total = 0;
-          for (const review of approvedReviews) {
-            const rating = Math.min(5, Math.max(1, Math.round(Number(review.rating) || 0)));
-            distribution[rating] += 1;
-            total += rating;
+    // Stock updates the cards that are already drawn from the built-in menu. Wait until the
+    // hero photo has had the connection to itself.
+    const timeoutId = window.setTimeout(() => {
+      apiRequest("/menu")
+        .then(({ categories }) => {
+          if (!cancelled) {
+            setPopularFlavors(getPopularFlavors(categories));
+            setMenuError("");
           }
-          setReviewStats({
-            count: approvedReviews.length,
-            average: approvedReviews.length ? total / approvedReviews.length : 0,
-            distribution,
-          });
-          setReviewsError("");
-        }
-      })
-      .catch((error) => {
-        if (!cancelled) setReviewsError(error.message);
-      })
-      .finally(() => {
-        if (!cancelled) setReviewsLoaded(true);
-      });
+        })
+        .catch((error) => {
+          if (!cancelled) setMenuError(error.message);
+        });
+    }, 1600);
     return () => {
       cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  useEffect(() => {
+    const node = reviewsSentinel.current;
+    if (!node) return undefined;
+    let cancelled = false;
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
+      apiRequest("/reviews")
+        .then(({ reviews: approvedReviews }) => {
+          if (!cancelled) {
+            setReviews(approvedReviews.slice(0, 6));
+            const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+            let total = 0;
+            for (const review of approvedReviews) {
+              const rating = Math.min(5, Math.max(1, Math.round(Number(review.rating) || 0)));
+              distribution[rating] += 1;
+              total += rating;
+            }
+            setReviewStats({
+              count: approvedReviews.length,
+              average: approvedReviews.length ? total / approvedReviews.length : 0,
+              distribution,
+            });
+            setReviewsError("");
+          }
+        })
+        .catch((error) => {
+          if (!cancelled) setReviewsError(error.message);
+        })
+        .finally(() => {
+          if (!cancelled) setReviewsLoaded(true);
+        });
+    }, { rootMargin: "700px" });
+    observer.observe(node);
+    return () => {
+      cancelled = true;
+      observer.disconnect();
     };
   }, []);
 
@@ -919,7 +940,9 @@ export function HomePage() {
                     alt=""
                     className="aspect-[16/10] w-full object-cover"
                     loading="lazy"
+                    sizes="(min-width: 1024px) 480px, 90vw"
                     src="/cream/cream%202.webp"
+                    srcSet={photoSrcSet("/cream/cream%202.webp")}
                   />
                 </figure>
                 <div className="absolute -bottom-6 right-4 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-[#092a53] shadow-[0_20px_44px_rgba(0,0,0,0.25)] sm:right-6">
@@ -1255,6 +1278,7 @@ export function HomePage() {
         </section>
 
         {/* Always shown: the reviews, or an invitation to write the first one. */}
+        <div aria-hidden="true" className="h-px" ref={reviewsSentinel} />
         <ReviewsSection error={reviewsError} isLoaded={reviewsLoaded} language={language} reviews={reviews} stats={reviewStats} t={t} />
 
         <section

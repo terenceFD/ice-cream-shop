@@ -84,23 +84,32 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
           className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
           style={{ transform: `translateX(-${current * 100}%)` }}
         >
-          {images.map((image, index) => (
-            <img decoding="async"
-              alt={index === 0 ? name : t("{name}, photo {number} of {total}", { name, number: index + 1, total: images.length })}
-              aria-hidden={index !== current}
-              className={`w-full shrink-0 select-none object-cover ${imageClassName}`}
-              draggable={false}
-              key={image}
-              loading={index === 0 ? "eager" : "lazy"}
-              sizes="(min-width: 1024px) 600px, 100vw"
-              srcSet={photoSrcSet(image)}
-              onError={(event) => {
-                event.currentTarget.onerror = null;
-                event.currentTarget.src = FALLBACK_IMAGE;
-              }}
-              src={image}
-            />
-          ))}
+          {images.map((image, index) => {
+            const last = (current + images.length - 1) % images.length;
+            const next = (current + 1) % images.length;
+            // Keep the strip width stable, but download only the visible photo and its neighbors.
+            if (index !== current && index !== next && index !== last) {
+              return <div aria-hidden="true" className={`w-full shrink-0 ${imageClassName}`} key={image} />;
+            }
+            return (
+              <img decoding="async"
+                alt={index === current ? name : t("{name}, photo {number} of {total}", { name, number: index + 1, total: images.length })}
+                aria-hidden={index !== current}
+                className={`w-full shrink-0 select-none object-cover ${imageClassName}`}
+                draggable={false}
+                fetchPriority={index === current ? "high" : "auto"}
+                key={image}
+                loading={index === current ? "eager" : "lazy"}
+                sizes="(min-width: 1024px) 600px, 100vw"
+                srcSet={photoSrcSet(image)}
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = FALLBACK_IMAGE;
+                }}
+                src={image}
+              />
+            );
+          })}
         </div>
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#061d3a]/30 via-transparent to-transparent" />
         {overlay}

@@ -282,89 +282,6 @@ export function AdminStockAlertsPage() {
   )
 }
 
-export function AdminActivityPage() {
-  const request = useAdminRequest()
-  const { t, language } = useLanguage()
-  const [activity, setActivity] = useState([])
-  const [error, setError] = useState('')
-
-  const [person, setPerson] = useState('')
-  const [area, setArea] = useState('')
-
-  useEffect(() => {
-    request('/admin/activity').then((result) => setActivity(result.activity)).catch((loadError) => setError(loadError.message))
-  }, [request])
-
-  const entries = useMemo(() => activity.map((item) => {
-    const described = describeAdminActivity(item.method, item.path)
-    return { ...item, ...described, day: formatAdminDate(item.createdAt, language) || '' }
-  }), [activity, language])
-  const people = useMemo(() => [...new Set(entries.map((entry) => entry.adminName))].sort(), [entries])
-  const shown = entries.filter((entry) => (!person || entry.adminName === person) && (!area || entry.area === area))
-
-  return (
-    <div className="min-w-0 space-y-6">
-      <AdminPageHeader
-        description={t('Recent successful admin changes, up to the latest 200 entries.')}
-        icon={adminIcons.history}
-        section={t('Workspace')}
-        t={t}
-        title={t('Admin activity history')}
-      />
-      <AdminNotice tone="error">{error}</AdminNotice>
-
-      <section className="rounded-[20px] border border-[#e5ebf3] bg-white">
-        <div className="flex flex-col gap-3 border-b border-[#edf1f5] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-          <p className="text-xs font-semibold text-[#65748a]">{t('Showing {shown} of {total} changes', { shown: shown.length, total: entries.length })}</p>
-          <div className="flex flex-wrap gap-2">
-            <label className="sr-only" htmlFor="activity-person">{t('Person')}</label>
-            <select className="min-h-10 rounded-xl border border-[#dde4ec] bg-white px-3 text-sm font-semibold text-[#102c50]" id="activity-person" onChange={(event) => setPerson(event.target.value)} value={person}>
-              <option value="">{t('Everyone')}</option>
-              {people.map((name) => <option key={name} value={name}>{name}</option>)}
-            </select>
-            <label className="sr-only" htmlFor="activity-area">{t('Area')}</label>
-            <select className="min-h-10 rounded-xl border border-[#dde4ec] bg-white px-3 text-sm font-semibold text-[#102c50]" id="activity-area" onChange={(event) => setArea(event.target.value)} value={area}>
-              <option value="">{t('All areas')}</option>
-              {ACTIVITY_AREAS.map((value) => <option key={value} value={value}>{t(AREA_LABELS[value])}</option>)}
-            </select>
-          </div>
-        </div>
-        {shown.length ? (
-          <ol className="divide-y divide-[#f0f3f7]">
-            {shown.map((entry, index) => {
-              const createdAtLabel = formatAdminTime(entry.createdAt, language)
-              const dateTime = entry.createdAt instanceof Date
-                ? Number.isFinite(entry.createdAt.getTime()) ? entry.createdAt.toISOString() : undefined
-                : entry.createdAt
-              const newDay = index === 0 || shown[index - 1].day !== entry.day
-              return (
-                <li key={entry.id}>
-                  {newDay && entry.day && <p className="bg-[#f7f9fc] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#8190a1] sm:px-5">{entry.day}</p>}
-                  <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
-                    <span aria-hidden="true" className={`grid size-9 shrink-0 place-items-center rounded-xl ${AREA_STYLES[entry.area]}`}>
-                      <AdminIcon path={AREA_ICONS[entry.area]} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-[#102c50]">{t(entry.label, { id: entry.id ?? '' })}</p>
-                      <p className="mt-0.5 truncate text-xs text-[#65748a]">
-                        {entry.adminName}
-                        {!entry.known && <span className="ml-1 font-mono text-[11px] text-[#a3b0bf]">· {entry.method} {entry.path}</span>}
-                      </p>
-                    </div>
-                    {createdAtLabel && <time className="shrink-0 text-xs tabular-nums text-[#65748a]" dateTime={dateTime}>{createdAtLabel}</time>}
-                  </div>
-                </li>
-              )
-            })}
-          </ol>
-        ) : (
-          <p className="px-6 py-14 text-center text-sm text-[#65748a]">{t('No admin changes have been recorded yet.')}</p>
-        )}
-      </section>
-    </div>
-  )
-}
-
 const AREA_LABELS = { catalog: 'Catalog', orders: 'Orders', customers: 'Customers', promotions: 'Promotions', settings: 'Settings', account: 'Accounts and sign-in' }
 const AREA_ICONS = { catalog: adminIcons.box, orders: adminIcons.truck, customers: adminIcons.user, promotions: adminIcons.check, settings: adminIcons.store, account: adminIcons.user }
 const AREA_STYLES = {
@@ -374,4 +291,333 @@ const AREA_STYLES = {
   promotions: 'bg-[#e5f4ea] text-[#2c7a4f]',
   settings: 'bg-[#eef1f5] text-[#52647b]',
   account: 'bg-[#fdeaea] text-[#a3352f]',
+}
+const AREA_DOTS = {
+  catalog: 'bg-[#bd9c00]',
+  orders: 'bg-[#3d6f9e]',
+  customers: 'bg-[#7a56b3]',
+  promotions: 'bg-[#2e9d5b]',
+  settings: 'bg-[#65748a]',
+  account: 'bg-[#c44b44]',
+}
+
+function adminInitials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+  return (parts[0] || '?').slice(0, 2).toUpperCase()
+}
+
+function activityDateTime(value) {
+  if (value instanceof Date) return Number.isFinite(value.getTime()) ? value.toISOString() : undefined
+  return value || undefined
+}
+
+export function AdminActivityPage() {
+  const request = useAdminRequest()
+  const { t, language } = useLanguage()
+  const [activity, setActivity] = useState(null)
+  const [error, setError] = useState('')
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [person, setPerson] = useState('')
+  const [area, setArea] = useState('')
+
+  const refresh = useCallback(async () => {
+    setIsRefreshing(true)
+    try {
+      const result = await request('/admin/activity')
+      setActivity(result?.activity ?? [])
+      setError('')
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : t('Unable to load the activity log.'))
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [request, t])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  const entries = useMemo(() => (activity || []).map((item) => {
+    const described = describeAdminActivity(item.method, item.path)
+    return { ...item, ...described, day: formatAdminDate(item.createdAt, language) || '' }
+  }), [activity, language])
+
+  const people = useMemo(() => [...new Set(entries.map((entry) => entry.adminName).filter(Boolean))].sort(), [entries])
+
+  useEffect(() => {
+    if (person && !people.includes(person)) setPerson('')
+  }, [people, person])
+
+  const shown = useMemo(
+    () => entries.filter((entry) => (!person || entry.adminName === person) && (!area || entry.area === area)),
+    [entries, person, area],
+  )
+
+  const summary = useMemo(() => {
+    const todayLabel = formatAdminDate(new Date(), language) || ''
+    const todayCount = entries.filter((entry) => entry.day === todayLabel).length
+    const areaCounts = ACTIVITY_AREAS
+      .map((value) => ({ value, count: entries.filter((entry) => entry.area === value).length }))
+      .filter((row) => row.count > 0)
+    const latest = entries[0] || null
+    return {
+      total: entries.length,
+      people: people.length,
+      today: todayCount,
+      areaCounts,
+      latest,
+    }
+  }, [entries, people, language])
+
+  const dayGroups = useMemo(() => {
+    const groups = []
+    for (const entry of shown) {
+      const day = entry.day || t('Unknown date')
+      const last = groups[groups.length - 1]
+      if (!last || last.day !== day) groups.push({ day, entries: [entry] })
+      else last.entries.push(entry)
+    }
+    return groups
+  }, [shown, t])
+
+  return (
+    <div className="min-w-0 space-y-6">
+      <AdminPageHeader
+        actions={(
+          <button
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#355777] ring-1 ring-[#dce4ed] transition hover:bg-[#f7f9fc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+            disabled={isRefreshing}
+            onClick={refresh}
+            type="button"
+          >
+            <AdminIcon className={`size-4 ${isRefreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} path={adminIcons.history} />
+            {t('Refresh')}
+          </button>
+        )}
+        description={t('A clear record of successful admin changes across the workspace.')}
+        icon={adminIcons.history}
+        section={t('Workspace')}
+        t={t}
+        title={t('Activity log')}
+      />
+
+      {error && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+          <span className="inline-flex items-start gap-2">
+            <AdminIcon className="mt-0.5 size-4 shrink-0" path={adminIcons.alert} />
+            {error}
+          </span>
+          <button className="font-extrabold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700" onClick={refresh} type="button">{t('Try again')}</button>
+        </div>
+      )}
+
+      {activity === null ? (error ? null : (
+        <div aria-label={t('Loading…')} className="space-y-6" role="status">
+          <div className="h-44 animate-pulse rounded-[24px] bg-[#eef2f6]" />
+          <div className="h-[28rem] animate-pulse rounded-[20px] bg-[#eef2f6]" />
+        </div>
+      )) : (
+        <>
+          <section aria-labelledby="activity-overview-title" className="overflow-hidden rounded-[24px] border border-[#e5ebf3] bg-white">
+            <div className="border-b border-[#edf1f5] bg-[#092a53] px-5 py-5 text-white sm:px-7 sm:py-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-sm font-semibold text-white/65" id="activity-overview-title">{t('Activity overview')}</h2>
+                  <p className="mt-2 font-display text-[2.1rem] font-extrabold leading-none tabular-nums tracking-tight sm:text-[2.5rem]">
+                    {summary.total}
+                  </p>
+                  <p className="mt-2 text-sm text-white/70">
+                    {summary.total === 1 ? t('1 recorded change') : t('{count} recorded changes', { count: summary.total })}
+                    <span aria-hidden="true" className="mx-2 text-white/25">·</span>
+                    {t('Latest 200 entries')}
+                  </p>
+                </div>
+                {summary.latest && (
+                  <p className="max-w-sm text-sm leading-5 text-white/75">
+                    <span className="text-white/50">{t('Latest')}</span>{' '}
+                    <span className="font-semibold text-[#ffdc32]">{t(summary.latest.label, { id: summary.latest.id ?? '' })}</span>
+                    <span className="text-white/45"> · {summary.latest.adminName}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <dl className="grid grid-cols-2 divide-x divide-y divide-[#edf1f5] sm:grid-cols-4 sm:divide-y-0">
+              <div className="px-4 py-4 sm:px-5">
+                <dt className="text-xs font-semibold text-[#8190a1]">{t('Today')}</dt>
+                <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.today}</dd>
+              </div>
+              <div className="px-4 py-4 sm:px-5">
+                <dt className="text-xs font-semibold text-[#8190a1]">{t('People')}</dt>
+                <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.people}</dd>
+              </div>
+              <div className="px-4 py-4 sm:px-5">
+                <dt className="text-xs font-semibold text-[#8190a1]">{t('Areas touched')}</dt>
+                <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.areaCounts.length}</dd>
+              </div>
+              <div className="px-4 py-4 sm:px-5">
+                <dt className="text-xs font-semibold text-[#8190a1]">{t('In this view')}</dt>
+                <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{shown.length}</dd>
+              </div>
+            </dl>
+
+            {summary.areaCounts.length > 0 && (
+              <div className="border-t border-[#edf1f5] px-4 py-4 sm:px-5">
+                <p className="text-xs font-semibold text-[#8190a1]">{t('By area')}</p>
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {summary.areaCounts.map((row) => (
+                    <li key={row.value}>
+                      <button
+                        aria-pressed={area === row.value}
+                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${
+                          area === row.value ? 'bg-[#092a53] text-white' : 'bg-[#f1f4f8] text-[#355777] hover:bg-[#e8edf4]'
+                        }`}
+                        onClick={() => setArea((current) => (current === row.value ? '' : row.value))}
+                        type="button"
+                      >
+                        <span aria-hidden="true" className={`size-2 rounded-full ${area === row.value ? 'bg-[#ffdc32]' : AREA_DOTS[row.value]}`} />
+                        {t(AREA_LABELS[row.value])}
+                        <span className={`tabular-nums ${area === row.value ? 'text-white/70' : 'text-[#8190a1]'}`}>{row.count}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+
+          <section aria-labelledby="activity-timeline-title" className="overflow-hidden rounded-[20px] border border-[#e5ebf3] bg-white">
+            <div className="flex flex-col gap-3 border-b border-[#edf1f5] px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="activity-timeline-title">{t('Change timeline')}</h2>
+                <p className="mt-0.5 text-sm text-[#65748a]">
+                  {t('Showing {shown} of {total} changes', { shown: shown.length, total: entries.length })}
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-[#65748a]" id="activity-area-label">{t('Area')}</span>
+                  <div aria-labelledby="activity-area-label" className="inline-flex flex-wrap rounded-xl bg-[#f1f4f8] p-1" role="group">
+                    <button
+                      aria-pressed={!area}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${!area ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
+                      onClick={() => setArea('')}
+                      type="button"
+                    >
+                      {t('All areas')}
+                    </button>
+                    {ACTIVITY_AREAS.map((value) => {
+                      const selected = area === value
+                      return (
+                        <button
+                          aria-pressed={selected}
+                          className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${selected ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
+                          key={value}
+                          onClick={() => setArea(value)}
+                          type="button"
+                        >
+                          {t(AREA_LABELS[value])}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+                {people.length > 1 && (
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-semibold text-[#65748a]" htmlFor="activity-person">{t('Person')}</label>
+                    <select
+                      className="min-h-9 rounded-xl border border-[#dde4ec] bg-white px-3 text-xs font-bold text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+                      id="activity-person"
+                      onChange={(event) => setPerson(event.target.value)}
+                      value={person}
+                    >
+                      <option value="">{t('Everyone')}</option>
+                      {people.map((name) => <option key={name} value={name}>{name}</option>)}
+                    </select>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {!entries.length ? (
+              <div className="px-6 py-14 text-center">
+                <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f5f9] text-[#355777]">
+                  <AdminIcon className="size-6" path={adminIcons.history} />
+                </span>
+                <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t('No admin changes have been recorded yet.')}</p>
+                <p className="mt-1 text-sm text-[#65748a]">{t('Successful edits, orders and account changes will appear here.')}</p>
+              </div>
+            ) : !shown.length ? (
+              <div className="px-6 py-14 text-center">
+                <p className="font-display text-lg font-extrabold text-[#092a53]">{t('No matching changes')}</p>
+                <p className="mt-1 text-sm text-[#65748a]">{t('Try another person or area filter.')}</p>
+                <button
+                  className="mt-4 text-sm font-bold text-[#355777] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+                  onClick={() => { setPerson(''); setArea('') }}
+                  type="button"
+                >
+                  {t('Clear filters')}
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-[#edf1f5]">
+                {dayGroups.map((group) => (
+                  <section aria-labelledby={`activity-day-${group.day}`} key={group.day}>
+                    <div className="sticky top-[68px] z-10 flex items-center justify-between gap-3 border-b border-[#edf1f5] bg-[#f7f9fc]/95 px-4 py-2.5 backdrop-blur-sm sm:px-5">
+                      <h3 className="text-xs font-extrabold text-[#65748a]" id={`activity-day-${group.day}`}>{group.day}</h3>
+                      <span className="text-[11px] font-semibold tabular-nums text-[#91a0b1]">
+                        {group.entries.length === 1 ? t('1 change') : t('{count} changes', { count: group.entries.length })}
+                      </span>
+                    </div>
+                    <ol className="relative">
+                      <span aria-hidden="true" className="absolute bottom-4 left-[2.15rem] top-4 w-px bg-[#e6ebf1] sm:left-[2.4rem]" />
+                      {group.entries.map((entry) => {
+                        const createdAtLabel = formatAdminTime(entry.createdAt, language)
+                        return (
+                          <li className="relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 px-4 py-4 sm:gap-4 sm:px-5" key={entry.id}>
+                            <span aria-hidden="true" className={`relative z-[1] grid size-10 shrink-0 place-items-center rounded-xl ring-4 ring-white ${AREA_STYLES[entry.area]}`}>
+                              <AdminIcon className="size-4" path={AREA_ICONS[entry.area]} />
+                            </span>
+                            <div className="min-w-0 pt-0.5">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-sm font-extrabold text-[#092a53]">{t(entry.label, { id: entry.id ?? '' })}</p>
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${AREA_STYLES[entry.area]}`}>
+                                  {t(AREA_LABELS[entry.area])}
+                                </span>
+                              </div>
+                              <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#65748a]">
+                                <span className="inline-flex items-center gap-1.5 font-semibold text-[#355777]">
+                                  <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#eef2f6] text-[9px] font-extrabold text-[#355777]">
+                                    {adminInitials(entry.adminName)}
+                                  </span>
+                                  {entry.adminName}
+                                </span>
+                                {!entry.known && (
+                                  <span className="truncate font-mono text-[11px] text-[#91a0b1]">{entry.method} {entry.path}</span>
+                                )}
+                              </div>
+                            </div>
+                            {createdAtLabel && (
+                              <time
+                                className="inline-flex shrink-0 items-center gap-1.5 pt-1 text-xs font-semibold tabular-nums text-[#8190a1]"
+                                dateTime={activityDateTime(entry.createdAt)}
+                              >
+                                <AdminIcon className="size-3.5 text-[#b0bbc8]" path={adminIcons.clock} />
+                                {createdAtLabel}
+                              </time>
+                            )}
+                          </li>
+                        )
+                      })}
+                    </ol>
+                  </section>
+                ))}
+              </div>
+            )}
+          </section>
+        </>
+      )}
+    </div>
+  )
 }

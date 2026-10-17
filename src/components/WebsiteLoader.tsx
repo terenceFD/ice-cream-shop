@@ -68,7 +68,7 @@ export function WebsiteLoader() {
 
           <div aria-hidden="true" className="website-loader__mark">
             <span className="website-loader__ring" />
-            <img alt="" className="website-loader__logo" decoding="async" height={96} loading="eager" src="/icons/icon-192.png" width={96} />
+            <img alt="" className="website-loader__logo" decoding="async" height={96} loading="eager" src="/logo.png" width={96} />
           </div>
 
           <p aria-hidden="true" className="website-loader__wordmark">

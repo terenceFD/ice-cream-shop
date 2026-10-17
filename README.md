@@ -1,12 +1,10 @@
-# Cold Stone Creamery Cameroon — Independent Guide
+# Cold Stone Creamery Cameroon — Website Guide
 
-An independent, bilingual (English and French) guide to publicly listed Cold Stone Creamery locations and global menu categories in Cameroon, alongside a separate operator-managed online shop. Built with React, Vite, Tailwind CSS, Express, and PostgreSQL (Supabase) in production or SQLite in development.
+A bilingual (English and French) website and online shop for Cold Stone Creamery locations in Cameroon. Built with React, Vite, Tailwind CSS, Express, and PostgreSQL (Supabase) in production or SQLite in development.
 
 Live site: https://ice-cream-shop-20eg.onrender.com
 
-This website is not an official Cold Stone Creamery website and does not claim affiliation. Public branch listings and global menu categories are informational only. Local branch hours, current operations, menu, product availability, and prices require confirmation with the relevant store. The separate website catalog and checkout are managed by this site's operator; catalog items and prices are not verified Cold Stone Cameroon products or prices.
-
-The `/locations` page lists publicly indexed areas in Bonanjo, Bonamoussadi, Bonabéri, and Ange Raphaël in Douala, and Bastos in Yaoundé. Listings are subject to change and include map-search links for confirmation. On `/menu`, customers browse image-led categories and product examples from the global brand menu, including Signature Creations; `/menu/all` lists every product on one page. Selecting a product shows its details, its FCFA price, a quantity selector with **Add to bag**, and similar products. These are not a confirmed Cameroon branch menu or prices; local availability, recipes, and prices may differ.
+The `/locations` page lists areas in Bonanjo, Bonamoussadi, Bonabéri, and Ange Raphaël in Douala, and Bastos in Yaoundé, with map-search links. On `/menu`, customers browse image-led categories and product examples, including Signature Creations; `/menu/all` lists every product on one page. Selecting a product shows its details, FCFA price, a quantity selector with **Add to bag**, and similar products.
 
 Research references:
 - [Cold Stone Creamery global menu](https://www.coldstonecreamery.com/menu/)
@@ -28,7 +26,7 @@ Research references:
 - Installable app (web app manifest and service worker) that works offline for browsing.
 
 **For the shop**
-- Admin dashboard for flavors, menu, categories, inventory and low-stock alerts, orders, deliveries, payments, promotions, reports, customer accounts, reviews, cake requests, event orders, contact messages, pickup and delivery settings, admin accounts, and an activity log. Admins land on **Store overview** after signing in. See [Admin dashboard](#admin-dashboard).
+- Admin dashboard for store-by-store summaries, flavors, menu, categories, inventory and low-stock alerts, orders, deliveries, payments, promotions, reports, customer accounts, reviews, cake requests, event orders, contact messages, pickup and delivery settings, admin accounts, and an activity log. Admins land on **Store overview** after signing in. See [Admin dashboard](#admin-dashboard).
 - Promotions can notify every customer who turned on notifications, with an optional custom message and a phone preview; existing promotions can be re-sent.
 - Order and event details include a one-tap **WhatsApp** button with the customer's update already written.
 - Store admins see and manage only their own store's data.
@@ -134,7 +132,9 @@ Admin image uploads (menu items and flavors, including "Upload from device" in t
 
 ### Store admin access
 
-An owner account has access to all stores. From **Admin accounts**, the owner can assign a branch admin to a whole town or assign a store admin to one store. Branch admins can see and manage operational data across **all stores in their assigned town**—including orders, payments, related customer accounts, order reviews, custom-cake requests, event orders, contact messages, and sales reports. Adding a store admin does not narrow or replace the branch admin's town-wide access. Store admins remain limited to their individually assigned store. The server enforces these scopes for reads and updates. Catalog, inventory, discounts, promotion notifications, and fulfillment configuration remain owner-managed.
+An owner account has access to all stores. The owner can use the dashboard's branch selector to view **ALL** branches or filter to Douala or Yaoundé; the selected town is reflected in the dashboard data and the **Stores** summaries. From **Admin accounts**, the owner can assign a branch admin to a whole town or assign a store admin to one store. Branch admins can see and manage operational data across **all stores in their assigned town**—including orders, payments, related customer accounts, order reviews, custom-cake requests, event orders, contact messages, and sales reports—and cannot switch to another town. Adding a store admin does not narrow or replace the branch admin's town-wide access. Store admins remain limited to their individually assigned store. The server enforces these scopes for reads and updates. Catalog, inventory, discounts, promotion notifications, and fulfillment configuration remain owner-managed.
+
+The **Stores** page summarizes orders, paid sales, open orders, customers, event orders, cake requests and reviews for each store in the admin's permitted view. The review queue lets authorized admins approve a review or reject it, which deletes it. The event-order sidebar count includes requests that need staff action: new requests and requests with a deposit paid.
 
 ### Menu products
 

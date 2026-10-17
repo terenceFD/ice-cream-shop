@@ -53,11 +53,20 @@ export function FlavorProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    refreshFlavors()
-    const inventoryRefresh = window.setInterval(() => {
-      refreshFlavors({ showLoading: false })
-    }, 30000)
-    return () => window.clearInterval(inventoryRefresh)
+    // The homepage already has its menu photos. Give those the connection first.
+    const delay = window.location.pathname === '/' ? 1600 : 0
+    let inventoryRefresh = 0
+    const start = window.setTimeout(() => {
+      refreshFlavors()
+      inventoryRefresh = window.setInterval(() => {
+        if (document.visibilityState === 'hidden') return
+        refreshFlavors({ showLoading: false })
+      }, 30000)
+    }, delay)
+    return () => {
+      window.clearTimeout(start)
+      window.clearInterval(inventoryRefresh)
+    }
   }, [refreshFlavors])
 
   async function addFlavor(flavor: FlavorInput) {

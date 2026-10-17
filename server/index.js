@@ -265,7 +265,10 @@ function isLocalDevelopmentOrigin(origin) {
   }
 }
 
-app.use(cors({
+// CORS belongs on the API only. Applying it to every response adds "Vary: Origin", and
+// Cloudflare will not store a file that varies on Origin, so photos and scripts were
+// fetched from Render on every visit.
+const apiCors = cors({
   origin(origin, callback) {
     if (!origin || frontendOrigins.includes(origin) || isLocalDevelopmentOrigin(origin)) {
       callback(null, true)
@@ -273,7 +276,8 @@ app.use(cors({
     }
     callback(new CorsOriginError(origin))
   },
-}))
+})
+app.use('/api', apiCors)
 app.use('/uploads', express.static(uploadDirectory, { fallthrough: false, index: false }))
 
 function isUniqueConstraintError(error) {
@@ -3648,12 +3652,16 @@ if (existsSync(frontendEntry)) {
       if (name.includes('/assets/') || name.includes('/fonts/')) {
         // Vite gives these files a new name whenever their content changes.
         response.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+        response.setHeader('CDN-Cache-Control', 'public, max-age=31536000')
       } else if (/\/(sw\.js|manifest\.webmanifest)$/.test(name)) {
         // The browser must always see the latest service worker and app manifest.
         response.setHeader('Cache-Control', 'no-cache')
+        response.setHeader('CDN-Cache-Control', 'no-store')
       } else if (/\.(?:webp|jpe?g|png|gif|svg|ico|avif|woff2?)$/i.test(name)) {
         // Photos and icons rarely change; reuse them for a week and refresh quietly after that.
+        // CDN-Cache-Control tells Cloudflare to keep a copy at the edge (Douala) as well.
         response.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=2592000')
+        response.setHeader('CDN-Cache-Control', 'public, max-age=604800')
       }
     },
   }))

@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../../pages/admin/useAdminAuth'
 import { apiRequest, ADMIN_STORE_TOWN_KEY, ADMIN_WELCOME_KEY } from '../../api/api'
@@ -142,6 +142,8 @@ export function AdminLayout() {
   const [profilePictureSaved, setProfilePictureSaved] = useState(false)
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
   const [isBranchMenuOpen, setIsBranchMenuOpen] = useState(false)
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false)
+  const [branchMenuBox, setBranchMenuBox] = useState<{ top: number; left: number; width: number } | null>(null)
   const [selectedBranch, setSelectedBranch] = useState(() => {
     try {
       const savedBranch = sessionStorage.getItem(ADMIN_STORE_TOWN_KEY)
@@ -154,6 +156,7 @@ export function AdminLayout() {
   const [securityDialogTab, setSecurityDialogTab] = useState<AccountSecurityTab | null>(null)
   const accountMenuRef = useRef<HTMLDivElement>(null)
   const branchMenuRef = useRef<HTMLDivElement>(null)
+  const languageMenuRef = useRef<HTMLDivElement>(null)
   const currentNavItem = navItems.find((item) => item.to === location.pathname)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     try {
@@ -187,6 +190,8 @@ export function AdminLayout() {
 
   useEffect(() => {
     setIsAccountMenuOpen(false)
+    setIsBranchMenuOpen(false)
+    setIsLanguageMenuOpen(false)
     setIsMobileNavOpen(false)
     setNavQuery('')
   }, [location.pathname])
@@ -219,6 +224,26 @@ export function AdminLayout() {
     }
   }, [isAccountMenuOpen])
 
+  function placeBranchMenu() {
+    const trigger = branchMenuRef.current?.querySelector('button')
+    if (!trigger) return
+    const rect = trigger.getBoundingClientRect()
+    const width = Math.min(352, window.innerWidth - 24)
+    const left = Math.min(Math.max(12, rect.right - width), window.innerWidth - width - 12)
+    setBranchMenuBox({ top: rect.bottom + 10, left, width })
+  }
+
+  useLayoutEffect(() => {
+    if (!isBranchMenuOpen) return undefined
+    placeBranchMenu()
+    window.addEventListener('resize', placeBranchMenu)
+    window.addEventListener('scroll', placeBranchMenu, true)
+    return () => {
+      window.removeEventListener('resize', placeBranchMenu)
+      window.removeEventListener('scroll', placeBranchMenu, true)
+    }
+  }, [isBranchMenuOpen])
+
   useEffect(() => {
     if (!isBranchMenuOpen) return undefined
     function handlePointerDown(event: PointerEvent) {
@@ -234,6 +259,22 @@ export function AdminLayout() {
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [isBranchMenuOpen])
+
+  useEffect(() => {
+    if (!isLanguageMenuOpen) return undefined
+    function handlePointerDown(event: PointerEvent) {
+      if (!languageMenuRef.current?.contains(event.target as Node)) setIsLanguageMenuOpen(false)
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setIsLanguageMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isLanguageMenuOpen])
 
   useEffect(() => {
     const branch = isOwner ? selectedBranch : isBranchAdmin ? currentAdmin?.branchTown : null
@@ -342,6 +383,18 @@ export function AdminLayout() {
     return <Navigate replace to="/admin/overview" />
   }
 
+  const branchChoices = [
+    { id: 'ALL' as const, mark: 'ALL', title: t('All cities'), detail: t('Douala and Yaoundé') },
+    { id: 'Douala' as const, mark: 'DLA', title: 'Douala', detail: t('Bonanjo, Bonamoussadi, Bonabéri, Ange Raphaël') },
+    { id: 'Yaoundé' as const, mark: 'YDE', title: 'Yaoundé', detail: t('Bastos') },
+  ].filter((choice) => isOwner || choice.id === selectedBranch)
+  const currentBranch = branchChoices.find((choice) => choice.id === selectedBranch) || branchChoices[0]
+  const languageChoices = [
+    { id: 'en' as const, mark: 'EN', title: 'English', detail: t('English for the admin workspace') },
+    { id: 'fr' as const, mark: 'FR', title: 'Français', detail: t('French for the admin workspace') },
+  ]
+  const currentLanguage = languageChoices.find((choice) => choice.id === language) || languageChoices[0]
+
   return (
     <div className="min-h-screen bg-[#f3f6fa] text-[#102c50]">
       <header className="sticky top-0 z-40 border-b border-[#e6ebf1] bg-white/90 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80">
@@ -385,100 +438,171 @@ export function AdminLayout() {
           )}
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2.5">
-            {hasTownScope && (
+            {hasTownScope && currentBranch && (
               <div className="relative" ref={branchMenuRef}>
                 <button
                   aria-controls="admin-branch-menu"
                   aria-expanded={isBranchMenuOpen}
                   aria-haspopup="menu"
-                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl border px-3 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:gap-2.5 sm:px-3.5 ${
+                  className={`inline-flex min-h-11 items-center gap-2.5 rounded-2xl border px-2 py-1 pr-2.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:pr-3 ${
                     isBranchMenuOpen
-                      ? 'border-[#b9c9d9] bg-[#f7f9fc] shadow-sm'
-                      : 'border-[#e3e9f0] bg-white hover:border-[#cbd6e2] hover:bg-[#f9fbfd]'
+                      ? 'border-[#092a53] bg-[#092a53] text-white shadow-[0_8px_20px_rgba(9,42,83,0.18)]'
+                      : 'border-[#e3e9f0] bg-white text-[#173654] hover:border-[#c5d2e0]'
                   }`}
-                  onClick={() => setIsBranchMenuOpen((open) => !open)}
+                  onClick={() => {
+                    setIsLanguageMenuOpen(false)
+                    if (!isBranchMenuOpen) placeBranchMenu()
+                    setIsBranchMenuOpen((open) => !open)
+                  }}
                   type="button"
                 >
-                  <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-[#edf3f9] text-[#355777]">
-                    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                      <path d="M4 10h16l-1.5-5h-13L4 10Zm0 0v10h16V10M9 20v-5h6v5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
-                    </svg>
+                  <span className={`grid size-8 shrink-0 place-items-center rounded-xl font-display text-[11px] font-extrabold tracking-wide ${isBranchMenuOpen ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-[#092a53] text-[#ffdc32]'}`}>
+                    {currentBranch.mark}
                   </span>
                   <span className="min-w-0 text-left">
-                    <span className="block text-[9px] font-bold uppercase tracking-[0.12em] text-[#8190a1]">{t('Shop Branch')}</span>
-                    <span className="block max-w-16 truncate text-[10px] font-extrabold text-[#173654] sm:max-w-32 sm:text-xs">{t(selectedBranch)}</span>
+                    <span className={`block text-[10px] font-semibold ${isBranchMenuOpen ? 'text-white/60' : 'text-[#8190a1]'}`}>{t('City')}</span>
+                    <span className="block max-w-20 truncate text-xs font-extrabold sm:max-w-36">{currentBranch.title}</span>
                   </span>
-                  <svg aria-hidden="true" className={`size-3.5 text-[#8190a1] transition ${isBranchMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24">
+                  <svg aria-hidden="true" className={`size-3.5 shrink-0 transition ${isBranchMenuOpen ? 'rotate-180 text-white/70' : 'text-[#8190a1]'}`} fill="none" viewBox="0 0 24 24">
                     <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                   </svg>
                 </button>
                 {isBranchMenuOpen && (
                   <div
-                    className="admin-modal-panel absolute right-0 top-[calc(100%+10px)] z-50 w-60 overflow-hidden rounded-2xl border border-[#e3e9f0] bg-white p-1.5 shadow-[0_20px_50px_rgba(9,42,83,0.16)]"
+                    className="admin-modal-panel fixed z-50 overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.22)] ring-1 ring-[#d7e0ea]"
+                    style={branchMenuBox ?? undefined}
                     id="admin-branch-menu"
                     role="menu"
                   >
-                    <p className="px-3 pb-1.5 pt-2 text-[9px] font-extrabold uppercase tracking-[0.13em] text-[#91a0b1]">{t('Choose a branch')}</p>
-                    {(isOwner ? ['ALL', 'Douala', 'Yaoundé'] as const : ['Douala', 'Yaoundé'] as const).map((branch) => {
-                      const isSelected = selectedBranch === branch
-                      return (
-                        <button
-                          aria-current={isSelected ? 'true' : undefined}
-                          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] ${
-                            isSelected ? 'bg-[#f2f6fa] text-[#092a53]' : 'text-[#4f6379] hover:bg-[#f7f9fc] hover:text-[#092a53]'
-                          } ${isBranchAdmin ? 'disabled:cursor-not-allowed' : 'disabled:cursor-default'} disabled:opacity-80`}
-                          disabled={isSelected || isBranchAdmin}
-                          key={branch}
-                          onClick={() => {
-                            if (!isOwner) return
-                            try {
-                              sessionStorage.setItem(ADMIN_STORE_TOWN_KEY, branch === 'ALL' ? 'all' : branch)
-                            } catch {
-                              // The branch remains selected for this page view.
-                            }
-                            setSelectedBranch(branch)
-                            setIsBranchMenuOpen(false)
-                          }}
-                          role="menuitem"
-                          type="button"
-                        >
-                          <span className={`grid size-8 place-items-center rounded-lg ${isSelected ? 'bg-[#e2ebf4] text-[#244f79]' : 'bg-[#f1f4f8] text-[#8190a1]'}`}>
-                            <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                              <path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
-                              <circle cx="12" cy="9" r="2.2" stroke="currentColor" strokeWidth="1.7" />
-                            </svg>
-                          </span>
-                          <span className="flex-1">
-                            <span className="block text-xs font-bold">{t(branch)}</span>
-                            <span className="mt-0.5 block text-[10px] text-[#91a0b1]">{t(branch === 'ALL' ? 'All branches' : 'Shop Branch')}</span>
-                          </span>
-                          {isSelected && (
-                            <svg aria-hidden="true" className="size-4 text-[#2c7a4f]" fill="none" viewBox="0 0 24 24">
-                              <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                            </svg>
-                          )}
-                        </button>
-                      )
-                    })}
+                    <div className="bg-[#092a53] px-4 py-3.5 text-white">
+                      <p className="text-[11px] font-semibold text-white/60">{t('Current city')}</p>
+                      <p className="mt-0.5 font-display text-lg font-extrabold leading-tight">{currentBranch.title}</p>
+                      <p className="mt-1 text-xs leading-5 text-white/65">{t('Orders, customers and reports follow this city.')}</p>
+                    </div>
+                    <div className="p-1.5">
+                      {branchChoices.map((choice) => {
+                        const isSelected = selectedBranch === choice.id
+                        return (
+                          <button
+                            aria-checked={isSelected}
+                            className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] ${
+                              isSelected ? 'bg-[#f4f7fb]' : 'hover:bg-[#f7f9fc]'
+                            } disabled:cursor-default`}
+                            disabled={!isOwner || isSelected}
+                            key={choice.id}
+                            onClick={() => {
+                              if (!isOwner) return
+                              try {
+                                sessionStorage.setItem(ADMIN_STORE_TOWN_KEY, choice.id === 'ALL' ? 'all' : choice.id)
+                              } catch {
+                                // The city remains selected for this page view.
+                              }
+                              setSelectedBranch(choice.id)
+                              setIsBranchMenuOpen(false)
+                            }}
+                            role="menuitemradio"
+                            type="button"
+                          >
+                            <span className={`grid size-10 shrink-0 place-items-center rounded-xl font-display text-xs font-extrabold ${isSelected ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#eef2f6] text-[#355777]'}`}>
+                              {choice.mark}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-sm font-extrabold text-[#092a53]">{choice.title}</span>
+                              <span className="mt-0.5 block text-xs leading-4 text-[#65748a]">{choice.detail}</span>
+                            </span>
+                            <span className={`grid size-5 shrink-0 place-items-center rounded-full ${isSelected ? 'bg-[#2e9d5b] text-white' : 'ring-1 ring-[#d5dee8]'}`}>
+                              {isSelected && (
+                                <svg aria-hidden="true" className="size-3" fill="none" viewBox="0 0 24 24">
+                                  <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" />
+                                </svg>
+                              )}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
             )}
 
-            <div aria-label={t('Select language')} className="inline-flex items-center rounded-full bg-[#f1f5f9] p-1" role="group">
-              {(['en', 'fr'] as const).map((option) => (
-                <button
-                  aria-pressed={language === option}
-                  className={`min-h-7 min-w-9 rounded-full px-2 text-[10px] font-extrabold tracking-wide transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#bd9c00] ${
-                    language === option ? 'bg-white text-[#092a53] shadow-[0_1px_3px_rgba(16,44,80,0.15)]' : 'text-[#7b8a9c] hover:text-[#092a53]'
-                  }`}
-                  key={option}
-                  onClick={() => setLanguage(option)}
-                  type="button"
+            <div className="relative" ref={languageMenuRef}>
+              <button
+                aria-controls="admin-language-menu"
+                aria-expanded={isLanguageMenuOpen}
+                aria-haspopup="menu"
+                aria-label={`${t('Language')}: ${currentLanguage.title}`}
+                className={`inline-flex min-h-11 items-center gap-2.5 rounded-2xl border px-2 py-1 pr-2.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:pr-3 ${
+                  isLanguageMenuOpen
+                    ? 'border-[#092a53] bg-[#092a53] text-white shadow-[0_8px_20px_rgba(9,42,83,0.18)]'
+                    : 'border-[#e3e9f0] bg-white text-[#173654] hover:border-[#c5d2e0]'
+                }`}
+                onClick={() => {
+                  setIsBranchMenuOpen(false)
+                  setIsLanguageMenuOpen((open) => !open)
+                }}
+                type="button"
+              >
+                <span className={`grid size-8 shrink-0 place-items-center rounded-xl font-display text-[11px] font-extrabold tracking-wide ${isLanguageMenuOpen ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-[#092a53] text-[#ffdc32]'}`}>
+                  {currentLanguage.mark}
+                </span>
+                <span className="min-w-0 text-left">
+                  <span className={`block text-[10px] font-semibold ${isLanguageMenuOpen ? 'text-white/60' : 'text-[#8190a1]'}`}>{t('Language')}</span>
+                  <span className="block max-w-[4.5rem] truncate text-xs font-extrabold sm:max-w-none">{currentLanguage.title}</span>
+                </span>
+                <svg aria-hidden="true" className={`size-3.5 shrink-0 transition ${isLanguageMenuOpen ? 'rotate-180 text-white/70' : 'text-[#8190a1]'}`} fill="none" viewBox="0 0 24 24">
+                  <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                </svg>
+              </button>
+              {isLanguageMenuOpen && (
+                <div
+                  className="admin-modal-panel absolute right-0 top-[calc(100%+10px)] z-50 w-[min(18.5rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.22)] ring-1 ring-[#d7e0ea]"
+                  id="admin-language-menu"
+                  role="menu"
                 >
-                  {option.toUpperCase()}
-                </button>
-              ))}
+                  <div className="bg-[#092a53] px-4 py-3.5 text-white">
+                    <p className="text-[11px] font-semibold text-white/60">{t('Select language')}</p>
+                    <p className="mt-0.5 font-display text-lg font-extrabold leading-tight">{currentLanguage.title}</p>
+                    <p className="mt-1 text-xs leading-5 text-white/65">{t('Menus, labels and reports switch with this choice.')}</p>
+                  </div>
+                  <div className="p-1.5">
+                    {languageChoices.map((choice) => {
+                      const isSelected = language === choice.id
+                      return (
+                        <button
+                          aria-checked={isSelected}
+                          className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] ${
+                            isSelected ? 'bg-[#f4f7fb]' : 'hover:bg-[#f7f9fc]'
+                          }`}
+                          key={choice.id}
+                          lang={choice.id}
+                          onClick={() => {
+                            setLanguage(choice.id)
+                            setIsLanguageMenuOpen(false)
+                          }}
+                          role="menuitemradio"
+                          type="button"
+                        >
+                          <span className={`grid size-10 shrink-0 place-items-center rounded-xl font-display text-xs font-extrabold ${isSelected ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#eef2f6] text-[#355777]'}`}>
+                            {choice.mark}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-extrabold text-[#092a53]">{choice.title}</span>
+                            <span className="mt-0.5 block text-xs leading-4 text-[#65748a]">{choice.detail}</span>
+                          </span>
+                          <span className={`grid size-5 shrink-0 place-items-center rounded-full ${isSelected ? 'bg-[#2e9d5b] text-white' : 'ring-1 ring-[#d5dee8]'}`}>
+                            {isSelected && (
+                              <svg aria-hidden="true" className="size-3" fill="none" viewBox="0 0 24 24">
+                                <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" />
+                              </svg>
+                            )}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             <Link
@@ -520,7 +644,11 @@ export function AdminLayout() {
                 className={`flex items-center gap-2.5 rounded-full py-1 pl-1 pr-2 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:pr-3 ${
                   isAccountMenuOpen ? 'bg-[#f1f5f9]' : 'hover:bg-[#f6f8fb]'
                 }`}
-                onClick={() => setIsAccountMenuOpen((open) => !open)}
+                onClick={() => {
+                  setIsBranchMenuOpen(false)
+                  setIsLanguageMenuOpen(false)
+                  setIsAccountMenuOpen((open) => !open)
+                }}
                 type="button"
               >
                 <span className="relative">

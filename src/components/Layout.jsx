@@ -44,6 +44,9 @@ const SHOP_DROPDOWN_TAG_LIMIT = 4;
 
 function NavigationDropdown({ active, label, links, mobile = false, onNavigate, subtitle, icon = '✦', feature }) {
   const detailsRef = useRef(null);
+  // Photos sit inside the closed menu, which is still on screen, so the browser would download
+  // them with the page. Load them only after the menu is opened.
+  const [showImages, setShowImages] = useState(false);
   const activeClass = active
     ? "border-[#ffdc32] text-[#ffdc32]"
     : "border-transparent text-white hover:border-[#ffdc32] hover:text-[#ffdc32]";
@@ -58,7 +61,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
 
   if (!mobile) {
     return (
-      <details className="group relative" ref={detailsRef}>
+      <details className="group relative" onToggle={(event) => { if (event.currentTarget.open) setShowImages(true); }} ref={detailsRef}>
         <summary
           onClick={closeOtherDropdowns}
           className={`flex h-10 cursor-pointer list-none items-center justify-between gap-2 whitespace-nowrap rounded-full pl-1.5 pr-3.5 text-[13px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] [&::-webkit-details-marker]:hidden ${
@@ -82,7 +85,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                 onClick={closeAfterNavigate}
                 to={feature.to}
               >
-                {feature.image && (
+                {feature.image && showImages && (
                   <img decoding="async" alt="" className="absolute inset-0 -z-20 size-full object-cover transition duration-700 group-hover/feature:scale-[1.06]" loading="lazy" onError={photoErrorHandler(feature.image)} src={thumbnail(feature.image)} />
                 )}
                 <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] via-[#061d3a]/60 to-[#061d3a]/10" />
@@ -105,7 +108,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                       onClick={closeAfterNavigate}
                       to={link.to}
                     >
-                      {link.image ? (
+                      {link.image && showImages ? (
                         <img decoding="async" alt="" aria-hidden="true" className="size-12 shrink-0 rounded-xl object-cover ring-1 ring-black/5 transition duration-300 group-hover/link:scale-[1.04]" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image, "tiny")} />
                       ) : (
                         <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#fff3b8] text-lg">{link.icon || "✦"}</span>
@@ -129,7 +132,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
   }
 
   return (
-    <details className="group relative">
+    <details className="group relative" onToggle={(event) => { if (event.currentTarget.open) setShowImages(true); }}>
       <summary
         onClick={closeOtherDropdowns}
         className={`flex cursor-pointer list-none items-center justify-between gap-2 border-b-2 transition-all duration-200 [&::-webkit-details-marker]:hidden ${
@@ -175,7 +178,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                 }}
                 to={link.to}
               >
-                {link.image ? (
+                {link.image && showImages ? (
                   <img decoding="async" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-xl object-cover ring-1 ring-white/10" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image, "tiny")} />
                 ) : (
                   <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/10 text-sm font-extrabold text-[#ffdc32]">
@@ -956,10 +959,14 @@ function PromotionCountdown() {
       }
     };
 
-    loadPromotion();
+    // The live page already includes the promotion in the HTML. Wait before asking again
+    // so this request does not compete with the hero photo. Development has no embedded copy.
+    const hasEmbeddedPromotion = Boolean(document.getElementById("initial-promotion"));
+    const firstRefresh = window.setTimeout(loadPromotion, hasEmbeddedPromotion ? 15_000 : 0);
     const refreshInterval = window.setInterval(loadPromotion, 60_000);
     return () => {
       cancelled = true;
+      window.clearTimeout(firstRefresh);
       window.clearInterval(refreshInterval);
     };
   }, []);

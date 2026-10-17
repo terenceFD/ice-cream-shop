@@ -4,6 +4,7 @@ import { passwordStrength } from "../../components/passwordStrength";
 import { useAdminAuth } from "./useAdminAuth";
 import { useLanguage } from "../../language/useLanguage";
 import { apiRequest } from "../../api/api";
+import { AdminPageHeader } from "./AdminPageHeader";
 
 const inputClassName =
   "mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
@@ -448,39 +449,29 @@ export function AdminManagementPage() {
     },
   ];
 
-  const metrics = [
-    { label: "Admin accounts", value: admins.length, icon: icons.users, accent: "bg-[#e9f1fa] text-[#315982]" },
-    { label: "Owners", value: ownerCount, icon: icons.crown, accent: "bg-[#fff4c2] text-[#8a6f00]" },
-    { label: "Branch and store admins", value: storeAdminCount + branchAdminCount, icon: icons.store, accent: "bg-[#e5f4ea] text-[#2c7a4f]" },
-    { label: "Stores without an admin", value: uncoveredCount, icon: icons.alert, accent: uncoveredCount ? "bg-[#fdecea] text-[#b2433a]" : "bg-[#f1f4f8] text-[#65748a]" },
-  ];
+  const coveredStores = Math.max(0, stores.length - uncoveredCount);
+  const coveragePercent = stores.length ? Math.round((coveredStores / stores.length) * 100) : 0;
 
   return (
     <div className="min-w-0 space-y-6">
-      <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
-            <Icon className="size-7" path={icons.shield} />
-          </span>
-          <div className="min-w-0">
-            <nav aria-label={t("Breadcrumb")} className="text-[11px] font-bold text-[#8190a1]">
-              {t("Workspace")} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#8a7000]">{t("Admin accounts")}</span>
-            </nav>
-            <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t("Manage admin accounts")}</h1>
-            <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">{t("Create separate branch or store admin logins and assign their access.")}</p>
-          </div>
-        </div>
-        <button
-          className="inline-flex min-h-10 items-center gap-2 self-start rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:opacity-50 xl:self-auto"
-          disabled={!stores.length}
-          onClick={() => openForm()}
-          type="button"
-        >
-          <Icon path={icons.plus} />
-          {t("Add an admin")}
-        </button>
-      </header>
+      <AdminPageHeader
+        actions={(
+          <button
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)] transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:opacity-50"
+            disabled={!stores.length}
+            onClick={() => openForm()}
+            type="button"
+          >
+            <Icon path={icons.plus} />
+            {t("Add an admin")}
+          </button>
+        )}
+        description={t("Create separate branch or store admin logins and assign their access.")}
+        icon={icons.shield}
+        section={t("Workspace")}
+        t={t}
+        title={t("Admin accounts")}
+      />
 
       {message && (
         <div className="flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
@@ -497,30 +488,77 @@ export function AdminManagementPage() {
         </p>
       )}
 
-      <section aria-label={t("Admin overview")} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
-        {metrics.map((metric) => (
-          <article className="rounded-2xl border border-[#e5ebf3] bg-white p-4 sm:p-5" key={metric.label}>
-            <span className={`grid size-9 place-items-center rounded-xl ${metric.accent}`}><Icon path={metric.icon} /></span>
-            <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#102c50]">{metric.value}</p>
-            <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{t(metric.label)}</p>
-          </article>
-        ))}
+      <section aria-labelledby="admin-overview-title" className="overflow-hidden rounded-[24px] border border-[#e5ebf3] bg-white">
+        <div className="border-b border-[#edf1f5] bg-[#092a53] px-5 py-5 text-white sm:px-7 sm:py-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-white/65" id="admin-overview-title">{t("Team overview")}</h2>
+              <p className="mt-2 font-display text-[2.1rem] font-extrabold leading-none tabular-nums tracking-tight sm:text-[2.5rem]">
+                {admins.length}
+              </p>
+              <p className="mt-2 text-sm text-white/70">
+                {admins.length === 1 ? t("1 admin account") : t("{count} admin accounts", { count: admins.length })}
+                <span aria-hidden="true" className="mx-2 text-white/25">·</span>
+                {t("{percent}% of stores covered", { percent: coveragePercent })}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/75">
+              <p>
+                <span className="text-white/50">{t("Owners")}</span>{" "}
+                <span className="font-semibold text-[#ffdc32]">{ownerCount}</span>
+              </p>
+              <p>
+                <span className="text-white/50">{t("Branch admins")}</span>{" "}
+                <span className="font-semibold text-[#ffdc32]">{branchAdminCount}</span>
+              </p>
+              <p>
+                <span className="text-white/50">{t("Store admins")}</span>{" "}
+                <span className="font-semibold text-[#ffdc32]">{storeAdminCount}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <dl className="grid grid-cols-2 divide-x divide-y divide-[#edf1f5] sm:grid-cols-4 sm:divide-y-0">
+          <div className="px-4 py-4 sm:px-5">
+            <dt className="text-xs font-semibold text-[#8190a1]">{t("Owners")}</dt>
+            <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{ownerCount}</dd>
+          </div>
+          <div className="px-4 py-4 sm:px-5">
+            <dt className="text-xs font-semibold text-[#8190a1]">{t("Branch and store admins")}</dt>
+            <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{storeAdminCount + branchAdminCount}</dd>
+          </div>
+          <div className="px-4 py-4 sm:px-5">
+            <dt className="text-xs font-semibold text-[#8190a1]">{t("Stores covered")}</dt>
+            <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">
+              {coveredStores}
+              <span className="ml-1 text-base font-bold text-[#8190a1]">/ {stores.length}</span>
+            </dd>
+          </div>
+          <div className={`px-4 py-4 sm:px-5 ${uncoveredCount ? "bg-[#fff8e8]" : ""}`}>
+            <dt className={`text-xs font-semibold ${uncoveredCount ? "text-[#8a6f00]" : "text-[#8190a1]"}`}>{t("Stores without an admin")}</dt>
+            <dd className={`mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight ${uncoveredCount ? "text-[#8a6f00]" : "text-[#092a53]"}`}>{uncoveredCount}</dd>
+          </div>
+        </dl>
       </section>
 
       <div className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <section aria-labelledby="admin-list-title" className="min-w-0 rounded-[20px] border border-[#e5ebf3] bg-white">
+        <section aria-labelledby="admin-list-title" className="@container min-w-0 overflow-hidden rounded-[20px] border border-[#e5ebf3] bg-white">
           <div className="flex flex-col gap-4 border-b border-[#edf1f5] p-4 sm:p-5">
             <div>
-              <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="admin-list-title">{t("Admin accounts")}</h2>
-              <p className="mt-0.5 text-xs text-[#65748a]">{t("Review who has access to the admin portal.")}</p>
+              <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="admin-list-title">{t("Access roster")}</h2>
+              <p className="mt-0.5 text-sm text-[#65748a]">
+                {visibleAdmins.length === 1
+                  ? t("1 person in this view")
+                  : t("{count} people in this view", { count: visibleAdmins.length })}
+              </p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <label className="relative block flex-1">
                 <span className="sr-only">{t("Search")}</span>
                 <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
                 <input className={`${inputClassName} mt-0 pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t("Name, email, or store")} type="search" value={search} />
               </label>
-              <div aria-label={t("Role")} className="flex max-w-full overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
+              <div aria-label={t("Role")} className="inline-flex max-w-full overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
                 {([
                   { key: "all", label: t("All"), count: admins.length },
                   { key: "owner", label: t("Owners"), count: ownerCount },
@@ -529,13 +567,13 @@ export function AdminManagementPage() {
                 ] as const).map((option) => (
                   <button
                     aria-pressed={roleFilter === option.key}
-                    className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition ${roleFilter === option.key ? "bg-white text-[#092a53] shadow-sm" : "text-[#65748a] hover:text-[#092a53]"}`}
+                    className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${roleFilter === option.key ? "bg-white text-[#092a53] shadow-sm" : "text-[#65748a] hover:text-[#092a53]"}`}
                     key={option.key}
                     onClick={() => setRoleFilter(option.key)}
                     type="button"
                   >
                     {option.label}
-                    <span className="rounded-full bg-[#e6ebf1] px-1.5 text-[10px] text-[#65748a]">{option.count}</span>
+                    <span className={`rounded-full px-1.5 text-[10px] ${roleFilter === option.key ? "bg-[#eef2f6] text-[#65748a]" : "bg-[#e6ebf1] text-[#65748a]"}`}>{option.count}</span>
                   </button>
                 ))}
               </div>
@@ -547,7 +585,7 @@ export function AdminManagementPage() {
               <span className="sr-only">{t("Loading administrators…")}</span>
               {[0, 1, 2].map((row) => (
                 <div aria-hidden="true" className="flex animate-pulse items-center gap-4" key={row}>
-                  <span className="size-10 rounded-xl bg-[#eef2f6]" />
+                  <span className="size-11 rounded-xl bg-[#eef2f6]" />
                   <span className="h-3 flex-1 rounded bg-[#eef2f6]" />
                   <span className="h-3 w-24 rounded bg-[#eef2f6]" />
                 </div>
@@ -557,102 +595,130 @@ export function AdminManagementPage() {
             <div className="px-6 py-14 text-center">
               <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f4f8] text-[#8190a1]"><Icon className="size-5" path={icons.users} /></span>
               <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t(admins.length ? "No admins match your search." : "No shop admins assigned yet.")}</p>
+              {admins.length > 0 && (
+                <button
+                  className="mt-4 text-sm font-bold text-[#355777] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+                  onClick={() => { setSearch(""); setRoleFilter("all"); }}
+                  type="button"
+                >
+                  {t("Clear filters")}
+                </button>
+              )}
             </div>
           ) : (
-            <div className="relative overflow-x-auto">
-              <table className="w-full min-w-[640px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-[#edf1f5] text-[11px] uppercase tracking-[0.08em] text-[#8190a1]">
-                    <th className="px-5 py-3 font-extrabold" scope="col">{t("Admin")}</th>
-                    <th className="px-3 py-3 font-extrabold" scope="col">{t("Role")}</th>
-                    <th className="px-3 py-3 font-extrabold" scope="col">{t("Assigned store or branch")}</th>
-                    <th className="px-5 py-3" scope="col"><span className="sr-only">{t("Action")}</span></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#f0f3f7]">
-                  {visibleAdmins.map((admin) => {
-                    const isCurrentAdmin = admin.email === currentAdmin?.email;
-                    const isOwnerAccount = admin.role === "owner";
-                    const isBranchAccount = admin.role === "branch_admin";
-                    return (
-                      <tr className={`transition hover:bg-[#fafbfd] ${isCurrentAdmin ? "bg-[#fffdf3]" : ""} ${removingAdminId === admin.id ? "opacity-50" : ""}`} key={admin.id}>
-                        <td className="px-5 py-3.5">
-                          <div className="flex min-w-0 items-center gap-3">
-                            <Avatar highlight={isCurrentAdmin} name={admin.name} picture={admin.profilePicture} />
-                            <div className="min-w-0">
-                              <p className="flex items-center gap-2 font-bold text-[#102c50]">
-                                <span className="max-w-[14rem] truncate">{admin.name}</span>
-                                {isCurrentAdmin && <span className="rounded-full bg-[#ffdc32] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#092a53]">{t("You")}</span>}
-                              </p>
-                              <a className="flex max-w-[16rem] items-center gap-1 truncate text-[11px] text-[#8190a1] hover:text-[#092a53]" href={`mailto:${admin.email}`}>
-                                <Icon className="size-3 shrink-0" path={icons.mail} />
-                                <span className="truncate">{admin.email}</span>
-                              </a>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-3 py-3.5">
-                          <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ${isOwnerAccount ? "bg-[#fff6cc] text-[#7a6300] ring-[#efdc85]" : "bg-[#e9f1fa] text-[#245281] ring-[#cfe0f2]"}`}>
-                            <Icon className="size-3.5" path={isOwnerAccount ? icons.crown : icons.store} />
-                            {t(isOwnerAccount ? "Owner" : isBranchAccount ? "Branch admin" : "Store admin")}
-                          </span>
-                        </td>
-                        <td className="px-3 py-3.5 text-xs font-semibold text-[#4f6379]">
-                          {isOwnerAccount
-                            ? t("All stores")
-                            : isBranchAccount
-                              ? t(admin.branchTown || "No branch assigned")
-                              : admin.storeName ? t(admin.storeName) : <span className="text-[#b2433a]">{t("No store assigned")}</span>}
-                        </td>
-                        <td className="px-5 py-3.5 text-right">
-                          {!isOwnerAccount && !isCurrentAdmin ? (
-                            <button
-                              aria-label={`${t("Remove")} ${admin.name}`}
-                              className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-red-50 hover:text-red-600 disabled:cursor-wait"
-                              disabled={removingAdminId === admin.id}
-                              onClick={() => { setError(""); setAdminToRemove(admin); }}
-                              title={t("Remove")}
-                              type="button"
-                            >
-                              <Icon path={icons.trash} />
-                            </button>
-                          ) : (
-                            <span className="grid size-8 place-items-center text-[#c3ccd7]" title={t(isOwnerAccount ? "Owner accounts cannot be removed here." : "You cannot remove your own account.")}>
-                              <Icon path={icons.lock} />
-                            </span>
+            <ul className="divide-y divide-[#edf1f5]">
+              <li className="hidden px-5 py-2.5 text-[11px] font-bold text-[#8e9bab] @[42rem]:grid @[42rem]:grid-cols-[minmax(14rem,1.4fr)_minmax(8rem,0.75fr)_minmax(9rem,1fr)_auto]">
+                <span>{t("Admin")}</span>
+                <span>{t("Role")}</span>
+                <span>{t("Access")}</span>
+                <span className="sr-only">{t("Action")}</span>
+              </li>
+              {visibleAdmins.map((admin) => {
+                const isCurrentAdmin = admin.email === currentAdmin?.email;
+                const isOwnerAccount = admin.role === "owner";
+                const isBranchAccount = admin.role === "branch_admin";
+                const accessLabel = isOwnerAccount
+                  ? t("All stores")
+                  : isBranchAccount
+                    ? t(admin.branchTown || "No branch assigned")
+                    : admin.storeName ? t(admin.storeName) : t("No store assigned");
+                const missingAccess = !isOwnerAccount && ((isBranchAccount && !admin.branchTown) || (!isBranchAccount && !admin.storeName));
+                return (
+                  <li
+                    className={`grid gap-3 px-4 py-4 sm:px-5 @[42rem]:grid-cols-[minmax(14rem,1.4fr)_minmax(8rem,0.75fr)_minmax(9rem,1fr)_auto] @[42rem]:items-center ${
+                      isCurrentAdmin ? "bg-[#fffdf3]" : "hover:bg-[#f8fafc]"
+                    } ${removingAdminId === admin.id ? "opacity-50" : ""}`}
+                    key={admin.id}
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Avatar highlight={isCurrentAdmin} name={admin.name} picture={admin.profilePicture} />
+                      <div className="min-w-0">
+                        <p className="flex flex-wrap items-center gap-2 font-extrabold text-[#092a53]">
+                          <span className="truncate">{admin.name}</span>
+                          {isCurrentAdmin && (
+                            <span className="rounded-full bg-[#ffdc32] px-2 py-0.5 text-[10px] font-extrabold text-[#092a53]">{t("You")}</span>
                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        </p>
+                        <a className="mt-0.5 flex max-w-full items-center gap-1 truncate text-xs text-[#8190a1] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]" href={`mailto:${admin.email}`}>
+                          <Icon className="size-3 shrink-0" path={icons.mail} />
+                          <span className="truncate">{admin.email}</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold text-[#8e9bab] @[42rem]:sr-only">{t("Role")}</p>
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                        isOwnerAccount
+                          ? "bg-[#fff6cc] text-[#7a6300]"
+                          : isBranchAccount
+                            ? "bg-[#fff4c2] text-[#8a6f00]"
+                            : "bg-[#e9f1fa] text-[#245281]"
+                      }`}>
+                        <Icon className="size-3.5" path={isOwnerAccount ? icons.crown : isBranchAccount ? icons.shield : icons.store} />
+                        {t(isOwnerAccount ? "Owner" : isBranchAccount ? "Branch admin" : "Store admin")}
+                      </span>
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold text-[#8e9bab] @[42rem]:sr-only">{t("Access")}</p>
+                      <p className={`truncate text-sm font-semibold ${missingAccess ? "text-[#b2433a]" : "text-[#355777]"}`}>{accessLabel}</p>
+                    </div>
+
+                    <div className="flex justify-end">
+                      {!isOwnerAccount && !isCurrentAdmin ? (
+                        <button
+                          aria-label={`${t("Remove")} ${admin.name}`}
+                          className="grid size-9 place-items-center rounded-xl text-[#6b7d91] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait"
+                          disabled={removingAdminId === admin.id}
+                          onClick={() => { setError(""); setAdminToRemove(admin); }}
+                          title={t("Remove")}
+                          type="button"
+                        >
+                          <Icon path={icons.trash} />
+                        </button>
+                      ) : (
+                        <span className="grid size-9 place-items-center rounded-xl text-[#c3ccd7]" title={t(isOwnerAccount ? "Owner accounts cannot be removed here." : "You cannot remove your own account.")}>
+                          <Icon path={icons.lock} />
+                        </span>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </section>
 
-        <aside aria-labelledby="coverage-title" className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 sm:p-5 xl:sticky xl:top-24">
-          <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="coverage-title">{t("Store coverage")}</h2>
-          <p className="mt-0.5 text-xs text-[#65748a]">{t("Every branch should have at least one admin.")}</p>
-          {stores.length > 0 && (
-            <div aria-hidden="true" className="mt-4 flex h-2 overflow-hidden rounded-full bg-[#fdecea]">
-              <span className="bg-[#35a36b]" style={{ width: `${((stores.length - uncoveredCount) / stores.length) * 100}%` }} />
-            </div>
-          )}
-          <ul className="mt-4 space-y-2">
+        <aside aria-labelledby="coverage-title" className="overflow-hidden rounded-[20px] border border-[#e5ebf3] bg-white xl:sticky xl:top-24">
+          <div className="border-b border-[#edf1f5] bg-[#092a53] px-4 py-4 text-white sm:px-5">
+            <h2 className="font-display text-lg font-extrabold" id="coverage-title">{t("Store coverage")}</h2>
+            <p className="mt-1 text-xs text-white/65">{t("Every branch should have at least one admin.")}</p>
+            {stores.length > 0 && (
+              <>
+                <div aria-hidden="true" className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/15">
+                  <span className="block h-full rounded-full bg-[#ffdc32]" style={{ width: `${coveragePercent}%` }} />
+                </div>
+                <p className="mt-2 text-xs font-semibold text-white/70">
+                  {t("{covered} of {total} stores covered", { covered: coveredStores, total: stores.length })}
+                </p>
+              </>
+            )}
+          </div>
+          <ul className="max-h-[32rem] space-y-0 overflow-y-auto divide-y divide-[#edf1f5] p-0">
             {coverage.map(({ store, storeAdmins, branchAdmins }) => {
               const hasAdminCoverage = storeAdmins.length > 0 || branchAdmins.length > 0;
               const branchAdminNames = branchAdmins.map((admin) => admin.name).join(", ");
               return (
-                <li className={`flex items-center gap-3 rounded-xl p-3 ring-1 ${hasAdminCoverage ? "bg-[#fafbfd] ring-[#eef2f6]" : "bg-[#fffafa] ring-[#f6dcd8]"}`} key={store.id}>
-                  <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${hasAdminCoverage ? "bg-[#e5f4ea] text-[#2c7a4f]" : "bg-[#fdecea] text-[#b2433a]"}`}>
-                    <Icon path={hasAdminCoverage ? icons.store : icons.alert} />
+                <li className={`flex items-center gap-3 px-4 py-3.5 sm:px-5 ${hasAdminCoverage ? "" : "bg-[#fffafa]"}`} key={store.id}>
+                  <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${hasAdminCoverage ? "bg-[#e5f4ea] text-[#2c7a4f]" : "bg-[#fdecea] text-[#b2433a]"}`}>
+                    <Icon path={hasAdminCoverage ? icons.check : icons.alert} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-[#102c50]">{t(store.name)}</p>
-                    <p className="truncate text-[11px] text-[#8190a1]">{t(store.town)}</p>
+                    <p className="truncate text-sm font-extrabold text-[#092a53]">{t(store.name)}</p>
+                    <p className="truncate text-xs text-[#8190a1]">{t(store.town)}</p>
                     {branchAdmins.length > 0 && (
-                      <p className="mt-1 truncate text-[10px] font-semibold text-[#8a7000]" title={`${t("Branch admin")}: ${branchAdminNames}`}>
+                      <p className="mt-1 truncate text-[11px] font-semibold text-[#8a7000]" title={`${t("Branch admin")}: ${branchAdminNames}`}>
                         {t("Branch admin")}: {branchAdminNames}
                       </p>
                     )}
@@ -668,7 +734,7 @@ export function AdminManagementPage() {
                     </div>
                   ) : (
                     <button
-                      className="inline-flex min-h-8 shrink-0 items-center gap-1 rounded-lg bg-[#092a53] px-2.5 text-[11px] font-bold text-white transition hover:bg-[#163e6b]"
+                      className="inline-flex min-h-8 shrink-0 items-center gap-1 rounded-lg bg-[#092a53] px-2.5 text-[11px] font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
                       onClick={() => openForm(store.id)}
                       type="button"
                     >
@@ -679,7 +745,7 @@ export function AdminManagementPage() {
                 </li>
               );
             })}
-            {!stores.length && !isLoadingAdmins && <li className="rounded-xl bg-[#f7f9fc] p-4 text-center text-sm text-[#8190a1]">{t("No stores found.")}</li>}
+            {!stores.length && !isLoadingAdmins && <li className="p-6 text-center text-sm text-[#8190a1]">{t("No stores found.")}</li>}
           </ul>
         </aside>
       </div>
