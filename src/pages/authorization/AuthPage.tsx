@@ -7,6 +7,7 @@ import { getCustomerToken } from '../../api/api'
 import { enablePromotionAlerts, isPushSupported } from '../../lib/pushNotifications'
 import { photoSrcSet } from '../../lib/thumbnails'
 import { useLanguage } from '../../language/useLanguage'
+import { isEventType } from '../../../shared/eventTypes.js'
 
 const PROFILE_IMAGE_DIMENSION = 256
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024
@@ -44,6 +45,9 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const location = useLocation()
   const returnToCheckout = location.state?.from === '/checkout'
   const returnToAccount = location.state?.from === '/account/orders'
+  const returnToEvent = location.state?.from === '/events'
+    ? `/events${isEventType(location.state?.type) ? `?type=${location.state.type}` : ''}`
+    : ''
   const checkoutNotice = typeof location.state?.notice === 'string' ? location.state.notice : ''
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -122,7 +126,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
         await login({ email, password })
       }
       navigate(
-        returnToCheckout ? '/checkout' : returnToAccount ? '/account/orders' : isSignup ? '/' : '/account/orders',
+        returnToCheckout ? '/checkout' : returnToAccount ? '/account/orders' : returnToEvent ? returnToEvent : isSignup ? '/' : '/account/orders',
         { replace: true },
       )
     } catch (authError) {

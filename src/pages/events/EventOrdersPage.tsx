@@ -5,6 +5,8 @@ import { useAuth } from "../../context/useAuth";
 import { Footer, Header } from "../../components/Layout";
 import { useLanguage } from "../../language/useLanguage";
 import { numberFormatter } from "../../lib/cartPricing";
+import { photoErrorHandler, thumbnail } from "../../lib/thumbnails";
+import { EVENT_OCCASIONS, eventOccasion, isEventType } from "../../../shared/eventTypes.js";
 
 interface EventConfig {
   eventTypes: string[];
@@ -55,14 +57,14 @@ interface EventOrder {
   createdAt: string;
 }
 
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  birthday: "Birthday party",
-  office: "Office event",
-  wedding: "Wedding",
-  school: "School event",
-  religious: "Religious celebration",
-  other: "Other event",
-};
+const EVENT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
+  EVENT_OCCASIONS.map((event) => [event.id, event.label]),
+);
+
+function eventTypeFromSearch(params: URLSearchParams) {
+  const requested = params.get("type");
+  return isEventType(requested) ? requested : "birthday";
+}
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   new: { label: "Waiting for the store's quote", className: "bg-[#eef2f7] text-[#33475e]" },
@@ -78,8 +80,87 @@ const fieldClass =
   "mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-3 text-sm font-medium text-[#102c50] outline-none! transition placeholder:text-[#9aa5b3] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25";
 const labelClass = "block text-xs font-bold text-[#4f6379]";
 
+const EVENT_ICONS: Record<string, string> = {
+  birthday: "M4 20h16M6 20v-3.5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2V20M8 14.5c1.2.8 2.2-.7 3.4 0s2.2.9 3.2 0 2.2.8 3.4 0M12 12V8.5M12 6.2v.01",
+  office: "M8 7V5.8A1.8 1.8 0 0 1 9.8 4h4.4A1.8 1.8 0 0 1 16 5.8V7M4 7h16v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Zm0 5h16",
+  wedding: "M9 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm7.5 3a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z",
+  school: "M3 10 12 5l9 5-9 5-9-5Zm4 2.2V16c0 1.2 2.2 2.8 5 2.8s5-1.6 5-2.8v-3.8",
+  religious: "M12 3.5c1.8 2.6 4 4.6 4 7.4a4 4 0 0 1-8 0c0-2.8 2.2-4.8 4-7.4Z",
+  other: "M12 4.5 13.4 9H18l-3.7 2.8 1.4 4.4L12 13.6 8.3 16.2l1.4-4.4L6 9h4.6L12 4.5Z",
+};
+
+function EventIcon({ id }: { id: string }) {
+  const path = EVENT_ICONS[id];
+  if (!path) return null;
+  return (
+    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+      <path d={path} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
+function OccasionFilm({
+  choices,
+  onChange,
+  value,
+  label,
+  t,
+}: {
+  choices: typeof EVENT_OCCASIONS;
+  onChange: (id: string) => void;
+  value: string;
+  label: string;
+  t: (key: string, variables?: Record<string, string | number>) => string;
+}) {
+  return (
+    <div aria-label={label} className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6" id="event-type" role="radiogroup">
+      {choices.map((event) => {
+        const selected = value === event.id;
+        return (
+          <button
+            aria-checked={selected}
+            className="rounded-2xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+            key={event.id}
+            onClick={() => onChange(event.id)}
+            role="radio"
+            type="button"
+          >
+            <span className={`relative block overflow-hidden rounded-2xl bg-[#092a53] ${selected ? "ring-2 ring-[#ffdc32] ring-offset-2" : ""}`}>
+              <img
+                alt=""
+                className={`aspect-[4/5] w-full object-cover ${selected ? "" : "brightness-75"}`}
+                decoding="async"
+                loading="lazy"
+                onError={photoErrorHandler(event.image, "/images/hero-ice-cream.jpg")}
+                sizes="(min-width: 1024px) 180px, 45vw"
+                src={thumbnail(event.image, "small")}
+              />
+              <span className="absolute inset-x-0 bottom-0 flex min-h-12 items-center gap-2 bg-[#092a53] px-2.5 py-2 text-white">
+                <span className={`grid size-6 shrink-0 place-items-center rounded-full ${selected ? "bg-[#ffdc32] text-[#092a53]" : "bg-white/10 text-[#ffdc32]"}`}>
+                  <EventIcon id={event.id} />
+                </span>
+                <span className="line-clamp-2 text-[13px] font-extrabold leading-4">{t(event.label)}</span>
+              </span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function formatXaf(amount: number, language: string) {
   return `${numberFormatter(language === "fr" ? "fr-CM" : "en-US").format(Math.round(amount || 0))} FCFA`;
+}
+
+function groupCatalog(items: CatalogItem[]) {
+  const groups: { title: string; items: CatalogItem[] }[] = [];
+  for (const item of items) {
+    const last = groups[groups.length - 1];
+    if (last && last.title === item.group) last.items.push(item);
+    else groups.push({ title: item.group, items: [item] });
+  }
+  return groups;
 }
 
 function suggestedDeposit(total: number, percent: number) {
@@ -98,7 +179,7 @@ export function EventOrdersPage() {
   const [eventOrders, setEventOrders] = useState<EventOrder[]>([]);
   const [loadError, setLoadError] = useState("");
 
-  const [eventType, setEventType] = useState("birthday");
+  const [eventType, setEventType] = useState(() => eventTypeFromSearch(searchParams));
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("15:00");
   const [guestCount, setGuestCount] = useState("30");
@@ -114,6 +195,9 @@ export function EventOrdersPage() {
   const [notice, setNotice] = useState("");
 
   const [payingId, setPayingId] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteError, setDeleteError] = useState("");
   const [payMethod, setPayMethod] = useState<"card" | "campay">("card");
   const [payPhone, setPayPhone] = useState("");
   const [payError, setPayError] = useState("");
@@ -148,6 +232,20 @@ export function EventOrdersPage() {
       .catch((error: unknown) => { if (!cancelled) setLoadError(error instanceof Error ? error.message : "Unable to load event options."); });
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    const requested = searchParams.get("type");
+    if (!isEventType(requested)) return;
+    setEventType(requested);
+    if (!customer) return;
+    const frame = window.requestAnimationFrame(() => {
+      const node = document.getElementById("event-type");
+      if (!node) return;
+      const rect = node.getBoundingClientRect();
+      if (rect.top < 80 || rect.bottom > window.innerHeight) node.scrollIntoView({ block: "center" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [searchParams, customer]);
 
   useEffect(() => {
     if (customer?.phone) {
@@ -220,6 +318,7 @@ export function EventOrdersPage() {
       .filter((item) => !query || `${item.name} ${item.group}`.toLowerCase().includes(query) || t(item.name).toLowerCase().includes(query))
       .slice(0, 40);
   }, [catalog, itemSearch, t]);
+  const treatGroups = groupCatalog(visibleCatalog);
 
   function setQuantity(itemId: string, value: number) {
     setQuantities((current) => ({ ...current, [itemId]: Math.max(0, Math.min(1000, Math.round(value) || 0)) }));
@@ -255,6 +354,21 @@ export function EventOrdersPage() {
     }
   }
 
+  async function deleteOrder(order: EventOrder) {
+    setDeleteError("");
+    setDeletingId(order.id);
+    try {
+      await apiRequest(`/customer/event-orders/${order.id}`, { method: "DELETE", token: getCustomerToken() });
+      setConfirmDeleteId(null);
+      setEventOrders((current) => current.filter((item) => item.id !== order.id));
+      setNotice(t("Event #{id} deleted.", { id: order.id }));
+    } catch (error) {
+      setDeleteError(error instanceof Error ? t(error.message) : t("This event could not be deleted."));
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   async function payDeposit(order: EventOrder) {
     setPayError("");
     setPayingId(order.id);
@@ -276,6 +390,17 @@ export function EventOrdersPage() {
     { title: t("Get your quote"), body: t("The store confirms the price, usually within a day.") },
     { title: t("Pay a {percent}% deposit", { percent: depositPercent }), body: t("Book your date by card or Mobile Money. The rest is paid on the day.") },
   ];
+  const occasionChoices = (config?.eventTypes?.length ? config.eventTypes : EVENT_OCCASIONS.map((event) => event.id))
+    .map((id) => eventOccasion(id))
+    .filter((event): event is (typeof EVENT_OCCASIONS)[number] => Boolean(event));
+  const chosen = eventOccasion(eventType) || occasionChoices[0] || EVENT_OCCASIONS[0];
+
+  function chooseEvent(type: string) {
+    setEventType(type);
+    const next = new URLSearchParams(searchParams);
+    next.set("type", type);
+    setSearchParams(next, { replace: true });
+  }
 
   return (
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
@@ -314,33 +439,28 @@ export function EventOrdersPage() {
           {loadError && <p className="mb-6 rounded-2xl bg-red-50 px-5 py-4 text-sm font-semibold text-red-700" role="alert">{loadError}</p>}
 
           {!authLoading && !customer ? (
-            <div className="mx-auto max-w-xl rounded-[28px] bg-white p-8 text-center shadow-[0_14px_40px_rgba(9,42,83,0.07)] ring-1 ring-[#ebe7dc]">
-              <h2 className="font-display text-2xl font-extrabold text-[#092a53]">{t("Sign in to plan your event")}</h2>
-              <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("An account lets you follow your quote, pay the deposit and get updates about your event.")}</p>
-              <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-                <Link className="rounded-full bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#163e6b]" to="/login">{t("Sign in")}</Link>
-                <Link className="rounded-full px-6 py-3 text-sm font-bold text-[#092a53] ring-1 ring-[#d5dde8] transition hover:ring-[#092a53]" to="/signup">{t("Create an account")}</Link>
+            <section aria-labelledby="plan-event-title">
+              <OccasionFilm choices={occasionChoices} label={t("Type of event")} onChange={chooseEvent} t={t} value={eventType} />
+              <div className="mt-8 flex flex-col gap-5 border-t border-[#e7e1d4] pt-6 sm:flex-row sm:items-end sm:justify-between">
+                <div className="max-w-md">
+                  <h2 className="font-display text-2xl font-extrabold leading-tight text-[#092a53]" id="plan-event-title">{t("Sign in to plan your event")}</h2>
+                  <p className="mt-2 text-sm font-semibold text-[#092a53]">{t(chosen.detail)}</p>
+                  <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("An account lets you follow your quote, pay the deposit and get updates about your event.")}</p>
+                </div>
+                <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+                  <Link className="inline-flex h-11 items-center justify-center rounded-full bg-[#ffdc32] px-5 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2" state={{ from: "/events", type: eventType }} to="/login">{t("Sign in")}</Link>
+                  <Link className="inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold text-[#092a53] ring-1 ring-[#d7deea] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2" state={{ from: "/events", type: eventType }} to="/signup">{t("Create an account")}</Link>
+                </div>
               </div>
-            </div>
+            </section>
           ) : customer ? (
             <>
               <form className="grid grid-cols-1 gap-8 lg:grid-cols-12" onSubmit={submit}>
                 <div className="space-y-8 lg:col-span-8">
                   <section className="rounded-[24px] bg-white p-6 shadow-[0_14px_40px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:p-7">
                     <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t("Your event")}</h2>
-                    <div className="mt-5 flex flex-wrap gap-2" role="radiogroup" aria-label={t("Type of event")}>
-                      {(config?.eventTypes || Object.keys(EVENT_TYPE_LABELS)).map((type) => (
-                        <button
-                          aria-checked={eventType === type}
-                          className={`rounded-full px-4 py-2 text-sm font-bold transition ${eventType === type ? "bg-[#092a53] text-white" : "bg-[#f4f6f9] text-[#4f6379] hover:text-[#092a53]"}`}
-                          key={type}
-                          onClick={() => setEventType(type)}
-                          role="radio"
-                          type="button"
-                        >
-                          {t(EVENT_TYPE_LABELS[type] || type)}
-                        </button>
-                      ))}
+                    <div className="mt-4">
+                      <OccasionFilm choices={occasionChoices} label={t("Type of event")} onChange={chooseEvent} t={t} value={eventType} />
                     </div>
                     <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
                       <label className={labelClass}>
@@ -360,18 +480,31 @@ export function EventOrdersPage() {
 
                   <section className="rounded-[24px] bg-white p-6 shadow-[0_14px_40px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:p-7">
                     <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t("Delivery or pickup")}</h2>
-                    <div className="mt-5 grid grid-cols-2 gap-3">
-                      {(["delivery", "pickup"] as const).map((type) => (
-                        <button
-                          aria-pressed={fulfillmentType === type}
-                          className={`rounded-2xl p-4 text-left text-sm font-bold ring-1 transition ${fulfillmentType === type ? "bg-[#fff8dd] text-[#092a53] ring-[#e6cf6a]" : "bg-[#f8fafc] text-[#4f6379] ring-[#e3e9f1] hover:ring-[#c9d4e0]"}`}
-                          key={type}
-                          onClick={() => setFulfillmentType(type)}
-                          type="button"
-                        >
-                          {t(type === "delivery" ? "Deliver to my event" : "I'll pick it up")}
-                        </button>
-                      ))}
+                    <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {([
+                        ["delivery", "Deliver to my event", "M3 7h11v8H3V7Zm11 3h4l3 3v2h-7M6.5 18.5a1.5 1.5 0 1 0 .01-3 1.5 1.5 0 0 0-.01 3Zm11 0a1.5 1.5 0 1 0 .01-3 1.5 1.5 0 0 0-.01 3Z"],
+                        ["pickup", "I'll pick it up", "M4 10.5 12 4l8 6.5M6.5 10v9h11v-9M10 19v-5h4v5"],
+                      ] as const).map(([type, label, icon]) => {
+                        const selected = fulfillmentType === type;
+                        return (
+                          <button
+                            aria-pressed={selected}
+                            className={`flex items-center gap-3 rounded-2xl px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 ${
+                              selected ? "bg-[#092a53] text-white" : "bg-[#f6f3ea] text-[#092a53] hover:bg-[#efe8d6]"
+                            }`}
+                            key={type}
+                            onClick={() => setFulfillmentType(type)}
+                            type="button"
+                          >
+                            <span className={`grid size-11 shrink-0 place-items-center rounded-full ${selected ? "bg-[#ffdc32] text-[#092a53]" : "bg-white text-[#65748a]"}`}>
+                              <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                                <path d={icon} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+                              </svg>
+                            </span>
+                            <span className="text-sm font-extrabold leading-5">{t(label)}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                     <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <label className={labelClass}>
@@ -397,32 +530,71 @@ export function EventOrdersPage() {
                   </section>
 
                   <section className="rounded-[24px] bg-white p-6 shadow-[0_14px_40px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:p-7">
-                    <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                       <div>
                         <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t("Choose your treats")}</h2>
-                        <p className="mt-1 text-sm text-[#65748a]">{t("At least {count} items in total. Prices are per item.", { count: minQuantity })}</p>
+                        <p className="mt-1 max-w-sm text-sm leading-6 text-[#65748a]">{t("At least {count} items in total. Prices are per item.", { count: minQuantity })}</p>
                       </div>
-                      <input className={`${fieldClass} mt-0 sm:w-64`} onChange={(event) => setItemSearch(event.target.value)} placeholder={t("Search treats")} type="search" value={itemSearch} />
+                      <input
+                        aria-label={t("Search treats")}
+                        className="h-11 w-full rounded-full bg-[#f6f3ea] px-4 text-sm font-semibold text-[#092a53] outline-none transition placeholder:font-medium placeholder:text-[#8592a3] focus:bg-white focus:ring-2 focus:ring-[#ffdc32] sm:w-56"
+                        onChange={(event) => setItemSearch(event.target.value)}
+                        placeholder={t("Search treats")}
+                        type="search"
+                        value={itemSearch}
+                      />
                     </div>
-                    <ul className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                      {visibleCatalog.map((item) => {
-                        const quantity = quantities[item.itemId] || 0;
-                        return (
-                          <li className={`flex items-center gap-3 rounded-2xl p-3 ring-1 transition ${quantity ? "bg-[#fffbea] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-[#efece3]"}`} key={item.itemId}>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-bold text-[#092a53]">{t(item.name)}</p>
-                              <p className="text-xs text-[#8592a3]">{t(item.group)} · {formatXaf(item.price, language)}</p>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <button aria-label={t("Remove one")} className="grid size-8 place-items-center rounded-lg bg-white text-lg font-bold text-[#4f6379] ring-1 ring-[#e3e9f1] disabled:opacity-40" disabled={!quantity} onClick={() => setQuantity(item.itemId, quantity - 5)} type="button">−</button>
-                              <input aria-label={t("Quantity of {name}", { name: t(item.name) })} className="w-14 rounded-lg border border-[#dde4ec] bg-white px-1 py-1.5 text-center text-sm font-bold tabular-nums text-[#092a53] outline-none! focus:border-[#bd9c00]" inputMode="numeric" min={0} onChange={(event) => setQuantity(item.itemId, Number(event.target.value))} type="number" value={quantity || ""} placeholder="0" />
-                              <button aria-label={t("Add five")} className="grid size-8 place-items-center rounded-lg bg-[#092a53] text-lg font-bold text-white" onClick={() => setQuantity(item.itemId, quantity + 5)} type="button">+</button>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                    <label className={`${labelClass} mt-6`}>
+                    {treatGroups.length ? (
+                      <div className="mt-6 space-y-6">
+                        {treatGroups.map((group) => (
+                          <div key={group.title}>
+                            <h3 className="text-sm font-extrabold text-[#092a53]">{t(group.title)}</h3>
+                            <ul className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                              {group.items.map((item) => {
+                                const quantity = quantities[item.itemId] || 0;
+                                const picked = quantity > 0;
+                                return (
+                                  <li className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 ${picked ? "bg-[#092a53] text-white" : "bg-[#f6f3ea] text-[#092a53]"}`} key={item.itemId}>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="line-clamp-2 text-sm font-extrabold leading-5">{t(item.name)}</p>
+                                      <p className={`text-xs font-semibold tabular-nums ${picked ? "text-[#ffdc32]" : "text-[#65748a]"}`}>{formatXaf(item.price, language)}</p>
+                                    </div>
+                                    <div className="flex shrink-0 items-center gap-1">
+                                      <button
+                                        aria-label={t("Remove one")}
+                                        className={`grid size-8 place-items-center rounded-full text-lg font-bold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] disabled:opacity-40 ${picked ? "bg-white/10 text-white" : "bg-white text-[#092a53]"}`}
+                                        disabled={!quantity}
+                                        onClick={() => setQuantity(item.itemId, quantity - 5)}
+                                        type="button"
+                                      >−</button>
+                                      <input
+                                        aria-label={t("Quantity of {name}", { name: t(item.name) })}
+                                        className={`w-12 rounded-lg px-1 py-1.5 text-center text-sm font-extrabold tabular-nums outline-none [appearance:textfield] focus:ring-2 focus:ring-[#ffdc32] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${picked ? "bg-white/10 text-white" : "bg-white text-[#092a53] ring-1 ring-[#e7e1d4]"}`}
+                                        inputMode="numeric"
+                                        min={0}
+                                        onChange={(event) => setQuantity(item.itemId, Number(event.target.value))}
+                                        placeholder="0"
+                                        type="number"
+                                        value={quantity || ""}
+                                      />
+                                      <button
+                                        aria-label={t("Add five")}
+                                        className={`grid size-8 place-items-center rounded-full text-lg font-bold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${picked ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#092a53] text-white"}`}
+                                        onClick={() => setQuantity(item.itemId, quantity + 5)}
+                                        type="button"
+                                      >+</button>
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-6 text-sm text-[#65748a]">{t("No items match your search")}</p>
+                    )}
+                    <label className={`${labelClass} mt-6 border-t border-[#efe8d6] pt-5`}>
                       {t("Notes for the store (optional)")}
                       <textarea className={`${fieldClass} min-h-24 resize-y`} maxLength={500} onChange={(event) => setNotes(event.target.value)} placeholder={t("Theme, allergies, serving needs, anything we should know")} value={notes} />
                     </label>
@@ -430,28 +602,39 @@ export function EventOrdersPage() {
                 </div>
 
                 <aside className="lg:col-span-4">
-                  <div className="space-y-4 rounded-[24px] bg-white p-6 shadow-[0_14px_40px_rgba(9,42,83,0.08)] ring-1 ring-[#ebe7dc] lg:sticky lg:top-28">
-                    <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t("Your estimate")}</h2>
+                  <div className="relative isolate overflow-hidden rounded-[24px] bg-[#092a53] p-6 text-white lg:sticky lg:top-28">
+                    <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 -z-10 size-72 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.2),rgb(255_220_50/0.2)_35%,transparent)]" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-16 -z-10 size-72 rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.7),rgb(28_79_138/0.7)_35%,transparent)]" />
+                    <h2 className="font-display text-xl font-extrabold text-white">{t("Your estimate")}</h2>
                     {selected.length ? (
-                      <ul className="space-y-1.5 text-sm">
+                      <ul className="mt-4 space-y-2 text-sm text-white">
                         {selected.map((item) => (
                           <li className="flex justify-between gap-3" key={item.itemId}>
-                            <span className="min-w-0 truncate text-[#4f6379]">{quantities[item.itemId]} × {t(item.name)}</span>
+                            <span className="min-w-0 truncate">{quantities[item.itemId]} × {t(item.name)}</span>
                             <span className="shrink-0 font-semibold tabular-nums">{formatXaf(item.price * quantities[item.itemId], language)}</span>
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-sm text-[#8592a3]">{t("Add treats to see your estimate.")}</p>
+                      <p className="mt-4 text-sm leading-6 text-white">{t("Add treats to see your estimate.")}</p>
                     )}
-                    <dl className="space-y-2 border-t border-[#eef1f5] pt-4 text-sm">
-                      <div className="flex justify-between"><dt className="text-[#65748a]">{t("Items")}</dt><dd className={`font-bold tabular-nums ${totalQuantity && totalQuantity < minQuantity ? "text-[#a46200]" : ""}`}>{totalQuantity} / {minQuantity}+</dd></div>
-                      <div className="flex justify-between"><dt className="text-[#65748a]">{t("Estimated total")}</dt><dd className="font-extrabold tabular-nums text-[#092a53]">{formatXaf(estimate, language)}</dd></div>
-                      <div className="flex justify-between"><dt className="text-[#65748a]">{t("Deposit ({percent}%)", { percent: depositPercent })}</dt><dd className="font-bold tabular-nums">{formatXaf(deposit, language)}</dd></div>
+                    <dl className="mt-4 space-y-2.5 border-t border-white/20 pt-4 text-sm text-white">
+                      <div className="flex justify-between gap-3">
+                        <dt>{t("Items")}</dt>
+                        <dd className="font-bold tabular-nums">{totalQuantity} / {minQuantity}+</dd>
+                      </div>
+                      <div className="flex items-baseline justify-between gap-3">
+                        <dt>{t("Estimated total")}</dt>
+                        <dd className="font-display text-lg font-extrabold tabular-nums">{formatXaf(estimate, language)}</dd>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <dt>{t("Deposit ({percent}%)", { percent: depositPercent })}</dt>
+                        <dd className="font-bold tabular-nums">{formatXaf(deposit, language)}</dd>
+                      </div>
                     </dl>
-                    <p className="text-xs leading-5 text-[#8592a3]">{t("Nothing is charged now. The store confirms the final price first, then you pay the deposit to book your date.")}</p>
-                    {formError && <p className="rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{formError}</p>}
-                    <button className="w-full rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] disabled:cursor-wait disabled:opacity-60" disabled={submitting} type="submit">
+                    <p className="mt-4 text-sm leading-6 text-white">{t("Nothing is charged now. The store confirms the final price first, then you pay the deposit to book your date.")}</p>
+                    {formError && <p className="mt-4 rounded-xl bg-white/15 px-3 py-2.5 text-sm font-semibold text-white" role="alert">{formError}</p>}
+                    <button className="mt-5 w-full rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] disabled:cursor-wait disabled:opacity-60" disabled={submitting} type="submit">
                       {submitting ? t("Sending…") : t("Request a quote")}
                     </button>
                   </div>
@@ -468,44 +651,76 @@ export function EventOrdersPage() {
                       const status = STATUS_STYLES[order.status] || STATUS_STYLES.new;
                       const total = order.quotedTotal ?? order.estimatedTotal;
                       return (
-                        <li className="scroll-mt-28 rounded-[22px] bg-white p-5 shadow-[0_10px_30px_-18px_rgba(9,42,83,0.35)] ring-1 ring-[#ebe7dc]" id={`event-order-${order.id}`} key={order.id}>
-                          <div className="flex flex-wrap items-start justify-between gap-2">
-                            <div>
-                              <p className="font-extrabold text-[#092a53]">{t(EVENT_TYPE_LABELS[order.eventType] || "Event")} · #{order.id}</p>
-                              <p className="mt-0.5 text-sm text-[#65748a]">{order.eventDate} · {order.eventTime} · {t("{count} guests", { count: order.guestCount })}</p>
+                        <li className="scroll-mt-28 rounded-[24px] bg-white p-5 shadow-[0_14px_40px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc]" id={`event-order-${order.id}`} key={order.id}>
+                          <div className="flex items-start gap-3">
+                            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#092a53] text-[#ffdc32]">
+                              <EventIcon id={order.eventType} />
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-start justify-between gap-2">
+                                <p className="font-extrabold text-[#092a53]">{t(EVENT_TYPE_LABELS[order.eventType] || "Event")} · #{order.id}</p>
+                                <span className={`rounded-full px-3 py-1 text-xs font-bold ${status.className}`}>{t(status.label)}</span>
+                              </div>
+                              <p className="mt-1 text-sm text-[#65748a]">{order.eventDate} · {order.eventTime} · {t("{count} guests", { count: order.guestCount })}</p>
                             </div>
-                            <span className={`rounded-full px-3 py-1 text-xs font-bold ${status.className}`}>{t(status.label)}</span>
                           </div>
-                          <p className="mt-3 text-sm text-[#4f6379]">
+                          <p className="mt-4 text-sm leading-6 text-[#4f6379]">
                             {order.items.map((item) => `${item.quantity} × ${t(item.name)}`).join(", ")}
                           </p>
-                          <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                            <div className="rounded-xl bg-[#f8fafc] p-3"><dt className="text-xs text-[#8592a3]">{t(order.quotedTotal ? "Quoted total" : "Estimated total")}</dt><dd className="font-extrabold tabular-nums">{formatXaf(total, language)}</dd></div>
-                            <div className="rounded-xl bg-[#f8fafc] p-3"><dt className="text-xs text-[#8592a3]">{t("Deposit")}</dt><dd className="font-extrabold tabular-nums">{order.depositAmount ? formatXaf(order.depositAmount, language) : "—"}</dd></div>
+                          <dl className="mt-4 flex gap-8 border-t border-[#efe8d6] pt-4 text-sm">
+                            <div>
+                              <dt className="text-xs font-semibold text-[#65748a]">{t(order.quotedTotal ? "Quoted total" : "Estimated total")}</dt>
+                              <dd className="mt-0.5 font-extrabold tabular-nums text-[#092a53]">{formatXaf(total, language)}</dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs font-semibold text-[#65748a]">{t("Deposit")}</dt>
+                              <dd className="mt-0.5 font-extrabold tabular-nums text-[#092a53]">{order.depositAmount ? formatXaf(order.depositAmount, language) : "—"}</dd>
+                            </div>
                           </dl>
-                          {order.adminNote && <p className="mt-3 rounded-xl bg-[#fffbea] px-3 py-2 text-sm text-[#5c4a00]">{t("Note from the store")}: {order.adminNote}</p>}
+                          {order.adminNote && <p className="mt-4 rounded-2xl bg-[#fff8d6] px-4 py-3 text-sm leading-6 text-[#5c4a00]">{t("Note from the store")}: {order.adminNote}</p>}
                           {order.status === "quoted" && order.depositAmount && (
-                            <div className="mt-4 space-y-3 rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#efece3]">
-                              <p className="text-sm font-bold text-[#092a53]">{t("Pay the deposit to book your date")}</p>
-                              <div className="flex flex-wrap gap-2">
+                            <div className="mt-4 rounded-2xl bg-[#f6f3ea] p-4">
+                              <p className="text-sm font-extrabold text-[#092a53]">{t("Pay the deposit to book your date")}</p>
+                              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                                 {methods.card && (
-                                  <button aria-pressed={payMethod === "card"} className={`rounded-full px-4 py-2 text-sm font-bold ring-1 ${payMethod === "card" ? "bg-[#092a53] text-white ring-[#092a53]" : "bg-white text-[#4f6379] ring-[#e3e9f1]"}`} onClick={() => setPayMethod("card")} type="button">{t("Card")}</button>
+                                  <button aria-pressed={payMethod === "card"} className={`rounded-2xl px-4 py-3 text-left text-sm font-extrabold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${payMethod === "card" ? "bg-[#092a53] text-white" : "bg-white text-[#092a53]"}`} onClick={() => setPayMethod("card")} type="button">{t("Card")}</button>
                                 )}
                                 {methods.campayMobileMoney && (
-                                  <button aria-pressed={payMethod === "campay"} className={`rounded-full px-4 py-2 text-sm font-bold ring-1 ${payMethod === "campay" ? "bg-[#092a53] text-white ring-[#092a53]" : "bg-white text-[#4f6379] ring-[#e3e9f1]"}`} onClick={() => setPayMethod("campay")} type="button">{t("Mobile Money")}</button>
+                                  <button aria-pressed={payMethod === "campay"} className={`rounded-2xl px-4 py-3 text-left text-sm font-extrabold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${payMethod === "campay" ? "bg-[#092a53] text-white" : "bg-white text-[#092a53]"}`} onClick={() => setPayMethod("campay")} type="button">{t("Mobile Money")}</button>
                                 )}
                               </div>
                               {payMethod === "campay" && (
-                                <label className={labelClass}>
+                                <label className={`${labelClass} mt-3`}>
                                   {t("Mobile Money number")}
                                   <input className={fieldClass} onChange={(event) => setPayPhone(event.target.value)} placeholder="6XX XX XX XX" type="tel" value={payPhone} />
                                 </label>
                               )}
-                              {payError && payingId === null && <p className="text-sm font-semibold text-red-700" role="alert">{payError}</p>}
-                              <button className="w-full rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] disabled:cursor-wait disabled:opacity-60" disabled={payingId === order.id || (!methods.card && !methods.campayMobileMoney)} onClick={() => payDeposit(order)} type="button">
+                              {payError && payingId === null && <p className="mt-3 text-sm font-semibold text-red-700" role="alert">{payError}</p>}
+                              <button className="mt-3 w-full rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60" disabled={payingId === order.id || (!methods.card && !methods.campayMobileMoney)} onClick={() => payDeposit(order)} type="button">
                                 {payingId === order.id ? t("Opening payment…") : t("Pay {amount} deposit", { amount: formatXaf(order.depositAmount, language) })}
                               </button>
                             </div>
+                          )}
+                          {["new", "quoted", "declined", "cancelled"].includes(order.status) && (
+                            confirmDeleteId === order.id ? (
+                              <div className="mt-4 rounded-2xl bg-[#f6f3ea] p-4">
+                                <p className="text-sm font-extrabold text-[#092a53]">{t("Delete this event?")}</p>
+                                <p className="mt-1 text-sm leading-6 text-[#65748a]">{t("This removes the request. It cannot be undone.")}</p>
+                                {deleteError && <p className="mt-2 text-sm font-semibold text-red-700" role="alert">{deleteError}</p>}
+                                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                                  <button className="inline-flex h-11 items-center justify-center rounded-full bg-[#092a53] px-5 text-sm font-extrabold text-white transition hover:bg-[#0d3a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60" disabled={deletingId === order.id} onClick={() => deleteOrder(order)} type="button">
+                                    {deletingId === order.id ? t("Deleting…") : t("Delete event")}
+                                  </button>
+                                  <button className="inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold text-[#092a53] ring-1 ring-[#d7deea] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2" onClick={() => { setConfirmDeleteId(null); setDeleteError(""); }} type="button">
+                                    {t("Keep event")}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <button className="mt-4 inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold text-[#092a53] ring-1 ring-[#d7deea] transition hover:bg-[#f6f3ea] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2" onClick={() => { setConfirmDeleteId(order.id); setDeleteError(""); }} type="button">
+                                {t("Delete event")}
+                              </button>
+                            )
                           )}
                         </li>
                       );

@@ -1485,7 +1485,8 @@ app.post('/api/auth/register/request-verification', signupLimiter, signupVerific
     `).run(email, verificationId, codeHash, name, passwordHash, profilePicture, createdAt, expiresAt)
 
     try {
-      await sendCustomerVerificationCode({ to: email, code })
+      const sent = await sendCustomerVerificationCode({ to: email, code })
+      console.log(`Verification code queued for ${email}: ${sent?.messageId || 'no message id'}`)
     } catch (emailError) {
       await database.prepare('DELETE FROM pending_customer_signups WHERE verification_id = ?').run(verificationId)
       console.error('Unable to send customer signup verification code:', describeEmailError(emailError))

@@ -121,3 +121,113 @@ test('only deletes declined event orders within the admin store or branch scope'
   assert.equal(declinedResponse.ended, true)
   assert.equal(deleted, true)
 })
+
+test('a customer can delete their own unpaid event and cannot delete someone else\'s or a booked one', async () => {
+  let order = { status: 'new', customerId: 4, storeId: 1 }
+  let deletedFor = null
+  const routes = new Map()
+  const app = Object.fromEntries(['get', 'post', 'patch', 'delete'].map((method) => [
+    method,
+    (path, _middleware, handler) => routes.set(`${method.toUpperCase()} ${path}`, handler),
+  ]))
+  registerEventOrderRoutes(app, {
+    database: {
+      prepare: () => ({
+        get: async () => ({
+          ...order,
+          itemsJson: '[]',
+          guestCount: 10,
+          estimatedTotal: 1000,
+          quotedTotal: null,
+          depositAmount: null,
+        }),
+        run: async (...args) => {
+          deletedFor = args
+          return { changes: 1 }
+        },
+      }),
+    },
+  })
+  const remove = routes.get('DELETE /api/customer/event-orders/:id')
+  const responseFor = () => ({
+    statusCode: 200,
+    status(code) { this.statusCode = code; return this },
+    json(body) { this.body = body; return this },
+    end() { this.ended = true; return this },
+  })
+
+  const other = responseFor()
+  await remove({ params: { id: '9' }, customer: { id: 8 } }, other)
+  assert.equal(other.statusCode, 404)
+  assert.equal(deletedFor, null)
+
+  const ok = responseFor()
+  await remove({ params: { id: '9' }, customer: { id: 4 } }, ok)
+  assert.equal(ok.statusCode, 204)
+  assert.equal(ok.ended, true)
+  assert.deepEqual(deletedFor, [9, 4])
+
+  order = { status: 'deposit_paid', customerId: 4, storeId: 1 }
+  deletedFor = null
+  const paid = responseFor()
+  await remove({ params: { id: '9' }, customer: { id: 4 } }, paid)
+  assert.equal(paid.statusCode, 409)
+  assert.equal(deletedFor, null)
+})
+
+test('deposit notices stay with the store or branch that received the payment', async () => {
+  const queries = []
+  let order = null
+  let updated = null
+  const routes = new Map()
+  const app = Object.fromEntries(['get', 'post', 'patch', 'delete'].map((method) => [
+    method,
+    (path, _middleware, handler) => routes.set(`${method.toUpperCase()} ${path}`, handler),
+  ]))
+  registerEventOrderRoutes(app, {
+    database: {
+      prepare: (query) => ({
+        all: async (...args) => {
+          queries.push({ query, args })
+          return [{ id: 5, customerName: 'Amina', depositAmount: 12000, eventType: 'birthday', eventDate: '2026-11-02', storeName: 'Bonanjo' }]
+        },
+        get: async () => order,
+        run: async (...args) => {
+          updated = args
+          return { changes: 1 }
+        },
+      }),
+    },
+  })
+  const responseFor = () => ({
+    statusCode: 200,
+    status(code) { this.statusCode = code; return this },
+    json(body) { this.body = body; return this },
+    end() { this.ended = true; return this },
+  })
+  const list = routes.get('GET /api/admin/event-orders/deposit-notices')
+  const storeResponse = responseFor()
+  await list({ admin: { role: 'store_admin', storeId: 3 } }, storeResponse)
+  assert.equal(storeResponse.statusCode, 200)
+  assert.equal(storeResponse.body.notices[0].depositAmount, 12000)
+  assert.match(queries.at(-1).query, /e\.store_id = \?/)
+  assert.match(queries.at(-1).query, /deposit_admin_seen = 0/)
+  assert.deepEqual(queries.at(-1).args, [3])
+
+  await list({ admin: { role: 'branch_admin', branchTown: 'Douala' } }, responseFor())
+  assert.match(queries.at(-1).query, /s\.town = \?/)
+  assert.deepEqual(queries.at(-1).args, ['Douala'])
+
+  const dismiss = routes.get('PATCH /api/admin/event-orders/:id/deposit-notice')
+  order = { customerId: 4, storeId: 9, storeTown: 'Yaoundé', itemsJson: '[]', guestCount: 10, estimatedTotal: 1000 }
+  const wrongStore = responseFor()
+  await dismiss({ params: { id: '5' }, admin: { role: 'store_admin', storeId: 3 } }, wrongStore)
+  assert.equal(wrongStore.statusCode, 404)
+  assert.equal(updated, null)
+
+  const seen = responseFor()
+  await dismiss({ params: { id: '5' }, admin: { role: 'branch_admin', branchTown: 'Yaoundé' } }, seen)
+  assert.equal(seen.statusCode, 204)
+  assert.equal(seen.ended, true)
+  assert.equal(updated[1], 5)
+})

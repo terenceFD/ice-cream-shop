@@ -535,6 +535,7 @@ if (configuredDatabaseBackend === "postgres") {
       deposit_reference TEXT,
       deposit_external_reference TEXT,
       deposit_paid_at TEXT,
+      deposit_admin_seen INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
@@ -553,6 +554,7 @@ if (configuredDatabaseBackend === "postgres") {
     CREATE INDEX IF NOT EXISTS idx_push_subscriptions_customer ON push_subscriptions(customer_id);
   `);
 
+  addColumnIfMissing("event_orders", "deposit_admin_seen", "INTEGER NOT NULL DEFAULT 1");
   addColumnIfMissing("customers", "profile_picture", "TEXT NOT NULL DEFAULT ''");
   addColumnIfMissing("orders", "review_reminder_sent_at", "TEXT");
   addColumnIfMissing("customers", "welcome_notification_sent_at", "TEXT");
@@ -821,9 +823,13 @@ export async function verifyDatabaseSchema() {
       deposit_reference TEXT,
       deposit_external_reference TEXT,
       deposit_paid_at TEXT,
+      deposit_admin_seen INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
+  `).run();
+  await database.prepare(`
+    ALTER TABLE event_orders ADD COLUMN IF NOT EXISTS deposit_admin_seen INTEGER NOT NULL DEFAULT 1
   `).run();
   await database.prepare(`
     CREATE INDEX IF NOT EXISTS idx_event_orders_customer ON event_orders(customer_id)

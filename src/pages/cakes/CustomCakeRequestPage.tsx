@@ -107,36 +107,38 @@ export function CustomCakeRequestPage() {
       <Header />
       <main>
         {/* Hero */}
-        <section className="relative isolate overflow-hidden border-b border-[#ebe7dc]">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-48 -top-48 -z-10 size-[36rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.15),rgb(255_220_50/0.15)_35%,transparent)]" />
+        <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-32 -top-36 -z-10 size-[40rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.16),rgb(255_220_50/0.16)_35%,transparent)]" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-52 -left-36 -z-10 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.55),rgb(28_79_138/0.55)_35%,transparent)]" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:28px_28px]" />
           <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-12 px-5 pb-16 pt-10 sm:px-8 sm:pt-14 lg:grid-cols-12 lg:gap-10 lg:px-12 lg:pb-20 lg:pt-16">
             <div className="lg:col-span-6">
-              <nav aria-label={t('Breadcrumb')} className="flex items-center gap-2 text-xs font-bold text-[#7b8796]">
-                <Link className="transition hover:text-[#092a53]" to="/menu">{t('Menu')}</Link>
-                <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
-                <span aria-current="page" className="text-[#092a53]">{t('Custom cake request')}</span>
+              <nav aria-label={t('Breadcrumb')} className="flex items-center gap-2 text-xs font-bold text-white/55">
+                <Link className="transition hover:text-white" to="/menu">{t('Menu')}</Link>
+                <span aria-hidden="true" className="text-white/30">/</span>
+                <span aria-current="page" className="text-white">{t('Custom cake request')}</span>
               </nav>
-              <p className="mt-8 inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
+              <p className="mt-8 inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
+                <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />
                 {t('Made for your celebration')}
               </p>
-              <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-[#092a53] sm:text-6xl lg:text-7xl">
+              <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-white sm:text-6xl lg:text-7xl">
                 {t('Custom cake request')}
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-7 text-[#52647b] sm:text-lg sm:leading-8">
+              <p className="mt-6 max-w-xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
                 {t('Choose your cake details and requested pickup date. This is a request, not a confirmed order; the store will contact you about availability and pricing.')}
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
                 <a
-                  className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-7 py-4 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-7 py-4 text-sm font-extrabold text-[#092a53] shadow-[0_14px_34px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
                   href="#cake-request-form"
                 >
                   {t('Start your request')} <span aria-hidden="true">↓</span>
                 </a>
-                <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-[#52647b]">
+                <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-white/80">
                   {['Choose your cake details', 'We’ll confirm the details'].map((label) => (
                     <li className="inline-flex items-center gap-2" key={label}>
-                      <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#ffdc32]/40 text-[#806a00]">
+                      <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#ffdc32]/15 text-[#ffdc32]">
                         <svg className="size-3" fill="none" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" /></svg>
                       </span>
                       {t(label)}

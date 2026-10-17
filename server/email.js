@@ -30,6 +30,8 @@ export function describeEmailError(error) {
   return 'The mail server could not be reached.'
 }
 
+const SENDER_ADDRESS = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export function isEmailDeliveryConfigured() {
   const host = process.env.SMTP_HOST?.trim()
   const port = Number(process.env.SMTP_PORT || 587)
@@ -37,7 +39,7 @@ export function isEmailDeliveryConfigured() {
   const username = process.env.SMTP_USER?.trim()
   const password = process.env.SMTP_PASSWORD
 
-  if (!host || !from || !Number.isInteger(port) || port < 1 || port > 65535) {
+  if (!host || !from || !SENDER_ADDRESS.test(from) || !Number.isInteger(port) || port < 1 || port > 65535) {
     return false
   }
   if (Boolean(username) !== Boolean(password)) {
@@ -55,6 +57,9 @@ function createTransporter() {
 
   if (!host || !from || !Number.isInteger(port) || port < 1 || port > 65535) {
     throw new EmailConfigurationError('Email delivery is not configured. Set SMTP_HOST, SMTP_PORT, and SMTP_FROM.')
+  }
+  if (!SENDER_ADDRESS.test(from)) {
+    throw new EmailConfigurationError('SMTP_FROM must be a full email address, such as the sender verified in Brevo.')
   }
   if (Boolean(username) !== Boolean(password)) {
     throw new EmailConfigurationError('Email delivery requires both SMTP_USER and SMTP_PASSWORD, or neither.')
@@ -81,8 +86,8 @@ export async function sendContactReply({ to, recipientName, subject, reply, admi
 
 export async function sendCustomerVerificationCode({ to, code }) {
   const { transporter, from } = createTransporter()
-  await transporter.sendMail({
-    from,
+  return transporter.sendMail({
+    from: `Cold Stone Creamery <${from}>`,
     to,
     subject: 'Your Cold Stone Creamery verification code',
     text: [

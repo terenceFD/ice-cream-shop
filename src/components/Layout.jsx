@@ -7,6 +7,7 @@ import { useAuth } from "../context/useAuth";
 import { useFlavors } from "../context/useFlavors";
 import { useLanguage } from "../language/useLanguage";
 import { coldStoneMenuCategories } from "../../shared/data";
+import { EVENT_OCCASIONS } from "../../shared/eventTypes.js";
 
 function ArrowIcon({ diagonal = false }) {
   return (
@@ -64,12 +65,12 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
       <details className="group relative" onToggle={(event) => { if (event.currentTarget.open) setShowImages(true); }} ref={detailsRef}>
         <summary
           onClick={closeOtherDropdowns}
-          className={`flex h-10 cursor-pointer list-none items-center justify-between gap-2 whitespace-nowrap rounded-full pl-1.5 pr-3.5 text-[13px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] [&::-webkit-details-marker]:hidden ${
+          className={`flex h-10 cursor-pointer list-none items-center justify-between gap-1.5 whitespace-nowrap rounded-full pl-1.5 pr-2.5 text-[13px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] [&::-webkit-details-marker]:hidden ${
             active ? "bg-white/[0.12] text-[#ffdc32]" : "text-white/85 hover:bg-white/[0.08] hover:text-white group-open:bg-white/[0.1] group-open:text-white"
           }`}
         >
-          <span className="flex items-center gap-2">
-            <span aria-hidden="true" className={`grid size-7 place-items-center rounded-full text-xs ${active ? "bg-[#ffdc32] text-[#092a53]" : "bg-white/10 text-[#ffdc32]"}`}>{icon}</span>
+          <span className="flex items-center gap-1.5">
+            <span aria-hidden="true" className={`grid size-6 place-items-center rounded-full text-[11px] ${active ? "bg-[#ffdc32] text-[#092a53]" : "bg-white/10 text-[#ffdc32]"}`}>{icon}</span>
             <span>{label}</span>
           </span>
           <svg aria-hidden="true" className="size-3 shrink-0 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
@@ -627,6 +628,7 @@ export function Header() {
   const isShopActive =
     location.pathname === "/flavors" || location.pathname.startsWith("/flavor/");
   const isMenuActive = location.pathname === "/menu" || location.pathname === "/menu/all";
+  const isEventsActive = location.pathname === "/events";
   const shopFlavors = flavors.filter((flavor) => flavor.availableQuantity > 0);
   const shopLinks = [
     {
@@ -682,6 +684,19 @@ export function Header() {
     cta: t("Explore the menu"),
     listTitle: t("Menu categories"),
   };
+  const eventLinks = EVENT_OCCASIONS.map((event) => ({
+    label: t(event.label),
+    to: `/events?type=${event.id}`,
+    image: event.image,
+    meta: t(event.detail),
+  }));
+  const eventFeature = {
+    to: "/events",
+    image: "/cake-images/cake-11.webp",
+    title: t("Plan the order"),
+    cta: t("Start an event order"),
+    listTitle: t("Type of event"),
+  };
   const customerSecondName = customer?.name.trim().split(/\s+/).at(-1) || "";
 
   useEffect(() => {
@@ -703,7 +718,7 @@ export function Header() {
   }, [isMobileMenuOpen]);
 
   const desktopLinkClassName = (isActive) =>
-    `relative inline-flex h-10 items-center whitespace-nowrap rounded-full px-4 text-[13px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
+    `relative inline-flex h-10 items-center whitespace-nowrap rounded-full px-2.5 text-[13px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
       isActive
         ? "bg-white/[0.12] text-[#ffdc32] after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-[#ffdc32]"
         : "text-white/85 hover:bg-white/[0.08] hover:text-white"
@@ -733,7 +748,7 @@ export function Header() {
         ref={headerRef}
       >
         <div aria-hidden="true" className={`pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent transition-opacity ${isScrolled ? "opacity-100" : "opacity-0"}`} />
-        <header className={`relative mx-auto flex max-w-[1320px] items-center gap-3 px-4 text-white transition-[height] duration-300 sm:px-8 lg:gap-6 lg:px-12 ${isScrolled ? "h-[68px]" : "h-[80px]"}`}>
+        <header className={`relative mx-auto flex max-w-[1320px] items-center gap-3 px-4 text-white transition-[height] duration-300 sm:px-8 lg:gap-4 lg:px-12 ${isScrolled ? "h-[68px]" : "h-[80px]"}`}>
           <Link aria-label="Cold Stone Creamery Cameroon home" className="group flex shrink-0 items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]" to="/">
             <BrandMark compact={isScrolled} />
             <span className="font-display text-[18px] font-extrabold leading-[0.95] tracking-tight text-white sm:text-[19px]">
@@ -744,12 +759,13 @@ export function Header() {
 
           {!isAdminPage && (
             <nav aria-label={t("Main navigation")} className="hidden flex-1 items-center justify-center xl:flex">
-              <div className="flex items-center gap-1 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10">
+              <div className="flex items-center gap-3 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10">
                 <Link className={desktopLinkClassName(isHome)} to="/#home">
                   {t("Home")}
                 </Link>
                 <NavigationDropdown active={isShopActive} feature={shopFeature} icon="▤" label={t("Flavors")} links={shopLinks} subtitle={t("Browse signature creations and treats.")} />
                 <NavigationDropdown active={isMenuActive} feature={menuFeature} icon="🍦" label={t("Menu")} links={menuLinks} subtitle={t("Browse signature creations and treats.")} />
+                <NavigationDropdown active={isEventsActive} feature={eventFeature} icon="🎂" label={t("Events")} links={eventLinks} subtitle={t("Ice cream for birthdays, offices and celebrations")} />
                 <Link className={desktopLinkClassName(location.pathname === "/about")} to="/about">
                   {t("About us")}
                 </Link>
@@ -760,7 +776,7 @@ export function Header() {
             </nav>
           )}
 
-          <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5 xl:ml-0">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:ml-0">
             <div className="hidden sm:block">
               <LanguageDropdown language={language} setLanguage={setLanguage} t={t} />
             </div>
@@ -777,7 +793,7 @@ export function Header() {
                 </div>
                 <Link
                   aria-label={t("Shopping bag, {count} items", { count: cartCount })}
-                  className={`relative grid size-11 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
+                  className={`relative grid size-11 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
                     location.pathname === "/cart" ? "bg-[#ffdc32] text-[#092a53]" : "text-white hover:bg-white/10"
                   }`}
                   to="/cart"
@@ -790,7 +806,7 @@ export function Header() {
                   )}
                 </Link>
                 <Link
-                  className="group hidden h-11 items-center gap-2 rounded-full bg-[#ffdc32] px-5 text-sm font-extrabold text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white xl:inline-flex"
+                  className="group hidden h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-[#ffdc32] px-4 text-sm font-extrabold leading-none text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white xl:inline-flex"
                   to="/flavors"
                 >
                   {t("Order now")}
@@ -856,12 +872,13 @@ export function Header() {
               </button>
             </div>
 
-            <div className="flex-1 space-y-1 px-3 py-4">
+            <div className="flex-1 space-y-2.5 px-3 py-4">
               <Link className={mobileLinkClassName(isHome)} onClick={() => setIsMobileMenuOpen(false)} to="/#home">
                 {t("Home")}
               </Link>
               <NavigationDropdown active={isShopActive} label={t("Flavors")} links={shopLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />
               <NavigationDropdown active={isMenuActive} label={t("Menu")} links={menuLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />
+              <NavigationDropdown active={isEventsActive} label={t("Events")} links={eventLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />
               <Link className={mobileLinkClassName(location.pathname === "/about")} onClick={() => setIsMobileMenuOpen(false)} to="/about">
                 {t("About us")}
               </Link>
@@ -870,9 +887,6 @@ export function Header() {
               </Link>
               <Link className={mobileLinkClassName(location.pathname === "/custom-cake")} onClick={() => setIsMobileMenuOpen(false)} to="/custom-cake">
                 {t("Custom cake request")}
-              </Link>
-              <Link className={mobileLinkClassName(location.pathname === "/events")} onClick={() => setIsMobileMenuOpen(false)} to="/events">
-                {t("Parties & events")}
               </Link>
               <div className="mt-3 border-t border-white/10 pt-3">
                 <AccountDropdown

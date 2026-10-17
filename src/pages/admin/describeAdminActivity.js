@@ -30,6 +30,7 @@ const RULES = [
   ['DELETE', /^\/api\/admin\/orders\/delivered$/, 'Cleared delivered orders', 'orders'],
   ['DELETE', /^\/api\/admin\/orders\/(\d+)$/, 'Deleted order #{id}', 'orders'],
   ['PATCH', /^\/api\/admin\/cake-requests\/(\d+)\/status$/, 'Updated cake request #{id}', 'orders'],
+  ['PATCH', /^\/api\/admin\/event-orders\/(\d+)\/deposit-notice$/, 'Dismissed the deposit notice for event #{id}', 'orders'],
   ['PATCH', /^\/api\/admin\/event-orders\/(\d+)$/, 'Updated event order #{id}', 'orders'],
   ['DELETE', /^\/api\/admin\/event-orders\/(\d+)$/, 'Deleted declined event order #{id}', 'orders'],
 

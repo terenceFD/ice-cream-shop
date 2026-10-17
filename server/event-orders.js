@@ -165,7 +165,7 @@ export function registerEventOrderRoutes(app, deps) {
 
   async function markDepositPaid(id) {
     const result = await database.prepare(`
-      UPDATE event_orders SET status = 'deposit_paid', deposit_paid_at = ?, updated_at = ?
+      UPDATE event_orders SET status = 'deposit_paid', deposit_paid_at = ?, deposit_admin_seen = 0, updated_at = ?
       WHERE id = ? AND status = 'quoted'
     `).run(new Date().toISOString(), new Date().toISOString(), id)
     const order = await getEventOrder(id)
@@ -231,6 +231,29 @@ export function registerEventOrderRoutes(app, deps) {
   app.get('/api/customer/event-orders', requireCustomer, async (request, response) => {
     const rows = await database.prepare(`${SELECT_EVENT_ORDER} WHERE e.customer_id = ? ORDER BY e.id DESC LIMIT 50`).all(request.customer.id)
     response.json({ eventOrders: rows.map(present) })
+  })
+
+  // A customer can remove a request they no longer want. A paid or booked event stays, so the store can cancel it.
+  app.delete('/api/customer/event-orders/:id', requireCustomer, async (request, response) => {
+    const id = Number(request.params.id)
+    const order = Number.isSafeInteger(id) ? await getEventOrder(id) : null
+    if (!order || Number(order.customerId) !== Number(request.customer.id)) {
+      response.status(404).json({ error: 'Event order not found.' })
+      return
+    }
+    if (!['new', 'quoted', 'declined', 'cancelled'].includes(order.status)) {
+      response.status(409).json({ error: 'A booked event with a deposit cannot be deleted. Contact the store to cancel it.' })
+      return
+    }
+    const result = await database.prepare(`
+      DELETE FROM event_orders
+      WHERE id = ? AND customer_id = ? AND status IN ('new', 'quoted', 'declined', 'cancelled')
+    `).run(id, request.customer.id)
+    if (!result.changes) {
+      response.status(409).json({ error: 'This event order has changed. Refresh and try again.' })
+      return
+    }
+    response.status(204).end()
   })
 
   app.post('/api/customer/event-orders/:id/deposit', requireCustomer, async (request, response) => {
@@ -339,6 +362,51 @@ export function registerEventOrderRoutes(app, deps) {
       console.error(`Unable to confirm deposit for event order #${id}:`, error.message)
       response.status(502).json({ error: 'The deposit could not be checked yet. Refresh the page in a minute.' })
     }
+  })
+
+  function eventListScope(admin) {
+    if (admin.role === 'store_admin') return { clause: 'WHERE e.store_id = ?', parameters: [admin.storeId] }
+    const town = admin.role === 'branch_admin' ? admin.branchTown : admin.selectedStoreTown || null
+    if (admin.role === 'owner' || admin.role === 'branch_admin') {
+      return town ? { clause: 'WHERE s.town = ?', parameters: [town] } : { clause: '', parameters: [] }
+    }
+    return { clause: 'WHERE e.store_id = ?', parameters: [admin.storeId] }
+  }
+
+  function adminCanSeeEvent(admin, order) {
+    if (!order) return false
+    if (admin.role === 'store_admin') return Number(order.storeId) === Number(admin.storeId)
+    if (admin.role === 'branch_admin') return order.storeTown === admin.branchTown
+    if (admin.role === 'owner' && admin.selectedStoreTown) return order.storeTown === admin.selectedStoreTown
+    return admin.role === 'owner'
+  }
+
+  app.get('/api/admin/event-orders/deposit-notices', requireAdmin, async (request, response) => {
+    const { clause, parameters } = eventListScope(request.admin)
+    const where = `${clause}${clause ? ' AND' : ' WHERE'} e.status = 'deposit_paid' AND e.deposit_admin_seen = 0`
+    const notices = await database.prepare(`
+      SELECT e.id, e.customer_name AS "customerName", e.deposit_amount AS "depositAmount",
+        e.event_type AS "eventType", e.event_date AS "eventDate", s.name AS "storeName"
+      FROM event_orders e LEFT JOIN stores s ON s.id = e.store_id
+      ${where}
+      ORDER BY e.deposit_paid_at DESC, e.id DESC
+      LIMIT 5
+    `).all(...parameters)
+    response.json({
+      notices: notices.map((notice) => ({ ...notice, depositAmount: Number(notice.depositAmount) || 0 })),
+    })
+  })
+
+  app.patch('/api/admin/event-orders/:id/deposit-notice', requireAdmin, async (request, response) => {
+    const id = Number(request.params.id)
+    const order = Number.isSafeInteger(id) ? await getEventOrder(id) : null
+    if (!adminCanSeeEvent(request.admin, order)) {
+      response.status(404).json({ error: 'Event order not found.' })
+      return
+    }
+    await database.prepare('UPDATE event_orders SET deposit_admin_seen = 1, updated_at = ? WHERE id = ?')
+      .run(new Date().toISOString(), id)
+    response.status(204).end()
   })
 
   app.get('/api/admin/event-orders', requireAdmin, async (request, response) => {

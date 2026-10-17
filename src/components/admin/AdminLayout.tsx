@@ -102,6 +102,19 @@ async function refreshNavigationCount<T>(
   }
 }
 
+interface DepositNotice {
+  id: number
+  customerName: string
+  depositAmount: number
+  eventType: string
+  eventDate: string
+  storeName: string | null
+}
+
+function formatDepositAmount(amount: number, language: string) {
+  return `${new Intl.NumberFormat(language === 'fr' ? 'fr-CM' : 'en-US').format(Math.round(amount || 0))} FCFA`
+}
+
 export function AdminLayout() {
   const { currentAdmin, logout, sessionToken, updateProfilePicture } = useAdminAuth()
   const { t, language, setLanguage } = useLanguage()
@@ -168,6 +181,7 @@ export function AdminLayout() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
   const [navQuery, setNavQuery] = useState('')
   const [showWelcome, setShowWelcome] = useState(false)
+  const [depositNotices, setDepositNotices] = useState<DepositNotice[]>([])
 
   useEffect(() => {
     if (!currentAdmin) return undefined
@@ -332,6 +346,9 @@ export function AdminLayout() {
         apiRequest<{ count: number }>(`/admin/event-orders?countOnly=true${branchQuery ? `&${branchQuery.slice(1)}` : ''}`, { token: sessionToken }),
         (result) => setNavigationCounts((counts) => ({ ...counts, eventOrderCount: result.count })),
       ),
+      apiRequest<{ notices: DepositNotice[] }>(`/admin/event-orders/deposit-notices${branchQuery}`, { token: sessionToken })
+        .then((result) => setDepositNotices(result?.notices || []))
+        .catch(() => {}),
     ])
     setCountsError(failures.filter(Boolean).join(' · '))
   }, [hasTownScope, selectedBranch, sessionToken])
@@ -345,6 +362,11 @@ export function AdminLayout() {
       window.removeEventListener('focus', refreshNavigationCounts)
     }
   }, [refreshNavigationCounts])
+
+  function hideDepositNotice(id: number) {
+    setDepositNotices((current) => current.filter((notice) => notice.id !== id))
+    apiRequest(`/admin/event-orders/${id}/deposit-notice`, { method: 'PATCH', token: sessionToken }).catch(() => {})
+  }
 
   async function handleLogout() {
     setLogoutError('')
@@ -825,6 +847,51 @@ export function AdminLayout() {
           <div aria-hidden="true" className="h-1 bg-white/10">
             <div className="admin-welcome-progress h-full bg-[#ffdc32]" />
           </div>
+        </div>
+      )}
+      {depositNotices.length > 0 && (
+        <div className={`fixed right-4 z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 ${showWelcome ? 'top-[248px]' : 'top-[84px]'}`}>
+          {depositNotices.map((notice) => (
+            <div className="flex gap-3 rounded-2xl bg-[#202124] p-3.5 text-white shadow-[0_24px_50px_rgba(0,0,0,0.35)]" key={notice.id} role="status">
+              <img alt="" className="size-10 shrink-0 rounded-full" height={40} src="/icons/icon-192.png" width={40} />
+              <Link
+                className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32]"
+                onClick={() => hideDepositNotice(notice.id)}
+                to={`/admin/events?event=${notice.id}`}
+              >
+                <p className="flex items-center gap-1.5 text-[11px] text-white/55">
+                  <span className="truncate">{window.location.host}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{t('now')}</span>
+                </p>
+                <p className="mt-0.5 truncate text-sm font-semibold">{t('Deposit paid')}</p>
+                <p className="mt-0.5 line-clamp-3 break-words text-[13px] leading-5 text-white/80">
+                  {notice.storeName
+                    ? t('{name} paid the {amount} deposit for event #{id} at {store}.', {
+                      name: notice.customerName,
+                      amount: formatDepositAmount(notice.depositAmount, language),
+                      id: notice.id,
+                      store: t(notice.storeName),
+                    })
+                    : t('{name} paid the {amount} deposit for event #{id}.', {
+                      name: notice.customerName,
+                      amount: formatDepositAmount(notice.depositAmount, language),
+                      id: notice.id,
+                    })}
+                </p>
+              </Link>
+              <button
+                aria-label={t('Dismiss')}
+                className="grid size-7 shrink-0 place-items-center rounded-full text-white/55 transition hover:bg-white/10 hover:text-white"
+                onClick={() => hideDepositNotice(notice.id)}
+                type="button"
+              >
+                <svg aria-hidden="true" className="size-3.5" fill="none" viewBox="0 0 24 24">
+                  <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                </svg>
+              </button>
+            </div>
+          ))}
         </div>
       )}
       <div className={`mx-auto grid max-w-[1600px] gap-5 px-3 py-5 sm:px-6 sm:py-7 lg:gap-7 lg:px-8 ${isSidebarCollapsed ? 'lg:grid-cols-[84px_minmax(0,1fr)]' : 'lg:grid-cols-[272px_minmax(0,1fr)]'}`}>
