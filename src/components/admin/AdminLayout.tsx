@@ -1042,7 +1042,7 @@ export function AdminLayout() {
                               ? t('{count} unread notifications', { count: count || 0 })
                               : item.label === 'Event orders'
                                 ? t('{count} event orders that need action', { count: count || 0 })
-                              : t('{count} new cake requests', { count: count || 0 })
+                                : t('{count} new cake requests', { count: count || 0 })
                         const isActive = location.pathname === item.to
                         return (
                           <li key={item.to}>

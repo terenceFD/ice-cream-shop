@@ -2421,10 +2421,20 @@ app.delete('/api/admin/admins/:id', requireAdmin, async (request, response) => {
 app.get('/api/admin/customers', requireAdmin, async (_request, response) => {
   const admin = _request.admin
   const town = selectedStoreTown(admin)
-  const storeFilter = hasTownScopedData(admin)
-    ? town ? 'JOIN orders o ON o.customer_id = c.id JOIN stores s ON s.id = o.store_id WHERE s.town = ?' : ''
-    : 'JOIN orders o ON o.customer_id = c.id WHERE o.store_id = ?'
-  const parameters = hasTownScopedData(admin) ? town ? [town] : [] : [admin.storeId]
+  // A new account has no order yet, so it must still appear. Customers who have
+  // ordered stay with the branch those orders belong to. The owner directory is
+  // global even when the dashboard is showing a selected branch.
+  const scopedToTown = admin.role === 'branch_admin' && Boolean(town)
+  const scopedToStore = admin.role === 'store_admin'
+  const storeFilter = scopedToTown
+    ? `LEFT JOIN orders o ON o.customer_id = c.id
+       LEFT JOIN stores s ON s.id = o.store_id
+       WHERE o.id IS NULL OR s.town = ?`
+    : scopedToStore
+      ? `LEFT JOIN orders o ON o.customer_id = c.id
+         WHERE o.id IS NULL OR o.store_id = ?`
+      : ''
+  const parameters = scopedToTown ? [town] : scopedToStore ? [admin.storeId] : []
   const customers = (await database.prepare(`
     SELECT DISTINCT c.id, c.name, c.email, c.phone, c.delivery_city AS "deliveryCity",
       c.created_at AS "createdAt", c.is_banned AS "isBanned"
@@ -2442,8 +2452,15 @@ app.patch('/api/admin/customers/:id/ban', requireAdmin, ownerOnly, async (reques
   }
   const town = selectedStoreTown(request.admin)
   if (town && !await database.prepare(`
-    SELECT 1 FROM orders o JOIN stores s ON s.id = o.store_id
-    WHERE o.customer_id = ? AND s.town = ?
+    SELECT 1 FROM customers c
+    WHERE c.id = ?
+      AND (
+        NOT EXISTS (SELECT 1 FROM orders WHERE customer_id = c.id)
+        OR EXISTS (
+          SELECT 1 FROM orders o JOIN stores s ON s.id = o.store_id
+          WHERE o.customer_id = c.id AND s.town = ?
+        )
+      )
   `).get(id, town)) {
     response.status(404).json({ error: 'Customer account not found.' })
     return

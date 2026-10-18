@@ -41,6 +41,7 @@ export function AdminFulfillmentPage() {
   const [slots, setSlots] = useState([])
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [isSavingBranches, setIsSavingBranches] = useState(false)
 
   const refresh = useCallback(async () => {
     try {
@@ -56,7 +57,10 @@ export function AdminFulfillmentPage() {
 
   async function saveZones(event) {
     event.preventDefault()
+    if (isSavingBranches) return
     setError('')
+    setMessage('')
+    setIsSavingBranches(true)
     try {
       await request('/admin/fulfillment-zones', {
         method: 'PUT',
@@ -65,6 +69,8 @@ export function AdminFulfillmentPage() {
       setMessage(t('Fulfillment zones saved.'))
     } catch (saveError) {
       setError(saveError.message)
+    } finally {
+      setIsSavingBranches(false)
     }
   }
 
@@ -120,9 +126,9 @@ export function AdminFulfillmentPage() {
                 {zone.storePhone && <p className="mt-1 text-xs font-semibold text-[#52647b]">{zone.storePhone}</p>}
               </div>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                <AdminToggle checked={zone.isActive} label={t('Active')} onChange={(isActive) => updateZone(zone.id, { isActive })} />
-                <AdminToggle checked={zone.pickupEnabled} disabled={!zone.isActive} label={t('Pickup')} onChange={(pickupEnabled) => updateZone(zone.id, { pickupEnabled })} />
-                <AdminToggle checked={zone.deliveryEnabled} disabled={!zone.isActive} label={t('Delivery')} onChange={(deliveryEnabled) => updateZone(zone.id, { deliveryEnabled })} />
+                <AdminToggle checked={zone.isActive} disabled={isSavingBranches} label={t('Active')} onChange={(isActive) => updateZone(zone.id, { isActive })} />
+                <AdminToggle checked={zone.pickupEnabled} disabled={isSavingBranches || !zone.isActive} label={t('Pickup')} onChange={(pickupEnabled) => updateZone(zone.id, { pickupEnabled })} />
+                <AdminToggle checked={zone.deliveryEnabled} disabled={isSavingBranches || !zone.isActive} label={t('Delivery')} onChange={(deliveryEnabled) => updateZone(zone.id, { deliveryEnabled })} />
                 {zone.deliveryEnabled && (
                   <label className="flex items-center gap-2 text-xs font-bold text-[#4f6379]">
                     {t('Delivery fee')}
@@ -136,8 +142,14 @@ export function AdminFulfillmentPage() {
             </li>
           ))}
         </ul>
-        <div className="flex justify-end border-t border-[#edf1f5] p-4 sm:p-5">
-          <button className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b]" type="submit">{t('Save branch availability')}</button>
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-[#edf1f5] p-4 sm:p-5">
+          {message && (
+            <p className="text-sm font-semibold text-[#1f5d3c]" role="status">{message}</p>
+          )}
+          <button className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b] disabled:opacity-70" disabled={isSavingBranches} type="submit">
+            {isSavingBranches && <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-white border-r-transparent motion-reduce:animate-none [animation-duration:2s]" />}
+            {isSavingBranches ? t('Saving…') : t('Save branch availability')}
+          </button>
         </div>
       </form>
 

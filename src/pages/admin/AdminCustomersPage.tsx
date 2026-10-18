@@ -26,6 +26,7 @@ const icons = {
   sparkle: 'M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5m7 7L18 18m0-12-2.5 2.5m-7 7L6 18',
   search: 'm20 20-4.2-4.2M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z',
   download: 'M12 4v12m0 0-5-5m5 5 5-5M5 20h14',
+  refresh: 'M20 7v5h-5M4 17v-5h5m-4.1-2a7.5 7.5 0 0 1 12.2-2.4L20 12M4 12l2.9 4.4A7.5 7.5 0 0 0 19.1 14',
   megaphone: 'M4 10v4h3l6 4V6L7 10H4Zm13-1a4 4 0 0 1 0 6',
   close: 'M6 6l12 12M18 6 6 18',
   alert: 'M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
@@ -99,6 +100,8 @@ export function AdminCustomersPage() {
   const [cityFilter, setCityFilter] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
   const [savingId, setSavingId] = useState<number | null>(null)
   const [copiedId, setCopiedId] = useState<number | null>(null)
   const [error, setError] = useState('')
@@ -118,9 +121,27 @@ export function AdminCustomersPage() {
         if (!cancelled) setError(loadError instanceof Error ? loadError.message : 'Unable to load customer accounts.')
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+          setRefreshing(false)
+        }
       })
     return () => { cancelled = true }
+  }, [refreshKey, sessionToken])
+
+  useEffect(() => {
+    function refreshWhenVisible() {
+      if (document.visibilityState === 'visible') {
+        setRefreshing(true)
+        setRefreshKey((current) => current + 1)
+      }
+    }
+    const interval = window.setInterval(refreshWhenVisible, 30_000)
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+    return () => {
+      window.clearInterval(interval)
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
+    }
   }, [sessionToken])
 
   useEffect(() => {
@@ -153,7 +174,6 @@ export function AdminCustomersPage() {
   const hasWhatsapp = (customer: CustomerAccount) => Boolean(customer.phone && whatsappNumber(customer.phone))
 
   const counts = useMemo(() => ({
-    all: customers.length,
     active: customers.filter((customer) => !customer.isBanned).length,
     banned: customers.filter((customer) => customer.isBanned).length,
     whatsapp: customers.filter((customer) => !customer.isBanned && hasWhatsapp(customer)).length,
@@ -302,7 +322,6 @@ export function AdminCustomersPage() {
   ]
 
   const metrics: { key: StatusFilter; label: string; value: number; icon: string; accent: string }[] = [
-    { key: 'all', label: 'Registered customers', value: counts.all, icon: icons.users, accent: 'bg-[#e9f1fa] text-[#315982]' },
     { key: 'active', label: 'Active accounts', value: counts.active, icon: icons.check, accent: 'bg-[#e5f4ea] text-[#2c7a4f]' },
     { key: 'new', label: 'New this month', value: counts.new, icon: icons.sparkle, accent: 'bg-[#fff4c2] text-[#8a6f00]' },
     { key: 'banned', label: 'Restricted accounts', value: counts.banned, icon: icons.ban, accent: 'bg-[#fdecea] text-[#b2433a]' },
@@ -328,6 +347,19 @@ export function AdminCustomersPage() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2.5">
+          <button
+            aria-label={t('Refresh customer accounts')}
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53] disabled:opacity-50"
+            disabled={loading || refreshing}
+            onClick={() => {
+              setRefreshing(true)
+              setRefreshKey((current) => current + 1)
+            }}
+            type="button"
+          >
+            <Icon className={refreshing ? 'size-4 animate-spin' : 'size-4'} path={icons.refresh} />
+            {t(refreshing ? 'Refreshing…' : 'Refresh')}
+          </button>
           <button
             className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53] disabled:opacity-50"
             disabled={!filteredCustomers.length}
@@ -491,7 +523,6 @@ export function AdminCustomersPage() {
                 type="button"
               >
                 {option.label}
-                <span className="rounded-full bg-[#e6ebf1] px-1.5 text-[10px] text-[#65748a]">{counts[option.key]}</span>
               </button>
             ))}
           </div>
