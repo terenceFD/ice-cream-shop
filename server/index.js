@@ -74,6 +74,8 @@ import {
   sendEventRequestNotification,
   sendEventQuote,
   sendEventDepositReceived,
+  sendCakeQuote,
+  sendCakeDepositReceived,
   sendCakeRequestNotification,
   sendContactReply,
   sendCustomerVerificationCode,
@@ -101,6 +103,8 @@ import {
   sendToCustomer,
 } from './push.js'
 import { registerEventOrderRoutes } from './event-orders.js'
+import { registerCakeQuoteRoutes } from './cake-quotes.js'
+import { isWhatsAppMessagingConfigured, sendWhatsAppText } from './whatsapp.js'
 
 // Tells the customer who placed an order about its new status on every device where they turned
 // notifications on. Runs in the background so staff never wait on it, and never throws.
@@ -465,10 +469,12 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 
   try {
     const isEventDeposit = Boolean(event.data.object?.metadata?.eventOrderId)
+    const isCakeDeposit = Boolean(event.data.object?.metadata?.cakeRequestId)
     if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
       if (isEventDeposit) await eventOrderRoutes?.onStripeDepositPaid(event.data.object)
+      else if (isCakeDeposit) await cakeQuoteRoutes?.onStripeCakeDepositPaid(event.data.object)
       else await recordPaidCheckout(event.data.object)
-    } else if (!isEventDeposit && (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed')) {
+    } else if (!isEventDeposit && !isCakeDeposit && (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed')) {
       await recordFailedCheckout(event.data.object)
     }
     response.json({ received: true })
@@ -2731,8 +2737,11 @@ async function updateOrderFulfillment(id, fulfillmentStatus, response, admin) {
 
   notifyCustomerOfOrderStatus(id, fulfillmentStatus)
   const order = await database.prepare(`
-    SELECT customer_email AS "customerEmail", customer_name AS "customerName"
-    FROM orders WHERE id = ?
+    SELECT customer_email AS "customerEmail", customer_name AS "customerName",
+      customer_phone AS "customerPhone", fulfillment_type AS "fulfillmentType",
+      s.name AS "storeName"
+    FROM orders o LEFT JOIN stores s ON s.id = o.store_id
+    WHERE o.id = ?
   `).get(id)
   try {
     await sendOrderStatusUpdate({
@@ -2743,6 +2752,27 @@ async function updateOrderFulfillment(id, fulfillmentStatus, response, admin) {
     })
   } catch (error) {
     console.error(`Unable to send fulfillment update for order #${id}:`, error.message)
+  }
+  if (isWhatsAppMessagingConfigured() && order.customerPhone) {
+    const name = (order.customerName || '').split(/\s+/)[0] || 'there'
+    const pickup = order.fulfillmentType === 'pickup'
+    const step = {
+      accepted: `your order #${id} has been accepted and the store will start on it shortly.`,
+      preparing: `your order #${id} is being prepared right now.`,
+      ready: pickup
+        ? `your order #${id} is ready for pickup${order.storeName ? ` at ${order.storeName}` : ''}.`
+        : `your order #${id} is packed and waiting for the rider.`,
+      out_for_delivery: `your order #${id} is out for delivery. Please keep your phone close.`,
+      delivered: `your order #${id} has been delivered. Enjoy, and thank you for choosing us!`,
+    }[fulfillmentStatus]
+    if (step) {
+      sendWhatsAppText({
+        to: order.customerPhone,
+        text: `Hello ${name}, this is Cold Stone Creamery: ${step}`,
+      }).catch((error) => {
+        console.error(`Unable to send WhatsApp update for order #${id}:`, error.message)
+      })
+    }
   }
   response.json({ fulfillmentStatus: result.fulfillmentStatus, deliveryStage: result.deliveryStage })
 }
@@ -3049,6 +3079,25 @@ const eventOrderRoutes = registerEventOrderRoutes(app, {
     sendEventRequestNotification,
     sendEventQuote,
     sendEventDepositReceived,
+  },
+})
+
+const cakeQuoteRoutes = registerCakeQuoteRoutes(app, {
+  database,
+  requireCustomer,
+  requireAdmin,
+  getStripe,
+  isCamPayMobileMoneyEnabled,
+  createCamPayPaymentLink,
+  getCamPayTransaction,
+  normalizeCameroonPhone,
+  publicSiteUrl,
+  selectedStoreTown,
+  describeEmailError,
+  email: {
+    isConfigured: isEmailDeliveryConfigured,
+    sendCakeQuote,
+    sendCakeDepositReceived,
   },
 })
 

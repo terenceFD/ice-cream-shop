@@ -4,15 +4,14 @@ import { useLanguage } from '../../language/useLanguage'
 import { useAdminAuth } from './useAdminAuth'
 
 const STATUSES = ['new', 'contacted', 'confirmed', 'declined']
-const NEXT_STATUS = { new: 'contacted', contacted: 'confirmed' }
 const inputClassName =
   'w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
 const WHATSAPP_PATH = 'M12.04 2a9.9 9.9 0 0 0-8.49 15l-1.3 4.75 4.86-1.27A9.96 9.96 0 1 0 12.04 2Zm0 18.1a8.1 8.1 0 0 1-4.13-1.13l-.3-.18-2.88.75.77-2.8-.2-.3A8.12 8.12 0 1 1 12.04 20.1Zm4.45-6.08c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.1-.49.1-.1.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.47-.4-.4-.54-.4h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.5.58.18 1.1.15 1.51.09.46-.07 1.43-.59 1.63-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28Z'
 
 const statusMeta = {
-  new: { label: 'new', badge: 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]', dot: 'bg-[#e0a100]', column: 'bg-[#fffaf0]', icon: 'M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5m7 7L18 18m0-12-2.5 2.5m-7 7L6 18' },
-  contacted: { label: 'contacted', badge: 'bg-[#e9f1fa] text-[#245281] ring-[#cfe0f2]', dot: 'bg-[#3b7dd8]', column: 'bg-[#f5f9fd]', icon: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z' },
-  confirmed: { label: 'confirmed', badge: 'bg-[#eaf6ee] text-[#246a46] ring-[#cfe8d8]', dot: 'bg-[#35a36b]', column: 'bg-[#f4fbf6]', icon: 'm5 12.5 4.5 4.5L19 7.5' },
+  new: { label: 'New request', badge: 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]', dot: 'bg-[#e0a100]', column: 'bg-[#fffaf0]', icon: 'M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5m7 7L18 18m0-12-2.5 2.5m-7 7L6 18' },
+  contacted: { label: 'Quote sent', badge: 'bg-[#e9f1fa] text-[#245281] ring-[#cfe0f2]', dot: 'bg-[#3b7dd8]', column: 'bg-[#f5f9fd]', icon: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z' },
+  confirmed: { label: 'Deposit paid', badge: 'bg-[#eaf6ee] text-[#246a46] ring-[#cfe8d8]', dot: 'bg-[#35a36b]', column: 'bg-[#f4fbf6]', icon: 'm5 12.5 4.5 4.5L19 7.5' },
   declined: { label: 'declined', badge: 'bg-[#fdeeee] text-[#a53f37] ring-[#f3d1ce]', dot: 'bg-[#d2544b]', column: 'bg-[#fcf6f6]', icon: 'M6 6l12 12M18 6 6 18' },
 }
 
@@ -94,6 +93,11 @@ export function AdminCakeRequestsBoard() {
   const [view, setView] = useState('board')
   const [updatingId, setUpdatingId] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
+  const [quotedTotal, setQuotedTotal] = useState('')
+  const [depositAmount, setDepositAmount] = useState('')
+  const [adminNote, setAdminNote] = useState('')
+  const [pickupDate, setPickupDate] = useState('')
+  const [quoteError, setQuoteError] = useState('')
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true)
@@ -114,6 +118,16 @@ export function AdminCakeRequestsBoard() {
   const selected = requests.find((item) => item.id === selectedId) || null
 
   useEffect(() => {
+    if (!selected) return
+    const total = selected.quotedTotal || selected.suggestedTotal || 22000
+    setQuotedTotal(String(total))
+    setDepositAmount(String(selected.depositAmount || Math.min(total, Math.ceil((total * 0.3) / 100) * 100)))
+    setAdminNote(selected.adminNote || '')
+    setPickupDate(selected.pickupDate || '')
+    setQuoteError('')
+  }, [selected?.id])
+
+  useEffect(() => {
     if (!selected) return undefined
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -126,6 +140,23 @@ export function AdminCakeRequestsBoard() {
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [selected])
+
+  async function sendQuote() {
+    if (!selected) return
+    setQuoteError('')
+    setUpdatingId(selected.id)
+    try {
+      const result = await request(`/admin/cake-requests/${selected.id}`, {
+        method: 'PATCH',
+        body: { action: 'quote', quotedTotal: Number(quotedTotal), depositAmount: Number(depositAmount), adminNote, pickupDate },
+      })
+      setRequests((current) => current.map((item) => (item.id === selected.id ? { ...item, ...result.request } : item)))
+    } catch (updateError) {
+      setQuoteError(updateError.message)
+    } finally {
+      setUpdatingId(null)
+    }
+  }
 
   async function updateStatus(id, status) {
     setError('')
@@ -182,25 +213,32 @@ export function AdminCakeRequestsBoard() {
 
   const metrics = [
     { key: 'new', label: 'New requests', value: counts.new },
-    { key: 'contacted', label: 'contacted', value: counts.contacted },
-    { key: 'confirmed', label: 'confirmed', value: counts.confirmed },
+    { key: 'contacted', label: 'Quote sent', value: counts.contacted },
+    { key: 'confirmed', label: 'Deposit paid', value: counts.confirmed },
     { key: 'due', label: 'Due within 7 days', value: counts.due },
   ]
 
-  const nextButton = (item, compact = false) => {
-    const next = NEXT_STATUS[item.status]
-    if (!next) return null
-    return (
-      <button
-        className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg font-bold transition disabled:cursor-wait disabled:opacity-60 ${compact ? 'min-h-8 bg-[#092a53] px-2.5 text-[11px] text-white hover:bg-[#163e6b]' : 'min-h-10 bg-[#092a53] px-4 text-sm text-white hover:bg-[#163e6b]'}`}
-        disabled={updatingId === item.id}
-        onClick={(event) => { event.stopPropagation(); updateStatus(item.id, next) }}
-        type="button"
-      >
-        <Icon className="size-3.5" path={statusMeta[next].icon} />
-        {updatingId === item.id ? t('Updating…') : t(next === 'contacted' ? 'Mark contacted' : 'Confirm order')}
-      </button>
-    )
+  async function sendQuote() {
+    if (!selected) return
+    setUpdatingId(selected.id)
+    setQuoteError('')
+    try {
+      const result = await request(`/admin/cake-requests/${selected.id}`, {
+        method: 'PATCH',
+        body: {
+          action: 'quote',
+          quotedTotal: Number(quotedTotal),
+          depositAmount: Number(depositAmount),
+          adminNote,
+          pickupDate,
+        },
+      })
+      setRequests((current) => current.map((item) => (item.id === selected.id ? { ...item, ...result.request } : item)))
+    } catch (error) {
+      setQuoteError(error.message)
+    } finally {
+      setUpdatingId(null)
+    }
   }
 
   const requestCard = (item) => {
@@ -233,7 +271,11 @@ export function AdminCakeRequestsBoard() {
           )}
           <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#f0f3f7] pt-3">
             <p className="min-w-0 truncate text-xs font-bold text-[#355777]">{item.customerName}</p>
-            {nextButton(item, true)}
+            {item.quotedTotal ? (
+              <span className="text-[11px] font-extrabold text-[#092a53]">{Number(item.quotedTotal).toLocaleString(locale)} FCFA</span>
+            ) : ['new', 'contacted'].includes(item.status) ? (
+              <span className="text-[11px] font-bold text-[#8a7000]">{t('Send quote')}</span>
+            ) : null}
           </div>
         </article>
       </li>
@@ -441,7 +483,6 @@ export function AdminCakeRequestsBoard() {
                       <td className="px-3 py-3.5"><StatusBadge status={item.status} t={t} /></td>
                       <td className="px-5 py-3.5 text-right" onClick={(event) => event.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1.5">
-                          {nextButton(item, true)}
                           <button aria-label={t('View details')} className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53]" onClick={() => setSelectedId(item.id)} type="button">
                             <Icon path={icons.chevron} />
                           </button>
@@ -534,6 +575,36 @@ export function AdminCakeRequestsBoard() {
                 </div>
               </section>
 
+              {['new', 'contacted'].includes(selected.status) && (
+                <section className="rounded-2xl bg-[#f7f9fc] p-4 ring-1 ring-[#e8edf3]">
+                  <h3 className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Quote and deposit')}</h3>
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <label className="text-[11px] font-bold text-[#52647b]">
+                      {t('Total (FCFA)')}
+                      <input className={`${inputClassName} mt-1`} inputMode="numeric" onChange={(event) => setQuotedTotal(event.target.value)} type="number" value={quotedTotal} />
+                    </label>
+                    <label className="text-[11px] font-bold text-[#52647b]">
+                      {t('Deposit (FCFA)')}
+                      <input className={`${inputClassName} mt-1`} inputMode="numeric" onChange={(event) => setDepositAmount(event.target.value)} type="number" value={depositAmount} />
+                    </label>
+                    <label className="col-span-2 text-[11px] font-bold text-[#52647b]">
+                      {t('Pickup date')}
+                      <input className={`${inputClassName} mt-1`} onChange={(event) => setPickupDate(event.target.value)} type="date" value={pickupDate} />
+                    </label>
+                    <label className="col-span-2 text-[11px] font-bold text-[#52647b]">
+                      {t('Note to the customer')}
+                      <textarea className={`${inputClassName} mt-1 min-h-20`} onChange={(event) => setAdminNote(event.target.value)} value={adminNote} />
+                    </label>
+                  </div>
+                  {quoteError && <p className="mt-2 text-sm font-semibold text-[#a53f37]" role="alert">{quoteError}</p>}
+                </section>
+              )}
+              {selected.quotedTotal && selected.status !== 'new' && (
+                <p className="rounded-2xl bg-[#eaf6ee] px-4 py-3 text-sm font-bold text-[#246a46]">
+                  {t('Quote')}: {Number(selected.quotedTotal).toLocaleString(locale)} FCFA · {t('Deposit')}: {Number(selected.depositAmount || 0).toLocaleString(locale)} FCFA
+                  {selected.depositPaidAt ? ` · ${t('Deposit paid')}` : ''}
+                </p>
+              )}
               {selected.message && (
                 <section className="rounded-2xl border-l-4 border-[#ffdc32] bg-[#fffbea] p-4">
                   <h3 className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#927700]">
@@ -584,7 +655,16 @@ export function AdminCakeRequestsBoard() {
                 </button>
               )}
               <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] hover:text-[#092a53]" onClick={() => setSelectedId(null)} type="button">{t('Close')}</button>
-              {nextButton(selected)}
+              {['new', 'contacted'].includes(selected.status) && (
+                <button
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-60"
+                  disabled={updatingId === selected.id}
+                  onClick={sendQuote}
+                  type="button"
+                >
+                  {updatingId === selected.id ? t('Sending…') : selected.quotedTotal ? t('Update quote') : t('Send quote')}
+                </button>
+              )}
             </footer>
           </section>
         </div>

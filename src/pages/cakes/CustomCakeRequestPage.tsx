@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { photoSrcSet } from '../../lib/thumbnails'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { apiRequest, getCustomerToken } from '../../api/api'
 import { useAuth } from '../../context/useAuth'
 import { ArrowIcon, Footer, Header } from '../../components/Layout'
@@ -9,9 +9,34 @@ import { getCameroonDate } from '../../../shared/cameroonDate'
 
 const toppingOptions = ['Sprinkles', 'Chocolate chips', 'Fresh fruit', 'Cookie pieces', 'Whipped cream']
 
+type CakeQuote = {
+  id: number
+  size: string
+  flavor: string
+  pickupDate: string
+  storeName: string | null
+  status: string
+  quotedTotal: number | null
+  depositAmount: number | null
+  adminNote: string
+  payToken?: string | null
+}
+
+const CAKE_STATUS: Record<string, string> = {
+  new: 'Waiting for the store’s quote',
+  contacted: 'Quote ready: pay the deposit',
+  confirmed: 'Deposit paid',
+  declined: 'Declined',
+}
+
+function formatXaf(amount: number, language: string) {
+  return `${new Intl.NumberFormat(language === 'fr' ? 'fr-CM' : 'en-US').format(Math.round(amount || 0))} FCFA`
+}
+
 export function CustomCakeRequestPage() {
   const { customer } = useAuth()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -25,6 +50,13 @@ export function CustomCakeRequestPage() {
   const [flavor, setFlavor] = useState('Vanilla')
   const [pickupDate, setPickupDate] = useState('')
   const [messageLength, setMessageLength] = useState(0)
+  const [quotes, setQuotes] = useState<CakeQuote[]>([])
+  const [payTokenRequest, setPayTokenRequest] = useState<CakeQuote | null>(null)
+  const [methods, setMethods] = useState({ card: false, campayMobileMoney: false })
+  const [payMethod, setPayMethod] = useState<'card' | 'campay'>('card')
+  const [payPhone, setPayPhone] = useState('')
+  const [payingId, setPayingId] = useState<number | null>(null)
+  const [payError, setPayError] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -40,6 +72,70 @@ export function CustomCakeRequestPage() {
       })
     return () => { cancelled = true }
   }, [])
+
+  useEffect(() => {
+    apiRequest<{ methods: { card: boolean; campayMobileMoney: boolean } }>('/payment/methods')
+      .then((result) => {
+        setMethods(result.methods)
+        setPayMethod(result.methods.card ? 'card' : 'campay')
+      })
+      .catch(() => {})
+  }, [])
+
+  function loadQuotes() {
+    if (!customer) {
+      setQuotes([])
+      return
+    }
+    apiRequest<{ requests: CakeQuote[] }>('/customer/cake-requests', { token: getCustomerToken() || undefined })
+      .then((result) => setQuotes(result.requests || []))
+      .catch(() => setQuotes([]))
+  }
+
+  useEffect(() => { loadQuotes() }, [customer?.id])
+
+  useEffect(() => {
+    const token = searchParams.get('pay')
+    if (!token) {
+      setPayTokenRequest(null)
+      return
+    }
+    apiRequest<{ request: CakeQuote }>(`/cake-requests/quote/${encodeURIComponent(token)}`)
+      .then((result) => setPayTokenRequest(result.request))
+      .catch(() => setPayTokenRequest(null))
+    const sessionId = searchParams.get('session_id')
+    if (sessionId) {
+      apiRequest(`/cake-requests/quote/${encodeURIComponent(token)}/deposit/confirm`, {
+        method: 'POST',
+        body: { sessionId },
+      }).then(() => {
+        loadQuotes()
+        const next = new URLSearchParams(searchParams)
+        next.delete('session_id')
+        setSearchParams(next, { replace: true })
+      }).catch(() => {})
+    }
+  }, [searchParams])
+
+  async function payDeposit(quote: CakeQuote, token?: string) {
+    setPayError('')
+    setPayingId(quote.id)
+    try {
+      const path = token
+        ? `/cake-requests/quote/${encodeURIComponent(token)}/deposit`
+        : `/customer/cake-requests/${quote.id}/deposit`
+      const result = await apiRequest<{ url: string }>(path, {
+        method: 'POST',
+        token: token ? undefined : getCustomerToken() || undefined,
+        body: { method: payMethod, phone: payPhone },
+      })
+      if (result.url) window.location.assign(result.url)
+    } catch (error) {
+      setPayError(error instanceof Error ? error.message : 'The deposit payment could not be started.')
+    } finally {
+      setPayingId(null)
+    }
+  }
 
   async function submitRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -399,7 +495,7 @@ export function CustomCakeRequestPage() {
                 {[
                   { title: 'Tell us what you love', detail: 'Choose a size, flavor and toppings.' },
                   { title: 'Pick a store and date', detail: 'Select a pickup location and preferred day.' },
-                  { title: 'We’ll confirm the details', detail: 'The store will contact you before your request is confirmed.' },
+                  { title: 'Pay the deposit to book it', detail: 'The store sends a quote. Pay the deposit to hold the cake and pickup date.' },
                 ].map((step, index) => (
                   <li className="flex gap-3" key={step.title}>
                     <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#fbf6e3] font-display text-xs font-extrabold tabular-nums text-[#8a7000]">{String(index + 1).padStart(2, '0')}</span>
@@ -415,11 +511,58 @@ export function CustomCakeRequestPage() {
                 <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 font-display text-xs font-extrabold text-[#806a00]">i</span>
                 <div className="text-xs leading-5 text-[#624f00]">
                   <p className="font-extrabold">{t('Please note')}</p>
-                  <p className="mt-0.5">{t('Sending this form is a request only. Your order is not confirmed until the store contacts you.')}</p>
+                  <p className="mt-0.5">{t('Sending this form is a request. The store will send a quote. The cake is booked when you pay the deposit.')}</p>
                 </div>
               </div>
             </aside>
           </div>
+
+          {(payTokenRequest || quotes.length > 0) && (
+            <div className="mx-auto mt-4 max-w-[1320px] px-5 pb-16 sm:px-8 lg:px-12">
+              <h2 className="font-display text-2xl font-extrabold text-[#092a53]">{t('Your cake quotes')}</h2>
+              <ul className="mt-5 grid gap-4 md:grid-cols-2">
+                {(payTokenRequest ? [payTokenRequest, ...quotes.filter((quote) => quote.id !== payTokenRequest.id)] : quotes).map((quote) => (
+                  <li className="rounded-[24px] bg-white p-5 ring-1 ring-[#ebe7dc]" key={quote.id}>
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">#{quote.id}</p>
+                    <h3 className="mt-1 font-display text-lg font-extrabold text-[#092a53]">{t(quote.size)} {t(quote.flavor)}</h3>
+                    <p className="mt-1 text-sm text-[#65748a]">{t('Pickup date')}: {formatDate(quote.pickupDate)}{quote.storeName ? ` · ${t(quote.storeName)}` : ''}</p>
+                    <p className="mt-3 inline-flex rounded-full bg-[#f3f6fa] px-2.5 py-1 text-xs font-bold text-[#315982]">{t(CAKE_STATUS[quote.status] || quote.status)}</p>
+                    {quote.quotedTotal && (
+                      <p className="mt-3 text-sm font-extrabold text-[#092a53]">
+                        {t('Total')}: {formatXaf(quote.quotedTotal, language)}
+                        {quote.depositAmount ? ` · ${t('Deposit')}: ${formatXaf(quote.depositAmount, language)}` : ''}
+                      </p>
+                    )}
+                    {quote.adminNote && <p className="mt-2 text-sm leading-6 text-[#5c4a00]">{quote.adminNote}</p>}
+                    {quote.status === 'contacted' && quote.depositAmount && (
+                      <div className="mt-4">
+                        <div className="grid grid-cols-2 gap-2">
+                          {methods.card && (
+                            <button className={`rounded-2xl px-4 py-3 text-sm font-extrabold ${payMethod === 'card' ? 'bg-[#092a53] text-white' : 'bg-[#f6f3ea] text-[#092a53]'}`} onClick={() => setPayMethod('card')} type="button">{t('Card')}</button>
+                          )}
+                          {methods.campayMobileMoney && (
+                            <button className={`rounded-2xl px-4 py-3 text-sm font-extrabold ${payMethod === 'campay' ? 'bg-[#092a53] text-white' : 'bg-[#f6f3ea] text-[#092a53]'}`} onClick={() => setPayMethod('campay')} type="button">{t('Mobile Money')}</button>
+                          )}
+                        </div>
+                        {payMethod === 'campay' && (
+                          <input className="mt-3 w-full rounded-2xl bg-white px-4 py-3 text-sm ring-1 ring-[#e5e1d7]" onChange={(event) => setPayPhone(event.target.value)} placeholder="6XX XX XX XX" type="tel" value={payPhone} />
+                        )}
+                        {payError && payingId === quote.id && <p className="mt-2 text-sm font-semibold text-red-700">{payError}</p>}
+                        <button
+                          className="mt-3 w-full rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] disabled:opacity-60"
+                          disabled={payingId === quote.id}
+                          onClick={() => payDeposit(quote, searchParams.get('pay') || quote.payToken || undefined)}
+                          type="button"
+                        >
+                          {payingId === quote.id ? t('Opening payment…') : t('Pay {amount} deposit', { amount: formatXaf(quote.depositAmount, language) })}
+                        </button>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       </main>
       <Footer />

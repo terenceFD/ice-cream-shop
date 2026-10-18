@@ -4,14 +4,15 @@
 import { COMPACT_HERO_MEDIA, FLAVOR_PHOTO_SIZES, HERO_PHOTO_SIZES, HOME_SLIDE_SIZES } from '../../shared/photoSizes.js'
 
 export const SITE_NAME = 'Cold Stone Creamery Cameroon'
+export const HOME_TITLE = 'Cold Stone Creamery Cameroon | Ice Cream in Douala & Yaoundé'
 export const DEFAULT_DESCRIPTION =
-  'Cold Stone Creamery Cameroon: ice cream mixed to order, signature creations, ice cream cakes and shakes. Order online for pickup or delivery in Douala and Yaoundé.'
+  'Cold Stone Creamery Cameroon: ice cream mixed to order, signature creations, cakes and shakes. Order online for pickup or delivery in Douala and Yaoundé.'
 export const DEFAULT_IMAGE = '/images/og-image.jpg'
 
 /** Pages search engines should list. */
 export const PUBLIC_PAGES = {
   '/': {
-    title: SITE_NAME,
+    title: HOME_TITLE,
     description: DEFAULT_DESCRIPTION,
     // First slide of the home page slider (HomePage.jsx).
     photo: { src: '/ice-images/ice-9.jpg', sizes: HOME_SLIDE_SIZES },
@@ -73,7 +74,7 @@ const PRIVATE_PREFIXES = ['/admin']
 export const FLAVOR_PATH = /^\/flavor\/(\d+)\/?$/
 
 export function pageTitle(title) {
-  return title === SITE_NAME ? title : `${title} | ${SITE_NAME}`
+  return title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`
 }
 
 function normalize(pathname) {

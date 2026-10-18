@@ -555,6 +555,14 @@ if (configuredDatabaseBackend === "postgres") {
   `);
 
   addColumnIfMissing("event_orders", "deposit_admin_seen", "INTEGER NOT NULL DEFAULT 1");
+  addColumnIfMissing("cake_requests", "quoted_total", "INTEGER");
+  addColumnIfMissing("cake_requests", "deposit_amount", "INTEGER");
+  addColumnIfMissing("cake_requests", "admin_note", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing("cake_requests", "pay_token", "TEXT");
+  addColumnIfMissing("cake_requests", "deposit_provider", "TEXT");
+  addColumnIfMissing("cake_requests", "deposit_reference", "TEXT");
+  addColumnIfMissing("cake_requests", "deposit_external_reference", "TEXT");
+  addColumnIfMissing("cake_requests", "deposit_paid_at", "TEXT");
   addColumnIfMissing("customers", "profile_picture", "TEXT NOT NULL DEFAULT ''");
   addColumnIfMissing("orders", "review_reminder_sent_at", "TEXT");
   addColumnIfMissing("customers", "welcome_notification_sent_at", "TEXT");
@@ -878,6 +886,14 @@ export async function verifyDatabaseSchema() {
   await database.prepare(`
     ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
   `).run();
+  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS quoted_total INTEGER`).run();
+  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_amount INTEGER`).run();
+  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS admin_note TEXT NOT NULL DEFAULT ''`).run();
+  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS pay_token TEXT`).run();
+  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_provider TEXT`).run();
+  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_reference TEXT`).run();
+  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_external_reference TEXT`).run();
+  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_paid_at TEXT`).run();
   await database.prepare(`
     ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
   `).run();
@@ -2096,14 +2112,22 @@ export async function listCakeRequests(storeId = null, storeTown = null) {
   const storeFilter = `${storeTown === null ? '' : 'WHERE s.town = ?'}${storeId === null ? '' : `${storeTown === null ? 'WHERE' : 'AND'} r.store_id = ?`}`
   const parameters = [...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
   const requests = await database.prepare(`
-    SELECT r.id, r.customer_name AS "customerName", r.customer_email AS "customerEmail",
+    SELECT r.id, r.customer_id AS "customerId", r.customer_name AS "customerName", r.customer_email AS "customerEmail",
       r.customer_phone AS "customerPhone", r.size, r.flavor, r.message, r.toppings,
       r.pickup_date AS "pickupDate", r.status, r.store_id AS "storeId",
-      s.name AS "storeName", r.created_at AS "createdAt"
+      s.name AS "storeName", r.created_at AS "createdAt",
+      r.quoted_total AS "quotedTotal", r.deposit_amount AS "depositAmount",
+      r.admin_note AS "adminNote", r.deposit_paid_at AS "depositPaidAt"
     FROM cake_requests r LEFT JOIN stores s ON s.id = r.store_id
     ${storeFilter} ORDER BY r.id DESC LIMIT 200
   `).all(...parameters)
-  return requests.map((request) => ({ ...request, toppings: JSON.parse(request.toppings) }))
+  return requests.map((request) => ({
+    ...request,
+    toppings: JSON.parse(request.toppings),
+    quotedTotal: request.quotedTotal == null ? null : Number(request.quotedTotal),
+    depositAmount: request.depositAmount == null ? null : Number(request.depositAmount),
+    suggestedTotal: ({ Small: 18000, Medium: 22000, Large: 25000 })[request.size] || 22000,
+  }))
 }
 
 export async function setCakeRequestStatus(id, status, storeId = null, storeTown = null) {

@@ -17,7 +17,8 @@ Research references:
 - Browse the menu and shop catalog with search, category, dietary, availability ("In stock only") and maximum-price filters, and sort by price or name. On phones the filters fold away behind a **Filters** button. **All menu** (`/menu/all`) shows every product on one page, and products added in admin appear there and on **Flavors** automatically.
 - Add any quantity of a product or flavor to the bag from its page and keep shopping.
 - Order online for pickup or delivery from a chosen store, and pay by card (Stripe) or Mobile Money (CamPay).
-- Customer accounts: order history with live progress, saved delivery details, favorites, one-tap reorder, loyalty points, and reviews of purchased items.
+- Customer accounts are created after email verification; no order is required for an account to be active. Sign-in is remembered across page refreshes and browser restarts, with sessions expiring after 8 hours.
+- Customer account features include order history with live progress, saved delivery details, favorites, one-tap reorder, loyalty points, and reviews of purchased items.
 - **Notifications on their device** (with the site's logo and name): order updates (confirmed, being prepared, out for delivery, delivered) and new promotions. Customers turn them on from a small invitation, the account page, or the payment confirmation page.
 - **Review reminder** a day after delivery, by notification and email, linking straight to that order's review form.
 - **Parties & events** (`/events`): request a bulk order for a birthday, office event or wedding, get a quote from the store, and pay a 30% deposit online.
@@ -233,6 +234,8 @@ The dashboard pages share a few building blocks in `src/pages/admin/`:
 **Adding an admin action:** when you add a new `POST`, `PUT`, `PATCH` or `DELETE` route under `/api/admin`, add its sentence to `describeAdminActivity.js`. `scripts/admin-activity.test.js` fails if any admin route is missing one, so it never shows up in the log as "Made a change".
 
 On phones, the stat cards at the top of each page become one row that scrolls sideways (the `.admin-stats` class in `src/index.css`), so the page's list starts on the first screen. The admin profile picture is changed from the account menu at the top right.
+
+The **Customer accounts** directory lists verified accounts even when they have not placed an order. Owners see customers across all branches regardless of the selected branch filter; branch admins see customers with no orders yet and customers whose orders belong to their assigned town; store admins see customers with no orders yet and customers whose orders belong to their assigned store. The list refreshes when the page becomes visible, every 30 seconds while open, and from its **Refresh** button.
 
 ## Settings reference
 

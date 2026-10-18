@@ -12,6 +12,7 @@ import { photoSrcSet } from '../shared/photoSizes.js'
 
 // index.html marks the default head tags with <!--seo--> … <!--/seo--> so each page can swap in its own.
 const SEO_BLOCK = /<!--seo-->[\s\S]*?<!--\/seo-->/
+const SEO_BODY = /<!--seo-body-->[\s\S]*?<!--\/seo-body-->/
 const FLAVOR_CACHE_MS = 60_000
 const PRIVATE_DISALLOW = ['/admin', '/account', '/cart', '/checkout', '/payment', '/api/']
 
@@ -70,6 +71,24 @@ function headTags(meta, base, structuredData) {
     ...structuredData.map(jsonLd),
   ]
   return tags.filter(Boolean).join('\n    ')
+}
+
+function pageBodySnapshot(meta) {
+  if (!meta.found || !meta.index) return '<!--seo-body--><!--/seo-body-->'
+  if (meta.path === '/') return null
+  return `<!--seo-body-->
+    <section id="seo-snapshot">
+      <h1>${escapeHtml(pageTitle(meta.title))}</h1>
+      <p>${escapeHtml(meta.description)}</p>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/menu">Menu</a>
+        <a href="/locations">Locations</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+      </nav>
+    </section>
+    <!--/seo-body-->`
 }
 
 // The promotion bar sits above the header. Sending the active promotion with the page lets the
@@ -170,6 +189,8 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
       let page = SEO_BLOCK.test(html)
         ? html.replace(SEO_BLOCK, tags)
         : html.replace(/<title>[\s\S]*?<\/title>/, '').replace('</head>', `  ${tags}\n  </head>`)
+      const bodySnapshot = pageBodySnapshot(meta)
+      if (bodySnapshot !== null) page = page.replace(SEO_BODY, bodySnapshot)
       // Admin pages have no promotion bar. When the database cannot answer, the app asks the API as before.
       const promotion = request.path.startsWith('/admin') ? undefined : await getPromotion()
       if (promotion !== undefined) page = page.replace('</head>', `  ${promotionDataTag(promotion)}\n  </head>`)

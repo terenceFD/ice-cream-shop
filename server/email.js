@@ -291,6 +291,52 @@ export async function sendEventDepositReceived({ recipients, order, adminUrl }) 
   })
 }
 
+export async function sendCakeQuote({ to, request, payUrl }) {
+  const { transporter, from } = createTransporter()
+  await transporter.sendMail({
+    from,
+    to,
+    subject: `Your Cold Stone Creamery cake quote #${request.id}`,
+    text: [
+      `Hello ${request.customerName},`,
+      '',
+      'Here is the quote for your custom cake request.',
+      '',
+      `Cake: ${request.size} ${request.flavor}`,
+      `Pickup: ${request.pickupDate}${request.storeName ? ` at ${request.storeName}` : ''}`,
+      `Total: ${formatXaf(request.quotedTotal)}`,
+      `Deposit to book the cake: ${formatXaf(request.depositAmount)}`,
+      ...(request.adminNote ? ['', `Note from the store: ${request.adminNote}`] : []),
+      '',
+      `Pay the deposit to confirm: ${payUrl}`,
+      '',
+      'The rest is paid when you pick up the cake.',
+      '',
+      'Thank you,',
+      'Cold Stone Creamery',
+    ].join('\n'),
+  })
+}
+
+export async function sendCakeDepositReceived({ recipients, request, adminUrl }) {
+  if (!recipients.length) return
+  const { transporter, from } = createTransporter()
+  await transporter.sendMail({
+    from,
+    to: recipients,
+    subject: `Deposit received for cake request #${request.id}`,
+    text: [
+      `${request.customerName} paid the ${formatXaf(request.depositAmount)} deposit for cake request #${request.id}.`,
+      '',
+      `Cake: ${request.size} ${request.flavor}`,
+      `Pickup: ${request.pickupDate}${request.storeName ? ` at ${request.storeName}` : ''}`,
+      `Total agreed: ${formatXaf(request.quotedTotal)}`,
+      '',
+      `Open the request: ${adminUrl}`,
+    ].join('\n'),
+  })
+}
+
 export async function sendCakeRequestNotification({
   recipients,
   requestId,

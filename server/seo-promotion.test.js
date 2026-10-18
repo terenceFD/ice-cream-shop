@@ -42,3 +42,17 @@ test('a database error leaves the promotion to the app instead of failing the pa
   assert.doesNotMatch(page, /initial-promotion/)
   assert.match(page, /<div id="root">/)
 })
+
+test('the home page keeps a crawler snapshot, and other public pages get their own heading', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'seo-body-'))
+  const templatePath = path.join(directory, 'index.html')
+  fs.writeFileSync(templatePath, `${TEMPLATE.slice(0, TEMPLATE.indexOf('</body>'))}<!--seo-body--><section id="seo-snapshot"><h1>Cold Stone Creamery Cameroon</h1><a href="/menu">Menu</a></section><!--/seo-body--></body></html>`)
+  const seo = createSeo({ templatePath, listFlavors: async () => [], getActivePromotion: async () => null })
+  const home = await render(seo, '/')
+  assert.match(home, /<h1>Cold Stone Creamery Cameroon<\/h1>/)
+  assert.match(home, /href="\/menu"/)
+  const menu = await render(seo, '/menu')
+  assert.match(menu, /<h1>Menu &amp; treats \| Cold Stone Creamery Cameroon<\/h1>/)
+  assert.match(menu, /href="\/locations"/)
+  assert.doesNotMatch(menu, /<h1>Cold Stone Creamery Cameroon<\/h1>/)
+})
