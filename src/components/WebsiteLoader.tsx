@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useLanguage } from '../language/useLanguage'
 
-// It leaves as soon as the page's content is drawn (not after every image has loaded), staying
-// just long enough not to flash. MAX_VISIBLE_MS is a safety net if a page never draws <main>.
-const MIN_VISIBLE_MS = 350
+// The opening screen only appears when the page is actually still drawing. A visit that is
+// ready straight away never sees it, so it does not sit on top of a page that has already loaded.
+// MAX_VISIBLE_MS is a safety net if a page never draws <main>.
+const SHOW_DELAY_MS = 160
+const MIN_VISIBLE_MS = 280
 const MAX_VISIBLE_MS = 2500
-const EXIT_MS = 650
+const EXIT_MS = 380
 
 // Opening screen in the style of the navy page headers (PageHero): soft blue glows, dot
 // pattern, the ✦ eyebrow pill, a dashed ring around the logo, and the yellow hand-drawn
@@ -14,21 +16,34 @@ const EXIT_MS = 650
 export function WebsiteLoader() {
   const { t } = useLanguage()
   const [isLeaving, setIsLeaving] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    const startedAt = performance.now()
+    let shownAt = 0
+    let stopped = false
+    let showTimer = 0
     let exitTimer = 0
     let removeTimer = 0
     let frame = 0
 
     const leave = () => {
-      if (exitTimer) return
-      const wait = Math.max(0, MIN_VISIBLE_MS - (performance.now() - startedAt))
+      if (stopped || exitTimer) return
+      // Ready before the screen was worth showing: keep the page clear.
+      if (!shownAt) {
+        stopped = true
+        return
+      }
+      const wait = Math.max(0, MIN_VISIBLE_MS - (performance.now() - shownAt))
       exitTimer = window.setTimeout(() => {
         setIsLeaving(true)
         removeTimer = window.setTimeout(() => setIsVisible(false), EXIT_MS)
       }, wait)
+    }
+
+    const reveal = () => {
+      if (stopped || shownAt) return
+      shownAt = performance.now()
+      setIsVisible(true)
     }
 
     // Pages are loaded on demand, so their <main> appears a moment after the app starts.
@@ -36,11 +51,16 @@ export function WebsiteLoader() {
       if (document.querySelector('main')) leave()
       else frame = window.requestAnimationFrame(waitForContent)
     }
+    showTimer = window.setTimeout(reveal, SHOW_DELAY_MS)
     waitForContent()
-    const safetyTimer = window.setTimeout(leave, MAX_VISIBLE_MS)
+    const safetyTimer = window.setTimeout(() => {
+      reveal()
+      leave()
+    }, MAX_VISIBLE_MS)
 
     return () => {
       window.cancelAnimationFrame(frame)
+      window.clearTimeout(showTimer)
       window.clearTimeout(safetyTimer)
       window.clearTimeout(exitTimer)
       window.clearTimeout(removeTimer)

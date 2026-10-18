@@ -370,6 +370,7 @@ export function HomePage() {
   const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
   const addedTimer = useRef(undefined);
   const reviewsSentinel = useRef(null);
+  const popularSection = useRef(null);
   const [promoBarVisible, setPromoBarVisible] = useState(promoBarIsVisible);
 
   useEffect(() => {
@@ -400,10 +401,14 @@ export function HomePage() {
   }, [activeSlide]);
 
   useEffect(() => {
+    const node = popularSection.current;
+    if (!node) return undefined;
     let cancelled = false;
-    // Stock updates the cards that are already drawn from the built-in menu. Wait until the
-    // hero photo has had the connection to itself.
-    const timeoutId = window.setTimeout(() => {
+    // The cards are already drawn from the built-in menu. Stock is loaded when this section
+    // is near the screen, so it does not compete with the hero photo.
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
       apiRequest("/menu")
         .then(({ categories }) => {
           if (!cancelled) {
@@ -414,10 +419,11 @@ export function HomePage() {
         .catch((error) => {
           if (!cancelled) setMenuError(error.message);
         });
-    }, 1600);
+    }, { rootMargin: "400px" });
+    observer.observe(node);
     return () => {
       cancelled = true;
-      window.clearTimeout(timeoutId);
+      observer.disconnect();
     };
   }, []);
 
@@ -814,6 +820,7 @@ export function HomePage() {
         <section
           aria-labelledby="popular-flavors-heading"
           className="relative isolate overflow-hidden bg-[#fbfaf5] px-5 pb-20 pt-12 sm:px-8 sm:pb-24 sm:pt-14 lg:px-10 lg:pb-28 lg:pt-16"
+          ref={popularSection}
         >
           <div
             aria-hidden="true"

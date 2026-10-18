@@ -743,7 +743,7 @@ export function Header() {
       {!isAdminPage && <PromotionCountdown />}
       <div
         className={`sticky top-0 z-50 transition-[transform,background-color,box-shadow] duration-300 ${isHidden && !isMobileMenuOpen ? "-translate-y-full" : "translate-y-0"} ${
-          isScrolled ? "bg-[#092a53]/[0.92] shadow-[0_10px_30px_rgba(5,22,46,0.28)] backdrop-blur-xl" : "bg-[#092a53]"
+          isScrolled ? "bg-[#092a53] shadow-[0_10px_30px_rgba(5,22,46,0.28)]" : "bg-[#092a53]"
         }`}
         ref={headerRef}
       >

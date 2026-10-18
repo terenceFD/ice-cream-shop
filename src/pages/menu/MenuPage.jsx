@@ -1268,7 +1268,7 @@ export function MenuPage() {
 
               <nav
                 aria-label={t("Menu categories")}
-                className="sticky top-[var(--site-header-offset,0px)] z-30 -mx-5 mt-8 border-b transition-[top] duration-300 border-[#ebe7dc] bg-[#fbfaf5]/90 px-5 backdrop-blur-md sm:-mx-8 sm:px-8 lg:-mx-12 lg:px-12"
+                className="sticky top-[var(--site-header-offset,0px)] z-30 -mx-5 mt-8 border-b transition-[top] duration-300 border-[#ebe7dc] bg-[#fbfaf5] px-5 sm:-mx-8 sm:px-8 lg:-mx-12 lg:px-12"
               >
                 <ul className="-mb-px flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   {categories.map((category) => {

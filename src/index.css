@@ -71,8 +71,7 @@ body {
   inset: 0;
   z-index: 1000;
   color: #ffffff;
-  transition: transform 650ms cubic-bezier(0.76, 0, 0.24, 1);
-  will-change: transform;
+  transition: transform 380ms cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 /* The panel lifts away; the curved edge below it follows. */
@@ -320,12 +319,10 @@ body {
 /* Elements waiting to scroll into view carry data-scroll-reveal="" and become "revealed". */
 .scroll-reveal-enabled [data-scroll-reveal=""] {
   opacity: 0;
-  filter: blur(6px);
-  transform: translate3d(0, 24px, 0) scale(0.985);
+  transform: translate3d(0, 16px, 0);
   transition:
-    opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    filter 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 500ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1),
     translate 300ms ease,
     background-color 300ms ease,
     box-shadow 300ms ease;
@@ -333,18 +330,14 @@ body {
   transition-delay:
     var(--scroll-reveal-delay, 0ms),
     var(--scroll-reveal-delay, 0ms),
-    var(--scroll-reveal-delay, 0ms),
     0ms,
     0ms,
     0ms;
-  will-change: opacity, filter, transform;
 }
 
 .scroll-reveal-enabled [data-scroll-reveal="revealed"] {
   opacity: 1;
-  filter: blur(0);
-  transform: translate3d(0, 0, 0) scale(1);
-  will-change: auto;
+  transform: translate3d(0, 0, 0);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -354,10 +347,8 @@ body {
 
   .scroll-reveal-enabled [data-scroll-reveal=""] {
     opacity: 1;
-    filter: none;
     transform: none;
     transition: none;
-    will-change: auto;
   }
 }
 
@@ -378,15 +369,13 @@ body {
    scroll into view. `scale` composes with hover `transform` zooms. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    /* Photo frames use overflow: hidden, which makes them scroll containers,
-       so each frame publishes its own page-relative view timeline. */
-    main figure:has(> img),
-    main :has(> img.size-full.object-cover:not(.home-slide-image)) {
+    /* Large story photos only. Product cards also use full-bleed images, and giving every
+       card its own scroll timeline made long pages expensive to scroll. */
+    main figure:has(> img) {
       view-timeline: --photo-depth block;
     }
 
-    main figure > img,
-    main img.size-full.object-cover:not(.home-slide-image) {
+    main figure > img {
       animation: scroll-photo-settle linear both;
       animation-timeline: --photo-depth;
       animation-range: entry 0% cover 45%;

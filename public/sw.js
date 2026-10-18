@@ -1,4 +1,6 @@
-const CACHE_NAME = 'cold-stone-shell-v10'
+const CACHE_NAME = 'cold-stone-shell-v11'
+// A sleeping host can take half a minute to answer. Past this, show the saved page instead of a blank tab.
+const NAVIGATION_TIMEOUT_MS = 1500
 // Caches from before the site was renamed are removed on activation too.
 const CACHE_PREFIXES = ['cold-stone-shell-', 'antixor-icy-shell-']
 const SHELL_URLS = ['/', '/index.html', '/logo.png', '/favicon.ico', '/favicon-32.png']
@@ -37,7 +39,24 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return
 
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).catch(async () => (await caches.match('/index.html'))))
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME)
+      const cached = await cache.match('/index.html')
+      let timer = 0
+      const network = fetch(request).then((response) => {
+        if (response.ok) cache.put('/index.html', response.clone())
+        return response.ok || !cached ? response : cached
+      }).catch(() => cached)
+      if (!cached) return network
+      const timeout = new Promise((resolve) => {
+        timer = setTimeout(() => resolve(cached), NAVIGATION_TIMEOUT_MS)
+      })
+      try {
+        return await Promise.race([network, timeout])
+      } finally {
+        clearTimeout(timer)
+      }
+    })())
     return
   }
 
