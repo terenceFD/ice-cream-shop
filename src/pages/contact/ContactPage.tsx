@@ -36,6 +36,33 @@ interface StoreOption {
   location: string
 }
 
+const contactFaqs: { question: string; answer: string }[] = [
+  {
+    question: 'How do I place an order?',
+    answer: 'Choose your treats from the menu or pick flavors by the scoop, add them to your bag and check out. You choose pickup or delivery and a time that suits you.',
+  },
+  {
+    question: 'How can I pay?',
+    answer: 'Pay securely online with a bank card or with Mobile Money. Your payment details are entered on the secure payment page and never stored on our site.',
+  },
+  {
+    question: 'Do you deliver?',
+    answer: 'Yes. Choose delivery at checkout and we bring your order to your door, or pick it up at your nearest branch. The delivery fee is shown before you pay.',
+  },
+  {
+    question: 'Can I order a cake or ice cream for an event?',
+    answer: 'Yes. Request a custom ice cream cake for a birthday or celebration, or order in bulk for parties, offices and weddings from the Parties & events page.',
+  },
+  {
+    question: 'Where are your branches?',
+    answer: 'We are in Douala and Yaoundé. Open the Locations page for addresses, phone numbers and directions.',
+  },
+  {
+    question: 'How can I contact you?',
+    answer: 'Use the form on this page or chat with us on WhatsApp. We reply as soon as we can.',
+  },
+]
+
 function PinIcon({ className = 'size-4' }: { className?: string }) {
   return (
     <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
@@ -538,6 +565,73 @@ export function ContactPage() {
                 </form>
               )}
             </section>
+          </div>
+        </section>
+
+        <section aria-labelledby="contact-faq-heading" className="relative isolate overflow-hidden bg-white px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
+          <div aria-hidden="true" className="pointer-events-none absolute -left-40 top-24 -z-10 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]" />
+          <div className="mx-auto grid max-w-[1240px] gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
+              <div className="lg:sticky lg:top-28">
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
+                  <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
+                  {t('Here to help')}
+                </p>
+                <h2 className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl" id="contact-faq-heading">
+                  {t('Frequently Asked Questions')}
+                </h2>
+                <p className="mt-5 max-w-md text-base leading-7 text-[#52647b]">
+                  {t('Quick answers about ordering, delivery, payment and our branches.')}
+                </p>
+
+                <div className="relative isolate mt-10 overflow-hidden rounded-[26px] bg-[#092a53] p-7 text-white shadow-[0_20px_50px_rgba(9,42,83,0.18)] sm:p-8">
+                  <div aria-hidden="true" className="absolute -right-14 -top-14 -z-10 size-44 rounded-full border-[28px] border-white/[0.05]" />
+                  <span aria-hidden="true" className="grid size-12 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]">
+                    <MailIcon />
+                  </span>
+                  <h3 className="mt-6 font-display text-2xl font-extrabold leading-tight">{t('Still have questions?')}</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/70">
+                    {t('Send us a message and our team will get back to you, or find your nearest branch.')}
+                  </p>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <a
+                      className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                      href="#contact-form"
+                    >
+                      {t('Send us a message')} <ArrowIcon />
+                    </a>
+                    <Link
+                      className="inline-flex items-center gap-2 rounded-full border border-white/25 px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                      to="/locations"
+                    >
+                      {t('Locations')}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7">
+              <div className="border-t border-[#e5e1d7]">
+                {contactFaqs.map(({ question, answer }, index) => (
+                  <details className="group border-b border-[#e5e1d7] transition-colors open:border-[#092a53]/20" key={question} open={index === 0}>
+                    <summary className="flex cursor-pointer list-none items-start gap-5 py-6 marker:content-none focus-visible:outline-none sm:gap-7 sm:py-7 [&::-webkit-details-marker]:hidden">
+                      <span aria-hidden="true" className="pt-1 font-display text-sm font-extrabold tabular-nums text-[#8a7000] transition-colors group-open:text-[#092a53]">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className="flex-1 font-display text-lg font-extrabold leading-snug text-[#092a53] transition-colors group-hover:text-[#163e6b] sm:text-xl">
+                        {t(question)}
+                      </span>
+                      <span aria-hidden="true" className="relative mt-0.5 grid size-9 shrink-0 place-items-center rounded-full border border-[#e5e1d7] text-[#092a53] transition duration-300 group-hover:border-[#092a53] group-open:border-[#ffdc32] group-open:bg-[#ffdc32]">
+                        <span className="absolute h-0.5 w-3.5 rounded-full bg-current" />
+                        <span className="absolute h-3.5 w-0.5 rounded-full bg-current transition duration-300 group-open:rotate-90 group-open:opacity-0" />
+                      </span>
+                    </summary>
+                    <p className="-mt-2 max-w-2xl pb-7 pl-11 pr-14 text-base leading-7 text-[#52647b] sm:pl-14">{t(answer)}</p>
+                  </details>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
       </main>

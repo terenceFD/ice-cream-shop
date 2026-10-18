@@ -28,8 +28,8 @@ const experienceSteps: { number: string; title: string; description: string; ima
 const guideSections: { eyebrow: string; title: string; description: string; to: string; cta: string; icon: string }[] = [
   {
     eyebrow: 'Menu guide',
-    title: 'Global treat categories',
-    description: 'Ice cream creations, shakes, cakes and more from the global Cold Stone menu.',
+    title: 'Ice cream, cakes and shakes',
+    description: 'Signature creations, shakes, cakes and more.',
     to: '/menu',
     cta: 'Discover the menu',
     icon: 'M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Zm0 13a3 3 0 0 1 3-3h11M9 8h6',
@@ -179,7 +179,7 @@ export function AboutPage() {
                 </h2>
               </div>
               <p className="max-w-sm border-l-2 border-[#ffdc32] pl-4 text-sm leading-6 text-white/70">
-                {t('Discover the simple idea behind the signature mix-in experience. Menu and ingredient availability may vary by location.')}
+                {t('Discover the simple idea behind the signature mix-in experience.')}
               </p>
             </div>
 

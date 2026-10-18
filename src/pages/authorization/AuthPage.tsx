@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent, type ClipboardEvent, type FormEvent, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowIcon, Header } from '../../components/Layout'
 import { PasswordField } from '../../components/PasswordField'
@@ -8,34 +8,6 @@ import { enablePromotionAlerts, isPushSupported } from '../../lib/pushNotificati
 import { photoSrcSet } from '../../lib/thumbnails'
 import { useLanguage } from '../../language/useLanguage'
 import { isEventType } from '../../../shared/eventTypes.js'
-
-const PROFILE_IMAGE_DIMENSION = 256
-const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024
-
-async function resizeProfilePicture(file: File): Promise<string> {
-  if (!file.type.startsWith('image/')) {
-    throw new Error('Choose an image file for the profile picture.')
-  }
-  if (file.size > MAX_PROFILE_IMAGE_SIZE) {
-    throw new Error('Choose an image smaller than 5 MB.')
-  }
-
-  const imageBitmap = await createImageBitmap(file)
-  const scale = Math.min(1, PROFILE_IMAGE_DIMENSION / Math.max(imageBitmap.width, imageBitmap.height))
-  const canvas = document.createElement('canvas')
-  canvas.width = Math.max(1, Math.round(imageBitmap.width * scale))
-  canvas.height = Math.max(1, Math.round(imageBitmap.height * scale))
-
-  const context = canvas.getContext('2d')
-  if (!context) {
-    imageBitmap.close()
-    throw new Error('Your browser could not prepare the profile picture.')
-  }
-
-  context.drawImage(imageBitmap, 0, 0, canvas.width, canvas.height)
-  imageBitmap.close()
-  return canvas.toDataURL('image/jpeg', 0.8)
-}
 
 export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const isSignup = mode === 'signup'
@@ -53,7 +25,6 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [profilePicture, setProfilePicture] = useState('')
   const [verificationId, setVerificationId] = useState('')
   const [verificationCode, setVerificationCode] = useState<string[]>(Array(6).fill(''))
   const [verificationNotice, setVerificationNotice] = useState('')
@@ -73,20 +44,6 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     return () => window.clearInterval(timer)
   }, [resendAvailableAt, verificationId])
 
-  async function handleProfilePictureChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    setError('')
-    try {
-      setProfilePicture(await resizeProfilePicture(file))
-    } catch (imageError) {
-      console.error('Unable to prepare customer profile picture.', imageError)
-      setProfilePicture('')
-      setError(t(imageError instanceof Error ? imageError.message : 'Could not load this profile picture.'))
-    }
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
@@ -103,7 +60,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     setIsSubmitting(true)
     try {
       if (isSignup && !verificationId) {
-        const result = await requestSignupVerification({ name, email, password, profilePicture })
+        const result = await requestSignupVerification({ name, email, password })
         setVerificationId(result.verificationId)
         setVerificationCode(Array(6).fill(''))
         setResendAvailableAt(Date.now() + 60_000)
@@ -141,7 +98,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     setVerificationNotice('')
     setIsSubmitting(true)
     try {
-      const result = await requestSignupVerification({ name, email, password, profilePicture })
+      const result = await requestSignupVerification({ name, email, password })
       setVerificationId(result.verificationId)
       setVerificationCode(Array(6).fill(''))
       setResendAvailableAt(Date.now() + 60_000)
@@ -284,38 +241,6 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
               )}
 
               <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-                {isSignup && !verificationId && (
-                  <div className="flex items-center gap-4 rounded-2xl bg-white p-4 ring-1 ring-[#ebe7dc]">
-                    {profilePicture ? (
-                      <img decoding="async" loading="lazy" alt={t('Profile preview')} className="size-16 shrink-0 rounded-full object-cover ring-4 ring-[#fff3b8]" src={profilePicture} />
-                    ) : (
-                      <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-full bg-[#f4f1e8] font-display text-xl font-extrabold text-[#a5aebb]">
-                        {name.trim() ? name.trim().charAt(0).toUpperCase() : (
-                          <svg className="size-7" fill="none" viewBox="0 0 24 24">
-                            <circle cx="12" cy="8.5" r="3.5" stroke="currentColor" strokeWidth="1.8" />
-                            <path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-                          </svg>
-                        )}
-                      </span>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className={labelClass}>{t('Profile picture')}</p>
-                      <p className="mt-1 text-xs leading-5 text-[#65748a]">{t('Optional. Image will be resized before saving (5 MB max).')}</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#ffdc32] px-3.5 py-1.5 text-xs font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-within:ring-2 focus-within:ring-[#092a53]">
-                          {profilePicture ? t('Change photo') : t('Upload photo')}
-                          <input accept="image/*" className="sr-only" onChange={handleProfilePictureChange} type="file" />
-                        </label>
-                        {profilePicture && (
-                          <button className="rounded-full px-3 py-1.5 text-xs font-extrabold text-[#65748a] transition hover:bg-[#f4f1e8] hover:text-[#092a53]" onClick={() => setProfilePicture('')} type="button">
-                            {t('Remove')}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {isSignup && !verificationId && (
                   <label className="block">
                     <span className={labelClass}>{t('Name')}</span>

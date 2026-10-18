@@ -207,11 +207,10 @@ Prices are always recalculated on the server from the menu; the deposit uses the
 
 Email is used for contact-form replies, admin new-order and cake/event request notices, customer order updates, payment receipts (`PAYMENT_CONFIRMATION_EMAILS_ENABLED=true`), event quotes, and review reminders. Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM`.
 
-With **Brevo** (`smtp-relay.brevo.com`):
-- Use port `587` locally. **On Render's free plan, outgoing ports 25, 465 and 587 are blocked: use `SMTP_PORT=2525`** with `SMTP_SECURE=false`.
-- `SMTP_PASSWORD` is a Brevo **SMTP key**, not your account password.
-- Turn off IP blocking for SMTP keys (Brevo: Settings › Security › Authorized IPs) or authorize the server's outbound addresses; hosts and mobile networks change IP addresses.
-- Verify `SMTP_FROM` as a sender in Brevo. A sender on your own domain delivers more reliably than a Gmail address.
+With **Mailjet** (`in-v3.mailjet.com`):
+- **On Render's free plan, outgoing ports 25, 465 and 587 are blocked: use `SMTP_PORT=2525`** with `SMTP_SECURE=false`. The same port works locally.
+- `SMTP_USER` is the API key and `SMTP_PASSWORD` is the secret key, from Account settings › SMTP and SEND API settings. Do not use the password you use to sign in to Mailjet.
+- Validate `SMTP_FROM` under Account settings › Sender addresses and domains. An address on a domain you control delivers more reliably than a Gmail address.
 
 When a reply cannot be sent, the dashboard shows the mail server's reason in plain words (blocked IP, rejected login, refused sender, or unreachable server). Email failures are logged and never reverse orders or payments.
 
@@ -243,7 +242,7 @@ On phones, the stat cards at the top of each page become one row that scrolls si
 | `FRONTEND_URL`, `FRONTEND_ORIGINS` | Public site address for payment returns and email links; allowed browser origins |
 | `DATABASE_URL`, `DATABASE_BACKEND`, `DATABASE_SSL_CA_FILE` | Supabase PostgreSQL connection; `sqlite` locally; CA certificate path |
 | `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Only for `npm run seed:admin` |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Email delivery (use port 2525 on Render's free plan) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Mailjet email delivery (`in-v3.mailjet.com`, port 2525) |
 | `PAYMENT_CONFIRMATION_EMAILS_ENABLED` | `true` to email customers a receipt after payment |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Card payments and the Stripe webhook |
 | `CAMPAY_ENVIRONMENT`, `CAMPAY_APP_USERNAME`, `CAMPAY_APP_PASSWORD`, `CAMPAY_MOBILE_MONEY_ENABLED` | Mobile Money payments |

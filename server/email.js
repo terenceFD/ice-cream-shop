@@ -15,16 +15,16 @@ export function describeEmailError(error) {
   const code = Number(error?.responseCode) || 0
   const text = `${error?.response || ''} ${error?.message || ''}`
   if (code === 525 || /unauthori[sz]ed ip/i.test(text)) {
-    return "Brevo blocked the website server's IP address. In Brevo, open Settings > Security > Authorized IPs and turn off blocking for SMTP keys, or authorize the server's outbound IP addresses."
+    return "Mailjet blocked the website server's IP address. In Mailjet, open Account settings and check the API key restrictions."
   }
   if (code === 535 || error?.code === 'EAUTH') {
-    return 'The mail server rejected the login. Check that SMTP_USER is your Brevo SMTP login and SMTP_PASSWORD is a current Brevo SMTP key (not your account password).'
+    return 'The mail server rejected the login. SMTP_USER must be the Mailjet API key and SMTP_PASSWORD the secret key, from Account settings > SMTP and SEND API settings. Do not use your Mailjet sign-in password.'
   }
   if (/sender|from address|not (a )?valid|unverified|not verified/i.test(text) && code >= 500) {
-    return 'The mail server refused the sender address. Verify the SMTP_FROM address as a sender in Brevo (Senders, domains & dedicated IPs).'
+    return 'The mail server refused the sender address. Validate SMTP_FROM in Mailjet under Account settings > Sender addresses and domains.'
   }
   if (['ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNREFUSED', 'ENOTFOUND', 'EDNS'].includes(error?.code)) {
-    return "The website server could not reach the mail server. Some hosts, including Render's free plan, block ports 25, 465 and 587. Set SMTP_PORT to 2525 (Brevo supports it) and SMTP_SECURE to false, and check that SMTP_HOST is smtp-relay.brevo.com."
+    return "The website server could not reach the mail server. Some hosts, including Render's free plan, block ports 25, 465 and 587. Set SMTP_PORT to 2525, SMTP_SECURE to false, and SMTP_HOST to in-v3.mailjet.com."
   }
   if (code) return `The mail server refused the message (code ${code}).`
   return 'The mail server could not be reached.'
@@ -59,7 +59,7 @@ function createTransporter() {
     throw new EmailConfigurationError('Email delivery is not configured. Set SMTP_HOST, SMTP_PORT, and SMTP_FROM.')
   }
   if (!SENDER_ADDRESS.test(from)) {
-    throw new EmailConfigurationError('SMTP_FROM must be a full email address, such as the sender verified in Brevo.')
+    throw new EmailConfigurationError('SMTP_FROM must be a full email address validated as a sender in Mailjet.')
   }
   if (Boolean(username) !== Boolean(password)) {
     throw new EmailConfigurationError('Email delivery requires both SMTP_USER and SMTP_PASSWORD, or neither.')

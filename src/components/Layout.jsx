@@ -239,8 +239,7 @@ function LanguageDropdown({ language, setLanguage, t }) {
         onClick={closeOtherDropdowns}
       >
         <span aria-hidden="true" className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[9px] font-extrabold tracking-tight text-[#092a53]">{activeLanguage.mark}</span>
-        <span className="hidden sm:inline">{activeLanguage.nativeLabel}</span>
-        <span className="sm:hidden">{activeLanguage.code}</span>
+        <span className="hidden xl:inline">{activeLanguage.nativeLabel}</span>
         <svg aria-hidden="true" className="size-3 text-white/70 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
           <path d="m2 4 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
         </svg>
@@ -348,6 +347,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
           className={`flex cursor-pointer list-none items-center gap-2 rounded-full py-1.5 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] md:text-sm [&::-webkit-details-marker]:hidden ${
             customer ? "pl-1.5 pr-3" : "px-3"
           } ${accountActive ? "bg-white/[0.1] text-[#ffdc32]" : "text-white hover:bg-white/[0.07] group-open:bg-white/[0.1]"}`}
+          aria-label={t("Account")}
           onClick={closeOtherDropdowns}
         >
           {customer ? (
@@ -361,7 +361,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
               <path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
             </svg>
           )}
-          <span>{t("Account")}</span>
+          <span className="hidden xl:inline">{t("Account")}</span>
           <svg aria-hidden="true" className="size-3 shrink-0 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
             <path d="m2 4 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
           </svg>
@@ -718,7 +718,7 @@ export function Header() {
   }, [isMobileMenuOpen]);
 
   const desktopLinkClassName = (isActive) =>
-    `relative inline-flex h-10 items-center whitespace-nowrap rounded-full px-2.5 text-[13px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
+    `relative inline-flex h-10 items-center whitespace-nowrap rounded-full px-2 text-[13px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] xl:px-2.5 ${
       isActive
         ? "bg-white/[0.12] text-[#ffdc32] after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-[#ffdc32]"
         : "text-white/85 hover:bg-white/[0.08] hover:text-white"
@@ -748,7 +748,7 @@ export function Header() {
         ref={headerRef}
       >
         <div aria-hidden="true" className={`pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent transition-opacity ${isScrolled ? "opacity-100" : "opacity-0"}`} />
-        <header className={`relative mx-auto flex max-w-[1320px] items-center gap-3 px-4 text-white transition-[height] duration-300 sm:px-8 lg:gap-4 lg:px-12 ${isScrolled ? "h-[68px]" : "h-[80px]"}`}>
+        <header className={`relative mx-auto flex max-w-[1320px] items-center gap-2 px-4 text-white transition-[height] duration-300 sm:px-6 lg:gap-2 lg:px-3 xl:gap-4 xl:px-12 ${isScrolled ? "h-[68px]" : "h-[80px]"}`}>
           <Link aria-label="Cold Stone Creamery Cameroon home" className="group flex shrink-0 items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]" to="/">
             <BrandMark compact={isScrolled} />
             <span className="font-display text-[18px] font-extrabold leading-[0.95] tracking-tight text-white sm:text-[19px]">
@@ -758,8 +758,8 @@ export function Header() {
           </Link>
 
           {!isAdminPage && (
-            <nav aria-label={t("Main navigation")} className="hidden flex-1 items-center justify-center xl:flex">
-              <div className="flex items-center gap-3 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10">
+            <nav aria-label={t("Main navigation")} className="hidden flex-1 items-center justify-center lg:flex">
+              <div className="flex items-center gap-0.5 rounded-full bg-white/[0.05] p-1 ring-1 ring-white/10 xl:gap-3">
                 <Link className={desktopLinkClassName(isHome)} to="/#home">
                   {t("Home")}
                 </Link>
@@ -776,13 +776,13 @@ export function Header() {
             </nav>
           )}
 
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:ml-0">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 lg:ml-0">
             <div className="hidden sm:block">
               <LanguageDropdown language={language} setLanguage={setLanguage} t={t} />
             </div>
             {!isAdminPage && (
               <>
-                <div className="hidden xl:block">
+                <div className="hidden lg:block">
                   <AccountDropdown
                     customer={customer}
                     customerName={customerSecondName}
@@ -806,7 +806,7 @@ export function Header() {
                   )}
                 </Link>
                 <Link
-                  className="group hidden h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-[#ffdc32] px-4 text-sm font-extrabold leading-none text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white xl:inline-flex"
+                  className="group hidden h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-[#ffdc32] px-3 text-[13px] font-extrabold leading-none text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white lg:inline-flex xl:px-4 xl:text-sm"
                   to="/flavors"
                 >
                   {t("Order now")}
@@ -818,7 +818,7 @@ export function Header() {
                   aria-controls="mobile-navigation"
                   aria-expanded={isMobileMenuOpen}
                   aria-label={t(isMobileMenuOpen ? "Close menu" : "Open menu")}
-                  className="grid size-11 place-items-center rounded-full bg-white/[0.08] text-white ring-1 ring-white/10 transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] xl:hidden"
+                  className="grid size-11 place-items-center rounded-full bg-white/[0.08] text-white ring-1 ring-white/10 transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] lg:hidden"
                   onClick={(event) => {
                     closeOtherDropdowns(event);
                     setIsMobileMenuOpen((open) => !open);
@@ -845,7 +845,7 @@ export function Header() {
       </div>
 
       {!isAdminPage && isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] xl:hidden" role="presentation">
+        <div className="fixed inset-0 z-[60] lg:hidden" role="presentation">
           <button aria-label={t("Close menu")} className="site-drawer-backdrop absolute inset-0 bg-[#05162e]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} tabIndex={-1} type="button" />
           <nav
             aria-label={t("Mobile navigation")}
@@ -985,15 +985,27 @@ function PromotionCountdown() {
     };
   }, []);
 
+  const remaining = promotion && now !== null ? Date.parse(promotion.expiresAt) - now : NaN;
+  const promoVisible = Boolean(
+    promotion &&
+    now !== null &&
+    dismissedCode !== promotion.code &&
+    Number.isFinite(remaining) &&
+    remaining > 0,
+  );
+
   useEffect(() => {
     if (!promotion) return undefined;
     const ticker = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(ticker);
   }, [promotion]);
 
-  if (!promotion || now === null || dismissedCode === promotion.code) return null;
-  const remaining = Date.parse(promotion.expiresAt) - now;
-  if (!Number.isFinite(remaining) || remaining <= 0) return null;
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-promo-visible", promoVisible);
+    return () => document.documentElement.removeAttribute("data-promo-visible");
+  }, [promoVisible]);
+
+  if (!promoVisible) return null;
 
   const days = Math.floor(remaining / 86_400_000);
   const hours = Math.floor((remaining % 86_400_000) / 3_600_000);

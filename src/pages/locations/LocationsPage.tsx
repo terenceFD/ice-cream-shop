@@ -28,6 +28,16 @@ function mapsUrl(location: CameroonLocation) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.mapQuery)}`
 }
 
+function extraLink(location: CameroonLocation) {
+  try {
+    const host = new URL(location.source).hostname
+    if (host.includes('facebook.com')) return { href: location.source, label: 'Facebook' }
+  } catch {
+    return null
+  }
+  return null
+}
+
 export function LocationsPage() {
   const { t } = useLanguage()
   const [city, setCity] = useState('')
@@ -145,6 +155,7 @@ export function LocationsPage() {
           <ul className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             {visibleLocations.map((location: CameroonLocation) => {
               const number = cameroonLocations.indexOf(location) + 1
+              const more = extraLink(location)
               return (
                 <li key={`${location.town}-${location.area}`}>
                   <article className="group flex h-full flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_30px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.12)] hover:ring-[#e2d39a]">
@@ -170,7 +181,7 @@ export function LocationsPage() {
                     </div>
 
                     <div className="flex flex-1 flex-col px-5 pb-5 pt-10 sm:px-6 sm:pb-6">
-                      <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Public listing')}</p>
+                      <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Cold Stone Creamery')}</p>
                       <h3 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]">{t(location.area)}</h3>
 
                       <dl className="mt-5 space-y-3">
@@ -181,15 +192,19 @@ export function LocationsPage() {
                           </span>
                           <dd className="text-sm font-semibold leading-6 text-[#52647b]">{t(location.address)}</dd>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <dt className="sr-only">{t('Phone')}</dt>
-                          <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#f1f5f8] text-[#092a53]">
-                            <Icon className="size-4" path={PHONE_PATH} />
-                          </span>
-                          <dd className={`text-sm font-semibold ${location.phone ? 'tabular-nums text-[#52647b]' : 'text-[#9aa5b3]'}`}>
-                            {location.phone || t('Phone not listed')}
-                          </dd>
-                        </div>
+                        {location.phone && (
+                          <div className="flex items-center gap-3">
+                            <dt className="sr-only">{t('Phone')}</dt>
+                            <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#f1f5f8] text-[#092a53]">
+                              <Icon className="size-4" path={PHONE_PATH} />
+                            </span>
+                            <dd>
+                              <a className="text-sm font-semibold tabular-nums text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4" href={`tel:${location.phone.replaceAll(' ', '')}`}>
+                                {location.phone}
+                              </a>
+                            </dd>
+                          </div>
+                        )}
                       </dl>
 
                       <div className="mt-auto flex items-center gap-2 border-t border-[#efebe1] pt-5">
@@ -199,7 +214,7 @@ export function LocationsPage() {
                           rel="noreferrer"
                           target="_blank"
                         >
-                          {t('Check map listing')} <ArrowIcon diagonal />
+                          {t('Directions')} <ArrowIcon diagonal />
                         </a>
                         {location.phone && (
                           <a
@@ -210,14 +225,16 @@ export function LocationsPage() {
                             <Icon className="size-[18px]" path={PHONE_PATH} />
                           </a>
                         )}
-                        <a
-                          className="inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-3 text-xs font-bold text-[#65748a] transition hover:bg-[#fbfaf5] hover:text-[#092a53]"
-                          href={location.source}
-                          rel="noreferrer"
-                          target="_blank"
-                        >
-                          <span className="max-sm:sr-only">{t('Reference')}</span> <span aria-hidden="true">↗</span>
-                        </a>
+                        {more && (
+                          <a
+                            className="inline-flex shrink-0 items-center rounded-full px-3 py-3 text-xs font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4"
+                            href={more.href}
+                            rel="noreferrer"
+                            target="_blank"
+                          >
+                            {t(more.label)}
+                          </a>
+                        )}
                       </div>
                     </div>
                   </article>
@@ -229,8 +246,8 @@ export function LocationsPage() {
           <aside className="mt-10 flex flex-col gap-5 rounded-[28px] bg-white p-6 shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_30px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:flex-row sm:items-center sm:p-8">
             <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#092a53] font-display text-lg font-extrabold text-[#ffdc32]">i</span>
             <div className="flex-1">
-              <h2 className="font-display text-lg font-extrabold text-[#092a53]">{t('Please verify before visiting')}</h2>
-              <p className="mt-1 text-sm leading-6 text-[#65748a]">{t('These neighborhood and address details come from publicly available map and local social listings, not direct confirmation from each shop. Opening hours, phone numbers and current operation may change.')}</p>
+              <h2 className="font-display text-lg font-extrabold text-[#092a53]">{t('Before you go')}</h2>
+              <p className="mt-1 text-sm leading-6 text-[#65748a]">{t('Directions opens each branch in Google Maps. Where a phone number is shown, call ahead to confirm today’s hours.')}</p>
             </div>
             <Link className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#d9d4c7] px-5 py-3 text-xs font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:border-[#092a53]" to="/contact">
               {t('Contact us')} <ArrowIcon />

@@ -65,11 +65,11 @@ export function CartPage() {
                 <h1 className="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-[3.4rem]">
                   {t('Your shopping bag')}
                 </h1>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-white/65 sm:text-base">
-                  {cartItems.length === 0
-                    ? t('Your bag is empty. Explore our flavors and add some happiness!')
-                    : t('You have {count} scoop(s) across {flavors} flavor(s) in your bag.', { count: cartCount, flavors: cartItems.length })}
-                </p>
+                {cartItems.length > 0 && (
+                  <p className="mt-3 max-w-xl text-sm leading-6 text-white/65 sm:text-base">
+                    {t('You have {count} scoop(s) across {flavors} flavor(s) in your bag.', { count: cartCount, flavors: cartItems.length })}
+                  </p>
+                )}
               </div>
 
               <ol aria-label={t('Checkout progress')} className="flex items-center gap-2 sm:gap-3">

@@ -410,7 +410,7 @@ body {
 
 .home-hero-progress {
   transform-origin: left;
-  animation: home-hero-progress 6000ms linear both;
+  animation: home-hero-progress 12000ms linear both;
 }
 
 @keyframes home-hero-copy-in {

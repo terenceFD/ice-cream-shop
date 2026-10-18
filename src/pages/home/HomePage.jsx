@@ -4,15 +4,22 @@ import {
   Footer,
   Header,
   ArrowIcon,
-  InstagramSection,
 } from "../../components/Layout";
 import { useCart } from "../../context/useCart";
 import { apiRequest } from "../../api/api";
-import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
+import { cameroonLocations, coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
 import { useLanguage } from "../../language/useLanguage";
 import { photoErrorHandler, photoSrcSet, thumbnail } from "../../lib/thumbnails";
 import { HOME_SLIDE_SIZES } from "../../../shared/photoSizes.js";
 import { numberFormatter } from "../../lib/cartPricing";
+
+function mapsSearchUrl(location) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.mapQuery)}`;
+}
+
+function promoBarIsVisible() {
+  return document.documentElement.hasAttribute("data-promo-visible");
+}
 
 const popularFlavorNames = [
   "Cookie Mintster",
@@ -46,19 +53,8 @@ const homeSlides = [
     description:
       "Layers of cake and creamy ice cream, finished with rich chocolate. Order one for birthdays, parties and every reason in between.",
     image: "/cake-images/cake-11.webp",
-    thumbnailSide: "right",
     alt: "A chocolate ice cream cake held up for a celebration",
     caption: "Made for celebrations",
-  },
-  {
-    eyebrow: "Make room for something sweet",
-    title: "Make every moment",
-    accent: "a little sweeter.",
-    description:
-      "Find a treat for today, a new flavor to love, or something special to share.",
-    image: "/cream/cream%204.webp",
-    alt: "A delicious ice cream treat",
-    caption: "A treat worth sharing",
   },
   {
     eyebrow: "Cool, creamy and full of crunch",
@@ -67,51 +63,8 @@ const homeSlides = [
     description:
       "Mint ice cream mixed with chocolate cookies and fudge, served in a waffle cone. A Signature Creation made right in front of you.",
     image: "/menu-official/ice-cream/signature-creations/cookie-mintster.webp",
-    thumbnailSide: "right",
     alt: "Mint ice cream with chocolate cookies and fudge in a waffle cone",
     caption: "Mixed on a frozen stone",
-  },
-  {
-    eyebrow: "Cake meets ice cream",
-    title: "Every slice",
-    accent: "a sweet surprise.",
-    description:
-      "Soft cake layered with ice cream and topped with fresh raspberries. Choose a signature cake or request your own design.",
-    image: "/cake-images/cake-2.webp",
-    thumbnailSide: "right",
-    alt: "A raspberry ice cream cake with a slice cut out",
-    caption: "Cake and ice cream, layered",
-  },
-  {
-    eyebrow: "Find your new favorite",
-    title: "A world of flavor",
-    accent: "is waiting.",
-    description:
-      "Explore the menu, discover signature combinations, and find a scoop that feels just right.",
-    image: "/ice-images/ice-10.jpg",
-    alt: "A colorful ice cream creation",
-    caption: "Choose. Mix. Make it yours.",
-  },
-  {
-    eyebrow: "Bright, fruity and fresh",
-    title: "Berries on top,",
-    accent: "sweetness in every bite.",
-    description:
-      "Creamy ice cream piled with raspberries and blueberries in a crisp waffle cone. A fruity favorite for sunny days.",
-    image: "/menu-official/ice-cream/signature-creations/berry-berry-berry-good.webp",
-    thumbnailSide: "right",
-    alt: "Ice cream topped with raspberries and blueberries in a waffle cone",
-    caption: "Fresh fruit, real flavor",
-  },
-  {
-    eyebrow: "Rich chocolate meets pistachio",
-    title: "A little luxury",
-    accent: "in every scoop.",
-    description:
-      "Chocolate ice cream with chocolate shavings and a pistachio crunch, served in a waffle cone. Our Dubai Chocolate Creation, made to order.",
-    image: "/menu-official/ice-cream/signature-creations/our-dubai-chocolate-creation.webp",
-    alt: "Chocolate ice cream with chocolate shavings and pistachio in a waffle cone",
-    caption: "Chocolate, pistachio, pure joy",
   },
 ];
 
@@ -193,59 +146,44 @@ function ReviewerAvatar({ name, picture, className }) {
 
 const LONG_REVIEW_LENGTH = 150;
 
-// Card order: photo with the name beside it, verified purchase, ordered item, stars, then the review.
-function ReviewCard({ review, language, t, className = "" }) {
+function ReviewCard({ review, language, t }) {
   const [expanded, setExpanded] = useState(false);
   const customerName = review.customerName || t("Customer");
   const rawText = (review.review || "").trim();
   const text = rawText ? rawText.charAt(0).toUpperCase() + rawText.slice(1) : "";
   const isLong = text.length > LONG_REVIEW_LENGTH;
   const date = formatReviewDate(review.createdAt, language);
+  const openQuote = language === "fr" ? "«" : "“";
+  const closeQuote = language === "fr" ? "»" : "”";
   return (
-    <li className={`w-full sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.84rem)] lg:max-w-[400px] ${className}`}>
-      <article className="flex h-full flex-col rounded-2xl bg-white p-5 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.55)] ring-1 ring-black/5 transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_50px_-22px_rgba(0,0,0,0.6)] sm:p-6">
-        <header className="flex items-center gap-4">
-          <ReviewerAvatar className="size-16 text-xl ring-4 ring-[#fff3c4]" name={customerName} picture={review.profilePicture} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-base font-extrabold text-[#0f2340]">{customerName}</p>
-            <p className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-[#1a7f4b]">
-              <VerifiedIcon className="size-3.5" />
-              {t("Verified purchase")}
-            </p>
-            {review.itemName && (
-              <p className="mt-0.5 truncate text-xs text-[#8592a3]">
-                {t("Ordered")}: <span className="font-semibold text-[#3a4a5e]">{t(review.itemName)}</span>
-              </p>
-            )}
-          </div>
-        </header>
-
-        <div className="mt-4 flex items-center gap-2.5 border-t border-[#eef1f5] pt-4">
+    <li>
+      <article className="flex h-full flex-col rounded-[24px] bg-white p-5 ring-1 ring-[#ebe7dc] transition duration-200 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(9,42,83,0.18),0_6px_14px_rgba(9,42,83,0.1)] hover:ring-[#092a53] sm:p-6">
+        <div className="flex items-center justify-between gap-3">
           <StarRating
             className="size-4"
-            filledClassName="text-[#f5b301]"
+            emptyClassName="text-[#e7e1d2]"
+            filledClassName="text-[#e2b100]"
             label={t("{rating} out of 5 stars", { rating: review.rating })}
             value={Number(review.rating) || 0}
           />
-          {date && (
-            <time className="text-xs text-[#8592a3]" dateTime={parseReviewDate(review.createdAt)?.toISOString()}>
-              {date}
-            </time>
+          {review.demo && (
+            <span className="rounded-full bg-[#fff6cc] px-2.5 py-1 text-[11px] font-extrabold text-[#8a7000]">{t("Demo")}</span>
           )}
         </div>
-
-        <div className="mt-3 flex-1">
+        <div className="mt-4 flex-1">
           {text ? (
-            <blockquote className={`whitespace-pre-line text-[15px] leading-relaxed text-[#3a4a5e] ${isLong && !expanded ? "line-clamp-4" : ""}`}>
-              “{text}”
+            <blockquote className={`max-w-3xl whitespace-pre-line text-[15px] leading-7 text-[#243044] ${isLong && !expanded ? "line-clamp-4" : ""}`}>
+              <span aria-hidden="true" className="float-left mr-1.5 font-display text-[2.6rem] font-extrabold leading-[0.72] text-[#ffdc32]">{openQuote}</span>
+              {text}
+              <span aria-hidden="true" className="ml-1 inline-block translate-y-1 font-display text-[1.7rem] font-extrabold leading-none text-[#ffdc32]">{closeQuote}</span>
             </blockquote>
           ) : (
-            <p className="text-[15px] italic leading-relaxed text-[#8592a3]">{t("No written comment.")}</p>
+            <p className="text-sm text-[#8a8172]">{t("No written comment.")}</p>
           )}
           {isLong && (
             <button
               aria-expanded={expanded}
-              className="mt-1 text-sm font-semibold text-[#0f4c8a] hover:underline focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f4c8a]"
+              className="mt-2 text-sm font-extrabold text-[#092a53] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
               onClick={() => setExpanded((current) => !current)}
               type="button"
             >
@@ -253,89 +191,139 @@ function ReviewCard({ review, language, t, className = "" }) {
             </button>
           )}
         </div>
+        <footer className="mt-5 flex items-center gap-3 border-t border-[#f0ece3] pt-4">
+          <ReviewerAvatar className="size-10 text-sm" name={customerName} picture={review.profilePicture} />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-extrabold text-[#092a53]">{customerName}</p>
+            <p className="mt-0.5 truncate text-xs text-[#65748a]">
+              {review.itemName ? t(review.itemName) : t("Verified purchase")}
+              {date ? ` · ${date}` : ""}
+            </p>
+          </div>
+        </footer>
       </article>
     </li>
   );
+}
+
+const DEMO_REVIEWS = [
+  {
+    rating: 5,
+    review: "The mint cookie cone was mixed right in front of me and stayed creamy on the way home.",
+    createdAt: "2026-10-16T10:00:00.000Z",
+    customerName: "Amina",
+    itemName: "Cookie Mintster",
+  },
+  {
+    rating: 4,
+    review: "Ordered the birthday cake for the office. It arrived looking just like the photo, and nothing was left.",
+    createdAt: "2026-10-11T10:00:00.000Z",
+    customerName: "Paul",
+    itemName: "Birthday Cake Remix",
+  },
+  {
+    rating: 5,
+    review: "The Dubai chocolate scoop was rich without being too sweet. I finished it before we left the shop.",
+    createdAt: "2026-10-04T10:00:00.000Z",
+    customerName: "Nadia",
+    itemName: "Our Dubai Chocolate Creation",
+  },
+  {
+    rating: 5,
+    review: "Founder’s Favorite had the pecans, brownie and caramel I wanted. Mixed on the stone, and gone in a few minutes.",
+    createdAt: "2026-09-27T10:00:00.000Z",
+    customerName: "Esther",
+    itemName: "Founder’s Favorite",
+  },
+];
+
+function demoReviews(t) {
+  return DEMO_REVIEWS.map((review) => ({ ...review, demo: true, review: t(review.review) }));
 }
 
 function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
   // Wait for the answer, so the "no reviews yet" message never flashes before real reviews.
   if (!isLoaded) return null;
   const hasReviews = reviews.length > 0;
-  const average = stats.average;
+  const showingDemo = !error && !hasReviews;
+  const displayReviews = showingDemo ? demoReviews(t) : reviews;
+  const average = showingDemo
+    ? DEMO_REVIEWS.reduce((sum, review) => sum + review.rating, 0) / DEMO_REVIEWS.length
+    : stats.average;
   const roundedAverage = Math.round(average * 10) / 10;
-  const count = stats.count;
+  const count = showingDemo ? DEMO_REVIEWS.length : stats.count;
+  const distribution = showingDemo
+    ? DEMO_REVIEWS.reduce((buckets, review) => {
+        buckets[review.rating] = (buckets[review.rating] || 0) + 1;
+        return buckets;
+      }, {})
+    : stats.distribution || {};
+  const busiest = Math.max(1, ...[1, 2, 3, 4, 5].map((stars) => distribution[stars] || 0));
   return (
-    <section
-      aria-labelledby="real-reviews-heading"
-      className="relative isolate overflow-hidden bg-[#092a53] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-10"
-    >
-      {/* Same backdrop as the hero: navy with a yellow glow, a blue glow and a faint dot grid. */}
-      <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220_50/0.12)_35%,transparent)]" />
-      <div aria-hidden="true" className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.5),rgb(28_79_138/0.5)_35%,transparent)]" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:28px_28px]" />
-
-      <div className="mx-auto max-w-[1240px]">
-        <header className="mx-auto max-w-2xl text-center">
-          <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
-            <span aria-hidden="true" className="h-px w-8 bg-[#ffdc32]" />
-            {t("What our customers are saying")}
-            <span aria-hidden="true" className="h-px w-8 bg-[#ffdc32]" />
-          </p>
-          <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight sm:text-5xl" id="real-reviews-heading">
-            {t("Real Reviews")}
-          </h2>
-          {hasReviews && (
-          <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-2xl bg-white/[0.08] px-5 py-2.5 ring-1 ring-white/15 backdrop-blur-sm sm:rounded-full">
-            <span className="font-display text-xl font-extrabold tabular-nums">{roundedAverage.toFixed(1)}</span>
-            <StarRating
-              className="size-4"
-              emptyClassName="text-white/20"
-              filledClassName="text-[#ffdc32]"
-              label={t("{rating} out of 5 stars", { rating: roundedAverage.toFixed(1) })}
-              value={average}
-            />
-            <span aria-hidden="true" className="hidden h-4 w-px bg-white/20 sm:block" />
-            <span className="text-sm text-white/75">
-              {t(count === 1 ? "Based on 1 review" : "Based on {count} reviews", { count })}
-            </span>
-            <span aria-hidden="true" className="hidden h-4 w-px bg-white/20 sm:block" />
-            <span className="inline-flex items-center gap-1 text-sm font-medium text-[#7fe0a9]">
-              <VerifiedIcon className="size-4" />
+    <section aria-labelledby="real-reviews-heading" className="bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-10">
+      <div className="mx-auto max-w-[1100px] rounded-[32px] bg-[#fbfaf5] px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
+        <div className={`flex flex-col gap-6 ${(hasReviews || showingDemo) ? "lg:flex-row lg:items-start lg:justify-between" : "items-center text-center"}`}>
+          <div className={(hasReviews || showingDemo) ? "max-w-xl" : "max-w-2xl"}>
+            <h2 className="font-display text-4xl font-extrabold leading-none tracking-tight text-[#092a53] sm:text-5xl" id="real-reviews-heading">
+              {t("Real Reviews")}
+            </h2>
+            <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-[#092a53]">
+              <VerifiedIcon className="size-4 text-[#2f8f4e]" />
               {t("Verified purchases only")}
-            </span>
+            </p>
           </div>
+          {(hasReviews || showingDemo) && (
+            <div className="flex flex-wrap items-center gap-5 rounded-[24px] bg-white px-5 py-4 ring-1 ring-[#ebe7dc]">
+              <div>
+                <p className="font-display text-5xl font-extrabold leading-none tabular-nums text-[#092a53]">{roundedAverage.toFixed(1)}</p>
+                <div className="mt-2">
+                  <StarRating
+                    className="size-4"
+                    emptyClassName="text-[#e7e1d2]"
+                    filledClassName="text-[#e2b100]"
+                    label={t("{rating} out of 5 stars", { rating: roundedAverage.toFixed(1) })}
+                    value={average}
+                  />
+                </div>
+                <p className="mt-1 text-sm text-[#65748a]">
+                  {showingDemo
+                    ? t(count === 1 ? "Sample review" : "Sample reviews")
+                    : t(count === 1 ? "Based on 1 review" : "Based on {count} reviews", { count })}
+                </p>
+              </div>
+              <ol className="grid min-w-[9.5rem] gap-1.5">
+                {[5, 4, 3, 2, 1].map((stars) => {
+                  const bucket = distribution[stars] || 0;
+                  return (
+                    <li
+                      aria-label={t("{count} reviews with {stars} stars", { count: bucket, stars })}
+                      className="grid grid-cols-[1.25rem_1fr_1.25rem] items-center gap-2"
+                      key={stars}
+                    >
+                      <span className="text-xs font-bold tabular-nums text-[#65748a]">{stars}</span>
+                      <span className="h-1.5 overflow-hidden rounded-full bg-[#efeae0]">
+                        <span
+                          className="block h-full rounded-full bg-[#ffdc32]"
+                          style={{ width: `${(bucket / busiest) * 100}%` }}
+                        />
+                      </span>
+                      <span className="text-right text-xs tabular-nums text-[#65748a]">{bucket}</span>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
           )}
-        </header>
+        </div>
 
         {error ? (
-          <p className="mx-auto mt-12 max-w-xl rounded-2xl bg-white/[0.08] p-6 text-center text-sm text-white/80 ring-1 ring-white/15" role="status">
+          <p className="mt-8 max-w-xl text-base leading-7 text-[#52647b]" role="status">
             {t("Customer reviews could not be loaded")}: {error}
           </p>
-        ) : !hasReviews ? (
-          <div className="mx-auto mt-12 max-w-xl rounded-[28px] bg-white/[0.07] px-6 py-10 text-center ring-1 ring-white/15 backdrop-blur-sm sm:px-10">
-            <StarRating
-              className="size-7"
-              emptyClassName="text-[#ffdc32]/35"
-              filledClassName="text-[#ffdc32]"
-              label={t("No reviews yet")}
-              value={0}
-            />
-            <h3 className="mt-5 font-display text-2xl font-extrabold">{t("Be the first to share your experience")}</h3>
-            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/75">
-              {t("Reviews come only from customers who ordered and received their treats. After your order is delivered, rate it from your orders page and your review will appear here.")}
-            </p>
-            <p className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-[#7fe0a9]">
-              <VerifiedIcon className="size-4" />
-              {t("Verified purchases only")}
-            </p>
-          </div>
         ) : (
-          <ul className="mt-12 flex flex-wrap justify-center gap-5">
-            {reviews.map((review, index) => (
+          <ul className={`mt-8 grid gap-4 ${displayReviews.length > 1 ? "lg:grid-cols-3" : ""}`}>
+            {displayReviews.map((review, index) => (
               <ReviewCard
-                // Phones show the three newest reviews to keep the page short.
-                className={index >= 3 ? "hidden sm:block" : ""}
                 key={`${review.createdAt}-${review.itemId || review.itemName}-${index}`}
                 language={language}
                 review={review}
@@ -345,18 +333,18 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
           </ul>
         )}
 
-        <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+        <div className={`mt-8 flex flex-wrap gap-3 ${(hasReviews || showingDemo) ? "" : "justify-center"}`}>
           <Link
-            className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
-            to="/menu"
-          >
-            {t("Explore the menu")} <ArrowIcon />
-          </Link>
-          <Link
-            className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold text-white ring-1 ring-white/30 transition hover:-translate-y-0.5 hover:bg-white/10 hover:ring-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white transition hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
             to="/account/orders"
           >
-            {t("Write a review")}
+            {t("Write a review")} <ArrowIcon />
+          </Link>
+          <Link
+            className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-extrabold text-[#092a53] ring-1 ring-[#d9d4c7] transition hover:ring-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+            to="/menu"
+          >
+            {t("Explore the menu")}
           </Link>
         </div>
       </div>
@@ -382,6 +370,15 @@ export function HomePage() {
   const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
   const addedTimer = useRef(undefined);
   const reviewsSentinel = useRef(null);
+  const [promoBarVisible, setPromoBarVisible] = useState(promoBarIsVisible);
+
+  useEffect(() => {
+    const sync = () => setPromoBarVisible(promoBarIsVisible());
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-promo-visible"] });
+    sync();
+    return () => observer.disconnect();
+  }, []);
 
   // Slide photos download only when needed: the one on screen, then the next one shortly before it
   // appears. Opening the page no longer downloads every slide photo at once.
@@ -397,7 +394,7 @@ export function HomePage() {
 
     const timeoutId = window.setTimeout(() => {
       setActiveSlide((current) => (current + 1) % homeSlides.length);
-    }, 6000);
+    }, 12000);
 
     return () => window.clearTimeout(timeoutId);
   }, [activeSlide]);
@@ -545,8 +542,11 @@ export function HomePage() {
                     {t("Explore flavors")} <ArrowIcon diagonal />
                   </Link>
                 </div>
+                <p className="mt-5 text-sm font-semibold text-white/80">
+                  {t("Pickup or delivery in Douala and Yaoundé.")}
+                </p>
 
-                <ul className="mt-12 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/10 pt-6 text-sm font-semibold text-white/80">
+                <ul className="mt-8 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/10 pt-6 text-sm font-semibold text-white/80">
                   {["Signature creations", "A flavor for every mood", "Cameroon locations"].map((label) => (
                     <li className="inline-flex items-center gap-2.5" key={label}>
                       <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#ffdc32]/15 text-[#ffdc32]">
@@ -634,18 +634,12 @@ export function HomePage() {
                   </div>
                 </div>
 
-                {/* Thumbnails: the first slides on the left, the cake and ice cream slides marked thumbnailSide "right" on the right. */}
-                {["left", "right"].map((side) => (
                 <div
                   aria-label={t("Choose a featured slide")}
-                  className={`absolute top-1/2 hidden -translate-y-1/2 flex-col gap-3 rounded-[22px] bg-white/10 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/15 backdrop-blur-md sm:flex ${
-                    side === "left" ? "-left-4 lg:-left-10" : "-right-4 lg:-right-10"
-                  }`}
-                  key={side}
+                  className="absolute top-1/2 -left-4 hidden -translate-y-1/2 flex-col gap-3 rounded-[22px] bg-white/10 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/15 backdrop-blur-md sm:flex lg:-left-10"
                   role="group"
                 >
                   {homeSlides.map((slide, index) => {
-                    if ((slide.thumbnailSide || "left") !== side) return null;
                     const isActive = activeSlide === index;
                     return (
                       <button
@@ -663,7 +657,6 @@ export function HomePage() {
                     );
                   })}
                 </div>
-                ))}
                 <div aria-label={t("Choose a featured slide")} className="mt-2 flex justify-center sm:hidden" role="group">
                   {/* The dots stay small, but each one has a finger-sized (32px) tap area. */}
                   {homeSlides.map((slide, index) => (
@@ -687,9 +680,9 @@ export function HomePage() {
           <div className="mt-16 border-t border-white/10 bg-[#061f40]/60 lg:mt-20">
             <ul className="mx-auto grid max-w-[1320px] sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { icon: "⌖", title: "Cameroon locations", detail: "Find a listed shop near you.", to: "/locations" },
+                { icon: "pin", title: "Cameroon locations", detail: "Find a listed shop near you.", to: "/locations" },
                 { icon: "✧", title: "Explore the menu", detail: "Browse signature creations and treats.", to: "/menu" },
-                { icon: "♡", title: "Explore flavors", detail: "Find a new favorite in the catalog.", to: "/flavors" },
+                { icon: "✶", title: "Parties & events", detail: "Ice cream for birthdays, offices and celebrations.", to: "/events" },
                 { icon: "✿", title: "Custom cake requests", detail: "Plan a cake for your celebration.", to: "/custom-cake" },
               ].map((feature, index) => (
                 <li
@@ -704,7 +697,13 @@ export function HomePage() {
                       aria-hidden="true"
                       className="grid size-11 shrink-0 place-items-center rounded-2xl bg-white/[0.07] text-lg text-[#ffdc32] ring-1 ring-white/10 transition group-hover:bg-[#ffdc32] group-hover:text-[#092a53]"
                     >
-                      {feature.icon}
+                      {feature.icon === "pin" ? (
+                        <svg className="size-5" fill="none" viewBox="0 0 24 24">
+                          <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Zm0-9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+                        </svg>
+                      ) : (
+                        feature.icon
+                      )}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-extrabold text-white">{t(feature.title)}</span>
@@ -720,9 +719,101 @@ export function HomePage() {
           </div>
         </section>
 
+        <section aria-labelledby="shops-heading" className="bg-white px-5 py-12 sm:px-8 lg:px-10 lg:py-14">
+          <div className="mx-auto max-w-[1320px]">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl" id="shops-heading">
+                {t("Shops")}
+              </h2>
+              <Link
+                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#092a53] px-4 py-2.5 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(9,42,83,0.16)] transition duration-200 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-safe:hover:-translate-y-0.5"
+                to="/locations"
+              >
+                <svg aria-hidden="true" className="size-4 text-[#ffdc32]" fill="none" viewBox="0 0 24 24">
+                  <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Zm0-9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+                </svg>
+                {t("All locations")}
+                <ArrowIcon />
+              </Link>
+            </div>
+            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {cameroonLocations.map((location) => (
+                <li className="min-w-0" key={`${location.town}-${location.area}`}>
+                  <a
+                    className="group flex h-full flex-col rounded-[22px] bg-[#fbfaf5] p-5 ring-1 ring-[#ebe7dc] transition duration-200 hover:bg-white hover:shadow-[0_18px_36px_rgba(9,42,83,0.18),0_6px_14px_rgba(9,42,83,0.1)] hover:ring-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-safe:hover:-translate-y-1"
+                    href={mapsSearchUrl(location)}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <span className="flex items-center justify-between gap-3">
+                      <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-white text-[#092a53] ring-1 ring-[#ebe7dc] transition duration-200 group-hover:bg-[#092a53] group-hover:text-[#ffdc32] group-hover:ring-[#092a53]">
+                        <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                          <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Zm0-9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+                        </svg>
+                      </span>
+                      <span className="text-xs font-bold text-[#65748a]">{t(location.town)}</span>
+                    </span>
+                    <span className="mt-4 font-display text-lg font-extrabold leading-tight text-[#092a53]">{location.area}</span>
+                    <span className="mt-2 flex items-start gap-2 text-sm leading-5 text-[#52647b]">
+                      <svg aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-[#a48700]" fill="none" viewBox="0 0 24 24">
+                        <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+                      </svg>
+                      <span>{location.address}</span>
+                    </span>
+                    {location.phone && (
+                      <span className="mt-2 flex items-center gap-2 text-sm font-semibold tabular-nums text-[#092a53]">
+                        <svg aria-hidden="true" className="size-4 shrink-0 text-[#092a53]" fill="none" viewBox="0 0 24 24">
+                          <path d="M5 4h3.5l1.7 4.2-2.2 1.4a11 11 0 0 0 6.4 6.4l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5C10.6 20 4 13.4 3.5 5.6A1.5 1.5 0 0 1 5 4Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+                        </svg>
+                        {location.phone}
+                      </span>
+                    )}
+                    <span className="mt-auto block pt-5">
+                      <span className="flex w-full items-center justify-center gap-1.5 rounded-full bg-[#092a53] px-3 py-2.5 text-xs font-extrabold text-white shadow-[0_8px_16px_rgba(9,42,83,0.16)] transition duration-200 group-hover:bg-[#ffdc32] group-hover:text-[#092a53]">
+                        {t("Directions")}
+                        <span className="transition duration-200 group-hover:translate-x-0.5">
+                          <ArrowIcon diagonal />
+                        </span>
+                        <span className="sr-only">{t("Opens in Google Maps")}</span>
+                      </span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {!promoBarVisible && (
+          <section aria-label={t("Buy 2 scoops, get the 3rd free")} className="bg-white px-5 pb-12 sm:px-8 lg:px-10">
+            <div className="mx-auto flex max-w-[1320px] flex-col gap-6 rounded-[28px] bg-[linear-gradient(100deg,#04162e_0%,#092a53_38%,#1e5a9a_100%)] p-6 text-white sm:flex-row sm:items-center sm:gap-8 sm:p-8">
+              <div aria-hidden="true" className="flex shrink-0 items-center gap-2">
+                <span className="grid size-12 place-items-center rounded-full bg-[#ffdc32] font-display text-xl font-extrabold text-[#092a53]">2</span>
+                <span className="font-display text-2xl font-extrabold text-white/40">+</span>
+                <span className="grid size-12 place-items-center rounded-full font-display text-xl font-extrabold text-[#ffdc32] ring-2 ring-[#ffdc32]">1</span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-display text-2xl font-extrabold leading-tight tracking-tight sm:text-[1.7rem]">
+                  {t("Buy 2 scoops, get the 3rd free")}
+                </p>
+                <p className="mt-1 max-w-xl text-sm leading-6 text-white/70">
+                  {t("Pick any three scoops and the lowest-priced one is on us.")}
+                </p>
+              </div>
+              <Link
+                className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] shadow-[0_8px_18px_rgba(0,0,0,0.18)] transition duration-200 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] motion-safe:hover:-translate-y-0.5"
+                to="/flavors"
+              >
+                {t("Explore flavors")}
+                <ArrowIcon />
+              </Link>
+            </div>
+          </section>
+        )}
+
         <section
           aria-labelledby="popular-flavors-heading"
-          className="relative isolate overflow-hidden bg-[#fbfaf5] px-5 py-20 sm:px-8 sm:py-24 lg:px-10 lg:py-28"
+          className="relative isolate overflow-hidden bg-[#fbfaf5] px-5 pb-20 pt-12 sm:px-8 sm:pb-24 sm:pt-14 lg:px-10 lg:pb-28 lg:pt-16"
         >
           <div
             aria-hidden="true"
@@ -906,519 +997,70 @@ export function HomePage() {
         </section>
 
         <section
-          aria-labelledby="why-choose-us-heading"
-          className="relative isolate w-full overflow-hidden bg-[#092a53] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-10 lg:py-28"
-          data-scroll-reveal="skip"
-        >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.05] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:28px_28px]"
-          />
-          <div className="mx-auto grid w-full max-w-[1320px] items-center gap-14 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-5">
-              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
-                <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />
-                {t("Why choose us")}
-              </p>
-              <h2
-                className="mt-5 font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl"
-                id="why-choose-us-heading"
-              >
-                {t("More scoops. More smiles.")}
-              </h2>
-              <p className="mt-5 max-w-md text-base leading-7 text-white/65 sm:text-lg sm:leading-8">
-                {t("Signature creations, bold mix-ins and a treat for every mood, at branches across Cameroon.")}
-              </p>
-
-              <div className="relative mt-10">
-                <figure className="overflow-hidden rounded-[30px] shadow-[0_30px_70px_rgba(0,0,0,0.3)] ring-1 ring-white/10">
-                  <img decoding="async"
-                    alt=""
-                    className="aspect-[16/10] w-full object-cover"
-                    loading="lazy"
-                    sizes="(min-width: 1024px) 480px, 90vw"
-                    src="/cream/cream%202.webp"
-                    srcSet={photoSrcSet("/cream/cream%202.webp")}
-                  />
-                </figure>
-                <div className="absolute -bottom-6 right-4 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-[#092a53] shadow-[0_20px_44px_rgba(0,0,0,0.25)] sm:right-6">
-                  <span aria-hidden="true" className="grid size-10 place-items-center rounded-xl bg-[#ffdc32] text-[#092a53]">
-                    <svg className="size-5" fill="none" viewBox="0 0 24 24">
-                      <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
-                    </svg>
-                  </span>
-                  <span className="leading-tight">
-                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">{t("Signature creations")}</span>
-                    <span className="mt-0.5 block text-sm font-bold">{t("A treat made your way")}</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-7">
-              <ul className="grid grid-cols-2 gap-3 sm:gap-5">
-                {[
-                  {
-                    title: "Mixed on a frozen stone",
-                    detail: "Your ice cream and mix-ins are folded together right in front of you.",
-                    icon: (
-                      <path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Zm0 0 7-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-                    ),
-                  },
-                  {
-                    title: "Made your way",
-                    detail: "Choose your flavor and mix-ins, or pick a signature creation.",
-                    icon: (
-                      <path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
-                    ),
-                  },
-                  {
-                    title: "Cakes for every celebration",
-                    detail: "Ice cream cakes and pies for birthdays, parties and events.",
-                    icon: (
-                      <path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.8 12 6.5l2.5-1.7M9.5 19.2 12 17.5l2.5 1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-                    ),
-                  },
-                  {
-                    title: "Pickup or delivery",
-                    detail: "Order online in Douala and Yaoundé at a time that suits you.",
-                    icon: (
-                      <>
-                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-                        <path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8M9 9.5h.01M15 9.5h.01" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-                      </>
-                    ),
-                  },
-                ].map((benefit, index) => (
-                  <li
-                    className={`group relative flex flex-col rounded-[22px] bg-white/[0.04] p-4 ring-1 ring-white/10 sm:rounded-[26px] transition duration-300 hover:-translate-y-1 hover:bg-white/[0.07] hover:ring-[#ffdc32]/40 sm:p-8 ${
-                      index % 2 === 1 ? "sm:translate-y-8 sm:hover:translate-y-7" : ""
-                    }`}
-                    key={benefit.title}
-                  >
-                    <div className="flex items-start justify-between">
-                      <span
-                        aria-hidden="true"
-                        className="grid size-11 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53] shadow-[0_10px_24px_rgba(255,220,50,0.2)] sm:size-14 transition duration-300 group-hover:-rotate-6 group-hover:scale-105"
-                      >
-                        <svg className="size-6" fill="none" viewBox="0 0 24 24">{benefit.icon}</svg>
-                      </span>
-                      <span aria-hidden="true" className="font-display text-sm font-extrabold tabular-nums text-white/30">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                    </div>
-                    <h3 className="mt-5 font-display text-base font-extrabold leading-tight sm:mt-8 sm:text-2xl">
-                      {t(benefit.title)}
-                    </h3>
-                    <p className="mt-2 text-xs leading-5 text-white/60 sm:text-sm sm:leading-6">
-                      {t(benefit.detail)}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-12 flex flex-wrap items-center gap-4 sm:mt-16">
-                <Link
-                  className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-7 py-4 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
-                  to="/menu"
-                >
-                  {t("Explore the menu")} <ArrowIcon />
-                </Link>
-                <p className="text-sm font-semibold text-white/55">{t("A flavor for every mood")}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section
           aria-labelledby="home-menu-heading"
-          className="relative isolate overflow-hidden bg-white px-5 py-20 sm:px-8 sm:py-24 lg:px-10 lg:py-28"
+          className="bg-[#092a53] px-5 py-10 text-white sm:px-8 sm:py-12 lg:px-10"
         >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-40 top-10 -z-10 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]"
-          />
           <div className="mx-auto max-w-[1320px]">
-            <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-              <div className="max-w-2xl">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                  <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                  {t("The Cold Stone experience")}
-                </p>
-                <h2
-                  className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
-                  id="home-menu-heading"
-                >
-                  {t("Menu highlights")}
-                </h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-[#52647b]">
-                  {t(
-                    "These categories appear on the global Cold Stone menu. Ask a Cameroon branch to confirm current selection.",
-                  )}
-                </p>
-              </div>
+            <div className="flex items-center justify-between gap-4">
+              <h2
+                className="font-display text-3xl font-extrabold leading-none tracking-tight sm:text-4xl"
+                id="home-menu-heading"
+              >
+                {t("Menu highlights")}
+              </h2>
               <Link
-                className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 md:self-auto"
+                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
                 to="/menu"
               >
-                {t("View menu guide")} <ArrowIcon diagonal />
+                {t("View menu guide")} <ArrowIcon />
               </Link>
             </div>
 
-            <div className="mt-12 grid auto-rows-[260px] gap-4 sm:grid-cols-2 sm:auto-rows-[240px] lg:grid-cols-4 lg:auto-rows-[220px] lg:gap-5">
-              {coldStoneMenuCategories.map((category, index) => {
-                const featured = index === 0;
-                const layout = [
-                  "sm:col-span-2 sm:row-span-2",
-                  "lg:col-span-2",
-                  "",
-                  "",
-                  "lg:col-span-2",
-                  "sm:col-span-2 lg:col-span-2",
-                ][index] ?? "";
-                return (
+            <ul className="-mx-5 mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 sm:mx-0 sm:gap-4 sm:px-0 lg:grid lg:grid-cols-6 lg:overflow-visible">
+              {coldStoneMenuCategories.map((category) => (
+                <li className="w-[7.25rem] shrink-0 snap-start sm:w-36 lg:w-auto" key={category.title}>
                   <Link
-                    aria-label={`${t(category.title)} — ${t("Browse the categories")}`}
-                    className={`group relative isolate flex flex-col justify-end overflow-hidden rounded-[26px] bg-[#092a53] text-white shadow-[0_12px_32px_rgba(9,42,83,0.1)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_rgba(9,42,83,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4 ${layout}`}
-                    key={category.title}
+                    className="group flex h-full flex-col items-center rounded-3xl px-1 py-2 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-4 focus-visible:ring-offset-[#092a53]"
                     to={`/menu?category=${encodeURIComponent(category.title)}`}
                   >
-                    <img decoding="async"
-                      alt=""
-                      aria-hidden="true"
-                      className="absolute inset-0 -z-20 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06]"
-                      loading="lazy"
-                      onError={photoErrorHandler(category.image)}
-                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      src={category.image}
-                      srcSet={photoSrcSet(category.image)}
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a]/90 via-[#061d3a]/35 to-transparent transition duration-500 group-hover:from-[#061d3a]/95"
-                    />
-
-                    <div className="absolute inset-x-5 top-5 flex items-center justify-between sm:inset-x-6 sm:top-6">
-                      <span className="font-display text-sm font-extrabold tabular-nums text-white/80">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white backdrop-blur-md">
-                        {t("{count} items", { count: category.items.length })}
-                      </span>
-                    </div>
-
-                    <div className="flex items-end justify-between gap-4 p-5 sm:p-6">
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">
-                          {t("Menu category")}
-                        </p>
-                        <h3
-                          className={`mt-1.5 font-display font-extrabold leading-tight tracking-tight ${
-                            featured ? "text-3xl sm:text-4xl lg:text-5xl" : "text-xl sm:text-2xl"
-                          }`}
-                        >
-                          {t(category.title)}
-                        </h3>
-                        <p
-                          className={`mt-2 max-w-md text-sm leading-6 text-white/75 ${
-                            featured ? "line-clamp-2" : "line-clamp-2 sm:line-clamp-1 lg:line-clamp-2"
-                          }`}
-                        >
-                          {t(category.description)}
-                        </p>
-                      </div>
-                      <span
-                        aria-hidden="true"
-                        className="grid size-11 shrink-0 place-items-center rounded-full bg-white text-[#092a53] shadow-md transition duration-300 group-hover:bg-[#ffdc32] group-hover:-rotate-45"
-                      >
-                        <ArrowIcon />
-                      </span>
-                    </div>
+                    <span className="rounded-full bg-[#ffdc32] p-1 shadow-[0_10px_24px_rgba(0,0,0,0.25)] transition group-hover:bg-white">
+                      <img
+                        alt=""
+                        className="size-[5.5rem] rounded-full object-cover sm:size-28"
+                        decoding="async"
+                        loading="lazy"
+                        onError={photoErrorHandler(category.image)}
+                        sizes="112px"
+                        src={thumbnail(category.image, "small")}
+                      />
+                    </span>
+                    <span className="mt-3 font-display text-sm font-extrabold leading-tight text-white sm:text-base">
+                      {t(category.title)}
+                    </span>
                   </Link>
-                );
-              })}
-            </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
-        <section
-          aria-labelledby="home-about-heading"
-          className="relative isolate overflow-hidden bg-[#fbfaf5] px-4 py-16 sm:px-7 sm:py-24 lg:px-10"
-          data-scroll-reveal="skip"
-        >
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-[#e5e1d7] to-transparent"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute -right-40 top-1/3 -z-10 size-[28rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]"
-          />
-          <div className="mx-auto max-w-[1320px]">
-            <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-              <div className="relative lg:col-span-6">
-                <div className="grid grid-cols-6 grid-rows-6 gap-3 sm:gap-4 [aspect-ratio:1/1] sm:[aspect-ratio:6/5]">
-                  <figure className="relative col-span-4 row-span-6 overflow-hidden rounded-[28px] bg-[#fff3b8] shadow-[0_24px_60px_rgba(9,42,83,0.16)]">
-                    <img decoding="async"
-                      alt={t("A child enjoying ice cream")}
-                      className="size-full object-cover object-[58%_30%] transition duration-700 hover:scale-[1.03]"
-                      loading="lazy"
-                      sizes="(min-width: 1024px) 400px, 66vw"
-                      src="/ice-images/about-child.jpg"
-                      srcSet={photoSrcSet("/ice-images/about-child.jpg")}
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#092a53]/40 via-transparent to-transparent"
-                    />
-                  </figure>
-                  <figure className="relative col-span-2 row-span-3 overflow-hidden rounded-[22px] bg-[#fff3b8] shadow-[0_14px_34px_rgba(9,42,83,0.12)]">
-                    <img decoding="async"
-                      alt={t("Ice cream cupcake")}
-                      className="size-full object-cover transition duration-700 hover:scale-[1.05]"
-                      loading="lazy"
-                      onError={photoErrorHandler("/cream/cream%203.webp")}
-                      src={thumbnail("/cream/cream%203.webp")}
-                    />
-                  </figure>
-                  <figure className="relative col-span-2 row-span-3 overflow-hidden rounded-[22px] bg-[#fff3b8] shadow-[0_14px_34px_rgba(9,42,83,0.12)]">
-                    <img decoding="async"
-                      alt={t("Chocolate ice cream cupcake")}
-                      className="size-full object-cover transition duration-700 hover:scale-[1.05]"
-                      loading="lazy"
-                      onError={photoErrorHandler("/cream/cream%205.webp")}
-                      src={thumbnail("/cream/cream%205.webp")}
-                    />
-                  </figure>
-                </div>
-                <div className="absolute -bottom-6 left-4 flex items-center gap-3 rounded-2xl border border-[#eeeae1] bg-white/95 px-4 py-3 shadow-[0_18px_40px_rgba(9,42,83,0.14)] backdrop-blur-sm sm:left-8 sm:px-5 sm:py-4">
-                  <div aria-hidden="true" className="flex -space-x-2.5">
-                    {["/cream/cream%201.webp", "/ice-images/ice-7.webp", "/milk/mk-2.webp"].map((src) => (
-                      <img decoding="async"
-                        alt=""
-                        className="size-9 rounded-full border-2 border-white object-cover"
-                        key={src}
-                        loading="lazy"
-                        onError={photoErrorHandler(src)}
-                        src={thumbnail(src, "tiny")}
-                      />
-                    ))}
-                  </div>
-                  <div className="leading-tight">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">
-                      {t("Happy customers")}
-                    </p>
-                    <p className="mt-0.5 text-sm font-bold text-[#092a53]">
-                      {t("Your smile is our success.")}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:col-span-6 lg:pl-4">
-                <p className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#8a7000]">
-                  <span aria-hidden="true" className="h-px w-8 bg-[#a48700]" />
-                  {t("About us")}
-                </p>
-                <h2
-                  className="mt-4 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
-                  id="home-about-heading"
-                >
-                  {t("The joy is in the details.")}
-                </h2>
-                <p className="mt-5 max-w-xl text-base leading-7 text-[#52647b]">
-                  {t(
-                    "Discover Cold Stone ice cream, signature creations, and the mix-ins that make every scoop a little more special.",
-                  )}
-                </p>
-
-                <ul className="mt-8 divide-y divide-[#e9e5da] border-y border-[#e9e5da]">
-                  {[
-                    { number: "01", label: "Pickup or delivery", detail: "Choose what suits your day." },
-                    { number: "02", label: "Loyalty rewards", detail: "Earn points on every order." },
-                    { number: "03", label: "Custom cakes", detail: "Plan a cake for any celebration." },
-                  ].map((item) => (
-                    <li className="group flex items-baseline gap-5 py-4 sm:py-5" key={item.label}>
-                      <span
-                        aria-hidden="true"
-                        className="font-display text-sm font-extrabold tabular-nums text-[#8a7000] transition-colors group-hover:text-[#092a53]"
-                      >
-                        {item.number}
-                      </span>
-                      <div className="flex flex-1 flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-                        <p className="font-display text-lg font-extrabold text-[#092a53]">
-                          {t(item.label)}
-                        </p>
-                        <p className="text-sm text-[#65748a]">{t(item.detail)}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <Link
-                    className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-                    to="/about"
-                  >
-                    {t("Discover our story")} <ArrowIcon />
-                  </Link>
-                  <Link
-                    className="inline-flex items-center gap-2 rounded-full border border-[#d9d4c7] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:border-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-                    to="/menu"
-                  >
-                    {t("Explore the menu")}
-                  </Link>
-                </div>
-              </div>
-            </div>
+        <section aria-label={t("About us")} className="bg-[#fbfaf5] px-5 py-8 sm:px-8 lg:px-10">
+          <div className="mx-auto flex max-w-[1320px] flex-col items-start justify-between gap-4 border-t border-[#e9e5da] pt-8 sm:flex-row sm:items-center">
+            <p className="max-w-2xl text-base leading-7 text-[#52647b]">
+              {t("Discover Cold Stone ice cream, signature creations, and the mix-ins that make every scoop a little more special.")}
+            </p>
+            <Link
+              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+              to="/about"
+            >
+              {t("Discover our story")} <ArrowIcon />
+            </Link>
           </div>
         </section>
 
         {/* Always shown: the reviews, or an invitation to write the first one. */}
         <div aria-hidden="true" className="h-px" ref={reviewsSentinel} />
         <ReviewsSection error={reviewsError} isLoaded={reviewsLoaded} language={language} reviews={reviews} stats={reviewStats} t={t} />
-
-        <section
-          aria-labelledby="home-faq-heading"
-          className="relative isolate overflow-hidden bg-white px-5 py-20 sm:px-8 sm:py-24 lg:px-10 lg:py-28"
-        >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -left-40 top-24 -z-10 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]"
-          />
-          <div className="mx-auto grid max-w-[1240px] gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-5">
-              <div className="lg:sticky lg:top-28">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                  <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                  {t("Here to help")}
-                </p>
-                <h2
-                  className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
-                  id="home-faq-heading"
-                >
-                  {t("Frequently Asked Questions")}
-                </h2>
-                <p className="mt-5 max-w-md text-base leading-7 text-[#52647b]">
-                  {t(
-                    "Quick answers about ordering, delivery, payment and our branches.",
-                  )}
-                </p>
-
-                <div className="relative isolate mt-10 overflow-hidden rounded-[26px] bg-[#092a53] p-7 text-white shadow-[0_20px_50px_rgba(9,42,83,0.18)] sm:p-8">
-                  <div
-                    aria-hidden="true"
-                    className="absolute -right-14 -top-14 -z-10 size-44 rounded-full border-[28px] border-white/[0.06]"
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="grid size-12 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]"
-                  >
-                    <svg className="size-6" fill="none" viewBox="0 0 24 24">
-                      <path
-                        d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V17H6.5A2.5 2.5 0 0 1 4 14.5v-8Z"
-                        stroke="currentColor"
-                        strokeLinejoin="round"
-                        strokeWidth="1.8"
-                      />
-                      <path d="M8.5 9.5h7M8.5 12.5h4" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-                    </svg>
-                  </span>
-                  <h3 className="mt-6 font-display text-2xl font-extrabold leading-tight">
-                    {t("Still have questions?")}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-white/70">
-                    {t("Send us a message and our team will get back to you, or find your nearest branch.")}
-                  </p>
-                  <div className="mt-6 flex flex-wrap gap-3">
-                    <Link
-                      className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
-                      to="/contact"
-                    >
-                      {t("Contact us")} <ArrowIcon />
-                    </Link>
-                    <Link
-                      className="inline-flex items-center gap-2 rounded-full border border-white/25 px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
-                      to="/locations"
-                    >
-                      {t("Locations")}
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-7">
-              <div className="border-t border-[#e5e1d7]">
-                {[
-                  {
-                    question: "How do I place an order?",
-                    answer:
-                      "Choose your treats from the menu or pick flavors by the scoop, add them to your bag and check out. You choose pickup or delivery and a time that suits you.",
-                  },
-                  {
-                    question: "How can I pay?",
-                    answer:
-                      "Pay securely online with a bank card or with Mobile Money. Your payment details are entered on the secure payment page and never stored on our site.",
-                  },
-                  {
-                    question: "Do you deliver?",
-                    answer:
-                      "Yes. Choose delivery at checkout and we bring your order to your door, or pick it up at your nearest branch. The delivery fee is shown before you pay.",
-                  },
-                  {
-                    question: "Can I order a cake or ice cream for an event?",
-                    answer:
-                      "Yes. Request a custom ice cream cake for a birthday or celebration, or order in bulk for parties, offices and weddings from the Parties & events page.",
-                  },
-                  {
-                    question: "Where are your branches?",
-                    answer:
-                      "We are in Douala and Yaoundé. Open the Locations page for addresses, phone numbers and directions.",
-                  },
-                  {
-                    question: "How can I contact you?",
-                    answer:
-                      "Send us a message from the Contact page or chat with us on WhatsApp. We reply as soon as we can.",
-                  },
-                ].map(({ question, answer }, index) => (
-                  <details
-                    className="group border-b border-[#e5e1d7] transition-colors open:border-[#092a53]/20"
-                    key={question}
-                    open={index === 0}
-                  >
-                    <summary className="flex cursor-pointer list-none items-start gap-5 py-6 marker:content-none focus-visible:outline-none sm:gap-7 sm:py-7 [&::-webkit-details-marker]:hidden">
-                      <span
-                        aria-hidden="true"
-                        className="pt-1 font-display text-sm font-extrabold tabular-nums text-[#8a7000] transition-colors group-open:text-[#092a53]"
-                      >
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <span className="flex-1 font-display text-lg font-extrabold leading-snug text-[#092a53] transition-colors group-hover:text-[#163e6b] sm:text-xl">
-                        {t(question)}
-                      </span>
-                      <span
-                        aria-hidden="true"
-                        className="relative mt-0.5 grid size-9 shrink-0 place-items-center rounded-full border border-[#e5e1d7] text-[#092a53] transition duration-300 group-hover:border-[#092a53] group-open:border-[#ffdc32] group-open:bg-[#ffdc32]"
-                      >
-                        <span className="absolute h-0.5 w-3.5 rounded-full bg-current" />
-                        <span className="absolute h-3.5 w-0.5 rounded-full bg-current transition duration-300 group-open:rotate-90 group-open:opacity-0" />
-                      </span>
-                    </summary>
-                    <p className="-mt-2 max-w-2xl pb-7 pl-11 pr-14 text-base leading-7 text-[#52647b] sm:pl-14">
-                      {t(answer)}
-                    </p>
-                  </details>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <InstagramSection />
       </main>
       <Footer />
     </div>
