@@ -324,7 +324,7 @@ export function FlavorsPage() {
                               ? "bg-[#4caf50] text-white"
                               : soldOut
                                 ? "bg-[#f1ede2] text-[#a5aebb]"
-                                : "bg-[#092a53] text-white hover:bg-[#163e6b] hover:shadow-[0_8px_20px_rgba(9,42,83,0.25)]"
+                                : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#ffe76c] hover:shadow-[0_8px_20px_rgba(255,220,50,0.35)]"
                           }`}
                           disabled={soldOut}
                           onClick={() => addFlavor(flavor)}
