@@ -145,6 +145,8 @@ Built-in menu products live in `shared/data.js`. A product's ID is built from it
 
 Built-in category descriptions are stored in the database. To change one for existing sites, add a row to `CATEGORY_DESCRIPTION_UPDATES` in `server/database.js` (old text, new text): the server updates it at start-up only if the old text is still there, so a description an admin has edited is kept. Category photos work the same way with `CATEGORY_IMAGE_UPDATES`.
 
+The built-in scoop flavors are defined in `shared/flavorCatalog.js`. The server applies this catalog once to each database, adding missing flavors without replacing existing flavor details or stock. The migration also renames the old `Biscute` banana flavor to `Banana Caramel Swirl` while keeping its current stock.
+
 ### Flavor tags
 
 Each flavor has one tag, shown on its card and used as a filter on `/flavors`. A tag only becomes a filter button when two or more flavors share it, so give flavors a small set of family tags (for example **Classics**, **Fruity**, **Chocolate**, **Caramel & coffee**) rather than a different tag each. French names for tags go in `src/language/french.ts`.

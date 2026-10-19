@@ -7,6 +7,7 @@ import {
   coldStoneMenuCategories,
   getMenuItemId,
 } from "../shared/data.js";
+import { coldStoneFlavors } from "../shared/flavorCatalog.js";
 
 const databasePath =
   process.env.DATABASE_PATH ||
@@ -1001,6 +1002,109 @@ export async function saveFlavor(flavor) {
     )
     .run(values);
   return findFlavor(Number(result.lastInsertRowid));
+}
+
+const FLAVOR_CATALOG_MIGRATION = "cold-stone-flavor-catalog-v1";
+const LEGACY_BANANA_FLAVOR = {
+  name: "Biscute",
+  detail: "Banana ice cream, caramel swirls",
+};
+
+function flavorCatalogValues(flavor) {
+  return { ...flavor, allergies: JSON.stringify(flavor.allergies) };
+}
+
+export async function migrateFlavorCatalog() {
+  await database.prepare(`
+    CREATE TABLE IF NOT EXISTS app_migrations (
+      name TEXT PRIMARY KEY,
+      applied_at TEXT
+    )
+  `).run();
+
+  const existingBananaFlavor = coldStoneFlavors.find(({ name }) => name === "Banana Caramel Swirl");
+  if (!existingBananaFlavor) throw new Error("The built-in banana flavor is missing from the catalog.");
+
+  if (databaseKind === "postgres") {
+    await database.transaction(async () => {
+      await database.prepare(`
+        INSERT INTO app_migrations (name) VALUES (?) ON CONFLICT (name) DO NOTHING
+      `).run(FLAVOR_CATALOG_MIGRATION);
+      const migration = await database.prepare(`
+        SELECT applied_at AS "appliedAt" FROM app_migrations WHERE name = ? FOR UPDATE
+      `).get(FLAVOR_CATALOG_MIGRATION);
+      if (migration?.appliedAt) return;
+
+      const legacy = await database.prepare(
+        "SELECT id FROM flavors WHERE name = ? AND detail = ?",
+      ).get(LEGACY_BANANA_FLAVOR.name, LEGACY_BANANA_FLAVOR.detail);
+      const banana = await database.prepare(
+        "SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)",
+      ).get(existingBananaFlavor.name);
+      if (legacy && !banana) {
+        await database.prepare(`
+          UPDATE flavors SET name = @name, detail = @detail, description = @description,
+            price = @price, image = @image, color = @color, tag = @tag,
+            servings = @servings, allergies = @allergies, origin = @origin
+          WHERE id = @id
+        `).run({ ...flavorCatalogValues(existingBananaFlavor), id: legacy.id });
+      }
+
+      for (const flavor of coldStoneFlavors) {
+        const existing = await database.prepare(
+          "SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)",
+        ).get(flavor.name);
+        if (existing) continue;
+        await database.prepare(`
+          INSERT INTO flavors (name, detail, description, price, image, color, tag, servings, allergies, origin, stock)
+          VALUES (@name, @detail, @description, @price, @image, @color, @tag, @servings, @allergies, @origin, @stock)
+        `).run(flavorCatalogValues(flavor));
+      }
+
+      await database.prepare("UPDATE app_migrations SET applied_at = ? WHERE name = ?")
+        .run(new Date().toISOString(), FLAVOR_CATALOG_MIGRATION);
+    });
+    return;
+  }
+
+  const applyMigration = database.transaction(() => {
+    database.prepare("INSERT OR IGNORE INTO app_migrations (name) VALUES (?)")
+      .run(FLAVOR_CATALOG_MIGRATION);
+    const migration = database.prepare(
+      "SELECT applied_at FROM app_migrations WHERE name = ?",
+    ).get(FLAVOR_CATALOG_MIGRATION);
+    if (migration?.applied_at) return;
+
+    const legacy = database.prepare(
+      "SELECT id FROM flavors WHERE name = ? AND detail = ?",
+    ).get(LEGACY_BANANA_FLAVOR.name, LEGACY_BANANA_FLAVOR.detail);
+    const banana = database.prepare(
+      "SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)",
+    ).get(existingBananaFlavor.name);
+    if (legacy && !banana) {
+      database.prepare(`
+        UPDATE flavors SET name = @name, detail = @detail, description = @description,
+          price = @price, image = @image, color = @color, tag = @tag,
+          servings = @servings, allergies = @allergies, origin = @origin
+        WHERE id = @id
+      `).run({ ...flavorCatalogValues(existingBananaFlavor), id: legacy.id });
+    }
+
+    for (const flavor of coldStoneFlavors) {
+      const existing = database.prepare(
+        "SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)",
+      ).get(flavor.name);
+      if (existing) continue;
+      database.prepare(`
+        INSERT INTO flavors (name, detail, description, price, image, color, tag, servings, allergies, origin, stock)
+        VALUES (@name, @detail, @description, @price, @image, @color, @tag, @servings, @allergies, @origin, @stock)
+      `).run(flavorCatalogValues(flavor));
+    }
+
+    database.prepare("UPDATE app_migrations SET applied_at = ? WHERE name = ?")
+      .run(new Date().toISOString(), FLAVOR_CATALOG_MIGRATION);
+  });
+  applyMigration();
 }
 
 function toMenuItem(row) {

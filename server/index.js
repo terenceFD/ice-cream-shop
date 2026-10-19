@@ -31,6 +31,7 @@ import {
   deleteContactMessage,
   deleteContactMessages,
   deleteSavedCart,
+  migrateFlavorCatalog,
   finalizePaidCheckout,
   finalizeZeroAmountCheckout,
   findCustomMenuItem,
@@ -3967,10 +3968,11 @@ if (existsSync(frontendEntry)) {
 
 try {
   await verifyDatabaseSchema()
+  await migrateFlavorCatalog()
   await database.prepare('DELETE FROM pending_customer_signups WHERE expires_at <= ?')
     .run(new Date().toISOString())
 } catch (error) {
-  console.error('Database schema verification failed:', error)
+  console.error('Database schema verification or flavor catalog migration failed:', error)
   await database.close()
   throw error
 }
