@@ -16,7 +16,7 @@ function getShopWhatsAppNumber() {
   return numberRequest;
 }
 
-/** A floating "Chat on WhatsApp" button, shown on customer pages when the shop has a WhatsApp number. */
+/** A floating WhatsApp button, shown on customer pages when the shop has a WhatsApp number. */
 export function WhatsAppButton() {
   const { t } = useLanguage();
   const location = useLocation();
@@ -41,7 +41,7 @@ export function WhatsAppButton() {
       target="_blank"
     >
       <WhatsAppIcon className="size-7" />
-      <span className="hidden pr-1 text-sm font-bold sm:group-hover:inline">{t("Chat with us")}</span>
+      <span className="pr-1 text-sm font-bold">{t("Chat us")}</span>
     </a>
   );
 }

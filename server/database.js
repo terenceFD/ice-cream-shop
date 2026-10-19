@@ -72,6 +72,11 @@ if (configuredDatabaseBackend === "postgres") {
       role TEXT NOT NULL DEFAULT 'owner',
       store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL,
       branch_town TEXT,
+      totp_secret TEXT,
+      totp_pending_secret TEXT,
+      totp_enabled INTEGER NOT NULL DEFAULT 0,
+      totp_last_counter INTEGER NOT NULL DEFAULT -1,
+      totp_recovery_codes TEXT NOT NULL DEFAULT '[]',
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -563,11 +568,17 @@ if (configuredDatabaseBackend === "postgres") {
   addColumnIfMissing("cake_requests", "deposit_reference", "TEXT");
   addColumnIfMissing("cake_requests", "deposit_external_reference", "TEXT");
   addColumnIfMissing("cake_requests", "deposit_paid_at", "TEXT");
+  addColumnIfMissing("cake_requests", "deposit_admin_seen", "INTEGER NOT NULL DEFAULT 1");
   addColumnIfMissing("customers", "profile_picture", "TEXT NOT NULL DEFAULT ''");
   addColumnIfMissing("orders", "review_reminder_sent_at", "TEXT");
   addColumnIfMissing("customers", "welcome_notification_sent_at", "TEXT");
   addColumnIfMissing("admins", "role", "TEXT NOT NULL DEFAULT 'owner'");
   addColumnIfMissing("admins", "security_pin_hash", "TEXT");
+  addColumnIfMissing("admins", "totp_secret", "TEXT");
+  addColumnIfMissing("admins", "totp_pending_secret", "TEXT");
+  addColumnIfMissing("admins", "totp_enabled", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing("admins", "totp_last_counter", "INTEGER NOT NULL DEFAULT -1");
+  addColumnIfMissing("admins", "totp_recovery_codes", "TEXT NOT NULL DEFAULT '[]'");
   // The site was renamed from "Antixor Icy"; flavors that used the old default origin follow.
   sqliteDatabase.prepare("UPDATE flavors SET origin = 'Cold Stone Creamery' WHERE origin = 'Antixor Icy'").run();
   addColumnIfMissing(
@@ -792,6 +803,21 @@ export async function verifyDatabaseSchema() {
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS security_pin_hash TEXT
   `).run();
   await database.prepare(`
+    ALTER TABLE admins ADD COLUMN IF NOT EXISTS totp_secret TEXT
+  `).run();
+  await database.prepare(`
+    ALTER TABLE admins ADD COLUMN IF NOT EXISTS totp_pending_secret TEXT
+  `).run();
+  await database.prepare(`
+    ALTER TABLE admins ADD COLUMN IF NOT EXISTS totp_enabled INTEGER NOT NULL DEFAULT 0
+  `).run();
+  await database.prepare(`
+    ALTER TABLE admins ADD COLUMN IF NOT EXISTS totp_last_counter BIGINT NOT NULL DEFAULT -1
+  `).run();
+  await database.prepare(`
+    ALTER TABLE admins ADD COLUMN IF NOT EXISTS totp_recovery_codes TEXT NOT NULL DEFAULT '[]'
+  `).run();
+  await database.prepare(`
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS review_reminder_sent_at TEXT
   `).run();
   await database.prepare(`
@@ -838,6 +864,9 @@ export async function verifyDatabaseSchema() {
   `).run();
   await database.prepare(`
     ALTER TABLE event_orders ADD COLUMN IF NOT EXISTS deposit_admin_seen INTEGER NOT NULL DEFAULT 1
+  `).run();
+  await database.prepare(`
+    ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_admin_seen INTEGER NOT NULL DEFAULT 1
   `).run();
   await database.prepare(`
     CREATE INDEX IF NOT EXISTS idx_event_orders_customer ON event_orders(customer_id)

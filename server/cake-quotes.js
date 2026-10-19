@@ -15,7 +15,7 @@ const SELECT_CAKE = `
     r.created_at AS "createdAt"
   FROM cake_requests r LEFT JOIN stores s ON s.id = r.store_id`
 
-function present(row, { includeToken = false } = {}) {
+function present(row, { includeToken = false, includePaymentDetails = false } = {}) {
   if (!row) return null
   let toppings = []
   try {
@@ -49,13 +49,25 @@ function present(row, { includeToken = false } = {}) {
     suggestedTotal,
     suggestedDeposit: suggestedDeposit(quotedTotal || suggestedTotal),
     ...(includeToken ? { payToken: row.payToken } : {}),
+    ...(includePaymentDetails ? {
+      depositProvider: row.depositProvider,
+      depositReference: row.depositReference,
+      depositExternalReference: row.depositExternalReference,
+    } : {}),
   }
 }
 
 function publicCake(row) {
   const cake = present(row)
   if (!cake) return null
-  const { customerEmail, customerPhone, ...safe } = cake
+  const {
+    customerEmail,
+    customerPhone: _customerPhone,
+    depositProvider: _depositProvider,
+    depositReference: _depositReference,
+    depositExternalReference: _depositExternalReference,
+    ...safe
+  } = cake
   return {
     ...safe,
     customerEmail: customerEmail ? `${customerEmail.slice(0, 2)}…` : '',
@@ -73,7 +85,10 @@ export function registerCakeQuoteRoutes(app, deps) {
   const getCake = async (id) => present(await database.prepare(`${SELECT_CAKE} WHERE r.id = ?`).get(id))
   const getCakeByToken = async (token) => {
     if (typeof token !== 'string' || !token || token.length > 80) return null
-    return present(await database.prepare(`${SELECT_CAKE} WHERE r.pay_token = ?`).get(token), { includeToken: true })
+    return present(await database.prepare(`${SELECT_CAKE} WHERE r.pay_token = ?`).get(token), {
+      includeToken: true,
+      includePaymentDetails: true,
+    })
   }
 
   async function adminEmails(storeId) {
@@ -100,9 +115,18 @@ export function registerCakeQuoteRoutes(app, deps) {
     return true
   }
 
+  function cakeListScope(admin) {
+    if (admin.role === 'store_admin') return { clause: 'WHERE r.store_id = ?', parameters: [admin.storeId] }
+    const town = admin.role === 'branch_admin' ? admin.branchTown : selectedStoreTown(admin)
+    if (admin.role === 'owner' || admin.role === 'branch_admin') {
+      return town ? { clause: 'WHERE s.town = ?', parameters: [town] } : { clause: '', parameters: [] }
+    }
+    return { clause: 'WHERE r.store_id = ?', parameters: [admin.storeId] }
+  }
+
   async function markDepositPaid(id) {
     const result = await database.prepare(`
-      UPDATE cake_requests SET status = 'confirmed', deposit_paid_at = ?
+      UPDATE cake_requests SET status = 'confirmed', deposit_paid_at = ?, deposit_admin_seen = 0
       WHERE id = ? AND status = 'contacted' AND deposit_amount IS NOT NULL
     `).run(new Date().toISOString(), id)
     const cake = await getCake(id)
@@ -242,6 +266,33 @@ export function registerCakeQuoteRoutes(app, deps) {
     response.json({ request: updated })
   })
 
+  app.get('/api/admin/cake-requests/deposit-notices', requireAdmin, async (request, response) => {
+    const { clause, parameters } = cakeListScope(request.admin)
+    const where = `${clause}${clause ? ' AND' : ' WHERE'} r.status = 'confirmed' AND r.deposit_admin_seen = 0`
+    const notices = await database.prepare(`
+      SELECT r.id, r.customer_name AS "customerName", r.deposit_amount AS "depositAmount",
+        r.size, r.flavor, r.pickup_date AS "pickupDate", s.name AS "storeName"
+      FROM cake_requests r LEFT JOIN stores s ON s.id = r.store_id
+      ${where}
+      ORDER BY r.deposit_paid_at DESC, r.id DESC
+      LIMIT 5
+    `).all(...parameters)
+    response.json({
+      notices: notices.map((notice) => ({ ...notice, depositAmount: Number(notice.depositAmount) || 0 })),
+    })
+  })
+
+  app.patch('/api/admin/cake-requests/:id/deposit-notice', requireAdmin, async (request, response) => {
+    const id = Number(request.params.id)
+    const cake = Number.isSafeInteger(id) ? await getCake(id) : null
+    if (!adminCanSee(request, cake)) {
+      response.status(404).json({ error: 'Custom cake request not found.' })
+      return
+    }
+    await database.prepare('UPDATE cake_requests SET deposit_admin_seen = 1 WHERE id = ?').run(id)
+    response.status(204).end()
+  })
+
   app.get('/api/customer/cake-requests', requireCustomer, async (request, response) => {
     const rows = await database.prepare(`${SELECT_CAKE} WHERE r.customer_id = ? OR r.customer_email = ? ORDER BY r.id DESC LIMIT 50`)
       .all(request.customer.id, request.customer.email)
@@ -259,7 +310,10 @@ export function registerCakeQuoteRoutes(app, deps) {
 
   app.post('/api/customer/cake-requests/:id/deposit', requireCustomer, async (request, response) => {
     const id = Number(request.params.id)
-    const cake = Number.isSafeInteger(id) ? present(await database.prepare(`${SELECT_CAKE} WHERE r.id = ?`).get(id), { includeToken: true }) : null
+    const cake = Number.isSafeInteger(id) ? present(await database.prepare(`${SELECT_CAKE} WHERE r.id = ?`).get(id), {
+      includeToken: true,
+      includePaymentDetails: true,
+    }) : null
     if (!cake || (Number(cake.customerId) !== Number(request.customer.id) && cake.customerEmail !== request.customer.email)) {
       response.status(404).json({ error: 'Cake request not found.' })
       return
@@ -306,7 +360,10 @@ export function registerCakeQuoteRoutes(app, deps) {
 
   app.post('/api/customer/cake-requests/:id/deposit/confirm', requireCustomer, async (request, response) => {
     const id = Number(request.params.id)
-    const cake = Number.isSafeInteger(id) ? present(await database.prepare(`${SELECT_CAKE} WHERE r.id = ?`).get(id), { includeToken: true }) : null
+    const cake = Number.isSafeInteger(id) ? present(await database.prepare(`${SELECT_CAKE} WHERE r.id = ?`).get(id), {
+      includeToken: true,
+      includePaymentDetails: true,
+    }) : null
     if (!cake || (Number(cake.customerId) !== Number(request.customer.id) && cake.customerEmail !== request.customer.email)) {
       response.status(404).json({ error: 'Cake request not found.' })
       return

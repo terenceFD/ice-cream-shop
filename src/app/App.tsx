@@ -14,7 +14,6 @@ import { ScrollToTop } from "../components/ScrollToTop";
 import { WebsiteLoader } from "../components/WebsiteLoader";
 import { InstallAppPrompt } from "../components/InstallAppPrompt";
 import { PromotionAlertsPrompt } from "../components/PromotionAlerts";
-import { WhatsAppButton } from "../components/WhatsAppButton";
 import { RouteMeta } from "../seo/RouteMeta";
 
 // Each page below downloads only when a visitor opens it, so the first visit to the shop
@@ -166,7 +165,6 @@ function App() {
                 </Suspense>
                 <InstallAppPrompt />
                 <PromotionAlertsPrompt />
-                <WhatsAppButton />
                 <RouteMeta />
               </AdminAuthProvider>
             </AuthProvider>

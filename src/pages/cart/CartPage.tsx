@@ -77,9 +77,8 @@ export function CartPage() {
                   <li className="flex items-center gap-2 sm:gap-3" key={step}>
                     <span
                       aria-current={index === 0 ? 'step' : undefined}
-                      className={`flex items-center gap-2 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-3.5 text-xs font-extrabold ${
-                        index === 0 ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/[0.07] text-white/55 ring-1 ring-white/10'
-                      }`}
+                      className={`flex items-center gap-2 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-3.5 text-xs font-extrabold ${index === 0 ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/[0.07] text-white/55 ring-1 ring-white/10'
+                        }`}
                     >
                       <span className={`grid size-6 place-items-center rounded-full text-[11px] ${index === 0 ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-white/10'}`}>
                         {index + 1}
@@ -150,13 +149,12 @@ export function CartPage() {
                       >
                         {[1, 2, 3].map((segment) => (
                           <span
-                            className={`h-2 rounded-full transition-colors duration-500 ${
-                              scoopsTowardOffer === 0 || segment <= scoopsTowardOffer
-                                ? segment === 3 || scoopsTowardOffer === 0
-                                  ? 'bg-[#6c9c45]'
-                                  : 'bg-[#ffdc32]'
-                                : 'bg-[#eeebe1]'
-                            }`}
+                            className={`h-2 rounded-full transition-colors duration-500 ${scoopsTowardOffer === 0 || segment <= scoopsTowardOffer
+                              ? segment === 3 || scoopsTowardOffer === 0
+                                ? 'bg-[#6c9c45]'
+                                : 'bg-[#ffdc32]'
+                              : 'bg-[#eeebe1]'
+                              }`}
                             key={segment}
                           />
                         ))}

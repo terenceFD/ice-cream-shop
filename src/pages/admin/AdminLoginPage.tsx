@@ -27,7 +27,14 @@ function Icon({ path, className = "size-4" }: { path: string; className?: string
 }
 
 export function AdminLoginPage() {
-  const { isAdmin, login } = useAdminAuth();
+  const {
+    isAdmin,
+    login,
+    beginAdminMfaSetup,
+    confirmAdminMfaSetup,
+    verifyAdminMfaLogin,
+    completeLogin,
+  } = useAdminAuth();
   const { t, language, setLanguage } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
@@ -37,6 +44,12 @@ export function AdminLoginPage() {
   const [errorKey, setErrorKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
+  const [mfaStage, setMfaStage] = useState<"password" | "setup" | "verify" | "recovery">("password");
+  const [challengeToken, setChallengeToken] = useState("");
+  const [authenticatorSecret, setAuthenticatorSecret] = useState("");
+  const [authenticatorUri, setAuthenticatorUri] = useState("");
+  const [authenticatorCode, setAuthenticatorCode] = useState("");
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
   const [wasSignedOutIdle] = useState(() => {
     try {
       return sessionStorage.getItem(IDLE_SIGN_OUT_KEY) === "1";
@@ -55,7 +68,7 @@ export function AdminLoginPage() {
   }, []);
 
   // Admins start on the store overview (today's orders and what needs attention).
-  if (isAdmin) {
+  if (isAdmin && recoveryCodes.length === 0) {
     return <Navigate to="/admin/overview" replace />;
   }
 
@@ -64,7 +77,32 @@ export function AdminLoginPage() {
     setError("");
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      if (mfaStage === "password") {
+        const result = await login(email, password);
+        setChallengeToken(result.challengeToken);
+        if (result.setupRequired) {
+          const setup = await beginAdminMfaSetup(result.challengeToken);
+          setAuthenticatorSecret(setup.secret);
+          setAuthenticatorUri(setup.authenticatorUri);
+          setMfaStage("setup");
+        } else {
+          setMfaStage("verify");
+        }
+        return;
+      }
+
+      if (!challengeToken) throw new Error("Your sign-in step expired. Enter your password again.");
+      if (mfaStage === "setup") {
+        const result = await confirmAdminMfaSetup(challengeToken, authenticatorCode);
+        setRecoveryCodes(result.recoveryCodes);
+        completeLogin(result);
+        setAuthenticatorCode("");
+        setMfaStage("recovery");
+        return;
+      }
+
+      const result = await verifyAdminMfaLogin(challengeToken, authenticatorCode);
+      completeLogin(result);
       const from = location.state?.from;
       const destination = from?.pathname ? `${from.pathname}${from.search || ""}${from.hash || ""}` : "/admin/overview";
       navigate(destination, { replace: true });
@@ -78,6 +116,23 @@ export function AdminLoginPage() {
 
   function trackCapsLock(event: KeyboardEvent<HTMLInputElement>) {
     setCapsLockOn(event.getModifierState?.("CapsLock") ?? false);
+  }
+
+  function restartSignIn() {
+    setMfaStage("password");
+    setChallengeToken("");
+    setAuthenticatorSecret("");
+    setAuthenticatorUri("");
+    setAuthenticatorCode("");
+    setRecoveryCodes([]);
+    setError("");
+  }
+
+  function continueToDashboard() {
+    const from = location.state?.from;
+    const destination = from?.pathname ? `${from.pathname}${from.search || ""}${from.hash || ""}` : "/admin/overview";
+    setRecoveryCodes([]);
+    navigate(destination, { replace: true });
   }
 
   const highlights = [
@@ -190,69 +245,127 @@ export function AdminLoginPage() {
               </p>
             )}
 
-            <form className="mt-8 space-y-5" noValidate={false} onSubmit={handleSubmit}>
-              <label className="block">
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]">{t("Admin email")}</span>
-                <span className="group relative mt-2 flex items-center rounded-2xl bg-white ring-1 ring-[#e3e1d8] transition hover:ring-[#d6cfbd] focus-within:ring-2 focus-within:ring-[#c9b24a]">
-                  <Icon className="pointer-events-none absolute left-4 size-[18px] text-[#65748a] transition group-focus-within:text-[#092a53]" path={icons.mail} />
-                  <input
-                    autoComplete="username"
-                    autoFocus
-                    className="w-full rounded-2xl bg-transparent py-3.5 pl-12 pr-4 text-sm font-semibold text-[#092a53] outline-none! placeholder:font-normal placeholder:text-[#a5aebb]"
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="you@coldstone.cm"
-                    required
-                    type="email"
-                    value={email}
-                  />
-                </span>
-              </label>
+            {error && (
+              <p className="mt-6 admin-login-shake flex items-start gap-2.5 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold leading-5 text-red-700 ring-1 ring-red-100" key={errorKey} role="alert">
+                <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
+                {error}
+              </p>
+            )}
 
-              <PasswordField
-                autoComplete="current-password"
-                label={t("Password")}
-                name="password"
-                onChange={(event) => setPassword(event.target.value)}
-                onKeyDown={trackCapsLock}
-                onKeyUp={trackCapsLock}
-                placeholder="••••••••"
-                required
-                value={password}
-                variant="modern"
-              >
-                {capsLockOn && (
-                  <span className="mt-2 flex items-center gap-1.5 text-xs font-bold text-[#9a6200]">
-                    <Icon className="size-3.5" path={icons.alert} />
-                    {t("Caps Lock is on")}
-                  </span>
-                )}
-              </PasswordField>
-
-              {error && (
-                <p className="admin-login-shake flex items-start gap-2.5 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold leading-5 text-red-700 ring-1 ring-red-100" key={errorKey} role="alert">
-                  <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
-                  {error}
-                </p>
-              )}
-
-              <button
-                className="group inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl bg-[#092a53] px-6 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.25)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:translate-y-0 disabled:cursor-wait disabled:opacity-70"
-                disabled={isSubmitting}
-                type="submit"
-              >
-                {isSubmitting ? (
+            {mfaStage === "recovery" ? (
+              <section aria-labelledby="recovery-codes-title" className="mt-8 rounded-2xl bg-white p-5 ring-1 ring-[#e7ecf2]">
+                <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="recovery-codes-title">{t("Save your recovery codes")}</h2>
+                <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("These codes are shown only once. Keep them somewhere private. Each code can be used once if you cannot access your authenticator.")}</p>
+                <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-[#f3f6fa] p-3 font-mono text-sm font-bold tracking-wide text-[#102c50]">
+                  {recoveryCodes.map((code) => <code key={code}>{code}</code>)}
+                </div>
+                <button
+                  className="mt-5 inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl bg-[#092a53] px-6 text-sm font-extrabold text-white transition hover:bg-[#163e6b]"
+                  onClick={continueToDashboard}
+                  type="button"
+                >
+                  {t("I have saved these codes")}
+                  <Icon className="size-4" path={icons.arrow} />
+                </button>
+              </section>
+            ) : (
+              <form className="mt-8 space-y-5" noValidate={false} onSubmit={handleSubmit}>
+                {mfaStage === "password" ? (
                   <>
-                    <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-white border-r-transparent" />
-                    {t("Signing in…")}
+                    <label className="block">
+                      <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]">{t("Admin email")}</span>
+                      <span className="group relative mt-2 flex items-center rounded-2xl bg-white ring-1 ring-[#e3e1d8] transition hover:ring-[#d6cfbd] focus-within:ring-2 focus-within:ring-[#c9b24a]">
+                        <Icon className="pointer-events-none absolute left-4 size-[18px] text-[#65748a] transition group-focus-within:text-[#092a53]" path={icons.mail} />
+                        <input
+                          autoComplete="username"
+                          autoFocus
+                          className="w-full rounded-2xl bg-transparent py-3.5 pl-12 pr-4 text-sm font-semibold text-[#092a53] outline-none! placeholder:font-normal placeholder:text-[#a5aebb]"
+                          onChange={(event) => setEmail(event.target.value)}
+                          placeholder="you@coldstone.cm"
+                          required
+                          type="email"
+                          value={email}
+                        />
+                      </span>
+                    </label>
+
+                    <PasswordField
+                      autoComplete="current-password"
+                      label={t("Password")}
+                      name="password"
+                      onChange={(event) => setPassword(event.target.value)}
+                      onKeyDown={trackCapsLock}
+                      onKeyUp={trackCapsLock}
+                      placeholder="••••••••"
+                      required
+                      value={password}
+                      variant="modern"
+                    >
+                      {capsLockOn && (
+                        <span className="mt-2 flex items-center gap-1.5 text-xs font-bold text-[#9a6200]">
+                          <Icon className="size-3.5" path={icons.alert} />
+                          {t("Caps Lock is on")}
+                        </span>
+                      )}
+                    </PasswordField>
                   </>
                 ) : (
                   <>
-                    {t("Sign in to dashboard")}
-                    <Icon className="size-4 transition group-hover:translate-x-0.5" path={icons.arrow} />
+                    {mfaStage === "setup" && (
+                      <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-[#52647b] ring-1 ring-[#e7ecf2]">
+                        <h2 className="font-display text-lg font-extrabold text-[#092a53]">{t("Set up your authenticator app")}</h2>
+                        <p className="mt-2">{t("Add a new account in an authenticator app such as Google Authenticator, Microsoft Authenticator, or 1Password. Enter this setup key:")}</p>
+                        <code className="mt-3 block break-all rounded-xl bg-[#f3f6fa] p-3 text-base font-extrabold tracking-[0.12em] text-[#102c50]">{authenticatorSecret}</code>
+                        <details className="mt-3">
+                          <summary className="cursor-pointer font-bold">{t("Show manual setup URI")}</summary>
+                          <code className="mt-2 block break-all rounded-xl bg-[#f3f6fa] p-3 text-xs">{authenticatorUri}</code>
+                        </details>
+                      </div>
+                    )}
+                    <label className="block">
+                      <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]">{t(mfaStage === "setup" ? "Authenticator code" : "Authenticator or recovery code")}</span>
+                      <input
+                        autoComplete="one-time-code"
+                        autoCapitalize="characters"
+                        autoFocus
+                        className="mt-2 w-full rounded-2xl bg-white px-4 py-3.5 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#092a53] outline-none ring-1 ring-[#e3e1d8] focus:ring-2 focus:ring-[#c9b24a]"
+                        inputMode={mfaStage === "setup" ? "numeric" : "text"}
+                        maxLength={mfaStage === "setup" ? 6 : 19}
+                        onChange={(event) => setAuthenticatorCode(event.target.value)}
+                        pattern={mfaStage === "setup" ? "[0-9]{6}" : undefined}
+                        placeholder={mfaStage === "setup" ? "000000" : "000000 or XXXX-XXXX"}
+                        required
+                        type="text"
+                        value={authenticatorCode}
+                      />
+                    </label>
                   </>
                 )}
-              </button>
-            </form>
+
+                <button
+                  className="group inline-flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl bg-[#092a53] px-6 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.25)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:translate-y-0 disabled:cursor-wait disabled:opacity-70"
+                  disabled={isSubmitting}
+                  type="submit"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-white border-r-transparent" />
+                      {t("Signing in…")}
+                    </>
+                  ) : (
+                    <>
+                      {t(mfaStage === "password" ? "Login" : mfaStage === "setup" ? "Verify and finish setup" : "Verify and sign in")}
+                      <Icon className="size-4 transition group-hover:translate-x-0.5" path={icons.arrow} />
+                    </>
+                  )}
+                </button>
+                {mfaStage !== "password" && (
+                  <button className="w-full py-2 text-sm font-bold text-[#52647b] hover:text-[#092a53]" onClick={restartSignIn} type="button">
+                    {t("Start sign-in again")}
+                  </button>
+                )}
+              </form>
+            )}
 
             <div className="mt-8 flex items-start gap-3 rounded-2xl bg-white p-4 text-xs leading-5 text-[#65748a] ring-1 ring-[#e7ecf2]">
               <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#eaf6ee] text-[#2c7a4f]">

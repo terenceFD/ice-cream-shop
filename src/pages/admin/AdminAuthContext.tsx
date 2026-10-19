@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useLocation } from 'react-router-dom'
 import { AdminAuthContext } from './useAdminAuth'
 import { apiRequest, ADMIN_TOKEN_KEY, ADMIN_WELCOME_KEY } from '../../api/api'
 
@@ -20,7 +21,11 @@ export interface AdminAuthContextValue {
   isAdmin: boolean;
   isLoading: boolean;
   sessionToken: string;
-  login: (email: string, password: string) => Promise<AdminAccount>;
+  login: (email: string, password: string) => Promise<{ challengeToken: string; setupRequired: boolean }>;
+  beginAdminMfaSetup: (challengeToken: string) => Promise<{ secret: string; authenticatorUri: string }>;
+  confirmAdminMfaSetup: (challengeToken: string, code: string) => Promise<{ token: string; admin: AdminAccount; recoveryCodes: string[] }>;
+  verifyAdminMfaLogin: (challengeToken: string, code: string) => Promise<{ token: string; admin: AdminAccount }>;
+  completeLogin: (result: { token: string; admin: AdminAccount }) => void;
   refreshAdmins: () => Promise<AdminAccount[]>;
   createAdmin: (details: { name: string; email: string; password: string; profilePicture: string; storeId?: number; branchTown?: string }) => Promise<AdminAccount>;
   removeAdmin: (id: number) => Promise<void>;
@@ -35,6 +40,7 @@ export interface AdminAuthContextValue {
 
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
+  const location = useLocation()
   const [currentAdmin, setCurrentAdmin] = useState<AdminAccount | null>(null)
   const [admins, setAdmins] = useState<AdminAccount[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -42,6 +48,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   // A token the server just issued alongside the admin's details needs no /admin/me round trip,
   // and skipping it keeps the dashboard from flashing its loading screen after a password change.
   const verifiedTokenRef = useRef('')
+  const devAutoLoginAttemptedRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
@@ -52,6 +59,27 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     if (!sessionToken) {
       setCurrentAdmin(null)
       setAdmins([])
+      if (import.meta.env.DEV && location.pathname.startsWith('/admin') && !devAutoLoginAttemptedRef.current) {
+        devAutoLoginAttemptedRef.current = true
+        setIsLoading(true)
+        apiRequest<{ token: string; admin: AdminAccount }>('/admin/dev-login', { method: 'POST' })
+          .then((result) => {
+            if (cancelled) return
+            verifiedTokenRef.current = result.token
+            sessionStorage.setItem(ADMIN_TOKEN_KEY, result.token)
+            setCurrentAdmin(result.admin)
+            setSessionToken(result.token)
+          })
+          .catch((error: unknown) => {
+            if (!cancelled) console.error('Development admin sign-in failed:', error)
+          })
+          .finally(() => {
+            if (!cancelled) setIsLoading(false)
+          })
+        return () => {
+          cancelled = true
+        }
+      }
       setIsLoading(false)
       return undefined
     }
@@ -62,7 +90,15 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         if (!cancelled) setCurrentAdmin(admin)
       })
       .catch(() => {
-        if (!cancelled) setCurrentAdmin(null)
+        if (!cancelled) {
+          setCurrentAdmin(null)
+          setSessionToken('')
+          try {
+            sessionStorage.removeItem(ADMIN_TOKEN_KEY)
+          } catch {
+            // The in-memory session is still cleared when storage is unavailable.
+          }
+        }
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false)
@@ -70,7 +106,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [sessionToken])
+  }, [sessionToken, location.pathname])
 
   useEffect(() => {
     function clearExpiredSession() {
@@ -82,13 +118,41 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function login(email: string, password: string) {
-    const result = await apiRequest<{ token: string; admin: AdminAccount }>('/admin/login', { method: 'POST', body: { email, password } })
+    const result = await apiRequest<{
+      challengeToken: string;
+      mfaSetupRequired: boolean;
+    }>('/admin/login', { method: 'POST', body: { email, password } })
+    return { challengeToken: result.challengeToken, setupRequired: result.mfaSetupRequired }
+  }
+
+  async function beginAdminMfaSetup(challengeToken: string) {
+    return apiRequest<{ secret: string; authenticatorUri: string }>('/admin/login/mfa/setup', {
+      method: 'POST',
+      body: { challengeToken },
+    })
+  }
+
+  async function confirmAdminMfaSetup(challengeToken: string, code: string) {
+    return apiRequest<{ token: string; admin: AdminAccount; recoveryCodes: string[] }>('/admin/login/mfa/verify-setup', {
+      method: 'POST',
+      body: { challengeToken, code },
+    })
+  }
+
+  async function verifyAdminMfaLogin(challengeToken: string, code: string) {
+    return apiRequest<{ token: string; admin: AdminAccount }>('/admin/login/mfa/verify', {
+      method: 'POST',
+      body: { challengeToken, code },
+    })
+  }
+
+  function completeLogin(result: { token: string; admin: AdminAccount }) {
+    verifiedTokenRef.current = result.token
     sessionStorage.setItem(ADMIN_TOKEN_KEY, result.token)
     // Picked up once by AdminLayout to greet the admin after this sign-in.
     sessionStorage.setItem(ADMIN_WELCOME_KEY, '1')
     setCurrentAdmin(result.admin)
     setSessionToken(result.token)
-    return result.admin
   }
 
   const refreshAdmins = useCallback(async () => {
@@ -189,6 +253,10 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       sessionToken,
       login,
+      beginAdminMfaSetup,
+      confirmAdminMfaSetup,
+      verifyAdminMfaLogin,
+      completeLogin,
       refreshAdmins,
       createAdmin,
       removeAdmin,

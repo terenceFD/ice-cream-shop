@@ -105,6 +105,16 @@ import {
 import { registerEventOrderRoutes } from './event-orders.js'
 import { registerCakeQuoteRoutes } from './cake-quotes.js'
 import { isWhatsAppMessagingConfigured, sendWhatsAppText } from './whatsapp.js'
+import {
+  authenticatorUri,
+  consumeRecoveryCode,
+  createRecoveryCodes,
+  decryptTotpSecret,
+  encryptTotpSecret,
+  generateTotpSecret,
+  hashRecoveryCode,
+  verifyTotpCode,
+} from './admin-mfa.js'
 
 // Tells the customer who placed an order about its new status on every device where they turned
 // notifications on. Runs in the background so staff never wait on it, and never throws.
@@ -220,7 +230,13 @@ function adminPasswordStamp(passwordHash) {
 }
 
 function signAdminToken(adminId, passwordHash) {
-  return jwt.sign({ sub: adminId, type: 'admin', pwd: adminPasswordStamp(passwordHash) }, jwtSecret, { expiresIn: '8h' })
+  return jwt.sign({
+    sub: adminId,
+    type: 'admin',
+    mfa: true,
+    ...(process.env.NODE_ENV !== 'production' && !process.env.RENDER ? { dev: true } : {}),
+    pwd: adminPasswordStamp(passwordHash),
+  }, jwtSecret, { expiresIn: '8h' })
 }
 
 function adminSessionMatchesPassword(payload, passwordHash) {
@@ -516,6 +532,21 @@ const loginLimiter = rateLimit({
   message: { error: 'Too many failed sign-in attempts for this account. Wait 15 minutes and try again.' },
 })
 
+const adminMfaLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  skipSuccessfulRequests: true,
+  keyGenerator: (request) => {
+    const token = typeof request.body?.challengeToken === 'string' ? request.body.challengeToken : ''
+    const subject = jwt.decode(token)?.sub
+    const adminKey = Number.isSafeInteger(subject) ? subject : 'unknown'
+    return `${ipKeyGenerator(request.ip)}:admin-mfa:${adminKey}`
+  },
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many authenticator attempts. Wait 15 minutes and try again.' },
+})
+
 // Shared by the owner password and email changes; only failed attempts count toward the limit.
 const passwordChangeLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -628,12 +659,17 @@ async function requireAdmin(request, response, next) {
     response.status(401).json({ error: 'Admin session is invalid or expired.' })
     return
   }
-  if (payload.type !== 'admin') {
+  if (payload.type !== 'admin' || payload.mfa !== true) {
     response.status(401).json({ error: 'Admin session is invalid.' })
+    return
+  }
+  if (payload.dev === true && isProduction) {
+    response.status(401).json({ error: 'Development admin sessions cannot be used in production.' })
     return
   }
   const account = await database.prepare(`
     SELECT a.id, a.name, a.email, a.profile_picture, a.role, a.password_hash AS "passwordHash",
+      a.totp_enabled AS "totpEnabled",
       a.store_id AS "storeId", s.name AS "storeName", s.town AS "storeTown",
       a.branch_town AS "branchTown"
     FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
@@ -645,6 +681,10 @@ async function requireAdmin(request, response, next) {
   const { passwordHash, ...admin } = account
   if (!adminSessionMatchesPassword(payload, passwordHash)) {
     response.status(401).json({ error: 'Your password was changed. Sign in again with the new password.' })
+    return
+  }
+  if (!admin.totpEnabled && payload.dev !== true) {
+    response.status(401).json({ error: 'Authenticator verification is required. Sign in again to set it up.' })
     return
   }
   if (!['owner', 'store_admin', 'branch_admin'].includes(admin.role)) {
@@ -2045,7 +2085,7 @@ app.post('/api/auth/logout', (_request, response) => {
 })
 
 app.use('/api/admin', async (request, response, next) => {
-  if (request.path === '/login') {
+  if (['/login', '/login/mfa/setup', '/login/mfa/verify', '/login/mfa/verify-setup', '/dev-login'].includes(request.path)) {
     next()
     return
   }
@@ -2160,6 +2200,45 @@ function lockedAdminMessage(remainingMs) {
   return `This admin account is locked for ${minutes} minute${minutes === 1 ? '' : 's'} after too many incorrect passwords. Try again later.`
 }
 
+const ADMIN_MFA_SETUP_TTL_SECONDS = 10 * 60
+const ADMIN_MFA_LOGIN_TTL_SECONDS = 5 * 60
+
+function signAdminMfaChallenge(admin, type, expiresIn) {
+  return jwt.sign({
+    sub: admin.id,
+    type,
+    pwd: adminPasswordStamp(admin.password_hash),
+  }, jwtSecret, { expiresIn })
+}
+
+async function readAdminMfaChallenge(request, response, expectedType) {
+  const token = typeof request.body.challengeToken === 'string' ? request.body.challengeToken : ''
+  try {
+    const payload = jwt.verify(token, jwtSecret, JWT_VERIFY_OPTIONS)
+    if (payload.type !== expectedType || !Number.isSafeInteger(payload.sub)) throw new Error('Invalid challenge')
+    const admin = await database.prepare(`
+      SELECT id, email, password_hash, totp_secret AS "totpSecret",
+        totp_pending_secret AS "totpPendingSecret", totp_enabled AS "totpEnabled",
+        totp_last_counter AS "totpLastCounter", totp_recovery_codes AS "totpRecoveryCodes"
+      FROM admins WHERE id = ?
+    `).get(payload.sub)
+    if (!admin || !adminSessionMatchesPassword(payload, admin.password_hash)) throw new Error('Invalid challenge')
+    return admin
+  } catch {
+    response.status(401).json({ error: 'Your sign-in step expired. Enter your password again.' })
+    return null
+  }
+}
+
+async function getAdminLoginIdentity(adminId) {
+  return database.prepare(`
+    SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture", a.role,
+      a.store_id AS "storeId", s.name AS "storeName", s.town AS "storeTown",
+      a.branch_town AS "branchTown"
+    FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
+  `).get(adminId)
+}
+
 app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
   try {
     const email = typeof request.body.email === 'string' ? request.body.email.trim() : ''
@@ -2186,16 +2265,159 @@ app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
     }
     clearAdminSignInFailures(email)
 
-    const token = signAdminToken(admin.id, admin.password_hash)
-    const identity = await database.prepare(`
-      SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture", a.role,
-        a.store_id AS "storeId", s.name AS "storeName", s.town AS "storeTown",
-        a.branch_town AS "branchTown"
-      FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
-    `).get(admin.id)
+    if (admin.totp_enabled && !admin.totp_secret) {
+      throw new Error(`Admin account ${admin.id} has MFA enabled without an authenticator secret.`)
+    }
+    const type = admin.totp_enabled ? 'admin-mfa-login' : 'admin-mfa-setup'
+    const expiresIn = admin.totp_enabled ? ADMIN_MFA_LOGIN_TTL_SECONDS : ADMIN_MFA_SETUP_TTL_SECONDS
     response.json({
-      token,
+      mfaRequired: Boolean(admin.totp_enabled),
+      mfaSetupRequired: !admin.totp_enabled,
+      challengeToken: signAdminMfaChallenge(admin, type, expiresIn),
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.post('/api/admin/dev-login', async (request, response, next) => {
+  const remoteAddress = request.socket.remoteAddress || ''
+  const isLoopback = remoteAddress === '::1'
+    || remoteAddress === '127.0.0.1'
+    || remoteAddress.startsWith('::ffff:127.')
+  if (isProduction || !isLoopback) {
+    response.status(404).json({ error: 'Not found.' })
+    return
+  }
+
+  try {
+    const admin = await database.prepare(`
+      SELECT id, name, email, password_hash AS "passwordHash", role,
+        store_id AS "storeId", branch_town AS "branchTown"
+      FROM admins
+      ORDER BY CASE role WHEN 'owner' THEN 0 ELSE 1 END, id
+      LIMIT 1
+    `).get()
+    if (!admin) {
+      response.status(503).json({ error: 'Create a local admin account with npm run seed:admin first.' })
+      return
+    }
+
+    response.json({
+      token: signAdminToken(admin.id, admin.passwordHash),
+      admin: await getAdminLoginIdentity(admin.id),
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.post('/api/admin/login/mfa/setup', adminMfaLoginLimiter, async (request, response, next) => {
+  try {
+    const admin = await readAdminMfaChallenge(request, response, 'admin-mfa-setup')
+    if (!admin) return
+    if (admin.totpEnabled) {
+      response.status(409).json({ error: 'Authenticator verification is already enabled for this account.' })
+      return
+    }
+    const secret = generateTotpSecret()
+    const pendingSecret = encryptTotpSecret(secret, jwtSecret)
+    await database.prepare(`
+      UPDATE admins SET totp_pending_secret = ? WHERE id = ? AND totp_enabled = 0
+    `).run(pendingSecret, admin.id)
+    response.json({
+      secret,
+      authenticatorUri: authenticatorUri(secret, admin.email),
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.post('/api/admin/login/mfa/verify-setup', adminMfaLoginLimiter, async (request, response, next) => {
+  try {
+    const admin = await readAdminMfaChallenge(request, response, 'admin-mfa-setup')
+    if (!admin) return
+    if (admin.totpEnabled || !admin.totpPendingSecret) {
+      response.status(409).json({ error: 'Start authenticator setup again before confirming your code.' })
+      return
+    }
+    const secret = decryptTotpSecret(admin.totpPendingSecret, jwtSecret)
+    const counter = verifyTotpCode(secret, typeof request.body.code === 'string' ? request.body.code.trim() : '')
+    if (counter === null) {
+      response.status(400).json({ error: 'That authenticator code is invalid or expired. Try the current 6-digit code.' })
+      return
+    }
+
+    const recoveryCodes = createRecoveryCodes()
+    const recoveryHashes = recoveryCodes.map((code) => hashRecoveryCode(code, jwtSecret))
+    const update = await database.prepare(`
+      UPDATE admins SET totp_secret = ?, totp_pending_secret = NULL, totp_enabled = 1,
+        totp_last_counter = ?, totp_recovery_codes = ?
+      WHERE id = ? AND totp_enabled = 0 AND totp_pending_secret = ?
+    `).run(admin.totpPendingSecret, counter, JSON.stringify(recoveryHashes), admin.id, admin.totpPendingSecret)
+    if (!update.changes) {
+      response.status(409).json({ error: 'Authenticator setup changed. Sign in again to continue.' })
+      return
+    }
+    const identity = await getAdminLoginIdentity(admin.id)
+    response.json({
+      token: signAdminToken(admin.id, admin.password_hash),
       admin: identity,
+      recoveryCodes,
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.post('/api/admin/login/mfa/verify', adminMfaLoginLimiter, async (request, response, next) => {
+  try {
+    const admin = await readAdminMfaChallenge(request, response, 'admin-mfa-login')
+    if (!admin) return
+    if (!admin.totpEnabled || !admin.totpSecret) {
+      response.status(409).json({ error: 'Authenticator verification is not enabled for this account.' })
+      return
+    }
+
+    const code = typeof request.body.code === 'string' ? request.body.code.trim() : ''
+    const secret = decryptTotpSecret(admin.totpSecret, jwtSecret)
+    const lastCounter = Number(admin.totpLastCounter ?? -1)
+    const counter = verifyTotpCode(secret, code, Date.now(), lastCounter)
+    let authenticated = false
+    if (counter !== null) {
+      const update = await database.prepare(`
+        UPDATE admins SET totp_last_counter = ?
+        WHERE id = ? AND totp_enabled = 1 AND totp_last_counter < ?
+      `).run(counter, admin.id, counter)
+      authenticated = update.changes > 0
+    } else {
+      let recoveryHashes
+      try {
+        recoveryHashes = JSON.parse(admin.totpRecoveryCodes)
+      } catch (error) {
+        throw new Error(`Admin account ${admin.id} has invalid MFA recovery codes.`, { cause: error })
+      }
+      if (!Array.isArray(recoveryHashes)) {
+        throw new Error(`Admin account ${admin.id} has invalid MFA recovery codes.`)
+      }
+      const remainingHashes = consumeRecoveryCode(code, recoveryHashes, jwtSecret)
+      if (remainingHashes) {
+        const update = await database.prepare(`
+          UPDATE admins SET totp_recovery_codes = ?
+          WHERE id = ? AND totp_enabled = 1 AND totp_recovery_codes = ?
+        `).run(JSON.stringify(remainingHashes), admin.id, admin.totpRecoveryCodes)
+        authenticated = update.changes > 0
+      }
+    }
+    if (!authenticated) {
+      response.status(401).json({ error: 'That authenticator code or recovery code is invalid or already used.' })
+      return
+    }
+
+    response.json({
+      token: signAdminToken(admin.id, admin.password_hash),
+      admin: await getAdminLoginIdentity(admin.id),
     })
   } catch (error) {
     next(error)

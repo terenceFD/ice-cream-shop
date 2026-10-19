@@ -75,6 +75,8 @@ npm run dev
 
 The development command waits for the Express API health check on port 3001 before starting Vite, which proxies `/api` and `/uploads` requests to the API. To run either process separately, use `npm run dev:server` for the API or `npm run dev:frontend` for Vite. Do not commit `.env` or the SQLite database.
 
+When the Vite development server is running, the admin portal automatically signs in to the first local admin account to make dashboard development easier. This bypass is limited to loopback requests on non-production servers; production still requires admin password and authenticator verification. Seed a local admin with `npm run seed:admin` if the development database has none.
+
 ### Databases: keep development separate from the live site
 
 - **Production (Render)** uses the Supabase PostgreSQL database set by `DATABASE_URL`.

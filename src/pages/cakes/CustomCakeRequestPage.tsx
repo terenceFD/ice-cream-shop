@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { photoSrcSet } from '../../lib/thumbnails'
 import { Link, useSearchParams } from 'react-router-dom'
 import { apiRequest, getCustomerToken } from '../../api/api'
@@ -57,6 +57,7 @@ export function CustomCakeRequestPage() {
   const [payPhone, setPayPhone] = useState('')
   const [payingId, setPayingId] = useState<number | null>(null)
   const [payError, setPayError] = useState('')
+  const [paymentNotice, setPaymentNotice] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -82,40 +83,68 @@ export function CustomCakeRequestPage() {
       .catch(() => {})
   }, [])
 
-  function loadQuotes() {
-    if (!customer) {
+  const loadQuotes = useCallback(() => {
+    if (!customer?.id) {
       setQuotes([])
       return
     }
     apiRequest<{ requests: CakeQuote[] }>('/customer/cake-requests', { token: getCustomerToken() || undefined })
       .then((result) => setQuotes(result.requests || []))
       .catch(() => setQuotes([]))
-  }
+  }, [customer?.id])
 
-  useEffect(() => { loadQuotes() }, [customer?.id])
+  useEffect(() => { loadQuotes() }, [loadQuotes])
+
+  const token = searchParams.get('pay')
+  const sessionId = searchParams.get('session_id')
+  const paymentProvider = searchParams.get('provider')
 
   useEffect(() => {
-    const token = searchParams.get('pay')
     if (!token) {
       setPayTokenRequest(null)
+      setPaymentNotice('')
       return
     }
-    apiRequest<{ request: CakeQuote }>(`/cake-requests/quote/${encodeURIComponent(token)}`)
-      .then((result) => setPayTokenRequest(result.request))
-      .catch(() => setPayTokenRequest(null))
-    const sessionId = searchParams.get('session_id')
-    if (sessionId) {
-      apiRequest(`/cake-requests/quote/${encodeURIComponent(token)}/deposit/confirm`, {
-        method: 'POST',
-        body: { sessionId },
-      }).then(() => {
-        loadQuotes()
-        const next = new URLSearchParams(searchParams)
-        next.delete('session_id')
-        setSearchParams(next, { replace: true })
-      }).catch(() => {})
+    let cancelled = false
+    async function loadQuoteAndConfirmPayment() {
+      try {
+        if (sessionId || paymentProvider === 'campay') {
+          setPaymentNotice(t('Checking your cake deposit payment...'))
+        }
+        const result = await apiRequest<{ request: CakeQuote }>(`/cake-requests/quote/${encodeURIComponent(token)}`)
+        if (cancelled) return
+        setPayTokenRequest(result.request)
+
+        if (!sessionId && paymentProvider !== 'campay') return
+        const confirmation = await apiRequest<{ request: CakeQuote; paid: boolean }>(
+          `/cake-requests/quote/${encodeURIComponent(token)}/deposit/confirm`,
+          { method: 'POST', body: sessionId ? { sessionId } : {} },
+        )
+        if (cancelled) return
+        setPayTokenRequest(confirmation.request)
+        setPaymentNotice(confirmation.paid
+          ? t('Deposit received. Your cake and pickup date are booked.')
+          : t("We're still waiting for the payment to be confirmed. Refresh this page in a minute."))
+        if (customer) loadQuotes()
+
+        if (confirmation.paid) {
+          const next = new URLSearchParams(searchParams)
+          next.delete('session_id')
+          next.delete('provider')
+          next.delete('status')
+          setSearchParams(next, { replace: true })
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setPaymentNotice(loadError instanceof Error
+            ? loadError.message
+            : t('Unable to confirm the cake deposit. Please refresh this page to try again.'))
+        }
+      }
     }
-  }, [searchParams])
+    loadQuoteAndConfirmPayment()
+    return () => { cancelled = true }
+  }, [token, sessionId, paymentProvider, searchParams, setSearchParams, customer, loadQuotes, t])
 
   async function payDeposit(quote: CakeQuote, token?: string) {
     setPayError('')
@@ -201,6 +230,13 @@ export function CustomCakeRequestPage() {
   return (
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
+      {paymentNotice && (
+        <div className="mx-auto max-w-[1320px] px-5 pt-5 sm:px-8 lg:px-12">
+          <p className={`rounded-2xl p-4 text-sm font-semibold leading-6 ring-1 ${paymentNotice === t('Deposit received. Your cake and pickup date are booked.') ? 'bg-[#f3f8ef] text-[#274d20] ring-[#cfe2c4]' : 'bg-[#fffaf0] text-[#624f00] ring-[#ecdfa6]'}`} role="status">
+            {paymentNotice}
+          </p>
+        </div>
+      )}
       <main>
         {/* Hero */}
         <section className="relative isolate overflow-hidden bg-[#092a53] text-white">

@@ -3,6 +3,10 @@
 // text for t(); {id} is filled from the path. `area` groups entries for the log's filter.
 const RULES = [
   ['POST', /^\/api\/admin\/login$/, 'Logged in', 'account'],
+  ['POST', /^\/api\/admin\/dev-login$/, 'Signed in to the local admin portal', 'account'],
+  ['POST', /^\/api\/admin\/login\/mfa\/setup$/, 'Started authenticator setup', 'account'],
+  ['POST', /^\/api\/admin\/login\/mfa\/verify-setup$/, 'Completed authenticator setup', 'account'],
+  ['POST', /^\/api\/admin\/login\/mfa\/verify$/, 'Verified authenticator sign-in', 'account'],
   ['POST', /^\/api\/admin\/logout$/, 'Logged out', 'account'],
   ['PUT', /^\/api\/admin\/email$/, 'Changed the account email', 'account'],
   ['PUT', /^\/api\/admin\/password$/, 'Changed the account password', 'account'],
@@ -32,6 +36,7 @@ const RULES = [
   ['PATCH', /^\/api\/admin\/cake-requests\/(\d+)\/status$/, 'Updated cake request #{id}', 'orders'],
   ['PATCH', /^\/api\/admin\/cake-requests\/(\d+)$/, 'Sent a quote for cake request #{id}', 'orders'],
   ['PATCH', /^\/api\/admin\/cake-requests\/(\d+)$/, 'Sent a quote for cake request #{id}', 'orders'],
+  ['PATCH', /^\/api\/admin\/cake-requests\/(\d+)\/deposit-notice$/, 'Dismissed the deposit notice for cake request #{id}', 'orders'],
   ['PATCH', /^\/api\/admin\/event-orders\/(\d+)\/deposit-notice$/, 'Dismissed the deposit notice for event #{id}', 'orders'],
   ['PATCH', /^\/api\/admin\/event-orders\/(\d+)$/, 'Updated event order #{id}', 'orders'],
   ['DELETE', /^\/api\/admin\/event-orders\/(\d+)$/, 'Deleted declined event order #{id}', 'orders'],
