@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { apiRequest, getCustomerToken } from "../../api/api";
 import { useAuth } from "../../context/useAuth";
 import { Footer, Header } from "../../components/Layout";
+import { PaymentStatusDialog, type PaymentStatus } from "../../components/PaymentStatusDialog";
 import { useLanguage } from "../../language/useLanguage";
 import { numberFormatter } from "../../lib/cartPricing";
 import { photoErrorHandler, thumbnail } from "../../lib/thumbnails";
@@ -193,6 +194,8 @@ export function EventOrdersPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [notice, setNotice] = useState("");
+  const [paymentDialog, setPaymentDialog] = useState<{ status: PaymentStatus; message: string } | null>(null);
+  const [paymentCheckAttempt, setPaymentCheckAttempt] = useState(0);
 
   const [payingId, setPayingId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
@@ -267,19 +270,33 @@ export function EventOrdersPage() {
     let cancelled = false;
     const token = getCustomerToken();
     const returningId = Number(searchParams.get("event"));
-    const fromPayment = searchParams.get("session_id") || searchParams.get("provider") === "campay";
+    const fromPayment = Boolean(searchParams.get("session_id") || searchParams.get("provider") === "campay");
+    let clearPaymentReturn = false;
     (async () => {
       try {
         if (returningId && searchParams.get("cancelled")) {
-          setNotice(t("The deposit payment was cancelled. You can try again below."));
+          setPaymentDialog({
+            status: "cancelled",
+            message: t("The deposit payment was cancelled. You can try again below."),
+          });
+          clearPaymentReturn = true;
         } else if (returningId && searchParams.get("status") === "failed") {
-          setNotice(t("The Mobile Money payment did not go through. You can try again below."));
+          setPaymentDialog({
+            status: "failed",
+            message: t("The Mobile Money payment did not go through. You can try again below."),
+          });
+          clearPaymentReturn = true;
         } else if (returningId && fromPayment) {
+          setPaymentDialog({ status: "checking", message: t("Checking your event deposit payment...") });
           const result = await apiRequest<{ paid?: boolean }>(`/customer/event-orders/${returningId}/deposit/confirm`, { method: "POST", token });
           if (!cancelled) {
-            setNotice(result?.paid
-              ? t("Deposit received. Your date is booked, and the store will confirm your event shortly.")
-              : t("We're still waiting for the payment to be confirmed. Refresh this page in a minute."));
+            setPaymentDialog({
+              status: result?.paid ? "success" : "pending",
+              message: t(result?.paid
+                ? "Deposit received. Your date is booked, and the store will confirm your event shortly."
+                : "We're still waiting for the payment to be confirmed. Check again in a moment."),
+            });
+            clearPaymentReturn = Boolean(result?.paid);
           }
         }
         if (!cancelled) await refreshOrders();
@@ -287,9 +304,18 @@ export function EventOrdersPage() {
           window.setTimeout(() => document.getElementById(`event-order-${returningId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
         }
       } catch (error) {
-        if (!cancelled) setNotice(error instanceof Error ? error.message : t("Unable to load your event orders."));
+        if (!cancelled) {
+          if (fromPayment) {
+            setPaymentDialog({
+              status: "error",
+              message: error instanceof Error ? error.message : t("Unable to confirm the event deposit. Please try again."),
+            });
+          } else {
+            setNotice(error instanceof Error ? error.message : t("Unable to load your event orders."));
+          }
+        }
       } finally {
-        if (!cancelled && fromPayment) {
+        if (!cancelled && clearPaymentReturn) {
           const next = new URLSearchParams(searchParams);
           ["session_id", "provider", "status", "cancelled"].forEach((key) => next.delete(key));
           setSearchParams(next, { replace: true });
@@ -298,7 +324,7 @@ export function EventOrdersPage() {
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customer]);
+  }, [customer, paymentCheckAttempt]);
 
   const availableStores = stores.filter((store) => (fulfillmentType === "pickup" ? store.pickupEnabled : store.deliveryEnabled));
   useEffect(() => {
@@ -405,6 +431,30 @@ export function EventOrdersPage() {
   return (
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
+      {paymentDialog && (
+        <PaymentStatusDialog
+          checkingMessage={t("Please wait while we verify your payment securely.")}
+          closeLabel={t("Close")}
+          eyebrow={t("Event deposit")}
+          message={paymentDialog.message}
+          onClose={() => setPaymentDialog(null)}
+          onRetry={paymentDialog.status === "pending" ? () => setPaymentCheckAttempt((attempt) => attempt + 1) : undefined}
+          retryLabel={t("Check payment again")}
+          status={paymentDialog.status}
+          successLabel={t("Continue")}
+          title={paymentDialog.status === "checking"
+            ? t("Confirming your event deposit")
+            : paymentDialog.status === "success"
+              ? t("Payment confirmed")
+              : paymentDialog.status === "pending"
+                ? t("Payment is still processing")
+                : paymentDialog.status === "cancelled"
+                  ? t("Payment cancelled")
+                  : paymentDialog.status === "failed"
+                    ? t("Payment was not completed")
+                    : t("We could not confirm your payment")}
+        />
+      )}
       <main>
         <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-16 pt-14 text-white sm:px-8 lg:px-12 lg:pb-20 lg:pt-20">
           <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220_50/0.12)_35%,transparent)]" />
@@ -433,9 +483,7 @@ export function EventOrdersPage() {
         </section>
 
         <div className="mx-auto max-w-[1200px] px-5 py-12 sm:px-8 lg:px-12">
-          {notice && (
-            <p className="mb-6 rounded-2xl bg-[#eef6e8] px-5 py-4 text-sm font-semibold text-[#2f5a1a] ring-1 ring-[#d6e8c8]" role="status">{notice}</p>
-          )}
+          {notice && <p className="mb-6 rounded-2xl bg-[#eef6e8] px-5 py-4 text-sm font-semibold text-[#2f5a1a] ring-1 ring-[#d6e8c8]" role="status">{notice}</p>}
           {loadError && <p className="mb-6 rounded-2xl bg-red-50 px-5 py-4 text-sm font-semibold text-red-700" role="alert">{loadError}</p>}
 
           {!authLoading && !customer ? (

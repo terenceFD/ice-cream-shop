@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useLanguage } from '../language/useLanguage'
 
-// The opening screen only appears when the page is actually still drawing. A visit that is
-// ready straight away never sees it, so it does not sit on top of a page that has already loaded.
-// MAX_VISIBLE_MS is a safety net if a page never draws <main>.
-const SHOW_DELAY_MS = 160
-const MIN_VISIBLE_MS = 280
+// Show the loader immediately so the page never renders in front of it. The overlay still
+// stays on screen for at least 1000ms before exiting, which keeps the splash visible long enough
+// without feeling delayed or stuck. MAX_VISIBLE_MS is a safety net if a page never draws <main>.
+const SHOW_DELAY_MS = 0
+const MIN_VISIBLE_MS = 1000
 const MAX_VISIBLE_MS = 2500
 const EXIT_MS = 380
 
@@ -15,57 +16,27 @@ const EXIT_MS = 380
 // the same curved edge as the headers. Styles: .website-loader in src/index.css.
 export function WebsiteLoader() {
   const { t } = useLanguage()
+  const { pathname } = useLocation()
   const [isLeaving, setIsLeaving] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
-    let shownAt = 0
-    let stopped = false
-    let showTimer = 0
+    setIsLeaving(false)
+    setIsVisible(true)
+
     let exitTimer = 0
     let removeTimer = 0
-    let frame = 0
 
-    const leave = () => {
-      if (stopped || exitTimer) return
-      // Ready before the screen was worth showing: keep the page clear.
-      if (!shownAt) {
-        stopped = true
-        return
-      }
-      const wait = Math.max(0, MIN_VISIBLE_MS - (performance.now() - shownAt))
-      exitTimer = window.setTimeout(() => {
-        setIsLeaving(true)
-        removeTimer = window.setTimeout(() => setIsVisible(false), EXIT_MS)
-      }, wait)
-    }
-
-    const reveal = () => {
-      if (stopped || shownAt) return
-      shownAt = performance.now()
-      setIsVisible(true)
-    }
-
-    // Pages are loaded on demand, so their <main> appears a moment after the app starts.
-    const waitForContent = () => {
-      if (document.querySelector('main')) leave()
-      else frame = window.requestAnimationFrame(waitForContent)
-    }
-    showTimer = window.setTimeout(reveal, SHOW_DELAY_MS)
-    waitForContent()
-    const safetyTimer = window.setTimeout(() => {
-      reveal()
-      leave()
-    }, MAX_VISIBLE_MS)
+    exitTimer = window.setTimeout(() => {
+      setIsLeaving(true)
+      removeTimer = window.setTimeout(() => setIsVisible(false), EXIT_MS)
+    }, MIN_VISIBLE_MS)
 
     return () => {
-      window.cancelAnimationFrame(frame)
-      window.clearTimeout(showTimer)
-      window.clearTimeout(safetyTimer)
       window.clearTimeout(exitTimer)
       window.clearTimeout(removeTimer)
     }
-  }, [])
+  }, [pathname])
 
   if (!isVisible) return null
 

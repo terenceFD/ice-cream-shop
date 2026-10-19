@@ -4,6 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { apiRequest, getCustomerToken } from '../../api/api'
 import { useAuth } from '../../context/useAuth'
 import { ArrowIcon, Footer, Header } from '../../components/Layout'
+import { PaymentStatusDialog, type PaymentStatus } from '../../components/PaymentStatusDialog'
 import { useLanguage } from '../../language/useLanguage'
 import { getCameroonDate } from '../../../shared/cameroonDate'
 
@@ -20,6 +21,11 @@ type CakeQuote = {
   depositAmount: number | null
   adminNote: string
   payToken?: string | null
+}
+
+type PaymentDialogState = {
+  status: PaymentStatus
+  message?: string
 }
 
 const CAKE_STATUS: Record<string, string> = {
@@ -57,7 +63,8 @@ export function CustomCakeRequestPage() {
   const [payPhone, setPayPhone] = useState('')
   const [payingId, setPayingId] = useState<number | null>(null)
   const [payError, setPayError] = useState('')
-  const [paymentNotice, setPaymentNotice] = useState('')
+  const [paymentDialog, setPaymentDialog] = useState<PaymentDialogState | null>(null)
+  const [paymentCheckAttempt, setPaymentCheckAttempt] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -102,49 +109,67 @@ export function CustomCakeRequestPage() {
   useEffect(() => {
     if (!token) {
       setPayTokenRequest(null)
-      setPaymentNotice('')
+      setPaymentDialog(null)
       return
     }
     let cancelled = false
     async function loadQuoteAndConfirmPayment() {
+      const wasCancelled = searchParams.get('cancelled') === '1'
+      const paymentFailed = searchParams.get('status') === 'failed'
+      const returningFromPayment = Boolean(sessionId || paymentProvider === 'campay')
+      if (returningFromPayment) setPaymentDialog({ status: 'checking' })
       try {
-        if (sessionId || paymentProvider === 'campay') {
-          setPaymentNotice(t('Checking your cake deposit payment...'))
-        }
         const result = await apiRequest<{ request: CakeQuote }>(`/cake-requests/quote/${encodeURIComponent(token)}`)
         if (cancelled) return
         setPayTokenRequest(result.request)
 
-        if (!sessionId && paymentProvider !== 'campay') return
+        if (wasCancelled || paymentFailed) {
+          setPaymentDialog({
+            status: wasCancelled ? 'cancelled' : 'failed',
+            message: t(wasCancelled
+              ? 'Cake deposit payment was cancelled. You can try again below.'
+              : 'The cake deposit payment did not go through. You can try again below.'),
+          })
+          const next = new URLSearchParams(searchParams)
+          for (const key of ['session_id', 'provider', 'status', 'cancelled']) next.delete(key)
+          setSearchParams(next, { replace: true })
+          return
+        }
+        if (!returningFromPayment) return
+
         const confirmation = await apiRequest<{ request: CakeQuote; paid: boolean }>(
           `/cake-requests/quote/${encodeURIComponent(token)}/deposit/confirm`,
           { method: 'POST', body: sessionId ? { sessionId } : {} },
         )
         if (cancelled) return
         setPayTokenRequest(confirmation.request)
-        setPaymentNotice(confirmation.paid
-          ? t('Deposit received. Your cake and pickup date are booked.')
-          : t("We're still waiting for the payment to be confirmed. Refresh this page in a minute."))
+        setPaymentDialog({
+          status: confirmation.paid ? 'success' : 'pending',
+          message: t(confirmation.paid
+            ? 'Deposit received. Your cake and pickup date are booked.'
+            : "We're still waiting for the payment to be confirmed. Check again in a moment."),
+        })
         if (customer) loadQuotes()
 
         if (confirmation.paid) {
           const next = new URLSearchParams(searchParams)
-          next.delete('session_id')
-          next.delete('provider')
-          next.delete('status')
+          for (const key of ['session_id', 'provider', 'status', 'cancelled']) next.delete(key)
           setSearchParams(next, { replace: true })
         }
       } catch (loadError) {
         if (!cancelled) {
-          setPaymentNotice(loadError instanceof Error
-            ? loadError.message
-            : t('Unable to confirm the cake deposit. Please refresh this page to try again.'))
+          setPaymentDialog({
+            status: 'error',
+            message: loadError instanceof Error
+              ? loadError.message
+              : t('Unable to confirm the cake deposit. Please try again.'),
+          })
         }
       }
     }
     loadQuoteAndConfirmPayment()
     return () => { cancelled = true }
-  }, [token, sessionId, paymentProvider, searchParams, setSearchParams, customer, loadQuotes, t])
+  }, [token, sessionId, paymentProvider, paymentCheckAttempt, searchParams, setSearchParams, customer, loadQuotes, t])
 
   async function payDeposit(quote: CakeQuote, token?: string) {
     setPayError('')
@@ -230,12 +255,31 @@ export function CustomCakeRequestPage() {
   return (
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
-      {paymentNotice && (
-        <div className="mx-auto max-w-[1320px] px-5 pt-5 sm:px-8 lg:px-12">
-          <p className={`rounded-2xl p-4 text-sm font-semibold leading-6 ring-1 ${paymentNotice === t('Deposit received. Your cake and pickup date are booked.') ? 'bg-[#f3f8ef] text-[#274d20] ring-[#cfe2c4]' : 'bg-[#fffaf0] text-[#624f00] ring-[#ecdfa6]'}`} role="status">
-            {paymentNotice}
-          </p>
-        </div>
+      {paymentDialog && (
+        <PaymentStatusDialog
+          checkingMessage={t('Please wait while we verify your payment securely.')}
+          closeLabel={t('Close')}
+          eyebrow={t('Custom cake deposit')}
+          message={paymentDialog.message || (paymentDialog.status === 'checking'
+            ? t('Checking your cake deposit payment...')
+            : t('Deposit received. Your cake and pickup date are booked.'))}
+          onClose={() => setPaymentDialog(null)}
+          onRetry={paymentDialog.status === 'pending' ? () => setPaymentCheckAttempt((attempt) => attempt + 1) : undefined}
+          retryLabel={t('Check payment again')}
+          status={paymentDialog.status}
+          successLabel={t('Continue')}
+          title={paymentDialog.status === 'checking'
+          ? t('Confirming your deposit')
+            : paymentDialog.status === 'success'
+              ? t('Payment confirmed')
+              : paymentDialog.status === 'pending'
+                ? t('Payment is still processing')
+                : paymentDialog.status === 'cancelled'
+                  ? t('Payment cancelled')
+                  : paymentDialog.status === 'failed'
+                    ? t('Payment was not completed')
+                    : t('We could not confirm your payment')}
+        />
       )}
       <main>
         {/* Hero */}
