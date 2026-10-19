@@ -1203,7 +1203,7 @@ export function AdminLayout() {
           </div>
         </aside>
 
-        <main data-scroll-reveal="skip" className="min-h-[60vh] min-w-0 rounded-[22px] border border-[#e2e8f0] bg-white p-4 shadow-[0_8px_28px_rgba(16,44,80,0.04)] sm:p-6 lg:p-8">
+        <main className="min-h-[60vh] min-w-0 rounded-[22px] border border-[#e2e8f0] bg-white p-4 shadow-[0_8px_28px_rgba(16,44,80,0.04)] sm:p-6 lg:p-8">
           <Suspense fallback={<div aria-busy="true" className="min-h-[50vh]" role="status" />}>
             <Outlet key={selectedBranch} />
           </Suspense>

@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { lazy, Suspense, useEffect, type ComponentType } from "react";
 import { CartProvider } from "../context/CartContext";
-import { HomePage } from "../pages/home/HomePage";
 import { NotFoundPage } from "../pages/notfound/NotFoundPage";
 import { FlavorProvider } from "../context/FlavorContext";
 import { AdminAuthProvider } from "../pages/admin/AdminAuthContext";
@@ -12,8 +11,6 @@ import { ScrollRevealObserver } from "../components/ScrollRevealObserver";
 import { ScrollProgress } from "../components/ScrollProgress";
 import { ScrollToTop } from "../components/ScrollToTop";
 import { WebsiteLoader } from "../components/WebsiteLoader";
-import { InstallAppPrompt } from "../components/InstallAppPrompt";
-import { PromotionAlertsPrompt } from "../components/PromotionAlerts";
 import { RouteMeta } from "../seo/RouteMeta";
 
 // Each page below downloads only when a visitor opens it, so the first visit to the shop
@@ -59,6 +56,10 @@ const AdminPaymentsPage = lazyPage(() => import("../pages/admin/AdminSalesPages"
 const AdminLayout = lazyPage(() => import("../components/admin/AdminLayout"), "AdminLayout");
 const EventOrdersPage = lazyPage(() => import("../pages/events/EventOrdersPage"), "EventOrdersPage");
 const AdminEventOrdersPage = lazyPage(() => import("../pages/admin/AdminEventOrdersPage"), "AdminEventOrdersPage");
+// Prompts are not needed for the first paint, so they load after the main bundle.
+const InstallAppPrompt = lazyPage(() => import("../components/InstallAppPrompt"), "InstallAppPrompt");
+const PromotionAlertsPrompt = lazyPage(() => import("../components/PromotionAlerts"), "PromotionAlertsPrompt");
+const HomePage = lazyPage(() => import("../pages/home/HomePage"), "HomePage");
 
 function PageLoading() {
   return <div aria-busy="true" className="min-h-[60vh]" role="status" />;

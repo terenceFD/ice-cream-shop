@@ -16,6 +16,28 @@ export function ScrollRevealObserver() {
     if (reducedMotion.matches || !('IntersectionObserver' in window)) return undefined
 
     const trackedElements = new Set<HTMLElement>()
+    const revealObserverMap = new WeakMap<Element, IntersectionObserver>()
+
+    // A React re-render can rewrite data-scroll-reveal back to '' on an element the visitor has
+    // already scrolled past. Whatever is on screen (or above it) is revealed again in the next
+    // frame; that is a handful of elements per frame, never a layout of the whole page.
+    const pendingChecks = new Set<Element>()
+    let checkFrame = 0
+    function queueRevealCheck(element: Element) {
+      pendingChecks.add(element)
+      if (checkFrame) return
+      checkFrame = window.requestAnimationFrame(() => {
+        checkFrame = 0
+        const checks = Array.from(pendingChecks)
+        pendingChecks.clear()
+        const tops = checks.map((element) => (element as HTMLElement).getBoundingClientRect().top)
+        checks.forEach((element, index) => {
+          if ((element as HTMLElement).dataset.scrollReveal !== '') return
+          if (tops[index] < window.innerHeight) (element as HTMLElement).dataset.scrollReveal = 'revealed'
+          else revealObserverMap.get(element)?.observe(element)
+        })
+      })
+    }
 
     // Reveals waiting elements as they scroll in.
     const revealObserver = new IntersectionObserver((entries) => {
@@ -47,21 +69,31 @@ export function ScrollRevealObserver() {
           const cardIndex = siblingCards.indexOf(element)
           element.style.setProperty('--scroll-reveal-delay', `${(cardIndex % 6) * 65}ms`)
         }
+        // Root elements of a page (<main> child) and of a <section> fade in as blocks by their
+        // own position, so a page without sections (the admin dashboard) still animates.
+        if (element.matches('main > *, section > *')) {
+          element.style.setProperty('--scroll-reveal-delay', '0ms')
+        }
+        revealObserverMap.set(element, revealObserver)
         element.dataset.scrollReveal = ''
         revealObserver.observe(element)
       }
     })
 
     function observePageSections() {
-      const elements = document.querySelectorAll<HTMLElement>('main > *, main section, main article, main form, main ul.grid > li, footer')
+      const elements = document.querySelectorAll<HTMLElement>('main > *, main section, main article, main form, main ul.grid > li, main section > *, footer')
       for (const element of elements) {
         if (trackedElements.has(element) || element.closest('[data-scroll-reveal="skip"]')) continue
         const isMainChild = element.parentElement?.tagName === 'MAIN'
         const containsAnimatedContent = element.matches('main > *')
           && !element.matches('section, article, form')
           && element.querySelector('section, article, form')
+        // Page roots (<main> child) that only wrap a section are skipped, so their sections
+        // animate instead of the whole block. Anything else at the top of a page - a plain
+        // <div> holding a dashboard, for example - fades in as a block.
         if (isMainChild && containsAnimatedContent) continue
         trackedElements.add(element)
+        revealObserverMap.set(element, revealObserver)
         firstLookObserver.observe(element)
       }
       document.documentElement.classList.add('scroll-reveal-enabled')
@@ -71,17 +103,32 @@ export function ScrollRevealObserver() {
     // Many small DOM changes (a countdown ticking, a slider moving) arrive together; scan the
     // page at most once per frame instead of once per change.
     let scanFrame = 0
-    const mutationObserver = new MutationObserver(() => {
-      if (scanFrame) return
+    const mutationObserver = new MutationObserver((records) => {
+      let hiddenAgain = false
+      for (const record of records) {
+        const target = record.target as HTMLElement
+        if (record.type === 'attributes' && record.attributeName === 'data-scroll-reveal'
+          && target.dataset.scrollReveal === '' && trackedElements.has(target)) {
+          queueRevealCheck(target)
+          hiddenAgain = true
+        }
+      }
+      if (hiddenAgain || scanFrame) return
       scanFrame = window.requestAnimationFrame(() => {
         scanFrame = 0
         observePageSections()
       })
     })
-    mutationObserver.observe(document.body, { childList: true, subtree: true })
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-scroll-reveal'],
+    })
 
     return () => {
       window.cancelAnimationFrame(scanFrame)
+      window.cancelAnimationFrame(checkFrame)
       mutationObserver.disconnect()
       firstLookObserver.disconnect()
       revealObserver.disconnect()

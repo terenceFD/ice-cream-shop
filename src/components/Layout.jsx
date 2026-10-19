@@ -782,6 +782,16 @@ export function Header() {
             </div>
             {!isAdminPage && (
               <>
+                <Link
+                  aria-label={t("Search the menu")}
+                  className="grid size-11 shrink-0 place-items-center rounded-full text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+                  to="/menu/all"
+                >
+                  <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="2" />
+                    <path d="m16 16 4 4" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                  </svg>
+                </Link>
                 <div className="hidden lg:block">
                   <AccountDropdown
                     customer={customer}
@@ -875,6 +885,13 @@ export function Header() {
             <div className="flex-1 space-y-2.5 px-3 py-4">
               <Link className={mobileLinkClassName(isHome)} onClick={() => setIsMobileMenuOpen(false)} to="/#home">
                 {t("Home")}
+              </Link>
+              <Link className={mobileLinkClassName(location.pathname === "/menu/all")} onClick={() => setIsMobileMenuOpen(false)} to="/menu/all">
+                <span>{t("Search the menu")}</span>
+                <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="2" />
+                  <path d="m16 16 4 4" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                </svg>
               </Link>
               <NavigationDropdown active={isShopActive} label={t("Flavors")} links={shopLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />
               <NavigationDropdown active={isMenuActive} label={t("Menu")} links={menuLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />

@@ -1,6 +1,7 @@
 import { useSyncExternalStore, type ReactNode } from "react";
 import { photoErrorHandler, photoSrcSet } from "../lib/thumbnails";
 import { COMPACT_HERO_MEDIA, HERO_PHOTO_SIZES } from "../../shared/photoSizes.js";
+import { HeroBackground } from "./HeroBackground";
 
 const FALLBACK_IMAGE = "/images/hero-ice-cream.jpg";
 
@@ -73,11 +74,7 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
   const showVisual = !compactOnMobile || isWideScreen;
   return (
     <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -right-40 -top-40 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(63_134_214/0.3),rgb(63_134_214/0.3)_35%,transparent)]" />
-        <div className="absolute -bottom-48 -left-32 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(45_106_168/0.35),rgb(45_106_168/0.35)_35%,transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
-      </div>
+      <HeroBackground variant="navy" />
 
       <div className={`mx-auto grid max-w-[1320px] items-center gap-12 px-5 pt-8 ${compactOnMobile ? "pb-16" : "pb-24"} sm:px-8 sm:pb-28 sm:pt-12 lg:grid-cols-12 lg:gap-8 lg:px-12 lg:pb-32 lg:pt-14`}>
         <div className="lg:col-span-6">

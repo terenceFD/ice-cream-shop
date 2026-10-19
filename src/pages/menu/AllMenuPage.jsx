@@ -104,7 +104,7 @@ export function AllMenuPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState(coldStoneMenuCategories);
   const [menuError, setMenuError] = useState("");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => searchParams.get("search") || "");
   const [sortBy, setSortBy] = useState("");
   const [addedKey, setAddedKey] = useState("");
   const [cartError, setCartError] = useState("");

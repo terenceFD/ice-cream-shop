@@ -340,6 +340,39 @@ body {
   transform: translate3d(0, 0, 0);
 }
 
+/* Section-level depth: a block that enters from below the screen also eases up from a slight
+   zoom, which makes the reveal feel tied to the scroll instead of to a timer. Only blocks with
+   room to move are scaled, so short rows and cards keep their plain fade. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .scroll-reveal-enabled main > *,
+    .scroll-reveal-enabled main section > * {
+      view-timeline: --section-entry block;
+      animation: section-rise linear both;
+      animation-timeline: --section-entry;
+      animation-range: entry 0% entry 60%;
+    }
+
+    /* The timeline scales the block, so the animated CSS transform must not fight it. */
+    .scroll-reveal-enabled main > *[data-scroll-reveal=""],
+    .scroll-reveal-enabled main section > *[data-scroll-reveal=""] {
+      transform: none;
+    }
+  }
+}
+
+@keyframes section-rise {
+  from {
+    opacity: 0.35;
+    scale: 0.985;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -348,7 +381,9 @@ body {
   .scroll-reveal-enabled [data-scroll-reveal=""] {
     opacity: 1;
     transform: none;
+    scale: none;
     transition: none;
+    animation: none;
   }
 }
 
@@ -390,6 +425,93 @@ body {
 
   to {
     scale: 1;
+  }
+}
+
+/* Hero background: drifting glows, panning dot grid, floating sprinkles */
+.hero-blob-a {
+  animation: hero-blob-drift-a 22s ease-in-out infinite alternate;
+}
+
+.hero-blob-b {
+  animation: hero-blob-drift-b 26s ease-in-out infinite alternate;
+}
+
+.hero-grid {
+  animation: hero-grid-pan 60s linear infinite;
+}
+
+.hero-sprinkle {
+  opacity: 0.55;
+  animation-name: hero-sprinkle-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes hero-blob-drift-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(-6%, 8%, 0) scale(1.18);
+  }
+}
+
+@keyframes hero-blob-drift-b {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(8%, -6%, 0) scale(1.12);
+  }
+}
+
+@keyframes hero-grid-pan {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 56px 56px;
+  }
+}
+
+@keyframes hero-sprinkle-float {
+  0%, 100% {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) rotate(0deg);
+  }
+
+  20%, 80% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: translate3d(6px, -22px, 0) rotate(160deg);
+  }
+}
+
+/* Twinkling star dots */
+.hero-star {
+  opacity: 0.25;
+  animation-name: hero-star-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes hero-star-twinkle {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(0.55) rotate(0deg);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(45deg);
   }
 }
 
@@ -435,6 +557,19 @@ body {
 
   .home-hero-progress {
     display: none;
+  }
+
+  .hero-blob-a,
+  .hero-blob-b,
+  .hero-grid,
+  .hero-sprinkle,
+  .hero-star {
+    animation: none;
+  }
+
+  .hero-sprinkle,
+  .hero-star {
+    opacity: 0;
   }
 }
 

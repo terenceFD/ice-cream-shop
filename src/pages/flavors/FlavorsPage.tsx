@@ -260,56 +260,73 @@ export function FlavorsPage() {
             <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
               {sortedFlavors.map((flavor) => {
                 const added = addedId === flavor.id;
+                const soldOut = flavor.availableQuantity < 1;
                 return (
                   <article
-                    className="group relative flex flex-col rounded-[22px] bg-white p-1.5 sm:rounded-[28px] sm:p-2.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a]"
+                    className="group relative isolate flex flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_1px_2px_rgba(9,42,83,0.05),0_16px_40px_rgba(9,42,83,0.08)] ring-1 ring-[#ece8de] transition duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_2px_4px_rgba(9,42,83,0.06),0_28px_60px_rgba(9,42,83,0.16)] hover:ring-[#e0dbcd]"
                     key={flavor.id}
                   >
-                    <Link
-                      aria-hidden="true"
-                      className={`relative block aspect-square overflow-hidden rounded-[17px] sm:rounded-[22px] ${flavor.color}`}
-                      tabIndex={-1}
-                      to={`/flavor/${flavor.id}`}
-                    >
-                      <img decoding="async" loading="lazy"
-                        alt=""
-                        className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05]"
-                        onError={photoErrorHandler(flavor.image)}
-                        sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, 50vw"
-                        src={flavor.image}
-                        srcSet={photoSrcSet(flavor.image)}
-                      />
-                      {flavor.tag && (
-                        <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-white/95 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.1em] text-[#52647b] shadow-sm backdrop-blur-sm sm:left-3 sm:top-3 sm:px-3 sm:py-1.5 sm:text-[10px]">
-                          {t(flavor.tag)}
-                        </span>
-                      )}
-                      {flavor.availableQuantity <= 5 && (
-                        <span className="absolute bottom-2 left-2 rounded-full bg-[#092a53]/85 px-2 py-1 text-[9px] sm:bottom-auto sm:left-auto sm:right-3 sm:top-3 sm:px-3 sm:py-1.5 sm:text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#ffdc32] backdrop-blur-sm">
-                          {t("{count} left", { count: flavor.availableQuantity })}
-                        </span>
-                      )}
-                    </Link>
+                    {/* Framed image area */}
+                    <div className="relative aspect-[4/3] overflow-hidden p-3 pb-0">
+                      <div className="relative size-full overflow-hidden rounded-[18px] bg-[#f4f1e8]">
+                        <Link
+                          aria-hidden="true"
+                          className="absolute inset-0 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                          tabIndex={-1}
+                          to={`/flavor/${flavor.id}`}
+                        />
+                        <img
+                          decoding="async"
+                          loading="lazy"
+                          alt=""
+                          className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.07] ${soldOut ? "grayscale-[80%] opacity-70" : ""}`}
+                          onError={photoErrorHandler(flavor.image)}
+                          sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, 50vw"
+                          src={flavor.image}
+                          srcSet={photoSrcSet(flavor.image)}
+                        />
+                        <span aria-hidden="true" className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-                    <div className="@container flex flex-1 flex-col px-1.5 pb-1.5 pt-3 sm:px-4 sm:pb-3 sm:pt-5">
-                      <h3 className="line-clamp-2 font-display text-[15px] font-extrabold leading-snug text-[#092a53] sm:text-xl">
-                        <Link className="after:absolute after:inset-0 after:rounded-[28px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#bd9c00]" to={`/flavor/${flavor.id}`}>
-                          {t(flavor.name)}
-                        </Link>
+                        {flavor.tag && (
+                          <span className="absolute left-3 top-3 max-w-[calc(100%-2rem)] truncate rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#092a53] shadow-[0_4px_12px_rgba(9,42,83,0.18)] backdrop-blur-sm">
+                            {t(flavor.tag)}
+                          </span>
+                        )}
+                        {!soldOut && flavor.availableQuantity <= 5 && (
+                          <span className="absolute right-3 top-3 rounded-full border border-[#f3dcb0] bg-[#fff6dd]/95 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#7a5c00] shadow-sm backdrop-blur-sm">
+                            {t("Only {count} left", { count: flavor.availableQuantity })}
+                          </span>
+                        )}
+                        {soldOut && (
+                          <span className="absolute inset-0 grid place-items-center bg-white/45 backdrop-blur-[3px]">
+                            <span className="rounded-full bg-[#092a53] px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-white shadow-xl sm:text-xs">
+                              {t("Sold out")}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex flex-1 flex-col p-4 sm:p-5">
+                      <h3 className="line-clamp-1 font-display text-lg font-extrabold tracking-tight text-[#092a53] transition-colors group-hover:text-[#123f76] sm:text-xl">
+                        {t(flavor.name)}
                       </h3>
-                      <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[#65748a] sm:mt-2 sm:text-sm sm:leading-6">{t(flavor.detail)}</p>
-
-                      <div className="mt-auto flex flex-col gap-2.5 border-t border-dashed border-[#e7e2d4] pt-3 sm:gap-3 sm:pt-4 @[16.5rem]:flex-row @[16.5rem]:items-center @[16.5rem]:justify-between">
-                        <span className="whitespace-nowrap font-display text-sm font-extrabold tabular-nums text-[#092a53] sm:text-lg">
+                      <p className="mt-1.5 line-clamp-2 text-[13px] leading-5 text-[#65748a]">{t(flavor.detail)}</p>
+                      <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+                        <span className="font-display text-lg font-extrabold tabular-nums text-[#092a53]">
                           {formatCartMoney(flavor.price, "xaf", language)}
                         </span>
                         <button
                           aria-label={t("Add {name} to your bag", { name: t(flavor.name) })}
-                          className={`relative z-10 inline-flex w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-extrabold transition sm:py-3 @[16.5rem]:w-auto @[16.5rem]:py-2.5 duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
+                          className={`relative z-10 inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-extrabold uppercase tracking-[0.08em] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-[#f1ede2] disabled:text-[#a5aebb] ${
                             added
                               ? "bg-[#4caf50] text-white"
-                              : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white"
+                              : soldOut
+                                ? "bg-[#f1ede2] text-[#a5aebb]"
+                                : "bg-[#092a53] text-white hover:bg-[#163e6b] hover:shadow-[0_8px_20px_rgba(9,42,83,0.25)]"
                           }`}
+                          disabled={soldOut}
                           onClick={() => addFlavor(flavor)}
                           type="button"
                         >
@@ -318,9 +335,9 @@ export function FlavorsPage() {
                               <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
                             </svg>
                           ) : (
-                            <BagIcon />
+                            <BagIcon className="size-4" />
                           )}
-                          <span aria-live="polite">{added ? t("Added") : t("Add to bag")}</span>
+                          <span className="hidden sm:inline">{added ? t("Added") : t("Add")}</span>
                         </button>
                       </div>
                     </div>
