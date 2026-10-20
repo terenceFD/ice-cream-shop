@@ -1,17 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
 import { useLanguage } from '../language/useLanguage'
 
-// Show the loader immediately so the page never renders in front of it. The overlay still
-// stays on screen for at least 1000ms before exiting, which keeps the splash visible long enough
-// without feeling delayed or stuck. MAX_VISIBLE_MS is a safety net if a page never draws <main>.
-// The splash runs only once per browser tab: navigating afterwards must feel instant, so a
-// session flag makes later route changes skip the 1000ms wait entirely.
-const SHOW_DELAY_MS = 0
+// Show on each full page load; the app-level component stays mounted during client-side navigation.
 const MIN_VISIBLE_MS = 1000
-const MAX_VISIBLE_MS = 2500
 const EXIT_MS = 380
-const SPLASH_SEEN_KEY = 'cold-stone-splash-seen'
 
 // Opening screen in the style of the navy page headers (PageHero): soft blue glows, dot
 // pattern, the ✦ eyebrow pill, a dashed ring around the logo, and the yellow hand-drawn
@@ -19,29 +11,12 @@ const SPLASH_SEEN_KEY = 'cold-stone-splash-seen'
 // the same curved edge as the headers. Styles: .website-loader in src/index.css.
 export function WebsiteLoader() {
   const { t } = useLanguage()
-  const { pathname } = useLocation()
   const [isLeaving, setIsLeaving] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
 
-  const [isFirstLoad] = useState(() => {
-    try {
-      if (sessionStorage.getItem(SPLASH_SEEN_KEY)) return false
-      sessionStorage.setItem(SPLASH_SEEN_KEY, '1')
-    } catch {
-      // Private mode without storage: still show the splash once on the first route.
-    }
-    return true
-  })
-
   useEffect(() => {
-    if (!isFirstLoad) return
-    setIsLeaving(false)
-    setIsVisible(true)
-
-    let exitTimer = 0
     let removeTimer = 0
-
-    exitTimer = window.setTimeout(() => {
+    const exitTimer = window.setTimeout(() => {
       setIsLeaving(true)
       removeTimer = window.setTimeout(() => setIsVisible(false), EXIT_MS)
     }, MIN_VISIBLE_MS)
@@ -50,9 +25,9 @@ export function WebsiteLoader() {
       window.clearTimeout(exitTimer)
       window.clearTimeout(removeTimer)
     }
-  }, [isFirstLoad])
+  }, [])
 
-  if (!isFirstLoad || !isVisible) return null
+  if (!isVisible) return null
 
   return (
     <div
