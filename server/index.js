@@ -2532,6 +2532,94 @@ app.post('/api/admin/security-pin/verify', securityPinLimiter, requireAdmin, asy
   }
 })
 
+app.post('/api/admin/authenticator/replace', passwordChangeLimiter, requireAdmin, async (request, response, next) => {
+  if (!requireOwner(request, response) || !requireCredentialsToken(request, response)) return
+  try {
+    const currentPassword = typeof request.body.currentPassword === 'string' ? request.body.currentPassword : ''
+    const code = typeof request.body.code === 'string' ? request.body.code.trim() : ''
+    const account = await database.prepare(`
+      SELECT password_hash AS "passwordHash", totp_secret AS "totpSecret",
+        totp_enabled AS "totpEnabled", totp_last_counter AS "totpLastCounter"
+      FROM admins WHERE id = ?
+    `).get(request.admin.id)
+    if (!account?.totpEnabled || !account.totpSecret) {
+      response.status(409).json({ error: 'Authenticator verification is not enabled for this account.' })
+      return
+    }
+    if (!await verifyPassword(currentPassword, account.passwordHash)) {
+      response.status(400).json({ error: 'Your current password or authenticator code is incorrect.' })
+      return
+    }
+    const secret = decryptTotpSecret(account.totpSecret, jwtSecret)
+    const counter = verifyTotpCode(secret, code, Date.now(), Number(account.totpLastCounter ?? -1))
+    if (counter === null) {
+      response.status(400).json({ error: 'Your current password or authenticator code is incorrect.' })
+      return
+    }
+
+    const newSecret = generateTotpSecret()
+    const pendingSecret = encryptTotpSecret(newSecret, jwtSecret)
+    const update = await database.prepare(`
+      UPDATE admins SET totp_pending_secret = ?, totp_last_counter = ?
+      WHERE id = ? AND totp_enabled = 1 AND totp_secret = ? AND totp_last_counter < ?
+    `).run(pendingSecret, counter, request.admin.id, account.totpSecret, counter)
+    if (!update.changes) {
+      response.status(409).json({ error: 'Authenticator setup changed. Try again.' })
+      return
+    }
+    response.json({
+      secret: newSecret,
+      authenticatorUri: authenticatorUri(newSecret, request.admin.email),
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.post('/api/admin/authenticator/replace/confirm', adminMfaLoginLimiter, requireAdmin, async (request, response, next) => {
+  if (!requireOwner(request, response) || !requireCredentialsToken(request, response)) return
+  try {
+    const code = typeof request.body.code === 'string' ? request.body.code.trim() : ''
+    const account = await database.prepare(`
+      SELECT totp_secret AS "totpSecret", totp_pending_secret AS "totpPendingSecret",
+        totp_enabled AS "totpEnabled"
+      FROM admins WHERE id = ?
+    `).get(request.admin.id)
+    if (!account?.totpEnabled || !account.totpSecret || !account.totpPendingSecret) {
+      response.status(409).json({ error: 'Start authenticator replacement again before confirming your code.' })
+      return
+    }
+
+    const newSecret = decryptTotpSecret(account.totpPendingSecret, jwtSecret)
+    const counter = verifyTotpCode(newSecret, code)
+    if (counter === null) {
+      response.status(400).json({ error: 'That new authenticator code is invalid. Check the code and try again.' })
+      return
+    }
+    const recoveryCodes = createRecoveryCodes()
+    const recoveryHashes = recoveryCodes.map((recoveryCode) => hashRecoveryCode(recoveryCode, jwtSecret))
+    const update = await database.prepare(`
+      UPDATE admins SET totp_secret = ?, totp_pending_secret = NULL, totp_last_counter = ?,
+        totp_recovery_codes = ?
+      WHERE id = ? AND totp_enabled = 1 AND totp_secret = ? AND totp_pending_secret = ?
+    `).run(
+      account.totpPendingSecret,
+      counter,
+      JSON.stringify(recoveryHashes),
+      request.admin.id,
+      account.totpSecret,
+      account.totpPendingSecret,
+    )
+    if (!update.changes) {
+      response.status(409).json({ error: 'Authenticator setup changed. Start replacement again.' })
+      return
+    }
+    response.json({ recoveryCodes })
+  } catch (error) {
+    next(error)
+  }
+})
+
 // Owners change their own password. Wrong-password replies use 400, not 401, so the
 // dashboard keeps the current session; the new token keeps this session signed in while others end.
 app.put('/api/admin/password', passwordChangeLimiter, requireAdmin, async (request, response, next) => {

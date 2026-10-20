@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { QRCodeSVG } from "qrcode.react";
 import { useAdminAuth } from "./useAdminAuth";
 import { PasswordField } from "../../components/PasswordField";
 import { useLanguage } from "../../language/useLanguage";
@@ -314,11 +315,27 @@ export function AdminLoginPage() {
                     {mfaStage === "setup" && (
                       <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-[#52647b] ring-1 ring-[#e7ecf2]">
                         <h2 className="font-display text-lg font-extrabold text-[#092a53]">{t("Set up your authenticator app")}</h2>
-                        <p className="mt-2">{t("Add a new account in an authenticator app such as Google Authenticator, Microsoft Authenticator, or 1Password. Enter this setup key:")}</p>
-                        <code className="mt-3 block break-all rounded-xl bg-[#f3f6fa] p-3 text-base font-extrabold tracking-[0.12em] text-[#102c50]">{authenticatorSecret}</code>
-                        <details className="mt-3">
-                          <summary className="cursor-pointer font-bold">{t("Show manual setup URI")}</summary>
-                          <code className="mt-2 block break-all rounded-xl bg-[#f3f6fa] p-3 text-xs">{authenticatorUri}</code>
+                        <p className="mt-2">{t("Scan this QR code with Google Authenticator, Microsoft Authenticator, or 1Password.")}</p>
+                        <div className="mt-4 flex justify-center rounded-2xl bg-[#f3f6fa] p-4">
+                          <QRCodeSVG
+                            aria-label={t("Authenticator setup QR code")}
+                            bgColor="#ffffff"
+                            fgColor="#102c50"
+                            includeMargin
+                            level="M"
+                            size={200}
+                            title={t("Authenticator setup QR code")}
+                            value={authenticatorUri}
+                          />
+                        </div>
+                        <details className="mt-4">
+                          <summary className="cursor-pointer font-bold">{t("Can't scan? Use manual setup")}</summary>
+                          <p className="mt-2">{t("Enter this setup key in your authenticator app:")}</p>
+                          <code className="mt-2 block break-all rounded-xl bg-[#f3f6fa] p-3 text-base font-extrabold tracking-[0.12em] text-[#102c50]">{authenticatorSecret}</code>
+                          <details className="mt-3">
+                            <summary className="cursor-pointer font-bold">{t("Show manual setup URI")}</summary>
+                            <code className="mt-2 block break-all rounded-xl bg-[#f3f6fa] p-3 text-xs">{authenticatorUri}</code>
+                          </details>
                         </details>
                       </div>
                     )}

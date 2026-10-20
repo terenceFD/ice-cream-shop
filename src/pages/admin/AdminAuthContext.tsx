@@ -35,6 +35,8 @@ export interface AdminAuthContextValue {
   verifySecurityPin: (pin: string) => Promise<string>;
   changePassword: (currentPassword: string, newPassword: string, pinToken: string) => Promise<void>;
   changeEmail: (currentPassword: string, newEmail: string, pinToken: string) => Promise<AdminAccount>;
+  beginAuthenticatorReplacement: (currentPassword: string, code: string, pinToken: string) => Promise<{ secret: string; authenticatorUri: string }>;
+  confirmAuthenticatorReplacement: (code: string, pinToken: string) => Promise<{ recoveryCodes: string[] }>;
   logout: () => Promise<void>;
 }
 
@@ -234,6 +236,22 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     return result.admin
   }
 
+  async function beginAuthenticatorReplacement(currentPassword: string, code: string, pinToken: string) {
+    return apiRequest<{ secret: string; authenticatorUri: string }>('/admin/authenticator/replace', {
+      method: 'POST',
+      token: sessionToken,
+      body: { currentPassword, code, pinToken },
+    })
+  }
+
+  async function confirmAuthenticatorReplacement(code: string, pinToken: string) {
+    return apiRequest<{ recoveryCodes: string[] }>('/admin/authenticator/replace/confirm', {
+      method: 'POST',
+      token: sessionToken,
+      body: { code, pinToken },
+    })
+  }
+
   async function logout() {
     try {
       if (sessionToken) await apiRequest('/admin/logout', { method: 'POST', token: sessionToken })
@@ -266,6 +284,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       verifySecurityPin,
       changePassword,
       changeEmail,
+      beginAuthenticatorReplacement,
+      confirmAuthenticatorReplacement,
       logout,
     }}>
       {children}

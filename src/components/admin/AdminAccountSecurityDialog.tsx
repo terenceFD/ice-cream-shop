@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
 import { PasswordField } from '../PasswordField'
 import { passwordStrength } from '../passwordStrength'
 import { useAdminAuth } from '../../pages/admin/useAdminAuth'
@@ -11,7 +12,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 // The server answers with this message when the PIN confirmation is missing or has expired.
 const PIN_REQUIRED_MESSAGE = 'Confirm your security PIN to continue.'
 
-export type AccountSecurityTab = 'password' | 'email'
+export type AccountSecurityTab = 'password' | 'email' | 'authenticator'
 type Stage = 'checking' | 'create-pin' | 'enter-pin' | 'forms'
 
 const iconPaths = {
@@ -645,6 +646,176 @@ function EmailPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
   )
 }
 
+function AuthenticatorPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
+  pinToken: string
+  onPinExpired: () => void
+  onClose: () => void
+  onBusyChange: (busy: boolean) => void
+}) {
+  const { beginAuthenticatorReplacement, confirmAuthenticatorReplacement } = useAdminAuth()
+  const { t } = useLanguage()
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [currentCode, setCurrentCode] = useState('')
+  const [newCode, setNewCode] = useState('')
+  const [setup, setSetup] = useState<{ secret: string; authenticatorUri: string } | null>(null)
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([])
+  const [error, setError] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+
+  async function handleStart(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!currentPassword || !/^\d{6}$/.test(currentCode) || isSaving) return
+    setError('')
+    setIsSaving(true)
+    onBusyChange(true)
+    try {
+      setSetup(await beginAuthenticatorReplacement(currentPassword, currentCode, pinToken))
+      setCurrentPassword('')
+      setCurrentCode('')
+    } catch (submitError) {
+      const message = errorMessage(submitError, 'Unable to start authenticator replacement.')
+      if (message === PIN_REQUIRED_MESSAGE) onPinExpired()
+      else setError(t(message))
+    } finally {
+      setIsSaving(false)
+      onBusyChange(false)
+    }
+  }
+
+  async function handleConfirm(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!setup || !/^\d{6}$/.test(newCode) || isSaving) return
+    setError('')
+    setIsSaving(true)
+    onBusyChange(true)
+    try {
+      const result = await confirmAuthenticatorReplacement(newCode, pinToken)
+      setRecoveryCodes(result.recoveryCodes)
+      setSetup(null)
+      setNewCode('')
+    } catch (submitError) {
+      const message = errorMessage(submitError, 'Unable to confirm the new authenticator.')
+      if (message === PIN_REQUIRED_MESSAGE) onPinExpired()
+      else setError(t(message))
+    } finally {
+      setIsSaving(false)
+      onBusyChange(false)
+    }
+  }
+
+  if (recoveryCodes.length > 0) {
+    return (
+      <div className="space-y-4 px-6 py-6">
+        <div>
+          <h3 className="font-display text-lg font-extrabold text-[#092a53]">{t('Save your new recovery codes')}</h3>
+          <p className="mt-1 text-sm leading-6 text-[#65748a]">{t('These codes replace your previous recovery codes. Each can only be used once.')}</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 rounded-xl bg-[#f3f6fa] p-3 font-mono text-sm font-bold tracking-wide text-[#102c50]">
+          {recoveryCodes.map((code) => <code key={code}>{code}</code>)}
+        </div>
+        <button
+          className="inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b]"
+          onClick={onClose}
+          type="button"
+        >
+          {t('I have saved these codes')}
+        </button>
+      </div>
+    )
+  }
+
+  if (setup) {
+    return (
+      <form noValidate onSubmit={handleConfirm}>
+        <div className="space-y-4 px-6 py-6">
+          <div>
+            <h3 className="font-display text-lg font-extrabold text-[#092a53]">{t('Scan your new authenticator QR code')}</h3>
+            <p className="mt-1 text-sm leading-6 text-[#65748a]">{t('The current authenticator remains active until you confirm a code from the new one.')}</p>
+          </div>
+          <div className="flex justify-center rounded-2xl bg-[#f3f6fa] p-4">
+            <QRCodeSVG
+              aria-label={t('Authenticator setup QR code')}
+              bgColor="#ffffff"
+              fgColor="#102c50"
+              includeMargin
+              level="M"
+              size={200}
+              title={t('Authenticator setup QR code')}
+              value={setup.authenticatorUri}
+            />
+          </div>
+          <details className="rounded-xl bg-[#f7f9fc] p-3 text-sm">
+            <summary className="cursor-pointer font-bold text-[#52647b]">{t("Can't scan? Use manual setup")}</summary>
+            <code className="mt-2 block break-all rounded-lg bg-white p-3 font-mono font-bold tracking-wider text-[#102c50]">{setup.secret}</code>
+            <code className="mt-2 block break-all rounded-lg bg-white p-3 text-xs text-[#52647b]">{setup.authenticatorUri}</code>
+          </details>
+          <label className="block text-sm font-semibold text-[#65748a]">
+            {t('Code from your new authenticator')}
+            <input
+              autoComplete="one-time-code"
+              autoFocus
+              className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#f8f7f2] px-4 py-3 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#092a53] outline-none focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+              inputMode="numeric"
+              maxLength={6}
+              onChange={(event) => { setNewCode(event.target.value.replace(/\D/g, '').slice(0, 6)); setError('') }}
+              pattern="[0-9]{6}"
+              placeholder="000000"
+              required
+              value={newCode}
+            />
+          </label>
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+        </div>
+        <FormFooter
+          canSubmit={/^\d{6}$/.test(newCode) && !isSaving}
+          isSaving={isSaving}
+          onCancel={onClose}
+          savingLabel={t('Verifying new authenticator…')}
+          submitLabel={t('Confirm new authenticator')}
+        />
+      </form>
+    )
+  }
+
+  return (
+    <form noValidate onSubmit={handleStart}>
+      <div className="space-y-5 px-6 py-6">
+        <p className="text-sm leading-6 text-[#65748a]">{t('To replace your authenticator, confirm your current password and a fresh code from your current authenticator. Your existing setup stays active until the new one is verified.')}</p>
+        <PasswordField
+          autoComplete="current-password"
+          label={t('Current password')}
+          name="currentPassword"
+          onChange={(event) => { setCurrentPassword(event.target.value); setError('') }}
+          required
+          value={currentPassword}
+        />
+        <label className="block text-sm font-semibold text-[#65748a]">
+          {t('Code from your current authenticator')}
+          <input
+            autoComplete="one-time-code"
+            className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#f8f7f2] px-4 py-3 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#092a53] outline-none focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+            inputMode="numeric"
+            maxLength={6}
+            onChange={(event) => { setCurrentCode(event.target.value.replace(/\D/g, '').slice(0, 6)); setError('') }}
+            pattern="[0-9]{6}"
+            placeholder="000000"
+            required
+            value={currentCode}
+          />
+        </label>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+      </div>
+      <FormFooter
+        canSubmit={Boolean(currentPassword) && /^\d{6}$/.test(currentCode) && !isSaving}
+        isSaving={isSaving}
+        onCancel={onClose}
+        savingLabel={t('Preparing new QR code…')}
+        submitLabel={t('Set up a new authenticator')}
+      />
+    </form>
+  )
+}
+
 export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }: { initialTab?: AccountSecurityTab; onClose: () => void }) {
   const { currentAdmin, getSecurityPinStatus } = useAdminAuth()
   const { t } = useLanguage()
@@ -703,6 +874,7 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
   const tabs: { id: AccountSecurityTab; label: string; icon: string }[] = [
     { id: 'password', label: t('Password'), icon: iconPaths.lock },
     { id: 'email', label: t('Email'), icon: iconPaths.mail },
+    { id: 'authenticator', label: t('Authenticator'), icon: iconPaths.key },
   ]
 
   return (
@@ -811,7 +983,9 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
           <div role="tabpanel">
             {tab === 'password'
               ? <PasswordPanel key="password" onBusyChange={setIsBusy} onClose={onClose} onPinExpired={handlePinExpired} pinToken={pinToken} />
-              : <EmailPanel key="email" onBusyChange={setIsBusy} onClose={onClose} onPinExpired={handlePinExpired} pinToken={pinToken} />}
+              : tab === 'email'
+                ? <EmailPanel key="email" onBusyChange={setIsBusy} onClose={onClose} onPinExpired={handlePinExpired} pinToken={pinToken} />
+                : <AuthenticatorPanel key="authenticator" onBusyChange={setIsBusy} onClose={onClose} onPinExpired={handlePinExpired} pinToken={pinToken} />}
           </div>
         )}
       </section>
