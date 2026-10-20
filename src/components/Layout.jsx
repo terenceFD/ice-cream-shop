@@ -6,6 +6,7 @@ import { useCart } from "../context/useCart";
 import { useAuth } from "../context/useAuth";
 import { useFlavors } from "../context/useFlavors";
 import { useLanguage } from "../language/useLanguage";
+import { PROMOTION_DISMISSED_KEY, readInitialPromotion } from "../lib/promotion";
 import { coldStoneMenuCategories } from "../../shared/data";
 import { EVENT_OCCASIONS } from "../../shared/eventTypes.js";
 
@@ -950,19 +951,6 @@ export function Header() {
   );
 }
 
-const PROMOTION_DISMISSED_KEY = "cold-stone-promotion-dismissed";
-
-// The server sends the active promotion with the page (server/seo.js), so the bar is there from
-// the first paint instead of pushing the page down a moment later.
-function readInitialPromotion() {
-  try {
-    const data = document.getElementById("initial-promotion")?.textContent;
-    return data ? JSON.parse(data).promotion || null : null;
-  } catch {
-    return null;
-  }
-}
-
 function PromotionCountdown() {
   const { language, t } = useLanguage();
   const [promotion, setPromotion] = useState(readInitialPromotion);
@@ -993,11 +981,11 @@ function PromotionCountdown() {
     // The live page already includes the promotion in the HTML. Wait before asking again
     // so this request does not compete with the hero photo. Development has no embedded copy.
     const hasEmbeddedPromotion = Boolean(document.getElementById("initial-promotion"));
-    const firstRefresh = window.setTimeout(loadPromotion, hasEmbeddedPromotion ? 15_000 : 0);
+    const firstRefresh = hasEmbeddedPromotion ? null : window.setTimeout(loadPromotion, 0);
     const refreshInterval = window.setInterval(loadPromotion, 60_000);
     return () => {
       cancelled = true;
-      window.clearTimeout(firstRefresh);
+      if (firstRefresh !== null) window.clearTimeout(firstRefresh);
       window.clearInterval(refreshInterval);
     };
   }, []);

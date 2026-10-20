@@ -503,6 +503,15 @@ body {
   will-change: opacity, transform;
 }
 
+.hero-background--static .hero-blob-a,
+.hero-background--static .hero-blob-b,
+.hero-background--static .hero-grid,
+.hero-background--static .hero-sprinkle,
+.hero-background--static .hero-star {
+  animation: none;
+  will-change: auto;
+}
+
 @keyframes hero-star-twinkle {
   0%, 100% {
     opacity: 0.15;

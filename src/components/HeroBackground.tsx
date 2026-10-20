@@ -48,7 +48,13 @@ const STARS = [
   { left: "68%", top: "46%", size: 9, delay: "-5.8s", duration: "4.7s", color: "#ff8ab5" },
 ];
 
-export function HeroBackground({ variant = "navy" }: { variant?: "navy" | "light" }) {
+export function HeroBackground({
+  variant = "navy",
+  animated = false,
+}: {
+  variant?: "navy" | "light";
+  animated?: boolean;
+}) {
   const blobs =
     variant === "navy"
       ? [
@@ -61,7 +67,7 @@ export function HeroBackground({ variant = "navy" }: { variant?: "navy" | "light
       ];
 
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+    <div aria-hidden="true" className={`hero-background pointer-events-none absolute inset-0 -z-10${animated ? "" : " hero-background--static"}`}>
       {blobs.map((blob, index) => (
         <div
           className={`${blob.className} rounded-full bg-[radial-gradient(closest-side,${blob.background},${blob.background}_35%,transparent)]`}
