@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Footer, Header, ArrowIcon } from "../../components/Layout";
+import { initialPromotionIsVisible } from "../../lib/promotion";
 import { HeroBackground } from "../../components/HeroBackground";
 import { useCart } from "../../context/useCart";
 import { apiRequest } from "../../api/api";
@@ -342,7 +343,7 @@ export function HomePage() {
   const addedTimer = useRef(undefined);
   const reviewsSentinel = useRef(null);
   const popularSection = useRef(null);
-  const [promoBarVisible, setPromoBarVisible] = useState(promoBarIsVisible);
+  const [promoBarVisible, setPromoBarVisible] = useState(initialPromotionIsVisible);
 
   useEffect(() => {
     const sync = () => setPromoBarVisible(promoBarIsVisible());

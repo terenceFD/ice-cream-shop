@@ -1210,6 +1210,8 @@ const french: Record<string, string> = {
   'Signing in…': 'Connexion…',
   Login: 'Connexion',
   'Set up your authenticator app': 'Configurer votre application d’authentification',
+  'Started authenticator replacement': 'Remplacement de l’authentificateur commencé',
+  'Replaced the authenticator': 'Authentificateur remplacé',
   'Add a new account in an authenticator app such as Google Authenticator, Microsoft Authenticator, or 1Password. Enter this setup key:': 'Ajoutez un compte dans une application comme Google Authenticator, Microsoft Authenticator ou 1Password. Saisissez cette clé de configuration :',
   'Scan this QR code with Google Authenticator, Microsoft Authenticator, or 1Password.': 'Scannez ce code QR avec Google Authenticator, Microsoft Authenticator ou 1Password.',
   'Authenticator setup QR code': 'Code QR de configuration de l’authentificateur',

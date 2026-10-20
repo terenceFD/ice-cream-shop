@@ -13,6 +13,8 @@ const RULES = [
   ['PUT', /^\/api\/admin\/profile-picture$/, 'Updated the profile picture', 'account'],
   ['POST', /^\/api\/admin\/security-pin$/, 'Set a security PIN', 'account'],
   ['POST', /^\/api\/admin\/security-pin\/verify$/, 'Confirmed the security PIN', 'account'],
+  ['POST', /^\/api\/admin\/authenticator\/replace$/, 'Started authenticator replacement', 'account'],
+  ['POST', /^\/api\/admin\/authenticator\/replace\/confirm$/, 'Replaced the authenticator', 'account'],
   ['POST', /^\/api\/admin\/admins$/, 'Added an admin account', 'account'],
   ['DELETE', /^\/api\/admin\/admins\/(\d+)$/, 'Removed admin account #{id}', 'account'],
 
