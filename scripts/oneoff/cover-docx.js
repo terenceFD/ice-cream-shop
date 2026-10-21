@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import zlib from 'node:zlib'
 
-const source = 'C:/Users/forbi/Desktop/ice cream site/Documentation/Cold-Stone-Creamery-Website-Documentation.docx'
+const source = 'C:/Users/forbi/Desktop/ice cream site/docs/Documentation/Cold-Stone-Creamery-Website-Documentation.docx'
 const output = 'C:/Users/forbi/AppData/Local/Temp/Cold-Stone-Creamery-Website-Documentation-covered.docx'
 const logoPath = 'C:/Users/forbi/Desktop/ice cream site/logo.png'
 const signature = { local: 0x04034b50, central: 0x02014b50, end: 0x06054b50 }

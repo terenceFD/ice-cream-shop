@@ -35,7 +35,7 @@ Research references:
 ## Project folders
 
 ```
-src/
+src/            App source code
   app/          App routes and the entry point (main.tsx)
   pages/        One folder per page: home, menu, flavors, cart, checkout, payment, admin, …
   components/   Shared UI pieces; admin/ holds the dashboard layout, guards and notifications
@@ -47,9 +47,33 @@ src/
 shared/         Code used by both the site and the server (menu data, photo sizes, currency, dates)
 server/         Express API, database, payments, email and push notifications
 scripts/        Dev runner, thumbnail maker, migrations and tests for shared code
+  oneoff/       One-time maintenance scripts (e.g. cover-docx.js for the documentation cover)
 public/         Photos, icons and fonts served as-is
 assets/original-photos/   Original photos kept for reference (not served)
 ```
+
+### Folders outside the app (repository root)
+
+Non-app files live beside `ice-cream-site/` at the repository root, documented in `../README-STRUCTURE.md`:
+
+| Folder | Contents |
+|---|---|
+| `docs/` | Project documentation (PDF/DOCX guide, cover preview) and a snapshot of a previous site version |
+| `qa/` | Throwaway browser-QA scripts (`resp-check*.mjs`) and their screenshot output; safe to delete |
+| `assets-source/hd-images/` | High-resolution source images used to generate thumbnails in `public/`; not referenced by the site directly |
+| `certs/` | Local HTTPS certificate |
+
+Nothing under `src/`, `shared/`, `server/`, `scripts/` (except `oneoff/cover-docx.js`, which points at `docs/`) or the build references these folders.
+
+## Homepage design system
+
+The home page follows a consistent design language:
+
+- **Colors:** navy primary `#092a53`, secondary `#123b68`, hover `#163e6b`; yellow accent `#ffdc32` (badges, CTAs on navy); muted slate `#65748a`/`#52647b` for secondary text; cream backgrounds `#fbfaf5`/`#f8f6f1`. Earlier purple tones (`#5b2d8f` and friends) have been replaced by the navy palette.
+- **Section order (after the hero slider):** "Follow your flavor" inspiration cards (mood filters + image cards with mood pill, accent bar and circular arrow button) → "Our favorites" fan-favorites grid → "A tropical scoop of vibe" (mango gradient `#ffe9b0→#f6b23a`, SUNSHINE watermark, navy 100%-real-mango badge, wavy bottom edge in the next section's color `#e9f4f3`) → "Pick it. Lick it. Love it." cards → "Small moments. Sweet memories." (offset-frame photo, rotated navy sticker) → **Real Reviews** → **Menu highlights** (two photo cards: "Review menu" → `/menu`, "View flavors" → `/flavors`).
+- **Cards** share the same pattern: white card on hover, navy-tinted shadows/rings (`rgba(9,42,83,…) `), image zoom on hover, navy circular arrow button that fills on hover.
+- **Hero background** (`src/components/HeroBackground.tsx`) renders static by default (`animated = false`); pass `animated` to re-enable drifting blobs, panning grid, sprinkles and twinkling stars.
+- **Hero slides** live in `const homeSlides` in `src/pages/home/HomePage.jsx`.
 
 ## Getting started
 
