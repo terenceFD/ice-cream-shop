@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { photoErrorHandler, photoSrcSet, thumbnail } from "../lib/thumbnails";
 import { Link, useLocation } from "react-router-dom";
 import { apiRequest } from "../api/api";
+import { numberFormatter } from "../lib/cartPricing";
 import { useCart } from "../context/useCart";
 import { useAuth } from "../context/useAuth";
 import { useFlavors } from "../context/useFlavors";
@@ -556,6 +557,182 @@ function BrandMark({ compact = false }) {
   );
 }
 
+// Mini-cart popover: shows the last items, subtotal and quick links, so the visitor
+// can confirm the bag without leaving the page. Opens on hover/focus (desktop) and
+// on tap (mobile), closes on outside click or Escape.
+function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [bagJustUpdated, setBagJustUpdated] = useState(false);
+  const wrapperRef = useRef(null);
+  const closeTimer = useRef(undefined);
+  const bagPulseTimer = useRef(undefined);
+  const previousCartCount = useRef(cartCount);
+  const formatPrice = (price) =>
+    `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (!wrapperRef.current?.contains(event.target)) setIsOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen]);
+
+  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+
+  useEffect(() => {
+    if (cartCount > previousCartCount.current) {
+      setBagJustUpdated(true);
+      window.clearTimeout(bagPulseTimer.current);
+      bagPulseTimer.current = window.setTimeout(
+        () => setBagJustUpdated(false),
+        1600,
+      );
+    }
+    previousCartCount.current = cartCount;
+  }, [cartCount]);
+
+  useEffect(() => () => window.clearTimeout(bagPulseTimer.current), []);
+
+  const open = () => {
+    window.clearTimeout(closeTimer.current);
+    setIsOpen(true);
+  };
+
+  const openWithDelay = () => {
+    window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setIsOpen(true), 180);
+  };
+
+  const closeSoon = () => {
+    window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setIsOpen(false), 220);
+  };
+
+  const isCartPage = location.pathname === "/cart";
+  const lastItems = [...cartItems].slice(-3).reverse();
+
+  return (
+    <div
+      className="relative hidden lg:block"
+      onPointerEnter={openWithDelay}
+      onPointerLeave={closeSoon}
+      ref={wrapperRef}
+    >
+      <Link
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-label={t("Shopping bag, {count} items", { count: cartCount })}
+        className={`relative grid size-11 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
+          isCartPage || isOpen ? "bg-[#ffdc32] text-[#092a53]" : "text-white hover:bg-white/10"
+        }`}
+        onClick={() => setIsOpen(false)}
+        to="/cart"
+      >
+        <BagIcon />
+        {cartCount > 0 && (
+          <span
+            className={`absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] font-extrabold ring-2 ring-[#092a53] ${
+              bagJustUpdated
+                ? "animate-bag-pulse bg-[#4caf50] text-white"
+                : "bg-[#ffdc32] text-[#092a53]"
+            }`}
+          >
+            {cartCount > 99 ? "99+" : cartCount}
+          </span>
+        )}
+      </Link>
+      {isOpen && (
+        <div
+          aria-label={t("Shopping bag")}
+          className="admin-modal-panel absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.25)] ring-1 ring-[#d7e0ea]"
+          role="dialog"
+        >
+          <div className="bg-[#092a53] px-4 py-3 text-white">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+              {t("Your bag")}
+            </p>
+            <p className="mt-0.5 font-display text-lg font-extrabold">
+              {t(
+                cartCount === 1 ? "1 item" : "{count} items",
+                { count: cartCount },
+              )}
+            </p>
+          </div>
+          {lastItems.length === 0 ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-sm leading-6 text-[#52647b]">
+                {t("Your bag is empty — add something sweet!")}
+              </p>
+            </div>
+          ) : (
+            <>
+              <ul className="max-h-64 overflow-y-auto p-2">
+                {lastItems.map((entry) => (
+                  <li
+                    className="flex items-center gap-3 rounded-xl px-2 py-2"
+                    key={entry.itemId}
+                  >
+                    <img
+                      alt=""
+                      className="size-11 shrink-0 rounded-lg object-cover"
+                      loading="lazy"
+                      src={thumbnail(entry.image, "tiny")}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-bold text-[#0d2c4e]">
+                        {t(entry.name)}
+                      </span>
+                      <span className="block text-xs text-[#65748a]">
+                        {t("Qty")} {entry.quantity}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-sm font-extrabold tabular-nums text-[#092a53]">
+                      {formatPrice((entry.price ?? 0) * entry.quantity)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="border-t border-[#e6ebf1] px-4 py-3">
+                <p className="flex items-center justify-between text-sm">
+                  <span className="font-semibold text-[#52647b]">{t("Subtotal")}</span>
+                  <span className="font-display text-base font-extrabold tabular-nums text-[#092a53]">
+                    {formatPrice(cartTotal)}
+                  </span>
+                </p>
+              </div>
+            </>
+          )}
+          <div className="flex gap-2 border-t border-[#e6ebf1] p-3">
+            <Link
+              className="flex-1 rounded-full bg-[#092a53] px-4 py-2.5 text-center text-sm font-extrabold text-white transition hover:bg-[#163e6b]"
+              onClick={() => setIsOpen(false)}
+              to="/cart"
+            >
+              {t("View cart")}
+            </Link>
+            <Link
+              className="flex-1 rounded-full border border-[#cfd8e1] px-4 py-2.5 text-center text-sm font-extrabold text-[#123b68] transition hover:border-[#092a53]"
+              onClick={() => setIsOpen(false)}
+              to="/menu"
+            >
+              {t("Keep shopping")}
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BagIcon({ className = "size-5" }) {
   return (
     <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
@@ -614,7 +791,7 @@ function useHeaderVisibility(headerRef) {
 }
 
 export function Header() {
-  const { cartCount } = useCart();
+  const { cartCount, cartItems, cartTotal } = useCart();
   const { customer, logout } = useAuth();
   const { flavors } = useFlavors();
   const { language, setLanguage, t } = useLanguage();
@@ -622,7 +799,26 @@ export function Header() {
   const headerRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [logoutError, setLogoutError] = useState("");
+  // The bag badge pulses briefly when an item is added, so the visitor sees exactly
+  // where their item went — feedback anchored to the bag, not a distant message.
+  const [bagJustUpdated, setBagJustUpdated] = useState(false);
+  const bagPulseTimer = useRef(undefined);
+  const previousCartCount = useRef(cartCount);
   const { isScrolled, isHidden } = useHeaderVisibility(headerRef);
+
+  useEffect(() => {
+    if (cartCount > previousCartCount.current) {
+      setBagJustUpdated(true);
+      window.clearTimeout(bagPulseTimer.current);
+      bagPulseTimer.current = window.setTimeout(
+        () => setBagJustUpdated(false),
+        1600,
+      );
+    }
+    previousCartCount.current = cartCount;
+  }, [cartCount]);
+
+  useEffect(() => () => window.clearTimeout(bagPulseTimer.current), []);
 
   const isHome = location.pathname === "/";
   const isAdminPage = location.pathname.startsWith("/admin");
@@ -783,16 +979,6 @@ export function Header() {
             </div>
             {!isAdminPage && (
               <>
-                <Link
-                  aria-label={t("Search the menu")}
-                  className="grid size-11 shrink-0 place-items-center rounded-full text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
-                  to="/menu/all"
-                >
-                  <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
-                    <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="2" />
-                    <path d="m16 16 4 4" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-                  </svg>
-                </Link>
                 <div className="hidden lg:block">
                   <AccountDropdown
                     customer={customer}
@@ -802,20 +988,14 @@ export function Header() {
                     t={t}
                   />
                 </div>
-                <Link
-                  aria-label={t("Shopping bag, {count} items", { count: cartCount })}
-                  className={`relative grid size-11 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
-                    location.pathname === "/cart" ? "bg-[#ffdc32] text-[#092a53]" : "text-white hover:bg-white/10"
-                  }`}
-                  to="/cart"
-                >
-                  <BagIcon />
-                  {cartCount > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#ffdc32] px-1 text-[10px] font-extrabold text-[#092a53] ring-2 ring-[#092a53]">
-                      {cartCount > 99 ? "99+" : cartCount}
-                    </span>
-                  )}
-                </Link>
+                <BagMenu
+                  cartCount={cartCount}
+                  cartItems={cartItems}
+                  cartTotal={cartTotal}
+                  language={language}
+                  location={location}
+                  t={t}
+                />
                 <Link
                   className="group hidden h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-[#ffdc32] px-3 text-[13px] font-extrabold leading-none text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white lg:inline-flex xl:px-4 xl:text-sm"
                   to="/flavors"
@@ -886,13 +1066,6 @@ export function Header() {
             <div className="flex-1 space-y-2.5 px-3 py-4">
               <Link className={mobileLinkClassName(isHome)} onClick={() => setIsMobileMenuOpen(false)} to="/#home">
                 {t("Home")}
-              </Link>
-              <Link className={mobileLinkClassName(location.pathname === "/menu/all")} onClick={() => setIsMobileMenuOpen(false)} to="/menu/all">
-                <span>{t("Search the menu")}</span>
-                <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
-                  <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="2" />
-                  <path d="m16 16 4 4" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-                </svg>
               </Link>
               <NavigationDropdown active={isShopActive} label={t("Flavors")} links={shopLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />
               <NavigationDropdown active={isMenuActive} label={t("Menu")} links={menuLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />

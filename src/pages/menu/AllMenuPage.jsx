@@ -108,6 +108,12 @@ export function AllMenuPage() {
   const [sortBy, setSortBy] = useState("");
   const [addedKey, setAddedKey] = useState("");
   const [cartError, setCartError] = useState("");
+  // Keep the box in step with the URL (e.g. a hero search landing here with ?search=…),
+  // so clearing the query in the address bar or pressing back works as expected.
+  const urlSearch = searchParams.get("search") || "";
+  useEffect(() => {
+    setSearch((current) => (current === urlSearch ? current : urlSearch));
+  }, [urlSearch]);
 
   // Start with the built-in menu, then switch to the live menu (stock, admin-added items).
   useEffect(() => {
