@@ -5,15 +5,11 @@ import { initialPromotionIsVisible } from "../../lib/promotion";
 import { HeroBackground } from "../../components/HeroBackground";
 import { useCart } from "../../context/useCart";
 import { apiRequest } from "../../api/api";
-import { cameroonLocations, coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
+import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
 import { useLanguage } from "../../language/useLanguage";
 import { photoErrorHandler, photoSrcSet, thumbnail } from "../../lib/thumbnails";
 import { HOME_SLIDE_SIZES } from "../../../shared/photoSizes.js";
 import { numberFormatter } from "../../lib/cartPricing";
-
-function mapsSearchUrl(location) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.mapQuery)}`;
-}
 
 function promoBarIsVisible() {
   return document.documentElement.hasAttribute("data-promo-visible");
@@ -32,6 +28,48 @@ const popularFlavorColors = [
   "#fff5d2",
   "#fff5c8",
   "#ffeadc",
+];
+const flavorInspiration = [
+  {
+    id: "strawberry",
+    title: "Strawberry daydream",
+    detail: "Berry-bright · soft & sweet",
+    mood: "fruit",
+    category: "Ice Cream",
+    item: "Our Strawberry Blonde",
+    image: "/menu-official/ice-cream/signature-creations/our-strawberry-blonde.webp",
+    color: "#f7c8d9",
+  },
+  {
+    id: "mango",
+    title: "Mango sunshine",
+    detail: "Tropical · golden & juicy",
+    mood: "fruit",
+    category: "Milkshakes & Smoothies",
+    item: "Mango Pineapple Smoothie",
+    image: "/menu-official/milkshakes-fruit-smoothies/smoothies/mango-pineapple.webp",
+    color: "#ffd45d",
+  },
+  {
+    id: "chocolate",
+    title: "Chocolate crush",
+    detail: "Cocoa-rich · deep & dreamy",
+    mood: "chocolate",
+    category: "Ice Cream",
+    item: "Chocolate Devotion",
+    image: "/menu-official/ice-cream/signature-creations/chocolate-devotion.webp",
+    color: "#d9b2a0",
+  },
+  {
+    id: "vanilla",
+    title: "Vanilla cloud",
+    detail: "Mellow · creamy & classic",
+    mood: "classics",
+    category: "Ice Cream",
+    item: "Cookie Doughn’t You Want Some",
+    image: "/menu-official/ice-cream/signature-creations/cookie-doughnt-you-want-some.webp",
+    color: "#ded0ef",
+  },
 ];
 const homeSlides = [
   {
@@ -337,6 +375,7 @@ export function HomePage() {
   const [reviewsError, setReviewsError] = useState("");
   const [reviewsLoaded, setReviewsLoaded] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [selectedFlavorMood, setSelectedFlavorMood] = useState("all");
   const [loadedSlides, setLoadedSlides] = useState([0]);
   const [addedItemKey, setAddedItemKey] = useState(null);
   const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
@@ -473,7 +512,7 @@ export function HomePage() {
           id="home"
           className="relative isolate w-full overflow-clip bg-[#092a53] text-white"
         >
-          <HeroBackground variant="navy" />
+          <HeroBackground animated={false} variant="navy" />
 
           <div className="mx-auto w-full max-w-[1320px] px-5 pt-10 sm:px-8 sm:pt-14 lg:px-12 lg:pt-16">
             <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
@@ -710,181 +749,103 @@ export function HomePage() {
           </div>
         </section>
 
-        <section aria-labelledby="shops-heading" className="relative overflow-hidden bg-[#f6f4ee] px-5 py-16 sm:px-8 lg:px-10 lg:py-20">
-          <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-8 rounded-t-[100%] bg-white" />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-48 -top-48 size-[36rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.14),transparent)]"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -left-40 bottom-0 size-[28rem] rounded-full bg-[radial-gradient(closest-side,rgb(9_42_83/0.07),transparent)]"
-          />
+        <section aria-labelledby="flavor-inspiration-heading" className="relative overflow-hidden bg-[#fff9ed] px-5 py-16 text-[#4b2869] sm:px-8 sm:py-20 lg:px-10 lg:py-24">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-48 size-[32rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_224_176/0.35),transparent)]" />
           <div className="relative mx-auto max-w-[1320px]">
-            <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                  <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                  {t("Visit us")}
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#60417a]">
+                  {t("Follow your flavor")}
                 </p>
-                <h2 className="mt-4 font-display text-3xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-4xl lg:text-[2.75rem]" id="shops-heading">
-                  {t("Our shops")}
+                <h2 className="mt-4 max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#4b2869] sm:text-5xl lg:text-6xl" id="flavor-inspiration-heading">
+                  {t("What’s your kind of happy?")}
                 </h2>
-                <p className="mt-3 text-base leading-7 text-[#52647b]">
-                  {t("Walk in for a scoop, or tap any shop below for directions in Google Maps.")}
+              </div>
+              <div className="max-w-[310px] lg:mb-1">
+                <p className="text-base leading-7 text-[#685b70]">
+                  {t("Fruity, chocolatey or beautifully classic. Let your cravings lead the way.")}
                 </p>
-              </div>
-              <Link
-                className="group inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-                to="/locations"
-              >
-                <svg aria-hidden="true" className="size-4 text-[#ffdc32]" fill="none" viewBox="0 0 24 24">
-                  <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Zm0-9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
-                </svg>
-                {t("All locations")}
-                <span aria-hidden="true" className="transition duration-200 group-hover:translate-x-1">
-                  <ArrowIcon />
-                </span>
-              </Link>
-            </div>
-
-            <ul className="mt-10 grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-              {cameroonLocations.map((location) => (
-                <li className="min-w-0" key={`${location.town}-${location.area}`}>
-                  <article
-                    className="group relative flex h-full flex-col overflow-hidden rounded-[24px] bg-white p-6 shadow-[0_2px_10px_rgba(9,42,83,0.06)] ring-1 ring-[#e6e2d6] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_48px_rgba(9,42,83,0.16),0_8px_16px_rgba(9,42,83,0.08)] hover:ring-[#092a53]/25 motion-safe:transition-transform"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#ffdc32] via-[#ffb84d] to-[#092a53] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    />
-                    <span className="flex items-center justify-between gap-3">
-                      <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#fff8e0] to-[#fff0c2] text-[#092a53] ring-1 ring-[#f0e3b8] transition duration-300 group-hover:from-[#ffdc32] group-hover:to-[#ffe76c]">
-                        <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
-                          <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Zm0-9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
-                        </svg>
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f0f5fb] px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#092a53] ring-1 ring-[#dbe6f3]">
-                        <svg aria-hidden="true" className="size-3" fill="none" viewBox="0 0 24 24">
-                          <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Zm0-9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" strokeWidth="2" />
-                        </svg>
-                        {t(location.town)}
-                      </span>
-                    </span>
-                    <span className="mt-5 font-display text-xl font-extrabold leading-tight tracking-tight text-[#092a53]">{location.area}</span>
-                    <span aria-hidden="true" className="mt-2.5 h-px w-8 bg-[#e6e2d6] transition-all duration-300 group-hover:w-14 group-hover:bg-[#ffdc32]" />
-                    <span className="mt-3 flex items-start gap-2.5 text-sm leading-5 text-[#52647b]">
-                      <svg aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-[#a48700]" fill="none" viewBox="0 0 24 24">
-                        <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
-                      </svg>
-                      <span>{location.address}</span>
-                    </span>
-                    {location.phone && (
-                      <a
-                        className="mt-2.5 flex w-fit items-center gap-2.5 rounded-lg text-sm font-semibold tabular-nums text-[#092a53] underline decoration-[#d2dbe5] underline-offset-4 transition hover:text-[#8a7000] hover:decoration-[#8a7000] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53]"
-                        href={`tel:${location.phone.replace(/\s/g, "")}`}
-                      >
-                        <svg aria-hidden="true" className="size-4 shrink-0 text-[#092a53]/70" fill="none" viewBox="0 0 24 24">
-                          <path d="M5 4h3.5l1.7 4.2-2.2 1.4a11 11 0 0 0 6.4 6.4l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5C10.6 20 4 13.4 3.5 5.6A1.5 1.5 0 0 1 5 4Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
-                        </svg>
-                        {location.phone}
-                      </a>
-                    )}
-                    <p className="mt-3 text-xs font-medium text-[#65748a]">{t("Call the shop for today’s opening hours.")}</p>
-                    <a
-                      className="mt-auto flex items-center justify-between gap-2 border-t border-[#efece3] pt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-                      href={mapsSearchUrl(location)}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      <span className="flex items-center gap-1 text-xs font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">
-                        {t("Directions")}
-                        <span aria-hidden="true" className="transition duration-200 group-hover:translate-x-1">
-                          <ArrowIcon diagonal />
-                        </span>
-                      </span>
-                      <span className="text-xs font-semibold text-[#52647b]">{t("Google Maps")}</span>
-                    </a>
-                  </article>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        {!promoBarVisible && (
-          <section aria-label={t("Buy 2 scoops, get the 3rd free")} className="bg-[#fbfaf5] px-5 pb-14 sm:px-8 lg:px-10">
-            <div className="relative mx-auto max-w-[1320px] overflow-hidden rounded-[28px] bg-[linear-gradient(105deg,#041528_0%,#092a53_42%,#14467c_78%,#1e5a9a_100%)] px-6 py-8 text-white shadow-[0_24px_60px_rgba(9,42,83,0.28)] sm:px-10 sm:py-10">
-              {/* Decorative layers */}
-              <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-                <div className="hero-grid absolute inset-0 [background-image:radial-gradient(rgb(255_255_255/0.05)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(105deg,transparent_30%,black_100%)]" />
-                <div className="hero-blob-a absolute -right-32 -top-40 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.16),rgb(255_220_50/0.16)_35%,transparent)]" />
-                <div className="hero-blob-b absolute -bottom-44 -left-24 size-[26rem] rounded-full bg-[radial-gradient(closest-side,rgb(94_164_234/0.22),rgb(94_164_234/0.22)_35%,transparent)]" />
-                {[
-                  { left: "70%", top: "18%", size: 13, delay: "-0.8s", duration: "3.6s", color: "#ffdc32" },
-                  { left: "82%", top: "64%", size: 10, delay: "-2.4s", duration: "4.2s", color: "#ffffff" },
-                  { left: "91%", top: "30%", size: 9, delay: "-1.5s", duration: "3.9s", color: "#ff8ab5" },
-                  { left: "58%", top: "80%", size: 8, delay: "-3.5s", duration: "4.5s", color: "#ffdc32" },
-                ].map((star, index) => (
-                  <svg
-                    className="hero-star absolute"
-                    key={index}
-                    style={{
-                      left: star.left,
-                      top: star.top,
-                      width: star.size,
-                      height: star.size,
-                      color: star.color,
-                      animationDelay: star.delay,
-                      animationDuration: star.duration,
-                    }}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2c.6 5.4 2 8 4.6 9.4C19.2 12.8 20.4 13.2 22 13.5c-5.4.6-8 2-9.4 4.6C11.2 20.7 10.8 21.9 10.5 23.5c-.6-5.4-2-8-4.6-9.4C3.4 12.7 2.2 12.3.6 12c5.4-.6 8-2 9.4-4.6C11.4 5.9 11.8 4.7 12 2Z"
-                      fill="currentColor"
-                    />
-                    <circle cx="12" cy="12" r="1.6" fill="currentColor" />
-                  </svg>
-                ))}
-              </div>
-
-              {/* Content */}
-              <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-8">
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <span className="grid size-14 place-items-center rounded-2xl bg-[#ffdc32] font-display text-2xl font-extrabold tabular-nums text-[#092a53] shadow-[0_10px_24px_rgba(255,220,50,0.35)]">2</span>
-                  <span aria-hidden="true" className="font-display text-2xl font-extrabold text-white/35">+</span>
-                  <span className="grid size-14 place-items-center rounded-2xl font-display text-2xl font-extrabold tabular-nums text-[#ffdc32] ring-2 ring-[#ffdc32]/80">1</span>
-                  <span aria-hidden="true" className="ml-1.5 font-display text-2xl font-extrabold text-white/35">=</span>
-                  <span className="grid h-14 place-items-center rounded-2xl bg-white/10 px-4 font-display text-lg font-extrabold uppercase tracking-[0.08em] text-white ring-1 ring-white/25 backdrop-blur-sm">Free</span>
-                  <span className="sr-only">2 + 1 = free</span>
-                  <span aria-hidden="true" className="ml-2 hidden h-10 w-px bg-white/15 sm:block" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
-                    <span aria-hidden="true" className="h-px w-6 bg-[#ffdc32]/70" />
-                    {t("Limited offer")}
-                  </p>
-                  <p className="mt-2 font-display text-2xl font-extrabold leading-tight tracking-tight sm:text-[1.7rem]">
-                    {t("Buy 2 scoops, get the 3rd free")}
-                  </p>
-                  <p className="mt-1.5 max-w-xl text-sm leading-6 text-white/70">
-                    {t("Pick any three scoops and the lowest-priced one is on us.")}
-                  </p>
-                </div>
                 <Link
-                  className="group/btn relative inline-flex w-fit shrink-0 items-center gap-2 overflow-hidden rounded-full bg-[#ffdc32] px-7 py-3.5 text-sm font-extrabold text-[#092a53] shadow-[0_10px_26px_rgba(255,220,50,0.3)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(255,220,50,0.42)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                  className="group mt-4 inline-flex min-h-12 items-center gap-3 rounded-full border border-[#806794] px-6 py-3 text-sm font-bold text-[#4b2869] transition hover:bg-[#4b2869] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4b2869] focus-visible:ring-offset-2"
                   to="/flavors"
                 >
-                  {t("Explore flavors")}
-                  <span aria-hidden="true" className="transition-transform duration-300 group-hover/btn:translate-x-1">
-                    <ArrowIcon />
-                  </span>
+                  {t("Explore all flavors")}
+                  <svg aria-hidden="true" className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24">
+                    <path d="M7 17 17 7M8 7h9v9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                  </svg>
                 </Link>
               </div>
             </div>
-          </section>
-        )}
+
+            <div aria-label={t("Filter flavor inspiration")} className="mt-8 flex flex-wrap gap-2.5" role="group">
+              {[
+                ["all", "All cravings"],
+                ["fruit", "Fruit lovers"],
+                ["chocolate", "Chocolate moods"],
+                ["classics", "The classics"],
+              ].map(([mood, label]) => {
+                const selected = selectedFlavorMood === mood;
+                return (
+                  <button
+                    aria-pressed={selected}
+                    className={`min-h-11 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4b2869] focus-visible:ring-offset-2 ${
+                      selected
+                        ? "border-[#542b70] bg-[#542b70] text-white shadow-[0_6px_16px_rgba(84,43,112,0.18)]"
+                        : "border-[#e5dcd0] bg-transparent text-[#59466b] hover:border-[#806794] hover:bg-white/70"
+                    }`}
+                    key={mood}
+                    onClick={() => setSelectedFlavorMood(mood)}
+                    type="button"
+                  >
+                    {t(label)}
+                  </button>
+                );
+              })}
+            </div>
+
+            <ul className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+              {flavorInspiration
+                .filter((flavor) => selectedFlavorMood === "all" || flavor.mood === selectedFlavorMood)
+                .map((flavor) => (
+                  <li className="min-w-0" key={flavor.id}>
+                    <Link
+                      className="group block h-full overflow-hidden rounded-[26px] bg-white shadow-[0_10px_30px_rgba(75,40,105,0.08)] ring-1 ring-[#4b2869]/[0.06] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_42px_rgba(75,40,105,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4b2869] focus-visible:ring-offset-4"
+                      style={{ backgroundColor: flavor.color }}
+                      to={`/menu?${new URLSearchParams({ category: flavor.category, item: flavor.item })}`}
+                    >
+                      <div className="aspect-[4/3] overflow-hidden bg-[#f0e8dc]">
+                        <img
+                          alt={t(flavor.title)}
+                          className="size-full object-cover transition duration-500 ease-out group-hover:scale-[1.04]"
+                          decoding="async"
+                          loading="lazy"
+                          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                          src={flavor.image}
+                        />
+                      </div>
+                      <div className="flex min-h-[112px] items-start justify-between gap-3 px-5 py-4 sm:px-6 sm:py-5">
+                        <span className="min-w-0">
+                          <span className="block font-display text-xl font-extrabold leading-tight text-[#4b2869] sm:text-2xl">
+                            {t(flavor.title)}
+                          </span>
+                          <span className="mt-2 block text-xs font-medium leading-5 text-[#65536d] sm:text-[13px]">
+                            {t(flavor.detail)}
+                          </span>
+                        </span>
+                        <svg aria-hidden="true" className="mt-1 size-4 shrink-0 text-[#4b2869] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24">
+                          <path d="M7 17 17 7M8 7h9v9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                        </svg>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+            <p className="mt-8 text-xs leading-5 text-[#827889]">
+              {t("A little flavor inspiration. Discover the current selection in store.")}
+            </p>
+          </div>
+        </section>
+
 
         <section
           aria-labelledby="popular-flavors-heading"
@@ -1074,6 +1035,223 @@ export function HomePage() {
             </p>
           </div>
         </section>
+
+        <section
+          aria-labelledby="sunshine-heading"
+          className="relative isolate overflow-hidden bg-[linear-gradient(120deg,#fbdf9a_0%,#f7c87e_45%,#f3b25e_100%)] px-5 py-14 sm:px-8 sm:py-16 lg:px-10 lg:py-20"
+        >
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center">
+            <span className="font-display whitespace-nowrap text-[18vw] font-extrabold leading-none tracking-tight text-white/25 select-none sm:text-[16vw]">
+              SUNSHINE
+            </span>
+          </div>
+          <div className="relative mx-auto grid max-w-[1320px] items-center gap-10 lg:grid-cols-2 lg:gap-16">
+            <div className="relative">
+              <div
+                aria-hidden="true"
+                className="absolute bottom-0 left-1/2 h-[42%] w-[78%] -translate-x-1/2 rounded-[50%] bg-[#e28c3f]/60 blur-[2px]"
+              />
+              <img
+                alt={t("Golden mango ice cream in a glass sundae dish with fresh mango slices")}
+                className="relative mx-auto max-h-[420px] w-auto max-w-full rounded-2xl object-contain mix-blend-multiply"
+                decoding="async"
+                loading="lazy"
+                src="/images/mango.jpg"
+              />
+            </div>
+            <div className="max-w-xl">
+              <p className="text-xs font-extrabold uppercase tracking-[0.25em] text-[#5b2d8f]">
+                {t("A tropical scoop of vibe")}
+              </p>
+              <h2
+                className="mt-4 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-[#5b2d8f] sm:text-6xl"
+                id="sunshine-heading"
+              >
+                {t("Hello, sunshine.")}
+              </h2>
+              <p className="mt-6 text-base leading-7 text-[#6b3fa0]">
+                {t("Golden mango. A cool, creamy scoop. And a little daydream of somewhere sunny. This is your cue to take a sweet escape.")}
+              </p>
+              <Link
+                className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#5b2d8f] px-7 py-3.5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(91,45,143,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#4a2378] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b2d8f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7c87e]"
+                to="/menu?category=Ice%20Cream"
+              >
+                {t("Find your fruity mood")}
+                <ArrowIcon />
+              </Link>
+              <p className="mt-5 text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#6b3fa0]">
+                {t("Mango only, migrating constantly")}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="lick-heading"
+          className="relative isolate overflow-hidden bg-[#e9f4f3] px-5 pb-14 sm:px-8 sm:pb-16 lg:px-10 lg:pb-20"
+        >
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -top-px h-24">
+            <svg
+              className="block h-full w-full"
+              viewBox="0 0 1440 96"
+              preserveAspectRatio="none"
+              fill="#f3b25e"
+            >
+              <path d="M0 0h1440v30c-120 34-240 52-380 52-150 0-270-30-420-52-140-20-260-8-380 14-100 19-200 32-260 36Z" />
+            </svg>
+          </div>
+          <div className="relative mx-auto mt-28 max-w-[1320px] sm:mt-32">
+            <div className="grid items-end gap-8 lg:grid-cols-2 lg:gap-16">
+              <div className="max-w-xl">
+                <p className="text-xs font-extrabold uppercase tracking-[0.25em] text-[#5b2d8f]">
+                  {t("Your happy, your way")}
+                </p>
+                <h2
+                  className="mt-4 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-[#5b2d8f] sm:text-6xl"
+                  id="lick-heading"
+                >
+                  {t("Pick it. Lick it. Love it.")}
+                </h2>
+              </div>
+              <div className="max-w-xl lg:justify-self-end">
+                <p className="text-base leading-7 text-[#6b3fa0]">
+                  {t("A cone for the stroll. A cup for the pause. A scoop to share.")}
+                </p>
+                <Link
+                  className="group mt-4 inline-flex items-center gap-2 rounded-full bg-[#5b2d8f] px-7 py-3.5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(91,45,143,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#4a2378] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b2d8f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#e9f4f3]"
+                  to="/menu?category=Ice%20Cream"
+                >
+                  {t("Find your fruity mood")}
+                  <ArrowIcon />
+                </Link>
+              </div>
+            </div>
+            <ul className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-7">
+              {[
+                { image: "/ice-images/ice-5.webp", key: "Chocolate-dipped cones" },
+                { image: "/ice-images/ice-8.webp", key: "Cups with a swirl" },
+                { image: "/ice-images/ice-10.jpg", key: "Crunchy waffle cones" },
+                { image: "/ice-images/ice-9.jpg", key: "Pints to go" },
+              ].map(({ image, key }, index) => (
+                <li
+                  className="group relative"
+                  key={key}
+                >
+                  {/* Hover lift + glow behind the card */}
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-x-4 bottom-0 top-6 rounded-[26px] bg-[#5b2d8f]/25 blur-2xl opacity-0 transition duration-500 group-hover:opacity-100"
+                  />
+                  <div className="relative rounded-[26px] bg-white p-3 pb-0 shadow-[0_6px_20px_rgba(91,45,143,0.10)] ring-1 ring-[#5b2d8f]/10 transition duration-500 ease-out group-hover:-translate-y-2 group-hover:shadow-[0_22px_44px_rgba(91,45,143,0.22)] group-hover:ring-[#5b2d8f]/25">
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-[18px] bg-[#f6f1fb]">
+                      <img
+                        alt={t(key)}
+                        className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.07]"
+                        decoding="async"
+                        loading="lazy"
+                        src={image}
+                      />
+                      {/* Soft sheen sweeping across on hover */}
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(115deg,transparent_30%,rgb(255_255_255/0.35)_50%,transparent_70%)] transition-transform duration-1000 ease-out group-hover:translate-x-full"
+                      />
+                      {/* Numbered badge */}
+                      <span className="absolute left-3 top-3 grid size-9 place-items-center rounded-full bg-white/90 font-display text-sm font-extrabold text-[#5b2d8f] shadow-[0_4px_12px_rgba(91,45,143,0.18)] backdrop-blur-sm">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3 px-3 py-4">
+                      <p className="font-display text-lg font-extrabold leading-tight text-[#5b2d8f]">
+                        {t(key)}
+                      </p>
+                      <span
+                        aria-hidden="true"
+                        className="grid size-8 shrink-0 place-items-center rounded-full bg-[#f3ecfb] text-[#5b2d8f] transition duration-300 group-hover:bg-[#5b2d8f] group-hover:text-white"
+                      >
+                        <ArrowIcon />
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {!promoBarVisible && (
+          <section aria-label={t("Buy 2 scoops, get the 3rd free")} className="bg-[#fbfaf5] px-5 pb-14 sm:px-8 lg:px-10">
+            <div className="relative mx-auto max-w-[1320px] overflow-hidden rounded-[28px] bg-[linear-gradient(105deg,#041528_0%,#092a53_42%,#14467c_78%,#1e5a9a_100%)] px-6 py-8 text-white shadow-[0_24px_60px_rgba(9,42,83,0.28)] sm:px-10 sm:py-10">
+              {/* Decorative layers */}
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+                <div className="hero-grid absolute inset-0 [background-image:radial-gradient(rgb(255_255_255/0.05)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(105deg,transparent_30%,black_100%)]" />
+                <div className="hero-blob-a absolute -right-32 -top-40 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.16),rgb(255_220_50/0.16)_35%,transparent)]" />
+                <div className="hero-blob-b absolute -bottom-44 -left-24 size-[26rem] rounded-full bg-[radial-gradient(closest-side,rgb(94_164_234/0.22),rgb(94_164_234/0.22)_35%,transparent)]" />
+                {[
+                  { left: "70%", top: "18%", size: 13, delay: "-0.8s", duration: "3.6s", color: "#ffdc32" },
+                  { left: "82%", top: "64%", size: 10, delay: "-2.4s", duration: "4.2s", color: "#ffffff" },
+                  { left: "91%", top: "30%", size: 9, delay: "-1.5s", duration: "3.9s", color: "#ff8ab5" },
+                  { left: "58%", top: "80%", size: 8, delay: "-3.5s", duration: "4.5s", color: "#ffdc32" },
+                ].map((star, index) => (
+                  <svg
+                    className="hero-star absolute"
+                    key={index}
+                    style={{
+                      left: star.left,
+                      top: star.top,
+                      width: star.size,
+                      height: star.size,
+                      color: star.color,
+                      animationDelay: star.delay,
+                      animationDuration: star.duration,
+                    }}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 2c.6 5.4 2 8 4.6 9.4C19.2 12.8 20.4 13.2 22 13.5c-5.4.6-8 2-9.4 4.6C11.2 20.7 10.8 21.9 10.5 23.5c-.6-5.4-2-8-4.6-9.4C3.4 12.7 2.2 12.3.6 12c5.4-.6 8-2 9.4-4.6C11.4 5.9 11.8 4.7 12 2Z"
+                      fill="currentColor"
+                    />
+                    <circle cx="12" cy="12" r="1.6" fill="currentColor" />
+                  </svg>
+                ))}
+              </div>
+
+              {/* Content */}
+              <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-8">
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <span className="grid size-14 place-items-center rounded-2xl bg-[#ffdc32] font-display text-2xl font-extrabold tabular-nums text-[#092a53] shadow-[0_10px_24px_rgba(255,220,50,0.35)]">2</span>
+                  <span aria-hidden="true" className="font-display text-2xl font-extrabold text-white/35">+</span>
+                  <span className="grid size-14 place-items-center rounded-2xl font-display text-2xl font-extrabold tabular-nums text-[#ffdc32] ring-2 ring-[#ffdc32]/80">1</span>
+                  <span aria-hidden="true" className="ml-1.5 font-display text-2xl font-extrabold text-white/35">=</span>
+                  <span className="grid h-14 place-items-center rounded-2xl bg-white/10 px-4 font-display text-lg font-extrabold uppercase tracking-[0.08em] text-white ring-1 ring-white/25 backdrop-blur-sm">Free</span>
+                  <span className="sr-only">2 + 1 = free</span>
+                  <span aria-hidden="true" className="ml-2 hidden h-10 w-px bg-white/15 sm:block" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
+                    <span aria-hidden="true" className="h-px w-6 bg-[#ffdc32]/70" />
+                    {t("Limited offer")}
+                  </p>
+                  <p className="mt-2 font-display text-2xl font-extrabold leading-tight tracking-tight sm:text-[1.7rem]">
+                    {t("Buy 2 scoops, get the 3rd free")}
+                  </p>
+                  <p className="mt-1.5 max-w-xl text-sm leading-6 text-white/70">
+                    {t("Pick any three scoops and the lowest-priced one is on us.")}
+                  </p>
+                </div>
+                <Link
+                  className="group/btn relative inline-flex w-fit shrink-0 items-center gap-2 overflow-hidden rounded-full bg-[#ffdc32] px-7 py-3.5 text-sm font-extrabold text-[#092a53] shadow-[0_10px_26px_rgba(255,220,50,0.3)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(255,220,50,0.42)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                  to="/flavors"
+                >
+                  {t("Explore flavors")}
+                  <span aria-hidden="true" className="transition-transform duration-300 group-hover/btn:translate-x-1">
+                    <ArrowIcon />
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section
           aria-labelledby="home-menu-heading"

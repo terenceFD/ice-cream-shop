@@ -872,7 +872,7 @@ export function AdminLayout() {
         <div className={`fixed right-4 z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 ${showWelcome ? 'top-[248px]' : 'top-[84px]'}`}>
           {depositNotices.map((notice) => (
             <div className="flex gap-3 rounded-2xl bg-[#202124] p-3.5 text-white shadow-[0_24px_50px_rgba(0,0,0,0.35)]" key={notice.id} role="status">
-              <img alt="" className="size-10 shrink-0 rounded-full" height={40} src="/icons/icon-192.png" width={40} />
+              <img alt="" className="size-10 shrink-0 rounded-full" decoding="async" height={40} loading="lazy" src="/icons/icon-192.png" width={40} />
               <Link
                 className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32]"
                 onClick={() => hideDepositNotice(notice.id)}
@@ -913,7 +913,7 @@ export function AdminLayout() {
           ))}
           {cakeDepositNotices.map((notice) => (
             <div className="flex gap-3 rounded-2xl bg-[#202124] p-3.5 text-white shadow-[0_24px_50px_rgba(0,0,0,0.35)]" key={notice.id} role="status">
-              <img alt="" className="size-10 shrink-0 rounded-full" height={40} src="/icons/icon-192.png" width={40} />
+              <img alt="" className="size-10 shrink-0 rounded-full" decoding="async" height={40} loading="lazy" src="/icons/icon-192.png" width={40} />
               <Link
                 className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32]"
                 onClick={() => hideCakeDepositNotice(notice.id)}
