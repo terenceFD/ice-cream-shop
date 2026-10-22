@@ -9,6 +9,9 @@ import {
   pageTitle,
 } from '../src/seo/pageMeta.js'
 import { photoSrcSet } from '../shared/photoSizes.js'
+// The home page's first slider photo. index.html preloads it; the '/' page head should not
+// repeat that tag, so it is not requested twice.
+const HOME_HERO_PHOTO = '/ice-images/ice-9.jpg'
 
 // index.html marks the default head tags with <!--seo--> … <!--/seo--> so each page can swap in its own.
 const SEO_BLOCK = /<!--seo-->[\s\S]*?<!--\/seo-->/
@@ -67,7 +70,7 @@ function headTags(meta, base, structuredData) {
     `<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`,
     `<meta name="twitter:image" content="${escapeHtml(image)}" />`,
     // The page's main photo is otherwise found only after the app's code has run.
-    meta.photo && preloadPhotoTag(meta.photo),
+    meta.photo && meta.photo.src !== HOME_HERO_PHOTO && preloadPhotoTag(meta.photo),
     ...structuredData.map(jsonLd),
   ]
   return tags.filter(Boolean).join('\n    ')
@@ -122,6 +125,7 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
   }
 
   async function sendPage(request, response, next) {
+    const startedAt = performance.now()
     try {
       const base = origin(request)
       const flavorMatch = request.path.match(FLAVOR_PATH)
@@ -179,6 +183,8 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
       response
         .status(meta.found ? 200 : 404)
         .set('Cache-Control', 'no-cache')
+        // How long the server spent building this page, so a slow first byte can be traced.
+        .set('Server-Timing', `meta;dur=${(performance.now() - startedAt).toFixed(1)}`)
         .type('html')
         .send(page)
     } catch (error) {
