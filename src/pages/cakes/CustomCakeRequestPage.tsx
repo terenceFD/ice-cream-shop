@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { photoSrcSet } from '../../lib/thumbnails'
+import { photoSrcSet, thumbnail } from '../../lib/thumbnails'
 import { Link, useSearchParams } from 'react-router-dom'
 import { apiRequest, getCustomerToken } from '../../api/api'
 import { useAuth } from '../../context/useAuth'
@@ -253,7 +253,7 @@ export function CustomCakeRequestPage() {
     value ? new Date(`${value}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'long' }) : ''
 
   return (
-    <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
+    <div className="min-h-screen bg-[linear-gradient(135deg,rgb(255_220_50/0.3)_0%,#fffaf0_46%,rgb(9_42_83/0.18)_100%)] text-[#102c50]">
       <Header />
       {paymentDialog && (
         <PaymentStatusDialog
@@ -282,69 +282,97 @@ export function CustomCakeRequestPage() {
         />
       )}
       <main id="main" tabIndex={-1}>
-        {/* Hero */}
-        <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-32 -top-36 -z-10 size-[40rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.16),rgb(255_220_50/0.16)_35%,transparent)]" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-52 -left-36 -z-10 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.55),rgb(28_79_138/0.55)_35%,transparent)]" />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:28px_28px]" />
-          <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-12 px-5 pb-16 pt-10 sm:px-8 sm:pt-14 lg:grid-cols-12 lg:gap-10 lg:px-12 lg:pb-20 lg:pt-16">
-            <div className="lg:col-span-6">
-              <nav aria-label={t('Breadcrumb')} className="flex items-center gap-2 text-xs font-bold text-white/55">
+        {/* Hero — same professional dark-navy design as the home page cake banner. */}
+        <section className="relative isolate overflow-hidden bg-[#081c38] text-white">
+          {/* Ambient decoration — subtle glows + dotted grid keep the dark section from feeling flat. */}
+          <div aria-hidden="true" className="pointer-events-none absolute -left-40 top-1/4 -z-10 size-[28rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),transparent)]" />
+          <div aria-hidden="true" className="pointer-events-none absolute -right-32 -bottom-24 -z-10 size-[24rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.55),transparent)]" />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.07]"
+            style={{ backgroundImage: "radial-gradient(rgb(255 255 255 / 0.9) 1px, transparent 1px)", backgroundSize: "26px 26px" }}
+          />
+          <div className="mx-auto grid max-w-[1320px] items-center gap-10 px-5 pb-20 pt-10 sm:px-8 sm:pb-24 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:px-12 lg:pb-28 lg:pt-16">
+            <div className="relative z-10 order-2 lg:order-1">
+              <nav aria-label={t('Breadcrumb')} className="mb-7 flex items-center gap-2 text-xs font-bold text-white/50">
                 <Link className="transition hover:text-white" to="/menu">{t('Menu')}</Link>
                 <span aria-hidden="true" className="text-white/30">/</span>
-                <span aria-current="page" className="text-white">{t('Custom cake request')}</span>
+                <span aria-current="page" className="text-[#ffdc32]">{t('Custom cake request')}</span>
               </nav>
-              <p className="mt-8 inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
-                <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />
-                {t('Made for your celebration')}
+              <p className="inline-flex items-center gap-2.5 rounded-full border border-[#ffdc32]/35 bg-[#ffdc32]/10 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">
+                <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                  <path d="M4 20h16M5 20v-7h14v7M8 13V9h8v4M12 9V5m0 0-2 2m2-2 2 2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                </svg>
+                {t('Made for celebrations')}
               </p>
-              <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-white sm:text-6xl lg:text-7xl">
+              <h1 className="mt-6 max-w-xl font-display text-4xl font-extrabold leading-[1.04] tracking-tight sm:text-5xl lg:text-[3.6rem]">
                 {t('Custom cake request')}
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
-                {t('Choose your cake details and requested pickup date. This is a request, not a confirmed order; the store will contact you about availability and pricing.')}
+              <p className="mt-5 max-w-lg text-base leading-7 text-white/70 sm:text-lg sm:leading-8">
+                {t('Creamy ice cream cakes for birthdays, parties, and every celebration.')}
               </p>
-              <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
+              <ul className="mt-7 grid max-w-md gap-3 sm:grid-cols-2">
+                {[
+                  { icon: '🎨', label: 'Custom designs' },
+                  { icon: '🕯️', label: 'Fresh daily' },
+                  { icon: '🎈', label: 'Any occasion' },
+                  { icon: '🛵', label: 'Same-day delivery' },
+                ].map(({ icon, label }) => (
+                  <li
+                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm"
+                    key={label}
+                  >
+                    <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#ffdc32]/15 text-base">{icon}</span>
+                    <span className="text-[13px] font-bold text-white/85">{t(label)}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-9 flex flex-wrap items-center gap-4">
                 <a
-                  className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-7 py-4 text-sm font-extrabold text-[#092a53] shadow-[0_14px_34px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                  className="group inline-flex min-h-14 items-center gap-3 rounded-full bg-[#ffdc32] px-8 py-3.5 text-sm font-extrabold text-[#092a53] shadow-[0_14px_34px_rgba(255,220,50,0.3)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#ffe761] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081c38]"
                   href="#cake-request-form"
                 >
-                  {t('Start your request')} <span aria-hidden="true">↓</span>
+                  {t('Start your request')}
+                  <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#092a53] text-[#ffdc32] transition-transform group-hover:translate-y-0.5">
+                    <svg className="size-4" fill="none" viewBox="0 0 24 24"><path d="M12 5v14m0 0-6-6m6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" /></svg>
+                  </span>
                 </a>
-                <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-white/80">
-                  {['Choose your cake details', 'We’ll confirm the details'].map((label) => (
-                    <li className="inline-flex items-center gap-2" key={label}>
-                      <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#ffdc32]/15 text-[#ffdc32]">
-                        <svg className="size-3" fill="none" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" /></svg>
-                      </span>
-                      {t(label)}
-                    </li>
-                  ))}
-                </ul>
+                <span className="flex items-center gap-2 text-sm font-semibold text-white/60">
+                  <svg aria-hidden="true" className="size-5 text-[#ffdc32]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 0 0 .95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.446a1 1 0 0 0-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.366-2.445a1 1 0 0 0-1.176 0l-3.367 2.445c-.784.57-1.838-.196-1.539-1.118l1.286-3.957a1 1 0 0 0-.363-1.118L2.063 9.385c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 0 0 .951-.69l1.285-3.958Z" />
+                  </svg>
+                  {t('4.9 rated by 1,200+ customers')}
+                </span>
               </div>
             </div>
 
-            <div className="relative lg:col-span-6">
-              <div className="grid grid-cols-5 grid-rows-2 gap-3 sm:gap-4 [aspect-ratio:5/4]">
-                <figure className="col-span-3 row-span-2 overflow-hidden rounded-[30px] bg-[#fff3b8] shadow-[0_28px_64px_rgba(9,42,83,0.18)]">
-                  <img decoding="async" loading="lazy" alt={t('Custom celebration cake')} className="size-full object-cover" sizes="(min-width: 1024px) 360px, 60vw" src="/cake-images/cake-1.webp" srcSet={photoSrcSet('/cake-images/cake-1.webp')} />
-                </figure>
-                <figure className="col-span-2 overflow-hidden rounded-[24px] bg-[#fff3b8] shadow-[0_16px_36px_rgba(9,42,83,0.12)]">
-                  <img decoding="async" loading="lazy" alt="" aria-hidden="true" className="size-full object-cover" sizes="(min-width: 1024px) 240px, 40vw" src="/cake-images/cake-3.webp" srcSet={photoSrcSet('/cake-images/cake-3.webp')} />
-                </figure>
-                <figure className="col-span-2 overflow-hidden rounded-[24px] bg-[#fff3b8] shadow-[0_16px_36px_rgba(9,42,83,0.12)]">
-                  <img decoding="async" loading="lazy" alt="" aria-hidden="true" className="size-full object-cover" sizes="(min-width: 1024px) 240px, 40vw" src="/cake-images/cake-5.webp" srcSet={photoSrcSet('/cake-images/cake-5.webp')} />
-                </figure>
-              </div>
-              <div className="absolute -bottom-6 left-4 flex max-w-[320px] items-center gap-3 rounded-2xl border border-[#eeeae1] bg-white/95 p-4 shadow-[0_18px_40px_rgba(9,42,83,0.14)] backdrop-blur-sm sm:left-8">
-                <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#ffdc32] text-[#092a53]">
-                  <svg className="size-6" fill="none" viewBox="0 0 24 24">
-                    <path d="M4 20h16M5 20v-6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6M5 16c2 1 3-1 4.7 0s2.6 1 4.6 0 3 1 4.7 0M12 12V8m0-3v.01" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-                  </svg>
-                </span>
-                <div className="leading-tight">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">{t('A treat made your way')}</p>
-                  <p className="mt-1 text-xs font-bold leading-4 text-[#092a53]">{t('Share your ideas and we’ll help bring your celebration cake to life.')}</p>
+            <div className="relative order-1 lg:order-2">
+              <div className="relative mx-auto max-w-[520px]">
+                {/* Rotating sunburst ring behind the photo adds a premium, celebratory feel. */}
+                <div aria-hidden="true" className="cake-sunburst absolute inset-0 -m-6 rounded-full border border-dashed border-[#ffdc32]/25" />
+                <div className="relative aspect-[4/5] overflow-hidden rounded-[32px] shadow-[0_30px_80px_rgba(0,0,0,0.45)] ring-1 ring-white/15">
+                  <img
+                    alt={t('Custom celebration cake')}
+                    className="absolute inset-0 size-full object-cover"
+                    decoding="async"
+                    loading="lazy"
+                    sizes="(min-width: 768px) 40vw, 90vw"
+                    src={thumbnail('/cake-images/cake-11.webp')}
+                    srcSet={photoSrcSet('/cake-images/cake-11.webp')}
+                  />
+                  <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#081c38]/70 via-transparent to-transparent" />
+                  <p className="absolute bottom-5 left-5 rounded-full border border-white/25 bg-white/15 px-4 py-2 text-xs font-extrabold text-white shadow-lg backdrop-blur-md sm:bottom-7 sm:left-7">
+                    {t('Cake meets ice cream')}
+                  </p>
+                </div>
+                {/* Floating accent cards give the image depth and sell the product. */}
+                <div className="absolute -left-4 top-10 hidden rounded-2xl border border-white/10 bg-white/95 px-4 py-3 shadow-[0_16px_40px_rgba(0,0,0,0.35)] backdrop-blur sm:block">
+                  <p className="font-display text-xl font-extrabold leading-none text-[#092a53]">48h+</p>
+                  <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-[#52647b]">{t('Cold-chain fresh')}</p>
+                </div>
+                <div className="cake-float absolute -bottom-5 -right-2 rounded-2xl border border-white/10 bg-[#ffdc32] px-4 py-3 shadow-[0_16px_40px_rgba(255,220,50,0.35)] sm:-right-5">
+                  <p className="font-display text-xl font-extrabold leading-none text-[#092a53]">100%</p>
+                  <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-[#092a53]/75">{t('Made to order')}</p>
                 </div>
               </div>
             </div>

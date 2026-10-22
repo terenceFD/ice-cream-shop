@@ -159,6 +159,8 @@ The script defaults to `server/database.sqlite`; use `--source=path/to/database.
 
 Both the migration and the application verify the PostgreSQL server certificate. If your environment does not trust Supabase's certificate chain, download the CA certificate from the Supabase database settings and set `DATABASE_SSL_CA_FILE` to its path. Do not disable certificate verification.
 
+**Database security:** `supabase/migrations/20261022145000_secure_public_tables.sql` enables row-level security on existing `public` tables and revokes table and sequence access from `PUBLIC`, `anon`, and `authenticated`. A migration file is not applied automatically: run its SQL once in the Supabase SQL Editor for an existing project. The application accesses PostgreSQL through the server, so do not add public policies unless a browser-side database use case is intentionally introduced. Enable RLS on any new public tables as well.
+
 **Backups:** check your Supabase plan's backup policy and export the database regularly if automatic daily backups are not included.
 
 ### Image uploads

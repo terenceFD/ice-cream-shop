@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Footer, Header, ArrowIcon } from "../../components/Layout";
 import { HeroBackground } from "../../components/HeroBackground";
@@ -73,6 +73,66 @@ const flavorInspiration = [
     item: "Cookie Doughn’t You Want Some",
     image: "/menu-official/milkshakes-fruit-smoothies/milkshakes/very-vanilla.webp",
     color: "#ded0ef",
+  },
+  {
+    id: "peanut-butter",
+    title: "Peanut butter bliss",
+    detail: "Nutty · rich & crunchy",
+    mood: "chocolate",
+    category: "Ice Cream",
+    item: "Peanut Butter Cup Perfection",
+    image: "/menu-official/ice-cream/signature-creations/peanut-butter-cup-perfection.webp",
+    color: "#f3d3b3",
+  },
+  {
+    id: "dubai-chocolate",
+    title: "Dubai chocolate luxury",
+    detail: "Pistachio · indulgent & golden",
+    mood: "chocolate",
+    category: "Ice Cream",
+    item: "Our Dubai Chocolate Creation",
+    image: "/menu-official/ice-cream/signature-creations/our-dubai-chocolate-creation.webp",
+    color: "#e8c98e",
+  },
+  {
+    id: "berry",
+    title: "Berry berry joy",
+    detail: "Double-berry · fresh & tangy",
+    mood: "fruit",
+    category: "Ice Cream",
+    item: "Berry Berry Berry Good",
+    image: "/menu-official/ice-cream/signature-creations/berry-berry-berry-good.webp",
+    color: "#f9c2d0",
+  },
+  {
+    id: "founder",
+    title: "Founder’s favorite",
+    detail: "Caramel & pecan · a house legend",
+    mood: "classics",
+    category: "Ice Cream",
+    item: "Founder’s Favorite",
+    image: "/menu-official/ice-cream/signature-creations/founders-favorite.webp",
+    color: "#f6e3b8",
+  },
+  {
+    id: "mint",
+    title: "Mint chip moment",
+    detail: "Cool mint · loaded with cookies",
+    mood: "classics",
+    category: "Ice Cream",
+    item: "Cookie Mintster",
+    image: "/menu-official/ice-cream/signature-creations/cookie-mintster.webp",
+    color: "#c8ecd8",
+  },
+  {
+    id: "banana-caramel",
+    title: "Banana caramel crunch",
+    detail: "Banana & caramel · sweet & crunchy",
+    mood: "fruit",
+    category: "Ice Cream",
+    item: "Banana Caramel Crunch",
+    image: "/menu-official/ice-cream/signature-creations/banana-caramel-crunch.webp",
+    color: "#ffe9a8",
   },
 ];
 const homeSlides = [
@@ -323,14 +383,6 @@ function ReviewCard({ review, language, t, eager = false }) {
                   {formatReviewDate(review.createdAt, language)}
                 </time>
               )}
-              {review.createdAt && (
-                <time
-                  className="mt-1 block text-xs font-medium text-[#6e7a89]"
-                  dateTime={review.createdAt}
-                >
-                  {formatReviewDate(review.createdAt, language)}
-                </time>
-              )}
             </div>
           </div>
           <StarRating
@@ -537,6 +589,8 @@ export function HomePage() {
   const [reviewsLoaded, setReviewsLoaded] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const [selectedFlavorMood, setSelectedFlavorMood] = useState("all");
+  const [selectedCakeType, setSelectedCakeType] = useState("all");
+  const [cakeSearch, setCakeSearch] = useState("");
   const [loadedSlides, setLoadedSlides] = useState([0]);
   const [addedItemKey, setAddedItemKey] = useState(null);
   const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
@@ -548,6 +602,7 @@ export function HomePage() {
   // Slim sub-nav for jumping between the home page's sections; highlights as you scroll.
   const homeSections = [
     { id: "flavors", label: "Flavors" },
+    { id: "cakes", label: "Cakes" },
     { id: "favorites", label: "Favorites" },
     { id: "reviews", label: "Reviews" },
     { id: "menu", label: "Menu" },
@@ -774,7 +829,81 @@ export function HomePage() {
     ]),
   );
 
-  // Live availability for the flavor cards ("Sold out today" chip), from the loaded menu.
+  // Cake cards use the same data source as the menu page, so prices match what a
+  // visitor sees when they open the cake page.
+  const cakeMenuCategory = useMemo(
+    () =>
+      (menuCategories || coldStoneMenuCategories).find(
+        (category) => category.title === "Cakes & Pies",
+      ) || { items: [] },
+    [menuCategories],
+  );
+  const featuredCakeTypes = [
+    { id: "all", label: "All cakes" },
+    { id: "signature", label: "Signature" },
+    { id: "birthday", label: "Birthday" },
+    { id: "kids", label: "Kids’ cakes" },
+    { id: "pies", label: "Pies" },
+  ];
+  const cakeTypeOf = (idName) => {
+    // idName is the stable catalog ID, e.g. "Birthday Cake Design 1" or
+    // "Ice Cream Pie Design 2". It is matched on those design IDs so a cake whose
+    // name merely mentions a word like "pie" (or "birthday") is not misfiled —
+    // that ordering made every cake badge read as "Pie" and collapsed the filter
+    // to a single group.
+    const text = String(idName || "").toLowerCase();
+    if (text.includes("pie design") || text.includes("ice cream pie")) return "pies";
+    if (text.includes("birthday cake design")) return "birthday";
+    if (text.includes("kids\u2019 themed") || text.includes("kids' themed") || text.includes("kid")) return "kids";
+    if (text.includes("design")) return "signature";
+    // A few cakes (Cheesecake Named Desire, Neapolitan…) carry no design ID, so
+    // their display name decides instead.
+    const name = String(idName || "").toLowerCase();
+    if (name.includes("pie")) return "pies";
+    if (name.includes("kids\u2019") || name.includes("kids'")) return "kids";
+    return "signature";
+  };
+  const cakeQuery = cakeSearch.trim().toLowerCase();
+  const cakeCards = useMemo(() => {
+    const items = ((cakeMenuCategory.items || []).map((item) => ({
+      ...item,
+      idName: item.id || item.name,
+    }))).filter((cake) => {
+      const typeOk =
+        selectedCakeType === "all" || cakeTypeOf(cake.idName) === selectedCakeType;
+      const queryOk =
+        !cakeQuery ||
+        cake.name.toLowerCase().includes(cakeQuery) ||
+        String(cake.detail || "").toLowerCase().includes(cakeQuery);
+      return typeOk && queryOk;
+    });
+    return items.slice(0, 8);
+  }, [cakeMenuCategory, selectedCakeType, cakeQuery]);
+  // Every cake card needs a slider (more than one photo), but many catalog items
+  // only carry a single image and no gallery. For those, pair the item's own photo
+  // with attractive cake photos from the same family (petite/sibling views of the
+  // same design), so no card on the home page ever shows a lone static image.
+  const relatedCakePhotos = useMemo(() => {
+    const byDesign = new Map();
+    for (const item of cakeMenuCategory.items || []) {
+      const type = cakeTypeOf(item.id || item.name);
+      const photos = [item.image, ...(item.gallery || [])].filter(Boolean);
+      for (const photo of photos) {
+        if (!byDesign.has(type)) byDesign.set(type, []);
+        const bucket = byDesign.get(type);
+        if (!bucket.includes(photo)) bucket.push(photo);
+      }
+    }
+    return byDesign;
+  }, [cakeMenuCategory]);
+  const cakeImagesOf = (cake) => {
+    const own = [cake.image, ...(cake.gallery || [])].filter(Boolean);
+    if (own.length > 1) return own;
+    const related = (relatedCakePhotos.get(cakeTypeOf(cake.idName)) || []).filter(
+      (photo) => !own.includes(photo),
+    );
+    return [...own, ...related.slice(0, 3)];
+  };
   return (
     <div className="min-h-screen overflow-clip bg-[#fbfaf5] text-[#102c50]">
       <Header />
@@ -884,7 +1013,7 @@ export function HomePage() {
                         className="min-h-12 w-full rounded-xl border border-white/20 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-[#092a53] placeholder:text-[#52647b]/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
                         id="home-hero-search"
                         onChange={(event) => setHeroSearch(event.target.value)}
-                        placeholder={t("Search “Dubai chocolate”, “mango”…")}
+                        placeholder={t("Search \u201CDubai chocolate\u201D, \u201Cmango\u201D\u2026")}
                         type="search"
                         value={heroSearch}
                       />
@@ -1187,12 +1316,16 @@ export function HomePage() {
                   {
                     value: t("30 min"),
                     label: t("Pickup at your chosen store"),
-                    icon: "M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z",
+                    // Clock icon — the old basket icon didn't read as "time".
+                    outlineIcon: true,
+                    icon: "M12 6v6l4 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z",
                   },
                   {
                     value: "FCFA + MoMo",
                     label: t("Cards and Mobile Money accepted"),
-                    icon: "M12 2.75l2.83 5.74 6.33.92-4.58 4.47 1.08 6.3L12 17.2l-5.66 2.98 1.08-6.3-4.58-4.47 6.33-.92L12 2.75Z",
+                    // Card icon — the old star icon suggested a rating, not payment.
+                    outlineIcon: true,
+                    icon: "M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.5v-9Zm0 3h18M6.5 15.5H10",
                   },
                   {
                     value: "1 pt / 100 FCFA",
@@ -1213,9 +1346,7 @@ export function HomePage() {
                     <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#ffdc32]/15 text-[#ffdc32] ring-1 ring-[#ffdc32]/25 transition duration-300 group-hover:scale-105 group-hover:bg-[#ffdc32]/25">
                       <svg
                         className="size-5"
-                        fill={
-                          stat.icon.startsWith("m5") ? "none" : "currentColor"
-                        }
+                        fill={stat.outlineIcon ? "none" : "currentColor"}
                         viewBox="0 0 24 24"
                       >
                         <path
@@ -1223,7 +1354,7 @@ export function HomePage() {
                           stroke="currentColor"
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={stat.icon.startsWith("m5") ? 2.4 : 0}
+                          strokeWidth={stat.outlineIcon ? 1.8 : 0}
                         />
                       </svg>
                     </span>
@@ -1316,7 +1447,7 @@ export function HomePage() {
                   className="mt-4 max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-6xl"
                   id="flavor-inspiration-heading"
                 >
-                  {t("What’s your kind of happy?")}
+                  {t("What\u2019s your kind of happy?")}
                 </h2>
               </div>
               <div className="max-w-[360px] lg:mb-2">
@@ -1387,7 +1518,7 @@ export function HomePage() {
               </p>
             ) : null}
             <ul
-              className={visibleFlavors.length === 0 ? "hidden" : "mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5"}
+              className={visibleFlavors.length === 0 ? "hidden" : "mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-5 lg:gap-5"}
             >
               {visibleFlavors.map((flavor) => {
                 const item = flavorMenuItems.get(flavor.id);
@@ -1478,70 +1609,205 @@ export function HomePage() {
               )}
             </p>
 
-            <div className="mt-12 border-t border-[#e4e0d4] pt-8">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#123b68]">
-                    {t("Your happy, your way")}
-                  </p>
-                  <h2
-                    className="mt-2 font-display text-2xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-3xl"
-                    id="lick-heading"
-                  >
-                    {t("Pick it. Lick it. Love it.")}
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-[#123b68]">
-                    {t("A cone for the stroll. A cup for the pause. A scoop to share.")}
-                  </p>
-                </div>
-                <Link
-                  className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-full bg-[#092a53] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 sm:self-auto"
-                  to="/menu?category=Ice%20Cream"
+          </div>
+        </section>
+
+        {/* Cake cards — same card design/animations/search as "Follow your flavor", with a
+            "Request a custom cake" button that leads to the cake builder page. */}
+        <section
+          aria-labelledby="cakes-heading"
+          className="relative overflow-hidden bg-[#fbfaf5] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          id="cakes"
+        >
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-40 -top-48 size-[32rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),transparent)]"
+          />
+          <div className="relative mx-auto max-w-[1320px]">
+            <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#123b68]">
+                  {t("Celebrate with a cake")}
+                </p>
+                <h2
+                  className="mt-4 max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-6xl"
+                  id="cakes-heading"
                 >
-                  {t("See cones, cups & pints")}
-                  <ArrowIcon />
+                  {t("Cakes for every occasion")}
+                </h2>
+                <p className="mt-5 max-w-lg text-base leading-7 text-[#52647b] sm:text-lg sm:leading-8">
+                  {t("Creamy ice cream cakes for birthdays, parties, and every celebration.")}
+                </p>
+              </div>
+              <div className="flex flex-col items-stretch gap-3 sm:items-end lg:mb-2">
+                <label className="block">
+                  <span className="sr-only">{t("Search cakes")}</span>
+                  <div className="relative">
+                    <svg
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#52647b]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="m21 21-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                    <input
+                      className="h-11 w-full min-w-[240px] rounded-full border border-[#cfd8e1] bg-white py-2.5 pl-10 pr-4 text-sm font-semibold text-[#092a53] transition placeholder:font-normal placeholder:text-[#a5aebb] hover:border-[#092a53]/50 focus:border-[#092a53] focus:outline-none focus:ring-2 focus:ring-[#092a53]/20"
+                      onChange={(event) => setCakeSearch(event.target.value)}
+                      placeholder={t("Search cakes\u2026")}
+                      type="search"
+                      value={cakeSearch}
+                    />
+                  </div>
+                </label>
+                <Link
+                  className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-full bg-[#092a53] px-6 py-3 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  to="/custom-cake"
+                >
+                  {t("Request a custom cake")}
+                  <span
+                    aria-hidden="true"
+                    className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-transform duration-300 group-hover:translate-x-0.5"
+                  >
+                    <ArrowIcon />
+                  </span>
                 </Link>
               </div>
-              <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
-                {[
-                  { image: "/ice-images/ice-5.webp", key: "Chocolate-dipped cones" },
-                  { image: "/ice-images/ice-8.webp", key: "Cups with a swirl" },
-                  { image: "/ice-images/ice-10.jpg", key: "Crunchy waffle cones" },
-                  { image: "/ice-images/ice-9.jpg", key: "Pints to go" },
-                ].map(({ image, key }) => (
-                  <li className="group min-w-0" key={key}>
-                    <Link
-                      className="block h-full overflow-hidden rounded-[24px] border border-[#092a53]/10 bg-white shadow-[0_8px_24px_rgba(9,42,83,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(9,42,83,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none"
-                      to="/menu?category=Ice%20Cream"
-                    >
-                      <div className="relative aspect-[4/3] overflow-hidden bg-[#eef3f8]">
-                        <img
-                          alt={t(key)}
-                          className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none"
-                          decoding="async"
-                          loading="lazy"
-                          onError={photoErrorHandler(image)}
-                          sizes="(min-width: 640px) 25vw, 50vw"
-                          src={thumbnail(image)}
-                          srcSet={photoSrcSet(image)}
-                        />
-                      </div>
-                      <div className="flex min-h-[68px] items-center justify-between gap-2 px-3 py-3 sm:px-4">
-                        <p className="font-display text-sm font-extrabold leading-snug text-[#092a53] sm:text-base">
-                          {t(key)}
-                        </p>
-                        <span
-                          aria-hidden="true"
-                          className="grid size-8 shrink-0 place-items-center rounded-full bg-[#fff5c8] text-[#092a53] transition-colors group-hover:bg-[#ffdc32]"
-                        >
-                          <ArrowIcon />
-                        </span>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
             </div>
+
+            <div
+              aria-label={t("Filter cakes")}
+              className="mt-6 flex flex-wrap gap-2.5"
+              role="group"
+            >
+                {featuredCakeTypes.map(({ id, label }) => {
+                  const selected = selectedCakeType === id;
+                  return (
+                    <button
+                      aria-pressed={selected}
+                      className={`min-h-11 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
+                        selected
+                          ? "border-[#092a53] bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)]"
+                          : "border-[#cfd8e1] bg-transparent text-[#123b68] hover:border-[#092a53] hover:bg-white/70"
+                      }`}
+                      key={id}
+                      onClick={() => setSelectedCakeType(id)}
+                      type="button"
+                    >
+                      {t(label)}
+                    </button>
+                  );
+                })}
+            </div>
+
+              {cakeCards.length === 0 ? (
+                <p
+                  className="mt-8 rounded-2xl border border-[#e6ebf1] bg-white px-5 py-8 text-center text-base leading-7 text-[#52647b]"
+                  role="status"
+                >
+                  {t("No cakes match your search \u2014 try another name or filter.")}
+                </p>
+              ) : (
+                <ul className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+                  {cakeCards.map((cake) => {
+                    const cakeKey = cake.id || getMenuItemId("Cakes & Pies", cake.name);
+                    const added = addedItemKey === cakeKey;
+                    const soldOut = cake.isAvailable === false || cake.availableQuantity < 1;
+                    const images = cakeImagesOf(cake);
+                    const accent = { pies: "#7a4bd8", kids: "#f56586", birthday: "#f5a623" }[
+                      cakeTypeOf(cake.idName)
+                    ] || "#38b2ac";
+
+                    return (
+                      <li
+                        className="group min-w-0 overflow-hidden rounded-[28px] bg-white shadow-[0_10px_30px_rgba(9,42,83,0.10)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_rgba(9,42,83,0.16)] motion-reduce:transform-none motion-reduce:transition-none"
+                        key={cake.name}
+                      >
+                        <div className="relative">
+                          <ProductImageSlider
+                            frameClassName="rounded-none shadow-none"
+                            imageClassName="aspect-[4/3]"
+                            images={images}
+                            name={t(cake.name)}
+                            resetKey={cake.name}
+                          />
+                          <span
+                            className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53] shadow-sm backdrop-blur-sm"
+                            style={{ backgroundColor: accent }}
+                          >
+                            {t(
+                              cakeTypeOf(cake.idName) === "pies"
+                                ? "Pie"
+                                : cakeTypeOf(cake.idName) === "birthday"
+                                  ? "Birthday"
+                                  : cakeTypeOf(cake.idName) === "kids"
+                                    ? "Kids"
+                                    : "Signature",
+                            )}
+                          </span>
+                          {soldOut && (
+                            <span className="absolute right-4 top-4 rounded-full bg-[#092a53]/85 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-sm">
+                              {t("Sold out today")}
+                            </span>
+                          )}
+                        </div>
+                        <div
+                          className="flex min-h-[150px] flex-col justify-between gap-3 border-t-4 px-5 py-4 sm:px-6 sm:py-5"
+                          style={{ borderColor: accent }}
+                        >
+                          <div>
+                            <Link
+                              className="font-display text-lg font-extrabold leading-tight text-[#092a53] transition-colors duration-300 hover:text-[#163e6b] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-xl"
+                              to={`/menu?${new URLSearchParams({ category: "Cakes & Pies", item: cake.name })}`}
+                            >
+                              {t(cake.name)}
+                            </Link>
+                            <p className="mt-2 text-xs font-medium leading-5 text-[#123b68] sm:text-[13px]">
+                              {t(cake.detail)}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span
+                              className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${
+                                added ? "animate-pulse text-green-700" : "text-[#092a53]"
+                              }`}
+                            >
+                              {typeof cake.priceXaf === "number" ? formatPrice(cake.priceXaf) : ""}
+                            </span>
+                            <button
+                              aria-label={
+                                added
+                                  ? t("Added to your bag")
+                                  : t("Add {name} to your bag", { name: t(cake.name) })
+                              }
+                              className={`min-h-10 shrink-0 rounded-full px-4 text-xs font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] ${
+                                added
+                                  ? "bg-[#4caf50] text-white"
+                                  : "bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]"
+                              }`}
+                              disabled={soldOut}
+                              onClick={() => handleAddToCart(cake, "Cakes & Pies")}
+                              type="button"
+                            >
+                              {soldOut ? t("Sold out") : added ? t("Added") : t("Add to bag")}
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              <p className="mt-8 text-xs leading-5 text-[#65748a]">
+                {t(
+                  "A taste of the cake menu. See all designs on the cakes page \u2014 or build your own.",
+                )}
+              </p>
           </div>
         </section>
 
@@ -1575,7 +1841,7 @@ export function HomePage() {
                     )}
                   </span>
                   <span className="inline-flex items-center gap-2 rounded-full bg-[#fff8d6] px-3 py-1 text-xs font-bold text-[#8a7000] ring-1 ring-[#f0dfa0]">
-                    <span aria-hidden="true">✦</span>{" "}
+                    <span aria-hidden="true">✨</span>{" "}
                     {t("Frozen stone special")}
                   </span>
                 </p>

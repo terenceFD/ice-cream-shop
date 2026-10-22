@@ -8,7 +8,7 @@ await makeThumbnails().catch((error) => console.error('Unable to make photo thum
 
 const backend = spawn(process.execPath, [fileURLToPath(new URL('../server/index.js', import.meta.url))], {
   stdio: 'inherit',
-  env: process.env,
+  env: { ...process.env, DATABASE_BACKEND: process.env.DATABASE_BACKEND || 'sqlite' },
 })
 const children = [backend]
 let shuttingDown = false
