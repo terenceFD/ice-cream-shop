@@ -101,6 +101,23 @@ export async function sendCustomerVerificationCode({ to, code }) {
   })
 }
 
+export async function sendPasswordResetCode({ to, code }) {
+  const { transporter, from } = createTransporter()
+  return transporter.sendMail({
+    from: `Cold Stone Creamery <${from}>`,
+    to,
+    subject: 'Your Cold Stone Creamery password reset code',
+    text: [
+      'Use this code to reset your Cold Stone Creamery account password:',
+      '',
+      code,
+      '',
+      'This code expires in 10 minutes. If you did not request a password reset, you can ignore this email and your password stays as it is.',
+    ].join('\n'),
+    html: `<div style="font-family:Arial,sans-serif;color:#102c50;max-width:480px;margin:auto;padding:24px"><h1 style="font-size:21px;color:#092a53">Reset your password</h1><p>Enter this code to reset your Cold Stone Creamery account password:</p><p style="display:inline-block;padding:14px 22px;border-radius:12px;background:#f3f6fa;color:#092a53;font-size:30px;font-weight:800;letter-spacing:10px">${code}</p><p style="color:#65748a">This code expires in 10 minutes. If you did not request a password reset, you can ignore this email and your password stays as it is.</p></div>`,
+  })
+}
+
 export async function sendNewOrderNotification({ recipients, orderId, customerName, customerEmail, storeName, storeAddress, items, totalCents, currency, orderUrl, paymentStatus = 'Awaiting payment' }) {
   if (!recipients.length) {
     throw new Error('No admin email addresses are available for order notifications.')

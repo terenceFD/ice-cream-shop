@@ -32,6 +32,8 @@ export interface AuthContextValue {
   sessionError: string;
   requestSignupVerification: (credentials: { name: string; email: string; password: string; profilePicture?: string }) => Promise<{ verificationId: string; expiresInSeconds: number }>;
   signup: (credentials: { verificationId: string; code: string }) => Promise<Customer>;
+  requestPasswordReset: (email: string) => Promise<{ message?: string; verificationId?: string; expiresInSeconds?: number }>;
+  confirmPasswordReset: (credentials: { verificationId: string; code: string; password: string }) => Promise<{ message?: string }>;
   login: (credentials: { email: string; password: string }) => Promise<Customer>;
   logout: () => Promise<void>;
   updateProfile: (profile: CustomerProfile) => Promise<Customer>;
@@ -120,6 +122,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return authenticate("/auth/register/verify", { verificationId, code });
   }
 
+  function requestPasswordReset(email: string) {
+    return apiRequest<{ message?: string; verificationId?: string; expiresInSeconds?: number }>(
+      "/auth/password/reset-request",
+      { method: "POST", body: { email } },
+    );
+  }
+
+  function confirmPasswordReset({ verificationId, code, password }: { verificationId: string; code: string; password: string }) {
+    return apiRequest<{ message?: string }>("/auth/password/reset-confirm", {
+      method: "POST",
+      body: { verificationId, code, password },
+    });
+  }
+
   async function login({ email, password }: { email: string; password: string }): Promise<Customer> {
     const result = await apiRequest<AuthResponse>("/auth/login", {
       method: "POST",
@@ -163,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ customer, isLoading, sessionError, requestSignupVerification, signup, login, logout, updateProfile }}
+      value={{ customer, isLoading, sessionError, requestSignupVerification, signup, requestPasswordReset, confirmPasswordReset, login, logout, updateProfile }}
     >
       {children}
     </AuthContext.Provider>

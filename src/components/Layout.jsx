@@ -35,6 +35,36 @@ function ArrowIcon({ diagonal = false }) {
   );
 }
 
+export function StoreTrustBadges({ className = "" }) {
+  const { t } = useLanguage();
+  const badges = [
+    { label: t("5 shops"), title: t("Across Cameroon") },
+    { label: t("30 min pickup"), title: t("Pickup at your chosen store") },
+    { label: t("FCFA + MoMo"), title: t("Cards and Mobile Money accepted") },
+    {
+      label: t("1 pt / 100 FCFA"),
+      title: t("Every 100 FCFA earns a point — 100 points = 1,000 FCFA off"),
+    },
+  ];
+
+  return (
+    <ul
+      aria-label={t("Store benefits")}
+      className={`flex flex-wrap gap-2 ${className}`}
+    >
+      {badges.map((badge) => (
+        <li
+          className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-xs font-bold text-white/90"
+          key={badge.label}
+          title={badge.title}
+        >
+          {badge.label}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function closeOtherDropdowns(event) {
   const current = event.currentTarget.closest("details");
   document.querySelectorAll("header details[open]").forEach((dropdown) => {
@@ -1443,21 +1473,24 @@ export function Footer() {
               {t("A little joy")} <span className="text-[#ffdc32]">{t("in every scoop.")}</span>
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061f40]"
-              to="/menu"
-            >
-              {t("Explore the menu")} <ArrowIcon />
-            </Link>
-            <a
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              href={instagramUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              <InstagramGlyph className="size-4" /> {t("Visit Instagram")}
-            </a>
+          <div className="flex flex-col gap-4 md:items-end">
+            <div className="flex flex-wrap gap-3">
+              <Link
+                className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061f40]"
+                to="/menu"
+              >
+                {t("Explore the menu")} <ArrowIcon />
+              </Link>
+              <a
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                href={instagramUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <InstagramGlyph className="size-4" /> {t("Visit Instagram")}
+              </a>
+            </div>
+            <StoreTrustBadges className="md:justify-end" />
           </div>
         </div>
 

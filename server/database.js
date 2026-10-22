@@ -1,4 +1,6 @@
 import Database from "better-sqlite3";
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { USD_TO_XAF } from "../shared/currency.js";
 import {
@@ -15,6 +17,10 @@ const databasePath =
 const configuredDatabaseBackend =
   process.env.DATABASE_BACKEND?.trim().toLowerCase() ||
   (process.env.DATABASE_URL ? "postgres" : "sqlite");
+
+if (configuredDatabaseBackend === "sqlite") {
+  mkdirSync(dirname(databasePath), { recursive: true });
+}
 
 if (!["sqlite", "postgres"].includes(configuredDatabaseBackend)) {
   throw new Error('DATABASE_BACKEND must be either "sqlite" or "postgres".');
@@ -100,6 +106,15 @@ if (configuredDatabaseBackend === "postgres") {
       name TEXT NOT NULL,
       password_hash TEXT NOT NULL,
       profile_picture TEXT NOT NULL DEFAULT '',
+      attempts INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      expires_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS password_resets (
+      email TEXT PRIMARY KEY COLLATE NOCASE,
+      verification_id TEXT NOT NULL UNIQUE,
+      code_hash TEXT NOT NULL,
       attempts INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL,
       expires_at TEXT NOT NULL
@@ -747,6 +762,19 @@ export async function verifyDatabaseSchema() {
       name TEXT NOT NULL,
       password_hash TEXT NOT NULL,
       profile_picture TEXT NOT NULL DEFAULT '',
+      attempts INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      expires_at TEXT NOT NULL
+    )
+  `).run();
+
+  // Created on the Postgres path too, so a fresh hosted database does not need a migration
+  // before the first password reset works.
+  await database.prepare(`
+    CREATE TABLE IF NOT EXISTS password_resets (
+      email TEXT PRIMARY KEY,
+      verification_id TEXT NOT NULL UNIQUE,
+      code_hash TEXT NOT NULL,
       attempts INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL,
       expires_at TEXT NOT NULL

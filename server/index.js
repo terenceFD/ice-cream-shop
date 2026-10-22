@@ -80,6 +80,7 @@ import {
   sendCakeRequestNotification,
   sendContactReply,
   sendCustomerVerificationCode,
+  sendPasswordResetCode,
   sendNewOrderNotification,
   sendOrderStatusUpdate,
 } from './email.js'
@@ -1660,6 +1661,139 @@ app.post('/api/auth/login', loginLimiter, async (request, response, next) => {
         deliveryResidence: customer.delivery_residence,
       },
     })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Ask for a password reset: email a 6-digit code if (and only if) the address has an account.
+app.post('/api/auth/password/reset-request', loginLimiter, async (request, response, next) => {
+  try {
+    const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+      response.status(400).json({ error: 'Enter the email address on your account.' })
+      return
+    }
+    if (!isEmailDeliveryConfigured()) {
+      response.status(503).json({ error: 'Password reset is temporarily unavailable. Please try again later.' })
+      return
+    }
+
+    const now = new Date()
+    await database.prepare('DELETE FROM password_resets WHERE expires_at <= ?').run(now.toISOString())
+    const pending = await database.prepare(`
+      SELECT verification_id AS "verificationId", created_at AS "createdAt"
+      FROM password_resets WHERE email = ?
+    `).get(email)
+    const generic = {
+      message: 'If an account uses that email, a reset code is on its way. Check your inbox.',
+      verificationId: pending?.verificationId || randomUUID(),
+      expiresInSeconds: 600,
+    }
+    if (pending && now.getTime() - Date.parse(pending.createdAt) < 60 * 1000) {
+      response.json(generic)
+      return
+    }
+
+    // Whether or not the address exists, the answer looks the same, so this endpoint cannot be
+    // used to find out which emails have accounts.
+    const customer = await database.prepare('SELECT id, is_banned AS "isBanned" FROM customers WHERE email = ? COLLATE NOCASE').get(email)
+    if (!customer || customer.isBanned) {
+      response.json(generic)
+      return
+    }
+
+    const verificationId = randomUUID()
+    const code = String(randomInt(0, 1_000_000)).padStart(6, '0')
+    const codeHash = createHmac('sha256', jwtSecret).update(`${verificationId}:${code}`).digest('hex')
+    await database.prepare('DELETE FROM password_resets WHERE email = ?').run(email)
+    await database.prepare(`
+      INSERT INTO password_resets (email, verification_id, code_hash, attempts, created_at, expires_at)
+      VALUES (?, ?, ?, 0, ?, ?)
+    `).run(email, verificationId, codeHash, now.toISOString(), new Date(now.getTime() + 10 * 60 * 1000).toISOString())
+
+    try {
+      const sent = await sendPasswordResetCode({ to: email, code })
+      console.log(`Password reset code queued for ${email}: ${sent?.messageId || 'no message id'}`)
+    } catch (emailError) {
+      await database.prepare('DELETE FROM password_resets WHERE verification_id = ?').run(verificationId)
+      console.error('Unable to send password reset code:', describeEmailError(emailError))
+      response.status(502).json({ error: 'We could not send your reset code. Please try again shortly.' })
+      return
+    }
+
+    response.json({ ...generic, verificationId })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Finish a password reset: check the code, then swap the password in one guarded update.
+app.post('/api/auth/password/reset-confirm', loginLimiter, signupCodeAttemptLimiter, async (request, response, next) => {
+  try {
+    const verificationId = typeof request.body.verificationId === 'string' ? request.body.verificationId : ''
+    const code = typeof request.body.code === 'string' ? request.body.code : ''
+    const password = typeof request.body.password === 'string' ? request.body.password : ''
+    if (!/^[0-9a-f-]{36}$/i.test(verificationId) || !/^\d{6}$/.test(code)
+      || password.length < 8 || password.length > 128) {
+      response.status(400).json({ error: 'Enter the 6-digit code from your email and a new password of 8 to 128 characters.' })
+      return
+    }
+    const pending = await database.prepare(`
+      SELECT email, code_hash AS "codeHash", attempts, expires_at AS "expiresAt"
+      FROM password_resets WHERE verification_id = ?
+    `).get(verificationId)
+    const invalidCodeMessage = 'The reset code is invalid or has expired. Request a new code to continue.'
+    if (!pending || Date.parse(pending.expiresAt) <= Date.now()) {
+      await database.prepare('DELETE FROM password_resets WHERE verification_id = ?').run(verificationId)
+      response.status(400).json({ error: invalidCodeMessage })
+      return
+    }
+    if (Number(pending.attempts) >= 5) {
+      await database.prepare('DELETE FROM password_resets WHERE verification_id = ?').run(verificationId)
+      response.status(400).json({ error: invalidCodeMessage })
+      return
+    }
+
+    const submittedHash = createHmac('sha256', jwtSecret).update(`${verificationId}:${code}`).digest()
+    const expectedHash = Buffer.from(pending.codeHash, 'hex')
+    const codeMatches = submittedHash.length === expectedHash.length && timingSafeEqual(submittedHash, expectedHash)
+    if (!codeMatches) {
+      const attempts = Number(pending.attempts) + 1
+      if (attempts >= 5) {
+        await database.prepare('DELETE FROM password_resets WHERE verification_id = ?').run(verificationId)
+        response.status(400).json({ error: invalidCodeMessage })
+        return
+      }
+      await database.prepare('UPDATE password_resets SET attempts = ? WHERE verification_id = ?').run(attempts, verificationId)
+      response.status(400).json({ error: invalidCodeMessage })
+      return
+    }
+
+    const customer = await database.prepare('SELECT id, is_banned AS "isBanned" FROM customers WHERE email = ? COLLATE NOCASE').get(pending.email)
+    if (!customer) {
+      response.status(400).json({ error: invalidCodeMessage })
+      return
+    }
+    if (customer.isBanned) {
+      response.status(403).json({ error: 'This customer account has been banned. Contact the store for assistance.' })
+      return
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12)
+    const consumed = await database.prepare(`
+      UPDATE customers SET password_hash = ? WHERE id = ? AND EXISTS (
+        SELECT 1 FROM password_resets
+        WHERE verification_id = ? AND code_hash = ? AND expires_at > ? AND attempts < 5
+      )
+    `).run(passwordHash, customer.id, verificationId, pending.codeHash, new Date().toISOString())
+    if (!consumed.changes) {
+      response.status(409).json({ error: 'This reset request has changed. Request a new code and try again.' })
+      return
+    }
+    await database.prepare('DELETE FROM password_resets WHERE verification_id = ?').run(verificationId)
+
+    response.json({ message: 'Your password has been updated. You can sign in with it now.' })
   } catch (error) {
     next(error)
   }

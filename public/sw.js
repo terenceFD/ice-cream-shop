@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cold-stone-shell-v11'
+const CACHE_NAME = 'cold-stone-shell-v12'
 // A sleeping host can take half a minute to answer. Past this, show the saved page instead of a blank tab.
 const NAVIGATION_TIMEOUT_MS = 1500
 // Caches from before the site was renamed are removed on activation too.
@@ -97,17 +97,10 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  if (/\.(?:svg|png|jpe?g|webp|woff2?)$/i.test(url.pathname)) {
-    event.respondWith(
-      caches.match(request).then((cached) => cached || fetch(request).then((response) => {
-        if (response.ok) {
-          const copy = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
-        }
-        return response
-      })),
-    )
-  }
+  // Photos are served straight from the network: they already carry a week's HTTP cache header and
+  // sit on a CDN, and intercepting them here made the browser drop its preloaded hero image
+  // (a preloaded response cannot be reused by a request made through the service worker), so
+  // every hero photo was fetched twice.
 })
 
 // Promotion alerts sent by the server. The notification carries the site name and logo.
