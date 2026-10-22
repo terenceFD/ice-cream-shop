@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { lazy, Suspense, useEffect, type ComponentType } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense, type ComponentType } from "react";
 import { CartProvider } from "../context/CartContext";
 import { NotFoundPage } from "../pages/notfound/NotFoundPage";
 import { FlavorProvider } from "../context/FlavorContext";
@@ -65,27 +65,6 @@ function PageLoading() {
   return <div aria-busy="true" className="min-h-[60vh]" role="status" />;
 }
 
-function SkipToMainContent() {
-  const location = useLocation();
-
-  useEffect(() => {
-    const main = document.querySelector("main");
-    if (main) {
-      main.id = "main-content";
-      main.tabIndex = -1;
-    }
-  }, [location.pathname]);
-
-  return (
-    <a
-      className="sr-only fixed left-4 top-4 z-50 rounded-lg bg-white px-4 py-3 font-bold text-[#102c50] shadow focus:not-sr-only"
-      href="#main-content"
-    >
-      Skip to main content
-    </a>
-  );
-}
-
 function App() {
   return (
     <LanguageProvider>
@@ -96,7 +75,6 @@ function App() {
             <ScrollRevealObserver />
             <ScrollProgress />
             <WebsiteLoader />
-            <SkipToMainContent />
             <AuthProvider>
               <AdminAuthProvider>
                 <Suspense fallback={<PageLoading />}>
