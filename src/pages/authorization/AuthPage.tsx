@@ -11,7 +11,7 @@ import { isEventType } from '../../../shared/eventTypes.js'
 
 export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const isSignup = mode === 'signup'
-  const { requestSignupVerification, signup, login } = useAuth()
+  const { requestSignupVerification, signup, requestPasswordReset, confirmPasswordReset, login } = useAuth()
   const { t } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
@@ -28,6 +28,10 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const [verificationId, setVerificationId] = useState('')
   const [verificationCode, setVerificationCode] = useState<string[]>(Array(6).fill(''))
   const [verificationNotice, setVerificationNotice] = useState('')
+  const [passwordResetStep, setPasswordResetStep] = useState<'idle' | 'request' | 'confirm'>('idle')
+  const [resetVerificationId, setResetVerificationId] = useState('')
+  const [resetPassword, setResetPassword] = useState('')
+  const [resetPasswordConfirmation, setResetPasswordConfirmation] = useState('')
   const [resendAvailableAt, setResendAvailableAt] = useState(0)
   const [resendCountdown, setResendCountdown] = useState(0)
   const verificationInputs = useRef<(HTMLInputElement | null)[]>([])
@@ -47,6 +51,53 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
+    setVerificationNotice('')
+    if (passwordResetStep === 'request') {
+      setIsSubmitting(true)
+      try {
+        const result = await requestPasswordReset(email)
+        if (!result.verificationId) throw new Error('Unable to start a password reset. Please try again.')
+        setResetVerificationId(result.verificationId)
+        setVerificationCode(Array(6).fill(''))
+        setPasswordResetStep('confirm')
+        setVerificationNotice(result.message || t('If an account uses that email, a reset code is on its way. Check your inbox.'))
+        window.setTimeout(() => verificationInputs.current[0]?.focus(), 0)
+      } catch (requestError) {
+        setError(requestError instanceof Error ? requestError.message : t('Unable to send a reset code. Please try again.'))
+      } finally {
+        setIsSubmitting(false)
+      }
+      return
+    }
+
+    if (passwordResetStep === 'confirm') {
+      if (verificationCode.some((digit) => !digit)) {
+        setError(t('Enter the 6-digit code sent to your email.'))
+        verificationInputs.current[0]?.focus()
+        return
+      }
+      if (resetPassword !== resetPasswordConfirmation) {
+        setError(t('Your passwords do not match. Please check them and try again.'))
+        return
+      }
+      setIsSubmitting(true)
+      try {
+        await confirmPasswordReset({ verificationId: resetVerificationId, code: verificationCode.join(''), password: resetPassword })
+        setPassword(resetPassword)
+        setResetPassword('')
+        setResetPasswordConfirmation('')
+        setVerificationCode(Array(6).fill(''))
+        setResetVerificationId('')
+        setPasswordResetStep('idle')
+        setVerificationNotice(t('Your password has been reset. Sign in with your new password.'))
+      } catch (resetError) {
+        setError(resetError instanceof Error ? resetError.message : t('Unable to reset your password. Please try again.'))
+      } finally {
+        setIsSubmitting(false)
+      }
+      return
+    }
+
     if (isSignup && !verificationId && password !== confirmPassword) {
       setError(t('Your passwords do not match. Please check them and try again.'))
       return
@@ -224,10 +275,18 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
               </div>
 
               <h1 className="mt-10 font-display text-4xl font-extrabold tracking-tight text-[#092a53] sm:text-5xl">
-                {isSignup ? verificationId ? t('Verify your email') : t('Create an account') : t('Welcome back')}
+                {passwordResetStep === 'request'
+                  ? t('Reset your password')
+                  : passwordResetStep === 'confirm'
+                    ? t('Choose a new password')
+                    : isSignup ? verificationId ? t('Verify your email') : t('Create an account') : t('Welcome back')}
               </h1>
               <p className="mt-3 text-base leading-7 text-[#65748a]">
-                {isSignup
+                {passwordResetStep === 'request'
+                  ? t('Enter the email address on your account and we’ll send you a reset code.')
+                  : passwordResetStep === 'confirm'
+                    ? t('Enter the 6-digit code from your email and choose a new password.')
+                    : isSignup
                   ? verificationId
                     ? t('Enter the 6-digit code we sent to your email to finish creating your account.')
                     : t('Create an account to keep your scoop club details together.')
@@ -241,7 +300,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
               )}
 
               <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-                {isSignup && !verificationId && (
+                {isSignup && !verificationId && passwordResetStep === 'idle' && (
                   <label className="block">
                     <span className={labelClass}>{t('Name')}</span>
                     <span className={inputShellClass}>
@@ -254,7 +313,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                   </label>
                 )}
 
-                {verificationId ? (
+                {isSignup && verificationId ? (
                   <div className="rounded-2xl bg-white p-5 ring-1 ring-[#ebe7dc] sm:p-6">
                     <div className="mx-auto grid size-11 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
                       <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
@@ -297,6 +356,70 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                       </button>
                     </div>
                   </div>
+                ) : passwordResetStep !== 'idle' ? (
+                  <>
+                    <label className="block">
+                      <span className={labelClass}>{t('Email address')}</span>
+                      <span className={inputShellClass}>
+                        <svg aria-hidden="true" className={iconClass} fill="none" viewBox="0 0 24 24">
+                          <rect height="14" rx="3" stroke="currentColor" strokeWidth="1.8" width="18" x="3" y="5" />
+                          <path d="m4 7 8 6 8-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                        </svg>
+                        <input autoComplete="email" className={inputClass} name="email" onChange={(event) => setEmail(event.target.value)} placeholder={t('you@example.com')} readOnly={passwordResetStep === 'confirm'} required type="email" value={email} />
+                      </span>
+                    </label>
+                    {passwordResetStep === 'confirm' && (
+                      <>
+                        <div
+                          aria-label={t('6-digit verification code')}
+                          className="flex justify-center gap-2 sm:gap-3"
+                          onPaste={handleVerificationPaste}
+                          role="group"
+                        >
+                          {verificationCode.map((digit, index) => (
+                            <input
+                              aria-label={t('Digit {number} of 6', { number: index + 1 })}
+                              autoComplete={index === 0 ? 'one-time-code' : 'off'}
+                              className="size-11 rounded-xl border border-[#dbe3ec] bg-[#f7f9fc] text-center text-xl font-extrabold text-[#092a53] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-[3px] focus:ring-[#ffdc32]/45 sm:size-12"
+                              inputMode="numeric"
+                              key={index}
+                              maxLength={6}
+                              onChange={(event) => updateVerificationCode(index, event.target.value)}
+                              onKeyDown={(event) => handleVerificationKeyDown(index, event)}
+                              pattern="[0-9]*"
+                              ref={(element) => { verificationInputs.current[index] = element }}
+                              required
+                              type="text"
+                              value={digit}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-center text-xs leading-5 text-[#8190a1]">{t('The code expires in 10 minutes.')}</p>
+                        <PasswordField
+                          autoComplete="new-password"
+                          label={t('New password')}
+                          maxLength={128}
+                          minLength={8}
+                          name="newPassword"
+                          onChange={(event) => setResetPassword(event.target.value)}
+                          required
+                          value={resetPassword}
+                          variant="modern"
+                        />
+                        <PasswordField
+                          autoComplete="new-password"
+                          label={t('Confirm new password')}
+                          maxLength={128}
+                          minLength={8}
+                          name="confirmNewPassword"
+                          onChange={(event) => setResetPasswordConfirmation(event.target.value)}
+                          required
+                          value={resetPasswordConfirmation}
+                          variant="modern"
+                        />
+                      </>
+                    )}
+                  </>
                 ) : (
                   <>
                     <label className="block">
@@ -336,6 +459,23 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                       )}
                     </PasswordField>
 
+                    {!isSignup && passwordResetStep === 'idle' && (
+                      <div className="mt-3 text-right">
+                        <button
+                          className="text-xs font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4"
+                          onClick={() => {
+                            setError('')
+                            setVerificationNotice('')
+                            setResetVerificationId('')
+                            setPasswordResetStep('request')
+                          }}
+                          type="button"
+                        >
+                          {t('Forgot password?')}
+                        </button>
+                      </div>
+                    )}
+
                     {isSignup && (
                       <PasswordField
                         autoComplete="new-password"
@@ -361,7 +501,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                   </>
                 )}
 
-                {isSignup && verificationNotice && (
+                {verificationNotice && (
                   <p className="rounded-2xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">{verificationNotice}</p>
                 )}
 
@@ -400,11 +540,29 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                     </svg>
                   )}
                   {isSubmitting
-                    ? t(isSignup ? verificationId ? 'Verifying code…' : 'Sending verification code…' : 'Please wait…')
-                    : isSignup ? t(verificationId ? 'Verify email' : 'Create account') : t('Log in')}
+                    ? t(passwordResetStep === 'request' ? 'Sending reset code…' : passwordResetStep === 'confirm' ? 'Resetting password…' : isSignup ? verificationId ? 'Verifying code…' : 'Sending verification code…' : 'Please wait…')
+                    : passwordResetStep === 'request' ? t('Send reset code') : passwordResetStep === 'confirm' ? t('Reset password') : isSignup ? t(verificationId ? 'Verify email' : 'Create account') : t('Log in')}
                   {!isSubmitting && <ArrowIcon />}
                 </button>
               </form>
+
+              {passwordResetStep !== 'idle' && (
+                <button
+                  className="mt-5 w-full text-center text-sm font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4"
+                  onClick={() => {
+                    setPasswordResetStep('idle')
+                    setResetVerificationId('')
+                    setResetPassword('')
+                    setResetPasswordConfirmation('')
+                    setVerificationCode(Array(6).fill(''))
+                    setError('')
+                    setVerificationNotice('')
+                  }}
+                  type="button"
+                >
+                  {t('Back to log in')}
+                </button>
+              )}
 
               <p className="mt-8 text-center text-sm text-[#65748a]">
                 {isSignup ? t('Already have an account?') : t("New to this website's shop?")}{' '}
