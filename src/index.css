@@ -340,7 +340,9 @@ body {
   transform: translate3d(0, 0, 0);
 }
 
-/* Section-level fades follow the scroll as blocks enter and leave the viewport. */
+/* Section-level depth: a block that enters from below the screen also eases up from a slight
+   zoom, which makes the reveal feel tied to the scroll instead of to a timer. Only blocks with
+   room to move are scaled, so short rows and cards keep their plain fade. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .scroll-reveal-enabled main > *,
@@ -348,7 +350,7 @@ body {
       view-timeline: --section-entry block;
       animation: section-rise linear both;
       animation-timeline: --section-entry;
-      animation-range: entry 0% exit 100%;
+      animation-range: entry 0% entry 60%;
     }
 
     /* The timeline scales the block, so the animated CSS transform must not fight it. */
@@ -361,19 +363,13 @@ body {
 
 @keyframes section-rise {
   from {
-    opacity: 0;
+    opacity: 0.35;
     scale: 0.985;
-  }
-
-  12%,
-  88% {
-    opacity: 1;
-    scale: 1;
   }
 
   to {
-    opacity: 0;
-    scale: 0.985;
+    opacity: 1;
+    scale: 1;
   }
 }
 
