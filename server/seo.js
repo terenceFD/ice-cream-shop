@@ -12,6 +12,7 @@ import { photoSrcSet } from '../shared/photoSizes.js'
 // The home page's first slider photo. index.html preloads it; the '/' page head should not
 // repeat that tag, so it is not requested twice.
 const HOME_HERO_PHOTO = '/ice-images/ice-9.jpg'
+const HOME_PHOTO_PRELOAD = /[ \t]*<link rel="preload" as="image"[^>]*\/ice-images\/ice-9\.[^>]*>\s*\n?/g
 
 // index.html marks the default head tags with <!--seo--> … <!--/seo--> so each page can swap in its own.
 const SEO_BLOCK = /<!--seo-->[\s\S]*?<!--\/seo-->/
@@ -173,6 +174,9 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
       const html = await getTemplate()
       const tags = headTags(meta, base, structuredData)
       let page = html.replace(LEGACY_SEO_BODY, '')
+      // index.html preloads the home slider's photo for every page. Only the home page shows that
+      // photo, so on every other page the tag is dropped instead of downloading a picture nobody shows.
+      if (request.path !== '/') page = page.replace(HOME_PHOTO_PRELOAD, '')
       page = SEO_BLOCK.test(page)
         ? page.replace(SEO_BLOCK, tags)
         : page.replace(/<title>[\s\S]*?<\/title>/, '').replace('</head>', `  ${tags}\n  </head>`)

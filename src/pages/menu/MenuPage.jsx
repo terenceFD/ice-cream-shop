@@ -213,14 +213,17 @@ function FilterSelect({ label, onChange, options, value }) {
   );
 }
 
-function MenuProductCard({ category, item, onSelect, t, formatPrice }) {
+// onQuickAdd: adds one to the bag straight from the card, so ordering no longer needs the detail
+// sheet. The card is a container with two separate buttons, because a button cannot hold a button.
+function MenuProductCard({ category, item, onSelect, onQuickAdd, added, t, formatPrice }) {
   const soldOut = item.isAvailable === false || item.availableQuantity < 1;
   return (
-    <button
-      className="group relative flex h-full flex-col rounded-[22px] bg-white p-1.5 text-left shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] sm:rounded-[28px] sm:p-2.5"
-      onClick={() => onSelect(category, item)}
-      type="button"
-    >
+    <div className="group relative flex h-full flex-col rounded-[22px] bg-white p-1.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] sm:rounded-[28px] sm:p-2.5">
+      <button
+        className="flex flex-1 flex-col rounded-[22px] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+        onClick={() => onSelect(category, item)}
+        type="button"
+      >
       <div className="relative aspect-square overflow-hidden rounded-[17px] bg-gradient-to-br from-[#fff8dd] via-[#fbfaf5] to-[#f1ede2] sm:rounded-[22px]">
         <MenuImage
           alt={t(item.name)}
@@ -261,9 +264,42 @@ function MenuProductCard({ category, item, onSelect, t, formatPrice }) {
               </svg>
             </span>
           </span>
+
+          {/* Quick add: one into the bag without opening the detail sheet. It sits beside the
+              price, so the cards stay in line however long the description is. */}
+          <button
+            aria-label={
+              soldOut
+                ? t("{name} is sold out", { name: t(item.name) })
+                : t("Add {name} to your bag", { name: t(item.name) })
+            }
+            className={`grid size-9 shrink-0 place-items-center rounded-full text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed sm:size-10 ${
+              added
+                ? "bg-[#4caf50] text-white"
+                : soldOut
+                  ? "bg-[#f1ede2] text-[#a5aebb]"
+                  : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#ffe76c] hover:shadow-[0_8px_20px_rgba(255,220,50,0.35)]"
+            }`}
+            disabled={soldOut}
+            onClick={(event) => {
+              // Without this the tap also opens the product's detail sheet.
+              event.stopPropagation();
+              onQuickAdd(category, item);
+            }}
+            type="button"
+          >
+            {added ? (
+              <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+              </svg>
+            ) : (
+              <span aria-hidden="true">+</span>
+            )}
+          </button>
+          </div>
         </div>
-      </div>
-    </button>
+      </button>
+    </div>
   );
 }
 
@@ -333,6 +369,8 @@ export function MenuPage() {
   const [cartNotice, setCartNotice] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
+  const [quickAddedId, setQuickAddedId] = useState(null);
+  const quickAddedTimer = useRef(undefined);
   const addedTimer = useRef(undefined);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -511,6 +549,11 @@ export function MenuPage() {
   const showCategory = (category) => {
     setSearchParams({ category: category.title });
     setSelectedItemState(null);
+    // The products change under a sticky tab bar, so put the first product row back on screen
+    // instead of leaving the visitor part-way down the previous list.
+    window.requestAnimationFrame(() =>
+      document.getElementById("menu-category-items")?.scrollIntoView({ block: "start" }),
+    );
   };
 
   const selectItem = (category, item) => {
@@ -545,6 +588,27 @@ export function MenuPage() {
       setJustAdded(true);
       window.clearTimeout(addedTimer.current);
       addedTimer.current = window.setTimeout(() => setJustAdded(false), 1800);
+    } else {
+      setCartNotice(
+        t("This item could not be added to your bag. Please try again."),
+      );
+    }
+  };
+
+  // Adds one to the bag from the product card, and ticks that card for a moment afterwards.
+  const quickAddItem = (category, item) => {
+    const id = item.id || getMenuItemId(category.title, item.name);
+    const added = addItemsToCart([{
+      ...item,
+      id,
+      itemType: "menu",
+      categoryTitle: category.title,
+      quantity: 1,
+    }]);
+    if (added > 0) {
+      setQuickAddedId(id);
+      window.clearTimeout(quickAddedTimer.current);
+      quickAddedTimer.current = window.setTimeout(() => setQuickAddedId(null), 1800);
     } else {
       setCartNotice(
         t("This item could not be added to your bag. Please try again."),
@@ -606,7 +670,7 @@ export function MenuPage() {
   return (
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
-      <main>
+      <main id="main" tabIndex={-1}>
         <PageHero
           compactOnMobile
           actions={
@@ -1317,12 +1381,17 @@ export function MenuPage() {
               <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
                 {activeCategory.items.map((item) => (
                   <MenuProductCard
+                    added={
+                      quickAddedId ===
+                      (item.id || getMenuItemId(activeCategory.title, item.name))
+                    }
                     category={activeCategory}
                     formatPrice={formatPrice}
                     item={item}
                     key={
                       item.id || getMenuItemId(activeCategory.title, item.name)
                     }
+                    onQuickAdd={quickAddItem}
                     onSelect={selectItem}
                     t={t}
                   />

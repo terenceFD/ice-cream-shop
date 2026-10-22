@@ -90,7 +90,7 @@ export function FlavorsPage() {
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
 
-      <main>
+      <main id="main" tabIndex={-1}>
         {/* Hero */}
         <PageHero
           compactOnMobile
@@ -143,7 +143,13 @@ export function FlavorsPage() {
               </div>
               {!loading && !error && (
                 <p aria-live="polite" className="rounded-full border border-[#ebe7dc] bg-white px-4 py-2 text-xs font-bold text-[#65748a]">
-                  {t("{count} flavors available", { count: filteredFlavors.length })}
+                  {/* While a filter is on, show both numbers so people can see it worked. */}
+                  {filteredFlavors.length === availableFlavors.length
+                    ? t("{count} flavors available", { count: filteredFlavors.length })
+                    : t("Showing {shown} of {count} flavors", {
+                        count: availableFlavors.length,
+                        shown: filteredFlavors.length,
+                      })}
                 </p>
               )}
             </div>
@@ -313,6 +319,21 @@ export function FlavorsPage() {
                         {t(flavor.name)}
                       </h3>
                       <p className="mt-1.5 line-clamp-2 text-[13px] leading-5 text-[#65748a]">{t(flavor.detail)}</p>
+                      {flavor.allergies && flavor.allergies.filter((item) => item !== "None common").length > 0 && (
+                        <ul className="mt-2 flex flex-wrap gap-1.5">
+                          {flavor.allergies
+                            .filter((item) => item !== "None common")
+                            .slice(0, 3)
+                            .map((item) => (
+                              <li
+                                className="rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-bold capitalize text-amber-900"
+                                key={item}
+                              >
+                                {t("Contains {item}", { item })}
+                              </li>
+                            ))}
+                        </ul>
+                      )}
                       <div className="mt-auto flex items-center justify-between gap-3 pt-4">
                         <span className="font-display text-lg font-extrabold tabular-nums text-[#092a53]">
                           {formatCartMoney(flavor.price, "xaf", language)}
