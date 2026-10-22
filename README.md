@@ -138,6 +138,14 @@ If the frontend and API must be hosted separately, set `VITE_API_URL` to the API
 - The website loader (`src/components/WebsiteLoader.tsx`) leaves as soon as the page's content is drawn, after at least 0.35 seconds, rather than waiting for every image.
 - Sections already on screen are shown straight away; only content further down fades in as it scrolls into view. `src/components/ScrollRevealObserver.tsx` learns where elements are from `IntersectionObserver`, because measuring them directly forces extra page layouts.
 - Decorative glows are soft radial gradients rather than blurred shapes, which are slow to draw on phones. Prices are formatted with one shared, reused formatter (`numberFormatter` in `src/lib/cartPricing.ts`).
+- Every page is built on the server in under a millisecond and answers with a `Server-Timing: meta;dur=…` header, so the server's share of the first byte can be read in the browser's DevTools (Network → Timing) instead of guessed at.
+- The home page chunk (`HomePage-*.js`) is downloaded alongside the main bundle instead of after it, because `vite.config.ts` limits `build.modulePreload` to that one chunk. Every other page still downloads only when opened.
+
+#### Keeping the Render service warm
+
+On Render's free plan the service sleeps after about 15 minutes without visitors, and the first visit after that waits for it to start (plus the database schema check) — usually 20-30 seconds. The page itself is cheap, so slow first bytes come from this wait, not from the code.
+
+To keep it awake, point a free monitor such as [cron-job.org](https://cron-job.org) or [UptimeRobot](https://uptimerobot.com) at `https://<your-site>/api/health` every 10 minutes. That route answers `{ "status": "ok" }` immediately without touching the database, so the ping costs almost nothing. Upgrading the Render plan to a paid instance disables sleeping and is the more reliable fix.
 
 ### Supabase
 
