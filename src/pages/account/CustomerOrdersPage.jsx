@@ -1108,7 +1108,7 @@ export function CustomerOrdersPage() {
   return (
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
-      <main>
+      <main id="main" tabIndex={-1}>
         {/* Hero */}
         <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">

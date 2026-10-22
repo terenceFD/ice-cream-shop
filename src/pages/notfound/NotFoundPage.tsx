@@ -7,7 +7,7 @@ export function NotFoundPage() {
   return (
     <div className="flex min-h-screen flex-col bg-[#f8f7f2] text-[#102c50]">
       <Header />
-      <main className="flex flex-1 items-center justify-center px-5 py-16 text-center">
+      <main id="main" tabIndex={-1} className="flex flex-1 items-center justify-center px-5 py-16 text-center">
         <div>
           <p className="font-display text-7xl font-bold text-[#ffdc32]">404</p>
           <h1 className="mt-3 font-display text-3xl font-bold">{t('This scoop is nowhere to be found.')}</h1>

@@ -64,7 +64,7 @@ export function AboutPage() {
   return (
     <div className="min-h-screen bg-white text-[#102c50]">
       <Header />
-      <main>
+      <main id="main" tabIndex={-1}>
         {/* Hero */}
         <PageHero
           actions={

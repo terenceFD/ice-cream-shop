@@ -204,7 +204,7 @@ export function AllMenuPage() {
   return (
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
-      <main>
+      <main id="main" tabIndex={-1}>
         <PageHero
           compactOnMobile
           actions={

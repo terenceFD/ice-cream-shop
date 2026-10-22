@@ -72,7 +72,7 @@ const french: Record<string, string> = {
   'Find your fruity mood': 'Trouvez votre humeur fruitée',
   'A hand scooping vanilla ice cream from a bowl with a strawberry scoop beside it': 'Une main servant une glace à la vanille dans un bol, avec une boule de fraise à côté',
   "Life's sweeter by the scoop": 'La vie est plus douce à la bouffée',
-  "The Mercely's feeling": "L'esprit Mercely's",
+  "The Cold Stone feeling": "L'esprit Cold Stone",
   'Small moments. Sweet memories.': 'Petits moments. Doux souvenirs.',
   "The first lick of a cone. The spoon you don't want to share. The scoop that turns an ordinary afternoon into a little celebration.": "La première bouchée d\u2019un cornet. La cuillère qu\u2019on ne veut pas partager. La bouffée qui transforme un après-midi ordinaire en petite fête.",
   "Welcome to our world of ice cream — where there's always room for a little more happy.": "Bienvenue dans notre univers de glaces — où il y a toujours de la place pour un peu plus de bonheur.",

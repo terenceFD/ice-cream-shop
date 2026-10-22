@@ -162,7 +162,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   return (
     <div className="flex min-h-screen flex-col bg-[#fbfaf5] text-[#102c50]">
       <Header />
-      <main className="flex flex-1 justify-center px-4 py-8 sm:px-8 sm:py-12 lg:py-16">
+      <main id="main" tabIndex={-1} className="flex flex-1 justify-center px-4 py-8 sm:px-8 sm:py-12 lg:py-16">
         <div className="grid w-full max-w-[1160px] gap-8 lg:grid-cols-12 lg:gap-12">
           {/* Brand panel */}
           <aside className="relative isolate hidden min-h-[640px] flex-col justify-between overflow-hidden rounded-[36px] bg-[#092a53] p-10 text-white shadow-[0_30px_70px_rgba(9,42,83,0.22)] lg:col-span-6 lg:flex xl:p-12">

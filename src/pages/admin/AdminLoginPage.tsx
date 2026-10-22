@@ -212,7 +212,7 @@ export function AdminLoginPage() {
       </aside>
 
       {/* Sign-in panel */}
-      <main className="flex min-h-screen flex-col px-5 py-6 sm:px-10 lg:px-12 xl:px-20">
+      <main id="main" tabIndex={-1} className="flex min-h-screen flex-col px-5 py-6 sm:px-10 lg:px-12 xl:px-20">
         <div className="flex items-center justify-between gap-4">
           <Link className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-bold text-[#4f6379] transition hover:bg-white hover:text-[#092a53]" to="/">
             <Icon path={icons.back} />

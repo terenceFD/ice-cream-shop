@@ -455,7 +455,7 @@ export function EventOrdersPage() {
                     : t("We could not confirm your payment")}
         />
       )}
-      <main>
+      <main id="main" tabIndex={-1}>
         <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-16 pt-14 text-white sm:px-8 lg:px-12 lg:pb-20 lg:pt-20">
           <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220_50/0.12)_35%,transparent)]" />
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.5),rgb(28_79_138/0.5)_35%,transparent)]" />

@@ -46,7 +46,7 @@ export function CartPage() {
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
 
-      <main>
+      <main id="main" tabIndex={-1}>
         <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-12 pt-9 text-white sm:px-8 sm:pb-16 sm:pt-12 lg:px-12">
           <div aria-hidden="true" className="absolute -right-32 -top-44 -z-10 size-[30rem] rounded-full border-[64px] border-white/[0.04]" />
           <div aria-hidden="true" className="absolute -bottom-40 left-[15%] -z-10 size-80 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.08),rgb(255_220_50/0.08)_35%,transparent)]" />

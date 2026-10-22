@@ -937,6 +937,12 @@ export function Header() {
 
   return (
     <>
+      <a
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:inline-flex focus:min-h-11 focus:items-center focus:rounded-full focus:bg-[#ffdc32] focus:px-5 focus:py-3 focus:text-sm focus:font-extrabold focus:text-[#092a53] focus:shadow-[0_14px_32px_rgba(9,42,83,0.35)] focus:outline-none focus:ring-2 focus:ring-white"
+        href="#main"
+      >
+        {t("Skip to main content")}
+      </a>
       {!isAdminPage && <PromotionCountdown />}
       <div
         className={`sticky top-0 z-50 transition-[transform,background-color,box-shadow] duration-300 ${isHidden && !isMobileMenuOpen ? "-translate-y-full" : "translate-y-0"} ${

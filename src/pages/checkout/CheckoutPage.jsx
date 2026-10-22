@@ -276,7 +276,7 @@ export function CheckoutPage() {
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
 
-      <main>
+      <main id="main" tabIndex={-1}>
         <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-12 pt-9 text-white sm:px-8 sm:pb-16 sm:pt-12 lg:px-12">
           <div
             aria-hidden="true"

@@ -281,7 +281,7 @@ export function CustomCakeRequestPage() {
                     : t('We could not confirm your payment')}
         />
       )}
-      <main>
+      <main id="main" tabIndex={-1}>
         {/* Hero */}
         <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
           <div aria-hidden="true" className="pointer-events-none absolute -right-32 -top-36 -z-10 size-[40rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.16),rgb(255_220_50/0.16)_35%,transparent)]" />

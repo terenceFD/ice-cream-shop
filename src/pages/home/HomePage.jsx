@@ -763,7 +763,7 @@ export function HomePage() {
   return (
     <div className="min-h-screen overflow-clip bg-[#fbfaf5] text-[#102c50]">
       <Header />
-      <main>
+      <main id="main" tabIndex={-1}>
         <section
           id="home"
           className="relative isolate w-full overflow-clip bg-[#092a53] text-white"
@@ -865,6 +865,7 @@ export function HomePage() {
                         />
                       </svg>
                       <input
+                        aria-label={t("Search the menu")}
                         className="min-h-12 w-full rounded-xl border border-white/20 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-[#092a53] placeholder:text-[#52647b]/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
                         id="home-hero-search"
                         onChange={(event) => setHeroSearch(event.target.value)}
@@ -1002,12 +1003,13 @@ export function HomePage() {
                     </p>
                     <div className="mt-5 flex items-center gap-3">
                       <button
-                        aria-label={t("Next slide in {seconds} seconds", { seconds: 12 })}
-                        className="relative h-3 flex-1 overflow-hidden rounded-full bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+                        aria-hidden="true"
+                        className="relative h-3 flex-1 cursor-pointer overflow-hidden rounded-full bg-white/20"
                         onClick={() => {
                           setActiveSlide((current) => (current + 1) % homeSlides.length);
                           holdHero();
                         }}
+                        tabIndex={-1}
                         title={t("Next slide in {seconds} seconds", { seconds: 12 })}
                         type="button"
                       >
@@ -1018,7 +1020,7 @@ export function HomePage() {
                       </button>
                       <button
                         aria-label={t("Previous slide")}
-                        className="grid size-11 place-items-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+                        className="grid size-12 place-items-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
                         onClick={() => {
                           setActiveSlide(
                             (current) =>
@@ -1983,7 +1985,7 @@ export function HomePage() {
                   aria-hidden="true"
                   className="h-px w-10 bg-[#092a53]/60"
                 />
-                {t("The Mercely's feeling")}
+                {t("The Cold Stone feeling")}
               </p>
               <h2
                 className="mt-4 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-6xl"

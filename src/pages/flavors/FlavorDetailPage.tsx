@@ -78,7 +78,7 @@ export function FlavorDetailPage() {
     return (
       <div className="flex min-h-screen flex-col bg-[#fbfaf5]">
         <Header />
-        <main className="mx-auto grid w-full max-w-[1320px] flex-1 gap-10 px-5 py-12 sm:px-8 lg:grid-cols-12 lg:px-12">
+        <main id="main" tabIndex={-1} className="mx-auto grid w-full max-w-[1320px] flex-1 gap-10 px-5 py-12 sm:px-8 lg:grid-cols-12 lg:px-12">
           <p className="sr-only" role="status">{t("Loading flavor…")}</p>
           <div aria-hidden="true" className="aspect-square animate-pulse rounded-[32px] bg-[#f1ede2] lg:col-span-7" />
           <div aria-hidden="true" className="space-y-5 lg:col-span-5 lg:pt-10">
@@ -98,7 +98,7 @@ export function FlavorDetailPage() {
     return (
       <div className="flex min-h-screen flex-col bg-[#fbfaf5]">
         <Header />
-        <main className="grid flex-1 place-items-center px-5 py-20">
+        <main id="main" tabIndex={-1} className="grid flex-1 place-items-center px-5 py-20">
           <div className="flex max-w-md flex-col items-center text-center">
             <span aria-hidden="true" className="grid size-16 place-items-center rounded-full bg-white font-display text-2xl font-extrabold text-[#8a7000] ring-1 ring-[#ebe7dc]">?</span>
             <h1 className="mt-6 font-display text-4xl font-extrabold tracking-tight text-[#092a53]">
@@ -160,7 +160,7 @@ export function FlavorDetailPage() {
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
 
-      <main>
+      <main id="main" tabIndex={-1}>
         <section className="relative isolate overflow-hidden" style={{ backgroundColor: tint }}>
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
             <div className="absolute -left-24 top-0 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_255_255/0.6),rgb(255_255_255/0.6)_35%,transparent)]" />

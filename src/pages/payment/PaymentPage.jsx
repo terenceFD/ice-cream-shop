@@ -296,7 +296,7 @@ export function PaymentPage() {
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
       <Header />
 
-      <main>
+      <main id="main" tabIndex={-1}>
         {paymentStatus === "paid" ? (
           <div className="px-5 py-10 sm:px-8 sm:py-16">
             {statusShell(
