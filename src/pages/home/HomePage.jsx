@@ -545,7 +545,6 @@ export function HomePage() {
   ];
   const [activeSection, setActiveSection] = useState("");
   const [heroSearch, setHeroSearch] = useState("");
-  const [showHeroSearch, setShowHeroSearch] = useState(false);
   // The hero pauses when the visitor hovers/focuses it or after they take control with the
   // arrows, so no one is dragged to the next slide mid-read. Auto-rotation resumes on
   // mouse leave/blur and resumes on its own after a while.
@@ -813,91 +812,83 @@ export function HomePage() {
                     <ArrowIcon diagonal />
                   </Link>
                 </div>
-                <button
-                  aria-controls="home-hero-search-form"
-                  aria-expanded={showHeroSearch}
-                  className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-sm font-bold text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
-                  onClick={() => setShowHeroSearch((visible) => !visible)}
-                  type="button"
-                >
-                  <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                    <path d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-                  </svg>
-                  {t("Search the menu")}
-                </button>
-
-                {showHeroSearch && <form
-                  id="home-hero-search-form"
-                  className="mt-3 flex max-w-md items-center gap-2"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    const query = heroSearch.trim();
-                    if (!query) return;
-                    // A term that names a menu category ("Novelties") goes straight to that
-                    // category's catalog page; anything else searches the whole catalog.
-                    const normalized = query.toLowerCase();
-                    const findCategory = (predicate) =>
-                      coldStoneMenuCategories.find(predicate);
-                    const category =
-                      findCategory(
-                        (entry) =>
-                          entry.title.toLowerCase() === normalized ||
-                          t(entry.title).toLowerCase() === normalized,
-                      ) ||
-                      findCategory(
-                        (entry) =>
-                          entry.title.toLowerCase().includes(normalized) ||
-                          t(entry.title).toLowerCase().includes(normalized),
-                      );
-                    if (category) {
-                      navigate(`/menu?category=${encodeURIComponent(category.title)}`);
-                      return;
-                    }
-                    navigate(`/menu/all?search=${encodeURIComponent(query)}`);
-                  }}
-                  role="search"
-                >
-                  <label className="sr-only" htmlFor="home-hero-search">
+                <div className="mt-6 max-w-lg rounded-2xl border border-white/15 bg-white/[0.06] p-3 shadow-[0_12px_30px_rgba(0,0,0,0.12)] sm:mt-7 sm:p-4">
+                  <label
+                    className="mb-2 block text-xs font-extrabold uppercase tracking-[0.14em] text-white/90 sm:text-sm"
+                    htmlFor="home-hero-search"
+                  >
                     {t("Search the menu")}
                   </label>
-                  <div className="relative flex-1">
-                    <svg
-                      aria-hidden="true"
-                      className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#123b68]/70"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeWidth="2"
-                      />
-                    </svg>
-                    <input
-                      className="w-full rounded-full border border-white/25 bg-white/95 py-3 pl-11 pr-4 text-sm font-semibold text-[#092a53] placeholder:text-[#52647b]/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
-                      id="home-hero-search"
-                      onChange={(event) => setHeroSearch(event.target.value)}
-                      placeholder={t("Search “Dubai chocolate”, “mango”…")}
-                      type="search"
-                      value={heroSearch}
-                    />
-                  </div>
-                  <button
-                    className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
-                    type="submit"
+                  <form
+                    id="home-hero-search-form"
+                    className="flex items-center gap-2"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      const query = heroSearch.trim();
+                      if (!query) return;
+                      // A term that names a menu category ("Novelties") goes straight to that
+                      // category's catalog page; anything else searches the whole catalog.
+                      const normalized = query.toLowerCase();
+                      const findCategory = (predicate) =>
+                        coldStoneMenuCategories.find(predicate);
+                      const category =
+                        findCategory(
+                          (entry) =>
+                            entry.title.toLowerCase() === normalized ||
+                            t(entry.title).toLowerCase() === normalized,
+                        ) ||
+                        findCategory(
+                          (entry) =>
+                            entry.title.toLowerCase().includes(normalized) ||
+                            t(entry.title).toLowerCase().includes(normalized),
+                        );
+                      if (category) {
+                        navigate(`/menu?category=${encodeURIComponent(category.title)}`);
+                        return;
+                      }
+                      navigate(`/menu/all?search=${encodeURIComponent(query)}`);
+                    }}
+                    role="search"
                   >
-                    <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
-                      <path
-                        d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeWidth="2"
+                    <div className="relative min-w-0 flex-1">
+                      <svg
+                        aria-hidden="true"
+                        className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#123b68]/70"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeWidth="2"
+                        />
+                      </svg>
+                      <input
+                        className="min-h-12 w-full rounded-xl border border-white/20 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-[#092a53] placeholder:text-[#52647b]/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+                        id="home-hero-search"
+                        onChange={(event) => setHeroSearch(event.target.value)}
+                        placeholder={t("Search “Dubai chocolate”, “mango”…")}
+                        type="search"
+                        value={heroSearch}
                       />
-                    </svg>
-                    <span className="sr-only">{t("Search")}</span>
-                  </button>
-                </form>}
+                    </div>
+                    <button
+                      className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#ffdc32] text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                      type="submit"
+                    >
+                      <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                        <path
+                          d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeWidth="2"
+                        />
+                      </svg>
+                      <span className="sr-only">{t("Search")}</span>
+                    </button>
+                  </form>
+                </div>
 
                 <ul className="mt-6 hidden flex-wrap gap-x-8 gap-y-3 border-t border-white/10 pt-6 text-sm font-semibold text-white/80 sm:flex">
                   {[
