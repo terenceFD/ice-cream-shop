@@ -432,24 +432,30 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-3 lg:mb-1">
-            <StarRating
-              className="size-5"
-              emptyClassName="text-[#e5e9ef]"
-              filledClassName="text-[#f5a623]"
-              label={t("{rating} out of 5 stars", {
-                rating: roundedAverage.toFixed(1),
-              })}
-              value={average}
-            />
-            <span className="text-sm font-bold text-[#0d2c4e]">
-              {roundedAverage.toFixed(1)}
-            </span>
-            <span className="text-sm font-medium text-[#6e7a89]">
-              {t(
-                count === 1 ? "Based on 1 review" : "Based on {count} reviews",
-                { count },
-              )}
-            </span>
+            {/* With no reviews yet there is no number to show, and a 0.0 row reads as "nobody ever
+                ordered" — so only the friendly invitation below is shown instead. */}
+            {hasReviews && (
+              <>
+                <StarRating
+                  className="size-5"
+                  emptyClassName="text-[#e5e9ef]"
+                  filledClassName="text-[#f5a623]"
+                  label={t("{rating} out of 5 stars", {
+                    rating: roundedAverage.toFixed(1),
+                  })}
+                  value={average}
+                />
+                <span className="text-sm font-bold text-[#0d2c4e]">
+                  {roundedAverage.toFixed(1)}
+                </span>
+                <span className="text-sm font-medium text-[#6e7a89]">
+                  {t(
+                    count === 1 ? "Based on 1 review" : "Based on {count} reviews",
+                    { count },
+                  )}
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -536,6 +542,9 @@ export function HomePage() {
   const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
   // A gentle "back to top" helper for the long home page, shown after the first screen.
   const [showScrollTop, setShowScrollTop] = useState(false);
+  // The section pill hides while reading down and returns when scrolling up to navigate.
+  const [pillVisible, setPillVisible] = useState(false);
+  const lastScrollY = useRef(0);
   // Slim sub-nav for jumping between the home page's sections; highlights as you scroll.
   const homeSections = [
     { id: "flavors", label: "Flavors" },
@@ -718,6 +727,12 @@ export function HomePage() {
     const onScroll = () => {
       const pastHero = window.scrollY > window.innerHeight * 0.9;
       setShowScrollTop(pastHero);
+      // The pill covers whatever is at the bottom of the screen, so it only appears while the
+      // visitor is moving up the page, where they are looking to jump rather than to read.
+      const goingUp = window.scrollY < lastScrollY.current - 4;
+      const goingDown = window.scrollY > lastScrollY.current + 4;
+      if (goingUp || goingDown) setPillVisible(pastHero && goingUp);
+      lastScrollY.current = window.scrollY;
       if (!pastHero) {
         setActiveSection("");
         return;
@@ -2115,13 +2130,15 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* Sticky section sub-nav — appears after the hero, highlights the section in view. */}
+        {/* Sticky section sub-nav — appears after the hero, highlights the section in view.
+            It sits at the bottom of the screen: at the top it covered headings and product
+            names as the visitor scrolled past them. */}
         <nav
           aria-label={t("Page sections")}
-          className={`fixed left-1/2 top-[72px] z-40 hidden -translate-x-1/2 transition duration-300 lg:top-[76px] lg:block ${
-            showScrollTop
+          className={`fixed bottom-6 left-1/2 z-40 hidden -translate-x-1/2 transition duration-300 lg:block ${
+            pillVisible
               ? "pointer-events-auto translate-y-0 opacity-100"
-              : "pointer-events-none -translate-y-3 opacity-0"
+              : "pointer-events-none translate-y-3 opacity-0"
           }`}
         >
           <div className="flex items-center gap-1 rounded-full bg-[#092a53]/90 p-1.5 shadow-[0_12px_32px_rgba(9,42,83,0.35)] ring-1 ring-white/15 backdrop-blur-md">
