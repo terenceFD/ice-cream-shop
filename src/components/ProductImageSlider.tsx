@@ -25,6 +25,10 @@ interface ProductImageSliderProps {
   frameClassName?: string;
   /** Badges shown over the photos, such as availability. */
   overlay?: ReactNode;
+  /** Reserve eager, high-priority loading for the primary image above the fold. */
+  priority?: boolean;
+  /** Rendered width of the image, used to select the smallest suitable srcset entry. */
+  sizes?: string;
   /** Changing this value returns the slider to the first photo. */
   resetKey?: string | number;
 }
@@ -32,7 +36,7 @@ interface ProductImageSliderProps {
 // Product photos with arrows, thumbnails, swipe on touch screens and left/right arrow keys.
 // Photos advance every few seconds, pausing while a mouse rests on them or a keyboard user is inside.
 // A single photo shows on its own, without controls.
-export function ProductImageSlider({ images: sourceImages, name, imageClassName = "aspect-square", frameClassName = "bg-[#f4f1e7]", overlay, resetKey }: ProductImageSliderProps) {
+export function ProductImageSlider({ images: sourceImages, name, imageClassName = "aspect-square", frameClassName = "bg-[#f4f1e7]", overlay, priority = false, sizes = "(min-width: 1024px) 600px, 100vw", resetKey }: ProductImageSliderProps) {
   const { t } = useLanguage();
   const images = [...new Set(sourceImages.filter(Boolean))];
   const [active, setActive] = useState(0);
@@ -97,10 +101,10 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
                 aria-hidden={index !== current}
                 className={`w-full shrink-0 select-none object-cover ${imageClassName}`}
                 draggable={false}
-                fetchPriority={index === current ? "high" : "auto"}
+                fetchPriority={priority && index === current ? "high" : "auto"}
                 key={image}
-                loading={index === current ? "eager" : "lazy"}
-                sizes="(min-width: 1024px) 600px, 100vw"
+                loading={priority && index === current ? "eager" : "lazy"}
+                sizes={sizes}
                 srcSet={photoSrcSet(image)}
                 onError={(event) => {
                   event.currentTarget.onerror = null;
@@ -121,7 +125,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
               </span>
               <button
                 aria-label={paused ? t("Play slideshow") : t("Pause slideshow")}
-                className="grid size-8 place-items-center rounded-full bg-[#092a53]/80 text-white backdrop-blur-sm transition hover:bg-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="relative grid size-8 place-items-center rounded-full bg-[#092a53]/80 text-white backdrop-blur-sm transition before:absolute before:-inset-1.5 before:content-[''] hover:bg-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 onClick={() => setPaused((value) => !value)}
                 type="button"
               >
@@ -162,7 +166,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
               <button
                 aria-current={index === current ? "true" : undefined}
                 aria-label={t("Show photo {number} of {total}", { number: index + 1, total: images.length })}
-                className={`block overflow-hidden rounded-2xl ring-2 transition focus-visible:outline-none focus-visible:ring-[#092a53] ${
+                className={`relative block shrink-0 overflow-hidden rounded-2xl ring-2 transition after:absolute after:-inset-2 after:content-[''] focus-visible:outline-none focus-visible:ring-[#092a53] ${
                   index === current ? "ring-[#ffdc32] shadow-[0_8px_20px_rgba(9,42,83,0.18)]" : "opacity-70 ring-transparent hover:opacity-100"
                 } ${frameClassName}`}
                 onClick={() => setActive(index)}

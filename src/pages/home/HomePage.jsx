@@ -685,16 +685,11 @@ export function HomePage() {
   const reviewsSentinel = useRef(null);
   const popularSection = useRef(null);
 
-  // Slide photos download only when needed: the one on screen, then the next one shortly before it
-  // appears. Opening the page no longer downloads every slide photo at once.
+  // Only download a slide photo when it becomes active. In particular, don't let the next
+  // slide compete with the initial hero image and other above-the-fold content.
   useEffect(() => {
     setLoadedSlides((current) => {
-      const next = current.includes(activeSlide)
-        ? current
-        : [...current, activeSlide];
-      // Preload the following slide shortly before it is shown.
-      const upcoming = (activeSlide + 1) % homeSlides.length;
-      return next.includes(upcoming) ? next : [...next, upcoming];
+      return current.includes(activeSlide) ? current : [...current, activeSlide];
     });
   }, [activeSlide]);
 
@@ -860,34 +855,43 @@ export function HomePage() {
     [],
   );
 
-  // Show the scroll-to-top button and the section sub-nav once past the hero.
+  // Measure section positions at most once per frame while scrolling.
   useEffect(() => {
-    const onScroll = () => {
-      const pastHero = window.scrollY > window.innerHeight * 0.9;
-      setShowScrollTop(pastHero);
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const scrollY = window.scrollY;
+      const viewportHeight = window.innerHeight;
+      const pastHero = scrollY > viewportHeight * 0.9;
       // The pill covers whatever is at the bottom of the screen, so it only appears while the
       // visitor is moving up the page, where they are looking to jump rather than to read.
-      const goingUp = window.scrollY < lastScrollY.current - 4;
-      const goingDown = window.scrollY > lastScrollY.current + 4;
-      if (goingUp || goingDown) setPillVisible(pastHero && goingUp);
-      lastScrollY.current = window.scrollY;
-      if (!pastHero) {
-        setActiveSection("");
-        return;
-      }
-      // The section whose top is closest above the viewport's middle wins.
+      const goingUp = scrollY < lastScrollY.current - 4;
+      const goingDown = scrollY > lastScrollY.current + 4;
       let current = "";
-      for (const { id } of homeSections) {
-        const node = document.getElementById(id);
-        if (node && node.getBoundingClientRect().top <= window.innerHeight * 0.4) {
-          current = id;
+      if (pastHero) {
+        // Read all layout values before updating React state.
+        const sectionThreshold = viewportHeight * 0.4;
+        for (const { id } of homeSections) {
+          const node = document.getElementById(id);
+          if (node && node.getBoundingClientRect().top <= sectionThreshold) {
+            current = id;
+          }
         }
       }
+      if (goingUp || goingDown) setPillVisible(pastHero && goingUp);
+      lastScrollY.current = scrollY;
+      setShowScrollTop(pastHero);
       setActiveSection(current);
     };
-    onScroll();
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1258,7 +1262,7 @@ export function HomePage() {
                         aria-label={t("Show slide {number}", {
                           number: index + 1,
                         })}
-                        className={`relative size-16 overflow-hidden rounded-2xl transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
+                        className={`relative size-16 overflow-hidden rounded-2xl ring-offset-2 ring-offset-[#092a53] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
                           isActive
                             ? "ring-2 ring-[#ffdc32]"
                             : "opacity-60 hover:opacity-100"
@@ -1294,7 +1298,7 @@ export function HomePage() {
                       aria-label={t("Show slide {number}", {
                         number: index + 1,
                       })}
-                      className="grid h-8 min-w-8 place-items-center px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] rounded-full"
+                      className="grid h-11 min-w-11 place-items-center px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] rounded-full"
                       key={slide.image}
                       onClick={() => {
                         setActiveSlide(index);
@@ -1334,7 +1338,7 @@ export function HomePage() {
                   {t("Why people love us")}
                 </p>
                 <Link
-                  className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-white/50 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+                  className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.16em] text-white/70 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
                   to="/locations"
                 >
                   <span
@@ -1377,6 +1381,9 @@ export function HomePage() {
                     key={stat.label}
                     title={stat.title}
                   >
+                    {/* Not a native tooltip: also on the label, so the redemption rule is
+                        readable on touch screens and by keyboard users. */}
+                    {stat.title && <span className="sr-only">{stat.title}</span>}
                     <div
                       aria-hidden="true"
                       className="pointer-events-none absolute -right-10 -top-10 size-24 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.14),transparent)] opacity-0 transition duration-500 group-hover:opacity-100"
@@ -1478,7 +1485,7 @@ export function HomePage() {
           <div className="relative mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#123b68]">
+                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#123b68]">
                   {t("Follow your flavor")}
                 </p>
                 <h2
@@ -1529,7 +1536,7 @@ export function HomePage() {
                   return (
                     <button
                       aria-pressed={selected}
-                      className={`min-h-11 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
+                      className={`min-h-12 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
                         selected
                           ? "border-[#092a53] bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)]"
                           : "border-[#cfd8e1] bg-transparent text-[#123b68] hover:border-[#092a53] hover:bg-white/70"
@@ -1567,7 +1574,7 @@ export function HomePage() {
                 {flavorSearch && (
                   <button
                     aria-label={t("Clear search")}
-                    className="absolute right-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-[#65748a] transition hover:bg-[#efece3] hover:text-[#092a53]"
+                    className="absolute right-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-[#65748a] transition before:absolute before:-inset-2 before:content-[''] hover:bg-[#efece3] hover:text-[#092a53]"
                     onClick={() => {
                       setFlavorSearch("");
                       if (selectedFlavorMood === "all") setShowAllFlavorResults(false);
@@ -1629,6 +1636,7 @@ export function HomePage() {
                         images={images}
                         name={t(flavor.title)}
                         resetKey={flavor.id}
+                        sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 100vw"
                       />
                       <span
                         className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53] shadow-sm backdrop-blur-sm transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none"
@@ -1681,7 +1689,7 @@ export function HomePage() {
                           aria-label={soldOut
                             ? t("Sold out")
                             : t("Add {name} to your bag", { name: t(flavor.item) })}
-                          className={`min-h-10 shrink-0 rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 group-hover:scale-105 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] disabled:group-hover:scale-100 ${
+                          className={`min-h-11 shrink-0 rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 group-hover:scale-105 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] disabled:group-hover:scale-100 ${
                             added
                               ? "bg-[#4caf50] text-white"
                               : "bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]"
@@ -1723,7 +1731,7 @@ export function HomePage() {
           <div className="relative mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#123b68]">
+                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#123b68]">
                   {t("Celebrate with a cake")}
                 </p>
                 <h2
@@ -1775,7 +1783,7 @@ export function HomePage() {
                   return (
                     <button
                       aria-pressed={selected}
-                      className={`min-h-11 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
+                      className={`min-h-12 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
                         selected
                           ? "border-[#092a53] bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)]"
                           : "border-[#cfd8e1] bg-transparent text-[#123b68] hover:border-[#092a53] hover:bg-white/70"
@@ -1852,6 +1860,7 @@ export function HomePage() {
                             images={images}
                             name={t(cake.name)}
                             resetKey={cake.name}
+                            sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 100vw"
                           />
                           <span
                             className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53] shadow-sm backdrop-blur-sm transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none"
@@ -1902,7 +1911,7 @@ export function HomePage() {
                                   ? t("Added to your bag")
                                   : t("Add {name} to your bag", { name: t(cake.name) })
                               }
-                              className={`min-h-10 shrink-0 rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 group-hover:scale-105 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] disabled:group-hover:scale-100 ${
+                              className={`min-h-11 shrink-0 rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 group-hover:scale-105 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] disabled:group-hover:scale-100 ${
                                 added
                                   ? "bg-[#4caf50] text-white"
                                   : "bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]"

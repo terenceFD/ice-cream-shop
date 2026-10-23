@@ -86,28 +86,26 @@ export function AboutPage() {
           subtitle={t('The joy is in the mix.')}
           title={t('Cold Stone Creamery')}
         />
-        <div className="relative z-10 mx-auto -mt-6 max-w-[1320px] px-5 sm:-mt-10 sm:px-8 lg:-mt-14 lg:px-12">
-          <ul className="relative grid overflow-hidden rounded-[28px] bg-white shadow-[0_24px_60px_rgba(9,42,83,0.14)] ring-1 ring-[#ebe7dc] before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-[#ffdc32] before:via-[#ffe76c] before:to-[#ffdc32] md:grid-cols-3">
-            {highlights.map((item, index) => (
+        <section aria-label={t('The signature experience')} className="bg-[#fbfaf5] px-5 py-12 sm:px-8 sm:py-16 lg:px-12">
+          <ul className="mx-auto grid max-w-[1200px] gap-4 md:grid-cols-3">
+            {highlights.map((item) => (
               <li
-                className={`group flex items-center gap-4 px-6 py-5 transition-colors duration-300 hover:bg-[#fffbea] sm:px-8 sm:py-7 ${
-                  index > 0 ? 'border-t border-[#efebe1] md:border-l md:border-t-0' : ''
-                }`}
+                className="group flex min-h-32 items-center gap-5 rounded-[26px] border border-[#ebe7dc] bg-white px-6 py-6 shadow-[0_10px_30px_rgba(9,42,83,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[#e2d39a] hover:shadow-[0_20px_42px_rgba(9,42,83,0.1)] sm:px-7"
                 key={item.label}
               >
-                <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32] shadow-[0_10px_22px_rgba(9,42,83,0.2)] transition duration-300 group-hover:-rotate-6 group-hover:bg-[#ffdc32] group-hover:text-[#092a53]">
+                <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#fff3b8] text-[#092a53] ring-1 ring-[#f2e5aa] transition duration-300 group-hover:-rotate-6 group-hover:bg-[#092a53] group-hover:text-[#ffdc32] group-hover:ring-[#092a53]">
                   <svg className="size-6" fill="none" viewBox="0 0 24 24">
                     <path d={item.icon} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                   </svg>
                 </span>
                 <span className="min-w-0">
                   <span aria-hidden="true" className="block text-[10px] font-extrabold tabular-nums tracking-[0.18em] text-[#8a7000]">{item.value}</span>
-                  <span className="mt-0.5 block font-display text-base font-extrabold leading-snug text-[#092a53] sm:text-lg">{t(item.label)}</span>
+                  <span className="mt-1 block font-display text-base font-extrabold leading-snug text-[#092a53] sm:text-lg">{t(item.label)}</span>
                 </span>
               </li>
             ))}
           </ul>
-        </div>
+        </section>
 
         {/* Story */}
         <section aria-labelledby="about-guide-heading" className="relative isolate overflow-hidden px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-32">

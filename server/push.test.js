@@ -14,7 +14,9 @@ const {
   buildWelcomeNotification,
   countCustomerSubscriptions,
   isPushConfigured,
+  isPublicPushAddress,
   normalizeNotificationMessage,
+  normalizePushUnsubscribe,
   normalizePushSubscription,
   publicKeyForPrivateKey,
   pushStatus,
@@ -39,10 +41,10 @@ function memoryDatabase() {
     INSERT INTO customers (id, name, is_banned) VALUES (1, 'Ada', 0), (2, 'Ben', 0), (3, 'Banned', 1);
   `)
   const insert = db.prepare('INSERT INTO push_subscriptions (customer_id, endpoint, p256dh, auth) VALUES (?, ?, ?, ?)')
-  insert.run(1, 'https://push.example/ada-phone', validKeys.p256dh, validKeys.auth)
-  insert.run(1, 'https://push.example/ada-laptop', validKeys.p256dh, validKeys.auth)
-  insert.run(2, 'https://push.example/ben-gone', validKeys.p256dh, validKeys.auth)
-  insert.run(3, 'https://push.example/banned', validKeys.p256dh, validKeys.auth)
+  insert.run(1, 'https://fcm.googleapis.com/fcm/send/ada-phone', validKeys.p256dh, validKeys.auth)
+  insert.run(1, 'https://fcm.googleapis.com/fcm/send/ada-laptop', validKeys.p256dh, validKeys.auth)
+  insert.run(2, 'https://fcm.googleapis.com/fcm/send/ben-gone', validKeys.p256dh, validKeys.auth)
+  insert.run(3, 'https://fcm.googleapis.com/fcm/send/banned', validKeys.p256dh, validKeys.auth)
   return db
 }
 
@@ -56,9 +58,30 @@ test('accepts a real browser subscription and rejects unsafe ones', () => {
     { endpoint: 'https://fcm.googleapis.com/fcm/send/abc', ...validKeys },
   )
   assert.equal(normalizePushSubscription({ endpoint: 'http://insecure.example/x', keys: validKeys }), null)
+  assert.equal(normalizePushSubscription({ endpoint: 'https://attacker.example/x', keys: validKeys }), null)
+  assert.equal(normalizePushSubscription({ endpoint: 'https://127.0.0.1/private', keys: validKeys }), null)
+  assert.equal(normalizePushSubscription({ endpoint: 'https://user@fcm.googleapis.com/fcm/send/abc', keys: validKeys }), null)
+  assert.equal(normalizePushSubscription({ endpoint: 'https://fcm.googleapis.com/fcm/send/abc', keys: validKeys, unexpected: true }), null)
   assert.equal(normalizePushSubscription({ endpoint: 'https://push.example/x', keys: { p256dh: 'short', auth: validKeys.auth } }), null)
   assert.equal(normalizePushSubscription({ endpoint: 'not a url', keys: validKeys }), null)
   assert.equal(normalizePushSubscription(null), null)
+})
+
+test('validates and trims unsubscribe payloads without permitting extra fields', () => {
+  assert.equal(normalizePushUnsubscribe({ endpoint: ' https://fcm.googleapis.com/fcm/send/abc ' }), 'https://fcm.googleapis.com/fcm/send/abc')
+  assert.equal(normalizePushUnsubscribe({ endpoint: 'https://fcm.googleapis.com/fcm/send/abc', extra: true }), null)
+  assert.equal(normalizePushUnsubscribe({ endpoint: ' ' }), null)
+})
+
+test('allows only globally routable push-service resolution addresses', () => {
+  assert.equal(isPublicPushAddress('8.8.8.8'), true)
+  assert.equal(isPublicPushAddress('2606:4700:4700::1111'), true)
+  assert.equal(isPublicPushAddress('127.0.0.1'), false)
+  assert.equal(isPublicPushAddress('10.0.0.1'), false)
+  assert.equal(isPublicPushAddress('169.254.1.1'), false)
+  assert.equal(isPublicPushAddress('::1'), false)
+  assert.equal(isPublicPushAddress('::ffff:127.0.0.1'), false)
+  assert.equal(isPublicPushAddress('not-an-ip'), false)
 })
 
 test('builds the promotion notification with the site name, logo and code', () => {
@@ -101,7 +124,10 @@ test('sends to every device of non-banned customers and removes devices that are
     },
   })
   assert.deepEqual(result, { devices: 3, sent: 2, removed: 1, failed: 0, skipped: false, errors: [] })
-  assert.deepEqual(delivered.map(([endpoint]) => endpoint).sort(), ['https://push.example/ada-laptop', 'https://push.example/ada-phone'])
+  assert.deepEqual(delivered.map(([endpoint]) => endpoint).sort(), [
+    'https://fcm.googleapis.com/fcm/send/ada-laptop',
+    'https://fcm.googleapis.com/fcm/send/ada-phone',
+  ])
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM push_subscriptions WHERE endpoint LIKE '%ben-gone'").get().n, 0)
   assert.equal(await countCustomerSubscriptions(db), 2)
 })
@@ -115,6 +141,20 @@ test('a temporary push-service error keeps the device for next time', async () =
   assert.equal(result.removed, 0)
   assert.deepEqual(result.errors, ['The push service returned HTTP 503.'])
   assert.equal(await countCustomerSubscriptions(db), 3)
+})
+
+test('removes legacy subscriptions with unapproved endpoints without sending to them', async () => {
+  const db = memoryDatabase()
+  db.prepare('INSERT INTO push_subscriptions (customer_id, endpoint, p256dh, auth) VALUES (?, ?, ?, ?)')
+    .run(1, 'https://127.0.0.1/private', validKeys.p256dh, validKeys.auth)
+  const attempted = []
+  const result = await sendToCustomer(db, 1, { title: 't', body: 'b' }, {
+    send: async (subscription) => { attempted.push(subscription.endpoint) },
+  })
+  assert.equal(result.removed, 1)
+  assert.equal(result.sent, 2)
+  assert.equal(attempted.some((endpoint) => endpoint.includes('127.0.0.1')), false)
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM push_subscriptions WHERE endpoint = 'https://127.0.0.1/private'").get().n, 0)
 })
 
 test('explains a key rejection so the owner knows what to fix', async () => {
@@ -162,7 +202,10 @@ test("order updates go only to that customer's devices", async () => {
     send: async (subscription) => { delivered.push(subscription.endpoint) },
   })
   assert.equal(result.sent, 2)
-  assert.deepEqual(delivered.sort(), ['https://push.example/ada-laptop', 'https://push.example/ada-phone'])
+  assert.deepEqual(delivered.sort(), [
+    'https://fcm.googleapis.com/fcm/send/ada-laptop',
+    'https://fcm.googleapis.com/fcm/send/ada-phone',
+  ])
   const banned = await sendToCustomer(db, 3, { title: 't', body: 'b' }, { send: async () => {} })
   assert.equal(banned.devices, 0)
 })

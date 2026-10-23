@@ -94,6 +94,7 @@ import {
   isPushConfigured,
   MAX_NOTIFICATION_MESSAGE_LENGTH,
   normalizeNotificationMessage,
+  normalizePushUnsubscribe,
   normalizePushSubscription,
   pushConfiguration,
   pushStatus,
@@ -915,7 +916,7 @@ app.post('/api/customer/push-subscription', requireCustomer, async (request, res
 })
 
 app.delete('/api/customer/push-subscription', requireCustomer, async (request, response) => {
-  const endpoint = typeof request.body?.endpoint === 'string' ? request.body.endpoint.trim() : ''
+  const endpoint = normalizePushUnsubscribe(request.body)
   if (!endpoint) {
     response.status(400).json({ error: 'Provide the device to turn alerts off for.' })
     return

@@ -933,6 +933,7 @@ export function MenuPage() {
                       imageClassName={`aspect-[4/3] lg:aspect-[5/4] ${selectedSoldOut ? "grayscale-[60%]" : ""}`}
                       images={[selectedItem.image, ...(selectedItem.gallery || [])]}
                       name={t(selectedItem.name)}
+                      priority
                       overlay={
                         <span
                           className={`absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] shadow-sm backdrop-blur-sm sm:left-6 sm:top-6 ${selectedSoldOut ? "text-red-700" : "text-[#37632c]"}`}

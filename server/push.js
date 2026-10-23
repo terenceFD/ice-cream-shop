@@ -1,5 +1,9 @@
 import { createECDH } from 'node:crypto'
+import dns from 'node:dns'
+import https from 'node:https'
+import ipaddr from 'ipaddr.js'
 import webpush from 'web-push'
+import { z } from 'zod'
 
 // Web Push lets the site put a notification on a customer's device, with the site's logo and
 // name, even when the site is closed. Only devices of signed-in customers are ever subscribed.
@@ -8,6 +12,11 @@ export const SITE_NAME = 'Cold Stone Creamery'
 const NOTIFICATION_ICON = '/icons/icon-192.png'
 const NOTIFICATION_BADGE = '/icons/notification-badge.png'
 const SEND_CONCURRENCY = 10
+const PUSH_SERVICE_HOSTS = new Set([
+  'fcm.googleapis.com',
+  'updates.push.services.mozilla.com',
+  'web.push.apple.com',
+])
 
 let configured = null
 let configurationProblem = ''
@@ -72,22 +81,84 @@ function describePushError(error) {
 }
 
 const BASE64URL = /^[A-Za-z0-9_-]+={0,2}$/
+const PushEndpointSchema = z.string()
+  .trim()
+  .min(1)
+  .max(1000)
+  .refine(isAllowedPushEndpoint)
+  .transform((endpoint) => new URL(endpoint).toString())
+const PushSubscriptionSchema = z.object({
+  endpoint: PushEndpointSchema,
+  keys: z.object({
+    p256dh: z.string().trim().min(40).max(200).regex(BASE64URL),
+    auth: z.string().trim().min(8).max(100).regex(BASE64URL),
+  }).strict(),
+}).strict()
+const PushUnsubscribeSchema = z.object({
+  endpoint: z.string().trim().min(1).max(1000),
+}).strict()
+
+function isAllowedPushEndpoint(endpoint) {
+  try {
+    const url = new URL(endpoint)
+    return url.protocol === 'https:'
+      && PUSH_SERVICE_HOSTS.has(url.hostname)
+      && !url.port
+      && !url.username
+      && !url.password
+      && !url.hash
+  } catch {
+    return false
+  }
+}
+
+export function isPublicPushAddress(address) {
+  if (!ipaddr.isValid(address)) return false
+  let parsed = ipaddr.parse(address)
+  if (parsed.kind() === 'ipv6' && parsed.isIPv4MappedAddress()) {
+    parsed = parsed.toIPv4Address()
+  }
+  return parsed.range() === 'unicast'
+}
+
+function createPushServiceAgent() {
+  return new https.Agent({
+    lookup(hostname, options, callback) {
+      if (!PUSH_SERVICE_HOSTS.has(hostname.toLowerCase())) {
+        callback(new Error('Push endpoint host is not an approved service.'))
+        return
+      }
+      dns.lookup(hostname, { all: true, verbatim: true }, (error, addresses) => {
+        if (error) {
+          callback(error)
+          return
+        }
+        // Pin only public DNS answers into the HTTPS agent to prevent SSRF and DNS rebinding.
+        if (!addresses.length || addresses.some(({ address }) => !isPublicPushAddress(address))) {
+          callback(new Error('Push service resolved to a non-public network address.'))
+          return
+        }
+        if (options?.all) callback(null, addresses)
+        else {
+          const selected = addresses.find(({ family }) => !options?.family || family === options.family)
+          if (!selected) callback(new Error('Push service has no address for the requested IP family.'))
+          else callback(null, selected.address, selected.family)
+        }
+      })
+    },
+  })
+}
 
 /** Checks a browser PushSubscription before it is stored. Returns null when it is unusable. */
 export function normalizePushSubscription(body) {
-  const endpoint = typeof body?.endpoint === 'string' ? body.endpoint.trim() : ''
-  const p256dh = typeof body?.keys?.p256dh === 'string' ? body.keys.p256dh.trim() : ''
-  const auth = typeof body?.keys?.auth === 'string' ? body.keys.auth.trim() : ''
-  let url
-  try {
-    url = new URL(endpoint)
-  } catch {
-    return null
-  }
-  if (url.protocol !== 'https:' || endpoint.length > 1000
-    || !BASE64URL.test(p256dh) || p256dh.length < 40 || p256dh.length > 200
-    || !BASE64URL.test(auth) || auth.length < 8 || auth.length > 100) return null
-  return { endpoint, p256dh, auth }
+  const parsed = PushSubscriptionSchema.safeParse(body)
+  if (!parsed.success) return null
+  return { endpoint: parsed.data.endpoint, ...parsed.data.keys }
+}
+
+export function normalizePushUnsubscribe(body) {
+  const parsed = PushUnsubscribeSchema.safeParse(body)
+  return parsed.success ? parsed.data.endpoint : null
 }
 
 const numberFormat = new Intl.NumberFormat('en-US')
@@ -255,26 +326,36 @@ export async function sendToCustomer(database, customerId, notification, options
 async function sendToSubscriptions(database, subscriptions, notification, { send = webpush.sendNotification } = {}) {
   const payload = JSON.stringify(notification)
   const result = { devices: subscriptions.length, sent: 0, removed: 0, failed: 0, skipped: false, errors: [] }
-  await runWithConcurrency(subscriptions, SEND_CONCURRENCY, async (subscription) => {
-    try {
-      await send(
-        { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
-        payload,
-        { TTL: 24 * 60 * 60, urgency: 'normal', topic: notification.tag?.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 32) || undefined },
-      )
-      result.sent += 1
-    } catch (error) {
-      if (error?.statusCode === 404 || error?.statusCode === 410) {
+  const agent = createPushServiceAgent()
+  try {
+    await runWithConcurrency(subscriptions, SEND_CONCURRENCY, async (subscription) => {
+      if (!isAllowedPushEndpoint(subscription.endpoint)) {
         await database.prepare('DELETE FROM push_subscriptions WHERE id = ?').run(subscription.id)
         result.removed += 1
-      } else {
-        result.failed += 1
-        const reason = describePushError(error)
-        if (!result.errors.includes(reason)) result.errors.push(reason)
-        console.error(`Push notification to subscription #${subscription.id} failed:`, error?.statusCode || '', error?.message)
+        return
       }
-    }
-  })
+      try {
+        await send(
+          { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
+          payload,
+          { TTL: 24 * 60 * 60, urgency: 'normal', agent, topic: notification.tag?.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 32) || undefined },
+        )
+        result.sent += 1
+      } catch (error) {
+        if (error?.statusCode === 404 || error?.statusCode === 410) {
+          await database.prepare('DELETE FROM push_subscriptions WHERE id = ?').run(subscription.id)
+          result.removed += 1
+        } else {
+          result.failed += 1
+          const reason = describePushError(error)
+          if (!result.errors.includes(reason)) result.errors.push(reason)
+          console.error(`Push notification to subscription #${subscription.id} failed:`, error?.statusCode || '', error?.message)
+        }
+      }
+    })
+  } finally {
+    agent.destroy()
+  }
   return result
 }
 
