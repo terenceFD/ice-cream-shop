@@ -5,6 +5,7 @@ import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
 import { apiRequest, getCustomerToken } from "../../api/api";
 import { useCart } from "../../context/useCart";
 import { useLanguage } from "../../language/useLanguage";
+import { normalizePhotoGallery } from "../../../shared/photoSizes.js";
 import { useAuth } from "../../context/useAuth";
 import { PageHero } from "../../components/PageHero";
 import { ProductImageSlider } from "../../components/ProductImageSlider";
@@ -931,7 +932,7 @@ export function MenuPage() {
                   <div className="lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300">
                     <ProductImageSlider
                       imageClassName={`aspect-[4/3] lg:aspect-[5/4] ${selectedSoldOut ? "grayscale-[60%]" : ""}`}
-                      images={[selectedItem.image, ...(selectedItem.gallery || [])]}
+                      images={[selectedItem.image, ...normalizePhotoGallery(selectedItem.gallery)]}
                       name={t(selectedItem.name)}
                       priority
                       overlay={

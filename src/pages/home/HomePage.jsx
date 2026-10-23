@@ -13,7 +13,10 @@ import {
   photoSrcSet,
   thumbnail,
 } from "../../lib/thumbnails";
-import { HOME_SLIDE_SIZES } from "../../../shared/photoSizes.js";
+import {
+  HOME_SLIDE_SIZES,
+  normalizePhotoGallery,
+} from "../../../shared/photoSizes.js";
 import { numberFormatter } from "../../lib/cartPricing";
 
 const popularFlavorNames = [
@@ -248,7 +251,11 @@ function getFlavorMood(flavor) {
 
 function getFlavorCardImages(flavor, item) {
   const images = [...new Set(
-    (flavor.images || (item?.image ? [item.image, ...(item.gallery || [])] : [flavor.image]))
+    (flavor.images
+      ? normalizePhotoGallery(flavor.images)
+      : item?.image
+        ? [item.image, ...normalizePhotoGallery(item.gallery)]
+        : [flavor.image])
       .filter(Boolean),
   )];
   if (images.length > 1) return images;
@@ -1005,7 +1012,7 @@ export function HomePage() {
     const byDesign = new Map();
     for (const item of cakeMenuCategory.items || []) {
       const type = cakeTypeOf(item.id || item.name, item.name);
-      const photos = [item.image, ...(item.gallery || [])].filter(Boolean);
+      const photos = [item.image, ...normalizePhotoGallery(item.gallery)].filter(Boolean);
       for (const photo of photos) {
         if (!byDesign.has(type)) byDesign.set(type, []);
         const bucket = byDesign.get(type);
@@ -1015,7 +1022,7 @@ export function HomePage() {
     return byDesign;
   }, [cakeMenuCategory]);
   const cakeImagesOf = (cake) => {
-    const own = [...new Set([cake.image, ...(cake.gallery || [])].filter(Boolean))];
+    const own = [...new Set([cake.image, ...normalizePhotoGallery(cake.gallery)].filter(Boolean))];
     if (own.length > 1) return own;
     const type = cakeTypeOf(cake.idName, cake.name);
     const related = (relatedCakePhotos.get(type) || []).filter(

@@ -78,6 +78,29 @@ The home page follows a consistent design language:
 - **Hero background** (`src/components/HeroBackground.tsx`) renders static by default (`animated = false`); pass `animated` to re-enable drifting blobs, panning grid, sprinkles and twinkling stars.
 - **Hero slides** live in `const homeSlides` in `src/pages/home/HomePage.jsx`.
 
+## Latest documented changes — Edition 1.3 (23 October 2026)
+
+This update continues the full website documentation and records the latest homepage, image-loading, development and database-security work.
+
+### Homepage cards, cakes and filters
+
+- **Follow your flavor** shows eight featured cards by default. Searching or choosing a specific mood searches the full available flavor catalog and displays every match; clearing the search and choosing **All cravings** returns to the featured set.
+- Flavor cards use equal-height grid rows, matching title and description space, and consistent add-to-bag placement, so longer product copy does not make cards in a row uneven.
+- The homepage cake section keeps a compact eight-card featured selection in its default view. Searching or selecting a cake type searches the full **Cakes & Pies** catalog and displays all matching cards; the full collection remains available from the **Explore all cakes** link to the menu.
+- Cake filters distinguish signature, birthday, kids’ cakes and pies using the catalog design ID and product name. Each homepage cake card has a photo slider; cards without a gallery combine their own photo with distinct category-appropriate cake or pie photos.
+- Cake cards use equal-height rows and consistent title/description space. The cake search input sits to the right of the filter buttons on wide screens, grows to a more readable width and stacks responsively on narrow screens. The section provides direct links to the full cake menu and custom-cake request page.
+- Both homepage card sections use four columns on wide screens and two columns on smaller screens where space allows.
+
+### Hero image loading and responsive photos
+
+- The homepage hero image and its HTML preload share the same responsive `sizes` value and responsive image candidates. The desktop slot width follows the hero grid instead of assuming a fixed 600 px, reducing the chance that the browser preloads a thumbnail size different from the one the page selects.
+- Shared responsive-photo rules live in `shared/photoSizes.js`; `scripts/photo-sizes.test.js` checks that the homepage preload and hero candidates stay aligned.
+
+### Local development and database security
+
+- Local development defaults to its own SQLite database so starting the development API does not accidentally connect to the live Supabase database. Keep `DATABASE_BACKEND=sqlite` in the local `.env`; Render production uses its configured PostgreSQL `DATABASE_URL`.
+- The Supabase security migration `supabase/migrations/20261022145000_secure_public_tables.sql` enables row-level security on public tables and revokes direct table and sequence access from `PUBLIC`, `anon` and `authenticated`. Apply the migration in the Supabase SQL Editor for an existing project; it is not run automatically by the site.
+
 ## Getting started
 
 Install dependencies and create a local environment file:

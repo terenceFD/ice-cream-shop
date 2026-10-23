@@ -5,6 +5,26 @@ export const PHOTO_WIDTHS = [160, 480, 800];
 // What the browser is told the original is; most site photos are 900 to 1200px wide.
 const FULL_WIDTH = 1200;
 
+export function normalizePhotoGallery(gallery) {
+  if (Array.isArray(gallery)) {
+    return gallery.filter((image) => typeof image === "string" && image.trim());
+  }
+  if (typeof gallery !== "string" || !gallery.trim()) return [];
+
+  let parsed;
+  try {
+    parsed = JSON.parse(gallery);
+  } catch (error) {
+    console.error("Unable to parse the product photo gallery.", error);
+    return [];
+  }
+  if (!Array.isArray(parsed)) {
+    console.error("The product photo gallery must be an array.");
+    return [];
+  }
+  return parsed.filter((image) => typeof image === "string" && image.trim());
+}
+
 export function isSitePhoto(src) {
   return typeof src === "string"
     && src.startsWith("/")

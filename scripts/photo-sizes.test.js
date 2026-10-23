@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { HOME_SLIDE_SIZES, photoAt, photoSrcSet, PHOTO_WIDTHS } from '../shared/photoSizes.js'
+import { HOME_SLIDE_SIZES, normalizePhotoGallery, photoAt, photoSrcSet, PHOTO_WIDTHS } from '../shared/photoSizes.js'
 import { thumbnailPathFor } from './make-thumbnails.mjs'
 
 const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url))
@@ -37,6 +37,13 @@ test('asks Unsplash for the width it needs', () => {
   assert.equal(small.searchParams.get('w'), '480')
   assert.equal(small.searchParams.get('fit'), 'crop')
   assert.match(photoSrcSet(src), /w=160.* 160w, .*w=800.* 800w, .* 1200w$/)
+})
+
+test('normalizes photo galleries returned as JSON strings or arrays', () => {
+  const photos = ['/ice-images/ice-1.webp', '/ice-images/ice-2.webp']
+  assert.deepEqual(normalizePhotoGallery(JSON.stringify(photos)), photos)
+  assert.deepEqual(normalizePhotoGallery(photos), photos)
+  assert.deepEqual(normalizePhotoGallery(null), [])
 })
 
 test('homepage hero preload uses the same responsive image candidates and slot size as the hero', () => {
