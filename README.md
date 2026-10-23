@@ -15,6 +15,7 @@ Research references:
 
 **For customers**
 - Browse the menu and shop catalog with search, category, dietary, availability ("In stock only") and maximum-price filters, and sort by price or name. On phones the filters fold away behind a **Filters** button. **All menu** (`/menu/all`) shows every product on one page, and products added in admin appear there and on **Flavors** automatically.
+- Discover flavors from the homepage's **Follow your flavor** section: the default view is eight featured cards (two desktop rows of four), while a search or a specific mood filter shows all matching available catalog flavors. **All cravings** restores the featured view when no search is active. Flavor cards include autoplaying image sliders with pause, arrow and thumbnail controls, swipe support, and reduced-motion handling.
 - Add any quantity of a product or flavor to the bag from its page and keep shopping.
 - Order online for pickup or delivery from a chosen store, and pay by card (Stripe) or Mobile Money (CamPay).
 - Customer accounts are created after email verification; no order is required for an account to be active. Sign-in is remembered across page refreshes and browser restarts, with sessions expiring after 8 hours.
@@ -22,7 +23,7 @@ Research references:
 - **Notifications on their device** (with the site's logo and name): order updates (confirmed, being prepared, out for delivery, delivered) and new promotions. Customers turn them on from a small invitation, the account page, or the payment confirmation page.
 - **Review reminder** a day after delivery, by notification and email, linking straight to that order's review form.
 - **Parties & events** (`/events`): request a bulk order for a birthday, office event or wedding, get a quote from the store, and pay a 30% deposit online.
-- Custom ice cream cake requests (`/custom-cake`).
+- Request a custom ice cream cake from the prominent homepage cakes section or `/custom-cake`. Choose a size, flavor and toppings, pickup store and date; the store sends a quote, and paying the deposit secures the cake and pickup date. The request page uses a soft gradient blending the brand's yellow and navy.
 - A **WhatsApp chat button** on every customer page.
 - Installable app (web app manifest and service worker) that works offline for browsing.
 
@@ -70,7 +71,9 @@ Nothing under `src/`, `shared/`, `server/`, `scripts/` (except `oneoff/cover-doc
 The home page follows a consistent design language:
 
 - **Colors:** navy primary `#092a53`, secondary `#123b68`, hover `#163e6b`; yellow accent `#ffdc32` (badges, CTAs on navy); muted slate `#65748a`/`#52647b` for secondary text; cream backgrounds `#fbfaf5`/`#f8f6f1`. Earlier purple tones (`#5b2d8f` and friends) have been replaced by the navy palette.
-- **Section order (after the hero slider):** "Follow your flavor" inspiration cards (mood filters + image cards with mood pill, accent bar and circular arrow button) → "Our favorites" fan-favorites grid → "A tropical scoop of vibe" (mango gradient `#ffe9b0→#f6b23a`, SUNSHINE watermark, navy 100%-real-mango badge, wavy bottom edge in the next section's color `#e9f4f3`) → "Pick it. Lick it. Love it." cards → "Small moments. Sweet memories." (offset-frame photo, rotated navy sticker) → **Real Reviews** → **Menu highlights** (two photo cards: "Review menu" → `/menu`, "View flavors" → `/flavors`).
+- **Homepage experience:** the hero slider and quick "How it works" guide lead into "Follow your flavor" and the cakes section. The flavor section shows eight featured cards by default in a four-column desktop grid; search and specific mood filters expand to all matching available catalog flavors, while **All cravings** restores the featured view when the search is empty. Product galleries and mood-matched alternate photos power the autoplaying flavor-card sliders, which support pause, arrows, thumbnails, swipe and reduced-motion preferences. The cakes section has searchable, filterable cake cards plus direct links to request a custom cake or browse all cakes. Further down, the page features fan favorites, a mango-themed spotlight, brand-story and review content, and menu highlights.
+
+- **Custom cake request page:** `/custom-cake` blends the brand's yellow and navy into a soft page-wide gradient. Customers submit their cake size, flavor, toppings, pickup store and preferred date; the store sends a quote, and the request is booked once the customer pays the deposit.
 - **Cards** share the same pattern: white card on hover, navy-tinted shadows/rings (`rgba(9,42,83,…) `), image zoom on hover, navy circular arrow button that fills on hover.
 - **Hero background** (`src/components/HeroBackground.tsx`) renders static by default (`animated = false`); pass `animated` to re-enable drifting blobs, panning grid, sprinkles and twinkling stars.
 - **Hero slides** live in `const homeSlides` in `src/pages/home/HomePage.jsx`.
