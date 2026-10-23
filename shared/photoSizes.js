@@ -44,7 +44,8 @@ export const HERO_PHOTO_SIZES = "(min-width: 1024px) 360px, 60vw";
 // Compact headers (shopping pages) show their photo only from this width up: on phones and
 // tablets it would sit below the text and push the products a whole screen down.
 export const COMPACT_HERO_MEDIA = "(min-width: 1024px)";
-// Home page slider: about 600px wide on computers, nearly the whole screen on phones.
-export const HOME_SLIDE_SIZES = "(min-width: 1024px) 600px, 92vw";
+// Home hero image: half the grid after its padding and gap on desktop, nearly the whole
+// content width on phones. Keep this in sync with the hero preload in index.html.
+export const HOME_SLIDE_SIZES = "(min-width: 1320px) 592px, (min-width: 1024px) calc(50vw - 68px), 92vw";
 // Round scoop photo on a flavor's own page: at most 500px wide.
 export const FLAVOR_PHOTO_SIZES = "(min-width: 1024px) 500px, 90vw";

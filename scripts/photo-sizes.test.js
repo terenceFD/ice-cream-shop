@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { photoAt, photoSrcSet, PHOTO_WIDTHS } from '../shared/photoSizes.js'
+import { HOME_SLIDE_SIZES, photoAt, photoSrcSet, PHOTO_WIDTHS } from '../shared/photoSizes.js'
 import { thumbnailPathFor } from './make-thumbnails.mjs'
 
 const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url))
@@ -36,4 +37,10 @@ test('asks Unsplash for the width it needs', () => {
   assert.equal(small.searchParams.get('w'), '480')
   assert.equal(small.searchParams.get('fit'), 'crop')
   assert.match(photoSrcSet(src), /w=160.* 160w, .*w=800.* 800w, .* 1200w$/)
+})
+
+test('homepage hero preload uses the same responsive image candidates and slot size as the hero', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
+  assert.ok(html.includes(`imagesrcset="${photoSrcSet('/ice-images/ice-9.jpg')}"`))
+  assert.ok(html.includes(`imagesizes="${HOME_SLIDE_SIZES}"`))
 })

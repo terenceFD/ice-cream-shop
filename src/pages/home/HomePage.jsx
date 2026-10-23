@@ -29,6 +29,24 @@ const popularFlavorColors = [
   "#fff5c8",
   "#ffeadc",
 ];
+const cakeSliderFallbacks = {
+  birthday: ["/cake-images/cake-1.webp", "/cake-images/cake-2.webp", "/cake-images/cake-6.webp"],
+  kids: ["/cake-images/cake-3.webp", "/cake-images/cake-1.webp", "/cake-images/cake-7.webp"],
+  pies: [
+    "/menu-official/cakes/ice-cream-pies/local-pies/cookie-dough-pie.webp",
+    "/menu-official/cakes/ice-cream-pies/local-pies/smore-some-more-pie.webp",
+    "/menu-official/cakes/ice-cream-pies/local-pies/caramel-apple-pie.webp",
+    "/menu-official/cakes/ice-cream-pies/local-pies/caramel-turtle-treat-pie.webp",
+    "/menu-official/cakes/ice-cream-pies/local-pies/pumpkin-pie.webp",
+  ],
+  signature: [
+    "/cake-images/cake-4.webp",
+    "/cake-images/cake-5.webp",
+    "/cake-images/cake-8.webp",
+    "/cake-images/cake-10.webp",
+    "/cake-images/cake-12.webp",
+  ],
+};
 const flavorInspiration = [
   {
     id: "strawberry",
@@ -845,7 +863,7 @@ export function HomePage() {
     { id: "kids", label: "Kids’ cakes" },
     { id: "pies", label: "Pies" },
   ];
-  const cakeTypeOf = (idName) => {
+  const cakeTypeOf = (idName, name = "") => {
     // idName is the stable catalog ID, e.g. "Birthday Cake Design 1" or
     // "Ice Cream Pie Design 2". It is matched on those design IDs so a cake whose
     // name merely mentions a word like "pie" (or "birthday") is not misfiled —
@@ -856,11 +874,11 @@ export function HomePage() {
     if (text.includes("birthday cake design")) return "birthday";
     if (text.includes("kids\u2019 themed") || text.includes("kids' themed") || text.includes("kid")) return "kids";
     if (text.includes("design")) return "signature";
-    // A few cakes (Cheesecake Named Desire, Neapolitan…) carry no design ID, so
-    // their display name decides instead.
-    const name = String(idName || "").toLowerCase();
-    if (name.includes("pie")) return "pies";
-    if (name.includes("kids\u2019") || name.includes("kids'")) return "kids";
+    // A few cakes carry no design ID, so their display name decides instead.
+    const displayName = String(name || idName || "").toLowerCase();
+    if (displayName.includes("pie")) return "pies";
+    if (displayName.includes("birthday")) return "birthday";
+    if (displayName.includes("kids\u2019") || displayName.includes("kids'") || displayName.includes("kid")) return "kids";
     return "signature";
   };
   const cakeQuery = cakeSearch.trim().toLowerCase();
@@ -870,14 +888,15 @@ export function HomePage() {
       idName: item.id || item.name,
     }))).filter((cake) => {
       const typeOk =
-        selectedCakeType === "all" || cakeTypeOf(cake.idName) === selectedCakeType;
+        selectedCakeType === "all" ||
+        cakeTypeOf(cake.idName, cake.name) === selectedCakeType;
       const queryOk =
         !cakeQuery ||
         cake.name.toLowerCase().includes(cakeQuery) ||
         String(cake.detail || "").toLowerCase().includes(cakeQuery);
       return typeOk && queryOk;
     });
-    return items.slice(0, 8);
+    return items;
   }, [cakeMenuCategory, selectedCakeType, cakeQuery]);
   // Every cake card needs a slider (more than one photo), but many catalog items
   // only carry a single image and no gallery. For those, pair the item's own photo
@@ -886,7 +905,7 @@ export function HomePage() {
   const relatedCakePhotos = useMemo(() => {
     const byDesign = new Map();
     for (const item of cakeMenuCategory.items || []) {
-      const type = cakeTypeOf(item.id || item.name);
+      const type = cakeTypeOf(item.id || item.name, item.name);
       const photos = [item.image, ...(item.gallery || [])].filter(Boolean);
       for (const photo of photos) {
         if (!byDesign.has(type)) byDesign.set(type, []);
@@ -897,12 +916,14 @@ export function HomePage() {
     return byDesign;
   }, [cakeMenuCategory]);
   const cakeImagesOf = (cake) => {
-    const own = [cake.image, ...(cake.gallery || [])].filter(Boolean);
+    const own = [...new Set([cake.image, ...(cake.gallery || [])].filter(Boolean))];
     if (own.length > 1) return own;
-    const related = (relatedCakePhotos.get(cakeTypeOf(cake.idName)) || []).filter(
+    const type = cakeTypeOf(cake.idName, cake.name);
+    const related = (relatedCakePhotos.get(type) || []).filter(
       (photo) => !own.includes(photo),
     );
-    return [...own, ...related.slice(0, 3)];
+    const fallbacks = (cakeSliderFallbacks[type] || []).filter((photo) => !own.includes(photo));
+    return [...new Set([...own, ...related, ...fallbacks])].slice(0, 4);
   };
   return (
     <div className="min-h-screen overflow-clip bg-[#fbfaf5] text-[#102c50]">
@@ -1720,7 +1741,7 @@ export function HomePage() {
                     const soldOut = cake.isAvailable === false || cake.availableQuantity < 1;
                     const images = cakeImagesOf(cake);
                     const accent = { pies: "#7a4bd8", kids: "#f56586", birthday: "#f5a623" }[
-                      cakeTypeOf(cake.idName)
+                      cakeTypeOf(cake.idName, cake.name)
                     ] || "#38b2ac";
 
                     return (
@@ -1741,11 +1762,11 @@ export function HomePage() {
                             style={{ backgroundColor: accent }}
                           >
                             {t(
-                              cakeTypeOf(cake.idName) === "pies"
+                              cakeTypeOf(cake.idName, cake.name) === "pies"
                                 ? "Pie"
-                                : cakeTypeOf(cake.idName) === "birthday"
+                                : cakeTypeOf(cake.idName, cake.name) === "birthday"
                                   ? "Birthday"
-                                  : cakeTypeOf(cake.idName) === "kids"
+                                  : cakeTypeOf(cake.idName, cake.name) === "kids"
                                     ? "Kids"
                                     : "Signature",
                             )}
