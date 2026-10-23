@@ -5,6 +5,7 @@ import { type Flavor } from "../../context/FlavorContext";
 import { useFlavors } from "../../context/useFlavors";
 import { ArrowIcon, Footer, Header } from "../../components/Layout";
 import { PageHero } from "../../components/PageHero";
+import { RatingBadge } from "../../components/RatingBadge";
 import { useLanguage } from "../../language/useLanguage";
 import { formatCartMoney } from "../../lib/cartPricing";
 import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
@@ -318,6 +319,12 @@ export function FlavorsPage() {
                       <h3 className="line-clamp-1 font-display text-lg font-extrabold tracking-tight text-[#092a53] transition-colors group-hover:text-[#123f76] sm:text-xl">
                         {t(flavor.name)}
                       </h3>
+                      <div className="mt-1.5">
+                        <RatingBadge
+                          averageRating={flavor.averageRating}
+                          reviewCount={flavor.reviewCount}
+                        />
+                      </div>
                       <p className="mt-1.5 line-clamp-2 text-[13px] leading-5 text-[#65748a]">{t(flavor.detail)}</p>
                       {flavor.allergies && flavor.allergies.filter((item) => item !== "None common").length > 0 && (
                         <ul className="mt-2 flex flex-wrap gap-1.5">
@@ -334,13 +341,13 @@ export function FlavorsPage() {
                             ))}
                         </ul>
                       )}
-                      <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+                      <div className="mt-auto flex flex-col gap-2 pt-4">
                         <span className="font-display text-lg font-extrabold tabular-nums text-[#092a53]">
                           {formatCartMoney(flavor.price, "xaf", language)}
                         </span>
                         <button
-                          aria-label={t("Add {name} to your bag", { name: t(flavor.name) })}
-                          className={`relative z-10 inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-extrabold uppercase tracking-[0.08em] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-[#f1ede2] disabled:text-[#a5aebb] ${
+                          aria-label={t("Add {name} to cart", { name: t(flavor.name) })}
+                          className={`relative z-10 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-extrabold uppercase tracking-[0.08em] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-[#f1ede2] disabled:text-[#a5aebb] ${
                             added
                               ? "bg-[#4caf50] text-white"
                               : soldOut
@@ -358,7 +365,7 @@ export function FlavorsPage() {
                           ) : (
                             <BagIcon className="size-4" />
                           )}
-                          <span className="hidden sm:inline">{added ? t("Added") : t("Add")}</span>
+                          <span>{added ? t("Added") : t("Add to cart")}</span>
                         </button>
                       </div>
                     </div>

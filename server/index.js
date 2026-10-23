@@ -19,6 +19,7 @@ import {
   createCakeRequest,
   createCheckoutOrder,
   createContactMessage,
+  createMenuReviews,
   createPaymentRecord,
   clearDeliveredOrders,
   database,
@@ -31,6 +32,7 @@ import {
   deleteContactMessage,
   deleteContactMessages,
   deleteSavedCart,
+  databaseKind,
   migrateFlavorCatalog,
   finalizePaidCheckout,
   finalizeZeroAmountCheckout,
@@ -45,7 +47,6 @@ import {
   listFlavors,
   markContactMessageRead,
   markContactMessageReplied,
-  createMenuReview,
   deleteMenuReview,
   registerCustomer,
   removeCustomerFavorite,
@@ -827,11 +828,26 @@ app.get('/api/health', (_request, response) => {
   response.json({ status: 'ok' })
 })
 
+async function getApprovedReviewSummaries() {
+  const summaries = await database.prepare(`
+    SELECT item_id AS "itemId", COUNT(*) AS "reviewCount",
+      ROUND(AVG(rating), 1) AS "averageRating"
+    FROM menu_reviews
+    WHERE is_approved = TRUE
+    GROUP BY item_id
+  `).all()
+  return new Map(summaries.map((summary) => [summary.itemId, {
+    averageRating: Number(summary.averageRating),
+    reviewCount: Number(summary.reviewCount),
+  }]))
+}
+
 app.get('/api/menu', async (_request, response) => {
-  const [inventoryRows, customItems, menuCategories] = await Promise.all([
+  const [inventoryRows, customItems, menuCategories, reviewSummaries] = await Promise.all([
     listMenuInventory(),
     listCustomMenuItems(),
     listMenuCategories(),
+    getApprovedReviewSummaries(),
   ])
   const inventory = new Map(inventoryRows.map((entry) => [entry.itemId, entry]))
   const categories = menuCategories.map((category) => {
@@ -845,6 +861,7 @@ app.get('/api/menu', async (_request, response) => {
         ...item,
         id,
         itemType: 'menu',
+        ...(reviewSummaries.get(id) || {}),
         categoryTitle: category.title,
         stock: stock?.stock ?? 100,
         reservedStock: stock?.reservedStock ?? 0,
@@ -858,7 +875,12 @@ app.get('/api/menu', async (_request, response) => {
       ...category,
       items: [
         ...builtInItems,
-        ...customItems.filter((item) => item.categoryTitle === category.title),
+        ...customItems
+          .filter((item) => item.categoryTitle === category.title)
+          .map((item) => ({
+            ...item,
+            ...(reviewSummaries.get(item.id) || {}),
+          })),
       ],
     }
   })
@@ -1434,7 +1456,16 @@ app.get('/api/payment/campay/:externalReference', requireCustomer, async (reques
 
 app.get('/api/flavors', async (_request, response, next) => {
   try {
-    response.json({ flavors: await listFlavors() })
+    const [flavors, reviewSummaries] = await Promise.all([
+      listFlavors(),
+      getApprovedReviewSummaries(),
+    ])
+    response.json({
+      flavors: flavors.map((flavor) => ({
+        ...flavor,
+        ...(reviewSummaries.get(`flavor:${flavor.id}`) || {}),
+      })),
+    })
   } catch (error) {
     next(error)
   }
@@ -1968,7 +1999,7 @@ app.get('/api/reviews', async (_request, response) => {
       c.name AS "customerName", c.profile_picture AS "profilePicture",
       r.item_id AS "itemId"
     FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
-    WHERE r.is_approved = 1
+    WHERE r.is_approved = TRUE
     ORDER BY r.id DESC LIMIT 50
   `).all()
   const reviewsWithItems = await Promise.all(reviews.map(async (review) => ({
@@ -2088,47 +2119,54 @@ app.get('/api/menu/:itemId/reviews', async (request, response) => {
   }
   const summary = await database.prepare(`
     SELECT COUNT(*) AS "reviewCount", ROUND(AVG(rating), 1) AS "averageRating"
-    FROM menu_reviews WHERE item_id = ? AND is_approved = 1
+    FROM menu_reviews WHERE item_id = ? AND is_approved = TRUE
   `).get(itemId)
   const reviews = await database.prepare(`
     SELECT r.rating, r.review, r.created_at AS "createdAt",
       c.name AS "customerName", c.profile_picture AS "profilePicture"
     FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
-    WHERE r.item_id = ? AND r.is_approved = 1 ORDER BY r.id DESC LIMIT 50
+    WHERE r.item_id = ? AND r.is_approved = TRUE ORDER BY r.id DESC LIMIT 50
   `).all(itemId)
   response.json({ ...summary, reviews })
 })
 
 app.post('/api/customer/reviews', requireCustomer, async (request, response) => {
   const orderId = Number(request.body.orderId)
-  const itemId = typeof request.body.itemId === 'string' ? request.body.itemId : ''
+  const requestedItemIds = Array.isArray(request.body.itemIds)
+    ? request.body.itemIds
+    : [request.body.itemId]
+  const itemIds = [...new Set(requestedItemIds)]
   const rating = Number(request.body.rating)
   const review = typeof request.body.review === 'string' ? request.body.review.trim() : ''
-  const flavorIdMatch = /^flavor:(\d+)$/.exec(itemId)
-  const flavorId = flavorIdMatch ? Number(flavorIdMatch[1]) : 0
-  if (!Number.isSafeInteger(orderId) || orderId < 1 || !await resolveFavoriteItem(itemId)
-    || !Number.isSafeInteger(rating) || rating < 1 || rating > 5 || review.length > 1000) {
-    response.status(400).json({ error: 'Provide a purchased item, a 1–5 star rating, and a review under 1,000 characters.' })
+  if (!Number.isSafeInteger(orderId) || orderId < 1 || itemIds.length < 1 || itemIds.length > 50
+    || itemIds.some((itemId) => typeof itemId !== 'string')
+    || !Number.isSafeInteger(rating) || rating < 1 || rating > 5 || review.length > 200) {
+    response.status(400).json({ error: 'Provide a purchased item, a 1–5 star rating, and a review of no more than 200 characters.' })
     return
   }
-  const purchase = await database.prepare(`
-    SELECT o.id FROM orders o JOIN order_items i ON i.order_id = o.id
-    WHERE o.id = ? AND o.customer_id = ? AND o.status IN ('processing', 'delivered')
-      AND (i.menu_item_id = ? OR (? LIKE 'flavor:%' AND i.flavor_id = ?))
-  `).get(orderId, request.customer.id, itemId, itemId, flavorId)
-  if (!purchase) {
+  const purchasedItems = await Promise.all(itemIds.map(async (itemId) => {
+    if (!await resolveFavoriteItem(itemId)) return false
+    const flavorIdMatch = /^flavor:(\d+)$/.exec(itemId)
+    const flavorId = flavorIdMatch ? Number(flavorIdMatch[1]) : 0
+    return database.prepare(`
+      SELECT o.id FROM orders o JOIN order_items i ON i.order_id = o.id
+      WHERE o.id = ? AND o.customer_id = ? AND o.status IN ('processing', 'delivered')
+        AND (i.menu_item_id = ? OR (? LIKE 'flavor:%' AND i.flavor_id = ?))
+    `).get(orderId, request.customer.id, itemId, itemId, flavorId)
+  }))
+  if (purchasedItems.some((purchase) => !purchase)) {
     response.status(403).json({ error: 'Only customers who purchased an item can review it.' })
     return
   }
   try {
-    const result = await createMenuReview({
+    const results = await createMenuReviews({
       customerId: request.customer.id,
       orderId,
-      itemId,
+      itemIds,
       rating,
       review,
     })
-    response.status(201).json(result)
+    response.status(201).json({ reviews: results, pendingApproval: true })
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'You have already reviewed this item for this order.' })
@@ -3006,7 +3044,7 @@ app.get('/api/admin/stores', requireAdmin, async (request, response) => {
     ) c ON c.store_id = s.id
     LEFT JOIN (
       SELECT o.store_id, COUNT(*) AS "reviewCount",
-        SUM(CASE WHEN mr.is_approved = 0 THEN 1 ELSE 0 END) AS "pendingReviewCount",
+        SUM(CASE WHEN mr.is_approved = FALSE THEN 1 ELSE 0 END) AS "pendingReviewCount",
         AVG(mr.rating) AS "averageRating"
       FROM menu_reviews mr JOIN orders o ON o.id = mr.order_id
       GROUP BY o.store_id
@@ -3584,19 +3622,22 @@ app.get('/api/admin/reviews', requireAdmin, async (request, response) => {
   if (request.query.countOnly === 'true') {
     const { count } = await database.prepare(`
       SELECT COUNT(*) AS count FROM menu_reviews r ${storeJoin}
-      WHERE r.is_approved = 0 ${storeFilter}
+      WHERE r.is_approved = FALSE ${storeFilter}
     `).get(...storeParameters)
     response.json({ pendingCount: count })
     return
   }
-  const status = request.query.status === 'approved' ? 1 : 0
+  const status = request.query.status === 'approved'
   const reviews = await database.prepare(`
     SELECT r.id, r.order_id AS "orderId", r.item_id AS "itemId", r.rating,
       r.review, r.is_approved AS "isApproved", r.created_at AS "createdAt",
       c.name AS "customerName", c.email AS "customerEmail"
     FROM menu_reviews r JOIN customers c ON c.id = r.customer_id ${storeJoin}
     WHERE r.is_approved = ? ${storeFilter} ORDER BY r.id DESC LIMIT 200
-  `).all(status, ...storeParameters)
+  `).all(
+    databaseKind === 'postgres' ? status : status ? 1 : 0,
+    ...storeParameters,
+  )
   const resolvedReviews = await Promise.all(reviews.map(async (review) => ({
     ...review,
     isApproved: Boolean(review.isApproved),

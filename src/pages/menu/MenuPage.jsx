@@ -9,6 +9,7 @@ import { normalizePhotoGallery } from "../../../shared/photoSizes.js";
 import { useAuth } from "../../context/useAuth";
 import { PageHero } from "../../components/PageHero";
 import { ProductImageSlider } from "../../components/ProductImageSlider";
+import { RatingBadge } from "../../components/RatingBadge";
 import { photoErrorHandler, photoSrcSet, thumbnail } from "../../lib/thumbnails";
 import { rankSimilar } from "../../lib/similarItems";
 import { numberFormatter } from "../../lib/cartPricing";
@@ -246,35 +247,40 @@ function MenuProductCard({ category, item, onSelect, onQuickAdd, added, t, forma
         <h3 className="line-clamp-2 font-display text-[15px] font-extrabold leading-snug text-[#092a53] sm:text-lg">
           {t(item.name)}
         </h3>
+        <div className="mt-1.5">
+          <RatingBadge
+            averageRating={item.averageRating}
+            reviewCount={item.reviewCount}
+          />
+        </div>
         <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[#65748a] sm:mt-2 sm:text-sm sm:leading-6">
           {t(item.detail)}
         </p>
 
-        <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-4">
-          <span className="font-display text-sm font-extrabold tabular-nums text-[#8a7000] sm:text-lg">
-            {formatPrice(item.priceXaf)}
-          </span>
-          <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#65748a] transition group-hover:text-[#092a53]">
-            <span className="sr-only">{t("View details")}</span>
-            <span
-              aria-hidden="true"
-              className="grid size-8 place-items-center rounded-full bg-[#f4f1e7] text-[#092a53] transition duration-300 group-hover:bg-[#092a53] group-hover:text-white sm:size-9"
-            >
-              <svg className="size-4" fill="none" viewBox="0 0 24 24">
-                <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
+        <div className="mt-auto flex flex-col gap-2 pt-3 sm:pt-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-display text-sm font-extrabold tabular-nums text-[#8a7000] sm:text-lg">
+              {formatPrice(item.priceXaf)}
             </span>
-          </span>
-
-          {/* Quick add: one into the bag without opening the detail sheet. It sits beside the
-              price, so the cards stay in line however long the description is. */}
+            <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#65748a] transition group-hover:text-[#092a53]">
+              <span className="sr-only">{t("View details")}</span>
+              <span
+                aria-hidden="true"
+                className="grid size-8 place-items-center rounded-full bg-[#f4f1e7] text-[#092a53] transition duration-300 group-hover:bg-[#092a53] group-hover:text-white sm:size-9"
+              >
+                <svg className="size-4" fill="none" viewBox="0 0 24 24">
+                  <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                </svg>
+              </span>
+            </span>
+          </div>
           <button
             aria-label={
               soldOut
                 ? t("{name} is sold out", { name: t(item.name) })
-                : t("Add {name} to your bag", { name: t(item.name) })
+                : t("Add {name} to cart", { name: t(item.name) })
             }
-            className={`grid size-9 shrink-0 place-items-center rounded-full text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed sm:size-10 ${
+            className={`inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full px-3 text-[11px] font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed sm:text-xs ${
               added
                 ? "bg-[#4caf50] text-white"
                 : soldOut
@@ -293,9 +299,8 @@ function MenuProductCard({ category, item, onSelect, onQuickAdd, added, t, forma
               <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
                 <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
               </svg>
-            ) : (
-              <span aria-hidden="true">+</span>
-            )}
+            ) : null}
+            {soldOut ? t("Sold out") : added ? t("Added") : t("Add to cart")}
           </button>
           </div>
         </div>

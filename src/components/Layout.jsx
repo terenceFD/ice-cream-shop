@@ -652,7 +652,7 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
 
   return (
     <div
-      className="relative hidden lg:block"
+      className="relative"
       onPointerEnter={openWithDelay}
       onPointerLeave={closeSoon}
       ref={wrapperRef}

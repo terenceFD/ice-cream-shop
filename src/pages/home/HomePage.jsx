@@ -7,6 +7,7 @@ import { useFlavors } from "../../context/useFlavors";
 import { apiRequest } from "../../api/api";
 import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
 import { ProductImageSlider } from "../../components/ProductImageSlider";
+import { RatingBadge } from "../../components/RatingBadge";
 import { useLanguage } from "../../language/useLanguage";
 import {
   photoErrorHandler,
@@ -1639,11 +1640,12 @@ export function HomePage() {
                     <div className="relative">
                       <ProductImageSlider
                         frameClassName="rounded-none shadow-none"
-                        imageClassName="aspect-[4/3] transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none"
+                        imageClassName="aspect-[16/10] transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none"
                         images={images}
                         name={t(flavor.title)}
                         resetKey={flavor.id}
                         sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 100vw"
+                        showThumbnails={false}
                       />
                       <span
                         className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53] shadow-sm backdrop-blur-sm transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none"
@@ -1657,6 +1659,12 @@ export function HomePage() {
                               : "Classic",
                         )}
                       </span>
+                      <span className="absolute bottom-4 right-4">
+                        <RatingBadge
+                          averageRating={item?.averageRating}
+                          reviewCount={item?.reviewCount}
+                        />
+                      </span>
                       {soldOut && (
                         <span className="absolute right-4 top-4 rounded-full bg-[#092a53]/85 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-sm">
                           {t("Sold out today")}
@@ -1664,23 +1672,23 @@ export function HomePage() {
                       )}
                     </div>
                     <div
-                      className="flex min-h-[190px] flex-1 flex-col justify-between gap-3 border-t-4 px-5 py-4 sm:px-6 sm:py-5"
+                      className="flex flex-1 flex-col justify-between gap-2 border-t-4 px-4 py-3 sm:px-5 sm:py-4"
                       style={{ borderColor: flavor.color }}
                     >
                       <div>
                         <Link
-                          className="line-clamp-2 min-h-[2.5em] font-display text-xl font-extrabold leading-tight text-[#092a53] transition-colors duration-300 hover:text-[#163e6b] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-2xl"
+                          className="line-clamp-2 min-h-[2.5em] font-display text-lg font-extrabold leading-tight text-[#092a53] transition-colors duration-300 hover:text-[#163e6b] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-xl"
                           to={catalogFlavor
                             ? `/flavor/${catalogFlavor.id}`
                             : `/menu?${new URLSearchParams({ category: flavor.category, item: flavor.item })}`}
                         >
                           {t(flavor.title)}
                         </Link>
-                        <p className="mt-2 line-clamp-2 min-h-10 text-xs font-medium leading-5 text-[#123b68] sm:text-[13px]">
+                        <p className="mt-1.5 line-clamp-2 min-h-10 text-xs font-medium leading-5 text-[#123b68] sm:text-[13px]">
                           {t(flavor.detail || "")}
                         </p>
                       </div>
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-col items-stretch gap-1.5">
                         <span
                           className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${
                             added ? "animate-pulse text-green-700" : "text-[#092a53]"
@@ -1695,8 +1703,8 @@ export function HomePage() {
                         <button
                           aria-label={soldOut
                             ? t("Sold out")
-                            : t("Add {name} to your bag", { name: t(flavor.item) })}
-                          className={`min-h-11 shrink-0 rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 group-hover:scale-105 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] disabled:group-hover:scale-100 ${
+                            : t("Add {name} to cart", { name: t(flavor.item) })}
+                          className={`min-h-11 w-full rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] ${
                             added
                               ? "bg-[#4caf50] text-white"
                               : "bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]"
@@ -1707,7 +1715,7 @@ export function HomePage() {
                             : item && handleAddToCart(item, flavor.category)}
                           type="button"
                         >
-                          {soldOut ? t("Sold out") : added ? t("Added") : t("Add to bag")}
+                          {soldOut ? t("Sold out") : added ? t("Added") : t("Add to cart")}
                         </button>
                       </div>
                     </div>
@@ -1883,6 +1891,12 @@ export function HomePage() {
                                     : "Signature",
                             )}
                           </span>
+                          <span className="absolute bottom-4 right-4">
+                            <RatingBadge
+                                    averageRating={cake.averageRating}
+                                    reviewCount={cake.reviewCount}
+                            />
+                          </span>
                           {soldOut && (
                             <span className="absolute right-4 top-4 rounded-full bg-[#092a53]/85 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-sm">
                               {t("Sold out today")}
@@ -1904,7 +1918,7 @@ export function HomePage() {
                               {t(cake.detail)}
                             </p>
                           </div>
-                          <div className="flex items-center justify-between gap-2">
+                          <div className="flex flex-col items-stretch gap-2">
                             <span
                               className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${
                                 added ? "animate-pulse text-green-700" : "text-[#092a53]"
@@ -1916,9 +1930,9 @@ export function HomePage() {
                               aria-label={
                                 added
                                   ? t("Added to your bag")
-                                  : t("Add {name} to your bag", { name: t(cake.name) })
+                                    : t("Add {name} to cart", { name: t(cake.name) })
                               }
-                              className={`min-h-11 shrink-0 rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 group-hover:scale-105 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] disabled:group-hover:scale-100 ${
+                              className={`min-h-11 w-full rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] ${
                                 added
                                   ? "bg-[#4caf50] text-white"
                                   : "bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]"
@@ -1927,7 +1941,7 @@ export function HomePage() {
                               onClick={() => handleAddToCart(cake, "Cakes & Pies")}
                               type="button"
                             >
-                              {soldOut ? t("Sold out") : added ? t("Added") : t("Add to bag")}
+                              {soldOut ? t("Sold out") : added ? t("Added") : t("Add to cart")}
                             </button>
                           </div>
                         </div>
@@ -2073,6 +2087,12 @@ export function HomePage() {
                           {t("Sold out")}
                         </span>
                       )}
+                      <span className="absolute right-6 top-6 sm:right-8 sm:top-8">
+                        <RatingBadge
+                          averageRating={item.averageRating}
+                          reviewCount={item.reviewCount}
+                        />
+                      </span>
 
                       <h3 className="font-display text-3xl font-extrabold leading-tight sm:text-4xl">
                         <Link
@@ -2085,7 +2105,7 @@ export function HomePage() {
                       <p className="mt-2 max-w-md text-sm leading-6 text-white/75 sm:text-base sm:leading-7">
                         {t(item.detail)}
                       </p>
-                      <div className="mt-6 flex flex-wrap items-end justify-between gap-4 border-t border-white/15 pt-5">
+                      <div className="mt-6 flex flex-col items-stretch gap-3 border-t border-white/15 pt-5 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                           <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-white/55">
                             {t("Price")}
@@ -2098,11 +2118,11 @@ export function HomePage() {
                           aria-label={
                             soldOut
                               ? t("Sold out")
-                              : t("Add {name} to your bag", {
+                              : t("Add {name} to cart", {
                                   name: t(item.name),
                                 })
                           }
-                          className={`relative z-10 inline-flex items-center gap-2 whitespace-nowrap rounded-full px-6 py-3.5 text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/60 ${
+                          className={`relative z-10 inline-flex min-h-12 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 py-3.5 text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/60 sm:w-auto ${
                             added
                               ? "bg-[#4caf50] text-white"
                               : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-white"
@@ -2116,7 +2136,7 @@ export function HomePage() {
                             ? t("Sold out")
                             : added
                               ? t("Added")
-                              : t("Add to bag")}
+                              : t("Add to cart")}
                         </button>
                       </div>
                     </article>
@@ -2125,11 +2145,11 @@ export function HomePage() {
 
                 return (
                   <article
-                    className="group relative flex items-center gap-4 rounded-[24px] bg-white p-3 pr-4 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:gap-5 sm:p-4 sm:pr-5 lg:col-span-7"
+                    className="group relative flex flex-col gap-3 rounded-[24px] bg-white p-3 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:flex-row sm:items-center sm:gap-5 sm:p-4 sm:pr-5 lg:col-span-7"
                     key={itemKey}
                   >
                     <div
-                      className="relative size-20 shrink-0 overflow-hidden rounded-[18px] sm:size-24"
+                      className="relative aspect-[16/9] w-full shrink-0 overflow-hidden rounded-[18px] sm:aspect-square sm:size-24"
                       style={{ backgroundColor: popularFlavorColors[index] }}
                     >
                       {image}
@@ -2143,19 +2163,17 @@ export function HomePage() {
                           {t(item.name)}
                         </Link>
                       </h3>
+                      <div className="mt-1">
+                        <RatingBadge
+                          averageRating={item.averageRating}
+                          reviewCount={item.reviewCount}
+                        />
+                      </div>
                       <p className="mt-1 line-clamp-1 text-xs leading-5 text-[#65748a] sm:text-sm sm:leading-6">
                         {t(item.detail)}
                       </p>
-                      <p className={`mt-1.5 whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 sm:hidden ${added ? "animate-pulse text-green-700" : "text-[#8a7000]"}`}>
+                      <p className={`mt-2 whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${added ? "animate-pulse text-green-700" : "text-[#8a7000]"}`}>
                         {soldOut ? t("Sold out") : formatPrice(item.priceXaf)}
-                      </p>
-                    </div>
-                    <div className="hidden shrink-0 text-right sm:block">
-                      <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">
-                        {soldOut ? t("Sold out") : t("Price")}
-                      </p>
-                      <p className={`mt-0.5 whitespace-nowrap font-display text-lg font-extrabold tabular-nums transition-colors duration-300 ${added ? "animate-pulse text-green-700" : "text-[#092a53]"}`}>
-                        {formatPrice(item.priceXaf)}
                       </p>
                     </div>
                     <button
@@ -2164,21 +2182,21 @@ export function HomePage() {
                           ? t("Sold out")
                           : added
                             ? t("Added")
-                            : t("Add {name} to your bag", {
+                            : t("Add {name} to cart", {
                                 name: t(item.name),
                               })
                       }
-                      className={`relative z-10 grid size-11 shrink-0 place-items-center rounded-full transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] sm:size-12 ${
+                      className={`relative z-10 mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] sm:mt-0 sm:w-auto sm:shrink-0 sm:px-5 ${
                         added
                           ? "bg-[#4caf50] text-white"
                           : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white"
                       }`}
                       disabled={soldOut}
                       onClick={() => handleAddToCart(item)}
-                      title={soldOut ? t("Sold out") : t("Add to bag")}
+                      title={soldOut ? t("Sold out") : t("Add to cart")}
                       type="button"
                     >
-                      {bagIcon || (
+                      {bagIcon && (
                         <svg
                           aria-hidden="true"
                           className="size-4"
@@ -2186,13 +2204,15 @@ export function HomePage() {
                           viewBox="0 0 24 24"
                         >
                           <path
-                            d="M6 6l12 12M18 6 6 18"
+                            d="m5 12.5 4.5 4.5L19 7.5"
                             stroke="currentColor"
                             strokeLinecap="round"
+                            strokeLinejoin="round"
                             strokeWidth="2"
                           />
                         </svg>
                       )}
+                      {soldOut ? t("Sold out") : added ? t("Added") : t("Add to cart")}
                     </button>
                   </article>
                 );

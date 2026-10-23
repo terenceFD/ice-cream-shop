@@ -4,7 +4,7 @@ import { useLanguage } from '../../language/useLanguage'
 import { useAdminAuth } from './useAdminAuth'
 
 const inputClassName =
-  'w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
+  'w-full rounded-lg border border-[#dce3eb] bg-white px-3 py-2 text-sm font-medium text-[#102c50] transition placeholder:text-[#8190a1] hover:border-[#bac7d5] focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/25 outline-none!'
 const STAR_PATH = 'M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z'
 
 const icons = {
@@ -64,13 +64,6 @@ function relativeTime(value, language) {
 
 function initials(name) {
   return String(name || '?').trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join('') || '?'
-}
-
-const avatarTones = ['bg-[#e9f1fa] text-[#245281]', 'bg-[#fff4c2] text-[#7a6300]', 'bg-[#e5f4ea] text-[#2c7a4f]', 'bg-[#efe9fb] text-[#5b3fa0]', 'bg-[#fdecea] text-[#a53f37]']
-
-function avatarTone(name) {
-  const sum = [...String(name)].reduce((total, character) => total + character.charCodeAt(0), 0)
-  return avatarTones[sum % avatarTones.length]
 }
 
 export function AdminReviewsBoard() {
@@ -218,47 +211,41 @@ export function AdminReviewsBoard() {
     rating,
     count: reviews.filter((review) => Number(review.rating) === rating).length,
   }))
-  const maxBucket = Math.max(1, ...distribution.map((bucket) => bucket.count))
   const averageOf = (list) => (list.length ? list.reduce((total, review) => total + Number(review.rating || 0), 0) / list.length : 0)
   const publishedAverage = averageOf(approvedReviews)
-  const viewAverage = averageOf(reviews)
   const fiveStarShare = approvedReviews.length ? Math.round((approvedReviews.filter((review) => review.rating === 5).length / approvedReviews.length) * 100) : 0
   const hasActiveFilters = Boolean(normalizedSearch || ratingFilter !== 'all')
 
   const metrics = [
-    { label: 'Awaiting approval', value: pendingReviews.length.toLocaleString(), icon: icons.clock, accent: 'bg-[#fff1dc] text-[#a86a00]', onClick: () => setShowApproved(false), active: !showApproved },
-    { label: 'Published', value: approvedReviews.length.toLocaleString(), icon: icons.check, accent: 'bg-[#e5f4ea] text-[#2c7a4f]', onClick: () => setShowApproved(true), active: showApproved },
-    { label: 'Average rating', value: approvedReviews.length ? publishedAverage.toFixed(1) : '—', icon: STAR_PATH, accent: 'bg-[#fff4c2] text-[#8a7000]', hint: t('Published reviews') },
-    { label: '5-star reviews', value: approvedReviews.length ? `${fiveStarShare}%` : '—', icon: icons.chat, accent: 'bg-[#e9f1fa] text-[#315982]', hint: t('Of published reviews') },
+    { label: 'Average rating', value: approvedReviews.length ? publishedAverage.toFixed(1) : '—', hint: t('Published reviews') },
+    { label: '5-star reviews', value: approvedReviews.length ? `${fiveStarShare}%` : '—', hint: t('Of published reviews') },
   ]
 
   return (
-    <div className="min-w-0 space-y-6">
-      <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <span className="relative grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
-            <Icon className="size-7" path={icons.chat} />
-            {pendingReviews.length > 0 && (
-              <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#e0a100] px-1 text-[10px] font-extrabold text-white ring-2 ring-white">{pendingReviews.length}</span>
-            )}
-          </span>
-          <div className="min-w-0">
-            <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
-              {t('Review management')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#8a7000]">{t('Customer reviews')}</span>
-            </nav>
-            <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Customer reviews')}</h1>
-            <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">{t('Review customer feedback, approve what is ready to publish, and manage live reviews.')}</p>
-          </div>
+    <div className="min-w-0 space-y-4">
+      <header className="flex items-start justify-between gap-3 border-b border-[#e5ebf3] pb-4 sm:items-end sm:pb-5">
+        <div className="min-w-0 flex-1">
+          <nav aria-label={t('Breadcrumb')} className="hidden text-xs font-medium text-[#65748a] sm:block">
+            {t('Review management')} <span aria-hidden="true" className="mx-1.5 text-[#a3b0bf]">/</span>
+            <span className="font-semibold text-[#355777]">{t('Customer reviews')}</span>
+          </nav>
+          <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-[#092a53]">{t('Customer reviews')}</h1>
+          <p aria-label={t('Review overview')} className="mt-1 text-xs font-medium text-[#65748a] sm:hidden">
+            {t('Average rating')} <span className="font-semibold text-[#102c50]">{approvedReviews.length ? publishedAverage.toFixed(1) : '—'}</span>
+            <span aria-hidden="true" className="mx-1.5 text-[#a3b0bf]">·</span>
+            {t('5-star reviews')} <span className="font-semibold text-[#102c50]">{approvedReviews.length ? `${fiveStarShare}%` : '—'}</span>
+          </p>
+          <p className="mt-1 hidden max-w-2xl text-sm leading-5 text-[#65748a] sm:block">{t('Review customer feedback, approve what is ready to publish, and manage live reviews.')}</p>
         </div>
         <button
-          className="inline-flex min-h-10 items-center gap-2 self-start rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53] disabled:cursor-wait disabled:opacity-60 xl:self-auto"
+          aria-label={t('Refresh')}
+          className="inline-flex min-h-10 min-w-10 items-center justify-center gap-2 rounded-lg border border-[#dce3eb] bg-white px-2.5 text-sm font-semibold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53] disabled:cursor-wait disabled:opacity-60 sm:min-w-0 sm:px-3.5"
           disabled={isRefreshing || bulkProgress !== null}
           onClick={refresh}
           type="button"
         >
           <Icon className={`size-4 ${isRefreshing ? 'animate-spin' : ''}`} path={icons.refresh} />
-          {t('Refresh')}
+          <span className="hidden sm:inline">{t('Refresh')}</span>
         </button>
       </header>
 
@@ -277,246 +264,213 @@ export function AdminReviewsBoard() {
         </p>
       )}
 
-      <section aria-label={t('Review overview')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t('Review overview')} className="hidden grid-cols-2 divide-x divide-[#e5ebf3] overflow-hidden rounded-xl border border-[#e5ebf3] bg-[#fbfcfe] sm:grid">
         {metrics.map((metric) => {
           const body = (
-            <>
-              <span className={`grid size-9 place-items-center rounded-xl ${metric.accent}`}>
-                {metric.icon === STAR_PATH
-                  ? <svg aria-hidden="true" className="size-4" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
-                  : <Icon path={metric.icon} />}
-              </span>
-              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#102c50]">{metric.value}</p>
-              <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{t(metric.label)}</p>
-              {metric.hint && <p className="mt-0.5 text-[11px] text-[#a3b0bf]">{metric.hint}</p>}
-            </>
+            <div className="flex min-h-16 flex-col justify-center gap-1.5 px-3 py-2.5 sm:min-h-[76px] sm:px-4 sm:py-3">
+              <p className="text-xs font-semibold leading-4 text-[#65748a] sm:text-[13px]">{t(metric.label)}</p>
+              <p className="font-display text-2xl font-bold leading-none tracking-tight text-[#102c50] tabular-nums">{metric.value}</p>
+              {metric.hint && <p className="text-xs leading-4 text-[#65748a]">{metric.hint}</p>}
+            </div>
           )
-          return metric.onClick ? (
-            <button
-              aria-pressed={metric.active}
-              className={`rounded-2xl border bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:p-5 ${metric.active ? 'border-[#092a53] shadow-[0_0_0_1px_#092a53]' : 'border-[#e5ebf3]'}`}
-              key={metric.label}
-              onClick={() => { metric.onClick(); setRatingFilter('all') }}
-              type="button"
-            >
-              {body}
-            </button>
-          ) : (
-            <article className="rounded-2xl border border-[#e5ebf3] bg-white p-4 sm:p-5" key={metric.label}>{body}</article>
-          )
+          return <article className="min-w-0" key={metric.label}>{body}</article>
         })}
       </section>
 
-      <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[17rem_minmax(0,1fr)]">
-        <aside aria-label={t('Rating breakdown')} className="rounded-[20px] border border-[#e5ebf3] bg-white p-5 xl:sticky xl:top-24">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t(showApproved ? 'Published' : 'Awaiting approval')}</p>
-          <div className="mt-3 flex items-end gap-3">
-            <p className="font-display text-5xl font-extrabold leading-none text-[#092a53]">{reviews.length ? viewAverage.toFixed(1) : '—'}</p>
-            <div className="pb-1">
-              <Stars className="size-4" rating={Math.round(viewAverage)} />
-              <p className="mt-1 text-xs text-[#8190a1]">{t('{count} reviews', { count: reviews.length })}</p>
-            </div>
+      <section aria-labelledby="review-queue-title" className="min-w-0">
+        <h2 className="sr-only" id="review-queue-title">{t(showApproved ? 'Approved reviews' : 'Pending reviews')}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#dce3eb]">
+          <div aria-label={t('Review publication status')} className="flex min-w-0 max-w-full gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group">
+            {[false, true].map((approved) => (
+              <button
+                aria-pressed={showApproved === approved}
+                className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-1 text-sm font-semibold transition ${showApproved === approved ? 'border-[#d1a900] text-[#092a53]' : 'border-transparent text-[#65748a] hover:text-[#092a53]'}`}
+                key={String(approved)}
+                onClick={() => { setShowApproved(approved); setRatingFilter('all'); setMessage('') }}
+                type="button"
+              >
+                {t(approved ? 'Approved reviews' : 'Pending reviews')}
+                <span className="rounded px-1.5 py-0.5 text-xs font-semibold tabular-nums text-[#65748a]">{approved ? approvedReviews.length : pendingReviews.length}</span>
+              </button>
+            ))}
           </div>
-          <ul className="mt-5 space-y-1.5">
+          {!showApproved && visibleReviews.length > 1 && (
+            <button
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#092a53] px-3.5 text-sm font-semibold text-white transition hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-60"
+              disabled={bulkProgress !== null}
+              onClick={() => setIsConfirmingBulk(true)}
+              type="button"
+            >
+              <Icon path={icons.checks} />
+              {bulkProgress
+                ? t('Approving {done} of {total}…', bulkProgress)
+                : t('Approve all shown ({count})', { count: visibleReviews.length })}
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-3 pt-4">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2.5">
+            <label className="relative block min-w-0">
+              <span className="sr-only">{t('Search reviews')}</span>
+              <Icon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
+              <input className={`${inputClassName} pl-9`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search reviews')} type="search" value={search} />
+            </label>
+            <label className="block min-w-0">
+              <span className="sr-only">{t('Sort by')}</span>
+              <select className={`${inputClassName} w-32 sm:w-44`} onChange={(event) => setSortBy(event.target.value)} value={sortBy}>
+                <option value="newest">{t('Sort: Newest first')}</option>
+                <option value="oldest">{t('Sort: Oldest first')}</option>
+                <option value="highest">{t('Sort: Highest rating')}</option>
+                <option value="lowest">{t('Sort: Lowest rating')}</option>
+              </select>
+            </label>
+          </div>
+
+          <div aria-label={t('Rating breakdown')} className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group">
+            <button
+              aria-pressed={ratingFilter === 'all'}
+              className={`inline-flex min-h-9 shrink-0 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${ratingFilter === 'all' ? 'border-[#d1a900] bg-[#fff9df] text-[#5e4c00]' : 'border-[#dce3eb] text-[#4f6379] hover:bg-[#f6f8fb]'}`}
+              onClick={() => setRatingFilter('all')}
+              type="button"
+            >
+              {t('Show all ratings')}
+            </button>
             {distribution.map((bucket) => {
               const isActive = String(bucket.rating) === String(ratingFilter)
               return (
-                <li key={bucket.rating}>
-                  <button
-                    aria-pressed={isActive}
-                    className={`flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-xs transition ${isActive ? 'bg-[#fffbea] ring-1 ring-[#e8c400]' : 'hover:bg-[#f6f8fb]'} disabled:cursor-default disabled:hover:bg-transparent`}
-                    disabled={!bucket.count}
-                    onClick={() => setRatingFilter(isActive ? 'all' : String(bucket.rating))}
-                    type="button"
-                  >
-                    <span className="flex w-8 items-center gap-0.5 font-bold text-[#4f6379]">
-                      {bucket.rating}
-                      <svg aria-hidden="true" className="size-3 text-[#f5b800]" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
+                <button
+                  aria-label={`${t('{rating} out of 5 stars', { rating: bucket.rating })}, ${t('{count} reviews', { count: bucket.count })}`}
+                  aria-pressed={isActive}
+                  className={`inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold tabular-nums transition disabled:cursor-default disabled:opacity-50 ${isActive ? 'border-[#d1a900] bg-[#fff9df] text-[#5e4c00]' : 'border-[#dce3eb] text-[#4f6379] hover:bg-[#f6f8fb]'}`}
+                  disabled={!bucket.count}
+                  key={bucket.rating}
+                  onClick={() => setRatingFilter(isActive ? 'all' : String(bucket.rating))}
+                  type="button"
+                >
+                  {bucket.rating}
+                  <svg aria-hidden="true" className="size-3.5 text-[#d1a900]" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
+                  <span className="text-[#8190a1]">{bucket.count}</span>
+                </button>
+              )
+            })}
+          </div>
+          <p aria-live="polite" className="text-xs font-medium text-[#65748a]">
+            {t('Showing {shown} of {total} reviews', { shown: visibleReviews.length, total: reviews.length })}
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="divide-y divide-[#edf1f5]" role="status">
+            <span className="sr-only">{t('Loading reviews…')}</span>
+            {[0, 1, 2].map((row) => (
+              <div aria-hidden="true" className="flex gap-3 py-5" key={row}>
+                <span className="size-10 shrink-0 rounded-full bg-[#e9edf2]" />
+                <span className="flex-1 space-y-3 pt-1">
+                  <span className="block h-4 w-40 rounded bg-[#e9edf2]" />
+                  <span className="block h-3 w-56 max-w-full rounded bg-[#e9edf2]" />
+                  <span className="block h-3 w-4/5 rounded bg-[#e9edf2]" />
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : visibleReviews.length ? (
+          <ul className="divide-y divide-[#edf1f5]">
+            {visibleReviews.map((review) => {
+              const isUpdating = updatingIds.includes(review.id)
+              return (
+                <li className={`py-5 transition-opacity ${isUpdating ? 'opacity-50' : ''}`} key={review.id}>
+                  <article className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                    <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-[#eef2f6] text-sm font-bold text-[#355777]">
+                      {initials(review.customerName)}
                     </span>
-                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-[#f1f4f8]">
-                      <span className={`block h-full rounded-full ${bucket.rating >= 4 ? 'bg-[#35a36b]' : bucket.rating === 3 ? 'bg-[#e0a100]' : 'bg-[#d2544b]'}`} style={{ width: `${(bucket.count / maxBucket) * 100}%` }} />
-                    </span>
-                    <span className="w-6 text-right font-bold tabular-nums text-[#8190a1]">{bucket.count}</span>
-                  </button>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <h3 className="font-semibold text-[#102c50]">{review.customerName}</h3>
+                        <span aria-label={t('{rating} out of 5 stars', { rating: review.rating })} role="img"><Stars className="size-3.5" rating={Number(review.rating)} /></span>
+                        <span className="text-xs font-medium text-[#65748a]" title={parseDate(review.createdAt)?.toLocaleString() || ''}>{relativeTime(review.createdAt, language)}</span>
+                      </div>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                        <span className="inline-flex items-center gap-1.5 font-semibold text-[#355777]">
+                          <Icon className="size-3.5 text-[#65748a]" path={icons.scoop} />
+                          {review.itemName}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 text-[#65748a]">
+                          <Icon className="size-3.5" path={icons.receipt} />
+                          {t('Order #{id}', { id: review.orderId })}
+                        </span>
+                      </div>
+                      {review.review ? (
+                        <blockquote className="mt-3 border-l-2 border-[#d1a900] pl-3.5 text-sm leading-6 text-[#3f526a]">
+                          {review.review}
+                        </blockquote>
+                      ) : (
+                        <p className="mt-3 text-sm italic text-[#65748a]">{t('No written comment.')}</p>
+                      )}
+                      <a className="mt-2 inline-flex min-h-8 items-center gap-1.5 text-xs font-medium text-[#65748a] hover:text-[#092a53]" href={`mailto:${review.customerEmail}`}>
+                        <Icon className="size-3.5" path={icons.mail} />
+                        {review.customerEmail}
+                      </a>
+                    </div>
+                    <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-col sm:items-end">
+                      <span className={`inline-flex min-h-7 items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-semibold ${showApproved ? 'bg-[#eef2f6] text-[#4f6379]' : 'bg-[#fff6cc] text-[#705b00]'}`}>
+                        <span aria-hidden="true" className={`size-1.5 rounded-full ${showApproved ? 'bg-[#65748a]' : 'bg-[#bd9c00]'}`} />
+                        {t(showApproved ? 'Published' : 'Awaiting approval')}
+                      </span>
+                      {showApproved ? (
+                        <button
+                          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-[#4f6379] transition hover:bg-[#f1f4f8] hover:text-[#092a53] disabled:cursor-wait sm:min-h-9"
+                          disabled={isUpdating || bulkProgress !== null}
+                          onClick={() => setApproval(review, false)}
+                          type="button"
+                        >
+                          <Icon path={icons.eyeOff} />
+                          {isUpdating ? t('Saving…') : t('Unpublish review')}
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-[#092a53] px-3.5 text-xs font-semibold text-white transition hover:bg-[#163e6b] disabled:cursor-wait sm:min-h-9"
+                            disabled={isUpdating || bulkProgress !== null}
+                            onClick={() => setApproval(review, true)}
+                            type="button"
+                          >
+                            <Icon path={icons.check} />
+                            {isUpdating ? t('Saving…') : t('Approve review')}
+                          </button>
+                          <button
+                            className="inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-lg border border-[#e8c8c4] px-3 text-xs font-semibold text-[#a53f37] transition hover:bg-[#fff4f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d2544b] disabled:cursor-wait disabled:opacity-60 sm:min-h-9"
+                            disabled={isUpdating || bulkProgress !== null}
+                            onClick={() => { setError(''); setMessage(''); setReviewToReject(review) }}
+                            type="button"
+                          >
+                            <Icon path={icons.trash} />
+                            {t('Reject')}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </article>
                 </li>
               )
             })}
           </ul>
-          {ratingFilter !== 'all' && (
-            <button className="mt-3 text-xs font-bold text-[#355777] underline decoration-[#ffdc32] decoration-2 underline-offset-4" onClick={() => setRatingFilter('all')} type="button">
-              {t('Show all ratings')}
-            </button>
-          )}
-        </aside>
-
-        <section aria-labelledby="review-queue-title" className="min-w-0 rounded-[20px] border border-[#e5ebf3] bg-white">
-          <div className="flex flex-col gap-4 border-b border-[#edf1f5] p-4 sm:p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div aria-label={t('Review publication status')} className="inline-flex max-w-full overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
-                {[false, true].map((approved) => (
-                  <button
-                    aria-pressed={showApproved === approved}
-                    className={`inline-flex items-center gap-2 whitespace-nowrap rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${showApproved === approved ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
-                    key={String(approved)}
-                    onClick={() => { setShowApproved(approved); setRatingFilter('all'); setMessage('') }}
-                    type="button"
-                  >
-                    {t(approved ? 'Approved reviews' : 'Pending reviews')}
-                    <span className={`rounded-full px-1.5 text-[10px] ${approved ? 'bg-[#e6ebf1] text-[#65748a]' : pendingReviews.length ? 'bg-[#e0a100] text-white' : 'bg-[#e6ebf1] text-[#65748a]'}`}>
-                      {approved ? approvedReviews.length : pendingReviews.length}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              {!showApproved && visibleReviews.length > 1 && (
-                <button
-                  className="inline-flex min-h-9 items-center gap-2 rounded-xl bg-[#092a53] px-3.5 text-xs font-bold text-white transition hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-60"
-                  disabled={bulkProgress !== null}
-                  onClick={() => setIsConfirmingBulk(true)}
-                  type="button"
-                >
-                  <Icon path={icons.checks} />
-                  {bulkProgress
-                    ? t('Approving {done} of {total}…', bulkProgress)
-                    : t('Approve all shown ({count})', { count: visibleReviews.length })}
-                </button>
-              )}
-            </div>
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-              <label className="relative block">
-                <span className="sr-only">{t('Search reviews')}</span>
-                <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
-                <input className={`${inputClassName} pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search reviews')} type="search" value={search} />
-              </label>
-              <label className="block">
-                <span className="sr-only">{t('Sort by')}</span>
-                <select className={`${inputClassName} sm:w-48`} onChange={(event) => setSortBy(event.target.value)} value={sortBy}>
-                  <option value="newest">{t('Sort: Newest first')}</option>
-                  <option value="oldest">{t('Sort: Oldest first')}</option>
-                  <option value="highest">{t('Sort: Highest rating')}</option>
-                  <option value="lowest">{t('Sort: Lowest rating')}</option>
-                </select>
-              </label>
-            </div>
-            <p aria-live="polite" className="text-xs font-semibold text-[#8190a1]">
-              {t('Showing {shown} of {total} reviews', { shown: visibleReviews.length, total: reviews.length })}
+        ) : (
+          <div className="py-12 text-center">
+            <p className="font-display text-lg font-bold text-[#092a53]">
+              {reviews.length ? t('No reviews match your filters.') : t(showApproved ? 'No approved reviews yet.' : 'No reviews are awaiting approval.')}
             </p>
+            <p className="mx-auto mt-1 max-w-sm text-sm text-[#65748a]">
+              {reviews.length ? t('Try a different search or rating filter.') : t(showApproved ? 'New customer reviews will appear here.' : 'You’re all caught up.')}
+            </p>
+            {hasActiveFilters && (
+              <button className="mt-4 min-h-10 rounded-lg border border-[#dce3eb] px-4 text-sm font-semibold text-[#355777] transition hover:bg-[#f6f9fc]" onClick={() => { setSearch(''); setRatingFilter('all') }} type="button">
+                {t('Clear filters')}
+              </button>
+            )}
           </div>
-
-          {loading ? (
-            <div className="space-y-3 p-4 sm:p-5" role="status">
-              <span className="sr-only">{t('Loading reviews…')}</span>
-              {[0, 1, 2].map((row) => <div aria-hidden="true" className="h-36 animate-pulse rounded-2xl bg-[#f4f7fa]" key={row} />)}
-            </div>
-          ) : visibleReviews.length ? (
-            <ul className="divide-y divide-[#f0f3f7]">
-              {visibleReviews.map((review) => {
-                const isUpdating = updatingIds.includes(review.id)
-                const isLow = Number(review.rating) <= 2
-                return (
-                  <li className={`p-4 transition hover:bg-[#fafbfd] sm:p-5 ${isUpdating ? 'opacity-50' : ''}`} key={review.id}>
-                    <article className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                      <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full text-sm font-extrabold ${avatarTone(review.customerName)}`}>
-                        {initials(review.customerName)}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                          <h3 className="font-bold text-[#102c50]">{review.customerName}</h3>
-                          <span aria-label={t('{rating} out of 5 stars', { rating: review.rating })} role="img"><Stars className="size-3.5" rating={Number(review.rating)} /></span>
-                          <span className="text-[11px] font-semibold text-[#a3b0bf]" title={parseDate(review.createdAt)?.toLocaleString() || ''}>{relativeTime(review.createdAt, language)}</span>
-                          {isLow && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-[#fdeeee] px-2 py-0.5 text-[10px] font-bold text-[#a53f37]">
-                              <Icon className="size-3" path={icons.alert} />
-                              {t('Needs attention')}
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          <span className="inline-flex items-center gap-1 rounded-full bg-[#fff6cc] px-2.5 py-1 text-[11px] font-bold text-[#7a6300]">
-                            <Icon className="size-3.5" path={icons.scoop} />
-                            {review.itemName}
-                          </span>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-[#f1f4f8] px-2.5 py-1 text-[11px] font-bold text-[#4f6379]">
-                            <Icon className="size-3.5" path={icons.receipt} />
-                            {t('Order #{id}', { id: review.orderId })}
-                          </span>
-                        </div>
-                        {review.review ? (
-                          <blockquote className="relative mt-3 rounded-xl bg-[#f7f9fc] py-3 pl-10 pr-4 text-sm leading-6 text-[#3f526a] ring-1 ring-[#eef2f6]">
-                            <Icon className="absolute left-3 top-3 size-5 text-[#c3cfdc]" path={icons.quote} />
-                            {review.review}
-                          </blockquote>
-                        ) : (
-                          <p className="mt-3 text-sm italic text-[#a3b0bf]">{t('No written comment.')}</p>
-                        )}
-                        <a className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[#8190a1] hover:text-[#092a53]" href={`mailto:${review.customerEmail}`}>
-                          <Icon className="size-3.5" path={icons.mail} />
-                          {review.customerEmail}
-                        </a>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-end">
-                        <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ${showApproved ? 'bg-[#eaf6ee] text-[#246a46] ring-[#cfe8d8]' : 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]'}`}>
-                          <span aria-hidden="true" className={`size-1.5 rounded-full ${showApproved ? 'bg-[#35a36b]' : 'bg-[#e0a100]'}`} />
-                          {t(showApproved ? 'Published' : 'Awaiting approval')}
-                        </span>
-                        {showApproved ? (
-                          <button
-                            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-bold text-[#4f6379] ring-1 ring-[#dde4ec] transition hover:bg-[#f6f8fb] hover:text-[#092a53] disabled:cursor-wait"
-                            disabled={isUpdating || bulkProgress !== null}
-                            onClick={() => setApproval(review, false)}
-                            type="button"
-                          >
-                            <Icon path={icons.eyeOff} />
-                            {isUpdating ? t('Saving…') : t('Unpublish review')}
-                          </button>
-                        ) : (
-                          <>
-                            <button
-                              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#35a36b] px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#2c8a59] disabled:cursor-wait"
-                              disabled={isUpdating || bulkProgress !== null}
-                              onClick={() => setApproval(review, true)}
-                              type="button"
-                            >
-                              <Icon path={icons.check} />
-                              {isUpdating ? t('Saving…') : t('Approve review')}
-                            </button>
-                            <button
-                              className="inline-flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-lg border border-[#f1d5d2] bg-[#fffafa] px-3.5 text-xs font-bold text-[#a53f37] shadow-sm transition duration-150 hover:border-[#e8b8b3] hover:bg-[#fff1ef] hover:shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d2544b] active:scale-[0.98] disabled:cursor-wait disabled:opacity-60"
-                              disabled={isUpdating || bulkProgress !== null}
-                              onClick={() => { setError(''); setMessage(''); setReviewToReject(review) }}
-                              type="button"
-                            >
-                              <Icon path={icons.trash} />
-                              {t('Reject')}
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </article>
-                  </li>
-                )
-              })}
-            </ul>
-          ) : (
-            <div className="px-6 py-14 text-center">
-              <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f4f8] text-[#8190a1]">
-                <Icon className="size-5" path={reviews.length ? icons.search : showApproved ? icons.chat : icons.check} />
-              </span>
-              <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">
-                {reviews.length ? t('No reviews match your filters.') : t(showApproved ? 'No approved reviews yet.' : 'No reviews are awaiting approval.')}
-              </p>
-              <p className="mx-auto mt-1 max-w-sm text-sm text-[#8190a1]">
-                {reviews.length ? t('Try a different search or rating filter.') : t(showApproved ? 'New customer reviews will appear here.' : 'You’re all caught up.')}
-              </p>
-              {hasActiveFilters && (
-                <button className="mt-4 min-h-9 rounded-xl border border-[#dce5ef] px-4 text-xs font-bold text-[#355777] transition hover:bg-[#f6f9fc]" onClick={() => { setSearch(''); setRatingFilter('all') }} type="button">
-                  {t('Clear filters')}
-                </button>
-              )}
-            </div>
-          )}
-        </section>
-      </div>
+        )}
+      </section>
 
       {isConfirmingBulk && (
         <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">

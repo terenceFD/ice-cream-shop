@@ -420,8 +420,8 @@ export function FlavorDetailPage() {
                             {formatCartMoney(relatedFlavor.price, "xaf", language)}
                           </span>
                           <button
-                            aria-label={t("Add {name} to your bag", { name: t(relatedFlavor.name) })}
-                            className={`relative z-10 inline-flex w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-extrabold transition sm:py-3 @[16.5rem]:w-auto @[16.5rem]:py-2.5 duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
+                            aria-label={t("Add {name} to cart", { name: t(relatedFlavor.name) })}
+                            className={`relative z-10 inline-flex w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-extrabold transition sm:py-3 sm:w-auto @[16.5rem]:w-full @[16.5rem]:py-2.5 duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
                               added ? "bg-[#4caf50] text-white" : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white"
                             }`}
                             onClick={() => {
@@ -430,7 +430,7 @@ export function FlavorDetailPage() {
                             type="button"
                           >
                             {added ? <CheckIcon /> : <BagIcon />}
-                            <span aria-live="polite">{added ? t("Added") : t("Add to bag")}</span>
+                            <span aria-live="polite">{added ? t("Added") : t("Add to cart")}</span>
                           </button>
                         </div>
                       </div>

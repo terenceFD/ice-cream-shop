@@ -1,10 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Header, Footer } from '../../components/Layout'
 import { type CartItem } from '../../context/CartContext'
 import { useCart } from '../../context/useCart'
 import { formatCartMoney, getCartPricing } from '../../lib/cartPricing'
 import { useLanguage } from '../../language/useLanguage'
+import { apiRequest } from '../../api/api'
+import { getMenuItemId } from '../../../shared/data'
+import { photoErrorHandler, photoSrcSet } from '../../lib/thumbnails'
+import { rankSimilar } from '../../lib/similarItems'
+
+type MenuSuggestion = CartItem & {
+  priceXaf: number
+  isAvailable?: boolean
+}
+
+type MenuCategory = {
+  title: string
+  items: MenuSuggestion[]
+}
 
 function Icon({ path, className = 'size-[18px]' }: { path: string; className?: string }) {
   return (
@@ -27,9 +41,14 @@ const icons = {
 }
 
 export function CartPage() {
-  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart()
+  const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
   const { t, language } = useLanguage()
   const [confirmClear, setConfirmClear] = useState(false)
+  const [suggestions, setSuggestions] = useState<MenuCategory[]>([])
+  const [suggestionsError, setSuggestionsError] = useState('')
+  const [suggestionsLoading, setSuggestionsLoading] = useState(true)
+  const [suggestionError, setSuggestionError] = useState('')
+  const [addedSuggestionId, setAddedSuggestionId] = useState<string | number | null>(null)
   const { cartCount, currency, subtotal, freeScoops, discount, total } = getCartPricing(cartItems)
   const money = (amount: number) => formatCartMoney(amount, currency, language)
   const hasUnavailableItems = cartItems.some((item: CartItem) => item.availableQuantity !== undefined && item.availableQuantity < item.quantity)
@@ -41,6 +60,95 @@ export function CartPage() {
   const itemPath = (item: CartItem) => (item.itemType === 'menu' ? '/menu' : `/flavor/${item.id}`)
 
   const steps = [t('Shopping bag'), t('Checkout'), t('Payment')]
+
+  useEffect(() => {
+    let cancelled = false
+    apiRequest<{ categories: MenuCategory[] }>('/menu')
+      .then((result) => {
+        if (!cancelled) {
+          if (Array.isArray(result?.categories)) {
+            setSuggestions(result.categories)
+          } else {
+            setSuggestionsError('Menu suggestions could not be loaded.')
+          }
+          setSuggestionsLoading(false)
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setSuggestionsError(error instanceof Error ? error.message : 'Menu suggestions could not be loaded.')
+          setSuggestionsLoading(false)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const availableMenuItems = suggestions
+    .flatMap((category) => category.items
+      .filter((item) => item.isAvailable !== false && (item.availableQuantity === undefined || item.availableQuantity > 0))
+      .map((item) => ({
+        category,
+        item,
+        key: String(item.id || getMenuItemId(category.title, item.name)),
+        group: category.title,
+        text: `${item.name} ${item.detail || ''} ${category.title}`,
+      })))
+  const cartMenuIds = new Set(
+    cartItems
+      .filter((item) => item.itemType === 'menu')
+      .map((item) => String(item.id)),
+  )
+  const menuItemsToRecommend = availableMenuItems.filter((candidate) => !cartMenuIds.has(candidate.key))
+  const recommendationScores = new Map<string, number>()
+  const orderedRecommendations: typeof menuItemsToRecommend = []
+
+  if (cartItems.length === 0) {
+    orderedRecommendations.push(...menuItemsToRecommend.slice(0, 8))
+  } else {
+    for (const cartItem of cartItems) {
+      const group = cartItem.itemType === 'menu' ? cartItem.categoryTitle : 'Ice Cream'
+      const ranked = rankSimilar(
+        {
+          key: String(cartItem.id),
+          group,
+          text: `${cartItem.name} ${cartItem.detail || ''} ${cartItem.tag || ''}`,
+        },
+        menuItemsToRecommend,
+        menuItemsToRecommend.length,
+      )
+      ranked.forEach((candidate, index) => {
+        const score = menuItemsToRecommend.length - index
+        recommendationScores.set(
+          candidate.key,
+          (recommendationScores.get(candidate.key) || 0) + score,
+        )
+      })
+    }
+    const recommendationOrder = [...menuItemsToRecommend].sort((first, second) =>
+      (recommendationScores.get(second.key) || 0) - (recommendationScores.get(first.key) || 0),
+    )
+    orderedRecommendations.push(...recommendationOrder.slice(0, 8))
+  }
+
+  const addSuggestion = (category: MenuCategory, item: MenuSuggestion) => {
+    setSuggestionError('')
+    const id = item.id || getMenuItemId(category.title, item.name)
+    const added = addToCart({
+      ...item,
+      id,
+      itemType: 'menu',
+      categoryTitle: category.title,
+      price: item.priceXaf,
+    })
+    if (added) {
+      setAddedSuggestionId(id)
+      window.setTimeout(() => setAddedSuggestionId((current) => current === id ? null : current), 1400)
+    } else {
+      setSuggestionError(t('This item could not be added to your bag. Please try again.'))
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
@@ -400,6 +508,53 @@ export function CartPage() {
               </aside>
             </div>
           )}
+
+          <section aria-labelledby="cart-suggestions-heading" className="mt-12">
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#8a7000]">{t('A little something extra')}</p>
+                <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="cart-suggestions-heading">{t('You might also like')}</h2>
+              </div>
+              <Link className="text-sm font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4" to="/menu">{t('Browse the menu')}</Link>
+            </div>
+            {suggestionsLoading && (
+              <p className="rounded-2xl bg-white px-4 py-3 text-sm text-[#65748a] ring-1 ring-[#ebe7dc]" role="status">{t('Loading menu suggestions…')}</p>
+            )}
+            {suggestionsError && (
+              <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-100" role="alert">{t(suggestionsError)}</p>
+            )}
+            {!suggestionsLoading && !suggestionsError && orderedRecommendations.length > 0 && (
+              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+                {orderedRecommendations.map(({ category, item }) => {
+                  const itemId = item.id || getMenuItemId(category.title, item.name)
+                  const added = addedSuggestionId === itemId
+                  return (
+                    <li className="flex min-w-0 flex-col overflow-hidden rounded-[22px] bg-white p-2 shadow-[0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:rounded-[26px] sm:p-3" key={itemId}>
+                      <Link className="overflow-hidden rounded-[16px] bg-[#f4f1e8]" to={`/menu?${new URLSearchParams({ category: category.title, item: item.name })}`}>
+                        <img alt={t(item.name)} className="aspect-square w-full object-cover transition duration-500 hover:scale-[1.04]" loading="lazy" onError={photoErrorHandler(item.image)} sizes="(min-width: 1024px) 25vw, 50vw" src={item.image} srcSet={photoSrcSet(item.image)} />
+                      </Link>
+                      <div className="flex flex-1 flex-col px-1 pb-1 pt-3 sm:px-1.5">
+                        <h3 className="line-clamp-2 min-h-[2.5em] font-display text-sm font-extrabold leading-snug text-[#092a53] sm:text-base">{t(item.name)}</h3>
+                        <p className="mt-1 font-display text-sm font-extrabold tabular-nums text-[#8a7000]">{formatCartMoney(item.priceXaf, 'xaf', language)}</p>
+                        <button
+                          aria-label={added ? t('Added to your bag') : t('Add {name} to cart', { name: t(item.name) })}
+                          className={`mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-full px-3 text-[10px] font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 sm:text-xs ${added ? 'bg-[#4caf50] text-white' : 'bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]'}`}
+                          onClick={() => addSuggestion(category, item)}
+                          type="button"
+                        >
+                          {added ? t('Added') : t('Add to cart')}
+                        </button>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+            {!suggestionsLoading && !suggestionsError && orderedRecommendations.length === 0 && (
+              <p className="rounded-2xl bg-white px-4 py-3 text-sm text-[#65748a] ring-1 ring-[#ebe7dc]" role="status">{t('No menu suggestions are available right now.')}</p>
+            )}
+            {suggestionError && <p className="mt-3 text-sm font-semibold text-red-700" role="alert">{suggestionError}</p>}
+          </section>
         </div>
       </main>
 

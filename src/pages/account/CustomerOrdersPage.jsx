@@ -10,16 +10,16 @@ import { PromotionAlertsSetting } from "../../components/PromotionAlerts";
 import { numberFormatter } from "../../lib/cartPricing";
 
 const fieldClass =
-  "mt-2 w-full rounded-2xl border border-[#e3dfd3] bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-[#102c50] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#cfcabb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
+  "mt-2 w-full rounded-xl border border-[#d7dee7] bg-white px-4 py-3.5 text-sm font-semibold text-[#102c50] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#b9c5d2] focus:border-[#bd9c00] focus:ring-4 focus:ring-[#ffdc32]/20 outline-none!";
 const labelClass = "block text-xs font-extrabold text-[#52647b]";
 const cardClass =
-  "rounded-[26px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:p-7";
+  "rounded-2xl bg-white p-5 ring-1 ring-[#e5e9ee] sm:p-7";
 const eyebrowClass =
-  "flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#8a7000] before:h-px before:w-5 before:bg-[#d6bd4a]";
+  "text-xs font-bold text-[#806800]";
 const primaryButton =
-  "inline-flex items-center justify-center gap-2 rounded-full bg-[#092a53] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-wait disabled:opacity-55";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#092a53] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-55";
 const ghostButton =
-  "inline-flex items-center justify-center gap-2 rounded-full border border-[#dcd8cc] bg-white px-4 py-2.5 text-xs font-extrabold text-[#52647b] transition hover:border-[#092a53] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#d5dce5] bg-white px-4 py-2.5 text-xs font-bold text-[#52647b] transition-colors hover:border-[#092a53] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50";
 
 const PROFILE_IMAGE_DIMENSION = 256;
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -171,8 +171,8 @@ function SectionHeading({ eyebrow, title, description, action }) {
 
 function EmptyState({ icon, title, body, children }) {
   return (
-    <div className="rounded-[26px] border border-dashed border-[#dcd6c4] bg-[#fdfcf7] px-6 py-12 text-center">
-      <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-white text-[#8a7000] shadow-sm ring-1 ring-[#ece6d2]">
+    <div className="rounded-2xl border border-dashed border-[#cfd8e2] bg-white px-6 py-12 text-center">
+      <span className="mx-auto grid size-14 place-items-center rounded-xl bg-[#fff8d8] text-[#806800]">
         <Icon className="size-6" path={icon} />
       </span>
       <h3 className="mt-4 font-display text-xl font-extrabold text-[#092a53]">
@@ -220,7 +220,7 @@ function OrderProgress({ order, t }) {
       aria-label={t("Live order tracking")}
       aria-live="polite"
       aria-atomic="true"
-      className="rounded-2xl bg-[#f7f6f0] p-4 ring-1 ring-[#ece8dc] sm:p-5"
+      className="rounded-xl bg-[#f3f6f8] p-4 sm:p-5"
     >
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
         <p className="flex items-center gap-2 text-xs font-extrabold text-[#102c50]">
@@ -243,7 +243,7 @@ function OrderProgress({ order, t }) {
           style={{ "--steps": steps.length }}
         >
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#6c9c45] to-[#8cbc5f] transition-[width] duration-700"
+            className="h-full rounded-full bg-[#6c9c45] transition-[width] duration-500 motion-reduce:transition-none"
             style={{ width: `${fill}%` }}
           />
         </div>
@@ -335,15 +335,20 @@ function StarRating({ value, onChange, t }) {
 
 function OrderReviewForm({ order, token, t, autoOpen = false }) {
   const detailsRef = useRef(null);
+  const items = [...new Map(
+    order.items
+      .filter((item) => item.productId)
+      .map((item) => [item.productId, item]),
+  ).values()];
   const [itemId, setItemId] = useState(
-    order.items.find((item) => item.productId)?.productId || "",
+    items[0]?.productId || "",
   );
+  const [applyToAll, setApplyToAll] = useState(items.length > 1);
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  const items = order.items.filter((item) => item.productId);
 
   // Arriving from a review reminder opens this order's form and brings it into view.
   useEffect(() => {
@@ -363,7 +368,12 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
       await apiRequest("/customer/reviews", {
         method: "POST",
         token,
-        body: { orderId: order.id, itemId, rating, review },
+        body: {
+          orderId: order.id,
+          itemIds: applyToAll ? items.map((item) => item.productId) : [itemId],
+          rating,
+          review,
+        },
       });
       setMessage(t("Thanks! Your review is awaiting approval."));
     } catch (submitError) {
@@ -375,7 +385,7 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
 
   return (
     <details className="group/review mt-5 scroll-mt-28 rounded-2xl ring-1 ring-[#ece8dc] open:bg-[#fdfcf7]" ref={detailsRef}>
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-4 py-3.5 text-sm font-extrabold text-[#102c50] transition hover:bg-[#fbfaf5] [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-sm font-extrabold text-[#102c50] transition hover:bg-[#f3f6f8] [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2.5">
           <span className="grid size-8 place-items-center rounded-xl bg-[#fff6cc] text-[#8a7000]">
             <Icon className="size-4" path="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" />
@@ -394,31 +404,47 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
       ) : (
         <form className="space-y-4 px-4 pb-4" onSubmit={submitReview}>
           <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
-            <label className={labelClass}>
-              {t("Product")}
-              <select
-                className={fieldClass}
-                onChange={(event) => setItemId(event.target.value)}
-                value={itemId}
-              >
-                {items.map((item) => (
-                  <option key={item.productId} value={item.productId}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            {items.length > 1 && (
+              <label className="flex min-h-11 items-center gap-2.5 text-sm font-semibold text-[#52647b] sm:col-span-2">
+                <input
+                  checked={applyToAll}
+                  className="size-4 accent-[#092a53]"
+                  onChange={(event) => setApplyToAll(event.target.checked)}
+                  type="checkbox"
+                />
+                {t("Apply this rating to all purchased items")}
+              </label>
+            )}
+            {!applyToAll && (
+              <label className={labelClass}>
+                {t("Product")}
+                <select
+                  className={fieldClass}
+                  onChange={(event) => setItemId(event.target.value)}
+                  value={itemId}
+                >
+                  {items.map((item) => (
+                    <option key={item.productId} value={item.productId}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             <StarRating onChange={setRating} t={t} value={rating} />
           </div>
           <label className={labelClass}>
             {t("Your review")}
             <textarea
               className={`${fieldClass} resize-y`}
-              maxLength={1000}
+              maxLength={200}
               onChange={(event) => setReview(event.target.value)}
               rows={3}
               value={review}
             />
+            <span aria-live="polite" className="mt-1 block text-right text-xs text-[#7b8796]">
+              {review.length}/200
+            </span>
           </label>
           {error && (
             <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert">
@@ -449,10 +475,10 @@ function OrderCard({
   const paymentIssue = isPaymentIssue(order);
 
   return (
-    <article className="overflow-hidden rounded-[26px] bg-white shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc]">
+    <article className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#e5e9ee]">
       <header className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 sm:px-7 sm:pt-6">
         <div className="flex min-w-0 items-center gap-3.5">
-          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#eef2f6] text-[#092a53]">
             <Icon path="M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" />
           </span>
           <div className="min-w-0">
@@ -478,14 +504,14 @@ function OrderCard({
 
         <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,15rem)]">
           <div>
-            <ul className="divide-y divide-[#f0ece2]">
+            <ul className="divide-y divide-[#edf1f5]">
               {order.items.map((item, index) => (
                 <li
                   className="flex items-center justify-between gap-4 py-2.5 text-sm first:pt-0"
                   key={`${order.id}-${index}`}
                 >
                   <span className="flex min-w-0 items-center gap-3">
-                    <span className="grid h-7 min-w-7 shrink-0 place-items-center rounded-lg bg-[#f4f1e7] px-1.5 text-xs font-extrabold text-[#52647b]">
+                    <span className="grid h-7 min-w-7 shrink-0 place-items-center rounded-md bg-[#f1f4f7] px-1.5 text-xs font-extrabold text-[#52647b]">
                       {item.quantity}×
                     </span>
                     <span className="truncate font-semibold text-[#102c50]">
@@ -498,7 +524,7 @@ function OrderCard({
                 </li>
               ))}
             </ul>
-            <div className="mt-3 flex items-center justify-between rounded-2xl bg-[#fbfaf5] px-4 py-3">
+            <div className="mt-3 flex items-center justify-between rounded-xl bg-[#f3f6f8] px-4 py-3">
               <span className="text-sm font-bold text-[#65748a]">{t("Total")}</span>
               <span className="font-display text-xl font-extrabold text-[#092a53]">
                 {formatPrice(order.totalCents)}
@@ -627,14 +653,14 @@ function CustomerProfileDetails({ customer, onSave, t }) {
 
   return (
     <form className="space-y-6" onSubmit={saveProfile}>
-      <div className="flex flex-col gap-5 rounded-[22px] bg-[#fbfaf5] p-5 ring-1 ring-[#ece8dc] sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-5 rounded-2xl bg-[#f3f6f8] p-5 sm:flex-row sm:items-center">
         <div className="relative w-fit">
           <Avatar
             customer={{ name: profile.name, profilePicture: profile.profilePicture }}
             size="size-24"
             text="text-4xl"
           />
-          <span className="absolute -bottom-1 -right-1 grid size-9 place-items-center rounded-full bg-[#092a53] text-white ring-4 ring-[#fbfaf5]">
+          <span className="absolute -bottom-1 -right-1 grid size-9 place-items-center rounded-full bg-[#092a53] text-white ring-4 ring-[#f3f6f8]">
             <Icon className="size-4" path="M4 8h3l2-3h6l2 3h3v11H4V8Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
           </span>
         </div>
@@ -755,26 +781,24 @@ function RewardsCard({ points, t, compact = false }) {
   const remaining = POINTS_PER_REWARD - progress;
 
   return (
-    <div className="relative isolate overflow-hidden rounded-[26px] bg-gradient-to-br from-[#0d3566] via-[#092a53] to-[#061d3a] p-6 text-white shadow-[0_18px_40px_rgba(9,42,83,0.22)] sm:p-7">
-      <div aria-hidden="true" className="absolute -right-16 -top-20 -z-10 size-56 rounded-full border-[40px] border-white/[0.05]" />
-      <div aria-hidden="true" className="absolute -bottom-24 -left-10 -z-10 size-56 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]" />
+    <div className="overflow-hidden rounded-2xl bg-[#092a53] p-5 text-white sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">
+          <p className="text-xs font-semibold text-white/70">
             {t("Loyalty rewards")}
           </p>
-          <p className="mt-2 font-display text-5xl font-extrabold leading-none">
+          <p className="mt-2 font-display text-4xl font-extrabold leading-none sm:text-5xl">
             {formatPoints(points)}
-            <span className="ml-2 text-base font-bold text-white/70">{t("points")}</span>
+            <span className="ml-2 text-base font-semibold text-white/70">{t("points")}</span>
           </p>
         </div>
-        <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]">
-          <Icon className="size-6" path="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" />
+        <span className="rounded-md bg-[#fff3b0] px-2.5 py-1 text-xs font-bold text-[#5e4c00]">
+          {formatPoints(rewardsAvailable)} {t("Rewards available")}
         </span>
       </div>
 
       <div className="mt-6">
-        <div className="flex justify-between text-xs font-semibold text-white/70">
+        <div className="flex flex-wrap justify-between gap-2 text-xs font-semibold text-white/75">
           <span>{t("{points} points to your next reward", { points: remaining })}</span>
           <span>
             {progress}/{POINTS_PER_REWARD}
@@ -785,33 +809,27 @@ function RewardsCard({ points, t, compact = false }) {
           aria-valuemax={POINTS_PER_REWARD}
           aria-valuemin={0}
           aria-valuenow={progress}
-          className="mt-2 h-2.5 overflow-hidden rounded-full bg-white/12"
+          className="mt-2 h-2 overflow-hidden rounded-full bg-white/20"
           role="progressbar"
         >
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#ffdc32] to-[#ffe97a] shadow-[0_0_12px_rgba(255,220,50,0.6)] transition-[width] duration-700"
+            className="h-full rounded-full bg-[#ffdc32] transition-[width] duration-500 motion-reduce:transition-none"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
       {!compact && (
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-white/[0.07] p-4 ring-1 ring-white/10">
-            <p className="text-[11px] font-bold text-white/60">{t("Rewards available")}</p>
-            <p className="mt-1 font-display text-2xl font-extrabold">{rewardsAvailable}</p>
-          </div>
-          <div className="rounded-2xl bg-white/[0.07] p-4 ring-1 ring-white/10">
-            <p className="text-[11px] font-bold text-white/60">{t("Worth")}</p>
-            <p className="mt-1 font-display text-2xl font-extrabold text-[#ffdc32]">
+        <div className="mt-5 flex flex-wrap items-baseline gap-x-2 border-t border-white/15 pt-4">
+          <p className="text-xs font-semibold text-white/70">{t("Worth")}</p>
+          <p className="font-display text-xl font-bold text-[#ffdc32]">
               {new Intl.NumberFormat("fr-CM").format(rewardsAvailable * REWARD_VALUE_FCFA)}{" "}
               <span className="text-sm text-white/80">FCFA</span>
-            </p>
-          </div>
+          </p>
         </div>
       )}
 
-      <p className="mt-5 text-xs leading-5 text-white/65">
+      <p className="mt-4 text-xs leading-5 text-white/70">
         {t("Earn 1 point per 100 FCFA. Redeem 100 points for 1,000 FCFA off.")}
       </p>
     </div>
@@ -895,7 +913,7 @@ export function CustomerOrdersPage() {
 
   if (isLoading)
     return (
-      <div className="grid min-h-screen place-items-center bg-[#f8f7f2] text-sm font-semibold text-[#65748a]">
+      <div className="grid min-h-screen place-items-center bg-[#f4f6f8] text-sm font-semibold text-[#65748a]">
         {t("Loading account…")}
       </div>
     );
@@ -1070,12 +1088,12 @@ export function CustomerOrdersPage() {
     <ul className="grid gap-3 sm:grid-cols-2">
       {list.map((favorite) => (
         <li
-          className="group flex items-center gap-3.5 rounded-[20px] bg-white p-3 ring-1 ring-[#ebe7dc] transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(18,44,80,0.08)]"
+          className="group flex items-center gap-3.5 rounded-xl bg-white p-3 ring-1 ring-[#e5e9ee] transition-colors hover:bg-[#f8fafb]"
           key={favorite.itemId}
         >
           <img decoding="async" loading="lazy"
             alt=""
-            className="size-16 shrink-0 rounded-2xl bg-[#f4f1e7] object-cover"
+            className="size-16 shrink-0 rounded-xl bg-[#f1f4f7] object-cover"
             src={favorite.item.image}
           />
           <div className="min-w-0 flex-1">
@@ -1106,49 +1124,37 @@ export function CustomerOrdersPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
+    <div className="min-h-screen bg-[#f4f6f8] text-[#102c50]">
       <Header />
       <main id="main" tabIndex={-1}>
         {/* Hero */}
-        <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute -right-40 -top-40 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(63_134_214/0.3),rgb(63_134_214/0.3)_35%,transparent)]" />
-            <div className="absolute -bottom-48 -left-32 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
-          </div>
-
-          <div className="mx-auto max-w-[1320px] px-5 pb-24 pt-8 sm:px-8 sm:pb-28 sm:pt-12 lg:px-12 lg:pb-32">
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex min-w-0 items-center gap-5 sm:gap-6">
-                <div className="relative shrink-0">
-                  <div className="rounded-full bg-gradient-to-br from-[#ffdc32] to-[#a48700] p-[3px] shadow-[0_20px_44px_rgba(2,12,28,0.4)]">
-                    <div className="rounded-full bg-[#092a53] p-[3px]">
-                      <Avatar customer={customer} size="size-[76px] sm:size-28" text="text-4xl sm:text-5xl" />
-                    </div>
-                  </div>
-                  <span aria-hidden="true" className="absolute bottom-1 right-1 size-4 rounded-full bg-[#4caf50] ring-4 ring-[#092a53]" />
-                </div>
+        <section className="bg-[#092a53] text-white">
+          <div className="mx-auto max-w-[1200px] px-5 pb-7 pt-7 sm:px-8 sm:pb-8 sm:pt-9 lg:px-10">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+                <Avatar
+                  customer={customer}
+                  size="size-[60px] sm:size-[72px]"
+                  text="text-2xl sm:text-3xl"
+                />
                 <div className="min-w-0">
-                  <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pl-2 pr-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32] backdrop-blur-sm">
-                    <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#ffdc32] text-[10px] text-[#092a53]">✦</span>
-                    {t("My account")}
-                  </p>
-                  <h1 className="mt-3 break-words font-display text-3xl font-extrabold leading-[1.05] sm:text-5xl">
+                  <p className="text-xs font-semibold text-white/65">{t("My account")}</p>
+                  <h1 className="mt-1 break-words font-display text-2xl font-bold leading-tight sm:text-3xl">
                     {t("Welcome back, {name}", { name: firstName })}
                   </h1>
-                  <p className="mt-2 truncate text-sm text-white/65">{customer.email}</p>
+                  <p className="mt-1 truncate text-sm text-white/70">{customer.email}</p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2.5 sm:shrink-0">
                 <Link
-                  className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] shadow-[0_12px_30px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#ffdc32] px-4 py-2.5 text-sm font-bold text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
                   to="/menu"
                 >
                   {t("Browse the menu")}
                   <Icon className="size-4" path="M5 12h14m-5-5 5 5-5 5" />
                 </Link>
                 <Link
-                  className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/30 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
                   to="/custom-cake"
                 >
                   {t("Design a custom cake")}
@@ -1156,42 +1162,28 @@ export function CustomerOrdersPage() {
               </div>
             </div>
 
-            <dl className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            <dl className="mt-7 grid grid-cols-2 border-t border-white/20 pt-4 sm:grid-cols-4">
               {[
-                { label: t("Orders"), value: orders.length, icon: "M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" },
-                { label: t("Active orders"), value: activeOrders.length, icon: "M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" },
-                { label: t("Saved favorites"), value: favorites.length, icon: "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" },
-                { label: t("Loyalty rewards"), value: `${formatPoints(points)} ${t("pts")}`, accent: true, icon: "M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" },
-              ].map((stat) => (
+                { label: t("Orders"), value: orders.length },
+                { label: t("Active orders"), value: activeOrders.length },
+                { label: t("Saved favorites"), value: favorites.length },
+                { label: t("Loyalty rewards"), value: `${formatPoints(points)} ${t("pts")}`, accent: true },
+              ].map((stat, index) => (
                 <div
-                  className={`flex items-center gap-3 rounded-2xl border p-4 backdrop-blur-sm sm:gap-4 sm:p-5 ${
-                    stat.accent ? "border-[#ffdc32]/30 bg-[#ffdc32]/10" : "border-white/10 bg-white/[0.05]"
-                  }`}
+                  className={`min-w-0 py-2 sm:py-1 ${index % 2 === 1 ? "border-l border-white/15 pl-3" : "pr-3"} ${index > 0 ? "sm:border-l sm:border-white/20 sm:pl-5" : ""} ${index >= 2 ? "border-t border-white/15 sm:border-t-0 sm:pt-1" : ""} ${index === 2 ? "sm:pl-5" : ""}`}
                   key={stat.label}
                 >
-                  <span
-                    aria-hidden="true"
-                    className={`grid size-10 shrink-0 place-items-center rounded-xl sm:size-11 ${stat.accent ? "bg-[#ffdc32] text-[#092a53]" : "bg-white/10 text-[#ffdc32]"}`}
-                  >
-                    <Icon path={stat.icon} />
-                  </span>
-                  <div className="min-w-0">
-                    <dt className="text-[11px] font-bold leading-tight text-white/55">{stat.label}</dt>
-                    <dd className={`mt-0.5 truncate font-display text-xl font-extrabold tabular-nums sm:text-2xl ${stat.accent ? "text-[#ffdc32]" : ""}`}>
-                      {stat.value}
-                    </dd>
-                  </div>
+                  <dt className="truncate text-xs font-medium text-white/65">{stat.label}</dt>
+                  <dd className={`mt-1 truncate font-display text-xl font-bold tabular-nums sm:text-2xl ${stat.accent ? "text-[#ffdc32]" : "text-white"}`}>
+                    {stat.value}
+                  </dd>
                 </div>
               ))}
             </dl>
           </div>
-
-          <svg aria-hidden="true" className="absolute inset-x-0 -bottom-px h-10 w-full text-[#f8f7f2] sm:h-14 lg:h-20" fill="currentColor" preserveAspectRatio="none" viewBox="0 0 1440 80">
-            <path d="M0 80V42C240 4 480 0 720 22s480 44 720 4v54H0Z" />
-          </svg>
         </section>
 
-        <div className="mx-auto max-w-[1320px] px-5 pb-16 pt-2 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-[1200px] px-5 pb-16 pt-5 sm:px-8 sm:pt-7 lg:px-10">
 
         {(accountError || accountNotice) && (
           <div className="mt-5 space-y-3">
@@ -1220,13 +1212,13 @@ export function CustomerOrdersPage() {
           </div>
         )}
 
-        <div className="mt-6 grid items-start gap-6 lg:mt-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8">
+        <div className="mt-4 grid items-start gap-5 lg:mt-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10">
           {/* Navigation */}
           <nav
             aria-label={t("Account sections")}
             className="relative z-10 -mx-5 overflow-x-auto px-5 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+1.5rem)] lg:transition-[top] lg:duration-300 lg:mx-0 lg:overflow-visible lg:px-0"
           >
-            <ul className="flex w-max gap-2 lg:w-auto lg:flex-col lg:gap-1 lg:rounded-[26px] lg:bg-white lg:p-2.5 lg:shadow-[0_10px_30px_rgba(18,44,80,0.05)] lg:ring-1 lg:ring-[#ebe7dc]">
+            <ul className="flex w-max gap-1.5 lg:w-auto lg:flex-col lg:gap-1">
               {TABS.map((tab) => {
                 const isCurrent = tab.key === activeTab;
                 const count = tabCounts[tab.key];
@@ -1234,26 +1226,24 @@ export function CustomerOrdersPage() {
                   <li key={tab.key}>
                     <button
                       aria-current={isCurrent ? "page" : undefined}
-                      className={`flex w-full items-center gap-3 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] lg:rounded-2xl lg:px-3 lg:py-3 ${
+                      className={`flex min-h-11 items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] lg:w-full ${
                         isCurrent
-                          ? "bg-[#092a53] text-white shadow-[0_8px_20px_rgba(9,42,83,0.2)]"
-                          : "bg-white text-[#52647b] ring-1 ring-[#e7e3d8] hover:text-[#092a53] lg:bg-transparent lg:ring-0 lg:hover:bg-[#f6f4ec]"
+                          ? "bg-[#fff5c2] text-[#092a53]"
+                          : "bg-white text-[#52647b] ring-1 ring-[#e5e9ee] hover:bg-[#f5f7f9] hover:text-[#092a53] lg:bg-transparent lg:ring-0 lg:hover:bg-[#eef1f4]"
                       }`}
                       onClick={() => selectTab(tab.key)}
                       type="button"
                     >
                       <span
-                        className={`hidden size-9 shrink-0 place-items-center rounded-xl lg:grid ${
-                          isCurrent ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#f4f1e8] text-[#52647b]"
-                        }`}
+                        className={`hidden size-5 shrink-0 place-items-center lg:grid ${isCurrent ? "text-[#806800]" : "text-[#718095]"}`}
                       >
                         <Icon path={tab.icon} />
                       </span>
                       <span className="flex-1 text-left">{t(tab.label)}</span>
                       {count > 0 && (
                         <span
-                          className={`rounded-full px-2 py-0.5 text-[11px] ${
-                            isCurrent ? "bg-white/15 text-white" : "bg-[#f1eee4] text-[#65748a]"
+                          className={`rounded-md px-1.5 py-0.5 text-[11px] ${
+                            isCurrent ? "bg-white/70 text-[#5e4c00]" : "bg-[#f1f4f7] text-[#65748a]"
                           }`}
                         >
                           {count}
@@ -1263,13 +1253,13 @@ export function CustomerOrdersPage() {
                   </li>
                 );
               })}
-              <li className="lg:mt-1 lg:border-t lg:border-[#f0ece2] lg:pt-1">
+              <li className="lg:mt-2 lg:border-t lg:border-[#e5e9ee] lg:pt-2">
                 <button
-                  className="group/logout flex w-full items-center gap-3 whitespace-nowrap rounded-full bg-white px-4 py-2.5 text-sm font-extrabold text-[#52647b] ring-1 ring-[#e7e3d8] transition hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 lg:rounded-2xl lg:bg-transparent lg:px-3 lg:py-3 lg:ring-0 lg:hover:bg-red-50"
+                  className="group/logout flex min-h-11 w-full items-center gap-3 whitespace-nowrap rounded-lg bg-white px-3 py-2.5 text-sm font-semibold text-[#52647b] ring-1 ring-[#e5e9ee] transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 lg:bg-transparent lg:ring-0"
                   onClick={handleLogout}
                   type="button"
                 >
-                  <span className="hidden size-9 shrink-0 place-items-center rounded-xl bg-[#f4f1e8] transition group-hover/logout:bg-red-100 lg:grid">
+                  <span className="hidden size-5 shrink-0 place-items-center lg:grid">
                     <Icon path="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H4" />
                   </span>
                   {t("Log out")}
@@ -1297,7 +1287,7 @@ export function CustomerOrdersPage() {
                     title={t("Current order")}
                   />
                   {loadingOrders ? (
-                    <div className="h-64 animate-pulse rounded-[26px] bg-white ring-1 ring-[#ebe7dc]" />
+                    <div className="h-64 animate-pulse rounded-2xl bg-white ring-1 ring-[#e5e9ee]" />
                   ) : currentOrder ? (
                     renderOrderCard(currentOrder)
                   ) : (
@@ -1344,11 +1334,11 @@ export function CustomerOrdersPage() {
                         { label: t("Contact us"), to: "/contact", icon: "M4 6h16v12H4V6Zm0 0 8 7 8-7" },
                       ].map((action) => (
                         <Link
-                          className="group flex flex-col gap-3 rounded-2xl bg-[#fbfaf5] p-4 text-sm font-extrabold text-[#102c50] ring-1 ring-[#ece8dc] transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_10px_24px_rgba(18,44,80,0.08)]"
+                          className="group flex flex-col gap-3 rounded-xl bg-[#f3f6f8] p-4 text-sm font-extrabold text-[#102c50] transition-colors hover:bg-[#e9eef3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
                           key={action.to}
                           to={action.to}
                         >
-                          <span className="grid size-10 place-items-center rounded-xl bg-white text-[#8a7000] ring-1 ring-[#ece8dc] transition group-hover:bg-[#ffdc32] group-hover:text-[#092a53] group-hover:ring-transparent">
+                          <span className="grid size-10 place-items-center rounded-lg bg-white text-[#806800] transition-colors group-hover:bg-[#ffdc32] group-hover:text-[#092a53]">
                             <Icon path={action.icon} />
                           </span>
                           {action.label}
@@ -1389,7 +1379,7 @@ export function CustomerOrdersPage() {
                     </h2>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex rounded-full bg-white p-1 ring-1 ring-[#e7e3d8]" role="group" aria-label={t("Filter orders")}>
+                    <div className="flex rounded-lg bg-white p-1 ring-1 ring-[#e5e9ee]" role="group" aria-label={t("Filter orders")}>
                       {[
                         { key: "all", label: t("All") },
                         { key: "active", label: t("In progress") },
@@ -1397,7 +1387,7 @@ export function CustomerOrdersPage() {
                       ].map((filter) => (
                         <button
                           aria-pressed={orderFilter === filter.key}
-                          className={`rounded-full px-3.5 py-1.5 text-xs font-extrabold transition ${
+                          className={`rounded-md px-3.5 py-1.5 text-xs font-extrabold transition ${
                             orderFilter === filter.key
                               ? "bg-[#092a53] text-white"
                               : "text-[#65748a] hover:text-[#092a53]"
@@ -1412,7 +1402,7 @@ export function CustomerOrdersPage() {
                     </div>
                     <button
                       aria-label={t("Refresh order status")}
-                      className="grid size-9 place-items-center rounded-full bg-white text-[#52647b] ring-1 ring-[#e7e3d8] transition hover:text-[#092a53] disabled:opacity-50"
+                      className="grid size-9 place-items-center rounded-lg bg-white text-[#52647b] ring-1 ring-[#e5e9ee] transition hover:text-[#092a53] disabled:opacity-50"
                       disabled={loadingOrders}
                       onClick={() =>
                         refreshOrders().catch((loadError) => setError(loadError.message))
@@ -1432,7 +1422,7 @@ export function CustomerOrdersPage() {
                 {loadingOrders ? (
                   <div className="space-y-4">
                     {[0, 1].map((key) => (
-                      <div className="h-56 animate-pulse rounded-[26px] bg-white ring-1 ring-[#ebe7dc]" key={key} />
+                      <div className="h-56 animate-pulse rounded-2xl bg-white ring-1 ring-[#e5e9ee]" key={key} />
                     ))}
                   </div>
                 ) : filteredOrders.length ? (
@@ -1601,7 +1591,7 @@ export function CustomerOrdersPage() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="mt-4 rounded-2xl bg-[#fbfaf5] p-5 text-sm leading-6 text-[#65748a]">
+                      <p className="mt-4 rounded-xl bg-[#f3f6f8] p-5 text-sm leading-6 text-[#65748a]">
                         {t("Your points will appear here after your first paid order.")}
                       </p>
                     )}

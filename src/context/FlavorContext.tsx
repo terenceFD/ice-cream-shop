@@ -19,6 +19,8 @@ export interface Flavor {
   itemType?: string;
   currency?: string;
   quantity?: number;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 type FlavorInput = Omit<Flavor, 'id' | 'availableQuantity'>

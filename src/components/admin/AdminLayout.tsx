@@ -482,13 +482,14 @@ export function AdminLayout() {
             {hasTownScope && currentBranch && (
               <div className="relative" ref={branchMenuRef}>
                 <button
+                  aria-label={`${t('City')}: ${currentBranch.title}`}
                   aria-controls="admin-branch-menu"
                   aria-expanded={isBranchMenuOpen}
                   aria-haspopup="menu"
-                  className={`inline-flex min-h-11 items-center gap-2.5 rounded-2xl border px-2 py-1 pr-2.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:pr-3 ${
+                  className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-1.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${
                     isBranchMenuOpen
-                      ? 'border-[#092a53] bg-[#092a53] text-white shadow-[0_8px_20px_rgba(9,42,83,0.18)]'
-                      : 'border-[#e3e9f0] bg-white text-[#173654] hover:border-[#c5d2e0]'
+                      ? 'border-[#d9c45b] bg-[#fffdf3] text-[#092a53]'
+                      : 'border-[#e3e9f0] bg-white text-[#173654] hover:border-[#c5d2e0] hover:bg-[#fbfcfd]'
                   }`}
                   onClick={() => {
                     setIsLanguageMenuOpen(false)
@@ -497,37 +498,40 @@ export function AdminLayout() {
                   }}
                   type="button"
                 >
-                  <span className={`grid size-8 shrink-0 place-items-center rounded-xl font-display text-[11px] font-extrabold tracking-wide ${isBranchMenuOpen ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-[#092a53] text-[#ffdc32]'}`}>
+                  <span className="rounded-md bg-[#fff5c2] px-2 py-1 font-mono text-[11px] font-bold tracking-wide text-[#705a00]">
                     {currentBranch.mark}
                   </span>
-                  <span className="min-w-0 text-left">
-                    <span className={`block text-[10px] font-semibold ${isBranchMenuOpen ? 'text-white/60' : 'text-[#8190a1]'}`}>{t('City')}</span>
-                    <span className="block max-w-20 truncate text-xs font-extrabold sm:max-w-36">{currentBranch.title}</span>
+                  <span className="hidden min-w-0 text-left sm:block">
+                    <span className="block text-[11px] font-semibold text-[#8190a1]">{t('City')}</span>
+                    <span className="block max-w-24 truncate text-xs font-bold sm:max-w-36">{currentBranch.title}</span>
                   </span>
-                  <svg aria-hidden="true" className={`size-3.5 shrink-0 transition ${isBranchMenuOpen ? 'rotate-180 text-white/70' : 'text-[#8190a1]'}`} fill="none" viewBox="0 0 24 24">
+                  <svg aria-hidden="true" className={`size-3.5 shrink-0 text-[#8190a1] transition-transform ${isBranchMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24">
                     <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                   </svg>
                 </button>
                 {isBranchMenuOpen && (
                   <div
-                    className="admin-modal-panel fixed z-50 overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.22)] ring-1 ring-[#d7e0ea]"
+                    className="admin-modal-panel fixed z-50 overflow-hidden rounded-xl border border-[#dfe5ec] bg-white shadow-[0_12px_32px_rgba(9,42,83,0.12)]"
                     style={branchMenuBox ?? undefined}
                     id="admin-branch-menu"
                     role="menu"
                   >
-                    <div className="bg-[#092a53] px-4 py-3.5 text-white">
-                      <p className="text-[11px] font-semibold text-white/60">{t('Current city')}</p>
-                      <p className="mt-0.5 font-display text-lg font-extrabold leading-tight">{currentBranch.title}</p>
-                      <p className="mt-1 text-xs leading-5 text-white/65">{t('Orders, customers and reports follow this city.')}</p>
+                    <div className="border-b border-[#e8edf2] bg-[#fafbfc] px-4 py-3.5">
+                      <p className="text-[11px] font-bold text-[#8190a1]">{t('Current city')}</p>
+                      <div className="mt-1 flex items-center justify-between gap-3">
+                        <p className="text-sm font-bold leading-tight text-[#092a53]">{currentBranch.title}</p>
+                        <span className="rounded-full bg-[#fff5c2] px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#705a00]">{currentBranch.mark}</span>
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-[#65748a]">{t('Orders, customers and reports follow this city.')}</p>
                     </div>
-                    <div className="p-1.5">
+                    <div className="space-y-1 p-2">
                       {branchChoices.map((choice) => {
                         const isSelected = selectedBranch === choice.id
                         return (
                           <button
                             aria-checked={isSelected}
-                            className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] ${
-                              isSelected ? 'bg-[#f4f7fb]' : 'hover:bg-[#f7f9fc]'
+                            className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] ${
+                              isSelected ? 'border-[#ead77c] bg-[#fffbea]' : 'border-transparent hover:bg-[#f7f9fc]'
                             } disabled:cursor-default`}
                             disabled={!isOwner || isSelected}
                             key={choice.id}
@@ -544,17 +548,17 @@ export function AdminLayout() {
                             role="menuitemradio"
                             type="button"
                           >
-                            <span className={`grid size-10 shrink-0 place-items-center rounded-xl font-display text-xs font-extrabold ${isSelected ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#eef2f6] text-[#355777]'}`}>
+                            <span className={`shrink-0 rounded-md px-2 py-1 font-mono text-[11px] font-bold tracking-wide ${isSelected ? 'bg-[#fff1a8] text-[#705a00]' : 'bg-[#f1f4f7] text-[#52667d]'}`}>
                               {choice.mark}
                             </span>
                             <span className="min-w-0 flex-1">
-                              <span className="block text-sm font-extrabold text-[#092a53]">{choice.title}</span>
+                              <span className="block text-[13px] font-bold text-[#092a53]">{choice.title}</span>
                               <span className="mt-0.5 block text-xs leading-4 text-[#65748a]">{choice.detail}</span>
                             </span>
-                            <span className={`grid size-5 shrink-0 place-items-center rounded-full ${isSelected ? 'bg-[#2e9d5b] text-white' : 'ring-1 ring-[#d5dee8]'}`}>
+                            <span className={`grid size-[18px] shrink-0 place-items-center rounded-full border ${isSelected ? 'border-[#b89c22] bg-[#ffdc32] text-[#092a53]' : 'border-[#cfd8e2] text-transparent'}`}>
                               {isSelected && (
-                                <svg aria-hidden="true" className="size-3" fill="none" viewBox="0 0 24 24">
-                                  <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" />
+                                <svg aria-hidden="true" className="size-2.5" fill="none" viewBox="0 0 24 24">
+                                  <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
                                 </svg>
                               )}
                             </span>
@@ -573,10 +577,10 @@ export function AdminLayout() {
                 aria-expanded={isLanguageMenuOpen}
                 aria-haspopup="menu"
                 aria-label={`${t('Language')}: ${currentLanguage.title}`}
-                className={`inline-flex min-h-11 items-center gap-2.5 rounded-2xl border px-2 py-1 pr-2.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:pr-3 ${
+                className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-1.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${
                   isLanguageMenuOpen
-                    ? 'border-[#092a53] bg-[#092a53] text-white shadow-[0_8px_20px_rgba(9,42,83,0.18)]'
-                    : 'border-[#e3e9f0] bg-white text-[#173654] hover:border-[#c5d2e0]'
+                    ? 'border-[#d9c45b] bg-[#fffdf3] text-[#092a53]'
+                    : 'border-[#e3e9f0] bg-white text-[#173654] hover:border-[#c5d2e0] hover:bg-[#fbfcfd]'
                 }`}
                 onClick={() => {
                   setIsBranchMenuOpen(false)
@@ -584,36 +588,39 @@ export function AdminLayout() {
                 }}
                 type="button"
               >
-                <span className={`grid size-8 shrink-0 place-items-center rounded-xl font-display text-[11px] font-extrabold tracking-wide ${isLanguageMenuOpen ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-[#092a53] text-[#ffdc32]'}`}>
+                <span className="rounded-md bg-[#fff5c2] px-2 py-1 font-mono text-[11px] font-bold tracking-wide text-[#705a00]">
                   {currentLanguage.mark}
                 </span>
-                <span className="min-w-0 text-left">
-                  <span className={`block text-[10px] font-semibold ${isLanguageMenuOpen ? 'text-white/60' : 'text-[#8190a1]'}`}>{t('Language')}</span>
-                  <span className="block max-w-[4.5rem] truncate text-xs font-extrabold sm:max-w-none">{currentLanguage.title}</span>
+                <span className="hidden min-w-0 text-left sm:block">
+                  <span className="block text-[11px] font-semibold text-[#8190a1]">{t('Language')}</span>
+                  <span className="block max-w-[4.5rem] truncate text-xs font-bold sm:max-w-none">{currentLanguage.title}</span>
                 </span>
-                <svg aria-hidden="true" className={`size-3.5 shrink-0 transition ${isLanguageMenuOpen ? 'rotate-180 text-white/70' : 'text-[#8190a1]'}`} fill="none" viewBox="0 0 24 24">
+                <svg aria-hidden="true" className={`size-3.5 shrink-0 text-[#8190a1] transition-transform ${isLanguageMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24">
                   <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 </svg>
               </button>
               {isLanguageMenuOpen && (
                 <div
-                  className="admin-modal-panel absolute right-0 top-[calc(100%+10px)] z-50 w-[min(18.5rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.22)] ring-1 ring-[#d7e0ea]"
+                  className="admin-modal-panel absolute right-0 top-[calc(100%+8px)] z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-[#dfe5ec] bg-white shadow-[0_12px_32px_rgba(9,42,83,0.12)]"
                   id="admin-language-menu"
                   role="menu"
                 >
-                  <div className="bg-[#092a53] px-4 py-3.5 text-white">
-                    <p className="text-[11px] font-semibold text-white/60">{t('Select language')}</p>
-                    <p className="mt-0.5 font-display text-lg font-extrabold leading-tight">{currentLanguage.title}</p>
-                    <p className="mt-1 text-xs leading-5 text-white/65">{t('Menus, labels and reports switch with this choice.')}</p>
+                  <div className="border-b border-[#e8edf2] bg-[#fafbfc] px-4 py-3.5">
+                    <p className="text-[11px] font-bold text-[#8190a1]">{t('Select language')}</p>
+                    <div className="mt-1 flex items-center justify-between gap-3">
+                      <p className="text-sm font-bold leading-tight text-[#092a53]">{currentLanguage.title}</p>
+                      <span className="rounded-full bg-[#fff5c2] px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#705a00]">{currentLanguage.mark}</span>
+                    </div>
+                    <p className="mt-1 text-xs leading-5 text-[#65748a]">{t('Menus, labels and reports switch with this choice.')}</p>
                   </div>
-                  <div className="p-1.5">
+                  <div className="space-y-1 p-2">
                     {languageChoices.map((choice) => {
                       const isSelected = language === choice.id
                       return (
                         <button
                           aria-checked={isSelected}
-                          className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] ${
-                            isSelected ? 'bg-[#f4f7fb]' : 'hover:bg-[#f7f9fc]'
+                          className={`flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] ${
+                            isSelected ? 'border-[#ead77c] bg-[#fffbea]' : 'border-transparent hover:bg-[#f7f9fc]'
                           }`}
                           key={choice.id}
                           lang={choice.id}
@@ -624,17 +631,17 @@ export function AdminLayout() {
                           role="menuitemradio"
                           type="button"
                         >
-                          <span className={`grid size-10 shrink-0 place-items-center rounded-xl font-display text-xs font-extrabold ${isSelected ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#eef2f6] text-[#355777]'}`}>
+                          <span className={`shrink-0 rounded-md px-2 py-1 font-mono text-[11px] font-bold tracking-wide ${isSelected ? 'bg-[#fff1a8] text-[#705a00]' : 'bg-[#f1f4f7] text-[#52667d]'}`}>
                             {choice.mark}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-extrabold text-[#092a53]">{choice.title}</span>
+                            <span className="block text-[13px] font-bold text-[#092a53]">{choice.title}</span>
                             <span className="mt-0.5 block text-xs leading-4 text-[#65748a]">{choice.detail}</span>
                           </span>
-                          <span className={`grid size-5 shrink-0 place-items-center rounded-full ${isSelected ? 'bg-[#2e9d5b] text-white' : 'ring-1 ring-[#d5dee8]'}`}>
+                          <span className={`grid size-[18px] shrink-0 place-items-center rounded-full border ${isSelected ? 'border-[#b89c22] bg-[#ffdc32] text-[#092a53]' : 'border-[#cfd8e2] text-transparent'}`}>
                             {isSelected && (
-                              <svg aria-hidden="true" className="size-3" fill="none" viewBox="0 0 24 24">
-                                <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" />
+                              <svg aria-hidden="true" className="size-2.5" fill="none" viewBox="0 0 24 24">
+                                <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
                               </svg>
                             )}
                           </span>

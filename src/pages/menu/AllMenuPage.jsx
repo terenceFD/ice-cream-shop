@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Footer, Header } from "../../components/Layout";
 import { PageHero } from "../../components/PageHero";
+import { RatingBadge } from "../../components/RatingBadge";
 import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
 import { apiRequest } from "../../api/api";
 import { useCart } from "../../context/useCart";
@@ -71,26 +72,33 @@ function MenuItemCard({ category, item, formatPrice, onAdd, added, showCategory,
             {t(item.name)}
           </Link>
         </h3>
+        <div className="mt-1.5">
+          <RatingBadge
+            averageRating={item.averageRating}
+            reviewCount={item.reviewCount}
+          />
+        </div>
         <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[#65748a] sm:text-sm sm:leading-6">{t(item.detail)}</p>
 
-        <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-4">
+        <div className="mt-auto flex flex-col gap-2 pt-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:pt-4">
           <span className="font-display text-sm font-extrabold tabular-nums text-[#8a7000] sm:text-lg">
             {formatPrice(item.priceXaf)}
           </span>
           <button
-            aria-label={added ? t("Added to your bag") : t("Add {name} to your bag", { name: t(item.name) })}
-            className={`relative z-10 grid size-9 shrink-0 place-items-center rounded-full transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#ece8de] disabled:text-[#a5aebb] sm:size-10 ${
+            aria-label={added ? t("Added to your bag") : t("Add {name} to cart", { name: t(item.name) })}
+            className={`relative z-10 inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-full px-3 text-[11px] font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#ece8de] disabled:text-[#a5aebb] sm:w-auto sm:px-4 sm:text-xs ${
               added ? "bg-[#37632c] text-white" : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#ffe76c]"
             }`}
             disabled={soldOut}
             onClick={() => onAdd(category, item)}
             type="button"
           >
-            <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-              {added
-                ? <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.6" />
-                : <path d="M12 5v14M5 12h14" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" />}
-            </svg>
+            {added && (
+              <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.6" />
+              </svg>
+            )}
+            <span>{added ? t("Added") : t("Add to cart")}</span>
           </button>
         </div>
       </div>

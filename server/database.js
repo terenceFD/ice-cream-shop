@@ -2315,7 +2315,12 @@ export async function setCakeRequestStatus(id, status, storeId = null, storeTown
 
 export async function setReviewApproval(id, isApproved, storeId = null, storeTown = null) {
   const storeFilter = `${storeTown === null ? '' : ' AND EXISTS (SELECT 1 FROM orders JOIN stores ON stores.id = orders.store_id WHERE orders.id = menu_reviews.order_id AND stores.town = ?)'}${storeId === null ? '' : ' AND EXISTS (SELECT 1 FROM orders WHERE orders.id = menu_reviews.order_id AND orders.store_id = ?)'}`
-  const parameters = [isApproved ? 1 : 0, id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
+  const parameters = [
+    databaseKind === "postgres" ? isApproved : isApproved ? 1 : 0,
+    id,
+    ...(storeTown === null ? [] : [storeTown]),
+    ...(storeId === null ? [] : [storeId]),
+  ]
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const result = await database.prepare(`UPDATE menu_reviews SET is_approved = ? WHERE id = ?${storeFilter}`)
@@ -2424,6 +2429,32 @@ export async function createMenuReview({ customerId, orderId, itemId, rating, re
     VALUES (?, ?, ?, ?, ?)
   `).run(customerId, orderId, itemId, rating, review)
   return { reviewId: Number(result.lastInsertRowid), pendingApproval: true }
+}
+
+export async function createMenuReviews({ customerId, orderId, itemIds, rating, review }) {
+  if (databaseKind === "sqlite") {
+    return database.transaction(() => itemIds.map((itemId) => {
+      const result = database.prepare(`
+        INSERT INTO menu_reviews (customer_id, order_id, item_id, rating, review)
+        VALUES (?, ?, ?, ?, ?)
+      `).run(customerId, orderId, itemId, rating, review)
+      return { reviewId: Number(result.lastInsertRowid), pendingApproval: true }
+    }))()
+  }
+
+  return database.transaction(async () => {
+    const results = []
+    for (const itemId of itemIds) {
+      results.push(await createMenuReview({
+        customerId,
+        orderId,
+        itemId,
+        rating,
+        review,
+      }))
+    }
+    return results
+  })
 }
 
 export async function createCakeRequest({
