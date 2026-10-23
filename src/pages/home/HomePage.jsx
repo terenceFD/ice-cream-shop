@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Footer, Header, ArrowIcon } from "../../components/Layout";
 import { HeroBackground } from "../../components/HeroBackground";
 import { useCart } from "../../context/useCart";
+import { useFlavors } from "../../context/useFlavors";
 import { apiRequest } from "../../api/api";
 import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
 import { ProductImageSlider } from "../../components/ProductImageSlider";
@@ -153,6 +154,23 @@ const flavorInspiration = [
     color: "#ffe9a8",
   },
 ];
+const flavorImageAlternates = {
+  fruit: [
+    "/flavor-inspiration/strawberry-daydream.jpg",
+    "/flavor-inspiration/mango-sunshine.jpg",
+    "/menu-official/ice-cream/signature-creations/berry-berry-berry-good-2.webp",
+  ],
+  chocolate: [
+    "/flavor-inspiration/chocolate-crush.jpg",
+    "/menu-official/ice-cream/signature-creations/chocolate-devotion-2.webp",
+    "/menu-official/ice-cream/signature-creations/our-dubai-chocolate-creation-2.webp",
+  ],
+  classics: [
+    "/flavor-inspiration/vanilla-cloud.jpg",
+    "/menu-official/ice-cream/signature-creations/founders-favorite-2.webp",
+    "/menu-official/ice-cream/signature-creations/cookie-mintster-2.webp",
+  ],
+};
 const homeSlides = [
   {
     eyebrow: "A little happiness in every scoop",
@@ -212,6 +230,34 @@ function findMenuItem(categories, categoryTitle, itemName) {
   return category?.items.find(
     (entry) => entry.name === itemName,
   );
+}
+
+function getFlavorMood(flavor) {
+  const flavorText = [flavor.name, flavor.detail, flavor.description, flavor.tag]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  if (/fruit|berry|strawberry|mango|banana|raspberry|blueberry|peach|pineapple|lemon/.test(flavorText)) {
+    return "fruit";
+  }
+  if (/chocolate|cocoa|cacao|fudge|brownie|nut|peanut|coffee/.test(flavorText)) {
+    return "chocolate";
+  }
+  return "classics";
+}
+
+function getFlavorCardImages(flavor, item) {
+  const images = [...new Set(
+    (flavor.images || (item?.image ? [item.image, ...(item.gallery || [])] : [flavor.image]))
+      .filter(Boolean),
+  )];
+  if (images.length > 1) return images;
+
+  const alternates = flavorImageAlternates[flavor.mood] || flavorImageAlternates.classics;
+  return [
+    ...images,
+    ...alternates.filter((image) => !images.includes(image)).slice(0, 2),
+  ];
 }
 
 const STAR_PATH =
@@ -591,6 +637,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
 export function HomePage() {
   const { language, t } = useLanguage();
   const { addToCart } = useCart();
+  const { flavors: catalogFlavors } = useFlavors();
   const navigate = useNavigate();
   const [popularFlavors, setPopularFlavors] = useState([]);
   const [popularLoaded, setPopularLoaded] = useState(false);
@@ -607,6 +654,8 @@ export function HomePage() {
   const [reviewsLoaded, setReviewsLoaded] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const [selectedFlavorMood, setSelectedFlavorMood] = useState("all");
+  const [flavorSearch, setFlavorSearch] = useState("");
+  const [showAllFlavorResults, setShowAllFlavorResults] = useState(false);
   const [selectedCakeType, setSelectedCakeType] = useState("all");
   const [cakeSearch, setCakeSearch] = useState("");
   const [loadedSlides, setLoadedSlides] = useState([0]);
@@ -626,7 +675,6 @@ export function HomePage() {
     { id: "menu", label: "Menu" },
   ];
   const [activeSection, setActiveSection] = useState("");
-  const [heroSearch, setHeroSearch] = useState("");
   // The hero pauses when the visitor hovers/focuses it or after they take control with the
   // arrows, so no one is dragged to the next slide mid-read. Auto-rotation resumes on
   // mouse leave/blur and resumes on its own after a while.
@@ -788,6 +836,23 @@ export function HomePage() {
     }
   }
 
+  function handleCatalogFlavorAdd(flavor) {
+    const added = addToCart(flavor);
+    setCartNoticeIsError(!added);
+    setCartNotice(
+      added
+        ? t("Added {name} to your bag.", { name: t(flavor.name) })
+        : t("This item could not be added to your bag. Please try again."),
+    );
+    window.clearTimeout(cartNoticeTimer.current);
+    cartNoticeTimer.current = window.setTimeout(() => setCartNotice(""), 4500);
+    if (added) {
+      setAddedItemKey(flavor.id);
+      window.clearTimeout(addedTimer.current);
+      addedTimer.current = window.setTimeout(() => setAddedItemKey(null), 1800);
+    }
+  }
+
   useEffect(() => () => window.clearTimeout(addedTimer.current), []);
   useEffect(() => () => window.clearTimeout(cartNoticeTimer.current), []);
   useEffect(
@@ -829,9 +894,38 @@ export function HomePage() {
   const formatPrice = (price) =>
     `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
 
-  const visibleFlavors = flavorInspiration.filter(
-    (flavor) => selectedFlavorMood === "all" || flavor.mood === selectedFlavorMood,
-  );
+  const catalogFlavorCards = catalogFlavors
+    .filter((flavor) => flavor.availableQuantity > 0)
+    .map((flavor, index) => ({
+      id: `catalog-${flavor.id}`,
+      title: flavor.name,
+      detail: flavor.detail || flavor.description,
+      mood: getFlavorMood(flavor),
+      category: "catalog",
+      item: flavor.name,
+      image: flavor.image,
+      color: flavor.color || ["#f7c8d9", "#ffd45d", "#d9b2a0", "#ded0ef"][index % 4],
+      catalogFlavor: flavor,
+    }));
+  const catalogFlavorNames = new Set(catalogFlavorCards.map((flavor) => flavor.item.toLowerCase()));
+  const allFlavorCards = [
+    ...flavorInspiration.filter((flavor) => !catalogFlavorNames.has(flavor.item.toLowerCase())),
+    ...catalogFlavorCards,
+  ];
+  const flavorFiltersActive = showAllFlavorResults || selectedFlavorMood !== "all" || Boolean(flavorSearch.trim());
+  const matchingFlavors = allFlavorCards.filter((flavor) => {
+    const matchesMood = selectedFlavorMood === "all" || flavor.mood === selectedFlavorMood;
+    const query = flavorSearch.trim().toLocaleLowerCase();
+    const searchableText = [flavor.title, flavor.item, flavor.detail, flavor.catalogFlavor?.description, flavor.catalogFlavor?.tag]
+      .filter(Boolean)
+      .join(" ");
+    const matchesSearch = !query || searchableText.toLocaleLowerCase().includes(query)
+      || t(flavor.title).toLocaleLowerCase().includes(query)
+      || t(flavor.detail || "").toLocaleLowerCase().includes(query)
+      || t(flavor.catalogFlavor?.tag || "").toLocaleLowerCase().includes(query);
+    return matchesMood && matchesSearch;
+  });
+  const visibleFlavors = flavorFiltersActive ? matchingFlavors : flavorInspiration.slice(0, 8);
 
   // Real menu prices for the flavor cards, so the teasers set expectations before clicking.
   const flavorMenuItems = new Map(
@@ -896,7 +990,8 @@ export function HomePage() {
         String(cake.detail || "").toLowerCase().includes(cakeQuery);
       return typeOk && queryOk;
     });
-    return items;
+    const hasActiveFilter = selectedCakeType !== "all" || cakeQuery.length > 0;
+    return hasActiveFilter ? items : items.slice(0, 8);
   }, [cakeMenuCategory, selectedCakeType, cakeQuery]);
   // Every cake card needs a slider (more than one photo), but many catalog items
   // only carry a single image and no gallery. For those, pair the item's own photo
@@ -976,84 +1071,6 @@ export function HomePage() {
                     {t(homeSlides[activeSlide].secondaryCta)}{" "}
                     <ArrowIcon diagonal />
                   </Link>
-                </div>
-                <div className="mt-6 max-w-lg rounded-2xl border border-white/15 bg-white/[0.06] p-3 shadow-[0_12px_30px_rgba(0,0,0,0.12)] sm:mt-7 sm:p-4">
-                  <label
-                    className="mb-2 block text-xs font-extrabold uppercase tracking-[0.14em] text-white/90 sm:text-sm"
-                    htmlFor="home-hero-search"
-                  >
-                    {t("Search the menu")}
-                  </label>
-                  <form
-                    id="home-hero-search-form"
-                    className="flex items-center gap-2"
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      const query = heroSearch.trim();
-                      if (!query) return;
-                      // A term that names a menu category ("Novelties") goes straight to that
-                      // category's catalog page; anything else searches the whole catalog.
-                      const normalized = query.toLowerCase();
-                      const findCategory = (predicate) =>
-                        coldStoneMenuCategories.find(predicate);
-                      const category =
-                        findCategory(
-                          (entry) =>
-                            entry.title.toLowerCase() === normalized ||
-                            t(entry.title).toLowerCase() === normalized,
-                        ) ||
-                        findCategory(
-                          (entry) =>
-                            entry.title.toLowerCase().includes(normalized) ||
-                            t(entry.title).toLowerCase().includes(normalized),
-                        );
-                      if (category) {
-                        navigate(`/menu?category=${encodeURIComponent(category.title)}`);
-                        return;
-                      }
-                      navigate(`/menu/all?search=${encodeURIComponent(query)}`);
-                    }}
-                    role="search"
-                  >
-                    <div className="relative min-w-0 flex-1">
-                      <svg
-                        aria-hidden="true"
-                        className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#123b68]/70"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeWidth="2"
-                        />
-                      </svg>
-                      <input
-                        aria-label={t("Search the menu")}
-                        className="min-h-12 w-full rounded-xl border border-white/20 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-[#092a53] placeholder:text-[#52647b]/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
-                        id="home-hero-search"
-                        onChange={(event) => setHeroSearch(event.target.value)}
-                        placeholder={t("Search \u201CDubai chocolate\u201D, \u201Cmango\u201D\u2026")}
-                        type="search"
-                        value={heroSearch}
-                      />
-                    </div>
-                    <button
-                      className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#ffdc32] text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
-                      type="submit"
-                    >
-                      <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
-                        <path
-                          d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeWidth="2"
-                        />
-                      </svg>
-                      <span className="sr-only">{t("Search")}</span>
-                    </button>
-                  </form>
                 </div>
 
                 <ul className="mt-6 hidden flex-wrap gap-x-8 gap-y-3 border-t border-white/10 pt-6 text-sm font-semibold text-white/80 sm:flex">
@@ -1500,68 +1517,121 @@ export function HomePage() {
               </div>
             </div>
 
-            <div
-              aria-label={t("Filter flavor inspiration")}
-              className="mt-8 flex flex-wrap gap-2.5"
-              role="group"
-            >
-              {[
-                ["all", "All cravings"],
-                ["fruit", "Fruit lovers"],
-                ["chocolate", "Chocolate moods"],
-                ["classics", "The classics"],
-              ].map(([mood, label]) => {
-                const selected = selectedFlavorMood === mood;
-                return (
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div aria-label={t("Filter flavor inspiration")} className="flex flex-wrap gap-2.5" role="group">
+                {[
+                  ["all", "All cravings"],
+                  ["fruit", "Fruit lovers"],
+                  ["chocolate", "Chocolate moods"],
+                  ["classics", "The classics"],
+                ].map(([mood, label]) => {
+                  const selected = selectedFlavorMood === mood;
+                  return (
+                    <button
+                      aria-pressed={selected}
+                      className={`min-h-11 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
+                        selected
+                          ? "border-[#092a53] bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)]"
+                          : "border-[#cfd8e1] bg-transparent text-[#123b68] hover:border-[#092a53] hover:bg-white/70"
+                      }`}
+                      key={mood}
+                      onClick={() => {
+                        setSelectedFlavorMood(mood);
+                        setShowAllFlavorResults(mood !== "all");
+                      }}
+                      type="button"
+                    >
+                      {t(label)}
+                    </button>
+                  );
+                })}
+              </div>
+              <label className="relative block w-full sm:max-w-xs">
+                <span className="sr-only">{t("Search flavors")}</span>
+                <svg aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#65748a]" fill="none" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+                  <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                </svg>
+                <input
+                  className="min-h-11 w-full rounded-full border border-[#cfd8e1] bg-white py-2.5 pl-12 pr-10 text-sm font-semibold text-[#092a53] outline-none transition placeholder:text-[#8190a1] focus:border-[#092a53] focus:ring-2 focus:ring-[#092a53]/15"
+                  onChange={(event) => {
+                    const query = event.target.value;
+                    setFlavorSearch(query);
+                    if (query.trim()) setShowAllFlavorResults(true);
+                    else if (selectedFlavorMood === "all") setShowAllFlavorResults(false);
+                  }}
+                  placeholder={t("Search flavors")}
+                  type="search"
+                  value={flavorSearch}
+                />
+                {flavorSearch && (
                   <button
-                    aria-pressed={selected}
-                    className={`min-h-11 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
-                      selected
-                        ? "border-[#092a53] bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)]"
-                        : "border-[#cfd8e1] bg-transparent text-[#123b68] hover:border-[#092a53] hover:bg-white/70"
-                    }`}
-                    key={mood}
-                    onClick={() => setSelectedFlavorMood(mood)}
+                    aria-label={t("Clear search")}
+                    className="absolute right-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-[#65748a] transition hover:bg-[#efece3] hover:text-[#092a53]"
+                    onClick={() => {
+                      setFlavorSearch("");
+                      if (selectedFlavorMood === "all") setShowAllFlavorResults(false);
+                    }}
                     type="button"
                   >
-                    {t(label)}
+                    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                    </svg>
                   </button>
-                );
-              })}
+                )}
+              </label>
             </div>
 
+            {flavorFiltersActive && (
+              <p aria-live="polite" className="mt-5 text-xs font-semibold text-[#65748a]">
+                {t("Showing {shown} of {total} flavors", {
+                  shown: matchingFlavors.length,
+                  total: allFlavorCards.length,
+                })}
+              </p>
+            )}
             {visibleFlavors.length === 0 ? (
               <p
                 className="mt-8 rounded-2xl border border-[#e6ebf1] bg-white px-5 py-8 text-center text-base leading-7 text-[#52647b]"
                 role="status"
               >
-                {t("Nothing here yet for this mood — try another craving.")}
+                {t("No flavors match your filters.")}
               </p>
             ) : null}
             <ul
-              className={visibleFlavors.length === 0 ? "hidden" : "mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-5 lg:gap-5"}
+              className={visibleFlavors.length === 0 ? "hidden" : "mt-8 grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5"}
             >
               {visibleFlavors.map((flavor) => {
-                const item = flavorMenuItems.get(flavor.id);
+                const catalogFlavor = flavor.catalogFlavor;
+                const item = catalogFlavor || flavorMenuItems.get(flavor.id);
                 const itemKey = item?.id || item?.name || flavor.item;
                 const added = addedItemKey === itemKey;
-                const soldOut = item?.isAvailable === false || item?.availableQuantity < 1;
-                const images = flavor.images || (item?.image
-                  ? [item.image, ...(item.gallery || [])]
-                  : [flavor.image]);
+                const soldOut = catalogFlavor
+                  ? catalogFlavor.availableQuantity < 1
+                  : item?.isAvailable === false || item?.availableQuantity < 1;
+                const images = getFlavorCardImages(flavor, item);
 
                 return (
-                  <li className="group min-w-0 overflow-hidden rounded-[28px] bg-white shadow-[0_10px_30px_rgba(9,42,83,0.10)]" key={flavor.id}>
+                  <li
+                    className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_10px_30px_rgba(9,42,83,0.10)] ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[color:var(--card-accent)]/40 motion-reduce:transform-none motion-reduce:transition-none"
+                    key={flavor.id}
+                    style={{ "--card-accent": flavor.color }}
+                  >
+                    {/* Shine sweep on hover */}
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 z-20 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_30%,rgba(255,255,255,0.55)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
+                    />
                     <div className="relative">
                       <ProductImageSlider
                         frameClassName="rounded-none shadow-none"
-                        imageClassName="aspect-[4/3]"
+                        imageClassName="aspect-[4/3] transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none"
                         images={images}
                         name={t(flavor.title)}
                         resetKey={flavor.id}
                       />
                       <span
-                        className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53] shadow-sm backdrop-blur-sm"
+                        className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53] shadow-sm backdrop-blur-sm transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none"
                         style={{ backgroundColor: flavor.color }}
                       >
                         {t(
@@ -1579,18 +1649,20 @@ export function HomePage() {
                       )}
                     </div>
                     <div
-                      className="flex min-h-[150px] flex-col justify-between gap-3 border-t-4 px-5 py-4 sm:px-6 sm:py-5"
+                      className="flex min-h-[190px] flex-1 flex-col justify-between gap-3 border-t-4 px-5 py-4 sm:px-6 sm:py-5"
                       style={{ borderColor: flavor.color }}
                     >
                       <div>
                         <Link
-                          className="font-display text-xl font-extrabold leading-tight text-[#092a53] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-2xl"
-                          to={`/menu?${new URLSearchParams({ category: flavor.category, item: flavor.item })}`}
+                          className="line-clamp-2 min-h-[2.5em] font-display text-xl font-extrabold leading-tight text-[#092a53] transition-colors duration-300 hover:text-[#163e6b] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-2xl"
+                          to={catalogFlavor
+                            ? `/flavor/${catalogFlavor.id}`
+                            : `/menu?${new URLSearchParams({ category: flavor.category, item: flavor.item })}`}
                         >
                           {t(flavor.title)}
                         </Link>
-                        <p className="mt-2 text-xs font-medium leading-5 text-[#123b68] sm:text-[13px]">
-                          {t(flavor.detail)}
+                        <p className="mt-2 line-clamp-2 min-h-10 text-xs font-medium leading-5 text-[#123b68] sm:text-[13px]">
+                          {t(flavor.detail || "")}
                         </p>
                       </div>
                       <div className="flex items-center justify-between gap-2">
@@ -1599,21 +1671,25 @@ export function HomePage() {
                             added ? "animate-pulse text-green-700" : "text-[#092a53]"
                           }`}
                         >
-                          {flavorPrices.get(flavor.id) != null
-                            ? formatPrice(flavorPrices.get(flavor.id))
-                            : ""}
+                          {catalogFlavor
+                            ? formatPrice(catalogFlavor.price)
+                            : flavorPrices.get(flavor.id) != null
+                              ? formatPrice(flavorPrices.get(flavor.id))
+                              : ""}
                         </span>
                         <button
                           aria-label={soldOut
                             ? t("Sold out")
                             : t("Add {name} to your bag", { name: t(flavor.item) })}
-                          className={`min-h-10 shrink-0 rounded-full px-4 text-xs font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] ${
+                          className={`min-h-10 shrink-0 rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 group-hover:scale-105 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] disabled:group-hover:scale-100 ${
                             added
                               ? "bg-[#4caf50] text-white"
                               : "bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]"
                           }`}
                           disabled={soldOut || !item}
-                          onClick={() => item && handleAddToCart(item, flavor.category)}
+                          onClick={() => catalogFlavor
+                            ? handleCatalogFlavorAdd(catalogFlavor)
+                            : item && handleAddToCart(item, flavor.category)}
                           type="button"
                         >
                           {soldOut ? t("Sold out") : added ? t("Added") : t("Add to bag")}
@@ -1624,11 +1700,11 @@ export function HomePage() {
                 );
               })}
             </ul>
-            <p className="mt-8 text-xs leading-5 text-[#65748a]">
-              {t(
-                "A little flavor inspiration. Discover the current selection in store.",
-              )}
-            </p>
+            {!flavorFiltersActive && visibleFlavors.length > 0 && (
+              <p className="mt-5 text-xs leading-5 text-[#65748a]">
+                {t("Search or choose a craving to see more flavors.")}
+              </p>
+            )}
 
           </div>
         </section>
@@ -1660,32 +1736,7 @@ export function HomePage() {
                   {t("Creamy ice cream cakes for birthdays, parties, and every celebration.")}
                 </p>
               </div>
-              <div className="flex flex-col items-stretch gap-3 sm:items-end lg:mb-2">
-                <label className="block">
-                  <span className="sr-only">{t("Search cakes")}</span>
-                  <div className="relative">
-                    <svg
-                      aria-hidden="true"
-                      className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#52647b]"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="m21 21-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeWidth="2"
-                      />
-                    </svg>
-                    <input
-                      className="h-11 w-full min-w-[240px] rounded-full border border-[#cfd8e1] bg-white py-2.5 pl-10 pr-4 text-sm font-semibold text-[#092a53] transition placeholder:font-normal placeholder:text-[#a5aebb] hover:border-[#092a53]/50 focus:border-[#092a53] focus:outline-none focus:ring-2 focus:ring-[#092a53]/20"
-                      onChange={(event) => setCakeSearch(event.target.value)}
-                      placeholder={t("Search cakes\u2026")}
-                      type="search"
-                      value={cakeSearch}
-                    />
-                  </div>
-                </label>
+              <div className="flex flex-wrap items-center justify-start gap-3 sm:justify-end lg:mb-2 lg:w-auto">
                 <Link
                   className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-full bg-[#092a53] px-6 py-3 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
                   to="/custom-cake"
@@ -1698,14 +1749,27 @@ export function HomePage() {
                     <ArrowIcon />
                   </span>
                 </Link>
+                <Link
+                  className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-full border border-[#cfd8e1] bg-white px-6 py-3 text-sm font-extrabold text-[#092a53] transition duration-300 hover:-translate-y-0.5 hover:border-[#092a53] hover:bg-[#fafdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  to={`/menu?${new URLSearchParams({ category: "Cakes & Pies" })}`}
+                >
+                  {t("Explore all cakes")}
+                  <span
+                    aria-hidden="true"
+                    className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-transform duration-300 group-hover:translate-x-0.5"
+                  >
+                    <ArrowIcon />
+                  </span>
+                </Link>
               </div>
             </div>
 
-            <div
-              aria-label={t("Filter cakes")}
-              className="mt-6 flex flex-wrap gap-2.5"
-              role="group"
-            >
+            <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div
+                aria-label={t("Filter cakes")}
+                className="flex flex-wrap gap-2.5"
+                role="group"
+              >
                 {featuredCakeTypes.map(({ id, label }) => {
                   const selected = selectedCakeType === id;
                   return (
@@ -1724,6 +1788,32 @@ export function HomePage() {
                     </button>
                   );
                 })}
+              </div>
+              <label className="block w-full lg:ml-auto lg:max-w-[380px]">
+                <span className="sr-only">{t("Search cakes")}</span>
+                <div className="group relative">
+                  <svg
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-[#65748a] transition-colors group-focus-within:text-[#092a53]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="m21 21-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                  <input
+                    className="h-14 w-full rounded-2xl border-2 border-[#dce3eb] bg-white py-3 pl-14 pr-5 text-base font-semibold text-[#092a53] shadow-[0_8px_24px_rgba(9,42,83,0.08)] transition placeholder:font-medium placeholder:text-[#929eac] hover:border-[#9eafc2] hover:shadow-[0_10px_28px_rgba(9,42,83,0.12)] focus:border-[#092a53] focus:outline-none focus:ring-4 focus:ring-[#092a53]/10"
+                    onChange={(event) => setCakeSearch(event.target.value)}
+                    placeholder={t("Search cakes\u2026")}
+                    type="search"
+                    value={cakeSearch}
+                  />
+                </div>
+              </label>
             </div>
 
               {cakeCards.length === 0 ? (
@@ -1734,7 +1824,7 @@ export function HomePage() {
                   {t("No cakes match your search \u2014 try another name or filter.")}
                 </p>
               ) : (
-                <ul className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+                <ul className="mt-8 grid auto-rows-fr items-start gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
                   {cakeCards.map((cake) => {
                     const cakeKey = cake.id || getMenuItemId("Cakes & Pies", cake.name);
                     const added = addedItemKey === cakeKey;
@@ -1746,19 +1836,25 @@ export function HomePage() {
 
                     return (
                       <li
-                        className="group min-w-0 overflow-hidden rounded-[28px] bg-white shadow-[0_10px_30px_rgba(9,42,83,0.10)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_rgba(9,42,83,0.16)] motion-reduce:transform-none motion-reduce:transition-none"
+                        className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_10px_30px_rgba(9,42,83,0.10)] ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[color:var(--card-accent)]/40 motion-reduce:transform-none motion-reduce:transition-none"
                         key={cake.name}
+                        style={{ "--card-accent": accent }}
                       >
+                        {/* Shine sweep on hover */}
+                        <span
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 z-20 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_30%,rgba(255,255,255,0.55)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
+                        />
                         <div className="relative">
                           <ProductImageSlider
                             frameClassName="rounded-none shadow-none"
-                            imageClassName="aspect-[4/3]"
+                            imageClassName="aspect-[4/3] transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none"
                             images={images}
                             name={t(cake.name)}
                             resetKey={cake.name}
                           />
                           <span
-                            className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53] shadow-sm backdrop-blur-sm"
+                            className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53] shadow-sm backdrop-blur-sm transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none"
                             style={{ backgroundColor: accent }}
                           >
                             {t(
@@ -1778,17 +1874,17 @@ export function HomePage() {
                           )}
                         </div>
                         <div
-                          className="flex min-h-[150px] flex-col justify-between gap-3 border-t-4 px-5 py-4 sm:px-6 sm:py-5"
+                          className="flex min-h-[190px] flex-1 flex-col justify-between gap-3 border-t-4 px-5 py-4 sm:px-6 sm:py-5"
                           style={{ borderColor: accent }}
                         >
                           <div>
                             <Link
-                              className="font-display text-lg font-extrabold leading-tight text-[#092a53] transition-colors duration-300 hover:text-[#163e6b] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-xl"
+                              className="line-clamp-2 min-h-[2.5em] font-display text-lg font-extrabold leading-tight text-[#092a53] transition-colors duration-300 hover:text-[#163e6b] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-xl"
                               to={`/menu?${new URLSearchParams({ category: "Cakes & Pies", item: cake.name })}`}
                             >
                               {t(cake.name)}
                             </Link>
-                            <p className="mt-2 text-xs font-medium leading-5 text-[#123b68] sm:text-[13px]">
+                            <p className="mt-2 line-clamp-2 min-h-10 text-xs font-medium leading-5 text-[#123b68] sm:text-[13px]">
                               {t(cake.detail)}
                             </p>
                           </div>
@@ -1806,7 +1902,7 @@ export function HomePage() {
                                   ? t("Added to your bag")
                                   : t("Add {name} to your bag", { name: t(cake.name) })
                               }
-                              className={`min-h-10 shrink-0 rounded-full px-4 text-xs font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] ${
+                              className={`min-h-10 shrink-0 rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 group-hover:scale-105 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] disabled:group-hover:scale-100 ${
                                 added
                                   ? "bg-[#4caf50] text-white"
                                   : "bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]"
