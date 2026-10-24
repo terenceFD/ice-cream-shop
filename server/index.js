@@ -833,7 +833,7 @@ async function getApprovedReviewSummaries() {
     SELECT item_id AS "itemId", COUNT(*) AS "reviewCount",
       ROUND(AVG(rating), 1) AS "averageRating"
     FROM menu_reviews
-    WHERE is_approved = TRUE
+    WHERE is_approved = 1
     GROUP BY item_id
   `).all()
   return new Map(summaries.map((summary) => [summary.itemId, {
@@ -1999,7 +1999,7 @@ app.get('/api/reviews', async (_request, response) => {
       c.name AS "customerName", c.profile_picture AS "profilePicture",
       r.item_id AS "itemId"
     FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
-    WHERE r.is_approved = TRUE
+    WHERE r.is_approved = 1
     ORDER BY r.id DESC LIMIT 50
   `).all()
   const reviewsWithItems = await Promise.all(reviews.map(async (review) => ({
@@ -2119,13 +2119,13 @@ app.get('/api/menu/:itemId/reviews', async (request, response) => {
   }
   const summary = await database.prepare(`
     SELECT COUNT(*) AS "reviewCount", ROUND(AVG(rating), 1) AS "averageRating"
-    FROM menu_reviews WHERE item_id = ? AND is_approved = TRUE
+    FROM menu_reviews WHERE item_id = ? AND is_approved = 1
   `).get(itemId)
   const reviews = await database.prepare(`
     SELECT r.rating, r.review, r.created_at AS "createdAt",
       c.name AS "customerName", c.profile_picture AS "profilePicture"
     FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
-    WHERE r.item_id = ? AND r.is_approved = TRUE ORDER BY r.id DESC LIMIT 50
+    WHERE r.item_id = ? AND r.is_approved = 1 ORDER BY r.id DESC LIMIT 50
   `).all(itemId)
   response.json({ ...summary, reviews })
 })
