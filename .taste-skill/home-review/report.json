@@ -1,0 +1,3619 @@
+{
+ "url": "http://localhost:5175/",
+ "at": "2026-10-24T10:20:34.378Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 11,
+   "filled": [
+    0.99,
+    0.99,
+    0.74,
+    0.96,
+    0.86,
+    1,
+    0.87,
+    0.93,
+    0.71,
+    0.84,
+    0.88
+   ],
+   "motion": {
+    "elements": 79,
+    "css": 21,
+    "transitions": 42,
+    "scripted": 16,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 9367,
+     "screens": 10.4,
+     "words": 1026,
+     "img": 83,
+     "video": 0,
+     "canvas": 0,
+     "svg": 144,
+     "sections": 10,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 41,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "ice-9.webp",
+      "cake-11.webp",
+      "our-strawberry-blonde.webp",
+      "our-strawberry-blonde-2.webp",
+      "mango-sunshine.webp",
+      "mango-pineapple.webp",
+      "chocolate-devotion.webp",
+      "chocolate-devotion-2.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 4,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Celebrate with a cake to remember.",
+     "words": 6,
+     "chars": 34,
+     "lines": 3,
+     "size": 72,
+     "vw": 5,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.04,
+     "leading": 1.04,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "left",
+     "widthRatio": 0.37,
+     "top": 250,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Celebrate with a cake to remember.",
+     "words": 6,
+     "lines": 3,
+     "size": 72,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Celebrate with a cake to remember.",
+      "words": 6,
+      "chars": 34,
+      "lines": 3,
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 1.04,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.37,
+      "top": 250,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "How it works",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.48,
+      "top": 1155,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "1",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.04,
+      "top": 1263,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "2",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.04,
+      "top": 1263,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "3",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.04,
+      "top": 1263,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "Find your flavor",
+      "words": 3,
+      "chars": 16,
+      "lines": 1,
+      "size": 60,
+      "vw": 4.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.29,
+      "top": 1659,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cakes for every occasion",
+      "words": 4,
+      "chars": 24,
+      "lines": 1,
+      "size": 60,
+      "vw": 4.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.44,
+      "top": 3177,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Fan favorites",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.37,
+      "top": 4710,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cookie Mintster",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.15,
+      "top": 5278,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Real Reviews",
+      "words": 2,
+      "chars": 12,
+      "lines": 1,
+      "size": 60,
+      "vw": 4.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.4,
+      "top": 5645,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "5.0",
+      "words": 1,
+      "chars": 3,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.03,
+      "top": 5734,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "Hello, sunshine.",
+      "words": 2,
+      "chars": 16,
+      "lines": 1,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.26,
+      "top": 6569,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Small moments. Sweet memories.",
+      "words": 4,
+      "chars": 30,
+      "lines": 3,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.04,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.23,
+      "top": 7220,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Menu highlights",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 60,
+      "vw": 4.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.03,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.31,
+      "top": 7861,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "The full menu",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.31,
+      "top": 8463,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "All flavors",
+      "words": 2,
+      "chars": 11,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.31,
+      "top": 8463,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.28,
+      "top": 8804,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 17,
+     "maxLines": 3,
+     "over2Lines": 2,
+     "statements": 3,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.81,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.19,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      18,
+      19,
+      20,
+      24,
+      30,
+      36,
+      48,
+      60,
+      72
+     ],
+     "sizeCount": 17,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 14,
+      "leading": 1.43,
+      "weight": 500,
+      "tracking": 0,
+      "contrast": 6.1
+     },
+     "measureChars": 82,
+     "max": {
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "text": "Celebrate with"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 2,
+     "microLabelShare": 0.005,
+     "microSamples": [
+      "Why people love us",
+      "Free app"
+     ],
+     "upperShare": 0.05,
+     "centerShare": 0.07,
+     "smallText": 9
+    },
+    "eyebrows": [
+     {
+      "text": "Ice cream cakes for every celebration",
+      "above": "Celebrate with a cake to remember.",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 16,
+      "top": 206
+     },
+     {
+      "text": "A tropical scoop of vibe",
+      "above": "Hello, sunshine.",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 6529
+     },
+     {
+      "text": "The Cold Stone feeling",
+      "above": "Small moments. Sweet memories.",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 7180
+     },
+     {
+      "text": "All categories",
+      "above": "The full menu",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 8435
+     },
+     {
+      "text": "Every flavor",
+      "above": "All flavors",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 8435
+     }
+    ],
+    "numbered": [
+     {
+      "text": "02",
+      "size": 12,
+      "top": 146
+     },
+     {
+      "text": "/ 03",
+      "size": 12,
+      "top": 152
+     }
+    ],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 78,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#f4f6f8",
+       "top": 1071,
+       "hsl": {
+        "h": 210,
+        "s": 0.22,
+        "l": 0.96
+       }
+      },
+      {
+       "color": "#e8edf2",
+       "top": 4646,
+       "hsl": {
+        "h": 210,
+        "s": 0.28,
+        "l": 0.93
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 7026,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 8740,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#52647b",
+       "share": 0.31
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.26
+      },
+      {
+       "color": "#092a53",
+       "share": 0.21
+      },
+      {
+       "color": "#123b68",
+       "share": 0.09
+      },
+      {
+       "color": "#65748a",
+       "share": 0.05
+      }
+     ],
+     "button": {
+      "bg": "#092a53",
+      "hsl": {
+       "h": 213,
+       "s": 0.8,
+       "l": 0.18
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": [
+      {
+       "text": "Chocolate Ice Cream with chocolate shavi",
+       "ratio": 4,
+       "need": 4.5,
+       "size": 14,
+       "fg": "#65748a",
+       "bg": "#e8edf2"
+      },
+      {
+       "text": "Sweet Cream Ice Cream with pecans, brown",
+       "ratio": 4,
+       "need": 4.5,
+       "size": 14,
+       "fg": "#65748a",
+       "bg": "#e8edf2"
+      },
+      {
+       "text": "Cake Batter Ice Cream with rainbow sprin",
+       "ratio": 4,
+       "need": 4.5,
+       "size": 14,
+       "fg": "#65748a",
+       "bg": "#e8edf2"
+      },
+      {
+       "text": "Chocolate Ice Cream with peanut butter, ",
+       "ratio": 4,
+       "need": 4.5,
+       "size": 14,
+       "fg": "#65748a",
+       "bg": "#e8edf2"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 70,
+     "inHero": 6,
+     "radius": 8,
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Order now",
+      "Order a cake",
+      "Explore the menu",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 44,
+     "shadowOverlay": 6,
+     "shadowSamples": [
+      "div.relative.aspect-[5/4] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "button.relative.size-12 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(9, 42, 8",
+      "div.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "span.grid.size-12 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 10,
+     "scrims": 17,
+     "gradientSamples": [
+      "div.hero-blob-a.pointer-events-none → radial-gradient(closest-side, rgba(255, 220, 50, 0.08), rgba(255, 220, 50, 0.08) 35%, rgba(0, 0, 0, 0))",
+      "div.hero-blob-b.pointer-events-none → radial-gradient(closest-side, rgba(28, 79, 138, 0.45), rgba(28, 79, 138, 0.45) 35%, rgba(0, 0, 0, 0))",
+      "div.pointer-events-none.absolute → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.3) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)",
+      "div.pointer-events-none.absolute → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.3) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)"
+     ],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "footer.mt-6.flex 614px",
+      "div.pointer-events-none.absolute 1440px rule"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 0,
+     "blurred": 6,
+     "roundedBoxes": 26,
+     "boxRadius": 12,
+     "squareMedia": 42,
+     "roundedMedia": 4,
+     "mediaRadius": 24,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 4,
+       "iconTopped": true,
+       "rounded": true,
+       "top": 903
+      },
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 1836
+      },
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 3354
+      },
+      {
+       "count": 4,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 4852
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.26
+     },
+     {
+      "type": "img",
+      "ratio": 0.24
+     }
+    ],
+    "nav": {
+     "links": 15,
+     "fixed": true,
+     "height": 78,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 9369,
+    "margins": {
+     "left": 60,
+     "right": 60
+    },
+    "sections": [
+     {
+      "sel": "section#home.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 993,
+      "words": 85,
+      "media": 1,
+      "middle": 77,
+      "heading": {
+       "text": "Celebrate with",
+       "size": 72,
+       "tag": "h1"
+      },
+      "left": 68,
+      "right": 68,
+      "textLeft": 68,
+      "textRight": 108,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 1073,
+      "height": 409,
+      "words": 56,
+      "media": 0,
+      "middle": 108,
+      "heading": {
+       "text": "How it works",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 60,
+      "right": 98,
+      "textLeft": 60,
+      "textRight": 98,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#flavors.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 1482,
+      "height": 1448,
+      "words": 143,
+      "media": 17,
+      "middle": 0,
+      "heading": {
+       "text": "Find your flavor",
+       "size": 60,
+       "tag": "h2"
+      },
+      "left": 0,
+      "right": 60,
+      "textLeft": 60,
+      "textRight": 86,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#cakes.relative.overflow-hidden",
+      "tag": "section",
+      "top": 2930,
+      "height": 1718,
+      "words": 249,
+      "media": 22,
+      "middle": 564,
+      "heading": {
+       "text": "Cakes for every occasion",
+       "size": 60,
+       "tag": "h2"
+      },
+      "left": 0,
+      "right": 16,
+      "textLeft": 60,
+      "textRight": 84,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#favorites.bg-[#e8edf2].px-5",
+      "tag": "section",
+      "top": 4648,
+      "height": 902,
+      "words": 109,
+      "media": 1,
+      "middle": 40,
+      "heading": {
+       "text": "Fan favorites",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 60,
+      "right": 76,
+      "textLeft": 60,
+      "textRight": 92,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#reviews.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 5551,
+      "height": 773,
+      "words": 69,
+      "media": 0,
+      "middle": 507,
+      "heading": {
+       "text": "Real Reviews",
+       "size": 60,
+       "tag": "h2"
+      },
+      "left": 60,
+      "right": 80,
+      "textLeft": 60,
+      "textRight": 80,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 6324,
+      "height": 704,
+      "words": 32,
+      "media": 1,
+      "middle": 80,
+      "heading": {
+       "text": "Hello, sunshine.",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 60,
+      "right": 114,
+      "textLeft": 822,
+      "textRight": 114,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-white.px-5",
+      "tag": "section",
+      "top": 7028,
+      "height": 740,
+      "words": 58,
+      "media": 1,
+      "middle": 65,
+      "heading": {
+       "text": "Small moments. Sweet memories.",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 45,
+      "right": 66,
+      "textLeft": 60,
+      "textRight": 66,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#menu.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 7767,
+      "height": 975,
+      "words": 55,
+      "media": 2,
+      "middle": 20,
+      "heading": {
+       "text": "Menu highlights",
+       "size": 60,
+       "tag": "h2"
+      },
+      "left": 60,
+      "right": 60,
+      "textLeft": 60,
+      "textRight": 274,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 8742,
+      "height": 627,
+      "words": 81,
+      "media": 0,
+      "middle": 190,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 124,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Celebrate with a cake to remember.",
+      "size": 72,
+      "top": 252,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 60,
+      "n": 13
+     },
+     {
+      "x": 748,
+      "n": 8
+     },
+     {
+      "x": 822,
+      "n": 5
+     },
+     {
+      "x": 88,
+      "n": 2
+     },
+     {
+      "x": 762,
+      "n": 2
+     },
+     {
+      "x": 1020,
+      "n": 2
+     },
+     {
+      "x": 868,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 33,
+    "bodySize": 14,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0.09,
+    "voidBox": {
+     "x": 0,
+     "y": 720,
+     "w": 1020,
+     "h": 120
+    }
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 12,
+   "filled": [
+    1,
+    0.99,
+    0.93,
+    0.81,
+    0.88,
+    0.83,
+    0.78,
+    0.83,
+    1,
+    0.8,
+    1,
+    0.66
+   ],
+   "motion": {
+    "elements": 73,
+    "css": 20,
+    "transitions": 37,
+    "scripted": 16,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 13988,
+     "screens": 13.7,
+     "words": 1017,
+     "img": 83,
+     "video": 0,
+     "canvas": 0,
+     "svg": 144,
+     "sections": 10,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 45,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "ice-9.webp",
+      "cake-11.webp",
+      "our-strawberry-blonde.webp",
+      "our-strawberry-blonde-2.webp",
+      "mango-sunshine.webp",
+      "mango-pineapple.webp",
+      "chocolate-devotion.webp",
+      "chocolate-devotion-2.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Celebrate with a cake to remember.",
+     "words": 6,
+     "chars": 34,
+     "lines": 3,
+     "size": 40.8,
+     "vw": 5.3,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.04,
+     "leading": 1.04,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "left",
+     "widthRatio": 0.39,
+     "top": 164,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Celebrate with a cake to remember.",
+     "words": 6,
+     "lines": 3,
+     "size": 40.8,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Celebrate with a cake to remember.",
+      "words": 6,
+      "chars": 34,
+      "lines": 3,
+      "size": 40.8,
+      "vw": 5.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 1.04,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.39,
+      "top": 164,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "How it works",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.47,
+      "top": 1752,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "1",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.07,
+      "top": 1845,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "2",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.07,
+      "top": 1845,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "3",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.07,
+      "top": 1845,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "Find your flavor",
+      "words": 3,
+      "chars": 16,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.85,
+      "top": 2187,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cakes for every occasion",
+      "words": 4,
+      "chars": 24,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.85,
+      "top": 4784,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Fan favorites",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.69,
+      "top": 7827,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cookie Mintster",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.28,
+      "top": 8521,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Real Reviews",
+      "words": 2,
+      "chars": 12,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.88,
+      "top": 9432,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "5.0",
+      "words": 1,
+      "chars": 3,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.05,
+      "top": 9606,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "Hello, sunshine.",
+      "words": 2,
+      "chars": 16,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.49,
+      "top": 10294,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Small moments. Sweet memories.",
+      "words": 4,
+      "chars": 30,
+      "lines": 3,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.04,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.42,
+      "top": 11311,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Menu highlights",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.03,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.58,
+      "top": 12461,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "The full menu",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.3,
+      "top": 12860,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "All flavors",
+      "words": 2,
+      "chars": 11,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.3,
+      "top": 12860,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.53,
+      "top": 13237,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 17,
+     "maxLines": 3,
+     "over2Lines": 2,
+     "statements": 3,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.8,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.2,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      18,
+      19,
+      20,
+      24,
+      30,
+      36,
+      41,
+      48
+     ],
+     "sizeCount": 16,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 14,
+      "leading": 1.43,
+      "weight": 500,
+      "tracking": 0,
+      "contrast": 6.1
+     },
+     "measureChars": 82,
+     "max": {
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "text": "Find your flavor"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 2,
+     "microLabelShare": 0.005,
+     "microSamples": [
+      "Why people love us",
+      "Free app"
+     ],
+     "upperShare": 0.05,
+     "centerShare": 0.07,
+     "smallText": 10
+    },
+    "eyebrows": [
+     {
+      "text": "Ice cream cakes for every celebration",
+      "above": "Celebrate with a cake to remember.",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 16,
+      "top": 120
+     },
+     {
+      "text": "A tropical scoop of vibe",
+      "above": "Hello, sunshine.",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 10254
+     },
+     {
+      "text": "The Cold Stone feeling",
+      "above": "Small moments. Sweet memories.",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 11271
+     },
+     {
+      "text": "All categories",
+      "above": "The full menu",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 12832
+     },
+     {
+      "text": "Every flavor",
+      "above": "All flavors",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 12832
+     }
+    ],
+    "numbered": [
+     {
+      "text": "02",
+      "size": 12,
+      "top": 555
+     },
+     {
+      "text": "/ 03",
+      "size": 12,
+      "top": 561
+     }
+    ],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 80,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#0f3566",
+       "top": 535,
+       "hsl": {
+        "h": 214,
+        "s": 0.74,
+        "l": 0.23
+       }
+      },
+      {
+       "color": "#f4f6f8",
+       "top": 1629,
+       "hsl": {
+        "h": 210,
+        "s": 0.22,
+        "l": 0.96
+       }
+      },
+      {
+       "color": "#e8edf2",
+       "top": 7771,
+       "hsl": {
+        "h": 210,
+        "s": 0.28,
+        "l": 0.93
+       }
+      },
+      {
+       "color": "#e9f6dd",
+       "top": 7969,
+       "hsl": {
+        "h": 91,
+        "s": 0.58,
+        "l": 0.92
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 11191,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 13181,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#52647b",
+       "share": 0.32
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.25
+      },
+      {
+       "color": "#092a53",
+       "share": 0.21
+      },
+      {
+       "color": "#123b68",
+       "share": 0.09
+      },
+      {
+       "color": "#65748a",
+       "share": 0.05
+      }
+     ],
+     "button": {
+      "bg": "#092a53",
+      "hsl": {
+       "h": 213,
+       "s": 0.8,
+       "l": 0.18
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 68,
+     "inHero": 4,
+     "radius": 8,
+     "height": 80,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Order a cake",
+      "Explore the menu",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 44,
+     "shadowOverlay": 5,
+     "shadowSamples": [
+      "div.relative.aspect-[5/4] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "button.relative.size-12 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(9, 42, 8",
+      "div.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "span.grid.size-12 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 10,
+     "scrims": 17,
+     "gradientSamples": [
+      "div.hero-blob-a.pointer-events-none → radial-gradient(closest-side, rgba(255, 220, 50, 0.08), rgba(255, 220, 50, 0.08) 35%, rgba(0, 0, 0, 0))",
+      "div.hero-blob-b.pointer-events-none → radial-gradient(closest-side, rgba(28, 79, 138, 0.45), rgba(28, 79, 138, 0.45) 35%, rgba(0, 0, 0, 0))",
+      "div.pointer-events-none.absolute → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.3) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)",
+      "div.pointer-events-none.absolute → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.3) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)"
+     ],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "footer.mt-6.flex 614px",
+      "div.pointer-events-none.absolute 768px rule"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 0,
+     "blurred": 6,
+     "roundedBoxes": 26,
+     "boxRadius": 12,
+     "squareMedia": 42,
+     "roundedMedia": 4,
+     "mediaRadius": 24,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 4,
+       "iconTopped": true,
+       "rounded": true,
+       "top": 1365
+      },
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 2570
+      },
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 5237
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.47
+     },
+     {
+      "type": "img",
+      "ratio": 0.44
+     }
+    ],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 13988,
+    "margins": {
+     "left": 32,
+     "right": 32
+    },
+    "sections": [
+     {
+      "sel": "section#home.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 1549,
+      "words": 85,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Celebrate with",
+       "size": 41,
+       "tag": "h1"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 32,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 1629,
+      "height": 478,
+      "words": 56,
+      "media": 0,
+      "middle": 49,
+      "heading": {
+       "text": "How it works",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 42,
+      "textLeft": 32,
+      "textRight": 42,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#flavors.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 2107,
+      "height": 2597,
+      "words": 143,
+      "media": 17,
+      "middle": 0,
+      "heading": {
+       "text": "Find your flavor",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 0,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 130,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#cakes.relative.overflow-hidden",
+      "tag": "section",
+      "top": 4704,
+      "height": 3067,
+      "words": 249,
+      "media": 22,
+      "middle": 310,
+      "heading": {
+       "text": "Cakes for every occasion",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 0,
+      "right": 0,
+      "textLeft": 32,
+      "textRight": 54,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#favorites.bg-[#e8edf2].px-5",
+      "tag": "section",
+      "top": 7771,
+      "height": 1580,
+      "words": 109,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Fan favorites",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 56,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#reviews.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 9352,
+      "height": 822,
+      "words": 69,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Real Reviews",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 96,
+      "textLeft": 32,
+      "textRight": 96,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 10174,
+      "height": 1017,
+      "words": 32,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Hello, sunshine.",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 232,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-white.px-5",
+      "tag": "section",
+      "top": 11191,
+      "height": 1190,
+      "words": 58,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Small moments. Sweet memories.",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 16,
+      "right": 16,
+      "textLeft": 32,
+      "textRight": 184,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#menu.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 12381,
+      "height": 801,
+      "words": 55,
+      "media": 2,
+      "middle": 0,
+      "heading": {
+       "text": "Menu highlights",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 90,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 13181,
+      "height": 807,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 46,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Celebrate with a cake to remember.",
+      "size": 41,
+      "top": 164,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 32,
+      "n": 20
+     },
+     {
+      "x": 160,
+      "n": 8
+     },
+     {
+      "x": 422,
+      "n": 3
+     },
+     {
+      "x": 60,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 33,
+    "bodySize": 14,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 12,
+   "filled": [
+    0.98,
+    1,
+    1,
+    0.78,
+    0.83,
+    0.91,
+    0.91,
+    0.89,
+    1,
+    1,
+    0.68,
+    0.98
+   ],
+   "motion": {
+    "elements": 99,
+    "css": 19,
+    "transitions": 64,
+    "scripted": 16,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 13198,
+     "screens": 15.6,
+     "words": 1007,
+     "img": 83,
+     "video": 0,
+     "canvas": 0,
+     "svg": 144,
+     "sections": 10,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 46,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "ice-9.webp",
+      "cake-11.webp",
+      "our-strawberry-blonde.webp",
+      "our-strawberry-blonde-2.webp",
+      "mango-sunshine.webp",
+      "mango-pineapple.webp",
+      "chocolate-devotion.webp",
+      "chocolate-devotion-2.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 6,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Celebrate with a cake to remember.",
+     "words": 6,
+     "chars": 34,
+     "lines": 3,
+     "size": 40.8,
+     "vw": 10.5,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.04,
+     "leading": 1.04,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.77,
+     "top": 132,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Celebrate with a cake to remember.",
+     "words": 6,
+     "lines": 3,
+     "size": 40.8,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Celebrate with a cake to remember.",
+      "words": 6,
+      "chars": 34,
+      "lines": 3,
+      "size": 40.8,
+      "vw": 10.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 1.04,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.77,
+      "top": 132,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "5 shops",
+      "words": 2,
+      "chars": 7,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.26,
+      "top": 1094,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "30 min",
+      "words": 2,
+      "chars": 6,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.41,
+      "top": 1206,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "FCFA + MoMo",
+      "words": 3,
+      "chars": 11,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.52,
+      "top": 1318,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "1 pt / 100 FCFA",
+      "words": 5,
+      "chars": 15,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.5,
+      "top": 1430,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "How it works",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 1606,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "1",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.12,
+      "top": 1755,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "2",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.12,
+      "top": 1866,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "3",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.12,
+      "top": 1976,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "Find your flavor",
+      "words": 3,
+      "chars": 16,
+      "lines": 1,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 2175,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cakes for every occasion",
+      "words": 4,
+      "chars": 24,
+      "lines": 2,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 4271,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Fan favorites",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 6815,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cookie Mintster",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.44,
+      "top": 7327,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Real Reviews",
+      "words": 2,
+      "chars": 12,
+      "lines": 1,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 8374,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "5.0",
+      "words": 1,
+      "chars": 3,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.09,
+      "top": 8536,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "Hello, sunshine.",
+      "words": 2,
+      "chars": 16,
+      "lines": 1,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.73,
+      "top": 9270,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Small moments. Sweet memories.",
+      "words": 4,
+      "chars": 30,
+      "lines": 3,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.04,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.63,
+      "top": 10009,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Menu highlights",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.03,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 10888,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "The full menu",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.65,
+      "top": 11300,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "All flavors",
+      "words": 2,
+      "chars": 11,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.65,
+      "top": 11693,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.89,
+      "top": 12035,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 21,
+     "maxLines": 3,
+     "over2Lines": 2,
+     "statements": 3,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.8,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.2,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      18,
+      20,
+      24,
+      30,
+      36,
+      41
+     ],
+     "sizeCount": 13,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 13,
+      "leading": 1.54,
+      "weight": 500,
+      "tracking": 0,
+      "contrast": 6.1
+     },
+     "measureChars": 40,
+     "max": {
+      "size": 40.8,
+      "vw": 10.5,
+      "font": "Fredoka",
+      "text": "Celebrate with"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 2,
+     "microLabelShare": 0.005,
+     "microSamples": [
+      "Why people love us",
+      "Free app"
+     ],
+     "upperShare": 0.05,
+     "centerShare": 0.07,
+     "smallText": 14
+    },
+    "eyebrows": [
+     {
+      "text": "Ice cream cakes for every celebration",
+      "above": "Celebrate with a cake to remember.",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 96
+     },
+     {
+      "text": "Pickup or delivery in Douala and Yaoundé.",
+      "above": "5 shops",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 12,
+      "top": 1014
+     },
+     {
+      "text": "A tropical scoop of vibe",
+      "above": "Hello, sunshine.",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 9230
+     },
+     {
+      "text": "The Cold Stone feeling",
+      "above": "Small moments. Sweet memories.",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 9969
+     }
+    ],
+    "numbered": [
+     {
+      "text": "02",
+      "size": 12,
+      "top": 511
+     },
+     {
+      "text": "/ 03",
+      "size": 12,
+      "top": 517
+     }
+    ],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 68,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#f4f6f8",
+       "top": 1550,
+       "hsl": {
+        "h": 210,
+        "s": 0.22,
+        "l": 0.96
+       }
+      },
+      {
+       "color": "#e8edf2",
+       "top": 6767,
+       "hsl": {
+        "h": 210,
+        "s": 0.28,
+        "l": 0.93
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 8626,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 11987,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#52647b",
+       "share": 0.32
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.24
+      },
+      {
+       "color": "#092a53",
+       "share": 0.21
+      },
+      {
+       "color": "#123b68",
+       "share": 0.09
+      },
+      {
+       "color": "#65748a",
+       "share": 0.05
+      }
+     ],
+     "button": {
+      "bg": "#092a53",
+      "hsl": {
+       "h": 213,
+       "s": 0.8,
+       "l": 0.18
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 72,
+     "inHero": 4,
+     "radius": 8,
+     "height": 64,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Order a cake",
+      "Explore the menu",
+      "Order now Cards & Mobile Money accepted",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 43,
+     "shadowOverlay": 6,
+     "shadowSamples": [
+      "div.relative.aspect-[5/4] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "div.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "span.grid.size-12 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "div.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 14,
+     "scrims": 17,
+     "gradientSamples": [
+      "div.hero-blob-a.pointer-events-none → radial-gradient(closest-side, rgba(255, 220, 50, 0.08), rgba(255, 220, 50, 0.08) 35%, rgba(0, 0, 0, 0))",
+      "div.hero-blob-b.pointer-events-none → radial-gradient(closest-side, rgba(28, 79, 138, 0.45), rgba(28, 79, 138, 0.45) 35%, rgba(0, 0, 0, 0))",
+      "div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.14), rgba(0, 0, 0, 0))",
+      "div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.14), rgba(0, 0, 0, 0))"
+     ],
+     "gradientText": 0,
+     "hairlines": 3,
+     "hairlineSamples": [
+      "footer.mt-6.flex 300px",
+      "div.pointer-events-none.absolute 390px rule",
+      "div.pointer-events-none.absolute 390px rule"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 0,
+     "blurred": 6,
+     "roundedBoxes": 26,
+     "boxRadius": 12,
+     "squareMedia": 3,
+     "roundedMedia": 4,
+     "mediaRadius": 20,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 4,
+       "iconTopped": true,
+       "rounded": true,
+       "top": 1070
+      },
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 2605
+      },
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 4809
+      },
+      {
+       "count": 4,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 7545
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.32
+     },
+     {
+      "type": "img",
+      "ratio": 0.3
+     }
+    ],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 68,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 13210,
+    "margins": {
+     "left": 20,
+     "right": 20
+    },
+    "sections": [
+     {
+      "sel": "div.hero-background.pointer-events-none",
+      "tag": "div",
+      "top": 80,
+      "height": 1482,
+      "words": 0,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": null,
+      "right": null,
+      "textLeft": null,
+      "textRight": null,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.mx-auto.w-full",
+      "tag": "div",
+      "top": 80,
+      "height": 865,
+      "words": 35,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Celebrate with",
+       "size": 41,
+       "tag": "h1"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 27,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.relative",
+      "tag": "div",
+      "top": 945,
+      "height": 617,
+      "words": 41,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "5 shops",
+       "size": 24,
+       "tag": "span"
+      },
+      "left": 34,
+      "right": 77,
+      "textLeft": 34,
+      "textRight": 77,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 1562,
+      "height": 561,
+      "words": 56,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "How it works",
+       "size": 30,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 23,
+      "textLeft": 20,
+      "textRight": 23,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#flavors.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 2123,
+      "height": 2097,
+      "words": 143,
+      "media": 17,
+      "middle": 0,
+      "heading": {
+       "text": "Find your flavor",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 0,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 36,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#cakes.relative.overflow-hidden",
+      "tag": "section",
+      "top": 4219,
+      "height": 2559,
+      "words": 249,
+      "media": 22,
+      "middle": 148,
+      "heading": {
+       "text": "Cakes for every occasion",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 0,
+      "right": 0,
+      "textLeft": 20,
+      "textRight": 34,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#favorites.bg-[#e8edf2].px-5",
+      "tag": "section",
+      "top": 6779,
+      "height": 1542,
+      "words": 109,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Fan favorites",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 25,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#reviews.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 8322,
+      "height": 856,
+      "words": 69,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Real Reviews",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 46,
+      "textLeft": 20,
+      "textRight": 46,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 9178,
+      "height": 739,
+      "words": 32,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Hello, sunshine.",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 47,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-white.px-5",
+      "tag": "section",
+      "top": 9917,
+      "height": 919,
+      "words": 58,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Small moments. Sweet memories.",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 12,
+      "right": 12,
+      "textLeft": 20,
+      "textRight": 22,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#menu.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 10836,
+      "height": 1163,
+      "words": 55,
+      "media": 2,
+      "middle": 0,
+      "heading": {
+       "text": "Menu highlights",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 11999,
+      "height": 1211,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 30,
+       "tag": "span"
+      },
+      "left": 20,
+      "right": 24,
+      "textLeft": 20,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Celebrate with a cake to remember.",
+      "size": 41,
+      "top": 144,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 20,
+      "n": 21
+     },
+     {
+      "x": 40,
+      "n": 4
+     },
+     {
+      "x": 124,
+      "n": 4
+     }
+    ],
+    "leftBlocks": 29,
+    "bodySize": 13,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "headline-lines",
+   "width": 1440,
+   "message": "2 headline(s) wrap past two lines at 1440px: \"Celebrate with a cake to remember.\" → 3 lines (6 words, 72px); \"Small moments. Sweet memories.\" → 3 lines (4 words, 48px)",
+   "fix": "Cut words first (a headline is a title, not a sentence). Then give it a wider measure. Lower the size only as a last resort and never below the scale you chose. A real statement paragraph belongs in a <p> or <blockquote> at 36px or less."
+  },
+  {
+   "level": "FAIL",
+   "id": "eyebrow",
+   "width": 1440,
+   "message": "5 eyebrow/kicker label(s) above headings: \"Ice cream cakes for every celebration\" above \"Celebrate with a cake to remember.\"; \"A tropical scoop of vibe\" above \"Hello, sunshine.\"; \"The Cold Stone feeling\" above \"Small moments. Sweet memories.\"; \"All categories\" above \"The full menu\"; \"Every flavor\" above \"All flavors\"",
+   "fix": "Delete them. If the label carried real information, fold it into the headline or the supporting sentence.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "numbering",
+   "width": 1440,
+   "message": "Decorative index numbers: \"02\", \"/ 03\"",
+   "fix": "Remove them. If order truly matters, write it into the words (\"First, …\") or use a real <ol>.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "micro-label",
+   "width": 1440,
+   "message": "2 tiny uppercase letter-spaced label(s): \"Why people love us\", \"Free app\"",
+   "fix": "Prefer sentence case at body size.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "gradient",
+   "width": 1440,
+   "message": "10 gradient fill(s): div.hero-blob-a.pointer-events-none → radial-gradient(closest-side, rgba(255, 220, 50, 0.08), rgba(255, 220, 50, 0.08) 35%, rgba(0, 0, 0, 0)) | div.hero-blob-b.pointer-events-none → radial-gradient(closest-side, rgba(28, 79, 138, 0.45), rgba(28, 79, 138, 0.45) 35%, rgba(0, 0, 0, 0)) | div.pointer-events-none.absolute → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.3) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)",
+   "fix": "Use a flat colour or a real image. The only gradient allowed by default is a neutral scrim over a photo for legibility.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "shadow",
+   "width": 1440,
+   "message": "44 box-shadow(s) on elements at rest: div.relative.aspect-[5/4] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0 | button.relative.size-12 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(9, 42, 8 | div.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+   "fix": "Remove. Separate surfaces with a tone step or space. Shadows are for things that really float (menus, dialogs, sticky bars).",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "hairline",
+   "width": 1440,
+   "message": "2 thin rule(s)/divider line(s): footer.mt-6.flex 614px | div.pointer-events-none.absolute 1440px rule",
+   "fix": "Delete. Separate with space, a tone change, or scale. Lines are only for real tables and form fields.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "outlined-box",
+   "width": 1440,
+   "message": "1 box(es) drawn with a 1px outline.",
+   "fix": "Prefer a filled surface or no box.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "glass",
+   "width": 1440,
+   "message": "6 backdrop-blur surfaces.",
+   "fix": "One blurred sticky bar at most; glass cards are a tell.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "icon-cards",
+   "width": 1440,
+   "message": "1 row(s) of identical cards each topped with a small icon (4 cards).",
+   "fix": "Replace with one composed section from the direction: a narrative split, a list set in large type, or real imagery per item.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (section #fbfaf5).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "contrast",
+   "width": 1440,
+   "message": "Low-contrast text: \"Chocolate Ice Cream with chocolate shavi\" 4:1 needs 4.5:1; \"Sweet Cream Ice Cream with pecans, brown\" 4:1 needs 4.5:1; \"Cake Batter Ice Cream with rainbow sprin\" 4:1 needs 4.5:1; \"Chocolate Ice Cream with peanut butter, \" 4:1 needs 4.5:1",
+   "fix": "Darken or lighten the text colour."
+  },
+  {
+   "level": "WARN",
+   "id": "size-count",
+   "width": 1440,
+   "message": "17 different font sizes (9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 24, 30, 36, 48, 60, 72).",
+   "fix": "A page needs about five: display, heading, lead, body, small.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "body-size",
+   "width": 1440,
+   "message": "Body text is 14px (the size most of the running text is set in).",
+   "fix": "Body copy 16–20px. Map small sizes from blueprints onto your body step.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "grey-body",
+   "width": 1440,
+   "message": "The running text is a soft grey on its ground (6.1:1).",
+   "fix": "Set body copy in the full ink (7:1 or more). Keep the muted ink for secondary notes; pages read thin and unfinished when everything is grey.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  },
+  {
+   "level": "WARN",
+   "id": "side-scroll",
+   "width": 1440,
+   "message": "4 row(s) scroll sideways with content past their edge.",
+   "fix": "Jurors and most visitors read a row cut at the edge as clipped, not as scrollable. Wrap it onto more lines, or end it inside the grid.",
+   "alsoAt": [
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "small-text",
+   "width": 1440,
+   "message": "9 text blocks under 13px.",
+   "fix": "Nothing meant to be read goes below 13px.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "headline-lines",
+   "width": 768,
+   "message": "2 headline(s) wrap past two lines at 768px: \"Celebrate with a cake to remember.\" → 3 lines (6 words, 40.8px); \"Small moments. Sweet memories.\" → 3 lines (4 words, 48px)",
+   "fix": "Cut words first (a headline is a title, not a sentence). Then give it a wider measure. Lower the size only as a last resort and never below the scale you chose. A real statement paragraph belongs in a <p> or <blockquote> at 32px or less."
+  },
+  {
+   "level": "FAIL",
+   "id": "headline-lines",
+   "width": 390,
+   "message": "2 headline(s) wrap past two lines at 390px: \"Celebrate with a cake to remember.\" → 3 lines (6 words, 40.8px); \"Small moments. Sweet memories.\" → 3 lines (4 words, 36px)",
+   "fix": "Cut words first (a headline is a title, not a sentence). Then give it a wider measure. Lower the size only as a last resort and never below the scale you chose. A real statement paragraph belongs in a <p> or <blockquote> at 24px or less."
+  },
+  {
+   "level": "FAIL",
+   "id": "late-title",
+   "width": 390,
+   "message": "The title is not readable 1.2s after the page loaded (something lies over it).",
+   "fix": "Put the headline in the HTML, painted on the first frame; the load sequence only adds arrival and is settled by 1.2s (references/motion.md, \"Load sequence in 1.2 seconds\"). No preloader, no gate, no waiting for the load event."
+  },
+  {
+   "level": "FAIL",
+   "id": "covered-text",
+   "width": 390,
+   "message": "Large text lies under another element at some scroll position: \"1 pt / 100 FCFA\" (screen 2, 100% hidden); \"How it works\" (screen 2, 100% hidden); \"Cookie Mintster\" (screen 9, 100% hidden); \"Real Reviews\" (screen 10, 100% hidden)",
+   "fix": "Nothing may sit on top of a headline or statement. Move the picture, shorten the pinned run, or raise the text above it (z-index) and give it a ground."
+  },
+  {
+   "level": "FAIL",
+   "id": "reduced-hidden",
+   "width": 1440,
+   "message": "With reduced motion requested, 54 text block(s) on the first screen stay invisible: \"Ice cream by the scoop\", \"Browse signature creations and treats.\", \"Browse all flavors\", \"Flavor tag\"",
+   "fix": "Put every hidden starting state inside @media (prefers-reduced-motion: no-preference); the reduced page is the finished page (references/motion.md §8)."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\home-review\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\home-review\\desktop-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\home-review\\desktop-page-02.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\home-review\\desktop-page-03.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\home-review\\tablet-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\home-review\\tablet-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\home-review\\tablet-page-02.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\home-review\\mobile-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\home-review\\mobile-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\home-review\\mobile-page-02.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

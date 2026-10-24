@@ -11,6 +11,8 @@ import {
 } from '../lib/installPrompt'
 
 const DISMISSED_KEY = 'cold-stone-install-dismissed'
+// Shown at most once per browser session, so revisits within a visit never nag.
+const SHOWN_THIS_SESSION_KEY = 'cold-stone-install-shown-this-session'
 const SNOOZE_MS = 14 * 24 * 60 * 60 * 1000
 const SHOW_AFTER_MS = 2500
 // Pages where a purchase or admin work is in progress are never interrupted.
@@ -23,6 +25,23 @@ function recentlyDismissed() {
     return Date.now() - Number(localStorage.getItem(DISMISSED_KEY) || 0) < SNOOZE_MS
   } catch {
     return false
+  }
+}
+
+// One show per session, no matter how the card is closed or the site reloaded.
+function shownThisSession() {
+  try {
+    return sessionStorage.getItem(SHOWN_THIS_SESSION_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function markShownThisSession() {
+  try {
+    sessionStorage.setItem(SHOWN_THIS_SESSION_KEY, '1')
+  } catch {
+    // Without storage the card falls back to per-load showing.
   }
 }
 
@@ -44,11 +63,15 @@ export function InstallAppPrompt() {
   const [isInstalling, setIsInstalling] = useState(false)
 
   useEffect(() => {
-    if (isRunningAsInstalledApp() || recentlyDismissed()) return undefined
+    if (isRunningAsInstalledApp() || recentlyDismissed() || shownThisSession()) return undefined
     let timer = 0
+    let settled = false
     function offerInstall(nextMode: Mode) {
+      if (settled) return
+      settled = true
       setMode(nextMode)
       window.clearTimeout(timer)
+      markShownThisSession()
       timer = window.setTimeout(() => setIsVisible(true), SHOW_AFTER_MS)
     }
     if (getInstallPrompt()) offerInstall('install')
