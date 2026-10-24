@@ -1,0 +1,161 @@
+  // The category hero picture: a distinct composition per category, built from
+  // that category's own product photos on its theme surface. Every category gets
+  // its own arrangement, so switching categories visibly changes the hero.
+  const heroItemPhotos = (heroCategory?.items ?? [])
+    .filter((item) => item.image && item.image !== heroCategory?.image)
+    .map((item) => item.image);
+  const heroCategoryVisual = heroCategory && (() => {
+    const title = heroCategory.title;
+    const variant = {
+      "Ice Cream": "stair",
+      "Cakes & Pies": "stack",
+      "Silk & Sorbet": "trio",
+      "Milkshakes & Smoothies": "diagonal",
+      Novelties: "ring",
+      "Limited-Time Favorites": "banner",
+    }[title] || "stair";
+    const [photoA, photoB, photoC] = [
+      heroCategory.image,
+      ...heroItemPhotos,
+      heroCategory.image,
+    ].slice(0, 3);
+
+    if (variant === "stack") {
+      // Cakes & Pies: one wide cake on top, two squares beneath — a layer cake.
+      return (
+        <div className="flex size-full flex-col gap-3">
+          <div className="relative min-h-0 flex-1 overflow-hidden rounded-[28px] bg-white/10">
+            <MenuImage
+              alt={t(title)}
+              className="size-full object-cover"
+              sizes="(min-width: 1024px) 30vw, 60vw"
+              src={photoA}
+            />
+            <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[11px] font-extrabold text-[#472a3b]">
+              {t("Slice or whole")}
+            </span>
+          </div>
+          <div className="grid min-h-0 flex-1 grid-cols-2 gap-3">
+            {[photoB, photoC].map((photo, index) => (
+              <div className="overflow-hidden rounded-[24px] bg-white/10" key={index}>
+                <MenuImage alt="" className="size-full object-cover" small src={photo} />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (variant === "trio") {
+      // Silk & Sorbet: three round scoops in a row, the middle one bigger.
+      return (
+        <div className="flex size-full flex-row items-center justify-center gap-4">
+          {[photoA, photoB, photoC].map((photo, index) => (
+            <div
+              className={`aspect-square shrink-0 self-center overflow-hidden rounded-full ring-4 ring-white/15 ${index === 1 ? "h-[64%]" : "h-[46%]"}`}
+              key={index}
+            >
+              <MenuImage
+                alt={index === 0 ? t(title) : ""}
+                className="size-full object-cover"
+                small={index !== 0}
+                src={photo}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (variant === "diagonal") {
+      // Milkshakes & Smoothies: three cups stepping up like a drinks board.
+      return (
+        <div className="flex size-full items-end justify-center gap-4 px-4">
+          {[photoC, photoA, photoB].map((photo, index) => (
+            <div
+              className={`overflow-hidden rounded-[24px] bg-white/10 ${index === 1 ? "h-[88%] w-[38%]" : "h-[60%] w-[29%]"} ${index === 0 ? "mb-[8%]" : ""}`}
+              key={index}
+            >
+              <MenuImage
+                alt={index === 1 ? t(title) : ""}
+                className="size-full object-cover"
+                small={index !== 1}
+                src={photo}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (variant === "ring") {
+      // Novelties: one big centred treat with four small squares — a sweet-shop window.
+      return (
+        <div className="relative size-full">
+          <div className="absolute left-[3%] top-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
+            <MenuImage alt="" className="size-full object-cover" small src={photoB} />
+          </div>
+          <div className="absolute right-[3%] top-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
+            <MenuImage alt="" className="size-full object-cover" small src={photoC} />
+          </div>
+          <div className="absolute left-1/2 top-1/2 size-[54%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full ring-4 ring-white/15">
+            <MenuImage
+              alt={t(title)}
+              className="size-full object-cover"
+              src={photoA}
+              sizes="(min-width: 1024px) 30vw, 60vw"
+            />
+          </div>
+          <div className="absolute bottom-[3%] left-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
+            <MenuImage alt="" className="size-full object-cover" small src={heroItemPhotos[1] || photoB} />
+          </div>
+          <div className="absolute bottom-[3%] right-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
+            <MenuImage alt="" className="size-full object-cover" small src={heroItemPhotos[2] || photoC} />
+          </div>
+        </div>
+      );
+    }
+
+    if (variant === "banner") {
+      // Limited-Time: full-bleed photo with a thick accent band under it — a poster.
+      return (
+        <div className="flex size-full flex-col overflow-hidden rounded-[28px]">
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <MenuImage
+              alt={t(title)}
+              className="size-full object-cover"
+              sizes="(min-width: 1024px) 30vw, 60vw"
+              src={photoA}
+            />
+          </div>
+          <div
+            className="flex items-center justify-between px-6 py-5"
+            style={{ backgroundColor: "var(--hero-accent)" }}
+          >
+            <span className="font-display text-xl font-extrabold text-[#092a53]">
+              {t("This month only")}
+            </span>
+            <span className="text-sm font-bold text-[#092a53]/80">
+              {t("{count} items", { count: heroCategory.items.length })}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    // "stair" — Ice Cream (and the fallback): three tiles climbing like steps.
+    return (
+      <div className="grid size-full grid-cols-[2fr_3fr] grid-rows-2 gap-3">
+        <div className="overflow-hidden rounded-[24px] bg-white/10">
+          <MenuImage alt={t(title)} className="size-full object-cover" small src={photoA} />
+        </div>
+        <div className="row-span-2 overflow-hidden rounded-[24px] bg-white/10">
+          <MenuImage alt="" className="size-full object-cover" sizes="(min-width: 1024px) 360px, 60vw" src={photoB} />
+        </div>
+        <div className="overflow-hidden rounded-[24px] bg-white/10">
+          <MenuImage alt="" className="size-full object-cover" small src={photoC} />
+        </div>
+      </div>
+    );
+  })();
+

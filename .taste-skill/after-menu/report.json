@@ -1,0 +1,2494 @@
+{
+ "url": "http://127.0.0.1:5173/menu/all",
+ "at": "2026-10-24T03:00:05.190Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 12,
+   "filled": [
+    1,
+    0.53,
+    0.35,
+    0.35,
+    0.4,
+    0.58,
+    0.6,
+    0.35,
+    0.31,
+    0.42,
+    0.71,
+    0.34
+   ],
+   "motion": {
+    "elements": 162,
+    "css": 27,
+    "transitions": 134,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 14630,
+     "screens": 16.3,
+     "words": 398,
+     "img": 94,
+     "video": 0,
+     "canvas": 0,
+     "svg": 75,
+     "sections": 9,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 77,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "founders-favorite.webp",
+      "midnight-delight.webp",
+      "birthday-cake-remix.webp",
+      "cheesecake-fantasy.webp",
+      "chocolate-devotion.webp",
+      "cookie-doughnt-you-want-some.webp",
+      "founders-favorite.webp",
+      "mint-mint-chocolate-chocolate-chip.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "🍦",
+      "🎂",
+      "✦",
+      "🍨"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "All menu",
+     "words": 2,
+     "chars": 8,
+     "lines": 1,
+     "size": 72,
+     "vw": 5,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "left",
+     "widthRatio": 0.41,
+     "top": 242,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "All menu",
+     "words": 2,
+     "lines": 1,
+     "size": 72,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "All menu",
+      "words": 2,
+      "chars": 8,
+      "lines": 1,
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.41,
+      "top": 242,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "88",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.05,
+      "top": 623,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "6",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.05,
+      "top": 623,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "2,800 FCFA",
+      "words": 2,
+      "chars": 10,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.11,
+      "top": 623,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "Ice Cream",
+      "words": 2,
+      "chars": 9,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.28,
+      "top": 1154,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cakes & Pies",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.26,
+      "top": 5628,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Silk & Sorbet",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.2,
+      "top": 9141,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Milkshakes & Smoothies",
+      "words": 3,
+      "chars": 22,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.22,
+      "top": 9782,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Novelties",
+      "words": 1,
+      "chars": 9,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.32,
+      "top": 11428,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Limited-Time Favorites",
+      "words": 2,
+      "chars": 22,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.2,
+      "top": 12484,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.28,
+      "top": 14067,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 11,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 3,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.98,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.02,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      24,
+      30,
+      36,
+      72
+     ],
+     "sizeCount": 13,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 14,
+      "leading": 1.43,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 4.5
+     },
+     "measureChars": 64,
+     "max": {
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "text": "All menu"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 7,
+     "microLabelShare": 0.005,
+     "microSamples": [
+      "The complete menu",
+      "✦",
+      "Menu items",
+      "Categories",
+      "From",
+      "Full menu"
+     ],
+     "upperShare": 0.08,
+     "centerShare": 0.09,
+     "smallText": 1
+    },
+    "eyebrows": [
+     {
+      "text": "The complete menu",
+      "above": "All menu",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 184
+     },
+     {
+      "text": "Menu items",
+      "above": "88",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 604
+     },
+     {
+      "text": "Categories",
+      "above": "6",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 604
+     },
+     {
+      "text": "From",
+      "above": "2,800 FCFA",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 604
+     },
+     {
+      "text": "Showing 88 items",
+      "above": "Ice Cream",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 1102
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 80,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 14003,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#41546b",
+       "share": 0.54
+      },
+      {
+       "color": "#102c50",
+       "share": 0.25
+      },
+      {
+       "color": "#092a53",
+       "share": 0.1
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.07
+      },
+      {
+       "color": "#65748a",
+       "share": 0.03
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 103,
+     "inHero": 7,
+     "radius": 12,
+     "height": 39,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Order now",
+      "Browse every item ↓",
+      "Shop by category",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 103,
+     "shadowOverlay": 4,
+     "shadowSamples": [
+      "a.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.bottom-0 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.left-[4%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.bottom-[10%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 2,
+     "scrims": 1,
+     "gradientSamples": [
+      "div.hero-blob-a.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.12), rgba(255, 220, 50, 0.12) 35%, rgba(0, 0, 0, 0))",
+      "div.hero-blob-b.absolute → radial-gradient(closest-side, rgba(28, 79, 138, 0.5), rgba(28, 79, 138, 0.5) 35%, rgba(0, 0, 0, 0))"
+     ],
+     "gradientText": 0,
+     "hairlines": 6,
+     "hairlineSamples": [
+      "header.mb-6.flex 1191px",
+      "header.mb-6.flex 1191px",
+      "header.mb-6.flex 1191px",
+      "header.mb-6.flex 1191px",
+      "header.mb-6.flex 1191px"
+     ],
+     "outlinedBoxes": 2,
+     "dashed": 1,
+     "blurred": 3,
+     "roundedBoxes": 184,
+     "boxRadius": 24,
+     "squareMedia": 0,
+     "roundedMedia": 89,
+     "mediaRadius": 18,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 1289
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.11
+     },
+     {
+      "type": "svg",
+      "ratio": 0.09
+     }
+    ],
+    "nav": {
+     "links": 15,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 14630,
+    "margins": {
+     "left": 134,
+     "right": 134
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 724,
+      "words": 52,
+      "media": 3,
+      "middle": 114,
+      "heading": {
+       "text": "All menu",
+       "size": 72,
+       "tag": "h1"
+      },
+      "left": 108,
+      "right": 116,
+      "textLeft": 108,
+      "textRight": 116,
+      "fullBleed": true,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "section.rounded-[20px].bg-[#f1f2ee]",
+      "tag": "section",
+      "top": 940,
+      "height": 138,
+      "words": 21,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 133,
+      "right": 133,
+      "textLeft": 152,
+      "textRight": 249,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section",
+      "tag": "section",
+      "top": 1153,
+      "height": 4411,
+      "words": 647,
+      "media": 33,
+      "middle": 39,
+      "heading": {
+       "text": "Ice Cream",
+       "size": 30,
+       "tag": "h2"
+      },
+      "left": 134,
+      "right": 134,
+      "textLeft": 137,
+      "textRight": 142,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.[content-visibility:auto].[contain-intrinsic-size:au",
+      "tag": "section",
+      "top": 5627,
+      "height": 3450,
+      "words": 672,
+      "media": 28,
+      "middle": 39,
+      "heading": {
+       "text": "Cakes & Pies",
+       "size": 30,
+       "tag": "h2"
+      },
+      "left": 134,
+      "right": 134,
+      "textLeft": 136,
+      "textRight": 142,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.[content-visibility:auto].[contain-intrinsic-size:au",
+      "tag": "section",
+      "top": 9140,
+      "height": 578,
+      "words": 66,
+      "media": 3,
+      "middle": 129,
+      "heading": {
+       "text": "Silk & Sorbet",
+       "size": 30,
+       "tag": "h2"
+      },
+      "left": 134,
+      "right": 142,
+      "textLeft": 139,
+      "textRight": 142,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.[content-visibility:auto].[contain-intrinsic-size:au",
+      "tag": "section",
+      "top": 9782,
+      "height": 1567,
+      "words": 206,
+      "media": 11,
+      "middle": 39,
+      "heading": {
+       "text": "Milkshakes & Smoothies",
+       "size": 30,
+       "tag": "h2"
+      },
+      "left": 134,
+      "right": 134,
+      "textLeft": 138,
+      "textRight": 142,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "All menu",
+      "size": 72,
+      "top": 242,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 195,
+      "n": 5
+     },
+     {
+      "x": 108,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 7,
+    "bodySize": 14,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0.07,
+    "voidBox": {
+     "x": 420,
+     "y": 120,
+     "w": 360,
+     "h": 240
+    }
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 12,
+   "filled": [
+    0.97,
+    0.4,
+    0.32,
+    0.42,
+    0.37,
+    0.33,
+    0.39,
+    0.39,
+    0.37,
+    0.64,
+    0.38,
+    0.37
+   ],
+   "motion": {
+    "elements": 103,
+    "css": 24,
+    "transitions": 78,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 23974,
+     "screens": 23.4,
+     "words": 336,
+     "img": 91,
+     "video": 0,
+     "canvas": 0,
+     "svg": 75,
+     "sections": 9,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 47,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "birthday-cake-remix.webp",
+      "cheesecake-fantasy.webp",
+      "chocolate-devotion.webp",
+      "cookie-doughnt-you-want-some.webp",
+      "founders-favorite.webp",
+      "mint-mint-chocolate-chocolate-chip.webp",
+      "our-strawberry-blonde.webp",
+      "peanut-butter-cup-perfection.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 1,
+     "brokenImages": [],
+     "emoji": [
+      "✦",
+      "🍨"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "All menu",
+     "words": 2,
+     "chars": 8,
+     "lines": 1,
+     "size": 60,
+     "vw": 7.8,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.92,
+     "top": 234,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "All menu",
+     "words": 2,
+     "lines": 1,
+     "size": 60,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "All menu",
+      "words": 2,
+      "chars": 8,
+      "lines": 1,
+      "size": 60,
+      "vw": 7.8,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 234,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "88",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.1,
+      "top": 603,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "6",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.1,
+      "top": 603,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "2,800 FCFA",
+      "words": 2,
+      "chars": 10,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.2,
+      "top": 603,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "Ice Cream",
+      "words": 2,
+      "chars": 9,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.52,
+      "top": 1136,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cakes & Pies",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.48,
+      "top": 10185,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Silk & Sorbet",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.37,
+      "top": 17273,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Milkshakes & Smoothies",
+      "words": 3,
+      "chars": 22,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.41,
+      "top": 18724,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Novelties",
+      "words": 1,
+      "chars": 9,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.59,
+      "top": 20175,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Limited-Time Favorites",
+      "words": 2,
+      "chars": 22,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.38,
+      "top": 21626,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.53,
+      "top": 23223,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 11,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 3,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.98,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.02,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      24,
+      30,
+      36,
+      60
+     ],
+     "sizeCount": 13,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 14,
+      "leading": 1.43,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 4.5
+     },
+     "measureChars": 64,
+     "max": {
+      "size": 60,
+      "vw": 7.8,
+      "font": "Fredoka",
+      "text": "All menu"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 6,
+     "microLabelShare": 0.004,
+     "microSamples": [
+      "The complete menu",
+      "✦",
+      "Menu items",
+      "Categories",
+      "From",
+      "Free app"
+     ],
+     "upperShare": 0.08,
+     "centerShare": 0.09,
+     "smallText": 1
+    },
+    "eyebrows": [
+     {
+      "text": "The complete menu",
+      "above": "All menu",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 176
+     },
+     {
+      "text": "Menu items",
+      "above": "88",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 584
+     },
+     {
+      "text": "Categories",
+      "above": "6",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 584
+     },
+     {
+      "text": "From",
+      "above": "2,800 FCFA",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 584
+     },
+     {
+      "text": "Showing 88 items",
+      "above": "Ice Cream",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 1084
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 80,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 23167,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#41546b",
+       "share": 0.54
+      },
+      {
+       "color": "#102c50",
+       "share": 0.25
+      },
+      {
+       "color": "#092a53",
+       "share": 0.1
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.07
+      },
+      {
+       "color": "#65748a",
+       "share": 0.03
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 100,
+     "inHero": 11,
+     "radius": 12,
+     "height": 39,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Browse every item ↓",
+      "Shop by category",
+      "All items 88",
+      "Ice Cream 33",
+      "Cakes & Pies 28"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 99,
+     "shadowOverlay": 3,
+     "shadowSamples": [
+      "a.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "span.grid.size-14 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "li.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "li.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 2,
+     "scrims": 1,
+     "gradientSamples": [
+      "div.hero-blob-a.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.12), rgba(255, 220, 50, 0.12) 35%, rgba(0, 0, 0, 0))",
+      "div.hero-blob-b.absolute → radial-gradient(closest-side, rgba(28, 79, 138, 0.5), rgba(28, 79, 138, 0.5) 35%, rgba(0, 0, 0, 0))"
+     ],
+     "gradientText": 0,
+     "hairlines": 6,
+     "hairlineSamples": [
+      "header.mb-6.flex 687px",
+      "header.mb-6.flex 687px",
+      "header.mb-6.flex 687px",
+      "header.mb-6.flex 687px",
+      "header.mb-6.flex 687px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 0,
+     "blurred": 3,
+     "roundedBoxes": 180,
+     "boxRadius": 24,
+     "squareMedia": 0,
+     "roundedMedia": 88,
+     "mediaRadius": 18,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 6,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 1306
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 23974,
+    "margins": {
+     "left": 50,
+     "right": 50
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 688,
+      "words": 45,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "All menu",
+       "size": 60,
+       "tag": "h1"
+      },
+      "left": 32,
+      "right": 163,
+      "textLeft": 32,
+      "textRight": 163,
+      "fullBleed": true,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "section.rounded-[20px].bg-[#f1f2ee]",
+      "tag": "section",
+      "top": 921,
+      "height": 139,
+      "words": 21,
+      "media": 0,
+      "middle": 196,
+      "heading": null,
+      "left": 51,
+      "right": 0,
+      "textLeft": 63,
+      "textRight": -353,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section",
+      "tag": "section",
+      "top": 1135,
+      "height": 8986,
+      "words": 647,
+      "media": 33,
+      "middle": 0,
+      "heading": {
+       "text": "Ice Cream",
+       "size": 30,
+       "tag": "h2"
+      },
+      "left": 50,
+      "right": 50,
+      "textLeft": 52,
+      "textRight": 58,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.[content-visibility:auto].[contain-intrinsic-size:au",
+      "tag": "section",
+      "top": 10185,
+      "height": 7008,
+      "words": 672,
+      "media": 28,
+      "middle": 0,
+      "heading": {
+       "text": "Cakes & Pies",
+       "size": 30,
+       "tag": "h2"
+      },
+      "left": 50,
+      "right": 50,
+      "textLeft": 52,
+      "textRight": 58,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "All menu",
+      "size": 60,
+      "top": 234,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 111,
+      "n": 3
+     },
+     {
+      "x": 32,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 5,
+    "bodySize": 14,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 12,
+   "filled": [
+    1,
+    0.62,
+    0.58,
+    0.62,
+    0.6,
+    0.47,
+    0.58,
+    0.64,
+    0.83,
+    0.64,
+    0.61,
+    0.56
+   ],
+   "motion": {
+    "elements": 102,
+    "css": 24,
+    "transitions": 77,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 19959,
+     "screens": 23.6,
+     "words": 320,
+     "img": 91,
+     "video": 0,
+     "canvas": 0,
+     "svg": 75,
+     "sections": 9,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 55,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "birthday-cake-remix.webp",
+      "cheesecake-fantasy.webp",
+      "chocolate-devotion.webp",
+      "cookie-doughnt-you-want-some.webp",
+      "founders-favorite.webp",
+      "mint-mint-chocolate-chocolate-chip.webp",
+      "our-strawberry-blonde.webp",
+      "peanut-butter-cup-perfection.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 1,
+     "brokenImages": [],
+     "emoji": [
+      "✦",
+      "🍨"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "All menu",
+     "words": 2,
+     "chars": 8,
+     "lines": 1,
+     "size": 36,
+     "vw": 9.2,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.9,
+     "top": 218,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "All menu",
+     "words": 2,
+     "lines": 1,
+     "size": 36,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "All menu",
+      "words": 2,
+      "chars": 8,
+      "lines": 1,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 218,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Ice Cream",
+      "words": 2,
+      "chars": 9,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.71,
+      "top": 826,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "🍨",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "DM Sans",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.14,
+      "top": 836,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "Cakes & Pies",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.7,
+      "top": 7270,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "🎂",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "DM Sans",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.14,
+      "top": 7280,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "Silk & Sorbet",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.7,
+      "top": 12904,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "🍧",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "DM Sans",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.14,
+      "top": 12914,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "Milkshakes & Smoothies",
+      "words": 3,
+      "chars": 22,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.7,
+      "top": 14362,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "🥤",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "DM Sans",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.14,
+      "top": 14371,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "Novelties",
+      "words": 1,
+      "chars": 9,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.7,
+      "top": 15820,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "🧁",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "DM Sans",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.14,
+      "top": 15829,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "✨",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "DM Sans",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.14,
+      "top": 17277,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "Limited-Time Favorites",
+      "words": 2,
+      "chars": 22,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.68,
+      "top": 17277,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.89,
+      "top": 18796,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 14,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 1,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.99,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.01,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      18,
+      24,
+      30,
+      36
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 12,
+      "leading": 1.67,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 7.8
+     },
+     "measureChars": 44,
+     "max": {
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "text": "All menu"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 3,
+     "microLabelShare": 0.002,
+     "microSamples": [
+      "The complete menu",
+      "✦",
+      "Free app"
+     ],
+     "upperShare": 0.08,
+     "centerShare": 0.09,
+     "smallText": 89
+    },
+    "eyebrows": [
+     {
+      "text": "The complete menu",
+      "above": "All menu",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 160
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 80,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 18748,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#41546b",
+       "share": 0.55
+      },
+      {
+       "color": "#102c50",
+       "share": 0.25
+      },
+      {
+       "color": "#092a53",
+       "share": 0.1
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.07
+      },
+      {
+       "color": "#65748a",
+       "share": 0.03
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 97,
+     "inHero": 8,
+     "radius": 12,
+     "height": 39,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "All items 88",
+      "Ice Cream 33",
+      "Cakes & Pies 28",
+      "Silk & Sorbet 3",
+      "Milkshakes & Smoothies 11"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 98,
+     "shadowOverlay": 3,
+     "shadowSamples": [
+      "span.grid.size-14 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "li.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "li.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "li.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 2,
+     "scrims": 1,
+     "gradientSamples": [
+      "div.hero-blob-a.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.12), rgba(255, 220, 50, 0.12) 35%, rgba(0, 0, 0, 0))",
+      "div.hero-blob-b.absolute → radial-gradient(closest-side, rgba(28, 79, 138, 0.5), rgba(28, 79, 138, 0.5) 35%, rgba(0, 0, 0, 0))"
+     ],
+     "gradientText": 0,
+     "hairlines": 6,
+     "hairlineSamples": [
+      "header.mb-6.flex 347px",
+      "header.mb-6.flex 343px",
+      "header.mb-6.flex 343px",
+      "header.mb-6.flex 343px",
+      "header.mb-6.flex 343px"
+     ],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 2,
+     "roundedBoxes": 179,
+     "boxRadius": 20,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 6,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 1037
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 19959,
+    "margins": {
+     "left": 31,
+     "right": 31
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 397,
+      "words": 32,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "All menu",
+       "size": 36,
+       "tag": "h1"
+      },
+      "left": 20,
+      "right": 29,
+      "textLeft": 20,
+      "textRight": 29,
+      "fullBleed": true,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "section.rounded-[20px].bg-[#f1f2ee]",
+      "tag": "section",
+      "top": 555,
+      "height": 195,
+      "words": 21,
+      "media": 0,
+      "middle": 560,
+      "heading": null,
+      "left": 33,
+      "right": 0,
+      "textLeft": 45,
+      "textRight": -718,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section",
+      "tag": "section",
+      "top": 826,
+      "height": 6379,
+      "words": 647,
+      "media": 33,
+      "middle": 0,
+      "heading": {
+       "text": "🍨",
+       "size": 24,
+       "tag": "span"
+      },
+      "left": 31,
+      "right": 31,
+      "textLeft": 34,
+      "textRight": 39,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.[content-visibility:auto].[contain-intrinsic-size:au",
+      "tag": "section",
+      "top": 7269,
+      "height": 5554,
+      "words": 672,
+      "media": 28,
+      "middle": 0,
+      "heading": {
+       "text": "🎂",
+       "size": 24,
+       "tag": "span"
+      },
+      "left": 31,
+      "right": 31,
+      "textLeft": 35,
+      "textRight": 35,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "All menu",
+      "size": 36,
+      "top": 218,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 93,
+      "n": 3
+     },
+     {
+      "x": 20,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 5,
+    "bodySize": 12,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "eyebrow",
+   "width": 1440,
+   "message": "5 eyebrow/kicker label(s) above headings: \"The complete menu\" (pill) above \"All menu\"; \"Menu items\" above \"88\"; \"Categories\" above \"6\"; \"From\" above \"2,800 FCFA\"; \"Showing 88 items\" above \"Ice Cream\"",
+   "fix": "Delete them. If the label carried real information, fold it into the headline or the supporting sentence.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "micro-label",
+   "width": 1440,
+   "message": "7 tiny uppercase letter-spaced labels (e.g. \"The complete menu\", \"✦\", \"Menu items\", \"Categories\").",
+   "fix": "Use sentence-case text at a readable size, or delete the label.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "emoji",
+   "width": 1440,
+   "message": "Emoji in the page: 🍦 🎂 ✦ 🍨",
+   "fix": "Remove. Use words or real imagery.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "gradient",
+   "width": 1440,
+   "message": "2 gradient fill(s): div.hero-blob-a.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.12), rgba(255, 220, 50, 0.12) 35%, rgba(0, 0, 0, 0)) | div.hero-blob-b.absolute → radial-gradient(closest-side, rgba(28, 79, 138, 0.5), rgba(28, 79, 138, 0.5) 35%, rgba(0, 0, 0, 0))",
+   "fix": "Use a flat colour or a real image. The only gradient allowed by default is a neutral scrim over a photo for legibility.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "shadow",
+   "width": 1440,
+   "message": "103 box-shadow(s) on elements at rest: a.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0 | figure.absolute.bottom-0 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0 | figure.absolute.left-[4%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+   "fix": "Remove. Separate surfaces with a tone step or space. Shadows are for things that really float (menus, dialogs, sticky bars).",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "hairline",
+   "width": 1440,
+   "message": "6 thin rule(s)/divider line(s): header.mb-6.flex 1191px | header.mb-6.flex 1191px | header.mb-6.flex 1191px | header.mb-6.flex 1191px",
+   "fix": "Delete. Separate with space, a tone change, or scale. Lines are only for real tables and form fields.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "outlined-box",
+   "width": 1440,
+   "message": "2 box(es) drawn with a 1px outline.",
+   "fix": "Prefer a filled surface or no box.",
+   "alsoAt": [
+    768
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "dashed",
+   "width": 1440,
+   "message": "1 dashed/dotted border(s).",
+   "fix": "Remove unless it is a real drop zone."
+  },
+  {
+   "level": "WARN",
+   "id": "glass",
+   "width": 1440,
+   "message": "3 backdrop-blur surfaces.",
+   "fix": "One blurred sticky bar at most; glass cards are a tell.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (section #fbfaf5).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "size-count",
+   "width": 1440,
+   "message": "13 different font sizes (9, 10, 11, 12, 13, 14, 16, 18, 19, 24, 30, 36, 72).",
+   "fix": "A page needs about five: display, heading, lead, body, small.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "body-size",
+   "width": 1440,
+   "message": "Body text is 14px (the size most of the running text is set in).",
+   "fix": "Body copy 16–20px. Map small sizes from blueprints onto your body step.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "grey-body",
+   "width": 1440,
+   "message": "The running text is a soft grey on its ground (4.5:1).",
+   "fix": "Set body copy in the full ink (7:1 or more). Keep the muted ink for secondary notes; pages read thin and unfinished when everything is grey.",
+   "alsoAt": [
+    768
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  },
+  {
+   "level": "WARN",
+   "id": "small-text",
+   "width": 1440,
+   "message": "1 text block(s) under 13px.",
+   "fix": "Nothing meant to be read goes below 13px.",
+   "alsoAt": [
+    768
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "side-scroll",
+   "width": 768,
+   "message": "1 row(s) scroll sideways with content past their edge.",
+   "fix": "Jurors and most visitors read a row cut at the edge as clipped, not as scrollable. Wrap it onto more lines, or end it inside the grid.",
+   "alsoAt": [
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "small-text",
+   "width": 390,
+   "message": "89 text blocks under 13px.",
+   "fix": "Nothing meant to be read goes below 13px."
+  },
+  {
+   "level": "WARN",
+   "id": "name-only-title",
+   "width": 390,
+   "message": "The h1 is a bare name (\"All menu\") and nothing else on the first screen says what this is.",
+   "fix": "Keep the name if it leads, and give the line under it (18px or more) the plain words: what it is, for whom, where or when. In the study of 97 Sites of the Day, first screens that named nothing lost usability and content points."
+  },
+  {
+   "level": "FAIL",
+   "id": "covered-text",
+   "width": 390,
+   "message": "Large text lies under another element at some scroll position: \"Ice Cream\" (screen 1, 50% hidden)",
+   "fix": "Nothing may sit on top of a headline or statement. Move the picture, shorten the pinned run, or raise the text above it (z-index) and give it a ground."
+  },
+  {
+   "level": "FAIL",
+   "id": "reduced-hidden",
+   "width": 1440,
+   "message": "With reduced motion requested, 60 text block(s) on the first screen stay invisible: \"Flavors\", \"Ice cream by the scoop\", \"Browse signature creations and treats.\", \"Browse all flavors\"",
+   "fix": "Put every hidden starting state inside @media (prefers-reduced-motion: no-preference); the reduced page is the finished page (references/motion.md §8)."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-menu\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-menu\\desktop-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-menu\\desktop-page-02.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-menu\\desktop-page-03.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-menu\\tablet-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-menu\\tablet-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-menu\\tablet-page-02.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-menu\\mobile-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-menu\\mobile-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-menu\\mobile-page-02.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

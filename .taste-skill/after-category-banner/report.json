@@ -1,0 +1,2708 @@
+{
+ "url": "http://127.0.0.1:5175/menu?category=Cakes%20%26%20Pies",
+ "at": "2026-10-24T08:26:35.184Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 8,
+   "filled": [
+    0.96,
+    0.99,
+    0.84,
+    0.91,
+    0.8,
+    0.92,
+    0.96,
+    0.99
+   ],
+   "motion": {
+    "elements": 10,
+    "css": 4,
+    "transitions": 6,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 6747,
+     "screens": 7.5,
+     "words": 959,
+     "img": 40,
+     "video": 0,
+     "canvas": 0,
+     "svg": 134,
+     "sections": 5,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 36,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "ice-4.webp",
+      "mk-1.webp",
+      "birthday-cakes.webp",
+      "cake-batter-confetti.webp",
+      "oreo-cookies-cream-extreme.webp",
+      "tall-dark-delicious.webp",
+      "birthday-cakes.webp",
+      "cake-batter-layers.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "✦"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Menu & treats",
+     "words": 3,
+     "chars": 13,
+     "lines": 1,
+     "size": 72,
+     "vw": 5,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.02,
+     "leading": 0.98,
+     "top": 194,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Menu & treats",
+     "words": 3,
+     "lines": 1,
+     "size": 72,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Menu & treats",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.41,
+      "top": 194,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "6",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.08,
+      "top": 575,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "88",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.05,
+      "top": 575,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "Cakes & Pies",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 60,
+      "vw": 4.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.36,
+      "top": 1044,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "28",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.11,
+      "top": 1310,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "28",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.11,
+      "top": 1310,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "16,000 FCFA",
+      "words": 2,
+      "chars": 11,
+      "lines": 2,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.11,
+      "top": 1310,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "Menu items",
+      "words": 2,
+      "chars": 10,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.11,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.12,
+      "top": 1776,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "A little more joy in your feed.",
+      "words": 7,
+      "chars": 31,
+      "lines": 2,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.32,
+      "top": 5750,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.28,
+      "top": 6184,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 10,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 5,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.8,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.2,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      30,
+      36,
+      48,
+      60,
+      72
+     ],
+     "sizeCount": 14,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 14,
+      "leading": 1.71,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 4.5
+     },
+     "measureChars": 64,
+     "max": {
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "text": "Menu & treats"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 7,
+     "microLabelShare": 0.018,
+     "microSamples": [
+      "The Cold Stone experience",
+      "✦",
+      "Menu categories",
+      "Menu items",
+      "Signature creations",
+      "Cakes & Pies"
+     ],
+     "upperShare": 0.08,
+     "centerShare": 0.09,
+     "smallText": 10
+    },
+    "eyebrows": [
+     {
+      "text": "The Cold Stone experience",
+      "above": "Menu & treats",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 136
+     },
+     {
+      "text": "Menu categories",
+      "above": "6",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 556
+     },
+     {
+      "text": "Menu items",
+      "above": "88",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 556
+     },
+     {
+      "text": "Menu items",
+      "above": "28",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 1286
+     },
+     {
+      "text": "Available",
+      "above": "28",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 1286
+     },
+     {
+      "text": "Starting from",
+      "above": "16,000 FCFA",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 1286
+     },
+     {
+      "text": "Cakes & Pies",
+      "above": "Menu items",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 1748
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 80,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#f1f2ee",
+       "top": 5617,
+       "hsl": {
+        "h": 75,
+        "s": 0.13,
+        "l": 0.94
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 6120,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#65748a",
+       "share": 0.47
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.25
+      },
+      {
+       "color": "#092a53",
+       "share": 0.15
+      },
+      {
+       "color": "#8a7000",
+       "share": 0.07
+      },
+      {
+       "color": "#53657a",
+       "share": 0.02
+      }
+     ],
+     "button": {
+      "bg": "#092a53",
+      "hsl": {
+       "h": 213,
+       "s": 0.8,
+       "l": 0.18
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": [
+      {
+       "text": "Back to categories",
+       "ratio": 3.5,
+       "need": 4.5,
+       "size": 12,
+       "fg": "#7b8796",
+       "bg": "#fbfaf5"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 48,
+     "inHero": 10,
+     "radius": 6,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Order now",
+      "Explore the menu ↓",
+      "Request a custom cake",
+      "Category All Categories",
+      "Dietary needs Any"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 14,
+     "shadowOverlay": 3,
+     "shadowSamples": [
+      "a.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.bottom-0 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.left-[4%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.bottom-[10%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 0,
+     "scrims": 1,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 2,
+     "dashed": 1,
+     "blurred": 3,
+     "roundedBoxes": 13,
+     "boxRadius": 16,
+     "squareMedia": 29,
+     "roundedMedia": 2,
+     "mediaRadius": 999,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.11
+     },
+     {
+      "type": "svg",
+      "ratio": 0.09
+     }
+    ],
+    "nav": {
+     "links": 15,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 6747,
+    "margins": {
+     "left": 108,
+     "right": 108
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 676,
+      "words": 49,
+      "media": 3,
+      "middle": 135,
+      "heading": {
+       "text": "Menu & treats",
+       "size": 72,
+       "tag": "h1"
+      },
+      "left": 108,
+      "right": 116,
+      "textLeft": 108,
+      "textRight": 116,
+      "fullBleed": true,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div#menu-content.mx-auto.max-w-[1320px]",
+      "tag": "div",
+      "top": 756,
+      "height": 4862,
+      "words": 720,
+      "media": 29,
+      "middle": 0,
+      "heading": {
+       "text": "Cakes & Pies",
+       "size": 60,
+       "tag": "h2"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 112,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#f1f2ee].py-16",
+      "tag": "section",
+      "top": 5617,
+      "height": 502,
+      "words": 25,
+      "media": 5,
+      "middle": 96,
+      "heading": {
+       "text": "A little more joy in your feed.",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 905,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 6120,
+      "height": 627,
+      "words": 81,
+      "media": 0,
+      "middle": 190,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 124,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Menu & treats",
+      "size": 72,
+      "top": 194,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 108,
+      "n": 18
+     },
+     {
+      "x": 419,
+      "n": 14
+     },
+     {
+      "x": 730,
+      "n": 14
+     },
+     {
+      "x": 1041,
+      "n": 14
+     },
+     {
+      "x": 156,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 61,
+    "bodySize": 14,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0.06,
+    "voidBox": {
+     "x": 420,
+     "y": 480,
+     "w": 420,
+     "h": 180
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": null,
+    "topbar": {
+     "h": 80
+    },
+    "canvas": {
+     "left": 108,
+     "right": 55
+    },
+    "hero": {
+     "text": "Menu & treats",
+     "words": 3,
+     "chars": 13,
+     "lines": 1,
+     "size": 72,
+     "vw": 5,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.02,
+     "leading": 0.98,
+     "top": 194,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 5,
+     "firstScreen": 4,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 5,
+     "radii": [
+      [
+       16,
+       2
+      ],
+      [
+       24,
+       2
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "heavyBorders": 1,
+     "borderSamples": [
+      "#ffffff on #092a53 (14.31:1)"
+     ],
+     "heavyShadows": 2,
+     "softShadows": 1,
+     "shadowSamples": [
+      "oklab(0.999994 0.0000455678 0.0000200868 / 0.25) 0px 0px 0px 1px",
+      "rgba(0, 0, 0, 0.45) 0px 24px 60px 0px"
+     ],
+     "glass": 1
+    },
+    "chips": {
+     "count": 30,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 210,
+       "size": 48,
+       "radius": "6px"
+      },
+      {
+       "hue": 206,
+       "size": 36,
+       "radius": "3.35544e+07px"
+      },
+      {
+       "hue": 206,
+       "size": 36,
+       "radius": "3.35544e+07px"
+      },
+      {
+       "hue": 206,
+       "size": 36,
+       "radius": "3.35544e+07px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 7,
+     "tabularShare": 0.86,
+     "kpiMax": 30
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.16,
+     "tiny": 4,
+     "tinySamples": [
+      "Menu categories 10px",
+      "Menu items 10px",
+      "Signature creations 10px",
+      "Free app 10px"
+     ],
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      30,
+      36,
+      48,
+      60,
+      72
+     ]
+    },
+    "title": {
+     "text": "Menu & treats",
+     "size": 72,
+     "top": 194
+    },
+    "colourShare": 0.561
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 12,
+   "filled": [
+    0.96,
+    0.93,
+    0.84,
+    0.86,
+    0.87,
+    0.9,
+    0.91,
+    0.89,
+    0.86,
+    0.85,
+    0.99,
+    1
+   ],
+   "motion": {
+    "elements": 10,
+    "css": 4,
+    "transitions": 6,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 12447,
+     "screens": 12.2,
+     "words": 940,
+     "img": 37,
+     "video": 0,
+     "canvas": 0,
+     "svg": 134,
+     "sections": 5,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 34,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "birthday-cakes.webp",
+      "cake-batter-confetti.webp",
+      "oreo-cookies-cream-extreme.webp",
+      "tall-dark-delicious.webp",
+      "birthday-cakes.webp",
+      "cake-batter-layers.webp",
+      "cake-batter-confetti.webp",
+      "caramel-nut-nirvana.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 1,
+     "brokenImages": [],
+     "emoji": [
+      "✦"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Menu & treats",
+     "words": 3,
+     "chars": 13,
+     "lines": 1,
+     "size": 60,
+     "vw": 7.8,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.02,
+     "leading": 0.98,
+     "top": 186,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Menu & treats",
+     "words": 3,
+     "lines": 1,
+     "size": 60,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Menu & treats",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 60,
+      "vw": 7.8,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 186,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "6",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.15,
+      "top": 555,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "88",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.1,
+      "top": 555,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "Cakes & Pies",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.35,
+      "top": 1144,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "28",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.1,
+      "top": 1368,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "28",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.1,
+      "top": 1388,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "16,000 FCFA",
+      "words": 2,
+      "chars": 11,
+      "lines": 2,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.1,
+      "top": 1388,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "Menu items",
+      "words": 2,
+      "chars": 10,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.11,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.23,
+      "top": 1753,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "A little more joy in your feed.",
+      "words": 7,
+      "chars": 31,
+      "lines": 2,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.67,
+      "top": 10043,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.53,
+      "top": 11696,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 10,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 5,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.79,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.21,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      30,
+      36,
+      48,
+      60
+     ],
+     "sizeCount": 13,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 14,
+      "leading": 1.71,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 4.5
+     },
+     "measureChars": 64,
+     "max": {
+      "size": 60,
+      "vw": 7.8,
+      "font": "Fredoka",
+      "text": "Menu & treats"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 6,
+     "microLabelShare": 0.014,
+     "microSamples": [
+      "The Cold Stone experience",
+      "✦",
+      "Menu categories",
+      "Menu items",
+      "Cakes & Pies",
+      "Free app"
+     ],
+     "upperShare": 0.08,
+     "centerShare": 0.09,
+     "smallText": 9
+    },
+    "eyebrows": [
+     {
+      "text": "The Cold Stone experience",
+      "above": "Menu & treats",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 128
+     },
+     {
+      "text": "Menu categories",
+      "above": "6",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 536
+     },
+     {
+      "text": "Menu items",
+      "above": "88",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 536
+     },
+     {
+      "text": "Available",
+      "above": "28",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 1344
+     },
+     {
+      "text": "Menu items",
+      "above": "28",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 1344
+     },
+     {
+      "text": "Starting from",
+      "above": "16,000 FCFA",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 1344
+     },
+     {
+      "text": "Cakes & Pies",
+      "above": "Menu items",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 1724
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 80,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#f1f2ee",
+       "top": 9963,
+       "hsl": {
+        "h": 75,
+        "s": 0.13,
+        "l": 0.94
+       }
+      },
+      {
+       "color": "#dfe3df",
+       "top": 10312,
+       "hsl": {
+        "h": 120,
+        "s": 0.07,
+        "l": 0.88
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 11640,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#65748a",
+       "share": 0.48
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.25
+      },
+      {
+       "color": "#092a53",
+       "share": 0.14
+      },
+      {
+       "color": "#8a7000",
+       "share": 0.06
+      },
+      {
+       "color": "#53657a",
+       "share": 0.02
+      }
+     ],
+     "button": {
+      "bg": "#092a53",
+      "hsl": {
+       "h": 213,
+       "s": 0.8,
+       "l": 0.18
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": [
+      {
+       "text": "Back to categories",
+       "ratio": 3.5,
+       "need": 4.5,
+       "size": 12,
+       "fg": "#7b8796",
+       "bg": "#fbfaf5"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 46,
+     "inHero": 8,
+     "radius": 6,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Explore the menu ↓",
+      "Request a custom cake",
+      "Category All Categories",
+      "Dietary needs Any",
+      "Availability Any"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 10,
+     "shadowOverlay": 3,
+     "shadowSamples": [
+      "a.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "button.flex.w-full → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "button.flex.w-full → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "button.flex.w-full → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 0,
+     "scrims": 1,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 1,
+     "dashed": 0,
+     "blurred": 3,
+     "roundedBoxes": 9,
+     "boxRadius": 16,
+     "squareMedia": 29,
+     "roundedMedia": 5,
+     "mediaRadius": 16,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 12447,
+    "margins": {
+     "left": 32,
+     "right": 32
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 640,
+      "words": 42,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Menu & treats",
+       "size": 60,
+       "tag": "h1"
+      },
+      "left": 32,
+      "right": 185,
+      "textLeft": 32,
+      "textRight": 185,
+      "fullBleed": true,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.relative.z-40",
+      "tag": "section",
+      "top": 776,
+      "height": 240,
+      "words": 14,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 48,
+      "right": 48,
+      "textLeft": 64,
+      "textRight": 185,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section",
+      "tag": "section",
+      "top": 1064,
+      "height": 8843,
+      "words": 706,
+      "media": 29,
+      "middle": 119,
+      "heading": {
+       "text": "Cakes & Pies",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 0,
+      "textLeft": 32,
+      "textRight": -278,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#f1f2ee].py-16",
+      "tag": "section",
+      "top": 9963,
+      "height": 1677,
+      "words": 25,
+      "media": 5,
+      "middle": 0,
+      "heading": {
+       "text": "A little more joy in your feed.",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 251,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 11640,
+      "height": 807,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 46,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Menu & treats",
+      "size": 60,
+      "top": 186,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 32,
+      "n": 32
+     },
+     {
+      "x": 394,
+      "n": 28
+     },
+     {
+      "x": 72,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 61,
+    "bodySize": 14,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": null,
+    "topbar": {
+     "h": 80
+    },
+    "canvas": {
+     "left": 32,
+     "right": -21
+    },
+    "hero": {
+     "text": "Menu & treats",
+     "words": 3,
+     "chars": 13,
+     "lines": 1,
+     "size": 60,
+     "vw": 7.8,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.02,
+     "leading": 0.98,
+     "top": 186,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 4,
+     "firstScreen": 3,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 4,
+     "radii": [
+      [
+       24,
+       2
+      ],
+      [
+       16,
+       1
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "heavyBorders": 1,
+     "borderSamples": [
+      "#ffffff on #092a53 (14.31:1)"
+     ],
+     "heavyShadows": 2,
+     "softShadows": 0,
+     "shadowSamples": [
+      "oklab(0.999994 0.0000455678 0.0000200868 / 0.25) 0px 0px 0px 1px",
+      "rgba(0, 0, 0, 0.45) 0px 24px 60px 0px"
+     ],
+     "glass": 1
+    },
+    "chips": {
+     "count": 29,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 206,
+       "size": 36,
+       "radius": "3.35544e+07px"
+      },
+      {
+       "hue": 206,
+       "size": 36,
+       "radius": "3.35544e+07px"
+      },
+      {
+       "hue": 206,
+       "size": 36,
+       "radius": "3.35544e+07px"
+      },
+      {
+       "hue": 206,
+       "size": 36,
+       "radius": "3.35544e+07px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 7,
+     "tabularShare": 0.86,
+     "kpiMax": 30
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.15,
+     "tiny": 3,
+     "tinySamples": [
+      "Menu categories 10px",
+      "Menu items 10px",
+      "Free app 10px"
+     ],
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      30,
+      36,
+      48,
+      60
+     ]
+    },
+    "title": {
+     "text": "Menu & treats",
+     "size": 60,
+     "top": 186
+    },
+    "colourShare": 0.577
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 12,
+   "filled": [
+    0.96,
+    0.87,
+    0.9,
+    0.96,
+    0.89,
+    0.95,
+    0.91,
+    0.94,
+    0.92,
+    0.98,
+    1,
+    1
+   ],
+   "motion": {
+    "elements": 10,
+    "css": 4,
+    "transitions": 6,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 9388,
+     "screens": 11.1,
+     "words": 912,
+     "img": 37,
+     "video": 0,
+     "canvas": 0,
+     "svg": 134,
+     "sections": 5,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 34,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "birthday-cakes.webp",
+      "cake-batter-confetti.webp",
+      "oreo-cookies-cream-extreme.webp",
+      "tall-dark-delicious.webp",
+      "birthday-cakes.webp",
+      "cake-batter-layers.webp",
+      "cake-batter-confetti.webp",
+      "caramel-nut-nirvana.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 1,
+     "brokenImages": [],
+     "emoji": [
+      "✦"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Menu & treats",
+     "words": 3,
+     "chars": 13,
+     "lines": 1,
+     "size": 36,
+     "vw": 9.2,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.02,
+     "leading": 0.98,
+     "top": 170,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Menu & treats",
+     "words": 3,
+     "lines": 1,
+     "size": 36,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Menu & treats",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 170,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Cakes & Pies",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.77,
+      "top": 908,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "28",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.36,
+      "top": 1076,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "28",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.36,
+      "top": 1076,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "16,000 FCFA",
+      "words": 2,
+      "chars": 11,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.77,
+      "top": 1156,
+      "tag": "dd",
+      "kind": "statement"
+     },
+     {
+      "text": "Menu items",
+      "words": 2,
+      "chars": 10,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.39,
+      "top": 1461,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "A little more joy in your feed.",
+      "words": 7,
+      "chars": 31,
+      "lines": 2,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 7153,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.89,
+      "top": 8225,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 8,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 3,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.79,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.21,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      24,
+      30,
+      36
+     ],
+     "sizeCount": 10,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 12,
+      "leading": 1.67,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 4.5
+     },
+     "measureChars": 44,
+     "max": {
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "text": "Menu & treats"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 4,
+     "microLabelShare": 0.009,
+     "microSamples": [
+      "The Cold Stone experience",
+      "✦",
+      "Cakes & Pies",
+      "Free app"
+     ],
+     "upperShare": 0.08,
+     "centerShare": 0.09,
+     "smallText": 33
+    },
+    "eyebrows": [
+     {
+      "text": "The Cold Stone experience",
+      "above": "Menu & treats",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 112
+     },
+     {
+      "text": "Menu items",
+      "above": "28",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 1052
+     },
+     {
+      "text": "Available",
+      "above": "28",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 1052
+     },
+     {
+      "text": "Cakes & Pies",
+      "above": "Menu items",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 1433
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 80,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#f1f2ee",
+       "top": 7089,
+       "hsl": {
+        "h": 75,
+        "s": 0.13,
+        "l": 0.94
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 8177,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#65748a",
+       "share": 0.5
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.24
+      },
+      {
+       "color": "#092a53",
+       "share": 0.14
+      },
+      {
+       "color": "#8a7000",
+       "share": 0.07
+      },
+      {
+       "color": "#41546b",
+       "share": 0.02
+      }
+     ],
+     "button": {
+      "bg": "#092a53",
+      "hsl": {
+       "h": 213,
+       "s": 0.8,
+       "l": 0.18
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": [
+      {
+       "text": "Back to categories",
+       "ratio": 3.5,
+       "need": 4.5,
+       "size": 12,
+       "fg": "#7b8796",
+       "bg": "#fbfaf5"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 40,
+     "inHero": 2,
+     "radius": 6,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Filters",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 6,
+     "shadowOverlay": 3,
+     "shadowSamples": [
+      "button.relative.inline-flex → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "span.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "a.mt-7.inline-flex → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "img.size-14.shrink-0 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 0,
+     "scrims": 1,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 2,
+     "roundedBoxes": 8,
+     "boxRadius": 16,
+     "squareMedia": 1,
+     "roundedMedia": 1,
+     "mediaRadius": 16,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.24
+     }
+    ],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 9388,
+    "margins": {
+     "left": 20,
+     "right": 20
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 349,
+      "words": 30,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Menu & treats",
+       "size": 36,
+       "tag": "h1"
+      },
+      "left": 20,
+      "right": 29,
+      "textLeft": 20,
+      "textRight": 29,
+      "fullBleed": true,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div#menu-content.mx-auto.max-w-[1320px]",
+      "tag": "div",
+      "top": 429,
+      "height": 6660,
+      "words": 707,
+      "media": 29,
+      "middle": 485,
+      "heading": {
+       "text": "Cakes & Pies",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 0,
+      "textLeft": 20,
+      "textRight": -644,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#f1f2ee].py-16",
+      "tag": "section",
+      "top": 7089,
+      "height": 1088,
+      "words": 25,
+      "media": 5,
+      "middle": 0,
+      "heading": {
+       "text": "A little more joy in your feed.",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 21,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 8177,
+      "height": 1211,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 30,
+       "tag": "span"
+      },
+      "left": 20,
+      "right": 24,
+      "textLeft": 20,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Menu & treats",
+      "size": 36,
+      "top": 170,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 20,
+      "n": 18
+     },
+     {
+      "x": 201,
+      "n": 14
+     },
+     {
+      "x": 44,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 33,
+    "bodySize": 12,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": null,
+    "topbar": {
+     "h": 80
+    },
+    "canvas": {
+     "left": 20,
+     "right": -90
+    },
+    "hero": {
+     "text": "Menu & treats",
+     "words": 3,
+     "chars": 13,
+     "lines": 1,
+     "size": 36,
+     "vw": 9.2,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.02,
+     "leading": 0.98,
+     "top": 170,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 3,
+     "firstScreen": 3,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 3,
+     "radii": [
+      [
+       24,
+       2
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 2,
+     "softShadows": 0,
+     "shadowSamples": [
+      "oklab(0.999994 0.0000455678 0.0000200868 / 0.25) 0px 0px 0px 1px",
+      "rgba(0, 0, 0, 0.45) 0px 24px 60px 0px"
+     ],
+     "glass": 0
+    },
+    "chips": {
+     "count": 29,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 206,
+       "size": 32,
+       "radius": "3.35544e+07px"
+      },
+      {
+       "hue": 206,
+       "size": 32,
+       "radius": "3.35544e+07px"
+      },
+      {
+       "hue": 206,
+       "size": 32,
+       "radius": "3.35544e+07px"
+      },
+      {
+       "hue": 206,
+       "size": 32,
+       "radius": "3.35544e+07px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 6,
+     "tabularShare": 0.83,
+     "kpiMax": 30
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.6,
+     "tiny": 3,
+     "tinySamples": [
+      "Menu categories 10px",
+      "Menu items 10px",
+      "Free app 10px"
+     ],
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      24,
+      30,
+      36
+     ]
+    },
+    "title": {
+     "text": "Menu & treats",
+     "size": 36,
+     "top": 170
+    },
+    "colourShare": 0.482
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "micro-label",
+   "width": 1440,
+   "message": "7 tiny uppercase letter-spaced labels (e.g. \"The Cold Stone experience\", \"✦\", \"Menu categories\", \"Menu items\").",
+   "fix": "Use sentence-case text at a readable size, or delete the label.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "emoji",
+   "width": 1440,
+   "message": "Emoji in the page: ✦",
+   "fix": "Remove. Use words or real imagery.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (section #fbfaf5).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "contrast",
+   "width": 1440,
+   "message": "Low-contrast text: \"Back to categories\" 3.5:1 needs 4.5:1",
+   "fix": "Darken or lighten the text colour.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "heavy-shadow",
+   "width": 1440,
+   "message": "2 panel shadow(s) heavy enough to read as floating: oklab(0.999994 0.0000455678 0.0000200868 / 0.25) 0px 0px 0px 1px | rgba(0, 0, 0, 0.45) 0px 24px 60px 0px",
+   "fix": "Panels sit on the ground: separate them with a fill one step from the ground or a quiet 1px border. A shadow, if any, is under 8% black with a small blur. Real overlays (menus, dialogs, popovers) may float.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "icon-chips",
+   "width": 1440,
+   "message": "30 icons sit in tinted squares or circles.",
+   "fix": "This is the commonest tell of a generated dashboard. Drop the tinted square: a KPI is a label and a number; an icon, if it helps, is plain and in the text colour.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "colour-sprawl",
+   "width": 1440,
+   "message": "56% of the first screen is strongly coloured.",
+   "fix": "Keep the screen neutral and spend colour on data and status: the studied screens sit near 3%, and only tinted styles reach 10–15%, as pale tints rather than saturated fills.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "tiny-text",
+   "width": 1440,
+   "message": "4 text blocks under 11px: Menu categories 10px, Menu items 10px, Signature creations 10px, Free app 10px.",
+   "fix": "Nothing below 11px; secondary text 12px, data 13–14px.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "app-title-size",
+   "width": 1440,
+   "message": "The h1 is 72px (\"Menu & treats\").",
+   "fix": "An app screen is not a landing page: the title is 18-32px (20-24px on a phone).",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "covered-text",
+   "width": 390,
+   "message": "Large text lies under another element at some scroll position: \"Menu items\" (screen 2, 100% hidden); \"Cold Stone Creamery\" (screen 10, 100% hidden)",
+   "fix": "Nothing may sit on top of a headline or statement. Move the picture, shorten the pinned run, or raise the text above it (z-index) and give it a ground."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-category-banner\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-category-banner\\desktop-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-category-banner\\desktop-page-02.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-category-banner\\tablet-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-category-banner\\tablet-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-category-banner\\tablet-page-02.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-category-banner\\mobile-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-category-banner\\mobile-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\after-category-banner\\mobile-page-02.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

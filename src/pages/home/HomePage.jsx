@@ -389,7 +389,7 @@ function ReviewerAvatar({ name, picture, className, eager = false }) {
   ) : (
     <span
       aria-hidden="true"
-      className={`grid shrink-0 place-items-center rounded-full bg-[#092a53] font-display font-extrabold text-[#ffdc32] ${className}`}
+      className={`grid shrink-0 place-items-center rounded-full bg-[#e8edf2] font-display font-extrabold text-[#092a53] ${className}`}
     >
       {name.charAt(0).toUpperCase()}
     </span>
@@ -408,23 +408,32 @@ function ReviewCard({ review, language, t, eager = false }) {
   const isLong = text.length > LONG_REVIEW_LENGTH;
   return (
     <li>
-      <article className="flex h-full flex-col rounded-2xl border border-[#eceff3] bg-[#f7f8fa] p-6 transition duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_40px_rgba(9,42,83,0.10)] sm:p-7">
+      <article className="flex h-full flex-col rounded-2xl border border-[#dce3eb] bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-[#b8c6d5] hover:shadow-[0_16px_36px_rgba(9,42,83,0.10)] sm:p-7">
         <div className="flex-1">
+          <div className="mb-5 flex min-h-5 items-center">
+            <StarRating
+              className="size-4"
+              emptyClassName="text-[#dce3eb]"
+              filledClassName="text-[#d9a900]"
+              label={t("{rating} out of 5 stars", { rating: review.rating })}
+              value={Number(review.rating) || 0}
+            />
+          </div>
           {text ? (
             <blockquote
-              className={`whitespace-pre-line text-[15px] font-medium leading-[1.75] text-[#22344c] ${isLong && !expanded ? "line-clamp-4" : ""}`}
+              className={`whitespace-pre-line text-[15px] font-medium leading-[1.75] text-[#20334c] ${isLong && !expanded ? "line-clamp-4" : ""}`}
             >
               {text}
             </blockquote>
           ) : (
-            <p className="text-sm italic leading-7 text-[#7b8794]">
+            <p className="text-sm italic leading-7 text-[#52647b]">
               {t("No written comment.")}
             </p>
           )}
           {isLong && (
             <button
               aria-expanded={expanded}
-              className="mt-3 text-[13px] font-bold tracking-wide text-[#123b68] underline decoration-[#c8d2dd] underline-offset-4 transition hover:decoration-[#123b68] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+              className="mt-3 text-sm font-bold text-[#123b68] underline decoration-[#c8d2dd] underline-offset-4 transition hover:decoration-[#123b68] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
               onClick={() => setExpanded((current) => !current)}
               type="button"
             >
@@ -432,24 +441,24 @@ function ReviewCard({ review, language, t, eager = false }) {
             </button>
           )}
         </div>
-        <footer className="mt-6 flex items-center justify-between gap-3">
+        <footer className="mt-6 flex items-center justify-between gap-3 border-t border-[#e8edf2] pt-5">
           <div className="flex min-w-0 items-center gap-3">
             <ReviewerAvatar
-              className="size-11 shrink-0 text-sm"
+              className="size-10 shrink-0 text-sm"
               eager={eager}
               name={customerName}
               picture={review.profilePicture}
             />
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-[#0d2c4e]">
+              <p className="truncate text-sm font-bold text-[#092a53]">
                 {customerName}
               </p>
-              <p className="mt-0.5 truncate text-xs font-medium text-[#6e7a89]">
+              <p className="mt-1 truncate text-xs font-medium text-[#52647b]">
                 {review.itemName ? t(review.itemName) : t("Verified purchase")}
               </p>
               {review.createdAt && (
                 <time
-                  className="mt-1 block text-xs font-medium text-[#6e7a89]"
+                  className="mt-1 block text-xs font-medium text-[#65748a]"
                   dateTime={review.createdAt}
                 >
                   {formatReviewDate(review.createdAt, language)}
@@ -457,13 +466,6 @@ function ReviewCard({ review, language, t, eager = false }) {
               )}
             </div>
           </div>
-          <StarRating
-            className="size-3.5 shrink-0"
-            emptyClassName="text-[#e5e9ef]"
-            filledClassName="text-[#f5a623]"
-            label={t("{rating} out of 5 stars", { rating: review.rating })}
-            value={Number(review.rating) || 0}
-          />
         </footer>
       </article>
     </li>
@@ -475,7 +477,7 @@ function SkeletonCard({ className = "" }) {
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse rounded-2xl border border-[#eceff3] bg-[#f7f8fa] p-6 ${className}`}
+      className={`animate-pulse rounded-2xl border border-[#dce3eb] bg-white p-6 ${className}`}
     >
       <div className="h-4 w-3/4 rounded-full bg-[#e4e8ee]" />
       <div className="mt-3 h-3 w-full rounded-full bg-[#e4e8ee]" />
@@ -497,11 +499,11 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
     return (
       <section
         aria-label={t("Real Reviews")}
-        className="bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+        className="bg-[#f4f6f8] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
       >
         <div className="mx-auto max-w-[1320px]">
-          <div className="h-10 w-56 animate-pulse rounded-full bg-[#e4e8ee] sm:h-12" />
-          <div className="mt-4 h-4 w-80 max-w-full animate-pulse rounded-full bg-[#e4e8ee]" />
+          <div className="h-10 w-56 animate-pulse rounded-lg bg-[#e1e7ed] sm:h-12" />
+          <div className="mt-4 h-4 w-80 max-w-full animate-pulse rounded-md bg-[#e1e7ed]" />
           <div className="mt-10 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
             <SkeletonCard />
             <SkeletonCard className="hidden md:block" />
@@ -525,22 +527,10 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
   return (
     <section
       aria-labelledby="real-reviews-heading"
-      className="relative isolate overflow-hidden bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+      className="bg-[#f4f6f8] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
       id="reviews"
     >
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-6 rounded-t-[100%] bg-[#fbfaf5]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#dde4ec] to-transparent"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(9,42,83,0.045),transparent_42%)]"
-      />
-      <div className="relative mx-auto max-w-[1320px]">
+      <div className="mx-auto max-w-[1320px]">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <h2
@@ -555,43 +545,41 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
               )}
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-3 lg:mb-1">
-            {/* With no reviews yet there is no number to show, and a 0.0 row reads as "nobody ever
-                ordered" — so only the friendly invitation below is shown instead. */}
-            {hasReviews && (
-              <>
+          {hasReviews && (
+            <div className="flex shrink-0 items-center gap-4 rounded-xl bg-white px-5 py-4 ring-1 ring-[#dce3eb] lg:mb-1">
+              <span className="font-display text-3xl font-extrabold leading-none tracking-tight text-[#092a53]">
+                {roundedAverage.toFixed(1)}
+              </span>
+              <span className="flex flex-col gap-1.5">
                 <StarRating
-                  className="size-5"
-                  emptyClassName="text-[#e5e9ef]"
-                  filledClassName="text-[#f5a623]"
+                  className="size-4"
+                  emptyClassName="text-[#dce3eb]"
+                  filledClassName="text-[#d9a900]"
                   label={t("{rating} out of 5 stars", {
                     rating: roundedAverage.toFixed(1),
                   })}
                   value={average}
                 />
-                <span className="text-sm font-bold text-[#0d2c4e]">
-                  {roundedAverage.toFixed(1)}
-                </span>
-                <span className="text-sm font-medium text-[#6e7a89]">
+                <span className="text-xs font-semibold text-[#52647b]">
                   {t(
                     count === 1 ? "Based on 1 review" : "Based on {count} reviews",
                     { count },
                   )}
                 </span>
-              </>
-            )}
-          </div>
+              </span>
+            </div>
+          )}
         </div>
 
         {error ? (
           <p
-            className="mt-8 rounded-2xl border border-[#e6ebf1] bg-[#f9fbfd] px-5 py-4 text-base leading-7 text-[#52647b]"
+            className="mt-8 rounded-xl bg-white px-5 py-4 text-base leading-7 text-[#52647b] ring-1 ring-[#dce3eb]"
             role="status"
           >
             {t("Customer reviews could not be loaded")}: {error}
           </p>
         ) : !hasReviews ? (
-          <div className="mt-8 flex flex-col items-start gap-4 rounded-2xl border border-[#e6ebf1] bg-[#f9fbfd] px-6 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <div className="mt-8 flex flex-col items-start gap-4 rounded-xl bg-white px-6 py-8 ring-1 ring-[#dce3eb] sm:flex-row sm:items-center sm:justify-between sm:px-8">
             <div>
               <p className="font-display text-xl font-extrabold leading-tight text-[#092a53]">
                 {t("No reviews yet — be the first!")}
@@ -601,7 +589,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
               </p>
             </div>
             <Link
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(9,42,83,0.16)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#092a53] px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
               to="/account/orders"
             >
               {t("Write a review")} <ArrowIcon />
@@ -623,15 +611,15 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
           </ul>
         )}
 
-        <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-[#dfe6ed] pt-6">
+        <div className="mt-8 flex flex-wrap items-center gap-3">
           <Link
-            className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(9,42,83,0.16)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#092a53] px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
             to="/account/orders"
           >
             {t("Write a review")} <ArrowIcon />
           </Link>
           <Link
-            className="inline-flex items-center gap-2 rounded-full border border-[#cfd8e1] bg-white px-6 py-3.5 text-sm font-extrabold text-[#123b68] transition hover:-translate-y-0.5 hover:border-[#092a53] hover:bg-[#fafdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-lg border border-[#cfd8e1] bg-white px-6 py-3.5 text-sm font-bold text-[#123b68] transition hover:-translate-y-0.5 hover:border-[#092a53] hover:bg-[#fafdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
             to="/menu"
           >
             {t("Explore the menu")}
@@ -1042,34 +1030,30 @@ export function HomePage() {
         >
           <HeroBackground variant="navy" />
 
-          <div className="mx-auto w-full max-w-[1320px] px-5 pt-10 sm:px-8 sm:pt-14 lg:px-12 lg:pt-16">
-            <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+          <div className="mx-auto w-full max-w-[1400px] px-5 pb-8 pt-7 sm:px-8 sm:pb-12 sm:pt-10 lg:px-12 lg:pb-14 lg:pt-12">
+            <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
               {/* Copy */}
               <div className="relative z-10 lg:col-span-6">
                 <div className="home-hero-copy" key={activeSlide}>
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
-                    <span
-                      aria-hidden="true"
-                      className="h-px w-10 bg-[#ffdc32]"
-                    />
+                  <p className="text-sm font-bold text-[#ffdc32] sm:text-base">
                     {t(homeSlides[activeSlide].eyebrow)}
                   </p>
-                  <h1 className="mt-6 font-display text-[clamp(2.9rem,6.6vw,5.75rem)] font-extrabold leading-[0.95] tracking-[-0.04em] text-white">
+                  <h1 className="mt-4 max-w-[13ch] font-display text-[clamp(2.55rem,5vw,4.7rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-white sm:mt-5">
                     {t(homeSlides[activeSlide].title)}
-                    <span className="mt-1 block text-[#ffdc32]">
+                    <span className="mt-1 block text-white">
                       {t(homeSlides[activeSlide].accent)}
                     </span>
                   </h1>
-                  <p className="mt-5 line-clamp-2 max-w-lg text-sm leading-6 text-white/70 sm:mt-7 sm:text-lg sm:leading-8">
+                  <p className="mt-4 max-w-lg text-base leading-7 text-white/75 sm:mt-5 sm:text-lg sm:leading-8">
                     {t(homeSlides[activeSlide].description)}
                   </p>
                 </div>
 
                 {/* Both buttons follow the slide on screen, so the main action always
                     matches what the copy is selling (e.g. "Order a cake" on the cake slide). */}
-                <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-9">
+                <div className="mt-5 flex flex-wrap items-center gap-3 sm:mt-7">
                   <Link
-                    className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-7 py-4 text-sm font-extrabold text-[#092a53] shadow-[0_14px_34px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                    className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#ffdc32] px-6 py-3 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
                     to={homeSlides[activeSlide].primaryTo}
                   >
                     {t(homeSlides[activeSlide].primaryCta)} <ArrowIcon />
@@ -1077,7 +1061,7 @@ export function HomePage() {
                   {/* Kept on every screen size: on small screens it shares the row with
                       the primary button (flex-wrap) so mobile visitors get both actions. */}
                   <Link
-                    className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                    className="inline-flex min-h-12 items-center gap-2 rounded-lg border border-white/30 px-5 py-3 text-sm font-bold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
                     to={homeSlides[activeSlide].secondaryTo}
                   >
                     {t(homeSlides[activeSlide].secondaryCta)}{" "}
@@ -1085,7 +1069,7 @@ export function HomePage() {
                   </Link>
                 </div>
 
-                <ul className="mt-6 hidden flex-wrap gap-x-8 gap-y-3 border-t border-white/10 pt-6 text-sm font-semibold text-white/80 sm:flex">
+                <ul className="mt-7 hidden flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-white/80 sm:flex">
                   {[
                     "Signature creations",
                     "A flavor for every mood",
@@ -1097,7 +1081,7 @@ export function HomePage() {
                     >
                       <span
                         aria-hidden="true"
-                        className="grid size-5 place-items-center rounded-full bg-[#ffdc32]/15 text-[#ffdc32]"
+                        className="grid size-5 place-items-center bg-white/10 text-[#ffdc32]"
                       >
                         <svg className="size-3" fill="none" viewBox="0 0 24 24">
                           <path
@@ -1145,76 +1129,57 @@ export function HomePage() {
                 <div
                   aria-label={`${activeSlide + 1} / ${homeSlides.length}`}
                   aria-roledescription={t("slide")}
-                  className="relative aspect-[4/5] overflow-hidden rounded-[36px] bg-[#0f3566] shadow-[0_40px_90px_rgba(0,0,0,0.35)] ring-1 ring-white/10 sm:aspect-[5/5] lg:aspect-[4/5] xl:aspect-[5/5]"
+                  className="relative"
                   role="group"
                 >
-                  {homeSlides.map((slide, index) => {
-                    if (!loadedSlides.includes(index)) return null;
-                    const isActive = activeSlide === index;
-                    return (
-                      <img
-                        decoding="async"
-                        alt={isActive ? t(slide.alt) : ""}
-                        aria-hidden={!isActive}
-                        className={`home-slide-image absolute inset-0 size-full object-cover object-center ${
-                          isActive
-                            ? "scale-100 opacity-100"
-                            : "scale-[1.04] opacity-0"
-                        }`}
-                        fetchPriority={index === 0 ? "high" : "auto"}
-                        key={slide.image}
-                        loading={index === 0 ? "eager" : "lazy"}
-                        sizes={HOME_SLIDE_SIZES}
-                        src={slide.image}
-                        srcSet={photoSrcSet(slide.image)}
-                      />
-                    );
-                  })}
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-t from-[#061d3a]/85 via-[#061d3a]/10 to-transparent"
-                  />
-
-                  <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-5 sm:p-6">
-                    <span className="rounded-full border border-white/25 bg-white/15 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-white backdrop-blur-md">
-                      {t("Featured")}
-                    </span>
-                    <span
-                      aria-live="polite"
-                      className="font-display text-sm font-extrabold tabular-nums text-white"
-                    >
-                      {String(activeSlide + 1).padStart(2, "0")}
-                      <span className="text-white/50">
-                        {" "}
-                        / {String(homeSlides.length).padStart(2, "0")}
+                  <div className="relative aspect-[5/4] overflow-hidden rounded-[20px] bg-[#0f3566] ring-1 ring-white/15 sm:rounded-[24px]">
+                    {homeSlides.map((slide, index) => {
+                      if (!loadedSlides.includes(index)) return null;
+                      const isActive = activeSlide === index;
+                      return (
+                        <img
+                          decoding="async"
+                          alt={isActive ? t(slide.alt) : ""}
+                          aria-hidden={!isActive}
+                          className={`home-slide-image absolute inset-0 size-full object-cover object-center ${
+                            isActive
+                              ? "scale-100 opacity-100"
+                              : "scale-[1.04] opacity-0"
+                          }`}
+                          fetchPriority={index === 0 ? "high" : "auto"}
+                          key={slide.image}
+                          loading={index === 0 ? "eager" : "lazy"}
+                          sizes={HOME_SLIDE_SIZES}
+                          src={slide.image}
+                          srcSet={photoSrcSet(slide.image)}
+                        />
+                      );
+                    })}
+                    <div className="absolute left-4 top-4 flex items-center gap-2 sm:left-5 sm:top-5">
+                      <span className="bg-[#f8f7f2] px-3 py-1.5 text-xs font-bold text-[#092a53]">
+                        {t("Featured")}
                       </span>
-                    </span>
+                      <span
+                        aria-live="polite"
+                        className="bg-[#092a53]/85 px-3 py-1.5 font-display text-xs font-bold tabular-nums text-white"
+                      >
+                        {String(activeSlide + 1).padStart(2, "0")}
+                        <span className="text-white/60">
+                          {" "}
+                          / {String(homeSlides.length).padStart(2, "0")}
+                        </span>
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
-                    <p className="max-w-xs font-display text-2xl font-extrabold leading-tight sm:text-3xl">
+                  <div className="flex items-center justify-between gap-4 pt-4 text-white sm:pt-5">
+                    <p className="min-w-0 font-display text-lg font-bold leading-tight sm:text-xl">
                       {t(homeSlides[activeSlide].caption)}
                     </p>
-                    <div className="mt-5 flex items-center gap-3">
-                      <button
-                        aria-hidden="true"
-                        className="relative h-3 flex-1 cursor-pointer overflow-hidden rounded-full bg-white/20"
-                        onClick={() => {
-                          setActiveSlide((current) => (current + 1) % homeSlides.length);
-                          holdHero();
-                        }}
-                        tabIndex={-1}
-                        title={t("Next slide in {seconds} seconds", { seconds: 12 })}
-                        type="button"
-                      >
-                        <span
-                          className="home-hero-progress absolute inset-0 rounded-full bg-[#ffdc32]"
-                          key={activeSlide}
-                        />
-                      </button>
+                    <div className="flex shrink-0 items-center gap-2">
                       <button
                         aria-label={t("Previous slide")}
-                        className="grid size-12 place-items-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+                        className="grid size-10 place-items-center rounded-full border border-white/30 text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
                         onClick={() => {
                           setActiveSlide(
                             (current) =>
@@ -1242,7 +1207,7 @@ export function HomePage() {
                       </button>
                       <button
                         aria-label={t("Next slide")}
-                        className="grid size-11 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] shadow-md transition hover:scale-105 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        className="grid size-10 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                         onClick={() => {
                           setActiveSlide(
                             (current) => (current + 1) % homeSlides.length,
@@ -1255,11 +1220,29 @@ export function HomePage() {
                       </button>
                     </div>
                   </div>
+                  <div className="mt-3 flex items-center gap-3">
+                    <button
+                      aria-hidden="true"
+                      className="relative h-1.5 flex-1 cursor-pointer overflow-hidden rounded-full bg-white/20"
+                      onClick={() => {
+                        setActiveSlide((current) => (current + 1) % homeSlides.length);
+                        holdHero();
+                      }}
+                      tabIndex={-1}
+                      title={t("Next slide in {seconds} seconds", { seconds: 12 })}
+                      type="button"
+                    >
+                      <span
+                        className="home-hero-progress absolute inset-0 rounded-full bg-[#ffdc32]"
+                        key={activeSlide}
+                      />
+                    </button>
+                  </div>
                 </div>
 
                 <div
                   aria-label={t("Choose a featured slide")}
-                  className="absolute top-1/2 -left-4 hidden -translate-y-1/2 flex-col gap-3 rounded-[22px] bg-white/10 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/15 backdrop-blur-md sm:flex lg:-left-10"
+                  className="mt-3 hidden items-center justify-end gap-2 sm:flex"
                   role="group"
                 >
                   {homeSlides.map((slide, index) => {
@@ -1270,7 +1253,7 @@ export function HomePage() {
                         aria-label={t("Show slide {number}", {
                           number: index + 1,
                         })}
-                        className={`relative size-16 overflow-hidden rounded-2xl ring-offset-2 ring-offset-[#092a53] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
+                        className={`relative size-12 overflow-hidden rounded-lg ring-offset-2 ring-offset-[#092a53] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
                           isActive
                             ? "ring-2 ring-[#ffdc32]"
                             : "opacity-60 hover:opacity-100"
@@ -1429,49 +1412,53 @@ export function HomePage() {
         {/* How ordering works — answers the first-time visitor's questions in one glance. */}
         <section
           aria-labelledby="how-it-works-heading"
-          className="border-b border-[#e9e5da] bg-[#f8f6f1] px-5 py-10 sm:px-8 sm:py-12 lg:px-10"
+          className="bg-[#f4f6f8] px-5 py-14 text-[#092a53] sm:px-8 sm:py-18 lg:px-10 lg:py-20"
         >
           <div className="mx-auto max-w-[1320px]">
-            <h2
-              className="text-center font-display text-xl font-extrabold tracking-tight text-[#092a53] sm:text-2xl"
-              id="how-it-works-heading"
-            >
-              {t("How it works")}
-            </h2>
-            <ol className="mt-6 grid gap-3 sm:grid-cols-3 sm:gap-4">
+            <div className="grid gap-4 sm:grid-cols-[1fr_0.85fr] sm:items-end sm:gap-10">
+              <h2
+                className="font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
+                id="how-it-works-heading"
+              >
+                {t("How it works")}
+              </h2>
+              <p className="max-w-lg text-base leading-7 text-[#52647b] sm:justify-self-end sm:text-lg sm:leading-8">
+                {t("Choose your flavor, pay online, then collect your order or have it delivered.")}
+              </p>
+            </div>
+            <ol className="mt-10 grid gap-x-10 gap-y-8 sm:mt-12 sm:grid-cols-3 sm:gap-x-8 lg:gap-x-16">
               {[
                 {
                   step: "1",
                   title: "Choose your treats",
                   description: "Browse the menu and add favorites to your bag.",
-                  icon: "🍦",
                 },
                 {
                   step: "2",
                   title: "Order online",
                   description: "Checkout with cards or Mobile Money in a few taps.",
-                  icon: "📱",
                 },
                 {
                   step: "3",
                   title: "Pick up or get it delivered",
                   description: "Ready in about 30 minutes at your chosen store.",
-                  icon: "🛵",
                 },
-              ].map(({ step, title, description, icon }) => (
+              ].map(({ step, title, description }) => (
                 <li
-                  className="relative flex flex-col items-center gap-2 rounded-2xl bg-white px-4 py-5 text-center shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_28px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:flex-row sm:gap-4 sm:px-5 sm:text-left"
+                  className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-4 sm:grid-cols-1 sm:gap-5"
                   key={step}
                 >
-                  <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff3b8] text-2xl">
-                    {icon}
+                  <span
+                    aria-hidden="true"
+                    className="grid size-12 place-items-center rounded-full bg-[#ffdc32] font-display text-2xl font-bold leading-none tabular-nums text-[#092a53] sm:size-14 sm:text-3xl"
+                  >
+                    {step}
                   </span>
                   <span className="min-w-0">
-                    <span className="block font-display text-base font-extrabold leading-tight text-[#092a53]">
-                      <span aria-hidden="true" className="text-[#f5a623]">{step}. </span>
+                    <span className="block font-display text-lg font-bold leading-tight text-[#092a53] sm:text-xl">
                       {t(title)}
                     </span>
-                    <span className="mt-1 block text-xs leading-5 text-[#52647b] sm:text-[13px]">
+                    <span className="mt-2 block max-w-sm text-sm leading-6 text-[#52647b] sm:text-base sm:leading-7">
                       {t(description)}
                     </span>
                   </span>
@@ -1483,24 +1470,17 @@ export function HomePage() {
 
         <section
           aria-labelledby="flavor-inspiration-heading"
-          className="relative overflow-hidden bg-[#fbfaf5] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          className="bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="flavors"
         >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-40 -top-48 size-[32rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),transparent)]"
-          />
-          <div className="relative mx-auto max-w-[1320px]">
+          <div className="mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
-                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#123b68]">
-                  {t("Follow your flavor")}
-                </p>
                 <h2
-                  className="mt-4 max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-6xl"
+                  className="max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-6xl"
                   id="flavor-inspiration-heading"
                 >
-                  {t("What\u2019s your kind of happy?")}
+                  {t("Find your flavor")}
                 </h2>
               </div>
               <div className="max-w-[360px] lg:mb-2">
@@ -1510,13 +1490,13 @@ export function HomePage() {
                   )}
                 </p>
                 <Link
-                  className="group mt-6 inline-flex min-h-14 items-center gap-3 rounded-full border-2 border-[#092a53] bg-white/60 px-8 py-3.5 text-base font-extrabold text-[#092a53] shadow-[0_6px_18px_rgba(9,42,83,0.08)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white hover:shadow-[0_12px_28px_rgba(9,42,83,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  className="group mt-6 inline-flex min-h-12 items-center gap-3 rounded-lg bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition-colors duration-300 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
                   to="/flavors"
                 >
                   {t("Explore all flavors")}
                   <svg
                     aria-hidden="true"
-                    className="size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                    className="size-4 transition-transform duration-300 group-hover:translate-x-0.5"
                     fill="none"
                     viewBox="0 0 24 24"
                   >
@@ -1532,7 +1512,7 @@ export function HomePage() {
               </div>
             </div>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div aria-label={t("Filter flavor inspiration")} className="flex flex-wrap gap-2.5" role="group">
                 {[
                   ["all", "All cravings"],
@@ -1544,10 +1524,10 @@ export function HomePage() {
                   return (
                     <button
                       aria-pressed={selected}
-                      className={`min-h-12 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
+                      className={`min-h-11 rounded-lg border px-4 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
                         selected
-                          ? "border-[#092a53] bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)]"
-                          : "border-[#cfd8e1] bg-transparent text-[#123b68] hover:border-[#092a53] hover:bg-white/70"
+                          ? "border-[#092a53] bg-[#092a53] text-white"
+                          : "border-[#d7dee7] bg-white text-[#123b68] hover:border-[#092a53] hover:bg-[#f8fafb]"
                       }`}
                       key={mood}
                       onClick={() => {
@@ -1568,7 +1548,7 @@ export function HomePage() {
                   <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
                 </svg>
                 <input
-                  className="min-h-11 w-full rounded-full border border-[#cfd8e1] bg-white py-2.5 pl-12 pr-10 text-sm font-semibold text-[#092a53] outline-none transition placeholder:text-[#8190a1] focus:border-[#092a53] focus:ring-2 focus:ring-[#092a53]/15"
+                  className="min-h-11 w-full rounded-lg border border-[#d7dee7] bg-white py-2.5 pl-12 pr-10 text-sm font-semibold text-[#092a53] outline-none transition placeholder:text-[#8190a1] focus:border-[#092a53] focus:ring-2 focus:ring-[#092a53]/15"
                   onChange={(event) => {
                     const query = event.target.value;
                     setFlavorSearch(query);
@@ -1582,7 +1562,7 @@ export function HomePage() {
                 {flavorSearch && (
                   <button
                     aria-label={t("Clear search")}
-                    className="absolute right-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-[#65748a] transition before:absolute before:-inset-2 before:content-[''] hover:bg-[#efece3] hover:text-[#092a53]"
+                    className="absolute right-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-[#65748a] transition before:absolute before:-inset-2 before:content-[''] hover:bg-[#edf1f5] hover:text-[#092a53]"
                     onClick={() => {
                       setFlavorSearch("");
                       if (selectedFlavorMood === "all") setShowAllFlavorResults(false);
@@ -1598,7 +1578,7 @@ export function HomePage() {
             </div>
 
             {flavorFiltersActive && (
-              <p aria-live="polite" className="mt-5 text-xs font-semibold text-[#65748a]">
+              <p aria-live="polite" className="mt-5 text-sm font-semibold text-[#52647b]">
                 {t("Showing {shown} of {total} flavors", {
                   shown: matchingFlavors.length,
                   total: allFlavorCards.length,
@@ -1607,14 +1587,14 @@ export function HomePage() {
             )}
             {visibleFlavors.length === 0 ? (
               <p
-                className="mt-8 rounded-2xl border border-[#e6ebf1] bg-white px-5 py-8 text-center text-base leading-7 text-[#52647b]"
+                className="mt-8 rounded-xl bg-white px-5 py-8 text-center text-base leading-7 text-[#52647b]"
                 role="status"
               >
                 {t("No flavors match your filters.")}
               </p>
             ) : null}
             <ul
-              className={visibleFlavors.length === 0 ? "hidden" : "mt-8 grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5"}
+              className={visibleFlavors.length === 0 ? "hidden" : "mt-8 grid auto-rows-fr grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6"}
             >
               {visibleFlavors.map((flavor) => {
                 const catalogFlavor = flavor.catalogFlavor;
@@ -1628,28 +1608,27 @@ export function HomePage() {
 
                 return (
                   <li
-                    className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_10px_30px_rgba(9,42,83,0.10)] ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[color:var(--card-accent)]/40 motion-reduce:transform-none motion-reduce:transition-none"
+                    className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[#ffdc32]/70 motion-reduce:transform-none motion-reduce:transition-none"
                     key={flavor.id}
-                    style={{ "--card-accent": flavor.color }}
                   >
                     {/* Shine sweep on hover */}
                     <span
                       aria-hidden="true"
                       className="pointer-events-none absolute inset-0 z-20 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_30%,rgba(255,255,255,0.55)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
                     />
-                    <div className="relative">
+                    <div className="relative bg-[#e8edf2]">
                       <ProductImageSlider
-                        frameClassName="rounded-none shadow-none"
-                        imageClassName="aspect-[16/10] transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none"
+                        frameClassName="rounded-none bg-[#e8edf2] shadow-none"
+                        imageClassName="aspect-square transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none sm:aspect-[4/3]"
                         images={images}
                         name={t(flavor.title)}
                         resetKey={flavor.id}
                         sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 100vw"
+                        showScrim={false}
                         showThumbnails={false}
                       />
                       <span
-                        className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53] shadow-sm backdrop-blur-sm transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none"
-                        style={{ backgroundColor: flavor.color }}
+                        className="absolute left-3 top-3 rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-[#092a53] transition-transform duration-500 ease-out group-hover:-rotate-3 group-hover:scale-105 motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-sm"
                       >
                         {t(
                           flavor.mood === "fruit"
@@ -1666,31 +1645,30 @@ export function HomePage() {
                         />
                       </span>
                       {soldOut && (
-                        <span className="absolute right-4 top-4 rounded-full bg-[#092a53]/85 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-sm">
+                        <span className="absolute right-4 top-4 rounded-md bg-[#092a53] px-3 py-1.5 text-xs font-bold text-white">
                           {t("Sold out today")}
                         </span>
                       )}
                     </div>
                     <div
-                      className="flex flex-1 flex-col justify-between gap-2 border-t-4 px-4 py-3 sm:px-5 sm:py-4"
-                      style={{ borderColor: flavor.color }}
+                      className="flex flex-1 flex-col justify-between gap-3 p-3.5 sm:gap-4 sm:p-5"
                     >
                       <div>
                         <Link
-                          className="line-clamp-2 min-h-[2.5em] font-display text-lg font-extrabold leading-tight text-[#092a53] transition-colors duration-300 hover:text-[#163e6b] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-xl"
+                          className="line-clamp-2 min-h-[2.5em] font-display text-base font-extrabold leading-tight text-[#092a53] transition-colors duration-300 hover:text-[#163e6b] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-xl"
                           to={catalogFlavor
                             ? `/flavor/${catalogFlavor.id}`
                             : `/menu?${new URLSearchParams({ category: flavor.category, item: flavor.item })}`}
                         >
                           {t(flavor.title)}
                         </Link>
-                        <p className="mt-1.5 line-clamp-2 min-h-10 text-xs font-medium leading-5 text-[#123b68] sm:text-[13px]">
+                        <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#52647b] sm:text-sm">
                           {t(flavor.detail || "")}
                         </p>
                       </div>
-                      <div className="flex flex-col items-stretch gap-1.5">
+                      <div className="flex flex-col items-stretch gap-2.5 sm:gap-3">
                         <span
-                          className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${
+                          className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 sm:text-base ${
                             added ? "animate-pulse text-green-700" : "text-[#092a53]"
                           }`}
                         >
@@ -1704,10 +1682,10 @@ export function HomePage() {
                           aria-label={soldOut
                             ? t("Sold out")
                             : t("Add {name} to cart", { name: t(flavor.item) })}
-                          className={`min-h-11 w-full rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] ${
+                          className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#52647b] sm:min-h-11 sm:px-4 sm:text-sm ${
                             added
                               ? "bg-[#4caf50] text-white"
-                              : "bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]"
+                              : "bg-[#092a53] text-white hover:bg-[#163e6b]"
                           }`}
                           disabled={soldOut || !item}
                           onClick={() => catalogFlavor
@@ -1724,7 +1702,7 @@ export function HomePage() {
               })}
             </ul>
             {!flavorFiltersActive && visibleFlavors.length > 0 && (
-              <p className="mt-5 text-xs leading-5 text-[#65748a]">
+              <p className="mt-5 text-sm leading-5 text-[#52647b]">
                 {t("Search or choose a craving to see more flavors.")}
               </p>
             )}
@@ -1736,58 +1714,53 @@ export function HomePage() {
             "Request a custom cake" button that leads to the cake builder page. */}
         <section
           aria-labelledby="cakes-heading"
-          className="relative overflow-hidden bg-[#fbfaf5] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          className="relative overflow-hidden bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="cakes"
         >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-40 -top-48 size-[32rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),transparent)]"
-          />
           <div className="relative mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
-                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#123b68]">
-                  {t("Celebrate with a cake")}
-                </p>
                 <h2
-                  className="mt-4 max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-6xl"
+                  className="max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-6xl"
                   id="cakes-heading"
                 >
                   {t("Cakes for every occasion")}
                 </h2>
-                <p className="mt-5 max-w-lg text-base leading-7 text-[#52647b] sm:text-lg sm:leading-8">
+              </div>
+              <div className="max-w-[360px] lg:mb-2">
+                <p className="text-lg font-medium leading-8 text-[#123b68]">
                   {t("Creamy ice cream cakes for birthdays, parties, and every celebration.")}
                 </p>
-              </div>
-              <div className="flex flex-wrap items-center justify-start gap-3 sm:justify-end lg:mb-2 lg:w-auto">
-                <Link
-                  className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-full bg-[#092a53] px-6 py-3 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-                  to="/custom-cake"
-                >
-                  {t("Request a custom cake")}
-                  <span
-                    aria-hidden="true"
-                    className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-transform duration-300 group-hover:translate-x-0.5"
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <Link
+                    className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-lg bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                    to="/custom-cake"
                   >
-                    <ArrowIcon />
-                  </span>
-                </Link>
-                <Link
-                  className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-full border border-[#cfd8e1] bg-white px-6 py-3 text-sm font-extrabold text-[#092a53] transition duration-300 hover:-translate-y-0.5 hover:border-[#092a53] hover:bg-[#fafdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-                  to={`/menu?${new URLSearchParams({ category: "Cakes & Pies" })}`}
-                >
-                  {t("Explore all cakes")}
-                  <span
-                    aria-hidden="true"
-                    className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-transform duration-300 group-hover:translate-x-0.5"
+                    {t("Request a custom cake")}
+                    <span
+                      aria-hidden="true"
+                      className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-transform duration-300 group-hover:translate-x-0.5"
+                    >
+                      <ArrowIcon />
+                    </span>
+                  </Link>
+                  <Link
+                    className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-lg border border-[#cfd8e1] bg-white px-6 py-3 text-sm font-bold text-[#092a53] transition duration-300 hover:-translate-y-0.5 hover:border-[#092a53] hover:bg-[#fafdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                    to={`/menu?${new URLSearchParams({ category: "Cakes & Pies" })}`}
                   >
-                    <ArrowIcon />
-                  </span>
-                </Link>
+                    {t("Explore all cakes")}
+                    <span
+                      aria-hidden="true"
+                      className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-transform duration-300 group-hover:translate-x-0.5"
+                    >
+                      <ArrowIcon />
+                    </span>
+                  </Link>
+                </div>
               </div>
             </div>
 
-            <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div
                 aria-label={t("Filter cakes")}
                 className="flex flex-wrap gap-2.5"
@@ -1798,10 +1771,10 @@ export function HomePage() {
                   return (
                     <button
                       aria-pressed={selected}
-                      className={`min-h-12 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
+                      className={`min-h-11 rounded-lg border px-4 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
                         selected
-                          ? "border-[#092a53] bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)]"
-                          : "border-[#cfd8e1] bg-transparent text-[#123b68] hover:border-[#092a53] hover:bg-white/70"
+                          ? "border-[#092a53] bg-[#092a53] text-white"
+                          : "border-[#d7dee7] bg-white text-[#123b68] hover:border-[#092a53] hover:bg-[#f8fafb]"
                       }`}
                       key={id}
                       onClick={() => setSelectedCakeType(id)}
@@ -1812,12 +1785,12 @@ export function HomePage() {
                   );
                 })}
               </div>
-              <label className="block w-full lg:ml-auto lg:max-w-[380px]">
+              <label className="relative block w-full sm:max-w-xs">
                 <span className="sr-only">{t("Search cakes")}</span>
                 <div className="group relative">
                   <svg
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-[#65748a] transition-colors group-focus-within:text-[#092a53]"
+                    className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#65748a] transition-colors group-focus-within:text-[#092a53]"
                     fill="none"
                     viewBox="0 0 24 24"
                   >
@@ -1829,7 +1802,7 @@ export function HomePage() {
                     />
                   </svg>
                   <input
-                    className="h-14 w-full rounded-2xl border-2 border-[#dce3eb] bg-white py-3 pl-14 pr-5 text-base font-semibold text-[#092a53] shadow-[0_8px_24px_rgba(9,42,83,0.08)] transition placeholder:font-medium placeholder:text-[#929eac] hover:border-[#9eafc2] hover:shadow-[0_10px_28px_rgba(9,42,83,0.12)] focus:border-[#092a53] focus:outline-none focus:ring-4 focus:ring-[#092a53]/10"
+                    className="min-h-11 w-full rounded-lg border border-[#d7dee7] bg-white py-2.5 pl-12 pr-4 text-sm font-semibold text-[#092a53] outline-none transition placeholder:font-medium placeholder:text-[#8190a1] hover:border-[#9eafc2] hover:shadow-[0_10px_28px_rgba(9,42,83,0.12)] focus:border-[#092a53] focus:ring-2 focus:ring-[#092a53]/15"
                     onChange={(event) => setCakeSearch(event.target.value)}
                     placeholder={t("Search cakes\u2026")}
                     type="search"
@@ -1841,13 +1814,13 @@ export function HomePage() {
 
               {cakeCards.length === 0 ? (
                 <p
-                  className="mt-8 rounded-2xl border border-[#e6ebf1] bg-white px-5 py-8 text-center text-base leading-7 text-[#52647b]"
+                  className="mt-8 rounded-xl bg-white px-5 py-8 text-center text-base leading-7 text-[#52647b]"
                   role="status"
                 >
                   {t("No cakes match your search \u2014 try another name or filter.")}
                 </p>
               ) : (
-                <ul className="mt-8 grid auto-rows-fr items-start gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+                <ul className="mt-8 grid auto-rows-fr grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
                   {cakeCards.map((cake) => {
                     const cakeKey = cake.id || getMenuItemId("Cakes & Pies", cake.name);
                     const added = addedItemKey === cakeKey;
@@ -1859,7 +1832,7 @@ export function HomePage() {
 
                     return (
                       <li
-                        className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_10px_30px_rgba(9,42,83,0.10)] ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[color:var(--card-accent)]/40 motion-reduce:transform-none motion-reduce:transition-none"
+                        className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[color:var(--card-accent)]/40 motion-reduce:transform-none motion-reduce:transition-none"
                         key={cake.name}
                         style={{ "--card-accent": accent }}
                       >
@@ -1868,18 +1841,17 @@ export function HomePage() {
                           aria-hidden="true"
                           className="pointer-events-none absolute inset-0 z-20 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_30%,rgba(255,255,255,0.55)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
                         />
-                        <div className="relative">
+                        <div className="relative bg-[#e8edf2]">
                           <ProductImageSlider
-                            frameClassName="rounded-none shadow-none"
-                            imageClassName="aspect-[4/3] transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none"
+                            frameClassName="rounded-none bg-[#e8edf2] shadow-none"
+                            imageClassName="aspect-square transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none sm:aspect-[4/3]"
                             images={images}
                             name={t(cake.name)}
                             resetKey={cake.name}
                             sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 100vw"
                           />
                           <span
-                            className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53] shadow-sm backdrop-blur-sm transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none"
-                            style={{ backgroundColor: accent }}
+                            className="absolute left-3 top-3 rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-[#092a53] transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-sm"
                           >
                             {t(
                               cakeTypeOf(cake.idName, cake.name) === "pies"
@@ -1898,29 +1870,28 @@ export function HomePage() {
                             />
                           </span>
                           {soldOut && (
-                            <span className="absolute right-4 top-4 rounded-full bg-[#092a53]/85 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-sm">
+                            <span className="absolute right-4 top-4 rounded-md bg-[#092a53] px-3 py-1.5 text-xs font-bold text-white">
                               {t("Sold out today")}
                             </span>
                           )}
                         </div>
                         <div
-                          className="flex min-h-[190px] flex-1 flex-col justify-between gap-3 border-t-4 px-5 py-4 sm:px-6 sm:py-5"
-                          style={{ borderColor: accent }}
+                          className="flex flex-1 flex-col justify-between gap-3 p-3.5 sm:gap-4 sm:p-5"
                         >
                           <div>
                             <Link
-                              className="line-clamp-2 min-h-[2.5em] font-display text-lg font-extrabold leading-tight text-[#092a53] transition-colors duration-300 hover:text-[#163e6b] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-xl"
+                              className="line-clamp-2 min-h-[2.5em] font-display text-base font-extrabold leading-tight text-[#092a53] transition-colors duration-300 hover:text-[#163e6b] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-xl"
                               to={`/menu?${new URLSearchParams({ category: "Cakes & Pies", item: cake.name })}`}
                             >
                               {t(cake.name)}
                             </Link>
-                            <p className="mt-2 line-clamp-2 min-h-10 text-xs font-medium leading-5 text-[#123b68] sm:text-[13px]">
+                            <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#52647b] sm:text-sm">
                               {t(cake.detail)}
                             </p>
                           </div>
-                          <div className="flex flex-col items-stretch gap-2">
+                          <div className="mt-auto flex flex-col items-stretch gap-2.5 sm:gap-3">
                             <span
-                              className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${
+                              className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 sm:text-base ${
                                 added ? "animate-pulse text-green-700" : "text-[#092a53]"
                               }`}
                             >
@@ -1932,10 +1903,10 @@ export function HomePage() {
                                   ? t("Added to your bag")
                                     : t("Add {name} to cart", { name: t(cake.name) })
                               }
-                              className={`min-h-11 w-full rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] ${
+                              className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#52647b] sm:min-h-11 sm:px-4 sm:text-sm ${
                                 added
                                   ? "bg-[#4caf50] text-white"
-                                  : "bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]"
+                                  : "bg-[#092a53] text-white hover:bg-[#163e6b]"
                               }`}
                               disabled={soldOut}
                               onClick={() => handleAddToCart(cake, "Cakes & Pies")}
@@ -1950,7 +1921,7 @@ export function HomePage() {
                   })}
                 </ul>
               )}
-              <p className="mt-8 text-xs leading-5 text-[#65748a]">
+              <p className="mt-5 text-sm leading-5 text-[#52647b]">
                 {t(
                   "A taste of the cake menu. See all designs on the cakes page \u2014 or build your own.",
                 )}
@@ -1960,41 +1931,27 @@ export function HomePage() {
 
         <section
           aria-labelledby="popular-flavors-heading"
-          className="relative isolate overflow-hidden bg-[#fbfaf5] px-5 pb-20 pt-12 sm:px-8 sm:pb-24 sm:pt-14 lg:px-10 lg:pb-28 lg:pt-16"
+          className="bg-[#e8edf2] px-5 pb-20 pt-12 sm:px-8 sm:pb-24 sm:pt-14 lg:px-10 lg:pb-28 lg:pt-16"
           id="favorites"
           ref={popularSection}
         >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -left-40 top-20 -z-10 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]"
-          />
           <div className="mx-auto max-w-[1320px]">
-            <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
               <div className="max-w-2xl">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                  <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                  {t("Our favorites")}
-                </p>
                 <h2
-                  className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
+                  className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
                   id="popular-flavors-heading"
                 >
                   {t("Fan favorites")}
                 </h2>
-                <p className="mt-4 flex max-w-xl flex-wrap items-center gap-x-4 gap-y-2 text-base leading-7 text-[#52647b]">
-                  <span>
-                    {t(
-                      "Our most-loved signature creations, mixed to order on the frozen stone.",
-                    )}
-                  </span>
-                  <span className="inline-flex items-center gap-2 rounded-full bg-[#fff8d6] px-3 py-1 text-xs font-bold text-[#8a7000] ring-1 ring-[#f0dfa0]">
-                    <span aria-hidden="true">✨</span>{" "}
-                    {t("Frozen stone special")}
-                  </span>
+                <p className="mt-4 max-w-xl text-base leading-7 text-[#52647b]">
+                  {t(
+                    "Our most-loved signature creations, mixed to order on the frozen stone.",
+                  )}
                 </p>
               </div>
               <Link
-                className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 md:self-auto"
+                className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 self-start rounded-md bg-[#092a53] px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 sm:self-auto"
                 to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
               >
                 {t("View all")} <ArrowIcon />
@@ -2054,7 +2011,7 @@ export function HomePage() {
                   <img
                     decoding="async"
                     alt=""
-                    className={`size-full object-cover transition-transform duration-500 group-hover:scale-[1.03] ${soldOut ? "grayscale-[60%]" : ""}`}
+                    className={`size-full object-cover transition-transform duration-500 group-hover:scale-[1.025] motion-reduce:transition-none ${soldOut ? "grayscale-[60%]" : ""}`}
                     loading="lazy"
                     onError={photoErrorHandler(
                       item.image,
@@ -2073,71 +2030,70 @@ export function HomePage() {
                 if (featured) {
                   return (
                     <article
-                      className="group relative isolate flex min-h-[460px] flex-col justify-end overflow-hidden rounded-[32px] p-6 text-white shadow-[0_30px_70px_rgba(9,42,83,0.22)] sm:min-h-[520px] sm:p-8 lg:col-span-5 lg:row-span-4 lg:min-h-0"
+                      className="group flex min-w-0 flex-col lg:col-span-5 lg:row-span-4"
                       key={itemKey}
-                      style={{ backgroundColor: popularFlavorColors[index] }}
                     >
-                      <div className="absolute inset-0 -z-20">{image}</div>
-                      <div
-                        aria-hidden="true"
-                        className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] via-[#061d3a]/55 via-40% to-transparent"
-                      />
-                      {soldOut && (
-                        <span className="absolute left-6 top-6 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-red-700 shadow-sm backdrop-blur-sm sm:left-8 sm:top-8">
-                          {t("Sold out")}
-                        </span>
-                      )}
-                      <span className="absolute right-6 top-6 sm:right-8 sm:top-8">
-                        <RatingBadge
-                          averageRating={item.averageRating}
-                          reviewCount={item.reviewCount}
-                        />
-                      </span>
+                      <Link
+                        aria-label={t(item.name)}
+                        className="relative block aspect-[4/3] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4"
+                        style={{ backgroundColor: popularFlavorColors[index] }}
+                        to={itemLink}
+                      >
+                        {image}
+                        {soldOut && (
+                          <span className="absolute left-4 top-4 rounded-sm bg-white px-3 py-1.5 text-xs font-bold text-red-700">
+                            {t("Sold out")}
+                          </span>
+                        )}
+                      </Link>
 
-                      <h3 className="font-display text-3xl font-extrabold leading-tight sm:text-4xl">
-                        <Link
-                          className="after:absolute after:inset-0 after:rounded-[32px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#ffdc32]"
-                          to={itemLink}
-                        >
-                          {t(item.name)}
-                        </Link>
-                      </h3>
-                      <p className="mt-2 max-w-md text-sm leading-6 text-white/75 sm:text-base sm:leading-7">
-                        {t(item.detail)}
-                      </p>
-                      <div className="mt-6 flex flex-col items-stretch gap-3 border-t border-white/15 pt-5 sm:flex-row sm:items-end sm:justify-between">
-                        <div>
-                          <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-white/55">
-                            {t("Price")}
-                          </p>
-                          <p className={`mt-0.5 whitespace-nowrap font-display text-2xl font-extrabold tabular-nums transition-colors duration-300 sm:text-3xl ${added ? "animate-pulse text-white" : "text-[#ffdc32]"}`}>
-                            {formatPrice(item.priceXaf)}
-                          </p>
+                      <div className="flex flex-1 flex-col pt-5 sm:pt-6">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <h3 className="font-display text-2xl font-extrabold leading-tight text-[#092a53] sm:text-3xl">
+                            <Link
+                              className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                              to={itemLink}
+                            >
+                              {t(item.name)}
+                            </Link>
+                          </h3>
+                          <RatingBadge
+                            averageRating={item.averageRating}
+                            reviewCount={item.reviewCount}
+                          />
                         </div>
-                        <button
-                          aria-label={
-                            soldOut
+                        <p className="mt-2 max-w-lg text-sm leading-6 text-[#52647b] sm:text-base sm:leading-7">
+                          {t(item.detail)}
+                        </p>
+                        <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-5">
+                          <p className={`whitespace-nowrap font-display text-xl font-extrabold tabular-nums transition-colors duration-300 sm:text-2xl ${added ? "text-green-700" : "text-[#092a53]"}`}>
+                            {soldOut ? t("Sold out") : formatPrice(item.priceXaf)}
+                          </p>
+                          <button
+                            aria-label={
+                              soldOut
+                                ? t("Sold out")
+                                : t("Add {name} to cart", {
+                                    name: t(item.name),
+                                  })
+                            }
+                            className={`relative z-10 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto ${
+                              added
+                                ? "bg-[#37632c] text-white"
+                                : "bg-[#092a53] text-white hover:bg-[#163e6b]"
+                            }`}
+                            disabled={soldOut}
+                            onClick={() => handleAddToCart(item)}
+                            type="button"
+                          >
+                            {bagIcon}
+                            {soldOut
                               ? t("Sold out")
-                              : t("Add {name} to cart", {
-                                  name: t(item.name),
-                                })
-                          }
-                          className={`relative z-10 inline-flex min-h-12 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 py-3.5 text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/60 sm:w-auto ${
-                            added
-                              ? "bg-[#4caf50] text-white"
-                              : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-white"
-                          }`}
-                          disabled={soldOut}
-                          onClick={() => handleAddToCart(item)}
-                          type="button"
-                        >
-                          {bagIcon}
-                          {soldOut
-                            ? t("Sold out")
-                            : added
-                              ? t("Added")
-                              : t("Add to cart")}
-                        </button>
+                              : added
+                                ? t("Added")
+                                : t("Add to cart")}
+                          </button>
+                        </div>
                       </div>
                     </article>
                   );
@@ -2145,19 +2101,21 @@ export function HomePage() {
 
                 return (
                   <article
-                    className="group relative flex flex-col gap-3 rounded-[24px] bg-white p-3 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:flex-row sm:items-center sm:gap-5 sm:p-4 sm:pr-5 lg:col-span-7"
+                    className="group flex min-w-0 flex-wrap gap-3 bg-white/80 p-3 sm:flex-nowrap sm:items-center sm:gap-4 sm:p-4 lg:col-span-7"
                     key={itemKey}
                   >
-                    <div
-                      className="relative aspect-[16/9] w-full shrink-0 overflow-hidden rounded-[18px] sm:aspect-square sm:size-24"
+                    <Link
+                      aria-label={t(item.name)}
+                      className="relative size-20 shrink-0 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 sm:size-24"
                       style={{ backgroundColor: popularFlavorColors[index] }}
+                      to={itemLink}
                     >
                       {image}
-                    </div>
-                    <div className="min-w-0 flex-1">
+                    </Link>
+                    <div className="min-w-0 flex-1 self-center">
                       <h3 className="font-display text-base font-extrabold leading-snug text-[#092a53] sm:text-lg">
                         <Link
-                          className="after:absolute after:inset-0 after:rounded-[24px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#bd9c00]"
+                          className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
                           to={itemLink}
                         >
                           {t(item.name)}
@@ -2172,7 +2130,7 @@ export function HomePage() {
                       <p className="mt-1 line-clamp-1 text-xs leading-5 text-[#65748a] sm:text-sm sm:leading-6">
                         {t(item.detail)}
                       </p>
-                      <p className={`mt-2 whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${added ? "animate-pulse text-green-700" : "text-[#8a7000]"}`}>
+                      <p className={`mt-1 whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${added ? "text-green-700" : "text-[#092a53]"}`}>
                         {soldOut ? t("Sold out") : formatPrice(item.priceXaf)}
                       </p>
                     </div>
@@ -2186,10 +2144,10 @@ export function HomePage() {
                                 name: t(item.name),
                               })
                       }
-                      className={`relative z-10 mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] sm:mt-0 sm:w-auto sm:shrink-0 sm:px-5 ${
+                      className={`relative z-10 mt-0 inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-md px-4 text-xs font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto sm:px-4 ${
                         added
-                          ? "bg-[#4caf50] text-white"
-                          : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white"
+                          ? "bg-[#37632c] text-white"
+                          : "bg-[#092a53] text-white hover:bg-[#163e6b]"
                       }`}
                       disabled={soldOut}
                       onClick={() => handleAddToCart(item)}
@@ -2219,9 +2177,9 @@ export function HomePage() {
               }) : Array.from({ length: 5 }, (_, index) => (
                 <div
                   aria-hidden="true"
-                  className={`animate-pulse rounded-[24px] bg-[#e4e8ee] ${
+                  className={`animate-pulse bg-[#e4e8ee] ${
                     index === 0
-                      ? "min-h-[460px] sm:min-h-[520px] lg:col-span-5 lg:row-span-4"
+                      ? "aspect-[4/3] min-h-[400px] sm:min-h-[480px] lg:col-span-5 lg:row-span-4 lg:aspect-auto lg:min-h-[520px]"
                       : "min-h-28 lg:col-span-7"
                   }`}
                   key={`favorite-skeleton-${index}`}
@@ -2272,179 +2230,106 @@ export function HomePage() {
 
         <section
           aria-labelledby="sunshine-heading"
-          className="relative isolate overflow-hidden bg-[linear-gradient(115deg,#ffe9b0_0%,#fbd15c_45%,#f6b23a_100%)] px-5 py-12 sm:px-8 sm:py-14 lg:px-10 lg:py-16"
+          className="bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
         >
-          {/* Decorative sun rings */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -left-40 -top-40 size-[36rem] rounded-full border-[24px] border-white/25"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -left-24 -top-24 size-[24rem] rounded-full border-[16px] border-white/20"
-          />
-          {/* Scattered mango dots */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute right-[12%] top-[18%] size-16 rounded-full bg-[#ffb648]/40 blur-[2px]"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute bottom-[14%] right-[38%] size-10 rounded-full bg-[#ff8f3f]/35 blur-[2px]"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 flex items-start justify-end overflow-hidden"
-          >
-            <span className="-mt-[6vw] font-display whitespace-nowrap text-[18vw] font-extrabold leading-none tracking-tight text-white/20 select-none sm:-mt-[5vw] sm:text-[16vw]">
-              SUNSHINE
-            </span>
-          </div>
-          <div className="relative mx-auto grid max-w-[1320px] items-center gap-12 lg:grid-cols-2 lg:gap-20">
-            <div className="relative order-2 lg:order-1">
-              <div
-                aria-hidden="true"
-                className="absolute bottom-0 left-1/2 h-[50%] w-[90%] -translate-x-1/2 rounded-[50%] bg-[#e28c3f]/60 blur-[2px]"
-              />
-              {/* Rotating circular badge over the image */}
-              <div className="absolute -right-2 -top-4 z-10 hidden sm:block">
-                <div className="relative grid size-24 place-items-center rounded-full bg-[#092a53] text-center shadow-[0_12px_28px_rgba(9,42,83,0.35)]">
-                  <span className="font-display px-3 text-[11px] font-extrabold uppercase leading-tight tracking-[0.14em] text-[#ffd45d]">
-                    {t("100% real mango")}
-                  </span>
-                </div>
-              </div>
+          <div className="mx-auto grid max-w-[1320px] items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
+            <div className="order-2 overflow-hidden lg:order-1">
               <img
                 alt={t(
-                  "Golden mango ice cream in a glass sundae dish with fresh mango slices",
+                  "Mango ice cream scoops with a spoon",
                 )}
-                className="relative mx-auto aspect-square w-full max-w-[520px] rounded-3xl object-cover shadow-[0_24px_56px_rgba(9,42,83,0.25)] transition duration-500 hover:scale-[1.02]"
+                className="aspect-[4/3] w-full object-cover transition duration-500 hover:scale-[1.02]"
                 decoding="async"
                 loading="lazy"
-                onError={photoErrorHandler("/images/ice.png")}
-                sizes="(min-width: 1024px) 520px, (min-width: 640px) 80vw, 100vw"
-                src={thumbnail("/images/ice.png")}
-                srcSet={photoSrcSet("/images/ice.png")}
+                onError={photoErrorHandler("/images/mango.jpg")}
+                sizes="(min-width: 1024px) 58vw, 100vw"
+                src={thumbnail("/images/mango.jpg")}
+                srcSet={photoSrcSet("/images/mango.jpg")}
               />
             </div>
             <div className="order-1 max-w-xl lg:order-2">
-              <p className="inline-flex items-center gap-2 rounded-full bg-white/50 px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#123b68]">
-                <span
-                  aria-hidden="true"
-                  className="size-2 rounded-full bg-[#f6a821]"
-                />
+              <p className="flex items-center gap-3 text-sm font-bold text-[#765c00]">
+                <span aria-hidden="true" className="h-px w-8 bg-[#a48700]" />
                 {t("A tropical scoop of vibe")}
               </p>
               <h2
-                className="mt-5 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-6xl lg:text-7xl"
+                className="mt-5 max-w-[14ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-5xl"
                 id="sunshine-heading"
               >
                 {t("Hello, sunshine.")}
               </h2>
-              <p className="mt-6 text-lg leading-8 font-medium text-[#123b68]">
+              <p className="mt-6 max-w-lg text-lg font-medium leading-8 text-[#123b68]">
                 {t(
                   "Golden mango. A cool, creamy scoop. And a little daydream of somewhere sunny. This is your cue to take a sweet escape.",
                 )}
               </p>
               <Link
-                className="group mt-9 inline-flex min-h-14 items-center gap-3 rounded-full bg-[#092a53] px-8 py-3.5 text-base font-extrabold text-white shadow-[0_14px_32px_rgba(9,42,83,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] hover:shadow-[0_18px_40px_rgba(9,42,83,0.42)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7c87e]"
+                className="group mt-8 inline-flex min-h-12 items-center gap-3 rounded-lg bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f6f8]"
                 to="/menu?category=Ice%20Cream"
               >
                 {t("Find your fruity mood")}
                 <span
                   aria-hidden="true"
-                  className="grid size-8 place-items-center rounded-full bg-[#ffd45d] text-[#092a53] transition duration-300 group-hover:scale-110"
+                  className="text-[#ffdc32] transition-transform duration-300 group-hover:translate-x-0.5"
                 >
                   <ArrowIcon />
                 </span>
               </Link>
             </div>
           </div>
-          {/* Wavy bottom edge matching the next section's curve */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 -bottom-px"
-          >
-            <svg
-              className="block h-16 w-full sm:h-20"
-              viewBox="0 0 1440 96"
-              preserveAspectRatio="none"
-              fill="#e9f4f3"
-            >
-              <path d="M0 96h1440V66c-120-34-240-52-380-52-150 0-270 30-420 52-140 20-260 8-380-14-100-19-200-32-260-36Z" />
-            </svg>
-          </div>
         </section>
 
         <section
           aria-labelledby="moments-heading"
-          className="relative isolate overflow-hidden bg-[#f8f6f1] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-28"
+          className="bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
         >
-          {/* Decorative sprinkles */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -left-32 -top-32 size-[28rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.14),transparent)]"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-40 -right-24 size-[26rem] rounded-full bg-[radial-gradient(closest-side,rgb(9_42_83/0.10),transparent)]"
-          />
-          <div className="relative mx-auto grid max-w-[1320px] items-center gap-12 lg:grid-cols-2 lg:gap-20">
-            <div className="relative order-2 lg:order-1">
-              <div
-                aria-hidden="true"
-                className="absolute -left-5 -top-5 h-full w-full rounded-[28px] border-[3px] border-[#092a53]/15"
-              />
+          <div className="mx-auto grid max-w-[1320px] items-center gap-9 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
+            <figure className="scroll-story-frame order-2 min-w-0 lg:order-1">
               <img
                 alt={t(
                   "A hand scooping vanilla ice cream from a bowl with a strawberry scoop beside it",
                 )}
-                className="relative aspect-square w-full max-w-[640px] rounded-[28px] object-cover shadow-[0_24px_56px_rgba(9,42,83,0.18)]"
+                className="aspect-[4/3] w-full object-cover"
                 decoding="async"
                 loading="lazy"
                 onError={photoErrorHandler("/images/vanilla.jpg")}
-                sizes="(min-width: 1024px) 640px, 100vw"
+                sizes="(min-width: 1024px) 58vw, 100vw"
                 src={thumbnail("/images/vanilla.jpg")}
                 srcSet={photoSrcSet("/images/vanilla.jpg")}
               />
-              <div className="absolute -bottom-6 right-8 grid size-32 rotate-3 place-items-center rounded-[22px] bg-[#092a53] px-4 text-center shadow-[0_14px_32px_rgba(9,42,83,0.35)] sm:size-36">
-                <span className="font-display text-base font-extrabold uppercase leading-tight text-[#ffd45d] sm:text-lg">
-                  {t("Life's sweeter by the scoop")}
-                </span>
-              </div>
-            </div>
+              <figcaption className="mt-4 text-sm font-semibold text-[#52647b]">
+                {t("Life's sweeter by the scoop")}
+              </figcaption>
+            </figure>
             <div className="order-1 max-w-xl lg:order-2">
-              <p className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#123b68]">
-                <span
-                  aria-hidden="true"
-                  className="h-px w-10 bg-[#092a53]/60"
-                />
+              <p className="flex items-center gap-3 text-sm font-bold text-[#765c00]">
+                <span aria-hidden="true" className="h-px w-8 bg-[#a48700]" />
                 {t("The Cold Stone feeling")}
               </p>
               <h2
-                className="mt-4 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-6xl"
+                className="mt-5 max-w-[12ch] font-display text-4xl font-extrabold leading-[1.04] tracking-tight text-[#092a53] sm:text-5xl"
                 id="moments-heading"
               >
                 {t("Small moments. Sweet memories.")}
               </h2>
-              <p className="mt-6 text-lg leading-8 font-medium text-[#123b68]">
+              <p className="mt-6 text-lg font-medium leading-8 text-[#123b68]">
                 {t(
                   "The first lick of a cone. The spoon you don't want to share. The scoop that turns an ordinary afternoon into a little celebration.",
                 )}
               </p>
-              <p className="mt-4 text-base leading-7 text-[#123b68]/90">
+              <p className="mt-4 text-base leading-7 text-[#52647b]">
                 {t(
                   "Welcome to our world of ice cream — where there's always room for a little more happy.",
                 )}
               </p>
               <Link
-                className="group mt-9 inline-flex min-h-14 items-center gap-3 rounded-full bg-[#092a53] px-8 py-3.5 text-base font-extrabold text-white shadow-[0_14px_32px_rgba(9,42,83,0.3)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] hover:shadow-[0_18px_40px_rgba(9,42,83,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f6f1]"
+                className="group mt-8 inline-flex min-h-12 items-center gap-3 rounded-lg bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
                 to="/about"
               >
                 {t("Step into our world")}
                 <span
                   aria-hidden="true"
-                  className="grid size-8 place-items-center rounded-full bg-[#ffd45d] text-[#092a53] transition duration-300 group-hover:scale-110"
+                  className="text-[#ffdc32] transition-transform duration-300 group-hover:translate-x-0.5"
                 >
                   <ArrowIcon />
                 </span>
@@ -2456,21 +2341,25 @@ export function HomePage() {
         
         <section
           aria-labelledby="home-menu-heading"
-          className="bg-white px-5 py-14 sm:px-8 sm:py-16 lg:px-10 lg:py-20"
+          className="bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="menu"
         >
           <div className="mx-auto max-w-[1320px]">
-            <h2
-              className="text-center font-display text-3xl font-extrabold leading-none tracking-tight text-[#092a53] sm:text-4xl lg:text-5xl"
-              id="home-menu-heading"
-            >
-              {t("Menu highlights")}
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-center text-base leading-7 text-[#52647b]">
-              {t("Explore signature creations and discover every flavor.")}
-            </p>
+            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h2
+                  className="max-w-xl font-display text-4xl font-extrabold leading-[1.03] tracking-tight sm:text-5xl lg:text-6xl"
+                  id="home-menu-heading"
+                >
+                  {t("Menu highlights")}
+                </h2>
+                <p className="mt-4 max-w-xl text-base leading-7 text-[#52647b] sm:text-lg">
+                  {t("Explore signature creations and discover every flavor.")}
+                </p>
+              </div>
+            </div>
 
-            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:gap-8">
+            <div className="mt-9 grid gap-5 md:grid-cols-2 lg:gap-7">
               {[
                 {
                   title: "The full menu",
@@ -2489,63 +2378,61 @@ export function HomePage() {
                   badge: "Every flavor",
                 },
               ].map((card, cardIndex) => (
-                <Link
-                  className="group relative block overflow-hidden rounded-[28px] shadow-[0_20px_50px_rgba(4,21,40,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-4 focus-visible:ring-offset-[#092a53]"
+                <article
+                  className="group overflow-hidden rounded-2xl bg-white ring-1 ring-[#dce3eb] transition duration-300 hover:-translate-y-1 hover:ring-[#b8c6d5] hover:shadow-[0_16px_36px_rgba(9,42,83,0.10)]"
                   key={card.to}
-                  to={card.to}
                 >
-                  <div className="relative aspect-[16/10] overflow-hidden sm:aspect-[16/9]">
-                    <img
-                      alt=""
-                      className="size-full object-cover transition duration-500 ease-out group-hover:scale-[1.03]"
-                      decoding={cardIndex === 0 ? "sync" : "async"}
-                      fetchPriority={cardIndex === 0 ? "high" : "auto"}
-                      loading={cardIndex === 0 ? "eager" : "lazy"}
-                      onError={photoErrorHandler(card.image)}
-                      sizes="(min-width: 1024px) 50vw, 100vw"
-                      src={card.image}
-                      srcSet={photoSrcSet(card.image)}
-                    />
-                    {/* Readability gradient */}
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0 bg-gradient-to-t from-[#041528] via-[#041528]/55 via-45% to-transparent"
-                    />
-                    {/* Badge */}
-                    <span className="absolute left-5 top-5 rounded-full bg-[#ffdc32] px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53] shadow-md">
-                      {t(card.badge)}
-                    </span>
-                    {/* Content */}
-                    <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-                      <h3 className="font-display text-2xl font-extrabold leading-tight text-white sm:text-3xl">
-                        {t(card.title)}
-                      </h3>
-                      <p className="mt-2 max-w-md text-sm leading-6 text-white/75 sm:text-base">
-                        {t(card.description)}
-                      </p>
-                      <span className="group/btn mt-5 inline-flex min-h-12 items-center gap-2.5 rounded-full bg-[#ffdc32] px-6 py-3 text-sm font-extrabold text-[#092a53] shadow-[0_10px_24px_rgba(255,220,50,0.3)] transition duration-300 group-hover:-translate-y-0.5 group-hover:bg-white group-hover:shadow-[0_14px_30px_rgba(255,220,50,0.4)]">
-                        {t(card.cta)}
-                        <span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-[#092a53] text-[#ffdc32] transition-transform duration-300 group-hover/btn:translate-x-0.5">
-                          <ArrowIcon />
-                        </span>
+                  <Link
+                    className="block overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#092a53]"
+                    to={card.to}
+                  >
+                    <div className="aspect-[16/10] overflow-hidden bg-[#e8edf2]">
+                      <img
+                        alt=""
+                        className="size-full object-cover transition duration-500 ease-out group-hover:scale-[1.03]"
+                        decoding={cardIndex === 0 ? "sync" : "async"}
+                        fetchPriority={cardIndex === 0 ? "high" : "auto"}
+                        loading={cardIndex === 0 ? "eager" : "lazy"}
+                        onError={photoErrorHandler(card.image)}
+                        sizes="(min-width: 1024px) 50vw, 100vw"
+                        src={card.image}
+                        srcSet={photoSrcSet(card.image)}
+                      />
+                    </div>
+                    <div className="flex items-start justify-between gap-4 p-5 sm:p-7">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#765c00]">
+                          {t(card.badge)}
+                        </p>
+                        <h3 className="mt-2 font-display text-2xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-3xl">
+                          {t(card.title)}
+                        </h3>
+                        <p className="mt-2 max-w-md text-sm leading-6 text-[#52647b] sm:text-base">
+                          {t(card.description)}
+                        </p>
+                      </div>
+                      <span
+                        aria-hidden="true"
+                        className="mt-1 grid size-10 shrink-0 place-items-center rounded-full bg-[#f4f6f8] text-[#092a53] transition duration-300 group-hover:bg-[#092a53] group-hover:text-white"
+                      >
+                        <ArrowIcon diagonal />
                       </span>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                </article>
               ))}
             </div>
 
             {/* Payment reassurance for first-time buyers */}
-            <p className="mt-8 flex flex-wrap items-center justify-center gap-2 text-sm font-semibold text-[#52647b]">
-              <span aria-hidden="true" className="text-lg">💳</span>
-              {t("Cards & Mobile Money accepted")}
-              <span aria-hidden="true" className="mx-1 h-1 w-1 rounded-full bg-[#c9d2dc]" />
-              {t("Pay in FCFA with")}
-              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-[#092a53]">Visa</span>
-              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-[#092a53]">Mastercard</span>
-              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-[#092a53]">MTN MoMo</span>
-              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-[#092a53]">Orange Money</span>
-            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-sm font-semibold text-[#52647b]">
+              <span>{t("Cards & Mobile Money accepted")}</span>
+              <span aria-hidden="true" className="mx-1 hidden h-1 w-1 rounded-full bg-[#c9d2dc] sm:block" />
+              <span>{t("Pay in FCFA with")}</span>
+              <span className="rounded-md bg-white px-3 py-1.5 text-xs font-bold text-[#092a53] ring-1 ring-[#dce3eb]">Visa</span>
+              <span className="rounded-md bg-white px-3 py-1.5 text-xs font-bold text-[#092a53] ring-1 ring-[#dce3eb]">Mastercard</span>
+              <span className="rounded-md bg-white px-3 py-1.5 text-xs font-bold text-[#092a53] ring-1 ring-[#dce3eb]">MTN MoMo</span>
+              <span className="rounded-md bg-white px-3 py-1.5 text-xs font-bold text-[#092a53] ring-1 ring-[#dce3eb]">Orange Money</span>
+            </div>
           </div>
         </section>
 

@@ -3,18 +3,19 @@ import { useLanguage } from '../language/useLanguage'
 
 type PasswordFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
   label: string
+  labelClassName?: string
   variant?: 'default' | 'modern'
   children?: ReactNode
 }
 
-export function PasswordField({ label, variant = 'default', children, ...inputProps }: PasswordFieldProps) {
+export function PasswordField({ label, labelClassName, variant = 'default', children, ...inputProps }: PasswordFieldProps) {
   const [isVisible, setIsVisible] = useState(false)
   const { t } = useLanguage()
 
   if (variant === 'modern') {
     return (
       <label className="block">
-        <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]">{label}</span>
+        <span className={labelClassName ?? 'text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]'}>{label}</span>
         <span className="group relative mt-2 flex items-center rounded-2xl bg-white ring-1 ring-[#e5e1d7] transition hover:ring-[#d6cfbd] focus-within:ring-[#c9b24a]">
           <svg aria-hidden="true" className="pointer-events-none absolute left-4 size-[18px] text-[#65748a] transition group-focus-within:text-[#092a53]" fill="none" viewBox="0 0 24 24">
             <rect height="10" rx="2.5" stroke="currentColor" strokeWidth="1.8" width="16" x="4" y="10" />

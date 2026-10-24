@@ -285,7 +285,6 @@ export function PaymentPage() {
       className={`relative mx-auto max-w-2xl overflow-hidden rounded-[32px] bg-white text-center shadow-[0_24px_60px_rgba(18,44,80,0.1)] ring-1 ${
         tone === "error" ? "ring-[#f2d6cf]" : tone === "success" ? "ring-[#d6e8c7]" : "ring-[#ebe7dc]"
       }`}
-      data-scroll-reveal="skip"
       role="status"
     >
       {children}

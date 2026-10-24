@@ -1,4 +1,4 @@
-import { useSyncExternalStore, type ReactNode } from "react";
+import { useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { photoErrorHandler, photoSrcSet } from "../lib/thumbnails";
 import { COMPACT_HERO_MEDIA, HERO_PHOTO_SIZES } from "../../shared/photoSizes.js";
 import { HeroBackground } from "./HeroBackground";
@@ -37,6 +37,10 @@ interface PageHeroProps {
   curveClassName?: string;
   /** Shopping pages: on phones and tablets, leave out the photo group so products start right below the title. */
   compactOnMobile?: boolean;
+  /** Custom hero background colour; defaults to the navy brand surface. */
+  surface?: string;
+  /** Custom accent colour replacing the brand yellow for this hero. */
+  accent?: string;
 }
 
 // Shared with the server's preload media query for compact headers.
@@ -68,26 +72,32 @@ function HeroImage({ src, alt, className, position, small = false }: { src: stri
 
 // Navy hero shared by the menu and the flavors page. It continues the navy header,
 // with the copy on the left and an arch-framed photo group on the right.
-export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, actions, stats = [], image, sideImages, visual, visualClassName = "aspect-[6/5]", badge, curveClassName = "text-[#fbfaf5]", compactOnMobile = false }: PageHeroProps) {
+export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, actions, stats = [], image, sideImages, visual, visualClassName = "aspect-[6/5]", badge, curveClassName = "text-[#fbfaf5]", compactOnMobile = false, surface, accent }: PageHeroProps) {
   const isWideScreen = useWideScreen();
   // Not rendered at all on phones (a hidden image would still download).
   const showVisual = !compactOnMobile || isWideScreen;
   return (
-    <section className="relative isolate overflow-hidden bg-[#092a53] text-white">
+    <section
+      className="relative isolate overflow-hidden bg-[var(--hero-surface,#092a53)] text-white"
+      style={{
+        "--hero-surface": surface,
+        "--hero-accent": accent || "#ffdc32",
+      } as CSSProperties}
+    >
       <HeroBackground variant="navy" />
 
       <div className={`mx-auto grid max-w-[1320px] items-center gap-12 px-5 pt-8 ${compactOnMobile ? "pb-16" : "pb-24"} sm:px-8 sm:pb-28 sm:pt-12 lg:grid-cols-12 lg:gap-8 lg:px-12 lg:pb-32 lg:pt-14`}>
         <div className="lg:col-span-6">
           {breadcrumb && <div className="mb-8 text-xs font-bold text-white/55">{breadcrumb}</div>}
-          <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pl-2 pr-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32] backdrop-blur-sm">
-            <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#ffdc32] text-[10px] text-[#092a53]">✦</span>
+          <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pl-2 pr-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[var(--hero-accent)] backdrop-blur-sm">
+            <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[var(--hero-accent)] text-[10px] text-[var(--hero-surface,#092a53)]">✦</span>
             {eyebrow}
           </p>
           <h1 className={`mt-6 font-display font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl ${compactOnMobile ? "text-4xl" : "text-5xl"}`}>
             {title}
-            {subtitle && <span className="mt-3 block text-[0.58em] leading-[1.05] text-[#ffdc32]">{subtitle}</span>}
+            {subtitle && <span className="mt-3 block text-[0.58em] leading-[1.05] text-[var(--hero-accent)]">{subtitle}</span>}
           </h1>
-          <svg aria-hidden="true" className="mt-3 h-3 w-40 text-[#ffdc32] sm:w-52" fill="none" preserveAspectRatio="none" viewBox="0 0 200 12">
+          <svg aria-hidden="true" className="mt-3 h-3 w-40 text-[var(--hero-accent)] sm:w-52" fill="none" preserveAspectRatio="none" viewBox="0 0 200 12">
             <path d="M2 9C40 3 90 1.5 198 6" stroke="currentColor" strokeLinecap="round" strokeWidth="4" />
           </svg>
           <p className="mt-6 max-w-xl text-base leading-7 text-white/70 sm:text-lg sm:leading-8">{description}</p>
@@ -97,7 +107,7 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
               {stats.map((stat) => (
                 <div className="px-5 py-4 sm:px-7" key={stat.label}>
                   <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/50">{stat.label}</dt>
-                  <dd className={`mt-1 font-display text-2xl font-extrabold tabular-nums sm:text-3xl ${stat.accent ? "text-[#ffdc32]" : "text-white"}`}>
+                  <dd className={`mt-1 font-display text-2xl font-extrabold tabular-nums sm:text-3xl ${stat.accent ? "text-[var(--hero-accent)]" : "text-white"}`}>
                     {stat.value}
                   </dd>
                 </div>
@@ -148,6 +158,6 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
 }
 
 PageHero.primary =
-  "inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-7 py-4 text-sm font-extrabold text-[#092a53] shadow-[0_12px_30px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]";
+"inline-flex items-center gap-2 rounded-full bg-[var(--hero-accent,#ffdc32)] px-7 py-4 text-sm font-extrabold text-[var(--hero-surface,#092a53)] shadow-[0_12px_30px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hero-accent,#ffdc32)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--hero-surface,#092a53)]";
 PageHero.secondary =
   "inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-7 py-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]";

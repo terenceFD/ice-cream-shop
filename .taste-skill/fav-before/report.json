@@ -1,0 +1,1245 @@
+{
+ "url": "http://localhost:5174/",
+ "at": "2026-10-24T01:14:24.856Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 10,
+   "filled": [
+    0.98,
+    0.95,
+    0.84,
+    0.95,
+    0.88,
+    0.79,
+    0.48,
+    1,
+    0.65,
+    0.8
+   ],
+   "motion": {
+    "elements": 145,
+    "css": 59,
+    "transitions": 69,
+    "scripted": 17,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 9142,
+     "screens": 10.2,
+     "words": 1070,
+     "img": 84,
+     "video": 0,
+     "canvas": 0,
+     "svg": 145,
+     "sections": 10,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 47,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "ice-9.webp",
+      "cake-11.webp",
+      "cookie-mintster.webp",
+      "our-strawberry-blonde.webp",
+      "our-strawberry-blonde-2.webp",
+      "mango-sunshine.webp",
+      "mango-pineapple.webp",
+      "chocolate-devotion.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 4,
+     "brokenImages": [],
+     "emoji": [
+      "🍦",
+      "🎂",
+      "📱",
+      "🛵",
+      "✨",
+      "💳",
+      "✦"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Fresh mint, loaded with cookies.",
+     "words": 5,
+     "chars": 32,
+     "lines": 3,
+     "size": 92,
+     "vw": 6.4,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.04,
+     "leading": 0.95,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "left",
+     "widthRatio": 0.41,
+     "top": 194,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Fresh mint, loaded with cookies.",
+     "words": 5,
+     "lines": 3,
+     "size": 92,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Fresh mint, loaded with cookies.",
+      "words": 5,
+      "chars": 32,
+      "lines": 3,
+      "size": 92,
+      "vw": 6.4,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 0.95,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.41,
+      "top": 194,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Mixed on a frozen stone",
+      "words": 5,
+      "chars": 23,
+      "lines": 2,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.22,
+      "top": 553,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "Find your flavor",
+      "words": 3,
+      "chars": 16,
+      "lines": 1,
+      "size": 60,
+      "vw": 4.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.28,
+      "top": 1409,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cakes for every occasion",
+      "words": 4,
+      "chars": 24,
+      "lines": 1,
+      "size": 60,
+      "vw": 4.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.44,
+      "top": 2919,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Fan favorites",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.39,
+      "top": 4494,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cookie Mintster",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.32,
+      "top": 5035,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "3,500 FCFA",
+      "words": 2,
+      "chars": 10,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.11,
+      "top": 5174,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "Real Reviews",
+      "words": 2,
+      "chars": 12,
+      "lines": 1,
+      "size": 60,
+      "vw": 4.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.39,
+      "top": 5460,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "SUNSHINE",
+      "words": 1,
+      "chars": 8,
+      "lines": 1,
+      "size": 230.4,
+      "vw": 16,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.98,
+      "top": 6098,
+      "tag": "div",
+      "kind": "heading"
+     },
+     {
+      "text": "Hello, sunshine.",
+      "words": 2,
+      "chars": 16,
+      "lines": 1,
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.39,
+      "top": 6314,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Small moments. Sweet memories.",
+      "words": 4,
+      "chars": 30,
+      "lines": 2,
+      "size": 60,
+      "vw": 4.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.39,
+      "top": 6997,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Menu highlights",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.89,
+      "top": 7674,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "The full menu",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.39,
+      "top": 7965,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "All flavors",
+      "words": 2,
+      "chars": 11,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.39,
+      "top": 7965,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "A little joy in every scoop.",
+      "words": 6,
+      "chars": 28,
+      "lines": 1,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.37,
+      "top": 8411,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "Cold Stone",
+      "words": 2,
+      "chars": 10,
+      "lines": 1,
+      "size": 240,
+      "vw": 16.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 1,
+      "top": 8955,
+      "tag": "p",
+      "kind": "statement"
+     }
+    ],
+    "headingSummary": {
+     "count": 16,
+     "maxLines": 3,
+     "over2Lines": 1,
+     "statements": 4,
+     "centered": 2,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.8,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.2,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      18,
+      19,
+      20,
+      24,
+      30,
+      36,
+      48,
+      60,
+      72,
+      92,
+      230,
+      240
+     ],
+     "sizeCount": 20,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 14,
+      "leading": 1.43,
+      "weight": 500,
+      "tracking": 0,
+      "contrast": 6.1
+     },
+     "measureChars": 81,
+     "max": {
+      "size": 240,
+      "vw": 16.7,
+      "font": "Fredoka",
+      "text": "Cold Stone"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 10,
+     "microLabelShare": 0.032,
+     "microSamples": [
+      "Cool, creamy and full of crunch",
+      "Featured",
+      "Why people love us",
+      "Our favorites",
+      "Price",
+      "100% real mango"
+     ],
+     "upperShare": 0.09,
+     "centerShare": 0.09,
+     "smallText": 22
+    },
+    "eyebrows": [
+     {
+      "text": "Cool, creamy and full of crunch",
+      "above": "Fresh mint, loaded with cookies.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 153
+     },
+     {
+      "text": "Our favorites",
+      "above": "Fan favorites",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 4458
+     },
+     {
+      "text": "Price",
+      "above": "3,500 FCFA",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 9,
+      "top": 5159
+     },
+     {
+      "text": "Explore the menu",
+      "above": "SUNSHINE",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": true,
+      "size": 14,
+      "top": 5944
+     },
+     {
+      "text": "A tropical scoop of vibe",
+      "above": "Hello, sunshine.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 6267
+     },
+     {
+      "text": "The Cold Stone feeling",
+      "above": "Small moments. Sweet memories.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 6965
+     }
+    ],
+    "numbered": [
+     {
+      "text": "03",
+      "size": 14,
+      "top": 161
+     },
+     {
+      "text": "/ 03",
+      "size": 14,
+      "top": 162
+     }
+    ],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 68,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#f4f6f8",
+       "top": 1224,
+       "hsl": {
+        "h": 210,
+        "s": 0.22,
+        "l": 0.96
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 5365,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#f8f6f1",
+       "top": 6748,
+       "hsl": {
+        "h": 43,
+        "s": 0.33,
+        "l": 0.96
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 8300,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.29
+      },
+      {
+       "color": "#52647b",
+       "share": 0.23
+      },
+      {
+       "color": "#092a53",
+       "share": 0.21
+      },
+      {
+       "color": "#123b68",
+       "share": 0.11
+      },
+      {
+       "color": "#65748a",
+       "share": 0.05
+      }
+     ],
+     "button": {
+      "bg": "#092a53",
+      "hsl": {
+       "h": 213,
+       "s": 0.8,
+       "l": 0.18
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 73,
+     "inHero": 8,
+     "radius": 8,
+     "height": 43,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Order now",
+      "Explore signature creations",
+      "View all menu",
+      "Menu",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 67,
+     "shadowOverlay": 7,
+     "shadowSamples": [
+      "a.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "div.relative.aspect-[4/5] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "button.grid.size-11 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "div.absolute.top-1/2 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 22,
+     "scrims": 17,
+     "gradientSamples": [
+      "div.hero-blob-a.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.12), rgba(255, 220, 50, 0.12) 35%, rgba(0, 0, 0, 0))",
+      "div.hero-blob-b.absolute → radial-gradient(closest-side, rgba(28, 79, 138, 0.5), rgba(28, 79, 138, 0.5) 35%, rgba(0, 0, 0, 0))",
+      "div.absolute.inset-0 → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.85) 0%, oklab(0.231324 -0.0156847 -0.0611215 ",
+      "div.hero-blob-a.pointer-events-none → radial-gradient(closest-side, rgba(255, 220, 50, 0.08), rgba(255, 220, 50, 0.08) 35%, rgba(0, 0, 0, 0))"
+     ],
+     "gradientText": 0,
+     "hairlines": 9,
+     "hairlineSamples": [
+      "ul.mt-6.hidden 592px",
+      "section.border-b.border-[#e9e5da] 1418px",
+      "div.mt-6.flex 465px",
+      "div.mt-8.flex 1300px",
+      "div.flex.flex-col 1224px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 0,
+     "blurred": 9,
+     "roundedBoxes": 36,
+     "boxRadius": 12,
+     "squareMedia": 39,
+     "roundedMedia": 8,
+     "mediaRadius": 36,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 4,
+       "iconTopped": true,
+       "rounded": true,
+       "top": 805
+      },
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 1580
+      },
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 3094
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.29
+     },
+     {
+      "type": "img",
+      "ratio": 0.29
+     },
+     {
+      "type": "img",
+      "ratio": 0.27
+     }
+    ],
+    "nav": {
+     "links": 15,
+     "fixed": true,
+     "height": 68,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 9154,
+    "margins": {
+     "left": 70,
+     "right": 70
+    },
+    "sections": [
+     {
+      "sel": "section#home.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 905,
+      "words": 87,
+      "media": 1,
+      "middle": 22,
+      "heading": {
+       "text": "Fresh mint,",
+       "size": 92,
+       "tag": "h1"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 108,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.border-b.border-[#e9e5da]",
+      "tag": "section",
+      "top": 986,
+      "height": 237,
+      "words": 45,
+      "media": 0,
+      "middle": 104,
+      "heading": {
+       "text": "How it works",
+       "size": 24,
+       "tag": "h2"
+      },
+      "left": 110,
+      "right": 132,
+      "textLeft": 110,
+      "textRight": 132,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#flavors.bg-[#f4f6f8].px-5",
+      "tag": "section",
+      "top": 1236,
+      "height": 1426,
+      "words": 143,
+      "media": 17,
+      "middle": 0,
+      "heading": {
+       "text": "Find your flavor",
+       "size": 60,
+       "tag": "h2"
+      },
+      "left": 80,
+      "right": 0,
+      "textLeft": 80,
+      "textRight": 104,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#cakes.relative.overflow-hidden",
+      "tag": "section",
+      "top": 2686,
+      "height": 1692,
+      "words": 249,
+      "media": 22,
+      "middle": 0,
+      "heading": {
+       "text": "Cakes for every occasion",
+       "size": 60,
+       "tag": "h2"
+      },
+      "left": 0,
+      "right": 0,
+      "textLeft": 70,
+      "textRight": 93,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#favorites.relative.isolate",
+      "tag": "section",
+      "top": 4399,
+      "height": 964,
+      "words": 115,
+      "media": 1,
+      "middle": 39,
+      "heading": {
+       "text": "Fan favorites",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 70,
+      "right": 90,
+      "textLeft": 70,
+      "textRight": 109,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#reviews.relative.isolate",
+      "tag": "section",
+      "top": 5377,
+      "height": 723,
+      "words": 69,
+      "media": 0,
+      "middle": 523,
+      "heading": {
+       "text": "Real Reviews",
+       "size": 60,
+       "tag": "h2"
+      },
+      "left": 70,
+      "right": 70,
+      "textLeft": 70,
+      "textRight": 70,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 6110,
+      "height": 638,
+      "words": 35,
+      "media": 2,
+      "middle": 84,
+      "heading": {
+       "text": "Hello, sunshine.",
+       "size": 72,
+       "tag": "h2"
+      },
+      "left": 119,
+      "right": 162,
+      "textLeft": 607,
+      "textRight": 162,
+      "fullBleed": true,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 6760,
+      "height": 831,
+      "words": 58,
+      "media": 1,
+      "middle": 79,
+      "heading": {
+       "text": "Small moments. Sweet memories.",
+       "size": 60,
+       "tag": "h2"
+      },
+      "left": 70,
+      "right": 117,
+      "textLeft": 525,
+      "textRight": 117,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#menu.bg-white.px-5",
+      "tag": "section",
+      "top": 7603,
+      "height": 704,
+      "words": 62,
+      "media": 2,
+      "middle": 0,
+      "heading": {
+       "text": "Menu highlights",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 80,
+      "right": 80,
+      "textLeft": 111,
+      "textRight": 282,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.relative.isolate",
+      "tag": "footer",
+      "top": 8312,
+      "height": 842,
+      "words": 106,
+      "media": 0,
+      "middle": 59,
+      "heading": {
+       "text": "A little joy",
+       "size": 48,
+       "tag": "p"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 121,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Fresh mint, loaded with cookies.",
+      "size": 92,
+      "top": 206,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 752,
+      "n": 13
+     },
+     {
+      "x": 70,
+      "n": 7
+     },
+     {
+      "x": 101,
+      "n": 6
+     },
+     {
+      "x": 767,
+      "n": 2
+     },
+     {
+      "x": 1011,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 30,
+    "bodySize": 14,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0.04,
+    "voidBox": {
+     "x": 0,
+     "y": 120,
+     "w": 60,
+     "h": 780
+    }
+   },
+   "app": null,
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "headline-lines",
+   "width": 1440,
+   "message": "1 headline(s) wrap past two lines at 1440px: \"Fresh mint, loaded with cookies.\" → 3 lines (5 words, 92px)",
+   "fix": "Cut words first (a headline is a title, not a sentence). Then give it a wider measure. Lower the size only as a last resort and never below the scale you chose. A real statement paragraph belongs in a <p> or <blockquote> at 36px or less."
+  },
+  {
+   "level": "FAIL",
+   "id": "eyebrow",
+   "width": 1440,
+   "message": "6 eyebrow/kicker label(s) above headings: \"Cool, creamy and full of crunch\" above \"Fresh mint, loaded with cookies.\"; \"Our favorites\" above \"Fan favorites\"; \"Price\" above \"3,500 FCFA\"; \"Explore the menu\" (pill) above \"SUNSHINE\"; \"A tropical scoop of vibe\" (pill) above \"Hello, sunshine.\"",
+   "fix": "Delete them. If the label carried real information, fold it into the headline or the supporting sentence."
+  },
+  {
+   "level": "FAIL",
+   "id": "numbering",
+   "width": 1440,
+   "message": "Decorative index numbers: \"03\", \"/ 03\"",
+   "fix": "Remove them. If order truly matters, write it into the words (\"First, …\") or use a real <ol>."
+  },
+  {
+   "level": "FAIL",
+   "id": "micro-label",
+   "width": 1440,
+   "message": "10 tiny uppercase letter-spaced labels (e.g. \"Cool, creamy and full of crunch\", \"Featured\", \"Why people love us\", \"Our favorites\").",
+   "fix": "Use sentence-case text at a readable size, or delete the label."
+  },
+  {
+   "level": "FAIL",
+   "id": "emoji",
+   "width": 1440,
+   "message": "Emoji in the page: 🍦 🎂 📱 🛵 ✨ 💳 ✦",
+   "fix": "Remove. Use words or real imagery."
+  },
+  {
+   "level": "FAIL",
+   "id": "gradient",
+   "width": 1440,
+   "message": "22 gradient fill(s): div.hero-blob-a.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.12), rgba(255, 220, 50, 0.12) 35%, rgba(0, 0, 0, 0)) | div.hero-blob-b.absolute → radial-gradient(closest-side, rgba(28, 79, 138, 0.5), rgba(28, 79, 138, 0.5) 35%, rgba(0, 0, 0, 0)) | div.absolute.inset-0 → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.85) 0%, oklab(0.231324 -0.0156847 -0.0611215 ",
+   "fix": "Use a flat colour or a real image. The only gradient allowed by default is a neutral scrim over a photo for legibility."
+  },
+  {
+   "level": "FAIL",
+   "id": "shadow",
+   "width": 1440,
+   "message": "67 box-shadow(s) on elements at rest: a.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0 | div.relative.aspect-[4/5] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0 | button.grid.size-11 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+   "fix": "Remove. Separate surfaces with a tone step or space. Shadows are for things that really float (menus, dialogs, sticky bars)."
+  },
+  {
+   "level": "FAIL",
+   "id": "hairline",
+   "width": 1440,
+   "message": "9 thin rule(s)/divider line(s): ul.mt-6.hidden 592px | section.border-b.border-[#e9e5da] 1418px | div.mt-6.flex 465px | div.mt-8.flex 1300px",
+   "fix": "Delete. Separate with space, a tone change, or scale. Lines are only for real tables and form fields."
+  },
+  {
+   "level": "WARN",
+   "id": "outlined-box",
+   "width": 1440,
+   "message": "1 box(es) drawn with a 1px outline.",
+   "fix": "Prefer a filled surface or no box."
+  },
+  {
+   "level": "WARN",
+   "id": "glass",
+   "width": 1440,
+   "message": "9 backdrop-blur surfaces.",
+   "fix": "One blurred sticky bar at most; glass cards are a tell."
+  },
+  {
+   "level": "FAIL",
+   "id": "icon-cards",
+   "width": 1440,
+   "message": "1 row(s) of identical cards each topped with a small icon (4 cards).",
+   "fix": "Replace with one composed section from the direction: a narrative split, a list set in large type, or real imagery per item."
+  },
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (section #fbfaf5, section #f8f6f1).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream."
+  },
+  {
+   "level": "WARN",
+   "id": "size-count",
+   "width": 1440,
+   "message": "20 different font sizes (9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 24, 30, 36, 48, 60, 72, 92, 230, 240).",
+   "fix": "A page needs about five: display, heading, lead, body, small."
+  },
+  {
+   "level": "FAIL",
+   "id": "body-size",
+   "width": 1440,
+   "message": "Body text is 14px (the size most of the running text is set in).",
+   "fix": "Body copy 16–20px. Map small sizes from blueprints onto your body step."
+  },
+  {
+   "level": "WARN",
+   "id": "grey-body",
+   "width": 1440,
+   "message": "The running text is a soft grey on its ground (6.1:1).",
+   "fix": "Set body copy in the full ink (7:1 or more). Keep the muted ink for secondary notes; pages read thin and unfinished when everything is grey."
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  },
+  {
+   "level": "WARN",
+   "id": "side-scroll",
+   "width": 1440,
+   "message": "4 row(s) scroll sideways with content past their edge.",
+   "fix": "Jurors and most visitors read a row cut at the edge as clipped, not as scrollable. Wrap it onto more lines, or end it inside the grid."
+  },
+  {
+   "level": "FAIL",
+   "id": "small-text",
+   "width": 1440,
+   "message": "22 text blocks under 13px.",
+   "fix": "Nothing meant to be read goes below 13px."
+  },
+  {
+   "level": "FAIL",
+   "id": "covered-text",
+   "width": 1440,
+   "message": "Large text lies under another element at some scroll position: \"30 min\" (screen 1, 75% hidden); \"FCFA + MoMo\" (screen 1, 38% hidden); \"1 pt / 100 FCFA\" (screen 1, 100% hidden); \"3,500 FCFA\" (screen 6, 100% hidden)",
+   "fix": "Nothing may sit on top of a headline or statement. Move the picture, shorten the pinned run, or raise the text above it (z-index) and give it a ground."
+  },
+  {
+   "level": "FAIL",
+   "id": "clipped-text",
+   "width": 1440,
+   "message": "Large text is cut off along its top by the box that holds it: \"SUNSHINE\" (screen 7)",
+   "fix": "Jurors read a wordmark sliced at the top as broken. Give the box room for the ascenders (line-height and padding), or crop at the bottom or a side edge on purpose."
+  },
+  {
+   "level": "FAIL",
+   "id": "reduced-hidden",
+   "width": 1440,
+   "message": "With reduced motion requested, 57 text block(s) on the first screen stay invisible: \"Flavors\", \"Ice cream by the scoop\", \"Browse signature creations and treats.\", \"Browse all flavors\"",
+   "fix": "Put every hidden starting state inside @media (prefers-reduced-motion: no-preference); the reduced page is the finished page (references/motion.md §8)."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\fav-before\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\fav-before\\desktop-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\fav-before\\desktop-page-02.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\fav-before\\desktop-page-03.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

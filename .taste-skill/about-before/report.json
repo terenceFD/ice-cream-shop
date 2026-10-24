@@ -1,0 +1,2947 @@
+{
+ "url": "http://127.0.0.1:5174/about",
+ "at": "2026-10-24T03:57:52.709Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 5,
+   "filled": [
+    0.95,
+    0.58,
+    1,
+    0.89,
+    1
+   ],
+   "motion": {
+    "elements": 41,
+    "css": 28,
+    "transitions": 12,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 4258,
+     "screens": 4.7,
+     "words": 412,
+     "img": 10,
+     "video": 0,
+     "canvas": 0,
+     "svg": 86,
+     "sections": 7,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 6,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "about-child.webp",
+      "ice-10.webp",
+      "hero-ice-cream.webp",
+      "ice-5.webp",
+      "ice-6.webp",
+      "ice-9.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "✦"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Cold Stone Creamery The joy is in the mix.",
+     "words": 9,
+     "chars": 42,
+     "lines": 3,
+     "size": 72,
+     "vw": 5,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "left",
+     "widthRatio": 0.41,
+     "top": 199,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Cold Stone Creamery The joy is in the mix.",
+     "words": 9,
+     "lines": 3,
+     "size": 72,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Cold Stone Creamery The joy is in the mix.",
+      "words": 9,
+      "chars": 42,
+      "lines": 3,
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.41,
+      "top": 199,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "A little more joy in every scoop.",
+      "words": 7,
+      "chars": 33,
+      "lines": 1,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.46,
+      "top": 1163,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "“",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 0.6,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.41,
+      "top": 1288,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "A treat made your way",
+      "words": 5,
+      "chars": 21,
+      "lines": 1,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.32,
+      "top": 1999,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Everything in one place.",
+      "words": 4,
+      "chars": 24,
+      "lines": 1,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.33,
+      "top": 2834,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "01",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 128,
+      "vw": 8.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.08,
+      "top": 2907,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "02",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 128,
+      "vw": 8.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.1,
+      "top": 2907,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "03",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 128,
+      "vw": 8.9,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.1,
+      "top": 2907,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "A little joy in every scoop.",
+      "words": 6,
+      "chars": 28,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.27,
+      "top": 3431,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.28,
+      "top": 3695,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 10,
+     "maxLines": 3,
+     "over2Lines": 1,
+     "statements": 3,
+     "centered": 0,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.72,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.28,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      24,
+      36,
+      42,
+      48,
+      72,
+      128
+     ],
+     "sizeCount": 16,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 14,
+      "leading": 1.71,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 14.3
+     },
+     "measureChars": 49,
+     "max": {
+      "size": 128,
+      "vw": 8.9,
+      "font": "Fredoka",
+      "text": "01"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 9,
+     "microLabelShare": 0.049,
+     "microSamples": [
+      "Our story",
+      "✦",
+      "The signature experience",
+      "Mixed to order",
+      "About us",
+      "The signature experience"
+     ],
+     "upperShare": 0.06,
+     "centerShare": 0.01,
+     "smallText": 5
+    },
+    "eyebrows": [
+     {
+      "text": "Our story",
+      "above": "Cold Stone Creamery The joy is in the mi",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 141
+     },
+     {
+      "text": "About us",
+      "above": "A little more joy in every scoop.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 1127
+     },
+     {
+      "text": "The signature experience",
+      "above": "A treat made your way",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 1946
+     },
+     {
+      "text": "What you’ll find here",
+      "above": "Everything in one place.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 2799
+     },
+     {
+      "text": "Our story",
+      "above": "03",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": true,
+      "size": 12,
+      "top": 2850
+     }
+    ],
+    "numbered": [
+     {
+      "text": "01",
+      "size": 10,
+      "top": 837
+     },
+     {
+      "text": "02",
+      "size": 10,
+      "top": 837
+     },
+     {
+      "text": "03",
+      "size": 10,
+      "top": 837
+     },
+     {
+      "text": "01",
+      "size": 20,
+      "top": 2353
+     },
+     {
+      "text": "02",
+      "size": 20,
+      "top": 2353
+     },
+     {
+      "text": "03",
+      "size": 20,
+      "top": 2353
+     },
+     {
+      "text": "01",
+      "size": 128,
+      "top": 2907
+     },
+     {
+      "text": "02",
+      "size": 128,
+      "top": 2907
+     },
+     {
+      "text": "03",
+      "size": 128,
+      "top": 2907
+     }
+    ],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#ffffff",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 80,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#fbfaf5",
+       "top": 2677,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 3631,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.64
+      },
+      {
+       "color": "#092a53",
+       "share": 0.15
+      },
+      {
+       "color": "#52647b",
+       "share": 0.07
+      },
+      {
+       "color": "#65748a",
+       "share": 0.05
+      },
+      {
+       "color": "#ffdc32",
+       "share": 0.04
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 10,
+     "inHero": 6,
+     "radius": "pill",
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Order now",
+      "Explore the menu",
+      "Available locations",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 25,
+     "shadowOverlay": 3,
+     "shadowSamples": [
+      "a.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.bottom-0 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.left-[4%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.bottom-[10%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 7,
+     "scrims": 2,
+     "gradientSamples": [
+      "div.absolute.-left-40 → radial-gradient(closest-side, rgba(255, 220, 50, 0.1), rgba(255, 220, 50, 0.1) 35%, rgba(0, 0, 0, 0))",
+      "div.absolute.-right-32 → radial-gradient(closest-side, rgba(63, 134, 214, 0.3), rgba(63, 134, 214, 0.3) 35%, rgba(0, 0, 0, 0))",
+      "div.absolute.-bottom-40 → radial-gradient(closest-side, rgba(255, 220, 50, 0.1), rgba(255, 220, 50, 0.1) 35%, rgba(0, 0, 0, 0))",
+      "div.absolute.inset-0 → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.5) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)"
+     ],
+     "gradientText": 0,
+     "hairlines": 3,
+     "hairlineSamples": [
+      "span.mt-auto.flex 310px",
+      "span.mt-auto.flex 310px",
+      "span.mt-auto.flex 310px"
+     ],
+     "outlinedBoxes": 7,
+     "dashed": 1,
+     "blurred": 4,
+     "roundedBoxes": 24,
+     "boxRadius": 28,
+     "squareMedia": 0,
+     "roundedMedia": 5,
+     "mediaRadius": 22,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 3,
+       "iconTopped": true,
+       "rounded": true,
+       "top": 795
+      },
+      {
+       "count": 3,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 2111
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.11
+     },
+     {
+      "type": "svg",
+      "ratio": 0.09
+     }
+    ],
+    "nav": {
+     "links": 15,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 4258,
+    "margins": {
+     "left": 108,
+     "right": 124
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 651,
+      "words": 45,
+      "media": 3,
+      "middle": 125,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 72,
+       "tag": "h1"
+      },
+      "left": 108,
+      "right": 116,
+      "textLeft": 108,
+      "textRight": 116,
+      "fullBleed": true,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#fbfaf5].px-5",
+      "tag": "section",
+      "top": 731,
+      "height": 256,
+      "words": 15,
+      "media": 0,
+      "middle": 286,
+      "heading": null,
+      "left": 225,
+      "right": 248,
+      "textLeft": 225,
+      "textRight": 248,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 993,
+      "height": 830,
+      "words": 81,
+      "media": 1,
+      "middle": 63,
+      "heading": {
+       "text": "A little more joy in every scoop.",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 129,
+      "right": 136,
+      "textLeft": 402,
+      "textRight": 136,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 1835,
+      "height": 830,
+      "words": 62,
+      "media": 3,
+      "middle": 57,
+      "heading": {
+       "text": "A treat made your way",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 129,
+      "right": 142,
+      "textLeft": 129,
+      "textRight": 152,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#fbfaf5].px-5",
+      "tag": "section",
+      "top": 2677,
+      "height": 687,
+      "words": 64,
+      "media": 0,
+      "middle": 47,
+      "heading": {
+       "text": "01",
+       "size": 128,
+       "tag": "span"
+      },
+      "left": 138,
+      "right": 130,
+      "textLeft": 138,
+      "textRight": 130,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#fbfaf5].px-5",
+      "tag": "section",
+      "top": 3371,
+      "height": 258,
+      "words": 11,
+      "media": 0,
+      "middle": 336,
+      "heading": {
+       "text": "A little joy",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 184,
+      "right": 213,
+      "textLeft": 184,
+      "textRight": 213,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 3631,
+      "height": 627,
+      "words": 81,
+      "media": 0,
+      "middle": 190,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 124,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Cold Stone Creamery The joy is in the mix.",
+      "size": 72,
+      "top": 199,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 108,
+      "n": 3
+     },
+     {
+      "x": 129,
+      "n": 2
+     },
+     {
+      "x": 648,
+      "n": 2
+     },
+     {
+      "x": 184,
+      "n": 1
+     },
+     {
+      "x": 348,
+      "n": 1
+     },
+     {
+      "x": 683,
+      "n": 1
+     },
+     {
+      "x": 950,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 11,
+    "bodySize": 14,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0.07,
+    "voidBox": {
+     "x": 480,
+     "y": 120,
+     "w": 300,
+     "h": 300
+    }
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 6,
+   "filled": [
+    1,
+    0.68,
+    0.64,
+    0.99,
+    0.96,
+    1
+   ],
+   "motion": {
+    "elements": 41,
+    "css": 28,
+    "transitions": 12,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 5574,
+     "screens": 5.4,
+     "words": 401,
+     "img": 10,
+     "video": 0,
+     "canvas": 0,
+     "svg": 86,
+     "sections": 7,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 6,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "about-child.webp",
+      "ice-10.webp",
+      "hero-ice-cream.webp",
+      "ice-5.webp",
+      "ice-6.webp",
+      "ice-9.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "✦"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Cold Stone Creamery The joy is in the mix.",
+     "words": 9,
+     "chars": 42,
+     "lines": 2,
+     "size": 60,
+     "vw": 7.8,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.92,
+     "top": 186,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Cold Stone Creamery The joy is in the mix.",
+     "words": 9,
+     "lines": 2,
+     "size": 60,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Cold Stone Creamery The joy is in the mix.",
+      "words": 9,
+      "chars": 42,
+      "lines": 2,
+      "size": 60,
+      "vw": 7.8,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 186,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "A little more joy in every scoop.",
+      "words": 7,
+      "chars": 33,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 2238,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "“",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 72,
+      "vw": 9.4,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 0.6,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.81,
+      "top": 2363,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "A treat made your way",
+      "words": 5,
+      "chars": 21,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.61,
+      "top": 3031,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Everything in one place.",
+      "words": 4,
+      "chars": 24,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.62,
+      "top": 3864,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "01",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 128,
+      "vw": 16.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.15,
+      "top": 3936,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "02",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 128,
+      "vw": 16.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.18,
+      "top": 3936,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "03",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 128,
+      "vw": 16.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.18,
+      "top": 3936,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "A little joy in every scoop.",
+      "words": 6,
+      "chars": 28,
+      "lines": 2,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.37,
+      "top": 4513,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.53,
+      "top": 4823,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 10,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 3,
+     "centered": 0,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.71,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.29,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      24,
+      35,
+      36,
+      48,
+      60,
+      72,
+      128
+     ],
+     "sizeCount": 17,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 14,
+      "leading": 1.71,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 14.3
+     },
+     "measureChars": 52,
+     "max": {
+      "size": 128,
+      "vw": 16.7,
+      "font": "Fredoka",
+      "text": "01"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 9,
+     "microLabelShare": 0.05,
+     "microSamples": [
+      "Our story",
+      "✦",
+      "The signature experience",
+      "Mixed to order",
+      "About us",
+      "The signature experience"
+     ],
+     "upperShare": 0.07,
+     "centerShare": 0.01,
+     "smallText": 5
+    },
+    "eyebrows": [
+     {
+      "text": "Our story",
+      "above": "Cold Stone Creamery The joy is in the mi",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 128
+     },
+     {
+      "text": "About us",
+      "above": "A little more joy in every scoop.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 2202
+     },
+     {
+      "text": "The signature experience",
+      "above": "A treat made your way",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 2978
+     },
+     {
+      "text": "What you’ll find here",
+      "above": "Everything in one place.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 3828
+     },
+     {
+      "text": "What you’ll find here",
+      "above": "01",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 3828
+     },
+     {
+      "text": "Our story",
+      "above": "03",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": true,
+      "size": 12,
+      "top": 3879
+     }
+    ],
+    "numbered": [
+     {
+      "text": "01",
+      "size": 10,
+      "top": 1237
+     },
+     {
+      "text": "02",
+      "size": 10,
+      "top": 1213
+     },
+     {
+      "text": "03",
+      "size": 10,
+      "top": 1237
+     },
+     {
+      "text": "01",
+      "size": 20,
+      "top": 3335
+     },
+     {
+      "text": "02",
+      "size": 20,
+      "top": 3335
+     },
+     {
+      "text": "03",
+      "size": 20,
+      "top": 3335
+     },
+     {
+      "text": "01",
+      "size": 128,
+      "top": 3936
+     },
+     {
+      "text": "02",
+      "size": 128,
+      "top": 3936
+     },
+     {
+      "text": "03",
+      "size": 128,
+      "top": 3936
+     }
+    ],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#ffffff",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 80,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#ffdc32",
+       "top": 1487,
+       "hsl": {
+        "h": 50,
+        "s": 1,
+        "l": 0.6
+       }
+      },
+      {
+       "color": "#fff3b8",
+       "top": 1523,
+       "hsl": {
+        "h": 50,
+        "s": 1,
+        "l": 0.86
+       }
+      },
+      {
+       "color": "#fbfaf5",
+       "top": 3722,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 4767,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.63
+      },
+      {
+       "color": "#092a53",
+       "share": 0.15
+      },
+      {
+       "color": "#52647b",
+       "share": 0.07
+      },
+      {
+       "color": "#65748a",
+       "share": 0.05
+      },
+      {
+       "color": "#ffdc32",
+       "share": 0.04
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 8,
+     "inHero": 4,
+     "radius": "pill",
+     "height": 52,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Explore the menu",
+      "Available locations",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 25,
+     "shadowOverlay": 3,
+     "shadowSamples": [
+      "a.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.bottom-0 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.left-[4%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.bottom-[10%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 7,
+     "scrims": 2,
+     "gradientSamples": [
+      "div.absolute.-left-40 → radial-gradient(closest-side, rgba(255, 220, 50, 0.1), rgba(255, 220, 50, 0.1) 35%, rgba(0, 0, 0, 0))",
+      "div.absolute.-right-32 → radial-gradient(closest-side, rgba(63, 134, 214, 0.3), rgba(63, 134, 214, 0.3) 35%, rgba(0, 0, 0, 0))",
+      "div.absolute.-bottom-40 → radial-gradient(closest-side, rgba(255, 220, 50, 0.1), rgba(255, 220, 50, 0.1) 35%, rgba(0, 0, 0, 0))",
+      "div.absolute.inset-0 → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.5) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)"
+     ],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 7,
+     "dashed": 1,
+     "blurred": 4,
+     "roundedBoxes": 24,
+     "boxRadius": 28,
+     "squareMedia": 0,
+     "roundedMedia": 2,
+     "mediaRadius": 999,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 3,
+       "iconTopped": true,
+       "rounded": true,
+       "top": 1188
+      },
+      {
+       "count": 3,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 3215
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.2
+     }
+    ],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 5574,
+    "margins": {
+     "left": 32,
+     "right": 35
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 1042,
+      "words": 45,
+      "media": 3,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 60,
+       "tag": "h1"
+      },
+      "left": 32,
+      "right": 112,
+      "textLeft": 32,
+      "textRight": 112,
+      "fullBleed": true,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#fbfaf5].px-5",
+      "tag": "section",
+      "top": 1124,
+      "height": 292,
+      "words": 15,
+      "media": 0,
+      "middle": 175,
+      "heading": null,
+      "left": 144,
+      "right": 75,
+      "textLeft": 144,
+      "textRight": 75,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 1429,
+      "height": 1437,
+      "words": 81,
+      "media": 1,
+      "middle": 0,
+      "heading": null,
+      "left": 37,
+      "right": 74,
+      "textLeft": 37,
+      "textRight": 74,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 2884,
+      "height": 826,
+      "words": 62,
+      "media": 3,
+      "middle": 29,
+      "heading": {
+       "text": "A treat made your way",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 37,
+      "right": 50,
+      "textLeft": 37,
+      "textRight": 74,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#fbfaf5].px-5",
+      "tag": "section",
+      "top": 3722,
+      "height": 714,
+      "words": 64,
+      "media": 0,
+      "middle": 23,
+      "heading": {
+       "text": "01",
+       "size": 128,
+       "tag": "span"
+      },
+      "left": 42,
+      "right": 35,
+      "textLeft": 42,
+      "textRight": 35,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#fbfaf5].px-5",
+      "tag": "section",
+      "top": 4444,
+      "height": 321,
+      "words": 11,
+      "media": 0,
+      "middle": 150,
+      "heading": {
+       "text": "A little joy",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 89,
+      "right": 221,
+      "textLeft": 89,
+      "textRight": 221,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 4767,
+      "height": 807,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 46,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Cold Stone Creamery The joy is in the mix.",
+      "size": 60,
+      "top": 186,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 32,
+      "n": 6
+     },
+     {
+      "x": 89,
+      "n": 2
+     },
+     {
+      "x": 42,
+      "n": 1
+     },
+     {
+      "x": 55,
+      "n": 1
+     },
+     {
+      "x": 73,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 11,
+    "bodySize": 14,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 9,
+   "filled": [
+    1,
+    0.59,
+    0.72,
+    0.84,
+    1,
+    0.99,
+    0.78,
+    1,
+    1
+   ],
+   "motion": {
+    "elements": 41,
+    "css": 28,
+    "transitions": 12,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 7472,
+     "screens": 8.9,
+     "words": 400,
+     "img": 10,
+     "video": 0,
+     "canvas": 0,
+     "svg": 86,
+     "sections": 7,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 5,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "about-child.webp",
+      "hero-ice-cream.webp",
+      "ice-5.webp",
+      "ice-6.webp",
+      "ice-9.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "✦"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Cold Stone Creamery The joy is in the mix.",
+     "words": 9,
+     "chars": 42,
+     "lines": 3,
+     "size": 48,
+     "vw": 12.3,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.9,
+     "top": 170,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Cold Stone Creamery The joy is in the mix.",
+     "words": 9,
+     "lines": 3,
+     "size": 48,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Cold Stone Creamery The joy is in the mix.",
+      "words": 9,
+      "chars": 42,
+      "lines": 3,
+      "size": 48,
+      "vw": 12.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 170,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "A little more joy in every scoop.",
+      "words": 7,
+      "chars": 33,
+      "lines": 2,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.88,
+      "top": 1984,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "“",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 72,
+      "vw": 18.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 0.6,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.74,
+      "top": 2126,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "A treat made your way",
+      "words": 5,
+      "chars": 21,
+      "lines": 2,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.88,
+      "top": 2875,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Everything in one place.",
+      "words": 4,
+      "chars": 24,
+      "lines": 2,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.05,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.87,
+      "top": 4620,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "01",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 128,
+      "vw": 32.8,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.3,
+      "top": 4773,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "Ice cream, cakes and shakes",
+      "words": 5,
+      "chars": 27,
+      "lines": 2,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.73,
+      "top": 4935,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "02",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 128,
+      "vw": 32.8,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.36,
+      "top": 5110,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "Publicly listed branches",
+      "words": 3,
+      "chars": 24,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.73,
+      "top": 5272,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "03",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 128,
+      "vw": 32.8,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.36,
+      "top": 5442,
+      "tag": "span",
+      "kind": "statement"
+     },
+     {
+      "text": "Order from this site",
+      "words": 4,
+      "chars": 20,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.73,
+      "top": 5604,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "A little joy in every scoop.",
+      "words": 6,
+      "chars": 28,
+      "lines": 2,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.73,
+      "top": 5920,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.89,
+      "top": 6309,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 13,
+     "maxLines": 3,
+     "over2Lines": 1,
+     "statements": 3,
+     "centered": 0,
+     "medianWords": 4,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.71,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.29,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      20,
+      24,
+      28,
+      30,
+      36,
+      48,
+      72,
+      128
+     ],
+     "sizeCount": 15,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 14,
+      "leading": 1.71,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 14.3
+     },
+     "measureChars": 29,
+     "max": {
+      "size": 128,
+      "vw": 32.8,
+      "font": "Fredoka",
+      "text": "01"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 9,
+     "microLabelShare": 0.05,
+     "microSamples": [
+      "Our story",
+      "✦",
+      "The signature experience",
+      "Mixed to order",
+      "About us",
+      "The signature experience"
+     ],
+     "upperShare": 0.07,
+     "centerShare": 0.01,
+     "smallText": 6
+    },
+    "eyebrows": [
+     {
+      "text": "Our story",
+      "above": "Cold Stone Creamery The joy is in the mi",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 112
+     },
+     {
+      "text": "About us",
+      "above": "A little more joy in every scoop.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 1949
+     },
+     {
+      "text": "The signature experience",
+      "above": "A treat made your way",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 2821
+     },
+     {
+      "text": "What you’ll find here",
+      "above": "Everything in one place.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11,
+      "top": 4585
+     },
+     {
+      "text": "Menu guide",
+      "above": "Ice cream, cakes and shakes",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 4909
+     },
+     {
+      "text": "Discover the menu",
+      "above": "02",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 5028
+     },
+     {
+      "text": "Locations",
+      "above": "Publicly listed branches",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 5246
+     },
+     {
+      "text": "Browse locations",
+      "above": "03",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 14,
+      "top": 5360
+     },
+     {
+      "text": "Online catalog",
+      "above": "Order from this site",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 5578
+     }
+    ],
+    "numbered": [
+     {
+      "text": "01",
+      "size": 10,
+      "top": 1123
+     },
+     {
+      "text": "02",
+      "size": 10,
+      "top": 1263
+     },
+     {
+      "text": "03",
+      "size": 10,
+      "top": 1403
+     },
+     {
+      "text": "01",
+      "size": 20,
+      "top": 3304
+     },
+     {
+      "text": "02",
+      "size": 20,
+      "top": 3746
+     },
+     {
+      "text": "03",
+      "size": 20,
+      "top": 4188
+     },
+     {
+      "text": "01",
+      "size": 128,
+      "top": 4773
+     },
+     {
+      "text": "02",
+      "size": 128,
+      "top": 5110
+     },
+     {
+      "text": "03",
+      "size": 128,
+      "top": 5442
+     }
+    ],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#ffffff",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 80,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#fbfaf5",
+       "top": 1031,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#ffdc32",
+       "top": 1603,
+       "hsl": {
+        "h": 50,
+        "s": 1,
+        "l": 0.6
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 6261,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.63
+      },
+      {
+       "color": "#092a53",
+       "share": 0.15
+      },
+      {
+       "color": "#52647b",
+       "share": 0.07
+      },
+      {
+       "color": "#65748a",
+       "share": 0.05
+      },
+      {
+       "color": "#ffdc32",
+       "share": 0.04
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 7,
+     "inHero": 3,
+     "radius": "pill",
+     "height": 52,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Explore the menu",
+      "Available locations",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 25,
+     "shadowOverlay": 3,
+     "shadowSamples": [
+      "a.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.bottom-0 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.left-[4%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "figure.absolute.bottom-[10%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 7,
+     "scrims": 2,
+     "gradientSamples": [
+      "div.absolute.-left-40 → radial-gradient(closest-side, rgba(255, 220, 50, 0.1), rgba(255, 220, 50, 0.1) 35%, rgba(0, 0, 0, 0))",
+      "div.absolute.-right-32 → radial-gradient(closest-side, rgba(63, 134, 214, 0.3), rgba(63, 134, 214, 0.3) 35%, rgba(0, 0, 0, 0))",
+      "div.absolute.-bottom-40 → radial-gradient(closest-side, rgba(255, 220, 50, 0.1), rgba(255, 220, 50, 0.1) 35%, rgba(0, 0, 0, 0))",
+      "div.absolute.inset-0 → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.5) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)"
+     ],
+     "gradientText": 0,
+     "hairlines": 3,
+     "hairlineSamples": [
+      "span.mt-auto.flex 285px",
+      "span.mt-auto.flex 285px",
+      "span.mt-auto.flex 285px"
+     ],
+     "outlinedBoxes": 7,
+     "dashed": 1,
+     "blurred": 4,
+     "roundedBoxes": 23,
+     "boxRadius": 28,
+     "squareMedia": 0,
+     "roundedMedia": 5,
+     "mediaRadius": 22,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 3,
+       "iconTopped": true,
+       "rounded": true,
+       "top": 1081
+      },
+      {
+       "count": 3,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 3083
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.13
+     }
+    ],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 7472,
+    "margins": {
+     "left": 20,
+     "right": 17
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 947,
+      "words": 45,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 48,
+       "tag": "h1"
+      },
+      "left": 20,
+      "right": 29,
+      "textLeft": 20,
+      "textRight": 36,
+      "fullBleed": true,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#fbfaf5].px-5",
+      "tag": "section",
+      "top": 1031,
+      "height": 504,
+      "words": 15,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 123,
+      "right": 87,
+      "textLeft": 123,
+      "textRight": 87,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 1548,
+      "height": 1173,
+      "words": 81,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "A little more joy in every scoop.",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 23,
+      "right": 23,
+      "textLeft": 23,
+      "textRight": 29,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.pointer-events-none.absolute",
+      "tag": "div",
+      "top": 2743,
+      "height": 1722,
+      "words": 0,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": null,
+      "right": null,
+      "textLeft": null,
+      "textRight": null,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.mx-auto.max-w-[1200px]",
+      "tag": "div",
+      "top": 2821,
+      "height": 1565,
+      "words": 62,
+      "media": 3,
+      "middle": 0,
+      "heading": {
+       "text": "A treat made your way",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 23,
+      "right": 24,
+      "textLeft": 23,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#fbfaf5].px-5",
+      "tag": "section",
+      "top": 4489,
+      "height": 1377,
+      "words": 64,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "01",
+       "size": 128,
+       "tag": "span"
+      },
+      "left": 25,
+      "right": 17,
+      "textLeft": 25,
+      "textRight": 17,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-[#fbfaf5].px-5",
+      "tag": "section",
+      "top": 5879,
+      "height": 379,
+      "words": 11,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "A little joy",
+       "size": 30,
+       "tag": "h2"
+      },
+      "left": 52,
+      "right": 101,
+      "textLeft": 52,
+      "textRight": 101,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 6261,
+      "height": 1211,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 30,
+       "tag": "span"
+      },
+      "left": 20,
+      "right": 24,
+      "textLeft": 20,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Cold Stone Creamery The joy is in the mix.",
+      "size": 48,
+      "top": 170,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 20,
+      "n": 7
+     },
+     {
+      "x": 50,
+      "n": 3
+     },
+     {
+      "x": 40,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 11,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "headline-lines",
+   "width": 1440,
+   "message": "1 headline(s) wrap past two lines at 1440px: \"Cold Stone Creamery The joy is in the mix.\" → 3 lines (9 words, 72px)",
+   "fix": "Cut words first (a headline is a title, not a sentence). Then give it a wider measure. Lower the size only as a last resort and never below the scale you chose. A real statement paragraph belongs in a <p> or <blockquote> at 36px or less."
+  },
+  {
+   "level": "FAIL",
+   "id": "eyebrow",
+   "width": 1440,
+   "message": "5 eyebrow/kicker label(s) above headings: \"Our story\" (pill) above \"Cold Stone Creamery The joy is in the mi\"; \"About us\" above \"A little more joy in every scoop.\"; \"The signature experience\" (pill) above \"A treat made your way\"; \"What you’ll find here\" above \"Everything in one place.\"; \"Our story\" (pill) above \"03\"",
+   "fix": "Delete them. If the label carried real information, fold it into the headline or the supporting sentence.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "numbering",
+   "width": 1440,
+   "message": "Decorative index numbers: \"01\", \"02\", \"03\", \"01\", \"02\", \"03\"",
+   "fix": "Remove them. If order truly matters, write it into the words (\"First, …\") or use a real <ol>.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "micro-label",
+   "width": 1440,
+   "message": "9 tiny uppercase letter-spaced labels (e.g. \"Our story\", \"✦\", \"The signature experience\", \"Mixed to order\").",
+   "fix": "Use sentence-case text at a readable size, or delete the label.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "emoji",
+   "width": 1440,
+   "message": "Emoji in the page: ✦",
+   "fix": "Remove. Use words or real imagery.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "gradient",
+   "width": 1440,
+   "message": "7 gradient fill(s): div.absolute.-left-40 → radial-gradient(closest-side, rgba(255, 220, 50, 0.1), rgba(255, 220, 50, 0.1) 35%, rgba(0, 0, 0, 0)) | div.absolute.-right-32 → radial-gradient(closest-side, rgba(63, 134, 214, 0.3), rgba(63, 134, 214, 0.3) 35%, rgba(0, 0, 0, 0)) | div.absolute.-bottom-40 → radial-gradient(closest-side, rgba(255, 220, 50, 0.1), rgba(255, 220, 50, 0.1) 35%, rgba(0, 0, 0, 0))",
+   "fix": "Use a flat colour or a real image. The only gradient allowed by default is a neutral scrim over a photo for legibility.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "shadow",
+   "width": 1440,
+   "message": "25 box-shadow(s) on elements at rest: a.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0 | figure.absolute.bottom-0 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0 | figure.absolute.left-[4%] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+   "fix": "Remove. Separate surfaces with a tone step or space. Shadows are for things that really float (menus, dialogs, sticky bars).",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "hairline",
+   "width": 1440,
+   "message": "3 thin rule(s)/divider line(s): span.mt-auto.flex 310px | span.mt-auto.flex 310px | span.mt-auto.flex 310px",
+   "fix": "Delete. Separate with space, a tone change, or scale. Lines are only for real tables and form fields.",
+   "alsoAt": [
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "outlined-box",
+   "width": 1440,
+   "message": "7 boxes drawn with a 1px outline.",
+   "fix": "Define a surface by its fill (one tone step from the page) or leave the content unboxed.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "dashed",
+   "width": 1440,
+   "message": "1 dashed/dotted border(s).",
+   "fix": "Remove unless it is a real drop zone.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "glass",
+   "width": 1440,
+   "message": "4 backdrop-blur surfaces.",
+   "fix": "One blurred sticky bar at most; glass cards are a tell.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "icon-cards",
+   "width": 1440,
+   "message": "1 row(s) of identical cards each topped with a small icon (3 cards).",
+   "fix": "Replace with one composed section from the direction: a narrative split, a list set in large type, or real imagery per item.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (section #fbfaf5).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "size-count",
+   "width": 1440,
+   "message": "16 different font sizes (9, 10, 11, 12, 13, 14, 16, 18, 19, 20, 24, 36, 42, 48, 72, 128).",
+   "fix": "A page needs about five: display, heading, lead, body, small.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "body-size",
+   "width": 1440,
+   "message": "Body text is 14px (the size most of the running text is set in).",
+   "fix": "Body copy 16–20px. Map small sizes from blueprints onto your body step.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  },
+  {
+   "level": "FAIL",
+   "id": "small-text",
+   "width": 1440,
+   "message": "5 text blocks under 13px.",
+   "fix": "Nothing meant to be read goes below 13px.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "off-centre",
+   "width": 1440,
+   "message": "The margins differ: 108px on the left, 124px on the right, at 1440px.",
+   "fix": "Put the navigation and the content on one pair of margins; check for padding on one side only, a scrollbar gutter, or a header on another inset than the page."
+  },
+  {
+   "level": "FAIL",
+   "id": "covered-text",
+   "width": 1440,
+   "message": "Large text lies under another element at some scroll position: \"Enjoy the moment\" (screen 3, 75% hidden)",
+   "fix": "Nothing may sit on top of a headline or statement. Move the picture, shorten the pinned run, or raise the text above it (z-index) and give it a ground.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "headline-lines",
+   "width": 390,
+   "message": "1 headline(s) wrap past two lines at 390px: \"Cold Stone Creamery The joy is in the mix.\" → 3 lines (9 words, 48px)",
+   "fix": "Cut words first (a headline is a title, not a sentence). Then give it a wider measure. Lower the size only as a last resort and never below the scale you chose. A real statement paragraph belongs in a <p> or <blockquote> at 24px or less."
+  },
+  {
+   "level": "FAIL",
+   "id": "reduced-hidden",
+   "width": 1440,
+   "message": "With reduced motion requested, 57 text block(s) on the first screen stay invisible: \"Ice cream by the scoop\", \"Browse signature creations and treats.\", \"Browse all flavors\", \"Flavor tag\"",
+   "fix": "Put every hidden starting state inside @media (prefers-reduced-motion: no-preference); the reduced page is the finished page (references/motion.md §8)."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\about-before\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\about-before\\desktop-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\about-before\\desktop-page-02.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\about-before\\tablet-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\about-before\\tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\about-before\\mobile-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\about-before\\mobile-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\about-before\\mobile-page-02.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

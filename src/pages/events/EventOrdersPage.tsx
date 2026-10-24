@@ -8,6 +8,7 @@ import { useLanguage } from "../../language/useLanguage";
 import { numberFormatter } from "../../lib/cartPricing";
 import { photoErrorHandler, thumbnail } from "../../lib/thumbnails";
 import { EVENT_OCCASIONS, eventOccasion, isEventType } from "../../../shared/eventTypes.js";
+import "./EventOrdersPage.css";
 
 interface EventConfig {
   eventTypes: string[];
@@ -62,6 +63,33 @@ const EVENT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
   EVENT_OCCASIONS.map((event) => [event.id, event.label]),
 );
 
+const EVENT_HERO_COPY = {
+  birthday: {
+    title: "A birthday worth celebrating",
+    description: "Bring the party together with scoops and cakes, planned around your guests.",
+  },
+  office: {
+    title: "A sweeter kind of work gathering",
+    description: "Share ice cream with your team or meeting, with an order planned for your group.",
+  },
+  wedding: {
+    title: "A sweet finish to your celebration",
+    description: "Make room for ice cream at the reception with an order arranged for your day.",
+  },
+  school: {
+    title: "Make the school day a little sweeter",
+    description: "Plan scoops for a class or school gathering, with portions for your group.",
+  },
+  religious: {
+    title: "Share a little sweetness together",
+    description: "Add ice cream to your gathering with an order coordinated for your guests.",
+  },
+  other: {
+    title: "Tell us what you are celebrating",
+    description: "From family gatherings to special occasions, build an ice cream order around your plans.",
+  },
+} satisfies Record<(typeof EVENT_OCCASIONS)[number]["id"], { title: string; description: string }>;
+
 function eventTypeFromSearch(params: URLSearchParams) {
   const requested = params.get("type");
   return isEventType(requested) ? requested : "birthday";
@@ -114,29 +142,29 @@ function OccasionFilm({
   t: (key: string, variables?: Record<string, string | number>) => string;
 }) {
   return (
-    <div aria-label={label} className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6" id="event-type" role="radiogroup">
+    <div aria-label={label} className="event-occasion-options grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6" id="event-type" role="radiogroup">
       {choices.map((event) => {
         const selected = value === event.id;
         return (
           <button
             aria-checked={selected}
-            className="rounded-2xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+            className="event-occasion-choice rounded-2xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
             key={event.id}
             onClick={() => onChange(event.id)}
             role="radio"
             type="button"
           >
-            <span className={`relative block overflow-hidden rounded-2xl bg-[#092a53] ${selected ? "ring-2 ring-[#ffdc32] ring-offset-2" : ""}`}>
+            <span className="event-occasion-tile relative block overflow-hidden rounded-[18px] bg-[#092a53]">
               <img
                 alt=""
-                className={`aspect-[4/5] w-full object-cover ${selected ? "" : "brightness-75"}`}
+                className={`aspect-[5/4] w-full object-cover transition-[filter] ${selected ? "" : "brightness-[0.82]"}`}
                 decoding="async"
                 loading="lazy"
                 onError={photoErrorHandler(event.image, "/images/hero-ice-cream.jpg")}
                 sizes="(min-width: 1024px) 180px, 45vw"
                 src={thumbnail(event.image, "small")}
               />
-              <span className="absolute inset-x-0 bottom-0 flex min-h-12 items-center gap-2 bg-[#092a53] px-2.5 py-2 text-white">
+              <span className="event-occasion-caption absolute inset-x-0 bottom-0 flex min-h-12 items-center gap-2 bg-[#092a53] px-2.5 py-2 text-white">
                 <span className={`grid size-6 shrink-0 place-items-center rounded-full ${selected ? "bg-[#ffdc32] text-[#092a53]" : "bg-white/10 text-[#ffdc32]"}`}>
                   <EventIcon id={event.id} />
                 </span>
@@ -429,7 +457,7 @@ export function EventOrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
+    <div className="event-orders-page min-h-screen bg-[#f5f7fa] text-[#102c50]">
       <Header />
       {paymentDialog && (
         <PaymentStatusDialog
@@ -455,44 +483,62 @@ export function EventOrdersPage() {
                     : t("We could not confirm your payment")}
         />
       )}
-      <main id="main" tabIndex={-1}>
-        <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-16 pt-14 text-white sm:px-8 lg:px-12 lg:pb-20 lg:pt-20">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220_50/0.12)_35%,transparent)]" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.5),rgb(28_79_138/0.5)_35%,transparent)]" />
+      <main className="event-orders-main" id="main" tabIndex={-1}>
+        <section className="event-page-intro bg-white px-5 pb-10 pt-10 sm:px-8 lg:px-12 lg:pb-12 lg:pt-14">
           <div className="mx-auto max-w-[1200px]">
-            <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
-              <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />
-              {t("Parties & events")}
-            </p>
-            <h1 className="mt-4 max-w-2xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
-              {t("Ice cream for birthdays, offices and celebrations")}
-            </h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-white/75">
-              {t("Order in bulk for your event. We prepare everything and deliver it, or you pick it up from your nearest store.")}
-            </p>
-            <ol className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="event-hero grid md:grid-cols-[1.1fr_0.9fr]">
+              <div className="event-hero-copy flex flex-col justify-center px-6 py-9 sm:px-10 sm:py-12 lg:px-14 lg:py-16">
+                <h1 className="mt-0 max-w-xl font-display text-4xl font-extrabold leading-[1.06] tracking-tight text-[#092a53] sm:text-5xl">
+                  {t(EVENT_HERO_COPY[chosen.id].title)}
+                </h1>
+                <p className="mt-4 max-w-lg text-base leading-7 text-[#4f6379]">
+                  {t(EVENT_HERO_COPY[chosen.id].description)}
+                </p>
+                <a className="event-hero-action" href="#event-type">{t("Start an event order")}</a>
+              </div>
+              <div className="event-hero-image scroll-story-frame relative min-h-56 bg-[#d8e2ee] md:min-h-[360px]">
+                <img
+                  alt=""
+                  className="absolute inset-0 size-full object-cover"
+                  decoding="async"
+                  fetchPriority="high"
+                  onError={photoErrorHandler(chosen.image, "/images/hero-ice-cream.jpg")}
+                  src={thumbnail(chosen.image)}
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-[#092a53]/90 px-5 py-4 text-white sm:px-7">
+                  <p className="text-xs font-bold text-[#ffdc32]">{t("Type of event")}</p>
+                  <p className="mt-1 font-display text-xl font-extrabold">{t(chosen.label)}</p>
+                  <p className="mt-1 text-sm leading-5 text-white/80">{t(chosen.detail)}</p>
+                </div>
+              </div>
+            </div>
+            <ol className="event-process grid grid-cols-1 gap-0 sm:grid-cols-3">
               {steps.map((step, index) => (
-                <li className="rounded-2xl bg-white/[0.07] p-5 ring-1 ring-white/10" key={step.title}>
-                  <span className="grid size-8 place-items-center rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53]">{index + 1}</span>
-                  <p className="mt-3 font-extrabold">{step.title}</p>
-                  <p className="mt-1 text-sm leading-6 text-white/70">{step.body}</p>
+                <li className="flex gap-3 py-4 sm:px-5 sm:first:pl-0 sm:last:pr-0" key={step.title}>
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53]">{index + 1}</span>
+                  <div>
+                    <p className="font-extrabold text-[#092a53]">{step.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-[#65748a]">{step.body}</p>
+                  </div>
                 </li>
               ))}
             </ol>
           </div>
         </section>
 
-        <div className="mx-auto max-w-[1200px] px-5 py-12 sm:px-8 lg:px-12">
+        <div className="event-page-content mx-auto max-w-[1200px] px-5 py-10 sm:px-8 lg:px-12 lg:py-12">
           {notice && <p className="mb-6 rounded-2xl bg-[#eef6e8] px-5 py-4 text-sm font-semibold text-[#2f5a1a] ring-1 ring-[#d6e8c8]" role="status">{notice}</p>}
           {loadError && <p className="mb-6 rounded-2xl bg-red-50 px-5 py-4 text-sm font-semibold text-red-700" role="alert">{loadError}</p>}
 
           {!authLoading && !customer ? (
-            <section aria-labelledby="plan-event-title">
-              <OccasionFilm choices={occasionChoices} label={t("Type of event")} onChange={chooseEvent} t={t} value={eventType} />
-              <div className="mt-8 flex flex-col gap-5 border-t border-[#e7e1d4] pt-6 sm:flex-row sm:items-end sm:justify-between">
+            <section aria-labelledby="event-occasion-title" className="event-signin-layout">
+              <div className="event-signin-occasion">
+                <h2 className="event-occasion-title" id="event-occasion-title">{t("Type of event")}</h2>
+                <OccasionFilm choices={occasionChoices} label={t("Type of event")} onChange={chooseEvent} t={t} value={eventType} />
+              </div>
+              <div className="event-signin-panel flex flex-col gap-5 rounded-[24px] bg-white p-6 ring-1 ring-[#e2e8f0] sm:flex-row sm:items-end sm:justify-between sm:p-8">
                 <div className="max-w-md">
                   <h2 className="font-display text-2xl font-extrabold leading-tight text-[#092a53]" id="plan-event-title">{t("Sign in to plan your event")}</h2>
-                  <p className="mt-2 text-sm font-semibold text-[#092a53]">{t(chosen.detail)}</p>
                   <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("An account lets you follow your quote, pay the deposit and get updates about your event.")}</p>
                 </div>
                 <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
@@ -503,9 +549,9 @@ export function EventOrdersPage() {
             </section>
           ) : customer ? (
             <>
-              <form className="grid grid-cols-1 gap-8 lg:grid-cols-12" onSubmit={submit}>
-                <div className="space-y-8 lg:col-span-8">
-                  <section className="rounded-[24px] bg-white p-6 shadow-[0_14px_40px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:p-7">
+              <form className="event-order-form grid grid-cols-1 gap-8 lg:grid-cols-12" onSubmit={submit}>
+                <div className="event-form-fields space-y-8 lg:col-span-8">
+                  <section className="event-form-section rounded-[22px] bg-white p-5 ring-1 ring-[#e2e8f0] sm:p-7">
                     <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t("Your event")}</h2>
                     <div className="mt-4">
                       <OccasionFilm choices={occasionChoices} label={t("Type of event")} onChange={chooseEvent} t={t} value={eventType} />
@@ -526,7 +572,7 @@ export function EventOrdersPage() {
                     </div>
                   </section>
 
-                  <section className="rounded-[24px] bg-white p-6 shadow-[0_14px_40px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:p-7">
+                  <section className="event-form-section rounded-[22px] bg-white p-5 ring-1 ring-[#e2e8f0] sm:p-7">
                     <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t("Delivery or pickup")}</h2>
                     <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {([
@@ -537,7 +583,7 @@ export function EventOrdersPage() {
                         return (
                           <button
                             aria-pressed={selected}
-                            className={`flex items-center gap-3 rounded-2xl px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 ${
+                            className={`event-fulfillment-choice flex items-center gap-3 rounded-2xl px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 ${
                               selected ? "bg-[#092a53] text-white" : "bg-[#f6f3ea] text-[#092a53] hover:bg-[#efe8d6]"
                             }`}
                             key={type}
@@ -577,7 +623,7 @@ export function EventOrdersPage() {
                     </div>
                   </section>
 
-                  <section className="rounded-[24px] bg-white p-6 shadow-[0_14px_40px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:p-7">
+                  <section className="event-form-section event-treat-section rounded-[22px] bg-white p-5 ring-1 ring-[#e2e8f0] sm:p-7">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                       <div>
                         <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t("Choose your treats")}</h2>
@@ -602,7 +648,7 @@ export function EventOrdersPage() {
                                 const quantity = quantities[item.itemId] || 0;
                                 const picked = quantity > 0;
                                 return (
-                                  <li className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 ${picked ? "bg-[#092a53] text-white" : "bg-[#f6f3ea] text-[#092a53]"}`} key={item.itemId}>
+                                  <li className={`event-treat-row flex items-center gap-3 rounded-2xl px-3 py-2.5 ${picked ? "bg-[#092a53] text-white" : "bg-[#f6f3ea] text-[#092a53]"}`} data-selected={picked} key={item.itemId}>
                                     <div className="min-w-0 flex-1">
                                       <p className="line-clamp-2 text-sm font-extrabold leading-5">{t(item.name)}</p>
                                       <p className={`text-xs font-semibold tabular-nums ${picked ? "text-[#ffdc32]" : "text-[#65748a]"}`}>{formatXaf(item.price, language)}</p>
@@ -649,10 +695,8 @@ export function EventOrdersPage() {
                   </section>
                 </div>
 
-                <aside className="lg:col-span-4">
-                  <div className="relative isolate overflow-hidden rounded-[24px] bg-[#092a53] p-6 text-white lg:sticky lg:top-28">
-                    <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 -z-10 size-72 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.2),rgb(255_220_50/0.2)_35%,transparent)]" />
-                    <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-16 -z-10 size-72 rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.7),rgb(28_79_138/0.7)_35%,transparent)]" />
+                <aside className="event-estimate-column lg:col-span-4">
+                  <div className="event-estimate rounded-[22px] bg-[#092a53] p-6 text-white lg:sticky lg:top-28">
                     <h2 className="font-display text-xl font-extrabold text-white">{t("Your estimate")}</h2>
                     {selected.length ? (
                       <ul className="mt-4 space-y-2 text-sm text-white">
@@ -682,14 +726,14 @@ export function EventOrdersPage() {
                     </dl>
                     <p className="mt-4 text-sm leading-6 text-white">{t("Nothing is charged now. The store confirms the final price first, then you pay the deposit to book your date.")}</p>
                     {formError && <p className="mt-4 rounded-xl bg-white/15 px-3 py-2.5 text-sm font-semibold text-white" role="alert">{formError}</p>}
-                    <button className="mt-5 w-full rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] disabled:cursor-wait disabled:opacity-60" disabled={submitting} type="submit">
+                    <button className="mt-5 w-full rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-wait disabled:opacity-60" disabled={submitting} type="submit">
                       {submitting ? t("Sending…") : t("Request a quote")}
                     </button>
                   </div>
                 </aside>
               </form>
 
-              <section aria-labelledby="my-event-orders-title" className="mt-14 scroll-mt-28" id="my-event-orders">
+              <section aria-labelledby="my-event-orders-title" className="event-orders-list mt-14 scroll-mt-28" id="my-event-orders">
                 <h2 className="font-display text-2xl font-extrabold text-[#092a53]" id="my-event-orders-title">{t("Your event orders")}</h2>
                 {!eventOrders.length ? (
                   <p className="mt-3 text-sm text-[#65748a]">{t("Your requests will appear here.")}</p>
@@ -699,7 +743,7 @@ export function EventOrdersPage() {
                       const status = STATUS_STYLES[order.status] || STATUS_STYLES.new;
                       const total = order.quotedTotal ?? order.estimatedTotal;
                       return (
-                        <li className="scroll-mt-28 rounded-[24px] bg-white p-5 shadow-[0_14px_40px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc]" id={`event-order-${order.id}`} key={order.id}>
+                        <li className="event-order-card scroll-mt-28 rounded-[22px] bg-white p-5 ring-1 ring-[#e2e8f0]" id={`event-order-${order.id}`} key={order.id}>
                           <div className="flex items-start gap-3">
                             <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#092a53] text-[#ffdc32]">
                               <EventIcon id={order.eventType} />
@@ -783,7 +827,7 @@ export function EventOrdersPage() {
             {t("Need a cake for the party?")} <Link className="font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4" to="/custom-cake">{t("Request a custom cake")}</Link>
           </p>
         </div>
-      </main>
+        </main>
       <Footer />
     </div>
   );

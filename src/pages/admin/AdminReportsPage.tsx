@@ -200,7 +200,7 @@ export function AdminReportsPage() {
   ]
 
   return (
-    <div className="min-w-0 space-y-6" data-scroll-reveal="skip">
+    <div className="min-w-0 space-y-6">
       <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">

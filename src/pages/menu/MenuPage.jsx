@@ -15,6 +15,25 @@ import { rankSimilar } from "../../lib/similarItems";
 import { numberFormatter } from "../../lib/cartPricing";
 
 const MAX_QUANTITY = 10;
+const CAKE_SPECIMEN_FIELDS = [
+  "bg-[#f1d9d0]",
+  "bg-[#f2e8c9]",
+  "bg-[#d9e5e9]",
+  "bg-[#e6dced]",
+];
+const CATEGORY_HERO_THEMES = {
+  "Ice Cream": { surface: "#092a53", accent: "#ffdc32", imageSide: "right" },
+  "Cakes & Pies": { surface: "#472a3b", accent: "#ffd0bd", imageSide: "left" },
+  "Silk & Sorbet": { surface: "#493447", accent: "#f0c5db", imageSide: "right" },
+  "Milkshakes & Smoothies": { surface: "#174b43", accent: "#d9ed9a", imageSide: "left" },
+  Novelties: { surface: "#4b352d", accent: "#ffd19a", imageSide: "right" },
+  "Limited-Time Favorites": { surface: "#5a3048", accent: "#ffd37d", imageSide: "left" },
+};
+const DEFAULT_CATEGORY_HERO_THEME = {
+  surface: "#092a53",
+  accent: "#ffdc32",
+  imageSide: "right",
+};
 
 function BagIcon() {
   return (
@@ -130,12 +149,12 @@ function FilterSelect({ label, onChange, options, value }) {
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-labelledby={`${id}-label ${id}-value`}
-        className={`flex w-full items-center justify-between gap-3 rounded-[20px] px-4 py-2.5 text-left ring-1 outline-none! transition ${
+        className={`flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left outline-none! transition ${
           open
-            ? "bg-white ring-[#d9d4c7] shadow-[0_8px_24px_rgba(9,42,83,0.08)]"
+            ? "bg-white ring-2 ring-[#092a53]"
             : value
-              ? "bg-[#fff8dd] ring-[#ecdfa6]"
-              : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"
+              ? "bg-[#fff3b8] ring-1 ring-[#e7d98b]"
+              : "bg-white ring-1 ring-[#e4e7e3] hover:ring-[#9ca9b6]"
         }`}
         onClick={() => (open ? setOpen(false) : openList())}
         onKeyDown={onButtonKeyDown}
@@ -144,13 +163,13 @@ function FilterSelect({ label, onChange, options, value }) {
       >
         <span className="min-w-0">
           <span
-            className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]"
+            className="block text-xs font-semibold text-[#53657a]"
             id={`${id}-label`}
           >
             {label}
           </span>
           <span
-            className="mt-0.5 block truncate text-sm font-bold capitalize text-[#092a53]"
+            className="mt-1 block truncate text-sm font-bold capitalize text-[#102c50]"
             id={`${id}-value`}
           >
             {selected?.label}
@@ -187,8 +206,8 @@ function FilterSelect({ label, onChange, options, value }) {
             <li
               aria-selected={isSelected}
               className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm capitalize transition-colors ${
-                isActive ? "bg-[#fbf6e3]" : ""
-              } ${isSelected ? "font-extrabold text-[#092a53]" : "font-semibold text-[#52647b]"}`}
+                isActive                 ? "bg-[#f1f2ee]" : ""
+              } ${isSelected ? "font-extrabold text-[#102c50]" : "font-semibold text-[#41546b]"}`}
               data-index={index}
               id={`${id}-option-${index}`}
               key={option.value}
@@ -217,34 +236,65 @@ function FilterSelect({ label, onChange, options, value }) {
 
 // onQuickAdd: adds one to the bag straight from the card, so ordering no longer needs the detail
 // sheet. The card is a container with two separate buttons, because a button cannot hold a button.
-function MenuProductCard({ category, item, onSelect, onQuickAdd, added, t, formatPrice }) {
+function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, added, t, formatPrice }) {
   const soldOut = item.isAvailable === false || item.availableQuantity < 1;
+  const isCakeCategory = category.title === "Cakes & Pies";
   return (
-    <div className="group relative flex h-full flex-col rounded-[22px] bg-white p-1.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] sm:rounded-[28px] sm:p-2.5">
+    <div
+      className={`group relative flex h-full flex-col ${
+        isCakeCategory
+          ? ""
+          : "rounded-[22px] bg-white p-1.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] sm:rounded-[28px] sm:p-2.5"
+      }`}
+    >
       <button
-        className="flex flex-1 flex-col rounded-[22px] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+        className={`flex flex-1 flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 ${
+          isCakeCategory ? "" : "rounded-[22px] sm:rounded-[28px]"
+        }`}
         onClick={() => onSelect(category, item)}
         type="button"
       >
-      <div className="relative aspect-square overflow-hidden rounded-[17px] bg-gradient-to-br from-[#fff8dd] via-[#fbfaf5] to-[#f1ede2] sm:rounded-[22px]">
+      <div
+        className={`relative flex items-center justify-center overflow-hidden ${
+          isCakeCategory
+            ? `aspect-square ${CAKE_SPECIMEN_FIELDS[itemIndex % CAKE_SPECIMEN_FIELDS.length]}`
+            : "aspect-square rounded-[17px] bg-gradient-to-br from-[#fff8dd] via-[#fbfaf5] to-[#f1ede2] sm:rounded-[22px]"
+        }`}
+      >
         <MenuImage
           alt={t(item.name)}
-          className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05] ${soldOut ? "opacity-70 grayscale-[70%]" : ""}`}
+          className={`transition duration-500 ease-out ${
+            isCakeCategory
+              ? "size-[90%] object-contain group-hover:scale-[1.02]"
+              : "size-full object-cover group-hover:scale-[1.05]"
+          } ${soldOut ? "opacity-70 grayscale-[70%]" : ""}`}
           sizes="(min-width: 1024px) 25vw, 50vw"
           src={item.image}
         />
-        <span
-          className={`absolute left-2 top-2 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] shadow-sm backdrop-blur-sm sm:left-3 sm:top-3 sm:px-2.5 sm:text-[10px] ${
-            soldOut ? "text-red-700" : "text-[#37632c]"
-          }`}
-        >
-          <span aria-hidden="true" className={`size-1.5 rounded-full ${soldOut ? "bg-red-500" : "bg-[#4caf50]"}`} />
-          {soldOut ? t("Sold out") : t("Available")}
-        </span>
+        {(soldOut || !isCakeCategory) && (
+          <span
+            className={`absolute left-2 top-2 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] shadow-sm backdrop-blur-sm sm:left-3 sm:top-3 sm:px-2.5 sm:text-[10px] ${
+              soldOut ? "text-red-700" : "text-[#37632c]"
+            }`}
+          >
+            <span aria-hidden="true" className={`size-1.5 rounded-full ${soldOut ? "bg-red-500" : "bg-[#4caf50]"}`} />
+            {soldOut ? t("Sold out") : t("Available")}
+          </span>
+        )}
       </div>
 
-      <div className="flex flex-1 flex-col px-1.5 pb-1.5 pt-3 sm:px-3 sm:pb-2.5 sm:pt-4">
-        <h3 className="line-clamp-2 font-display text-[15px] font-extrabold leading-snug text-[#092a53] sm:text-lg">
+      <div
+        className={`flex flex-1 flex-col ${
+          isCakeCategory
+            ? "px-0 pb-0 pt-4 sm:pt-5"
+            : "px-1.5 pb-1.5 pt-3 sm:px-3 sm:pb-2.5 sm:pt-4"
+        }`}
+      >
+        <h3 className={`line-clamp-2 font-display font-extrabold leading-snug text-[#092a53] ${
+          isCakeCategory
+            ? "text-base sm:text-lg"
+            : "text-[15px] sm:text-lg"
+        }`}>
           {t(item.name)}
         </h3>
         <div className="mt-1.5">
@@ -253,57 +303,60 @@ function MenuProductCard({ category, item, onSelect, onQuickAdd, added, t, forma
             reviewCount={item.reviewCount}
           />
         </div>
-        <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[#65748a] sm:mt-2 sm:text-sm sm:leading-6">
+        <p className={`mt-1.5 line-clamp-2 text-xs leading-5 text-[#65748a] sm:mt-2 sm:text-sm sm:leading-6 ${
+          isCakeCategory ? "min-h-[3.25rem]" : ""
+        }`}>
           {t(item.detail)}
         </p>
-
-        <div className="mt-auto flex flex-col gap-2 pt-3 sm:pt-4">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-display text-sm font-extrabold tabular-nums text-[#8a7000] sm:text-lg">
-              {formatPrice(item.priceXaf)}
-            </span>
-            <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#65748a] transition group-hover:text-[#092a53]">
+        <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-4">
+          <span className="font-display text-sm font-extrabold tabular-nums text-[#8a7000] sm:text-lg">
+            {formatPrice(item.priceXaf)}
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#65748a] transition group-hover:text-[#092a53]">
               <span className="sr-only">{t("View details")}</span>
               <span
                 aria-hidden="true"
-                className="grid size-8 place-items-center rounded-full bg-[#f4f1e7] text-[#092a53] transition duration-300 group-hover:bg-[#092a53] group-hover:text-white sm:size-9"
+                className={`grid size-8 place-items-center rounded-full transition duration-300 sm:size-9 ${
+                  isCakeCategory
+                    ? "bg-[#e9edf0] text-[#092a53] group-hover:bg-[#092a53] group-hover:text-white"
+                    : "bg-[#f4f1e7] text-[#092a53] group-hover:bg-[#092a53] group-hover:text-white"
+                }`}
               >
                 <svg className="size-4" fill="none" viewBox="0 0 24 24">
                   <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 </svg>
               </span>
-            </span>
-          </div>
-          <button
-            aria-label={
-              soldOut
-                ? t("{name} is sold out", { name: t(item.name) })
-                : t("Add {name} to cart", { name: t(item.name) })
-            }
-            className={`inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full px-3 text-[11px] font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed sm:text-xs ${
-              added
-                ? "bg-[#4caf50] text-white"
-                : soldOut
-                  ? "bg-[#f1ede2] text-[#a5aebb]"
-                  : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#ffe76c] hover:shadow-[0_8px_20px_rgba(255,220,50,0.35)]"
-            }`}
-            disabled={soldOut}
-            onClick={(event) => {
-              // Without this the tap also opens the product's detail sheet.
-              event.stopPropagation();
-              onQuickAdd(category, item);
-            }}
-            type="button"
-          >
-            {added ? (
-              <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
-              </svg>
-            ) : null}
-            {soldOut ? t("Sold out") : added ? t("Added") : t("Add to cart")}
-          </button>
-          </div>
+          </span>
         </div>
+      </div>
+      </button>
+      <button
+        aria-label={
+          soldOut
+            ? t("{name} is sold out", { name: t(item.name) })
+            : t("Add {name} to cart", { name: t(item.name) })
+        }
+        className={`mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 px-3 text-[11px] font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed sm:text-xs ${
+          isCakeCategory
+            ? "rounded-md"
+            : "rounded-full"
+        } ${
+          added
+            ? "bg-[#4caf50] text-white"
+            : soldOut
+              ? "bg-[#e8ebe7] text-[#8793a0]"
+              : "bg-[#092a53] text-white hover:-translate-y-0.5 hover:bg-[#163e6b] hover:shadow-[0_8px_20px_rgba(9,42,83,0.18)]"
+        }`}
+        disabled={soldOut}
+        onClick={() => onQuickAdd(category, item)}
+        type="button"
+      >
+        {added ? (
+          <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+            <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+          </svg>
+        ) : null}
+        {soldOut ? t("Sold out") : added ? t("Added") : t("Add to cart")}
       </button>
     </div>
   );
@@ -314,49 +367,52 @@ function SimilarProductCard({ category, item, onSelect, showCategory, t, formatP
   const soldOut = item.isAvailable === false || item.availableQuantity < 1;
   return (
     <button
-      className="group relative isolate flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-[20px] bg-[#092a53] p-3.5 text-left text-white shadow-[0_12px_32px_rgba(9,42,83,0.1)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_54px_rgba(9,42,83,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4 sm:rounded-[26px] sm:p-6"
+      className="group relative isolate flex aspect-[3/4] flex-col overflow-hidden rounded-[20px] bg-white text-left text-[#102c50] ring-1 ring-[#e4e7e3] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_54px_rgba(9,42,83,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4 sm:rounded-[26px]"
       onClick={() => onSelect(category, item)}
       type="button"
     >
-      <MenuImage
-        alt=""
-        className={`absolute inset-0 -z-20 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.07] ${soldOut ? "grayscale-[60%]" : ""}`}
-        sizes="(min-width: 1024px) 25vw, 50vw"
-        src={item.image}
-      />
-      <span
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] from-15% via-[#061d3a]/60 via-50% to-transparent to-75% transition duration-500 group-hover:via-[#061d3a]/70"
-      />
-
-      <span className="absolute inset-x-3 top-3 flex items-start justify-between gap-2 sm:inset-x-6 sm:top-6 sm:gap-3">
-        {showCategory && (
-          <span className="max-w-[80%] truncate rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#092a53] shadow-sm max-sm:hidden">
-            {t(category.title)}
-          </span>
-        )}
-        {soldOut && (
-          <span className="ml-auto rounded-full bg-white px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.1em] text-red-700 sm:px-3 sm:py-1.5 sm:text-[10px]">
-            {t("Sold out")}
-          </span>
-        )}
-      </span>
-
-      <span className="line-clamp-2 font-display text-[15px] font-extrabold leading-snug [text-shadow:0_1px_12px_rgba(6,29,58,0.6)] sm:text-2xl">
-        {t(item.name)}
-      </span>
-      <span className="mt-2 line-clamp-2 max-h-0 text-sm leading-6 max-sm:hidden text-white/75 opacity-0 transition-all duration-500 group-hover:max-h-12 group-hover:opacity-100 group-focus-visible:max-h-12 group-focus-visible:opacity-100">
-        {t(item.detail)}
-      </span>
-      <span className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/15 pt-2.5 sm:mt-4 sm:gap-3 sm:pt-4">
-        <span className="font-display text-sm font-extrabold tabular-nums text-[#ffdc32] sm:text-lg">
-          {formatPrice(item.priceXaf)}
-        </span>
+      <span className="relative min-h-0 flex-1 overflow-hidden bg-[#f1f2ee]">
+        <MenuImage
+          alt=""
+          className={`absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.07] ${soldOut ? "grayscale-[60%]" : ""}`}
+          sizes="(min-width: 1024px) 25vw, 50vw"
+          src={item.image}
+        />
         <span
           aria-hidden="true"
-          className="grid size-8 shrink-0 place-items-center rounded-full bg-white text-[#092a53] transition duration-300 group-hover:-rotate-45 group-hover:bg-[#ffdc32] sm:size-10"
-        >
-          <ArrowIcon />
+          className="absolute inset-0 bg-gradient-to-t from-[#061d3a] from-15% via-[#061d3a]/60 via-50% to-transparent to-75% transition duration-500 group-hover:via-[#061d3a]/70"
+        />
+        <span className="absolute inset-x-3 top-3 flex items-start justify-between gap-2 sm:inset-x-5 sm:top-5">
+          {showCategory && (
+            <span className="max-w-[80%] truncate rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-[#102c50] max-sm:hidden">
+              {t(category.title)}
+            </span>
+          )}
+          {soldOut && (
+            <span className="ml-auto rounded-lg bg-white px-2.5 py-1.5 text-xs font-bold text-red-700">
+              {t("Sold out")}
+            </span>
+          )}
+        </span>
+      </span>
+
+      <span className="flex flex-col p-3.5 sm:p-5">
+        <span className="line-clamp-2 font-display text-base font-bold leading-snug text-[#102c50] sm:text-xl">
+          {t(item.name)}
+        </span>
+        <span className="mt-1 line-clamp-2 max-h-0 text-sm leading-6 text-[#41546b] opacity-0 transition-all duration-500 group-hover:max-h-12 group-hover:opacity-100 group-focus-visible:max-h-12 group-focus-visible:opacity-100 max-sm:hidden">
+          {t(item.detail)}
+        </span>
+        <span className="mt-3 flex items-center justify-between gap-2 border-t border-[#e4e7e3] pt-3 sm:mt-4 sm:pt-4">
+          <span className="font-display text-sm font-bold tabular-nums text-[#102c50] sm:text-base">
+            {formatPrice(item.priceXaf)}
+          </span>
+          <span
+            aria-hidden="true"
+            className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#092a53] text-white transition duration-300 group-hover:-rotate-45 group-hover:bg-[#ffdc32] group-hover:text-[#092a53] sm:size-10"
+          >
+            <ArrowIcon />
+          </span>
         </span>
       </span>
     </button>
@@ -409,6 +465,12 @@ export function MenuPage() {
       ? Math.min(...activeCategory.items.map((item) => item.priceXaf))
       : null,
   };
+  const activeCategoryTheme = activeCategory
+    ? CATEGORY_HERO_THEMES[activeCategory.title] || DEFAULT_CATEGORY_HERO_THEME
+    : DEFAULT_CATEGORY_HERO_THEME;
+  const categoryHeroPreviews = (activeCategory?.items ?? [])
+    .filter((item) => item.image && item.image !== activeCategory?.image)
+    .slice(0, 2);
   const selectedItem =
     selectedItemState?.categoryTitle === activeCategoryTitle
       ? selectedItemState.item
@@ -445,6 +507,187 @@ export function MenuPage() {
   const totalMenuItems = categories.reduce(
     (total, category) => total + category.items.length,
     0,
+  );
+  const featuredCategory =
+    categories.find((category) => category.title === "Ice Cream") ||
+    categories[0];
+  const heroCategory = activeCategory || featuredCategory;
+  const heroCategoryTheme = heroCategory
+    ? CATEGORY_HERO_THEMES[heroCategory.title] || DEFAULT_CATEGORY_HERO_THEME
+    : DEFAULT_CATEGORY_HERO_THEME;
+  const heroCategoryStats = heroCategory
+    ? {
+        available: heroCategory.items.filter(
+          (item) => item.isAvailable !== false && item.availableQuantity > 0,
+        ).length,
+        lowestPrice: heroCategory.items.length
+          ? Math.min(...heroCategory.items.map((item) => item.priceXaf))
+          : null,
+      }
+    : { available: 0, lowestPrice: null };
+  // The category hero picture: a distinct composition per category, built from
+  // that category's own product photos on its theme surface. Every category gets
+  // its own arrangement, so switching categories visibly changes the hero.
+  const heroItemPhotos = (heroCategory?.items ?? [])
+    .filter((item) => item.image && item.image !== heroCategory?.image)
+    .map((item) => item.image);
+  const heroCategoryVisual = heroCategory && (() => {
+    const title = heroCategory.title;
+    const variant = {
+      "Ice Cream": "stair",
+      "Cakes & Pies": "stack",
+      "Silk & Sorbet": "trio",
+      "Milkshakes & Smoothies": "diagonal",
+      Novelties: "ring",
+      "Limited-Time Favorites": "banner",
+    }[title] || "stair";
+    const [photoA, photoB, photoC] = [
+      heroCategory.image,
+      ...heroItemPhotos,
+      heroCategory.image,
+    ].slice(0, 3);
+
+    if (variant === "stack") {
+      // Cakes & Pies: one wide cake on top, two squares beneath — a layer cake.
+      return (
+        <div className="flex size-full flex-col gap-3">
+          <div className="relative min-h-0 flex-1 overflow-hidden rounded-[28px] bg-white/10">
+            <MenuImage
+              alt={t(title)}
+              className="size-full object-cover"
+              sizes="(min-width: 1024px) 30vw, 60vw"
+              src={photoA}
+            />
+            <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[11px] font-extrabold text-[#472a3b]">
+              {t("Slice or whole")}
+            </span>
+          </div>
+          <div className="grid min-h-0 flex-1 grid-cols-2 gap-3">
+            {[photoB, photoC].map((photo, index) => (
+              <div className="overflow-hidden rounded-[24px] bg-white/10" key={index}>
+                <MenuImage alt="" className="size-full object-cover" small src={photo} />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (variant === "trio") {
+      // Silk & Sorbet: three round scoops in a row, the middle one bigger.
+      return (
+        <div className="flex size-full flex-row items-center justify-center gap-4">
+          {[photoA, photoB, photoC].map((photo, index) => (
+            <div
+              className={`aspect-square shrink overflow-hidden rounded-full ring-4 ring-white/15 ${index === 1 ? "h-[62%]" : "h-[42%]"}`}
+              key={index}
+            >
+              <MenuImage
+                alt={index === 0 ? t(title) : ""}
+                className="size-full object-cover"
+                small={index !== 0}
+                src={photo}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (variant === "diagonal") {
+      // Milkshakes & Smoothies: three cups stepping up like a drinks board.
+      return (
+        <div className="flex size-full items-end justify-center gap-4 px-4">
+          {[photoC, photoA, photoB].map((photo, index) => (
+            <div
+              className={`overflow-hidden rounded-[24px] bg-white/10 ${index === 1 ? "h-[88%] w-[38%]" : "h-[60%] w-[29%]"} ${index === 0 ? "mb-[8%]" : ""}`}
+              key={index}
+            >
+              <MenuImage
+                alt={index === 1 ? t(title) : ""}
+                className="size-full object-cover"
+                small={index !== 1}
+                src={photo}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (variant === "ring") {
+      // Novelties: one big centred treat with four small squares — a sweet-shop window.
+      return (
+        <div className="relative size-full">
+          <div className="absolute left-[3%] top-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
+            <MenuImage alt="" className="size-full object-cover" small src={photoB} />
+          </div>
+          <div className="absolute right-[3%] top-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
+            <MenuImage alt="" className="size-full object-cover" small src={photoC} />
+          </div>
+          <div className="absolute left-1/2 top-1/2 size-[54%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full ring-4 ring-white/15">
+            <MenuImage
+              alt={t(title)}
+              className="size-full object-cover"
+              src={photoA}
+              sizes="(min-width: 1024px) 30vw, 60vw"
+            />
+          </div>
+          <div className="absolute bottom-[3%] left-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
+            <MenuImage alt="" className="size-full object-cover" small src={heroItemPhotos[1] || photoB} />
+          </div>
+          <div className="absolute bottom-[3%] right-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
+            <MenuImage alt="" className="size-full object-cover" small src={heroItemPhotos[2] || photoC} />
+          </div>
+        </div>
+      );
+    }
+
+    if (variant === "banner") {
+      // Limited-Time: full-bleed photo with a thick accent band under it — a poster.
+      return (
+        <div className="flex size-full flex-col overflow-hidden rounded-[28px]">
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <MenuImage
+              alt={t(title)}
+              className="size-full object-cover"
+              sizes="(min-width: 1024px) 30vw, 60vw"
+              src={photoA}
+            />
+          </div>
+          <div
+            className="flex items-center justify-between px-6 py-5"
+            style={{ backgroundColor: "var(--hero-accent)" }}
+          >
+            <span className="font-display text-xl font-extrabold text-[#092a53]">
+              {t("This month only")}
+            </span>
+            <span className="text-sm font-bold text-[#092a53]/80">
+              {t("{count} items", { count: heroCategory.items.length })}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    // "stair" — Ice Cream (and the fallback): three tiles climbing like steps.
+    return (
+      <div className="grid size-full grid-cols-[2fr_3fr] grid-rows-2 gap-3">
+        <div className="overflow-hidden rounded-[24px] bg-white/10">
+          <MenuImage alt={t(title)} className="size-full object-cover" small src={photoA} />
+        </div>
+        <div className="row-span-2 overflow-hidden rounded-[24px] bg-white/10">
+          <MenuImage alt="" className="size-full object-cover" sizes="(min-width: 1024px) 360px, 60vw" src={photoB} />
+        </div>
+        <div className="overflow-hidden rounded-[24px] bg-white/10">
+          <MenuImage alt="" className="size-full object-cover" small src={photoC} />
+        </div>
+      </div>
+    );
+  })();
+
+  const supportingCategories = categories.filter(
+    (category) => category !== featuredCategory,
   );
   const clearFilters = () => {
     setSearch("");
@@ -673,35 +916,97 @@ export function MenuPage() {
       ),
   );
 
+  // The all-menu hero picture: the site's own product photography, set as a
+  // flat block collage — one dominant tile, two supporting, cleanly aligned.
+  const allMenuVisual = (
+    <div className="grid size-full grid-cols-[2fr_3fr] grid-rows-2 gap-3">
+      <MenuImage
+        alt={t("Berry Berry Berry Good ice cream")}
+        className="h-full w-full object-cover"
+        small
+        src="/menu-official/ice-cream/signature-creations/berry-berry-berry-good.webp"
+      />
+      <MenuImage
+        alt={t("Birthday Cake Remix ice cream")}
+        className="row-span-2 h-full w-full object-cover"
+        sizes="(min-width: 1024px) 360px, 60vw"
+        src="/menu-official/ice-cream/signature-creations/birthday-cake-remix.webp"
+      />
+      <MenuImage
+        alt={t("Chocolate Devotion ice cream")}
+        className="h-full w-full object-cover"
+        small
+        src="/menu-official/ice-cream/signature-creations/chocolate-devotion.webp"
+      />
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
       <main id="main" tabIndex={-1}>
-        <PageHero
-          compactOnMobile
-          actions={
-            <>
-              <a className={PageHero.primary} href="#menu-content">
-                {t("Explore the menu")} <span aria-hidden="true">↓</span>
-              </a>
-              <Link className={PageHero.secondary} to="/custom-cake">
-                {t("Request a custom cake")}
-              </Link>
-            </>
-          }
-          badge={{ mark: "✦", eyebrow: t("Signature creations"), text: t("A treat made your way") }}
-          description={t(
-            "Signature creations, ice cream cakes and pies, shakes, smoothies and seasonal treats, made fresh for you. Order online for pickup or delivery.",
-          )}
-          eyebrow={t("The Cold Stone experience")}
-          image={{ src: "/ice-images/ice-4.webp", alt: t("Ice cream treats") }}
-          sideImages={["/milk/mk-1.webp", "/cake-images/cake-1.webp"]}
-          stats={[
-            { label: t("Menu categories"), value: categories.length },
-            { label: t("Menu items"), value: totalMenuItems, accent: true },
-          ]}
-          title={t("Menu & treats")}
-        />
+        {activeCategory ? (
+          <PageHero
+            compactOnMobile
+            accent={activeCategoryTheme.accent}
+            actions={
+              <>
+                <a className={PageHero.primary} href="#menu-category-items">
+                  {t("Browse {title}", { title: t(activeCategory.title) })} <span aria-hidden="true">↓</span>
+                </a>
+                <Link className={PageHero.secondary} to="/custom-cake">
+                  {t("Request a custom cake")}
+                </Link>
+              </>
+            }
+            badge={{
+              mark: heroCategoryStats.lowestPrice !== null ? "₣" : "✦",
+              eyebrow: t("Starting from"),
+              text:
+                heroCategoryStats.lowestPrice !== null
+                  ? formatPrice(heroCategoryStats.lowestPrice)
+                  : t("A treat made your way"),
+            }}
+            description={t(activeCategory.description)}
+            eyebrow={t("{count} items on the menu", { count: activeCategory.items.length })}
+            stats={[
+              { label: t("Menu items"), value: activeCategory.items.length },
+              { label: t("Available"), value: heroCategoryStats.available, accent: true },
+            ]}
+            surface={activeCategoryTheme.surface}
+            title={t(activeCategory.title)}
+            visual={heroCategoryVisual}
+          />
+        ) : (
+          <PageHero
+            compactOnMobile
+            actions={
+              <>
+                <a className={PageHero.primary} href="#menu-content">
+                  {t("Explore the menu")} <span aria-hidden="true">↓</span>
+                </a>
+                <Link className={PageHero.secondary} to="/custom-cake">
+                  {t("Request a custom cake")}
+                </Link>
+              </>
+            }
+            badge={{
+              mark: "✦",
+              eyebrow: t("Signature creations"),
+              text: t("A treat made your way"),
+            }}
+            description={t(
+              "Signature creations, ice cream cakes and pies, shakes, smoothies and seasonal treats, made fresh for you. Order online for pickup or delivery.",
+            )}
+            eyebrow={t("The Cold Stone experience")}
+            stats={[
+              { label: t("Menu categories"), value: categories.length },
+              { label: t("Menu items"), value: totalMenuItems, accent: true },
+            ]}
+            title={t("Menu & treats")}
+            visual={allMenuVisual}
+          />
+        )}
 
         <div
           className="mx-auto max-w-[1320px] scroll-mt-4 px-5 py-10 sm:px-8 sm:py-14 lg:px-12"
@@ -719,11 +1024,11 @@ export function MenuPage() {
 
           <section
             aria-label={t("Search and filter menu")}
-            className="relative z-40 mb-8 rounded-[28px] sm:mb-12 bg-white p-3 shadow-[0_1px_0_rgba(9,42,83,0.04),0_14px_40px_rgba(9,42,83,0.07)] ring-1 ring-[#ebe7dc] sm:p-4"
+            className="relative z-40 mb-8 rounded-[24px] bg-[#f1f2ee] p-3 sm:mb-12 sm:p-4"
           >
             <div className="flex flex-col gap-3 xl:flex-row xl:items-stretch">
               <div className="flex flex-1 gap-2">
-              <label className="group relative flex min-w-0 flex-1 items-center rounded-[20px] bg-[#fbfaf5] ring-1 ring-transparent transition focus-within:bg-white">
+              <label className="group relative flex min-w-0 flex-1 items-center rounded-2xl bg-white ring-1 ring-transparent transition focus-within:ring-[#092a53]">
                 <span className="sr-only">{t("Search menu")}</span>
                 <svg
                   aria-hidden="true"
@@ -758,8 +1063,8 @@ export function MenuPage() {
               <button
                 aria-controls="menu-filter-options"
                 aria-expanded={filtersOpen}
-                className={`relative inline-flex shrink-0 items-center gap-2 rounded-[20px] px-4 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] sm:hidden ${
-                  filtersOpen ? "bg-[#092a53] text-white" : "bg-[#fbfaf5] text-[#092a53] ring-1 ring-[#e5e1d7]"
+                className={`relative inline-flex shrink-0 items-center gap-2 rounded-2xl px-4 py-3 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] sm:hidden ${
+                  filtersOpen ? "bg-[#092a53] text-white" : "bg-white text-[#102c50] ring-1 ring-[#e4e7e3]"
                 }`}
                 onClick={() => setFiltersOpen((open) => !open)}
                 type="button"
@@ -769,7 +1074,7 @@ export function MenuPage() {
                 </svg>
                 {t("Filters")}
                 {optionFilterCount > 0 && (
-                  <span className="grid size-5 place-items-center rounded-full bg-[#ffdc32] text-[10px] tabular-nums text-[#092a53]">
+                  <span className="grid size-5 place-items-center rounded-md bg-[#ffdc32] text-[11px] tabular-nums text-[#092a53]">
                     {optionFilterCount}
                   </span>
                 )}
@@ -834,16 +1139,16 @@ export function MenuPage() {
                 ))}
 
                 <label
-                  className={`relative flex flex-col justify-center rounded-[20px] px-4 py-2.5 ring-1 transition xl:w-[170px] ${
-                    maxPrice ? "bg-[#fff8dd] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"
+                  className={`relative flex flex-col justify-center rounded-2xl px-4 py-3 ring-1 transition xl:w-[170px] ${
+                    maxPrice ? "bg-[#fff3b8] ring-[#e7d98b]" : "bg-white ring-transparent hover:ring-[#9ca9b6]"
                   }`}
                 >
-                  <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">
+                  <span className="truncate text-xs font-semibold text-[#53657a]">
                     {t("Maximum price")}
                   </span>
                   <span className="mt-0.5 flex items-baseline gap-1.5">
                     <input
-                      className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#a5aebb]"
+                      className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-[#102c50] outline-none! placeholder:font-medium placeholder:text-[#7b8796]"
                       inputMode="numeric"
                       min="0"
                       onChange={(event) => setMaxPrice(event.target.value)}
@@ -852,7 +1157,7 @@ export function MenuPage() {
                       type="number"
                       value={maxPrice}
                     />
-                    <span className="shrink-0 text-[10px] font-extrabold text-[#65748a]">FCFA</span>
+                    <span className="shrink-0 text-xs font-bold text-[#53657a]">FCFA</span>
                   </span>
                 </label>
               </div>
@@ -932,7 +1237,7 @@ export function MenuPage() {
                 </span>
               </nav>
 
-              <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+              <div className="grid gap-8 lg:grid-cols-12 lg:gap-10">
                 <div className="lg:col-span-7">
                   <div className="lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300">
                     <ProductImageSlider
@@ -956,13 +1261,12 @@ export function MenuPage() {
                   </div>
                 </div>
 
-                <div className="flex min-w-0 flex-col lg:col-span-5 lg:py-4">
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                    <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
+                <div className="flex min-w-0 flex-col rounded-[24px] bg-white p-5 sm:p-8 lg:col-span-5 lg:p-8">
+                  <p className="inline-flex w-fit items-center rounded-lg bg-[#f1f2ee] px-3 py-1.5 text-sm font-bold text-[#102c50]">
                     {t(activeCategory.title)}
                   </p>
                   <h2
-                    className="mt-5 break-words font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
+                    className="mt-5 break-words font-display text-4xl font-bold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
                     id="menu-product-title"
                   >
                     {t(selectedItem.name)}
@@ -993,7 +1297,7 @@ export function MenuPage() {
                     </a>
                   )}
 
-                  <p className="mt-6 text-base leading-8 text-[#52647b] sm:text-lg sm:leading-8">
+                  <p className="mt-6 text-base leading-7 text-[#263d57] sm:text-lg sm:leading-8">
                     {t(selectedItem.detail)}
                   </p>
 
@@ -1001,7 +1305,7 @@ export function MenuPage() {
                     <ul className="mt-6 flex flex-wrap gap-2">
                       {selectedItem.dietaryTags.map((tag) => (
                         <li
-                          className="rounded-full border border-[#dfe9d8] bg-[#f3f8ef] px-3 py-1.5 text-xs font-bold capitalize text-[#37632c]"
+                          className="rounded-lg bg-[#eaf2e7] px-3 py-1.5 text-sm font-semibold capitalize text-[#31572b]"
                           key={tag}
                         >
                           {t(tag)}
@@ -1010,21 +1314,21 @@ export function MenuPage() {
                     </ul>
                   )}
 
-                  <div className="mt-8 border-y border-[#ebe7dc] py-6">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#65748a]">
+                  <div className="mt-8 rounded-2xl bg-[#f1f2ee] px-5 py-4">
+                    <p className="text-sm font-semibold text-[#53657a]">
                       {t("Price")}
                     </p>
-                    <p className="mt-1 font-display text-4xl font-extrabold tabular-nums text-[#092a53]">
+                    <p className="mt-1 font-display text-4xl font-bold tabular-nums text-[#092a53]">
                       {formatPrice(selectedItem.priceXaf)}
                     </p>
                   </div>
 
                   <div className="mt-6 flex gap-3">
                     {!selectedSoldOut && (
-                      <div aria-label={t("Quantity")} className="flex shrink-0 items-center rounded-full bg-white p-1 ring-1 ring-[#e5e1d7]" role="group">
+                      <div aria-label={t("Quantity")} className="flex shrink-0 items-center rounded-xl bg-[#f1f2ee] p-1" role="group">
                         <button
                           aria-label={t("Decrease quantity")}
-                          className="grid size-11 place-items-center rounded-full text-lg font-bold text-[#092a53] transition hover:bg-[#fbfaf5] disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
+                          className="grid size-11 place-items-center rounded-lg text-lg font-bold text-[#092a53] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
                           disabled={quantity <= 1}
                           onClick={() => setQuantity((current) => Math.max(1, current - 1))}
                           type="button"
@@ -1036,7 +1340,7 @@ export function MenuPage() {
                         </output>
                         <button
                           aria-label={t("Increase quantity")}
-                          className="grid size-11 place-items-center rounded-full text-lg font-bold text-[#092a53] transition hover:bg-[#fbfaf5] disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
+                          className="grid size-11 place-items-center rounded-lg text-lg font-bold text-[#092a53] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
                           disabled={quantity >= maxQuantity}
                           onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
                           type="button"
@@ -1046,10 +1350,10 @@ export function MenuPage() {
                       </div>
                     )}
                     <button
-                      className={`inline-flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-4 text-sm font-extrabold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-[#e7e3d9] disabled:text-[#65748a] disabled:shadow-none sm:px-6 ${
+                      className={`inline-flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-4 text-sm font-extrabold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-[#e7e3d9] disabled:text-[#65748a] disabled:shadow-none sm:px-6 ${
                         justAdded
-                          ? "bg-[#3d8b40] shadow-[0_12px_28px_rgba(61,139,64,0.3)]"
-                          : "bg-[#092a53] shadow-[0_12px_28px_rgba(9,42,83,0.22)] hover:-translate-y-0.5 hover:bg-[#163e6b]"
+                          ? "bg-[#3d8b40]"
+                          : "bg-[#092a53] hover:-translate-y-0.5 hover:bg-[#163e6b] hover:shadow-[0_12px_28px_rgba(9,42,83,0.22)]"
                       }`}
                       disabled={selectedSoldOut}
                       onClick={addSelectedItem}
@@ -1075,7 +1379,7 @@ export function MenuPage() {
                             : t("Save to favorites")
                         }
                         aria-pressed={selectedIsFavorite}
-                        className={`grid size-[52px] shrink-0 place-items-center rounded-full border text-xl transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 ${
+                        className={`grid size-[52px] shrink-0 place-items-center rounded-xl border text-xl transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 ${
                           selectedIsFavorite
                             ? "border-[#f56586] bg-[#fff0f3] text-[#e0435f]"
                             : "border-[#d9d4c7] bg-white text-[#52647b] hover:border-[#092a53] hover:text-[#092a53]"
@@ -1109,13 +1413,11 @@ export function MenuPage() {
                     </p>
                   )}
 
-                  <ul className="mt-8 grid grid-cols-3 divide-x divide-[#ebe7dc] rounded-2xl border border-[#ebe7dc] bg-white">
-                    {["Mixed to order", "Made to your taste", "Freshly made"].map((label, index) => (
-                      <li className="flex flex-col items-center gap-1.5 px-2 py-4 text-center" key={label}>
-                        <span aria-hidden="true" className="font-display text-xs font-extrabold tabular-nums text-[#8a7000]">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        <span className="text-xs font-bold leading-4 text-[#092a53]">{t(label)}</span>
+                  <ul className="mt-8 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    {["Mixed to order", "Made to your taste", "Freshly made"].map((label) => (
+                      <li className="flex items-center gap-2 rounded-xl bg-[#f1f2ee] px-3 py-3 text-sm font-semibold leading-5 text-[#102c50]" key={label}>
+                        <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-[#d4ad00]" />
+                        {t(label)}
                       </li>
                     ))}
                   </ul>
@@ -1207,23 +1509,22 @@ export function MenuPage() {
 
               <section
                 aria-labelledby="similar-products-title"
-                className="mt-20 border-t border-[#ebe7dc] pt-14"
+                className="mt-20 rounded-[24px] bg-[#f1f2ee] p-5 sm:p-8"
               >
                 <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
                   <div>
-                    <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                      <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
+                    <p className="text-sm font-semibold text-[#53657a]">
                       {t("You may also like")}
                     </p>
                     <h3
-                      className="mt-4 font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl"
+                      className="mt-2 font-display text-3xl font-bold tracking-tight text-[#092a53] sm:text-4xl"
                       id="similar-products-title"
                     >
                       {t("Similar products")}
                     </h3>
                   </div>
                   <button
-                    className="inline-flex items-center gap-2 rounded-full border border-[#d9d4c7] bg-white px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:border-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                    className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#102c50] ring-1 ring-[#e4e7e3] transition hover:-translate-y-0.5 hover:ring-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
                     onClick={() => setSelectedItemState(null)}
                     type="button"
                   >
@@ -1264,71 +1565,90 @@ export function MenuPage() {
                 </span>
               </nav>
 
-              <div className="relative isolate overflow-hidden rounded-[32px] bg-[#092a53] text-white shadow-[0_24px_60px_rgba(9,42,83,0.18)]">
-                {/* The square category photo only fills the right side on wider screens,
-                    so it is not blown up (and blurred) across the whole banner. */}
-                <MenuImage
-                  alt=""
-                  className="absolute inset-y-0 right-0 -z-20 h-full w-full object-cover md:w-[58%]"
-                  sizes="(min-width: 768px) 720px, 100vw"
-                  src={activeCategory.image}
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 -z-10 bg-gradient-to-r from-[#061d3a] via-[#061d3a]/85 to-[#061d3a]/20 md:from-[#061d3a] md:from-42% md:via-[#061d3a]/70 md:via-55% md:to-transparent md:to-80%"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a]/70 via-transparent to-transparent md:hidden"
-                />
-                <div className="flex min-h-[420px] flex-col justify-end p-7 sm:p-10 md:min-h-[460px] lg:p-14">
-                  <div className="max-w-2xl">
-                    <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
-                      <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />
-                      {t("Menu category")}
-                    </p>
-                    <h2
-                      className="mt-5 font-display text-5xl font-extrabold leading-[1] tracking-tight sm:text-6xl lg:text-7xl"
-                      id="menu-category-title"
-                    >
-                      {t(activeCategory.title)}
-                    </h2>
-                    <p className="mt-5 max-w-xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
-                      {t(activeCategory.description)}
-                    </p>
+              <div
+                className="menu-category-hero overflow-hidden bg-[var(--category-hero-surface)] text-white"
+                data-image-side={activeCategoryTheme.imageSide}
+                data-theme={activeCategory.title}
+                style={{
+                  "--category-hero-surface": activeCategoryTheme.surface,
+                  "--category-hero-accent": activeCategoryTheme.accent,
+                }}
+              >
+                <div className="grid md:grid-cols-2">
+                  <div className={`menu-category-hero-gallery order-first flex flex-col bg-white/[0.06] ${activeCategoryTheme.imageSide === "left" ? "md:order-first" : "md:order-last"}`}>
+                    <MenuImage
+                      alt={t(activeCategory.title)}
+                      className="menu-category-hero-image aspect-[4/3] w-full bg-[#e8edf2] object-cover md:min-h-[360px] md:flex-1"
+                      sizes="(min-width: 768px) 50vw, 100vw"
+                      src={activeCategory.image}
+                    />
+                    {categoryHeroPreviews.length > 0 && (
+                      <ul aria-label={t("Menu items")} className="grid grid-cols-2 divide-x divide-white/15 px-3 py-3 sm:px-4 sm:py-4">
+                        {categoryHeroPreviews.map((item) => (
+                          <li className="flex min-w-0 items-center gap-3" key={item.id || item.name}>
+                            <MenuImage
+                              alt=""
+                              className="size-14 shrink-0 object-cover sm:size-16"
+                              small
+                              src={item.image}
+                            />
+                            <span className="min-w-0">
+                              <span className="block line-clamp-2 text-xs font-bold leading-4 sm:text-sm sm:leading-5">
+                                {t(item.name)}
+                              </span>
+                              <span className="mt-1 block text-xs font-semibold tabular-nums text-white/70">
+                                {formatPrice(item.priceXaf)}
+                              </span>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
+                  <div className={`menu-category-hero-copy flex flex-col justify-between gap-8 p-6 sm:p-10 lg:p-12 ${activeCategoryTheme.imageSide === "left" ? "md:order-last" : "md:order-first"}`}>
+                    <div>
+                      <h2
+                        className="font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl"
+                        id="menu-category-title"
+                      >
+                        {t(activeCategory.title)}
+                      </h2>
+                      <p className="mt-5 max-w-xl text-base leading-7 text-white/85 sm:text-lg sm:leading-8">
+                        {t(activeCategory.description)}
+                      </p>
+                    </div>
 
-                  <div className="mt-10 flex flex-col gap-6 border-t border-white/15 pt-6 sm:flex-row sm:items-end sm:justify-between">
-                    <dl className="flex flex-wrap gap-x-10 gap-y-4">
+                    <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
                       <div>
-                        <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/55">
+                        <dt className="text-sm font-semibold text-white/75">
                           {t("Menu items")}
                         </dt>
-                        <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums">
+                        <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums text-white">
                           {activeCategory.items.length}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/55">
+                        <dt className="text-sm font-semibold text-white/75">
                           {t("Available")}
                         </dt>
-                        <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums">
+                        <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums text-white">
                           {activeCategoryStats.available}
                         </dd>
                       </div>
                       {activeCategoryStats.lowestPrice !== null && (
-                        <div>
-                          <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/55">
+                        <div className="col-span-2 sm:col-span-1">
+                          <dt className="text-sm font-semibold text-white/75">
                             {t("Starting from")}
                           </dt>
-                          <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums text-[#ffdc32]">
+                          <dd className="mt-1 font-display text-2xl font-extrabold tabular-nums text-[var(--category-hero-accent)] sm:text-3xl">
                             {formatPrice(activeCategoryStats.lowestPrice)}
                           </dd>
                         </div>
                       )}
                     </dl>
+
                     <a
-                      className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--category-hero-accent)] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition-colors hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 sm:w-fit"
                       href="#menu-category-items"
                     >
                       {t("Browse items")} <span aria-hidden="true">↓</span>
@@ -1339,19 +1659,19 @@ export function MenuPage() {
 
               <nav
                 aria-label={t("Menu categories")}
-                className="sticky top-[var(--site-header-offset,0px)] z-30 -mx-5 mt-8 border-b transition-[top] duration-300 border-[#ebe7dc] bg-[#fbfaf5] px-5 sm:-mx-8 sm:px-8 lg:-mx-12 lg:px-12"
+                className="sticky top-[var(--site-header-offset,0px)] z-30 -mx-5 mt-8 bg-white px-5 transition-[top] duration-300 sm:-mx-8 sm:px-8 lg:-mx-12 lg:px-12"
               >
-                <ul className="-mb-px flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <ul className="flex gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   {categories.map((category) => {
                     const active = category.title === activeCategory.title;
                     return (
                       <li className="shrink-0" key={category.title}>
                         <button
                           aria-current={active ? "page" : undefined}
-                          className={`inline-flex items-center gap-2 border-b-2 px-4 py-4 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00] ${
+                          className={`inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00] ${
                             active
-                              ? "border-[#092a53] text-[#092a53]"
-                              : "border-transparent text-[#7b8796] hover:border-[#d9d4c7] hover:text-[#092a53]"
+                              ? "bg-[#092a53] text-white"
+                              : "bg-[#f1f2ee] text-[#41546b] hover:bg-[#e7e9e4] hover:text-[#092a53]"
                           }`}
                           onClick={() => showCategory(category)}
                           type="button"
@@ -1359,7 +1679,7 @@ export function MenuPage() {
                           {t(category.title)}
                           <span
                             className={`rounded-full px-2 py-0.5 text-[10px] tabular-nums ${
-                              active ? "bg-[#092a53] text-white" : "bg-[#efece3] text-[#7b8796]"
+                              active ? "bg-white/15 text-white" : "bg-white text-[#53657a]"
                             }`}
                           >
                             {category.items.length}
@@ -1386,7 +1706,7 @@ export function MenuPage() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
-                {activeCategory.items.map((item) => (
+                {activeCategory.items.map((item, itemIndex) => (
                   <MenuProductCard
                     added={
                       quickAddedId ===
@@ -1395,6 +1715,7 @@ export function MenuPage() {
                     category={activeCategory}
                     formatPrice={formatPrice}
                     item={item}
+                    itemIndex={itemIndex}
                     key={
                       item.id || getMenuItemId(activeCategory.title, item.name)
                     }
@@ -1406,107 +1727,116 @@ export function MenuPage() {
               </div>
             </section>
           ) : (
-            <section aria-labelledby="menu-categories-title">
-              <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                    <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                    {t("Browse the categories")}
-                  </p>
+            <section
+              aria-labelledby="menu-categories-title"
+              className="-mx-5 bg-[#e8edf2] px-5 py-10 sm:-mx-8 sm:px-8 sm:py-14 lg:-mx-12 lg:px-12"
+            >
+              <div className="mx-auto max-w-[1320px] bg-white p-5 sm:p-8 lg:p-10">
+                <div className="mb-8 flex flex-wrap items-end justify-between gap-4 sm:mb-10">
                   <h2
-                    className="mt-4 font-display text-4xl font-extrabold tracking-tight text-[#092a53] sm:text-5xl"
+                    className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl"
                     id="menu-categories-title"
                   >
                     {t("Menu categories")}
                   </h2>
+                  <p className="text-sm font-semibold text-[#41546b]">
+                    {t("{count} categories", { count: categories.length })}
+                  </p>
                 </div>
-                <p className="rounded-full border border-[#ebe7dc] bg-white px-4 py-2 text-xs font-bold text-[#65748a]">
-                  {t("{count} categories", { count: categories.length })}
-                </p>
-              </div>
-              {/* Phones: compact rows (photo beside the text). Larger screens: tall cards. */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-7">
-                {categories.map((category, index) => {
-                  const lowestPrice = category.items.length
-                    ? Math.min(...category.items.map((item) => item.priceXaf))
-                    : null;
-                  const previews = category.items.slice(0, 3);
-                  return (
+
+                {featuredCategory && (
+                  <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
                     <button
-                      className="group flex flex-row rounded-[24px] bg-white p-2 text-left sm:flex-col sm:rounded-[30px] sm:p-2.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_30px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
-                      key={category.title}
-                      onClick={() => showCategory(category)}
+                      className="group flex min-w-0 flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00]"
+                      key={featuredCategory.title}
+                      onClick={() => showCategory(featuredCategory)}
                       type="button"
                     >
-                      <div className="relative aspect-square w-28 shrink-0 overflow-hidden rounded-[18px] bg-[#f4f1e7] sm:aspect-[5/4] sm:w-auto sm:rounded-[24px]">
-                        <MenuImage
-                          alt=""
-                          className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06]"
-                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 112px"
-                          src={category.image}
-                        />
-                        <span
-                          aria-hidden="true"
-                          className="absolute inset-0 bg-gradient-to-t from-[#061d3a]/55 via-transparent to-[#061d3a]/10 max-sm:hidden"
-                        />
-                        <span className="absolute left-4 top-4 font-display text-sm font-extrabold tabular-nums text-white drop-shadow max-sm:hidden">
-                          {String(index + 1).padStart(2, "0")}
+                      <MenuImage
+                        alt=""
+                        className="aspect-[4/3] w-full bg-[#e8edf2] object-cover"
+                        sizes="(min-width: 1024px) 40vw, 100vw"
+                        src={featuredCategory.image}
+                      />
+                      <span className="mt-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                        <span className="font-display text-2xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-3xl">
+                          {t(featuredCategory.title)}
                         </span>
-                        <span className="absolute right-4 top-4 rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#092a53] shadow-sm max-sm:hidden">
-                          {t("{count} items", { count: category.items.length })}
+                        <span className="text-sm font-semibold text-[#41546b]">
+                          {t("{count} items", { count: featuredCategory.items.length })}
                         </span>
-                        {previews.length > 0 && (
-                          <span aria-hidden="true" className="absolute bottom-4 left-4 flex -space-x-2.5 max-sm:hidden">
-                            {previews.map((item) => (
+                      </span>
+                      <span className="mt-2 max-w-lg text-base leading-7 text-[#102c50]">
+                        {t(featuredCategory.description)}
+                      </span>
+                      <span className="mt-5 flex flex-wrap items-end justify-between gap-4">
+                        <span>
+                          <span className="block text-sm font-semibold text-[#41546b]">
+                            {t("Starting from")}
+                          </span>
+                          <span className="mt-1 block font-display text-xl font-extrabold tabular-nums text-[#8a7000]">
+                            {featuredCategory.items.length
+                              ? formatPrice(
+                                  Math.min(...featuredCategory.items.map((item) => item.priceXaf)),
+                                )
+                              : t("Unavailable")}
+                          </span>
+                        </span>
+                        <span className="font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 transition-colors group-hover:text-[#8a7000]">
+                          {t("Browse items")}
+                        </span>
+                      </span>
+                    </button>
+
+                    <ul className="space-y-2 sm:space-y-3">
+                      {supportingCategories.map((category) => {
+                        const lowestPrice = category.items.length
+                          ? Math.min(...category.items.map((item) => item.priceXaf))
+                          : null;
+
+                        return (
+                          <li key={category.title}>
+                            <button
+                              className="group flex min-h-28 w-full items-center gap-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00] sm:gap-5 sm:py-4"
+                              onClick={() => showCategory(category)}
+                              type="button"
+                            >
                               <MenuImage
                                 alt=""
-                                className="size-10 rounded-full border-2 border-white object-cover shadow-md"
-                                key={item.name}
-                                small
-                                src={item.image}
+                                className="size-20 shrink-0 bg-[#e8edf2] object-cover sm:size-24"
+                                sizes="96px"
+                                src={category.image}
                               />
-                            ))}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex min-w-0 flex-1 flex-col px-3 py-1 sm:px-5 sm:pb-4 sm:pt-6">
-                        <h3 className="font-display text-lg font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-2xl">
-                          {t(category.title)}
-                          <span className="ml-2 align-middle text-[11px] font-bold text-[#65748a] sm:hidden">
-                            {t("{count} items", { count: category.items.length })}
-                          </span>
-                        </h3>
-                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#65748a] sm:mt-2 sm:text-sm sm:leading-6">
-                          {t(category.description)}
-                        </p>
-                        <div className="mt-auto flex items-center justify-between gap-3 pt-2 sm:pt-6">
-                          {lowestPrice !== null ? (
-                            <span>
-                              <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">
-                                {t("Starting from")}
+                              <span className="min-w-0 flex-1">
+                                <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                                  <span className="font-display text-lg font-extrabold leading-tight text-[#092a53] sm:text-xl">
+                                    {t(category.title)}
+                                  </span>
+                                  <span className="text-sm font-semibold text-[#41546b]">
+                                    {t("{count} items", { count: category.items.length })}
+                                  </span>
+                                </span>
+                                <span className="mt-1 block text-sm leading-5 text-[#102c50]">
+                                  {t(category.description)}
+                                </span>
+                                <span className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                                  <span className="text-sm font-bold tabular-nums text-[#8a7000]">
+                                    {lowestPrice !== null
+                                      ? formatPrice(lowestPrice)
+                                      : t("Unavailable")}
+                                  </span>
+                                  <span className="text-sm font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 transition-colors group-hover:text-[#8a7000]">
+                                    {t("Browse items")}
+                                  </span>
+                                </span>
                               </span>
-                              <span className="mt-0.5 block font-display text-base font-extrabold tabular-nums text-[#8a7000] sm:text-lg">
-                                {formatPrice(lowestPrice)}
-                              </span>
-                            </span>
-                          ) : (
-                            <span />
-                          )}
-                          <span className="inline-flex items-center gap-3 text-sm font-extrabold text-[#092a53]">
-                            <span className="hidden sm:inline">{t("Browse items")}</span>
-                            <span
-                              aria-hidden="true"
-                              className="grid size-9 place-items-center sm:size-11 rounded-full bg-[#092a53] text-white transition duration-300 group-hover:-rotate-45 group-hover:bg-[#ffdc32] group-hover:text-[#092a53]"
-                            >
-                              <ArrowIcon />
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
               </div>
             </section>
           )}

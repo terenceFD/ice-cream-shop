@@ -7,7 +7,6 @@ import { AdminAuthProvider } from "../pages/admin/AdminAuthContext";
 import { AdminRoute } from "../components/admin/AdminRoute";
 import { AuthProvider } from "../context/AuthContext";
 import { LanguageProvider } from "../language/LanguageContext";
-import { ScrollRevealObserver } from "../components/ScrollRevealObserver";
 import { ScrollProgress } from "../components/ScrollProgress";
 import { ScrollToTop } from "../components/ScrollToTop";
 import { WebsiteLoader } from "../components/WebsiteLoader";
@@ -72,7 +71,6 @@ function App() {
         <CartProvider>
           <BrowserRouter>
             <ScrollToTop />
-            <ScrollRevealObserver />
             <ScrollProgress />
             <WebsiteLoader />
             <AuthProvider>

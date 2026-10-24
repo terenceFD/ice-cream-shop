@@ -8,6 +8,7 @@ import { enablePromotionAlerts, isPushSupported } from '../../lib/pushNotificati
 import { photoSrcSet } from '../../lib/thumbnails'
 import { useLanguage } from '../../language/useLanguage'
 import { isEventType } from '../../../shared/eventTypes.js'
+import './AuthPage.css'
 
 export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const isSignup = mode === 'signup'
@@ -205,34 +206,35 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const strengthColors = ['bg-[#e5e1d7]', 'bg-red-500', 'bg-[#f2a33a]', 'bg-[#d4ad00]', 'bg-[#4caf50]']
   const passwordsMatch = Boolean(confirmPassword) && password === confirmPassword
   const benefits = ['Track your orders', 'Save your favorites', 'Faster checkout']
-  const inputShellClass = 'group relative mt-2 flex items-center rounded-2xl bg-white ring-1 ring-[#e5e1d7] transition hover:ring-[#d6cfbd] focus-within:ring-[#c9b24a]'
-  const inputClass = 'w-full rounded-2xl bg-transparent py-3.5 pl-12 pr-4 text-sm font-semibold text-[#092a53] outline-none! placeholder:font-normal placeholder:text-[#a5aebb]'
+  const brandImage = '/ice-images/ice-5.webp'
+  const inputShellClass = `group relative mt-2 flex items-center bg-white ring-1 transition hover:ring-[#d6cfbd] focus-within:ring-[#c9b24a] ${isSignup ? 'rounded-xl ring-[#d9e1ea]' : 'auth-login-input-shell rounded-xl ring-[#d9e1ea]'}`
+  const inputClass = `w-full bg-transparent py-3.5 pl-12 pr-4 text-sm font-semibold text-[#092a53] outline-none! placeholder:font-normal placeholder:text-[#a5aebb] ${isSignup ? 'rounded-xl' : 'auth-login-input rounded-xl'}`
   const iconClass = 'pointer-events-none absolute left-4 size-[18px] text-[#65748a] transition group-focus-within:text-[#092a53]'
-  const labelClass = 'text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]'
+  const labelClass = isSignup
+    ? 'text-[13px] font-bold text-[#334b65]'
+    : 'auth-login-label text-[13px] font-bold text-[#334b65]'
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fbfaf5] text-[#102c50]">
+    <div className={`flex min-h-screen flex-col text-[#102c50] ${isSignup ? 'auth-signup-page' : 'auth-login-page'}`}>
       <Header />
-      <main id="main" tabIndex={-1} className="flex flex-1 justify-center px-4 py-8 sm:px-8 sm:py-12 lg:py-16">
-        <div className="grid w-full max-w-[1160px] gap-8 lg:grid-cols-12 lg:gap-12">
+      <main id="main" tabIndex={-1} className={`flex flex-1 justify-center px-4 py-8 sm:px-8 sm:py-12 lg:py-16 ${isSignup ? 'auth-signup-main' : 'auth-login-main'}`}>
+        <div className={`grid w-full max-w-[1160px] ${isSignup ? 'auth-signup-layout' : 'gap-8 lg:grid-cols-12 lg:gap-12 auth-login-layout'}`}>
           {/* Brand panel */}
-          <aside className="relative isolate hidden min-h-[640px] flex-col justify-between overflow-hidden rounded-[36px] bg-[#092a53] p-10 text-white shadow-[0_30px_70px_rgba(9,42,83,0.22)] lg:col-span-6 lg:flex xl:p-12">
-            <img decoding="async" loading="lazy" alt="" className="absolute inset-0 -z-20 size-full object-cover" sizes="(min-width: 1024px) 560px, 100vw" src={isSignup ? '/ice-images/ice-5.webp' : '/ice-images/ice-4.webp'} srcSet={photoSrcSet(isSignup ? '/ice-images/ice-5.webp' : '/ice-images/ice-4.webp')} />
-            <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] via-[#061d3a]/70 to-[#061d3a]/25" />
-            <Link aria-label={t('Back to home')} className="inline-flex w-fit items-center gap-3 rounded-2xl bg-white/10 py-2 pl-2 pr-4 ring-1 ring-white/15 backdrop-blur-md transition hover:bg-white/15" to="/">
+          <aside className={isSignup
+            ? 'auth-signup-brand relative isolate flex min-h-[320px] flex-col justify-between overflow-hidden bg-[#092a53] p-7 text-white sm:p-9 lg:min-h-[640px] lg:p-10 xl:p-12'
+            : 'auth-login-brand relative isolate flex min-h-[250px] flex-col justify-between overflow-hidden bg-[#092a53] p-6 text-white sm:p-8 lg:col-span-5 lg:min-h-[620px] lg:p-10 xl:p-12'}>
+            <img decoding="async" loading={isSignup ? 'lazy' : 'eager'} alt="" className={`absolute inset-0 size-full object-cover ${isSignup ? '-z-20' : 'z-0'}`} sizes="(min-width: 1024px) 560px, 100vw" src={brandImage} srcSet={photoSrcSet(brandImage)} />
+            <div aria-hidden="true" className={isSignup ? 'absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] via-[#061d3a]/70 to-[#061d3a]/25' : 'auth-login-photo-scrim absolute inset-0 z-10'} />
+            <Link aria-label={t('Back to home')} className={`inline-flex w-fit items-center gap-3 transition hover:opacity-85 ${isSignup ? 'rounded-xl bg-[#092a53]/60 py-2 pl-2 pr-4' : 'auth-login-brand-home relative z-20'}`} to="/">
               <img decoding="async" loading="eager" alt="" aria-hidden="true" className="size-10 rounded-full" height={40} src="/logo.png" width={40} />
               <span className="font-display text-base font-extrabold leading-tight">Cold Stone<br /><span className="text-[#ffdc32]">Creamery</span></span>
             </Link>
 
-            <div>
-              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
-                <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />
-                {isSignup ? t('Join the scoop club') : t('Welcome back')}
-              </p>
-              <h2 className="mt-5 max-w-md font-display text-4xl font-extrabold leading-[1.05] tracking-tight xl:text-5xl">
-                {isSignup ? t('A little more joy in every visit.') : t('Your next favorite scoop is waiting.')}
+            <div className={isSignup ? 'auth-signup-brand-copy' : 'auth-login-brand-copy relative z-20'}>
+              <h2 className={`max-w-md font-display text-4xl font-extrabold leading-[1.05] tracking-tight xl:text-5xl ${isSignup ? 'mt-0' : 'auth-login-brand-title'}`}>
+                {isSignup ? t('A little more joy in every visit.') : t('Made for moments worth sharing')}
               </h2>
-              <ul className="mt-8 grid gap-3">
+              <ul className={`grid gap-3 ${isSignup ? 'mt-6' : 'auth-login-benefits'}`}>
                 {benefits.map((benefit) => (
                   <li className="flex items-center gap-3 text-sm font-semibold text-white/85" key={benefit}>
                     <span aria-hidden="true" className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[#092a53]">
@@ -244,25 +246,21 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                   </li>
                 ))}
               </ul>
-              <p className="mt-10 flex items-center gap-3 border-t border-white/15 pt-6 text-xs font-semibold text-white/60">
-                <span aria-hidden="true" className="text-[#ffdc32]">✦</span>
-                {t('Made for moments worth sharing')}
-              </p>
             </div>
           </aside>
 
           {/* Form */}
-          <section className="flex min-w-0 flex-col justify-center lg:col-span-6">
-            <div className="mx-auto w-full max-w-md">
-              <div aria-label={t('Account')} className="grid grid-cols-2 rounded-full bg-white p-1 ring-1 ring-[#ebe7dc]" role="group">
+          <section className={`flex min-w-0 flex-col justify-center ${isSignup ? 'auth-signup-form' : 'auth-login-form lg:col-span-7'}`}>
+            <div className={`mx-auto w-full max-w-md ${isSignup ? 'auth-signup-form-inner' : 'auth-login-form-inner'}`}>
+              <div aria-label={t('Account')} className={`grid grid-cols-2 ${isSignup ? 'auth-signup-tabs' : 'auth-login-tabs'}`} role="group">
                 {[
                   { to: '/login', label: t('Log in'), active: !isSignup },
                   { to: '/signup', label: t('Sign up'), active: isSignup },
                 ].map((tab) => (
                   <Link
                     aria-current={tab.active ? 'page' : undefined}
-                    className={`rounded-full px-4 py-2.5 text-center text-sm font-extrabold transition ${
-                      tab.active ? 'bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.2)]' : 'text-[#65748a] hover:text-[#092a53]'
+                    className={`${isSignup ? 'auth-signup-tab' : 'auth-login-tab'} ${
+                      tab.active ? isSignup ? 'bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.2)]' : 'text-[#092a53]' : 'text-[#65748a] hover:text-[#092a53]'
                     }`}
                     key={tab.to}
                     replace
@@ -274,14 +272,14 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 ))}
               </div>
 
-              <h1 className="mt-10 font-display text-4xl font-extrabold tracking-tight text-[#092a53] sm:text-5xl">
+              <h1 className={`mt-10 font-display text-4xl font-extrabold tracking-tight text-[#092a53] sm:text-5xl ${isSignup ? 'auth-signup-heading' : 'auth-login-heading'}`}>
                 {passwordResetStep === 'request'
                   ? t('Reset your password')
                   : passwordResetStep === 'confirm'
                     ? t('Choose a new password')
                     : isSignup ? verificationId ? t('Verify your email') : t('Create an account') : t('Welcome back')}
               </h1>
-              <p className="mt-3 text-base leading-7 text-[#65748a]">
+              <p className={`mt-3 text-base leading-7 text-[#65748a] ${isSignup ? 'auth-signup-intro' : 'auth-login-intro'}`}>
                 {passwordResetStep === 'request'
                   ? t('Enter the email address on your account and we’ll send you a reset code.')
                   : passwordResetStep === 'confirm'
@@ -299,7 +297,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 </p>
               )}
 
-              <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+              <form className={`mt-8 space-y-5 ${isSignup ? 'auth-signup-fields' : 'auth-login-fields'}`} onSubmit={handleSubmit}>
                 {isSignup && !verificationId && passwordResetStep === 'idle' && (
                   <label className="block">
                     <span className={labelClass}>{t('Name')}</span>
@@ -314,7 +312,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 )}
 
                 {isSignup && verificationId ? (
-                  <div className="rounded-2xl bg-white p-5 ring-1 ring-[#ebe7dc] sm:p-6">
+                  <div className={isSignup ? 'auth-signup-verification' : 'rounded-2xl bg-white p-5 ring-1 ring-[#ebe7dc] sm:p-6'}>
                     <div className="mx-auto grid size-11 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
                       <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
                         <rect height="14" rx="3" stroke="currentColor" strokeWidth="1.8" width="18" x="3" y="5" />
@@ -398,6 +396,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                         <PasswordField
                           autoComplete="new-password"
                           label={t('New password')}
+                          labelClassName="auth-login-label"
                           maxLength={128}
                           minLength={8}
                           name="newPassword"
@@ -409,6 +408,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                         <PasswordField
                           autoComplete="new-password"
                           label={t('Confirm new password')}
+                          labelClassName="auth-login-label"
                           maxLength={128}
                           minLength={8}
                           name="confirmNewPassword"
@@ -436,6 +436,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                     <PasswordField
                       autoComplete={isSignup ? 'new-password' : 'current-password'}
                       label={t('Password')}
+                      labelClassName={!isSignup ? 'auth-login-label' : undefined}
                       maxLength={128}
                       minLength={8}
                       name="password"
@@ -506,7 +507,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 )}
 
                 {canNotify && !verificationId && (
-                  <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-white px-4 py-3.5 text-sm leading-5 text-[#52647b] ring-1 ring-[#e5e1d7] transition hover:ring-[#d6cfbd]">
+                  <label className={`flex cursor-pointer items-start gap-3 rounded-xl bg-white px-4 py-3.5 text-sm leading-5 text-[#52647b] ring-1 ring-[#e5e1d7] transition hover:ring-[#d6cfbd] ${isSignup ? 'auth-signup-notifications' : ''}`}>
                     <input
                       checked={wantsNotifications}
                       className="mt-0.5 size-4 shrink-0 accent-[#092a53]"
@@ -529,7 +530,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 )}
 
                 <button
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#092a53] px-6 py-4 text-sm font-extrabold text-white shadow-[0_14px_30px_rgba(9,42,83,0.22)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-wait disabled:opacity-70"
+                  className={`inline-flex w-full items-center justify-center gap-2 px-6 py-4 text-sm font-extrabold transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-wait disabled:opacity-70 ${isSignup ? 'rounded-lg bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]' : 'auth-login-submit'}`}
                   disabled={isSubmitting || Boolean(isSignup && verificationId && verificationCode.some((digit) => !digit))}
                   type="submit"
                 >

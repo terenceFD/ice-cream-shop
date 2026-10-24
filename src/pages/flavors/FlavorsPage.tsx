@@ -156,7 +156,7 @@ export function FlavorsPage() {
             </div>
 
             {/* Search + tags */}
-            <div className="relative z-30 mb-10 rounded-[28px] bg-white p-3 shadow-[0_1px_0_rgba(9,42,83,0.04),0_14px_40px_rgba(9,42,83,0.07)] ring-1 ring-[#ebe7dc] sm:p-4">
+            <div className="relative z-30 mb-10 rounded-[24px] bg-[#f1efe7] p-3 sm:p-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
               <label className="group relative flex flex-1 items-center rounded-[20px] bg-[#fbfaf5] transition focus-within:bg-white focus-within:ring-1 focus-within:ring-[#c9b24a]">
                 <span className="sr-only">{t("Search flavors")}</span>
@@ -185,8 +185,8 @@ export function FlavorsPage() {
                 )}
               </label>
                 <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-none">
-                  <label className={`relative flex flex-col justify-center rounded-[20px] px-4 py-2.5 ring-1 transition lg:w-[170px] ${maxPrice ? "bg-[#fff8dd] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"}`}>
-                    <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Maximum price")}</span>
+                  <label className={`relative flex flex-col justify-center rounded-[18px] px-4 py-2.5 ring-1 transition lg:w-[170px] ${maxPrice ? "bg-[#fff4c1] ring-[#d9bd45]" : "bg-white ring-transparent hover:ring-[#d9d4c7]"}`}>
+                    <span className="truncate text-xs font-bold text-[#52647b]">{t("Maximum price")}</span>
                     <span className="mt-0.5 flex items-baseline gap-1.5">
                       <input
                         className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#a5aebb]"
@@ -201,8 +201,8 @@ export function FlavorsPage() {
                       <span className="shrink-0 text-[10px] font-extrabold text-[#65748a]">FCFA</span>
                     </span>
                   </label>
-                  <label className={`relative flex flex-col justify-center rounded-[20px] px-4 py-2.5 ring-1 transition lg:w-[190px] ${sortBy !== "recommended" ? "bg-[#fff8dd] ring-[#ecdfa6]" : "bg-[#fbfaf5] ring-transparent hover:ring-[#e5e1d7]"}`}>
-                    <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Sort by")}</span>
+                  <label className={`relative flex flex-col justify-center rounded-[18px] px-4 py-2.5 ring-1 transition lg:w-[190px] ${sortBy !== "recommended" ? "bg-[#fff4c1] ring-[#d9bd45]" : "bg-white ring-transparent hover:ring-[#d9d4c7]"}`}>
+                    <span className="truncate text-xs font-bold text-[#52647b]">{t("Sort by")}</span>
                     <select
                       className="mt-0.5 w-full min-w-0 cursor-pointer appearance-none bg-transparent pr-5 text-sm font-bold text-[#092a53] outline-none!"
                       onChange={(event) => setSortBy(event.target.value)}
@@ -228,7 +228,7 @@ export function FlavorsPage() {
 
               {flavorTags.length > 0 && (
                 <div className="mt-3 flex items-center gap-3 px-1">
-                  <span className="hidden shrink-0 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a] sm:inline">{t("Flavor tag")}</span>
+                  <span className="hidden shrink-0 text-sm font-bold text-[#52647b] sm:inline">{t("Flavor tag")}</span>
                   {/* The faded right edge shows the row scrolls when the tags do not all fit. */}
                   <div aria-label={t("Flavor tag")} className="-my-1 flex min-w-0 flex-1 gap-2 overflow-x-auto py-1 pr-8 [mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group">
                     {["", ...flavorTags].map((tag) => {
@@ -238,8 +238,8 @@ export function FlavorsPage() {
                           aria-pressed={active}
                           className={`shrink-0 rounded-full px-4 py-2 text-xs font-extrabold transition first-letter:uppercase ${
                             active
-                              ? "bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.2)]"
-                              : "bg-[#fbfaf5] text-[#52647b] ring-1 ring-[#ebe7dc] hover:text-[#092a53] hover:ring-[#d9d4c7]"
+                              ? "bg-[#092a53] text-white ring-1 ring-[#092a53]"
+                              : "bg-white text-[#52647b] ring-1 ring-[#dedacf] hover:bg-[#fff4c1] hover:text-[#092a53] hover:ring-[#d9bd45]"
                           }`}
                           key={tag || "all"}
                           onClick={() => selectTag(tag)}
@@ -270,12 +270,10 @@ export function FlavorsPage() {
                 const soldOut = flavor.availableQuantity < 1;
                 return (
                   <article
-                    className="group relative isolate flex flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_1px_2px_rgba(9,42,83,0.05),0_16px_40px_rgba(9,42,83,0.08)] ring-1 ring-[#ece8de] transition duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_2px_4px_rgba(9,42,83,0.06),0_28px_60px_rgba(9,42,83,0.16)] hover:ring-[#e0dbcd]"
+                    className="group relative isolate flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-[#dce3eb] transition duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(9,42,83,0.12)] hover:ring-[#aebdce]"
                     key={flavor.id}
                   >
-                    {/* Framed image area */}
-                    <div className="relative aspect-[4/3] overflow-hidden p-3 pb-0">
-                      <div className="relative size-full overflow-hidden rounded-[18px] bg-[#f4f1e8]">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-[#e8edf2]">
                         <Link
                           aria-hidden="true"
                           className="absolute inset-0 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
@@ -286,54 +284,53 @@ export function FlavorsPage() {
                           decoding="async"
                           loading="lazy"
                           alt=""
-                          className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.07] ${soldOut ? "grayscale-[80%] opacity-70" : ""}`}
+                          className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.04] ${soldOut ? "grayscale-[80%] opacity-70" : ""}`}
                           onError={photoErrorHandler(flavor.image)}
                           sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, 50vw"
                           src={flavor.image}
                           srcSet={photoSrcSet(flavor.image)}
                         />
-                        <span aria-hidden="true" className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                         {flavor.tag && (
-                          <span className="absolute left-3 top-3 max-w-[calc(100%-2rem)] truncate rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#092a53] shadow-[0_4px_12px_rgba(9,42,83,0.18)] backdrop-blur-sm">
+                          <span className="absolute left-3 top-3 max-w-[calc(100%-2rem)] truncate rounded-md bg-white px-3 py-1.5 text-xs font-bold text-[#092a53] sm:left-4 sm:top-4">
                             {t(flavor.tag)}
                           </span>
                         )}
                         {!soldOut && flavor.availableQuantity <= 5 && (
-                          <span className="absolute right-3 top-3 rounded-full border border-[#f3dcb0] bg-[#fff6dd]/95 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#7a5c00] shadow-sm backdrop-blur-sm">
+                          <span className="absolute right-3 top-3 rounded-md bg-white px-3 py-1.5 text-xs font-bold text-[#7a5c00] sm:right-4 sm:top-4">
                             {t("Only {count} left", { count: flavor.availableQuantity })}
                           </span>
                         )}
                         {soldOut && (
-                          <span className="absolute inset-0 grid place-items-center bg-white/45 backdrop-blur-[3px]">
-                            <span className="rounded-full bg-[#092a53] px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-white shadow-xl sm:text-xs">
+                          <span className="absolute inset-0 grid place-items-center bg-white/45">
+                            <span className="rounded-md bg-[#092a53] px-4 py-2 text-xs font-bold text-white">
                               {t("Sold out")}
                             </span>
                           </span>
                         )}
-                      </div>
                     </div>
 
-                    {/* Content */}
                     <div className="flex flex-1 flex-col p-4 sm:p-5">
-                      <h3 className="line-clamp-1 font-display text-lg font-extrabold tracking-tight text-[#092a53] transition-colors group-hover:text-[#123f76] sm:text-xl">
-                        {t(flavor.name)}
+                      <h3 className="line-clamp-2 min-h-[2.5em] font-display text-lg font-extrabold leading-tight tracking-tight text-[#092a53] transition-colors group-hover:text-[#123f76] sm:text-xl">
+                        <Link className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2" to={`/flavor/${flavor.id}`}>
+                          {t(flavor.name)}
+                        </Link>
                       </h3>
-                      <div className="mt-1.5">
+                      <div className="mt-2 min-h-6">
                         <RatingBadge
                           averageRating={flavor.averageRating}
                           reviewCount={flavor.reviewCount}
                         />
                       </div>
-                      <p className="mt-1.5 line-clamp-2 text-[13px] leading-5 text-[#65748a]">{t(flavor.detail)}</p>
+                      <p className="mt-2 line-clamp-2 min-h-10 text-sm leading-5 text-[#52647b]">{t(flavor.detail)}</p>
                       {flavor.allergies && flavor.allergies.filter((item) => item !== "None common").length > 0 && (
-                        <ul className="mt-2 flex flex-wrap gap-1.5">
+                        <ul className="mt-3 flex flex-wrap gap-1.5">
                           {flavor.allergies
                             .filter((item) => item !== "None common")
                             .slice(0, 3)
                             .map((item) => (
                               <li
-                                className="rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-bold capitalize text-amber-900"
+                                className="rounded-md bg-[#fff7df] px-2 py-1 text-[11px] font-semibold capitalize text-[#674d00]"
                                 key={item}
                               >
                                 {t("Contains {item}", { item })}
@@ -347,12 +344,10 @@ export function FlavorsPage() {
                         </span>
                         <button
                           aria-label={t("Add {name} to cart", { name: t(flavor.name) })}
-                          className={`relative z-10 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-extrabold uppercase tracking-[0.08em] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-[#f1ede2] disabled:text-[#a5aebb] ${
+                          className={`relative z-10 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] ${
                             added
                               ? "bg-[#4caf50] text-white"
-                              : soldOut
-                                ? "bg-[#f1ede2] text-[#a5aebb]"
-                                : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#ffe76c] hover:shadow-[0_8px_20px_rgba(255,220,50,0.35)]"
+                              : "bg-[#092a53] text-white hover:-translate-y-0.5 hover:bg-[#163e6b]"
                           }`}
                           disabled={soldOut}
                           onClick={() => addFlavor(flavor)}
@@ -400,12 +395,12 @@ export function FlavorsPage() {
             {loading && !error && (
               <div aria-hidden="true" className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 4 }, (_, index) => (
-                  <div className="rounded-[28px] bg-white p-2.5 ring-1 ring-[#ebe7dc]" key={index}>
-                    <div className="aspect-square animate-pulse rounded-[22px] bg-[#f1ede2]" />
-                    <div className="space-y-3 px-3 pb-3 pt-5">
-                      <div className="h-5 w-2/3 animate-pulse rounded-full bg-[#f1ede2]" />
-                      <div className="h-3 w-full animate-pulse rounded-full bg-[#f4f1e8]" />
-                      <div className="h-3 w-4/5 animate-pulse rounded-full bg-[#f4f1e8]" />
+                  <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#dce3eb]" key={index}>
+                    <div className="aspect-[4/3] animate-pulse bg-[#e8edf2]" />
+                    <div className="space-y-3 p-4 sm:p-5">
+                      <div className="h-5 w-2/3 animate-pulse rounded-md bg-[#e8edf2]" />
+                      <div className="h-3 w-full animate-pulse rounded-md bg-[#edf1f5]" />
+                      <div className="h-3 w-4/5 animate-pulse rounded-md bg-[#edf1f5]" />
                     </div>
                   </div>
                 ))}

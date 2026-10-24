@@ -162,18 +162,8 @@ export function FlavorDetailPage() {
 
       <main id="main" tabIndex={-1}>
         <section className="relative isolate overflow-hidden" style={{ backgroundColor: tint }}>
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute -left-24 top-0 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_255_255/0.6),rgb(255_255_255/0.6)_35%,transparent)]" />
-            <div className="absolute -bottom-40 right-0 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.25),rgb(255_220_50/0.25)_35%,transparent)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(rgba(9,42,83,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_90%)]" />
-            {/* First word only, fading out at both edges, so the backdrop never looks cut off mid-word. */}
-            <p className="absolute inset-x-0 bottom-0 select-none overflow-hidden whitespace-nowrap text-center font-display text-[22vw] font-extrabold leading-[0.8] text-[#092a53]/[0.05] [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)] lg:text-[13rem]">
-              {t(flavor.name).split(/\s+/)[0]}
-            </p>
-          </div>
-
-          <div className="mx-auto max-w-[1320px] px-5 pb-16 pt-8 sm:px-8 sm:pb-20 sm:pt-10 lg:px-12 lg:pb-24">
-            <nav aria-label={t("Breadcrumb")} className="mb-10 flex flex-wrap items-center gap-2 text-xs font-bold text-[#092a53]/60">
+          <div className="mx-auto max-w-[1320px] px-5 pb-14 pt-7 sm:px-8 sm:pb-16 sm:pt-8 lg:px-12 lg:pb-20">
+            <nav aria-label={t("Breadcrumb")} className="mb-8 flex flex-wrap items-center gap-2 text-sm font-semibold text-[#092a53]/70">
               <Link className="transition hover:text-[#092a53]" to="/">{t("Home")}</Link>
               <span aria-hidden="true" className="text-[#092a53]/30">/</span>
               <Link className="transition hover:text-[#092a53]" to="/flavors">{t("Flavors")}</Link>
@@ -187,41 +177,32 @@ export function FlavorDetailPage() {
               <span aria-current="page" className="max-w-[14rem] truncate text-[#092a53]">{t(flavor.name)}</span>
             </nav>
 
-            <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
-              {/* Scoop photo: smaller on phones and tablets so the price and "Add to bag" show without scrolling. */}
-              <div className="relative mx-auto w-full max-w-[240px] sm:max-w-[320px] lg:col-span-6 lg:max-w-[500px]">
-                <div aria-hidden="true" className="absolute inset-[-6%] rounded-full border-2 border-dashed border-[#092a53]/15" />
-                <figure className={`relative aspect-square overflow-hidden rounded-full shadow-[0_50px_90px_rgba(9,42,83,0.25)] ring-[12px] ring-white ${flavor.color}`}>
+            <div className="grid items-start gap-8 lg:grid-cols-12 lg:gap-12">
+              <div className="relative mx-auto w-full max-w-[520px] lg:col-span-7 lg:max-w-none">
+                <figure className={`scroll-story-frame aspect-[4/3] rounded-[24px] sm:rounded-[32px] ${flavor.color}`}>
                   <img decoding="async" fetchPriority="high" loading="eager" alt={t(flavor.name)} className="size-full object-cover" onError={photoErrorHandler(flavor.image)} sizes={FLAVOR_PHOTO_SIZES} src={flavor.image} srcSet={photoSrcSet(flavor.image)} />
                 </figure>
 
                 {lowStock && (
-                  <span className="absolute bottom-[2%] right-[8%] inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#806a00] shadow-lg">
+                  <span className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-sm font-bold text-[#806a00]">
                     <span aria-hidden="true" className="size-1.5 animate-pulse rounded-full bg-[#d4ad00] motion-reduce:animate-none" />
                     {t("{count} left", { count: flavor.availableQuantity })}
                   </span>
                 )}
               </div>
 
-              {/* Purchase card */}
-              <div className="min-w-0 rounded-[32px] bg-white p-6 shadow-[0_30px_70px_rgba(9,42,83,0.14)] ring-1 ring-[#092a53]/5 sm:p-9 lg:col-span-6">
-                {flavor.tag && (
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                    <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                    {t(flavor.tag)}
-                  </p>
-                )}
+              <div className="min-w-0 rounded-[24px] bg-white p-6 sm:p-9 lg:col-span-5">
                 <h1 className="mt-4 break-words font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-6xl">
                   {t(flavor.name)}
                 </h1>
                 <p className="mt-4 text-lg font-semibold leading-8 text-[#52647b]">{t(flavor.detail)}</p>
 
-                <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-y border-[#efebe1] py-5">
+                <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#f7f6f1] px-4 py-5">
                   <p className="font-display text-4xl font-extrabold tabular-nums text-[#092a53]">
                     {formatCartMoney(flavor.price, "xaf", language)}
                     <span className="ml-2 font-sans text-sm font-bold text-[#65748a] max-sm:hidden">/ {t("Price per scoop").toLocaleLowerCase()}</span>
                   </p>
-                  <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-extrabold ${lowStock ? "bg-[#fff6dc] text-[#806a00]" : "bg-[#f3f8ef] text-[#37632c]"}`}>
+                  <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold ${lowStock ? "bg-[#fff6dc] text-[#806a00]" : "bg-[#f3f8ef] text-[#37632c]"}`}>
                     <span aria-hidden="true" className={`size-1.5 rounded-full ${lowStock ? "bg-[#d4ad00]" : "bg-[#4caf50]"}`} />
                     {lowStock ? t("{count} left", { count: flavor.availableQuantity }) : t("In stock")}
                   </span>
@@ -255,8 +236,8 @@ export function FlavorDetailPage() {
                   <button
                     className={`inline-flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-4 text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 sm:px-6 ${
                       mainAdded
-                        ? "bg-[#4caf50] text-white shadow-[0_12px_28px_rgba(76,175,80,0.3)]"
-                        : "bg-[#092a53] text-white shadow-[0_12px_28px_rgba(9,42,83,0.22)] hover:-translate-y-0.5 hover:bg-[#163e6b]"
+                        ? "bg-[#4caf50] text-white"
+                        : "bg-[#092a53] text-white hover:-translate-y-0.5 hover:bg-[#163e6b]"
                     }`}
                     onClick={addSelected}
                     type="button"
@@ -292,7 +273,7 @@ export function FlavorDetailPage() {
                           aria-controls={`flavor-panel-${tab.key}`}
                           aria-selected={selected}
                           className={`min-w-0 flex-1 truncate rounded-full px-3 py-2.5 text-xs font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] sm:text-sm ${
-                            selected ? "bg-white text-[#092a53] shadow-[0_6px_16px_rgba(9,42,83,0.1)]" : "text-[#65748a] hover:text-[#092a53]"
+                            selected ? "bg-[#092a53] text-white" : "text-[#52647b] hover:bg-white hover:text-[#092a53]"
                           }`}
                           id={`flavor-tab-${tab.key}`}
                           key={tab.key}
@@ -341,12 +322,12 @@ export function FlavorDetailPage() {
                     )}
                     {activeInfoTab === "details" && (
                       <dl className="grid grid-cols-2 gap-3">
-                        <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]">
-                          <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Origin")}</dt>
+                        <div className="rounded-2xl bg-[#f7f6f1] p-4">
+                          <dt className="text-xs font-bold text-[#52647b]">{t("Origin")}</dt>
                           <dd className="mt-1 font-display text-lg font-extrabold text-[#092a53]">{t(flavor.origin)}</dd>
                         </div>
-                        <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]">
-                          <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Servings")}</dt>
+                        <div className="rounded-2xl bg-[#f7f6f1] p-4">
+                          <dt className="text-xs font-bold text-[#52647b]">{t("Servings")}</dt>
                           <dd className="mt-1 font-display text-lg font-extrabold tabular-nums text-[#092a53]">{flavor.servings}</dd>
                         </div>
                       </dl>
@@ -360,35 +341,28 @@ export function FlavorDetailPage() {
 
         {/* Offer */}
         <section className="mx-auto max-w-[1320px] px-5 pt-12 sm:px-8 sm:pt-16 lg:px-12">
-          <div className="relative isolate flex flex-col gap-6 overflow-hidden rounded-[28px] bg-[#ffdc32] p-6 text-[#092a53] sm:flex-row sm:items-center sm:justify-between sm:p-8">
-            <div aria-hidden="true" className="absolute -right-16 -top-20 -z-10 size-64 rounded-full border-[40px] border-white/30" />
+          <div className="flex flex-col gap-6 rounded-[24px] bg-[#092a53] p-6 text-white sm:flex-row sm:items-center sm:justify-between sm:p-8">
             <div className="flex items-center gap-5">
-              <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] font-display text-lg font-extrabold text-[#ffdc32]">3×</span>
+              <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#ffdc32] font-display text-lg font-extrabold text-[#092a53]">3×</span>
               <div>
                 <p className="font-display text-2xl font-extrabold">{t("More scoops, more smiles")}</p>
-                <p className="mt-1 text-sm font-semibold text-[#092a53]/70">{t("Pick any three scoops and the lowest-priced one is on us.")}</p>
+                <p className="mt-1 text-sm font-semibold text-white/75">{t("Pick any three scoops and the lowest-priced one is on us.")}</p>
               </div>
             </div>
-            <Link className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#092a53] px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b]" to="/cart">
+            <Link className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]" to="/cart">
               <BagIcon /> {t("Go to your bag")}
             </Link>
           </div>
         </section>
 
         {relatedFlavors.length > 0 && (
-          <section aria-labelledby="related-flavors-title" className="py-16 sm:py-20">
+          <section aria-labelledby="related-flavors-title" className="mt-16 bg-[#f1efe7] py-16 sm:mt-20 sm:py-20">
             <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-              <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                    <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                    {t("Explore more flavors")}
-                  </p>
-                  <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight text-[#092a53] sm:text-5xl" id="related-flavors-title">
-                    {t("You might also love")}
-                  </h2>
-                </div>
-                <Link className="inline-flex items-center gap-2 rounded-full border border-[#d9d4c7] bg-white px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:border-[#092a53]" to="/flavors">
+              <div className="mb-8 flex flex-wrap items-end justify-between gap-4 sm:mb-10">
+                <h2 className="max-w-[14ch] font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl" id="related-flavors-title">
+                  {t("You might also love")}
+                </h2>
+                <Link className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffdc32]" to="/flavors">
                   {t("Browse all flavors")} <ArrowIcon />
                 </Link>
               </div>
@@ -397,25 +371,25 @@ export function FlavorDetailPage() {
                   const added = addedKey === `related-${relatedFlavor.id}`;
                   return (
                     <article
-                      className="group relative flex flex-col rounded-[22px] bg-white p-1.5 sm:rounded-[28px] sm:p-2.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a]"
+                      className="group relative flex flex-col overflow-hidden rounded-[20px] bg-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)]"
                       key={relatedFlavor.id}
                     >
-                      <div className={`relative aspect-square overflow-hidden rounded-[17px] sm:rounded-[22px] ${relatedFlavor.color}`}>
+                      <div className={`relative aspect-[4/3] overflow-hidden ${relatedFlavor.color}`}>
                         <img decoding="async" alt="" className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05]" loading="lazy" onError={photoErrorHandler(relatedFlavor.image)} sizes="(min-width: 1024px) 25vw, 50vw" src={relatedFlavor.image} srcSet={photoSrcSet(relatedFlavor.image)} />
                         {relatedFlavor.tag && (
-                          <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-white/95 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.1em] text-[#52647b] shadow-sm backdrop-blur-sm sm:left-3 sm:top-3 sm:px-3 sm:py-1.5 sm:text-[10px]">
+                          <span className="absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#092a53]">
                             {t(relatedFlavor.tag)}
                           </span>
                         )}
                       </div>
-                      <div className="@container flex flex-1 flex-col px-1.5 pb-1.5 pt-3 sm:px-4 sm:pb-3 sm:pt-5">
+                      <div className="@container flex flex-1 flex-col px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
                         <h3 className="line-clamp-2 font-display text-[15px] font-extrabold leading-snug text-[#092a53] sm:text-xl">
-                          <Link className="after:absolute after:inset-0 after:rounded-[28px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#bd9c00]" to={`/flavor/${relatedFlavor.id}`}>
+                          <Link className="after:absolute after:inset-0 after:rounded-[20px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#bd9c00]" to={`/flavor/${relatedFlavor.id}`}>
                             {t(relatedFlavor.name)}
                           </Link>
                         </h3>
                         <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[#65748a] sm:mt-2 sm:text-sm sm:leading-6">{t(relatedFlavor.detail)}</p>
-                        <div className="mt-auto flex flex-col gap-2.5 border-t border-dashed border-[#e7e2d4] pt-3 sm:gap-3 sm:pt-4 @[16.5rem]:flex-row @[16.5rem]:items-center @[16.5rem]:justify-between">
+                        <div className="mt-auto flex flex-col gap-2.5 pt-4 sm:gap-3 sm:pt-5 @[16.5rem]:flex-row @[16.5rem]:items-center @[16.5rem]:justify-between">
                           <span className="whitespace-nowrap font-display text-sm font-extrabold tabular-nums text-[#092a53] sm:text-lg">
                             {formatCartMoney(relatedFlavor.price, "xaf", language)}
                           </span>

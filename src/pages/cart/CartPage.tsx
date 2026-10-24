@@ -151,13 +151,11 @@ export function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
+    <div className="min-h-screen bg-[#f4f6f8] text-[#092a53]">
       <Header />
 
       <main id="main" tabIndex={-1}>
-        <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-12 pt-9 text-white sm:px-8 sm:pb-16 sm:pt-12 lg:px-12">
-          <div aria-hidden="true" className="absolute -right-32 -top-44 -z-10 size-[30rem] rounded-full border-[64px] border-white/[0.04]" />
-          <div aria-hidden="true" className="absolute -bottom-40 left-[15%] -z-10 size-80 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.08),rgb(255_220_50/0.08)_35%,transparent)]" />
+        <section className="bg-[#092a53] px-5 py-8 text-white sm:px-8 sm:py-10 lg:px-12">
           <div className="mx-auto max-w-[1240px]">
             <nav aria-label={t('Breadcrumb')} className="text-xs font-semibold text-white/55">
               <Link className="transition hover:text-[#ffdc32]" to="/">{t('Home')}</Link>
@@ -165,35 +163,31 @@ export function CartPage() {
               <span aria-current="page" className="text-white">{t('Shopping bag')}</span>
             </nav>
 
-            <div className="mt-6 flex flex-wrap items-end justify-between gap-8">
+            <div className="mt-7 flex flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
-                <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32] before:h-px before:w-6 before:bg-[#ffdc32]/70">
-                  {t('Your order')}
-                </p>
-                <h1 className="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-[3.4rem]">
+                <h1 className="font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
                   {t('Your shopping bag')}
                 </h1>
                 {cartItems.length > 0 && (
-                  <p className="mt-3 max-w-xl text-sm leading-6 text-white/65 sm:text-base">
+                  <p className="mt-3 max-w-xl text-sm leading-6 text-white/75 sm:text-base">
                     {t('You have {count} scoop(s) across {flavors} flavor(s) in your bag.', { count: cartCount, flavors: cartItems.length })}
                   </p>
                 )}
               </div>
 
-              <ol aria-label={t('Checkout progress')} className="flex items-center gap-2 sm:gap-3">
+              <ol aria-label={t('Checkout progress')} className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-bold sm:gap-x-4">
                 {steps.map((step, index) => (
-                  <li className="flex items-center gap-2 sm:gap-3" key={step}>
+                  <li className="flex items-center gap-2" key={step}>
                     <span
                       aria-current={index === 0 ? 'step' : undefined}
-                      className={`flex items-center gap-2 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-3.5 text-xs font-extrabold ${index === 0 ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/[0.07] text-white/55 ring-1 ring-white/10'
-                        }`}
+                      className={`inline-flex min-h-9 items-center gap-2 whitespace-nowrap ${index === 0 ? 'text-[#ffdc32]' : 'text-white/60'}`}
                     >
-                      <span className={`grid size-6 place-items-center rounded-full text-[11px] ${index === 0 ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-white/10'}`}>
+                      <span className={`grid size-6 place-items-center rounded-full text-[11px] ${index === 0 ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/10 text-white/75'}`}>
                         {index + 1}
                       </span>
                       {step}
                     </span>
-                    {index < steps.length - 1 && <span aria-hidden="true" className="hidden h-px w-6 bg-white/20 sm:block" />}
+                    {index < steps.length - 1 && <span aria-hidden="true" className="h-px w-4 bg-white/25 sm:w-6" />}
                   </li>
                 ))}
               </ol>
@@ -201,44 +195,43 @@ export function CartPage() {
           </div>
         </section>
 
-        <div className="mx-auto max-w-[1240px] px-5 py-8 sm:px-8 sm:py-12 lg:px-12">
+        <div className="mx-auto max-w-[1240px] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
           {cartItems.length === 0 ? (
-            <section className="relative mx-auto max-w-3xl overflow-hidden rounded-[32px] bg-white px-6 py-14 text-center shadow-[0_18px_50px_rgba(18,44,80,0.07)] ring-1 ring-[#ebe7dc] sm:px-12 sm:py-20">
-              <div aria-hidden="true" className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#fff6cc]/70 to-transparent" />
-              <div className="relative">
-                <span className="mx-auto grid size-24 place-items-center rounded-[30px] bg-[#092a53] text-[#ffdc32] shadow-[0_18px_36px_rgba(9,42,83,0.25)]">
-                  <Icon className="size-10" path={icons.bag} />
+            <section className="mx-auto grid max-w-5xl gap-8 bg-white px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-14 lg:px-14">
+              <div>
+                <span className="grid size-14 place-items-center rounded-full bg-[#e8edf2] text-[#092a53]">
+                  <Icon className="size-7" path={icons.bag} />
                 </span>
-                <h2 className="mt-7 font-display text-3xl font-extrabold text-[#092a53] sm:text-4xl">{t('Your bag is empty')}</h2>
-                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#65748a] sm:text-base">
+                <h2 className="mt-5 font-display text-3xl font-extrabold text-[#092a53] sm:text-4xl">{t('Your bag is empty')}</h2>
+                <p className="mt-3 max-w-md text-sm leading-6 text-[#52647b] sm:text-base sm:leading-7">
                   {t('Start adding your favorite flavors and get ready for a sweet treat!')}
                 </p>
-                <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <div className="mt-7 flex flex-wrap gap-3">
                   <Link
-                    className="inline-flex items-center gap-2 rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] shadow-[0_10px_24px_rgba(255,220,50,0.3)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]"
+                    className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#ffdc32] px-6 py-3 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
                     to="/flavors"
                   >
                     {t('Explore flavors')} <Icon className="size-4" path={icons.arrow} />
                   </Link>
                   <Link
-                    className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-extrabold text-[#092a53] ring-1 ring-[#dcd8cc] transition hover:bg-[#fbfaf5] hover:ring-[#092a53]"
+                    className="inline-flex min-h-12 items-center gap-2 rounded-lg px-5 py-3 text-sm font-bold text-[#092a53] transition-colors hover:bg-[#f4f6f8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
                     to="/menu"
                   >
                     {t('Browse the menu')}
                   </Link>
                 </div>
-                <p className="mx-auto mt-10 inline-flex items-center gap-2 rounded-full bg-[#fbfaf5] px-4 py-2 text-xs font-bold text-[#715e00] ring-1 ring-[#efe4b0]">
-                  <Icon className="size-4" path={icons.gift} />
-                  {t('Buy 2 scoops, get the 3rd free')}
-                </p>
               </div>
+              <p className="flex max-w-xs items-start gap-3 bg-[#fff8d8] p-5 text-sm font-semibold leading-6 text-[#5d4c00]">
+                <Icon className="mt-0.5 size-5 shrink-0" path={icons.gift} />
+                {t('Buy 2 scoops, get the 3rd free')}
+              </p>
             </section>
           ) : (
             <div className="grid min-w-0 items-start gap-7 lg:grid-cols-[minmax(0,1fr)_380px] xl:gap-10">
               <section aria-labelledby="cart-items-heading" className="min-w-0 space-y-5">
                 {scoopCount > 0 && (
-                  <div className="flex flex-col gap-4 rounded-[24px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:flex-row sm:items-center sm:p-6">
-                    <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#8a7000]">
+                  <div className="flex flex-col gap-4 bg-[#e8edf2] p-5 sm:flex-row sm:items-center sm:p-6">
+                    <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white text-[#092a53]">
                       <Icon className="size-6" path={icons.gift} />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -261,7 +254,7 @@ export function CartPage() {
                               ? segment === 3 || scoopsTowardOffer === 0
                                 ? 'bg-[#6c9c45]'
                                 : 'bg-[#ffdc32]'
-                              : 'bg-[#eeebe1]'
+                              : 'bg-[#cfd8e1]'
                               }`}
                             key={segment}
                           />
@@ -269,7 +262,7 @@ export function CartPage() {
                       </div>
                     </div>
                     <Link
-                      className="inline-flex shrink-0 items-center gap-1.5 text-xs font-extrabold text-[#806a00] transition hover:text-[#092a53]"
+                      className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-[#092a53] transition hover:text-[#bd9c00]"
                       to="/flavors"
                     >
                       {t('Add flavors')} <Icon className="size-4" path={icons.arrow} />
@@ -277,17 +270,17 @@ export function CartPage() {
                   </div>
                 )}
 
-                <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc]">
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f0ece2] px-5 py-4 sm:px-7 sm:py-5">
+                <div className="overflow-hidden bg-white">
+                  <div className="flex flex-wrap items-center justify-between gap-3 bg-[#e8edf2] px-5 py-4 sm:px-7 sm:py-5">
                     <h2 className="flex items-center gap-2.5 font-display text-xl font-extrabold text-[#092a53]" id="cart-items-heading">
                       {t('Items in your bag')}
-                      <span className="rounded-full bg-[#f1eee4] px-2.5 py-0.5 font-sans text-xs font-extrabold text-[#52647b]">{cartCount}</span>
+                      <span className="rounded-full bg-white px-2.5 py-0.5 font-sans text-xs font-extrabold text-[#52647b]">{cartCount}</span>
                     </h2>
                     {confirmClear ? (
                       <span className="flex items-center gap-2 text-xs font-bold">
                         <span className="text-[#65748a]">{t('Remove everything?')}</span>
                         <button
-                          className="rounded-full bg-red-600 px-3 py-1.5 text-white transition hover:bg-red-700"
+                          className="rounded-md bg-red-700 px-3 py-1.5 text-white transition hover:bg-red-800"
                           onClick={() => {
                             clearCart()
                             setConfirmClear(false)
@@ -296,7 +289,7 @@ export function CartPage() {
                         >
                           {t('Yes, clear')}
                         </button>
-                        <button className="rounded-full px-3 py-1.5 text-[#52647b] ring-1 ring-[#dcd8cc] transition hover:ring-[#092a53]" onClick={() => setConfirmClear(false)} type="button">
+                        <button className="rounded-md px-3 py-1.5 text-[#52647b] transition hover:bg-white" onClick={() => setConfirmClear(false)} type="button">
                           {t('Cancel')}
                         </button>
                       </span>
@@ -312,14 +305,14 @@ export function CartPage() {
                     )}
                   </div>
 
-                  <ul className="divide-y divide-[#f0ece2]">
+                  <ul className="divide-y divide-[#e8edf2]">
                     {cartItems.map((item) => {
                       const isShort = item.availableQuantity !== undefined && item.availableQuantity < item.quantity
                       return (
-                        <li className="group flex min-w-0 gap-4 px-5 py-5 transition hover:bg-[#fdfcf8] sm:gap-6 sm:px-7 sm:py-6" key={item.id}>
+                        <li className="group flex min-w-0 gap-4 px-5 py-5 transition-colors hover:bg-[#f8fafb] sm:gap-6 sm:px-7 sm:py-6" key={item.id}>
                           <Link
                             aria-label={t(item.name)}
-                            className={`relative size-24 shrink-0 overflow-hidden rounded-[20px] ring-1 ring-black/5 ${item.color} sm:size-32`}
+                            className={`relative size-24 shrink-0 overflow-hidden rounded-lg ${item.color} sm:size-32`}
                             to={itemPath(item)}
                           >
                             <img decoding="async" loading="lazy"
@@ -332,17 +325,17 @@ export function CartPage() {
                           <div className="flex min-w-0 flex-1 flex-col gap-4">
                             <div className="flex min-w-0 items-start justify-between gap-3">
                               <div className="min-w-0">
-                                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">
+                                <p className="text-xs font-semibold text-[#65748a]">
                                   {t(item.itemType === 'menu' ? 'Menu' : 'Flavors')}
                                 </p>
                                 <Link
-                                  className="mt-1 block truncate font-display text-lg font-extrabold text-[#092a53] transition hover:text-[#806a00] sm:text-xl"
+                                  className="mt-1 block truncate font-display text-lg font-bold text-[#092a53] transition hover:text-[#bd9c00] sm:text-xl"
                                   to={itemPath(item)}
                                 >
                                   {t(item.name)}
                                 </Link>
                                 {item.detail && (
-                                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#7b8796] sm:text-sm">{t(item.detail)}</p>
+                                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#52647b] sm:text-sm">{t(item.detail)}</p>
                                 )}
                               </div>
                               <button
@@ -367,10 +360,10 @@ export function CartPage() {
 
                             <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
                               <div className="flex items-center gap-3">
-                                <div className="inline-flex items-center rounded-full bg-[#f6f4ec] p-1 ring-1 ring-[#ebe7dc]">
+                                <div className="inline-flex items-center rounded-lg bg-[#e8edf2] p-1">
                                   <button
                                     aria-label={t('Decrease quantity')}
-                                    className="grid size-8 place-items-center rounded-full text-[#52647b] transition hover:bg-white hover:text-[#092a53] hover:shadow-sm"
+                                    className="grid size-8 place-items-center rounded-md text-[#52647b] transition hover:bg-white hover:text-[#092a53]"
                                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
                                     type="button"
                                   >
@@ -381,7 +374,7 @@ export function CartPage() {
                                   </span>
                                   <button
                                     aria-label={t('Increase quantity')}
-                                    className="grid size-8 place-items-center rounded-full text-[#52647b] transition hover:bg-white hover:text-[#092a53] hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:shadow-none"
+                                    className="grid size-8 place-items-center rounded-md text-[#52647b] transition hover:bg-white hover:text-[#092a53] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent"
                                     disabled={item.quantity >= item.availableQuantity}
                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                     type="button"
@@ -412,25 +405,24 @@ export function CartPage() {
                     })}
                   </ul>
 
-                  <div className="border-t border-[#f0ece2] bg-[#fdfcf8] px-5 py-4 sm:px-7">
-                    <Link className="inline-flex items-center gap-2 text-sm font-extrabold text-[#806a00] transition hover:gap-3 hover:text-[#092a53]" to={shopPath}>
+                  <div className="bg-[#f4f6f8] px-5 py-4 sm:px-7">
+                    <Link className="inline-flex items-center gap-2 text-sm font-bold text-[#092a53] transition hover:gap-3 hover:text-[#bd9c00]" to={shopPath}>
                       <Icon className="size-4 rotate-180" path={icons.arrow} />
                       {t('Continue shopping')}
                     </Link>
                   </div>
                 </div>
 
-                <p className="flex gap-3 rounded-2xl bg-[#fffbea] px-4 py-3.5 text-xs leading-5 text-[#6b5800] ring-1 ring-[#f0e2a0] sm:px-5">
+                <p className="flex gap-3 bg-[#e8edf2] px-4 py-3.5 text-xs leading-5 text-[#334e6e] sm:px-5">
                   <Icon className="mt-0.5 size-4 shrink-0" path={icons.info} />
                   {t("Prices are in FCFA. Any delivery fee is shown at checkout before you pay.")}
                 </p>
               </section>
 
               <aside aria-labelledby="order-summary-heading" className="relative z-10 space-y-4 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300">
-                <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_18px_50px_rgba(18,44,80,0.09)] ring-1 ring-[#ebe7dc]">
+                <div className="overflow-hidden bg-white">
                   <div className="bg-[#092a53] px-6 py-5 text-white sm:px-7">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">{t('Your order')}</p>
-                    <h2 className="mt-1 font-display text-2xl font-extrabold" id="order-summary-heading">{t('Order summary')}</h2>
+                    <h2 className="font-display text-2xl font-extrabold" id="order-summary-heading">{t('Order summary')}</h2>
                   </div>
 
                   <div className="space-y-5 p-6 sm:p-7">
@@ -456,7 +448,7 @@ export function CartPage() {
                       </div>
                     </dl>
 
-                    <div className="flex items-end justify-between gap-3 border-t border-dashed border-[#dcd8cc] pt-5">
+                    <div className="flex items-end justify-between gap-3 border-t border-[#e8edf2] pt-5">
                       <span className="font-display text-lg font-extrabold text-[#092a53]">{t('Total')}</span>
                       <span className="font-display text-3xl font-extrabold tabular-nums leading-none text-[#092a53]">{money(total)}</span>
                     </div>
@@ -468,7 +460,7 @@ export function CartPage() {
 
                     {hasUnavailableItems ? (
                       <button
-                        className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-[#ecebe5] px-5 py-4 text-sm font-extrabold text-[#8b95a2]"
+                        className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-[#e8edf2] px-5 py-4 text-sm font-extrabold text-[#65748a]"
                         disabled
                         type="button"
                       >
@@ -477,7 +469,7 @@ export function CartPage() {
                       </button>
                     ) : (
                       <Link
-                        className="group flex w-full items-center justify-center gap-2 rounded-full bg-[#ffdc32] px-5 py-4 text-sm font-extrabold text-[#092a53] shadow-[0_12px_26px_rgba(255,220,50,0.35)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]"
+                        className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[#ffdc32] px-5 py-4 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
                         to="/checkout"
                       >
                         <Icon className="size-4" path={icons.lock} />
@@ -488,14 +480,14 @@ export function CartPage() {
                   </div>
                 </div>
 
-                <ul className="grid gap-2.5 rounded-[24px] bg-white p-5 text-xs ring-1 ring-[#ebe7dc]">
+                <ul className="grid gap-2.5 bg-white p-5 text-xs">
                   {[
                     { icon: icons.lock, title: t('Secure checkout'), body: t('Your payment details are protected.') },
                     { icon: icons.truck, title: t('Delivery or pickup'), body: t('Choose what suits you at checkout.') },
                     { icon: icons.clock, title: t('Made fresh'), body: t('Prepared when your order is confirmed.') },
                   ].map((perk) => (
                     <li className="flex items-center gap-3" key={perk.title}>
-                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#f4f1e8] text-[#092a53]">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#e8edf2] text-[#092a53]">
                         <Icon className="size-4" path={perk.icon} />
                       </span>
                       <span className="min-w-0">
@@ -511,17 +503,14 @@ export function CartPage() {
 
           <section aria-labelledby="cart-suggestions-heading" className="mt-12">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#8a7000]">{t('A little something extra')}</p>
-                <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="cart-suggestions-heading">{t('You might also like')}</h2>
-              </div>
-              <Link className="text-sm font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4" to="/menu">{t('Browse the menu')}</Link>
+              <h2 className="font-display text-2xl font-extrabold text-[#092a53]" id="cart-suggestions-heading">{t('You might also like')}</h2>
+              <Link className="text-sm font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4" to="/menu">{t('Browse the menu')}</Link>
             </div>
             {suggestionsLoading && (
-              <p className="rounded-2xl bg-white px-4 py-3 text-sm text-[#65748a] ring-1 ring-[#ebe7dc]" role="status">{t('Loading menu suggestions…')}</p>
+              <p className="bg-white px-4 py-3 text-sm text-[#52647b]" role="status">{t('Loading menu suggestions…')}</p>
             )}
             {suggestionsError && (
-              <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-100" role="alert">{t(suggestionsError)}</p>
+              <p className="bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{t(suggestionsError)}</p>
             )}
             {!suggestionsLoading && !suggestionsError && orderedRecommendations.length > 0 && (
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
@@ -529,16 +518,16 @@ export function CartPage() {
                   const itemId = item.id || getMenuItemId(category.title, item.name)
                   const added = addedSuggestionId === itemId
                   return (
-                    <li className="flex min-w-0 flex-col overflow-hidden rounded-[22px] bg-white p-2 shadow-[0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:rounded-[26px] sm:p-3" key={itemId}>
-                      <Link className="overflow-hidden rounded-[16px] bg-[#f4f1e8]" to={`/menu?${new URLSearchParams({ category: category.title, item: item.name })}`}>
+                    <li className="flex min-w-0 flex-col overflow-hidden bg-white p-2 sm:p-3" key={itemId}>
+                      <Link className="overflow-hidden bg-[#e8edf2]" to={`/menu?${new URLSearchParams({ category: category.title, item: item.name })}`}>
                         <img alt={t(item.name)} className="aspect-square w-full object-cover transition duration-500 hover:scale-[1.04]" loading="lazy" onError={photoErrorHandler(item.image)} sizes="(min-width: 1024px) 25vw, 50vw" src={item.image} srcSet={photoSrcSet(item.image)} />
                       </Link>
                       <div className="flex flex-1 flex-col px-1 pb-1 pt-3 sm:px-1.5">
                         <h3 className="line-clamp-2 min-h-[2.5em] font-display text-sm font-extrabold leading-snug text-[#092a53] sm:text-base">{t(item.name)}</h3>
-                        <p className="mt-1 font-display text-sm font-extrabold tabular-nums text-[#8a7000]">{formatCartMoney(item.priceXaf, 'xaf', language)}</p>
+                        <p className="mt-1 font-display text-sm font-extrabold tabular-nums text-[#092a53]">{formatCartMoney(item.priceXaf, 'xaf', language)}</p>
                         <button
                           aria-label={added ? t('Added to your bag') : t('Add {name} to cart', { name: t(item.name) })}
-                          className={`mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-full px-3 text-[10px] font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 sm:text-xs ${added ? 'bg-[#4caf50] text-white' : 'bg-[#ffdc32] text-[#092a53] hover:bg-[#ffe76c]'}`}
+                          className={`mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-md px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${added ? 'bg-[#37632c] text-white' : 'bg-[#092a53] text-white hover:bg-[#163e6b]'}`}
                           onClick={() => addSuggestion(category, item)}
                           type="button"
                         >
@@ -551,7 +540,7 @@ export function CartPage() {
               </ul>
             )}
             {!suggestionsLoading && !suggestionsError && orderedRecommendations.length === 0 && (
-              <p className="rounded-2xl bg-white px-4 py-3 text-sm text-[#65748a] ring-1 ring-[#ebe7dc]" role="status">{t('No menu suggestions are available right now.')}</p>
+              <p className="bg-white px-4 py-3 text-sm text-[#52647b]" role="status">{t('No menu suggestions are available right now.')}</p>
             )}
             {suggestionError && <p className="mt-3 text-sm font-semibold text-red-700" role="alert">{suggestionError}</p>}
           </section>

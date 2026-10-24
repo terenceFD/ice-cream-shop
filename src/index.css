@@ -1,7 +1,8 @@
 @import 'tailwindcss';
 
-/* Keep every button-like control visually recognizable, including disabled buttons. */
+/* Keep every interactive control recognizable, while preserving disabled affordances. */
 button,
+a[href],
 input[type='button'],
 input[type='submit'],
 input[type='reset'],
@@ -9,6 +10,12 @@ input[type='reset'],
 summary,
 label[for] {
   cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
 }
 
 /* The site's own copies of DM Sans and Fredoka (Latin, which covers English and French). Serving
@@ -76,68 +83,22 @@ body {
   outline-offset: 3px;
 }
 
-/* Website loader (src/components/WebsiteLoader.tsx): the navy page-header look. */
+/* Website loader (src/components/WebsiteLoader.tsx). */
 .website-loader {
   position: fixed;
   inset: 0;
   z-index: 1000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #092a53;
   color: #ffffff;
   transition: transform 380ms cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-/* The panel lifts away; the curved edge below it follows. */
 .website-loader--leaving {
   pointer-events: none;
-  transform: translateY(calc(-100% - 5rem));
-}
-
-.website-loader__panel {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  overflow: hidden;
-  place-items: center;
-  background: #092a53;
-}
-
-.website-loader__wave {
-  position: absolute;
-  top: calc(100% - 1px);
-  left: 0;
-  width: 100%;
-  height: 5rem;
-  color: #092a53;
-  transform: scaleY(-1);
-}
-
-.website-loader__glow {
-  position: absolute;
-  border-radius: 9999px;
-}
-
-.website-loader__glow--top {
-  top: -10rem;
-  right: -10rem;
-  width: 44rem;
-  height: 44rem;
-  /* A soft gradient instead of a blur filter: it looks the same and is far cheaper to draw. */
-  background: radial-gradient(circle, rgba(63, 134, 214, 0.32), rgba(63, 134, 214, 0) 65%);
-}
-
-.website-loader__glow--bottom {
-  bottom: -12rem;
-  left: -8rem;
-  width: 40rem;
-  height: 40rem;
-  background: radial-gradient(circle, rgba(45, 106, 168, 0.38), rgba(45, 106, 168, 0) 65%);
-}
-
-.website-loader__dots {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: radial-gradient(ellipse at center, #000 35%, transparent 78%);
+  transform: translateY(-100%);
 }
 
 .website-loader__content {
@@ -145,171 +106,120 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem 1.25rem;
+  width: min(100% - 2.5rem, 24rem);
+  padding: 2rem 0;
   text-align: center;
-  animation: website-loader-arrive 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: website-loader-arrive 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .website-loader--leaving .website-loader__content {
+  animation: none;
   opacity: 0;
-  transform: translateY(-28px);
-  transition: opacity 300ms ease, transform 600ms cubic-bezier(0.76, 0, 0.24, 1);
+  transform: translateY(-12px);
+  transition: opacity 180ms ease, transform 240ms cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-.website-loader__eyebrow {
-  display: inline-flex;
+.website-loader__brand {
+  display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin: 0 0 2.25rem;
-  padding: 0.375rem 1rem 0.375rem 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffdc32;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.website-loader__eyebrow span {
-  display: grid;
-  width: 1.25rem;
-  height: 1.25rem;
-  place-items: center;
-  border-radius: 9999px;
-  background: #ffdc32;
-  color: #092a53;
-  font-size: 0.625rem;
-  letter-spacing: 0;
-}
-
-.website-loader__mark {
-  position: relative;
-  display: grid;
-  width: 9rem;
-  height: 9rem;
-  place-items: center;
-}
-
-/* A soft yellow disc behind the logo, like the yellow circle in the page-header photo group. */
-.website-loader__mark::before {
-  position: absolute;
-  inset: 1.25rem;
-  border-radius: 9999px;
-  background: radial-gradient(circle, rgba(255, 220, 50, 0.22), transparent 70%);
-  content: "";
-  transform: scale(1.35);
-}
-
-.website-loader__ring {
-  position: absolute;
-  inset: 0;
-  border: 1.5px dashed rgba(255, 255, 255, 0.24);
-  border-radius: 9999px;
-  animation: website-loader-turn 18s linear infinite;
+  justify-content: center;
+  gap: 0.875rem;
 }
 
 .website-loader__logo {
-  position: relative;
-  width: 6rem;
-  height: 6rem;
+  width: 3.75rem;
+  height: 3.75rem;
+  flex: 0 0 auto;
   border-radius: 9999px;
-  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.1), 0 26px 50px rgba(2, 12, 28, 0.5);
-  animation: website-loader-float 2.6s ease-in-out infinite;
+  box-shadow: 0 0 0 1px rgba(9, 42, 83, 0.1);
 }
 
 .website-loader__wordmark {
-  margin: 1.75rem 0 0;
+  display: grid;
+  gap: 0.1rem;
+  margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(2rem, 7vw, 2.5rem);
+  font-size: 1.25rem;
   font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.02em;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  text-align: left;
 }
 
 .website-loader__wordmark span {
   color: #ffdc32;
 }
 
-/* The page headers' hand-drawn underline, drawing itself as the loading indicator. */
-.website-loader__underline {
-  width: 11rem;
-  height: 0.75rem;
-  margin-top: 0.6rem;
+.website-loader__scoop-track {
+  position: relative;
+  width: 12rem;
+  height: 3px;
+  margin-top: 2.5rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.28);
 }
 
-.website-loader__underline path {
-  stroke: #ffdc32;
-  stroke-dasharray: 100;
-  stroke-dashoffset: 100;
-  stroke-linecap: round;
-  stroke-width: 4;
-  animation: website-loader-draw 1.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+.website-loader__scoop {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid #092a53;
+  border-radius: 50%;
+  background: #ffdc32;
+  box-shadow: 0 0 0 1px #092a53;
+  animation: website-loader-scoop 1.4s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
 }
 
 .website-loader__message {
-  margin: 1.1rem 0 0;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9375rem;
-  font-weight: 500;
+  margin: 1rem 0 0;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 @keyframes website-loader-arrive {
   from {
     opacity: 0;
-    transform: translateY(16px) scale(0.97);
+    transform: translateY(8px);
   }
 
   to {
     opacity: 1;
-    transform: none;
+    transform: translateY(0);
   }
 }
 
-@keyframes website-loader-turn {
+@keyframes website-loader-scoop {
+  from {
+    transform: translate3d(0, -50%, 0);
+  }
+
   to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes website-loader-float {
-  50% {
-    transform: translateY(-5px) rotate(-3deg);
-  }
-}
-
-@keyframes website-loader-draw {
-  0% {
-    stroke-dashoffset: 100;
-  }
-
-  55% {
-    stroke-dashoffset: 0;
-  }
-
-  100% {
-    stroke-dashoffset: -100;
+    transform: translate3d(11.25rem, -50%, 0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .site-scroll-progress {
+    display: none;
+  }
+
   .website-loader,
   .website-loader__content,
   .website-loader--leaving .website-loader__content,
-  .website-loader__ring,
-  .website-loader__logo {
+  .website-loader__scoop {
     transition: none;
     animation: none;
   }
 
   .website-loader--leaving {
     display: none;
-  }
-
-  .website-loader__underline path {
-    animation: none;
-    stroke-dashoffset: 0;
   }
 }
 
@@ -327,74 +237,67 @@ body {
   }
 }
 
-/* Elements waiting to scroll into view carry data-scroll-reveal="" and become "revealed". */
-.scroll-reveal-enabled [data-scroll-reveal=""] {
-  opacity: 0;
-  transform: translate3d(0, 16px, 0);
-  transition:
-    opacity 500ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    translate 300ms ease,
-    background-color 300ms ease,
-    box-shadow 300ms ease;
-  /* Stagger only the reveal; hover effects respond immediately. */
-  transition-delay:
-    var(--scroll-reveal-delay, 0ms),
-    var(--scroll-reveal-delay, 0ms),
-    0ms,
-    0ms,
-    0ms;
+/* A quiet brand marker tracks reading progress without delaying page content. */
+.site-scroll-progress {
+  position: fixed;
+  z-index: 60;
+  inset: 0 0 auto;
+  height: 2px;
+  pointer-events: none;
 }
 
-.scroll-reveal-enabled [data-scroll-reveal="revealed"] {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
+.site-scroll-progress__bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: #ffdc32;
 }
 
-/* Section-level depth: a block that enters from below the screen also eases up from a slight
-   zoom, which makes the reveal feel tied to the scroll instead of to a timer. Only blocks with
-   room to move are scaled, so short rows and cards keep their plain fade. */
-@supports (animation-timeline: view()) {
+@supports (animation-timeline: scroll()) {
   @media (prefers-reduced-motion: no-preference) {
-    .scroll-reveal-enabled main > *,
-    .scroll-reveal-enabled main section > * {
-      view-timeline: --section-entry block;
-      animation: section-rise linear both;
-      animation-timeline: --section-entry;
-      animation-range: entry 0% entry 60%;
-    }
-
-    /* The timeline scales the block, so the animated CSS transform must not fight it. */
-    .scroll-reveal-enabled main > *[data-scroll-reveal=""],
-    .scroll-reveal-enabled main section > *[data-scroll-reveal=""] {
-      transform: none;
+    .site-scroll-progress__bar {
+      animation: site-scroll-progress linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0% 100%;
     }
   }
 }
 
-@keyframes section-rise {
+@keyframes site-scroll-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* A small, scroll-linked settle reserved for large editorial photos. */
+.scroll-story-frame {
+  overflow: clip;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .scroll-story-frame {
+      view-timeline-name: --story-frame;
+      view-timeline-axis: block;
+    }
+
+    .scroll-story-frame > img {
+      animation: story-image-settle linear both;
+      animation-timeline: --story-frame;
+      animation-range: entry 0% cover 40%;
+    }
+  }
+}
+
+@keyframes story-image-settle {
   from {
-    opacity: 0.35;
-    scale: 0.985;
+    scale: 1.045;
   }
 
   to {
-    opacity: 1;
     scale: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  .scroll-reveal-enabled [data-scroll-reveal=""] {
-    opacity: 1;
-    transform: none;
-    scale: none;
-    transition: none;
-    animation: none;
   }
 }
 
@@ -409,34 +312,6 @@ body {
   transition:
     opacity 750ms cubic-bezier(0.2, 0.7, 0.2, 1),
     transform 1100ms cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-/* Scroll-driven photo depth: framed photos settle from a slight zoom as they
-   scroll into view. `scale` composes with hover `transform` zooms. */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    /* Large story photos only. Product cards also use full-bleed images, and giving every
-       card its own scroll timeline made long pages expensive to scroll. */
-    main figure:has(> img) {
-      view-timeline: --photo-depth block;
-    }
-
-    main figure > img {
-      animation: scroll-photo-settle linear both;
-      animation-timeline: --photo-depth;
-      animation-range: entry 0% cover 45%;
-    }
-  }
-}
-
-@keyframes scroll-photo-settle {
-  from {
-    scale: 1.14;
-  }
-
-  to {
-    scale: 1;
-  }
 }
 
 /* Hero background: drifting glows, panning dot grid, floating sprinkles */

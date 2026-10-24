@@ -29,6 +29,8 @@ interface ProductImageSliderProps {
   priority?: boolean;
   /** Hide the thumbnail strip when the surrounding card needs a shorter footprint. */
   showThumbnails?: boolean;
+  /** Hide the decorative photo scrim when the image is already clearly labeled. */
+  showScrim?: boolean;
   /** Rendered width of the image, used to select the smallest suitable srcset entry. */
   sizes?: string;
   /** Changing this value returns the slider to the first photo. */
@@ -38,7 +40,7 @@ interface ProductImageSliderProps {
 // Product photos with arrows, thumbnails, swipe on touch screens and left/right arrow keys.
 // Photos advance every few seconds, pausing while a mouse rests on them or a keyboard user is inside.
 // A single photo shows on its own, without controls.
-export function ProductImageSlider({ images: sourceImages, name, imageClassName = "aspect-square", frameClassName = "bg-[#f4f1e7]", overlay, priority = false, showThumbnails = true, sizes = "(min-width: 1024px) 600px, 100vw", resetKey }: ProductImageSliderProps) {
+export function ProductImageSlider({ images: sourceImages, name, imageClassName = "aspect-square", frameClassName = "bg-[#f4f1e7]", overlay, priority = false, showThumbnails = true, showScrim = true, sizes = "(min-width: 1024px) 600px, 100vw", resetKey }: ProductImageSliderProps) {
   const { t } = useLanguage();
   const images = [...new Set(sourceImages.filter(Boolean))];
   const [active, setActive] = useState(0);
@@ -117,7 +119,9 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
             );
           })}
         </div>
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#061d3a]/30 via-transparent to-transparent" />
+        {showScrim && (
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#061d3a]/30 via-transparent to-transparent" />
+        )}
         {overlay}
         {hasSlides && showThumbnails && (
           <>
@@ -161,7 +165,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
         )}
       </div>
 
-      {hasSlides && (
+      {showThumbnails && hasSlides && (
         <ul className="mt-4 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:thin]">
           {images.map((image, index) => (
             <li className="shrink-0" key={image}>

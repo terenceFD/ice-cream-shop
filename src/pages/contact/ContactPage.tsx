@@ -5,6 +5,7 @@ import { PageHero } from '../../components/PageHero'
 import { apiRequest } from '../../api/api'
 import { cameroonLocations } from '../../../shared/data'
 import { useLanguage } from '../../language/useLanguage'
+import './ContactPage.css'
 
 const inputClassName = 'w-full rounded-2xl border border-transparent bg-[#fbfaf5] px-5 py-4 text-sm font-medium text-[#092a53] outline-none! ring-1 ring-[#ebe7dc] transition placeholder:font-normal placeholder:text-[#a5aebb] hover:ring-[#ddd6c4] focus:bg-white focus:ring-[#c9b24a]'
 const labelClassName = 'text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]'
@@ -341,46 +342,39 @@ export function ContactPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
+    <div className="contact-page min-h-screen bg-[#fbfaf5] text-[#102c50]">
       <Header />
       <main id="main" tabIndex={-1}>
+        <div className="contact-page-hero">
         <PageHero
           actions={
-            <>
-              <a className={PageHero.primary} href="#contact-form">
-                {t('Send us a message')} <span aria-hidden="true">↓</span>
-              </a>
-              <Link className={PageHero.secondary} to="/about">
-                {t('About us →')}
-              </Link>
-            </>
+            <a className={PageHero.primary} href="#contact-form">
+              {t('Send us a message')} <span aria-hidden="true">↓</span>
+            </a>
           }
           description={t('Have a question for a store? Choose its branch and send a message directly to that store’s team.')}
           eyebrow={t('We’d love to hear from you')}
           title={t('Contact us')}
-          visualClassName="flex flex-col gap-3 sm:block sm:aspect-[6/5]"
+          visualClassName="contact-hero-visual"
           visual={
             <>
-              <div aria-hidden="true" className="absolute right-[4%] top-[6%] size-[80%] rounded-full border border-dashed border-white/20 max-sm:hidden" />
-
               <a
                 className="group relative block rounded-[28px] bg-white p-5 sm:absolute sm:left-0 sm:top-[4%] sm:w-[78%] text-[#092a53] shadow-[0_40px_80px_rgba(2,12,28,0.45)] transition duration-300 hover:-translate-y-1 sm:p-6"
                 href="#contact-form"
               >
-                <span className="flex items-center gap-3">
-                  <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
+                <span className="contact-card-heading flex items-center gap-3">
+                  <span aria-hidden="true" className="contact-card-icon grid size-11 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
                     <MailIcon />
                   </span>
-                  <span className="leading-tight">
+                  <span className="contact-card-copy leading-tight">
                     <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">{t('Contact a store')}</span>
                     <span className="mt-0.5 block font-display text-base font-extrabold sm:text-lg">{t('Send us a message')}</span>
                   </span>
                 </span>
-                <span aria-hidden="true" className="mt-5 block space-y-2.5">
-                  <span className="block h-9 rounded-xl bg-[#fbfaf5] ring-1 ring-[#ebe7dc]" />
-                  <span className="block h-14 rounded-xl bg-[#fbfaf5] ring-1 ring-[#ebe7dc]" />
+                <span className="contact-card-detail mt-4 block text-sm leading-6 text-[#52647b]">
+                  {t(steps[0].detail)}
                 </span>
-                <span aria-hidden="true" className="mt-4 flex justify-end">
+                <span className="contact-card-action mt-4 flex">
                   <span className="inline-flex items-center gap-2 rounded-full bg-[#092a53] px-4 py-2 text-xs font-extrabold text-white transition group-hover:bg-[#163e6b]">
                     {t('Send message')} <ArrowIcon />
                   </span>
@@ -423,21 +417,18 @@ export function ContactPage() {
             </>
           }
         />
+        </div>
 
-        <section className="pb-20 pt-10 sm:pb-24 sm:pt-14 lg:pb-28">
-          <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-start gap-10 px-5 sm:px-8 lg:grid-cols-12 lg:gap-14 lg:px-12">
-            <aside className="lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300 lg:col-span-4">
-              <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                {t('How it works')}
-              </p>
+        <section className="contact-message-section pb-20 pt-10 sm:pb-24 sm:pt-14 lg:pb-28">
+          <div className="contact-workspace mx-auto grid max-w-[1320px] grid-cols-1 items-start gap-10 px-5 sm:px-8 lg:grid-cols-12 lg:gap-14 lg:px-12">
+            <aside className="contact-guide lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300 lg:col-span-4">
               <h2 className="mt-4 font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl">
-                {t('Say hello')}
+                {t('Your message goes to the right store')}
               </h2>
 
-              <ol className="relative mt-8 space-y-7 before:absolute before:bottom-6 before:left-[23px] before:top-6 before:w-0.5 before:bg-gradient-to-b before:from-[#ffdc32] before:to-[#ebe7dc]">
+              <ol className="contact-steps relative mt-8 space-y-7 before:absolute before:bottom-6 before:left-[23px] before:top-6 before:w-0.5 before:bg-gradient-to-b before:from-[#ffdc32] before:to-[#ebe7dc]">
                 {steps.map((step, index) => (
-                  <li className="group relative flex gap-5" key={step.title}>
+                  <li className="contact-step group relative flex gap-5" key={step.title}>
                     <span className="relative z-10 grid size-12 shrink-0 place-items-center rounded-2xl bg-[#092a53] font-display text-sm font-extrabold tabular-nums text-[#ffdc32] shadow-[0_10px_22px_rgba(9,42,83,0.2)] ring-4 ring-[#fbfaf5] transition duration-300 group-hover:-rotate-6 group-hover:bg-[#ffdc32] group-hover:text-[#092a53]">
                       {String(index + 1).padStart(2, '0')}
                     </span>
@@ -449,7 +440,7 @@ export function ContactPage() {
                 ))}
               </ol>
 
-              <div className="relative mt-10 overflow-hidden rounded-[24px] bg-[#092a53] p-6 text-white shadow-[0_20px_44px_rgba(9,42,83,0.2)]">
+              <div className="contact-location-note relative mt-10 overflow-hidden rounded-[24px] bg-[#092a53] p-6 text-white shadow-[0_20px_44px_rgba(9,42,83,0.2)]">
                 <div aria-hidden="true" className="absolute -right-12 -top-12 size-36 rounded-full border-[24px] border-white/[0.05]" />
                 <span aria-hidden="true" className="grid size-11 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]">
                   <PinIcon className="size-5" />
@@ -466,7 +457,7 @@ export function ContactPage() {
             <section
               aria-labelledby="contact-form-title"
               id="contact-form"
-              className="relative scroll-mt-28 overflow-hidden rounded-[32px] bg-white p-6 before:absolute before:inset-x-0 before:top-0 before:h-1.5 before:bg-gradient-to-r before:from-[#ffdc32] before:via-[#ffe76c] before:to-[#ffdc32] shadow-[0_1px_0_rgba(9,42,83,0.04),0_24px_60px_rgba(9,42,83,0.08)] ring-1 ring-[#ebe7dc] sm:p-10 lg:col-span-8 lg:p-12"
+              className="contact-form-panel relative scroll-mt-28 overflow-hidden rounded-[32px] bg-white p-6 before:absolute before:inset-x-0 before:top-0 before:h-1.5 before:bg-gradient-to-r before:from-[#ffdc32] before:via-[#ffe76c] before:to-[#ffdc32] shadow-[0_1px_0_rgba(9,42,83,0.04),0_24px_60px_rgba(9,42,83,0.08)] ring-1 ring-[#ebe7dc] sm:p-10 lg:col-span-8 lg:p-12"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -499,7 +490,7 @@ export function ContactPage() {
                   </button>
                 </div>
               ) : (
-                <form className="mt-10 space-y-6" onSubmit={handleSubmit}>
+                <form className="contact-form-body mt-10 space-y-6" onSubmit={handleSubmit}>
                   <div>
                     <StoreSelect
                       disabled={isLoadingStores || stores.length === 0}
@@ -568,10 +559,10 @@ export function ContactPage() {
           </div>
         </section>
 
-        <section aria-labelledby="contact-faq-heading" className="relative isolate overflow-hidden bg-white px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
+        <section aria-labelledby="contact-faq-heading" className="contact-faq-section relative isolate overflow-hidden bg-white px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
           <div aria-hidden="true" className="pointer-events-none absolute -left-40 top-24 -z-10 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]" />
-          <div className="mx-auto grid max-w-[1240px] gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-5">
+          <div className="contact-faq-layout mx-auto grid max-w-[1240px] gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="contact-faq-intro lg:col-span-5">
               <div className="lg:sticky lg:top-28">
                 <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
                   <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
@@ -584,7 +575,7 @@ export function ContactPage() {
                   {t('Quick answers about ordering, delivery, payment and our branches.')}
                 </p>
 
-                <div className="relative isolate mt-10 overflow-hidden rounded-[26px] bg-[#092a53] p-7 text-white shadow-[0_20px_50px_rgba(9,42,83,0.18)] sm:p-8">
+                <div className="contact-faq-note relative isolate mt-10 overflow-hidden rounded-[26px] bg-[#092a53] p-7 text-white shadow-[0_20px_50px_rgba(9,42,83,0.18)] sm:p-8">
                   <div aria-hidden="true" className="absolute -right-14 -top-14 -z-10 size-44 rounded-full border-[28px] border-white/[0.05]" />
                   <span aria-hidden="true" className="grid size-12 place-items-center rounded-2xl bg-[#ffdc32] text-[#092a53]">
                     <MailIcon />
@@ -611,7 +602,7 @@ export function ContactPage() {
               </div>
             </div>
 
-            <div className="lg:col-span-7">
+            <div className="contact-faq-list lg:col-span-7">
               <div className="border-t border-[#e5e1d7]">
                 {contactFaqs.map(({ question, answer }, index) => (
                   <details className="group border-b border-[#e5e1d7] transition-colors open:border-[#092a53]/20" key={question} open={index === 0}>
