@@ -4,7 +4,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '../index.css'
 import App from './App'
-import { initialLanguage, loadFrenchDictionary } from '../language/languageLoader'
 
 const rootElement = document.getElementById('root')
 if (!rootElement) throw new Error('Root element #root was not found.')
@@ -18,10 +17,7 @@ function start() {
   )
 }
 
-// French readers get their translations before the first paint (no flash of English);
-// English readers start immediately without downloading them.
-if (initialLanguage() === 'fr') loadFrenchDictionary().catch(() => {}).finally(start)
-else start()
+start()
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

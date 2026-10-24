@@ -113,7 +113,7 @@ export function InstallAppPrompt() {
     <section
       aria-labelledby="install-app-title"
       aria-describedby="install-app-description"
-      className="install-app-card fixed inset-x-3 bottom-3 z-[55] sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[26rem]"
+      className="install-app-card fixed inset-x-3 bottom-3 z-[55] max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[26rem]"
       role="dialog"
     >
       <div className="overflow-hidden rounded-[20px] bg-white text-[#102c50] shadow-[0_20px_56px_rgba(9,42,83,0.24)] ring-1 ring-[#102c50]/10">

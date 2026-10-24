@@ -2,26 +2,26 @@ import { useEffect, useState } from 'react'
 import { useLanguage } from '../language/useLanguage'
 
 // Show on each full page load; the app-level component stays mounted during client-side navigation.
-const MIN_VISIBLE_MS = 1000
 const EXIT_MS = 380
 
 export function WebsiteLoader() {
-  const { t } = useLanguage()
+  const { isReady, t } = useLanguage()
   const [isLeaving, setIsLeaving] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
+    if (!isReady) return undefined
     let removeTimer = 0
     const exitTimer = window.setTimeout(() => {
       setIsLeaving(true)
       removeTimer = window.setTimeout(() => setIsVisible(false), EXIT_MS)
-    }, MIN_VISIBLE_MS)
+    }, 0)
 
     return () => {
       window.clearTimeout(exitTimer)
       window.clearTimeout(removeTimer)
     }
-  }, [])
+  }, [isReady])
 
   if (!isVisible) return null
 

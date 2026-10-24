@@ -2,16 +2,25 @@ export const LANGUAGE_STORAGE_KEY = 'cold-stone-language'
 export type Language = 'en' | 'fr'
 
 let frenchDictionary: Record<string, string> | null = null
+let frenchDictionaryRequest: Promise<Record<string, string>> | null = null
 
 /** The French dictionary if it has already been downloaded. */
 export function getFrenchDictionary() {
   return frenchDictionary
 }
 
-/** Downloads the French dictionary once; later calls reuse it. */
-export async function loadFrenchDictionary() {
-  frenchDictionary ??= (await import('./french')).default
-  return frenchDictionary
+/** Downloads the French dictionary once; concurrent callers share the same request. */
+export function loadFrenchDictionary() {
+  frenchDictionaryRequest ??= import('./french')
+    .then(({ default: dictionary }) => {
+      frenchDictionary = dictionary
+      return dictionary
+    })
+    .catch((error: unknown) => {
+      frenchDictionaryRequest = null
+      throw error
+    })
+  return frenchDictionaryRequest
 }
 
 /** The saved language, or French when the browser prefers it. */

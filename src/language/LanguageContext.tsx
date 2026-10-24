@@ -5,6 +5,7 @@ import { getFrenchDictionary, initialLanguage, LANGUAGE_STORAGE_KEY, loadFrenchD
 
 export interface LanguageContextValue {
   language: Language
+  isReady: boolean
   setLanguage: Dispatch<SetStateAction<Language>>
   t: (key: string, variables?: Record<string, string | number>) => string
 }
@@ -13,15 +14,27 @@ export interface LanguageContextValue {
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(initialLanguage)
-  // French text arrives on demand; main.tsx preloads it before the first render for French readers.
+  // French text arrives on demand, so loading translations never blocks the initial render.
   const [french, setFrench] = useState(getFrenchDictionary)
+  const [frenchLoadFailed, setFrenchLoadFailed] = useState(false)
 
   useEffect(() => {
-    if (language !== 'fr' || french) return
+    if (language !== 'fr' || french) {
+      setFrenchLoadFailed(false)
+      return
+    }
     let cancelled = false
     loadFrenchDictionary()
-      .then((dictionary) => { if (!cancelled) setFrench(dictionary) })
-      .catch((error) => console.error('Unable to load the French translations.', error))
+      .then((dictionary) => {
+        if (cancelled) return
+        setFrench(dictionary)
+        setFrenchLoadFailed(false)
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return
+        console.error('Unable to load the French translations.', error)
+        setFrenchLoadFailed(true)
+      })
     return () => { cancelled = true }
   }, [language, french])
 
@@ -36,6 +49,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(() => ({
     language,
+    isReady: language !== 'fr' || french !== null || frenchLoadFailed,
     setLanguage,
     t(key: string, variables: Record<string, string | number> = {}) {
       let result = language === 'fr' ? french?.[key] || key : key
@@ -44,7 +58,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       }
       return result
     },
-  }), [language, french])
+  }), [language, french, frenchLoadFailed])
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
