@@ -1,0 +1,2167 @@
+{
+ "url": "http://localhost:5173/custom-cake",
+ "at": "2026-10-24T10:50:40.493Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 5,
+   "filled": [
+    1,
+    0.92,
+    0.9,
+    0.74,
+    0.93
+   ],
+   "motion": {
+    "elements": 13,
+    "css": 6,
+    "transitions": 7,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 4183,
+     "screens": 4.6,
+     "words": 509,
+     "img": 12,
+     "video": 0,
+     "canvas": 0,
+     "svg": 54,
+     "sections": 7,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 9,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "cake-11.webp",
+      "cake-1.webp",
+      "cake-2.webp",
+      "cake-3.webp",
+      "cake-4.webp",
+      "cake-1.webp",
+      "cake-2.webp",
+      "cake-3.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "🎨",
+      "🕯",
+      "🎈",
+      "🛵"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Custom cake request",
+     "words": 3,
+     "chars": 19,
+     "lines": 1,
+     "size": 57.6,
+     "vw": 4,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 1.04,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "left",
+     "widthRatio": 0.4,
+     "top": 318,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Custom cake request",
+     "words": 3,
+     "lines": 1,
+     "size": 57.6,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Custom cake request",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 57.6,
+      "vw": 4,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.04,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.4,
+      "top": 318,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Cakes made here",
+      "words": 3,
+      "chars": 15,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.18,
+      "top": 997,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Tell us about your cake",
+      "words": 5,
+      "chars": 23,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.11,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.54,
+      "top": 1656,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.28,
+      "top": 3620,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 4,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.9,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.1,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      24,
+      36,
+      58
+     ],
+     "sizeCount": 13,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 16,
+      "leading": 1.75,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 7.4
+     },
+     "measureChars": 55,
+     "max": {
+      "size": 57.6,
+      "vw": 4,
+      "font": "Fredoka",
+      "text": "Custom cake request"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 2,
+     "microLabelShare": 0.01,
+     "microSamples": [
+      "Made for celebrations",
+      "Free app"
+     ],
+     "upperShare": 0.02,
+     "centerShare": 0.02,
+     "smallText": 12
+    },
+    "eyebrows": [
+     {
+      "text": "Made for celebrations",
+      "above": "Custom cake request",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 260
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#081c38",
+       "top": 80,
+       "hsl": {
+        "h": 215,
+        "s": 0.75,
+        "l": 0.13
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 1616,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 3556,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.37
+      },
+      {
+       "color": "#65748a",
+       "share": 0.21
+      },
+      {
+       "color": "#092a53",
+       "share": 0.17
+      },
+      {
+       "color": "#41546b",
+       "share": 0.08
+      },
+      {
+       "color": "#52647b",
+       "share": 0.05
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": [
+      {
+       "text": "(optional)",
+       "ratio": 2.1,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#a5aebb",
+       "bg": "#fbfaf5"
+      },
+      {
+       "text": "(optional)",
+       "ratio": 2.1,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#a5aebb",
+       "bg": "#fbfaf5"
+      },
+      {
+       "text": "0 / 200",
+       "ratio": 2.1,
+       "need": 4.5,
+       "size": 11,
+       "fg": "#a5aebb",
+       "bg": "#fbfaf5"
+      },
+      {
+       "text": "Order at least",
+       "ratio": 4.2,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#65748a",
+       "bg": "#f1f2ee"
+      },
+      {
+       "text": "Cakes are",
+       "ratio": 4.2,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#65748a",
+       "bg": "#f1f2ee"
+      },
+      {
+       "text": "Booking",
+       "ratio": 4.2,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#65748a",
+       "bg": "#f1f2ee"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 7,
+     "inHero": 5,
+     "radius": "pill",
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Order now",
+      "Start your request",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 33,
+     "shadowOverlay": 5,
+     "shadowSamples": [
+      "a.group.inline-flex → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "div.relative.aspect-[4/5] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "p.absolute.bottom-5 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "div.absolute.-left-4 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 3,
+     "scrims": 1,
+     "gradientSamples": [
+      "div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.12), rgba(0, 0, 0, 0))",
+      "div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(28, 79, 138, 0.55), rgba(0, 0, 0, 0))",
+      "div.absolute.inset-0 → linear-gradient(to top, oklab(0.227946 -0.0132131 -0.0588108 / 0.7) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)"
+     ],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "div.mt-8.flex 784px",
+      "dl.border-t.border-white/10 408px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 1,
+     "blurred": 6,
+     "roundedBoxes": 20,
+     "boxRadius": 16,
+     "squareMedia": 4,
+     "roundedMedia": 1,
+     "mediaRadius": 32,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 3,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 1796
+      },
+      {
+       "count": 5,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 1616
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.26
+     }
+    ],
+    "nav": {
+     "links": 15,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 4183,
+    "margins": {
+     "left": 100,
+     "right": 84
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 826,
+      "words": 52,
+      "media": 1,
+      "middle": 167,
+      "heading": {
+       "text": "Custom cake request",
+       "size": 58,
+       "tag": "h1"
+      },
+      "left": 108,
+      "right": 128,
+      "textLeft": 108,
+      "textRight": 128,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.px-5.pb-4",
+      "tag": "section",
+      "top": 906,
+      "height": 630,
+      "words": 34,
+      "media": 4,
+      "middle": 16,
+      "heading": {
+       "text": "Cakes made here",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 60,
+      "right": 60,
+      "textLeft": 60,
+      "textRight": 64,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.px-5.py-14",
+      "tag": "section",
+      "top": 1536,
+      "height": 2020,
+      "words": 277,
+      "media": 4,
+      "middle": 112,
+      "heading": {
+       "text": "Tell us about your cake",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 100,
+      "right": 84,
+      "textLeft": 100,
+      "textRight": 84,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": true
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 3556,
+      "height": 627,
+      "words": 81,
+      "media": 0,
+      "middle": 190,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 124,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Custom cake request",
+      "size": 58,
+      "top": 318,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 100,
+      "n": 4
+     },
+     {
+      "x": 128,
+      "n": 3
+     },
+     {
+      "x": 996,
+      "n": 2
+     },
+     {
+      "x": 60,
+      "n": 1
+     },
+     {
+      "x": 932,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 11,
+    "bodySize": 16,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0.11,
+    "voidBox": {
+     "x": 0,
+     "y": 720,
+     "w": 780,
+     "h": 180
+    }
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 7,
+   "filled": [
+    1,
+    0.97,
+    0.86,
+    0.73,
+    0.86,
+    0.98,
+    1
+   ],
+   "motion": {
+    "elements": 11,
+    "css": 5,
+    "transitions": 6,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 6441,
+     "screens": 6.3,
+     "words": 467,
+     "img": 11,
+     "video": 0,
+     "canvas": 0,
+     "svg": 49,
+     "sections": 6,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 9,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "cake-11.webp",
+      "cake-1.webp",
+      "cake-2.webp",
+      "cake-3.webp",
+      "cake-4.webp",
+      "cake-1.webp",
+      "cake-2.webp",
+      "cake-3.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "🎨",
+      "🕯",
+      "🎈",
+      "🛵"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Custom cake request",
+     "words": 3,
+     "chars": 19,
+     "lines": 1,
+     "size": 48,
+     "vw": 6.3,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 1.04,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "left",
+     "widthRatio": 0.75,
+     "top": 913,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Custom cake request",
+     "words": 3,
+     "lines": 1,
+     "size": 48,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Custom cake request",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.04,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.75,
+      "top": 913,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Cakes made here",
+      "words": 3,
+      "chars": 15,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.34,
+      "top": 1482,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Tell us about your cake",
+      "words": 5,
+      "chars": 23,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.11,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.81,
+      "top": 2016,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.53,
+      "top": 5690,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 4,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.91,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.09,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      24,
+      36,
+      48
+     ],
+     "sizeCount": 12,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 16,
+      "leading": 1.75,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 7.4
+     },
+     "measureChars": 101,
+     "max": {
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "text": "Custom cake request"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 1,
+     "microLabelShare": 0.008,
+     "microSamples": [
+      "Made for celebrations"
+     ],
+     "upperShare": 0.02,
+     "centerShare": 0.02,
+     "smallText": 12
+    },
+    "eyebrows": [
+     {
+      "text": "Made for celebrations",
+      "above": "Custom cake request",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 854
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#081c38",
+       "top": 80,
+       "hsl": {
+        "h": 215,
+        "s": 0.75,
+        "l": 0.13
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 1976,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 3876,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 5634,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.32
+      },
+      {
+       "color": "#65748a",
+       "share": 0.23
+      },
+      {
+       "color": "#092a53",
+       "share": 0.18
+      },
+      {
+       "color": "#41546b",
+       "share": 0.09
+      },
+      {
+       "color": "#52647b",
+       "share": 0.05
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": [
+      {
+       "text": "(optional)",
+       "ratio": 2.1,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#a5aebb",
+       "bg": "#fbfaf5"
+      },
+      {
+       "text": "(optional)",
+       "ratio": 2.1,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#a5aebb",
+       "bg": "#fbfaf5"
+      },
+      {
+       "text": "0 / 200",
+       "ratio": 2.1,
+       "need": 4.5,
+       "size": 11,
+       "fg": "#a5aebb",
+       "bg": "#fbfaf5"
+      },
+      {
+       "text": "Order at least",
+       "ratio": 4.2,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#65748a",
+       "bg": "#f1f2ee"
+      },
+      {
+       "text": "Cakes are",
+       "ratio": 4.2,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#65748a",
+       "bg": "#f1f2ee"
+      },
+      {
+       "text": "Booking",
+       "ratio": 4.2,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#65748a",
+       "bg": "#f1f2ee"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 4,
+     "inHero": 1,
+     "radius": "pill",
+     "height": 60,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": []
+    },
+    "surfaces": {
+     "shadowStatic": 32,
+     "shadowOverlay": 2,
+     "shadowSamples": [
+      "a.group.inline-flex → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "div.relative.aspect-[4/5] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "p.absolute.bottom-5 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "div.absolute.-left-4 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 3,
+     "scrims": 1,
+     "gradientSamples": [
+      "div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.12), rgba(0, 0, 0, 0))",
+      "div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(28, 79, 138, 0.55), rgba(0, 0, 0, 0))",
+      "div.absolute.inset-0 → linear-gradient(to top, oklab(0.227946 -0.0132131 -0.0588108 / 0.7) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)"
+     ],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "div.mt-8.flex 624px",
+      "dl.border-t.border-white/10 704px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 1,
+     "blurred": 6,
+     "roundedBoxes": 18,
+     "boxRadius": 16,
+     "squareMedia": 0,
+     "roundedMedia": 5,
+     "mediaRadius": 16,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 3,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 2156
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.43
+     }
+    ],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 6441,
+    "margins": {
+     "left": 32,
+     "right": 46
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 1322,
+      "words": 52,
+      "media": 1,
+      "middle": 0,
+      "heading": null,
+      "left": 32,
+      "right": 121,
+      "textLeft": 32,
+      "textRight": 121,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.px-5.pb-4",
+      "tag": "section",
+      "top": 1402,
+      "height": 494,
+      "words": 34,
+      "media": 4,
+      "middle": 16,
+      "heading": {
+       "text": "Cakes made here",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 79,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.px-5.py-14",
+      "tag": "section",
+      "top": 1896,
+      "height": 3738,
+      "words": 277,
+      "media": 4,
+      "middle": 0,
+      "heading": {
+       "text": "Tell us about your cake",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 56,
+      "right": 56,
+      "textLeft": 56,
+      "textRight": 56,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 5634,
+      "height": 807,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 46,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Custom cake request",
+      "size": 48,
+      "top": 913,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 32,
+      "n": 4
+     },
+     {
+      "x": 100,
+      "n": 3
+     },
+     {
+      "x": 56,
+      "n": 2
+     },
+     {
+      "x": 72,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 11,
+    "bodySize": 16,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 9,
+   "filled": [
+    1,
+    1,
+    0.88,
+    0.72,
+    0.62,
+    0.9,
+    0.76,
+    1,
+    1
+   ],
+   "motion": {
+    "elements": 11,
+    "css": 5,
+    "transitions": 6,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 7182,
+     "screens": 8.5,
+     "words": 463,
+     "img": 11,
+     "video": 0,
+     "canvas": 0,
+     "svg": 49,
+     "sections": 6,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 9,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "cake-11.webp",
+      "cake-1.webp",
+      "cake-2.webp",
+      "cake-3.webp",
+      "cake-4.webp",
+      "cake-1.webp",
+      "cake-2.webp",
+      "cake-3.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "🎨",
+      "🕯",
+      "🎈",
+      "🛵"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Custom cake request",
+     "words": 3,
+     "chars": 19,
+     "lines": 1,
+     "size": 36,
+     "vw": 9.2,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 1.04,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.9,
+     "top": 700,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Custom cake request",
+     "words": 3,
+     "lines": 1,
+     "size": 36,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Custom cake request",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.04,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 700,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Cakes made here",
+      "words": 3,
+      "chars": 15,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.55,
+      "top": 1393,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Tell us about your cake",
+      "words": 5,
+      "chars": 23,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.77,
+      "top": 2097,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Design your cake",
+      "words": 3,
+      "chars": 16,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.45,
+      "top": 2309,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Pickup details",
+      "words": 2,
+      "chars": 14,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.36,
+      "top": 3285,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Your contact details",
+      "words": 3,
+      "chars": 20,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.53,
+      "top": 3936,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Your cake",
+      "words": 2,
+      "chars": 9,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.77,
+      "top": 4535,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.89,
+      "top": 6019,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 8,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.91,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.09,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      20,
+      24,
+      30,
+      36
+     ],
+     "sizeCount": 10,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 16,
+      "leading": 1.75,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 17
+     },
+     "measureChars": 46,
+     "max": {
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "text": "Custom cake request"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 1,
+     "microLabelShare": 0.008,
+     "microSamples": [
+      "Made for celebrations"
+     ],
+     "upperShare": 0.01,
+     "centerShare": 0.02,
+     "smallText": 11
+    },
+    "eyebrows": [
+     {
+      "text": "Made for celebrations",
+      "above": "Custom cake request",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": true,
+      "size": 11,
+      "top": 642
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#081c38",
+       "top": 80,
+       "hsl": {
+        "h": 215,
+        "s": 0.75,
+        "l": 0.13
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 2073,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#092a53",
+       "top": 4511,
+       "hsl": {
+        "h": 213,
+        "s": 0.8,
+        "l": 0.18
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 5971,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.32
+      },
+      {
+       "color": "#65748a",
+       "share": 0.23
+      },
+      {
+       "color": "#092a53",
+       "share": 0.18
+      },
+      {
+       "color": "#41546b",
+       "share": 0.09
+      },
+      {
+       "color": "#33455c",
+       "share": 0.05
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": [
+      {
+       "text": "(optional)",
+       "ratio": 2.1,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#a5aebb",
+       "bg": "#fbfaf5"
+      },
+      {
+       "text": "(optional)",
+       "ratio": 2.1,
+       "need": 4.5,
+       "size": 13,
+       "fg": "#a5aebb",
+       "bg": "#fbfaf5"
+      },
+      {
+       "text": "0 / 200",
+       "ratio": 2.1,
+       "need": 4.5,
+       "size": 11,
+       "fg": "#a5aebb",
+       "bg": "#fbfaf5"
+      },
+      {
+       "text": "Carrefour Ange Raphaël",
+       "ratio": 4.4,
+       "need": 4.5,
+       "size": 12,
+       "fg": "#65748a",
+       "bg": "#fbf6e3"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 0,
+     "radius": "pill",
+     "height": 60,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": []
+    },
+    "surfaces": {
+     "shadowStatic": 31,
+     "shadowOverlay": 2,
+     "shadowSamples": [
+      "a.group.inline-flex → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "div.relative.aspect-[4/5] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "p.absolute.bottom-5 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+      "div.cake-float.absolute → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 3,
+     "scrims": 1,
+     "gradientSamples": [
+      "div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.12), rgba(0, 0, 0, 0))",
+      "div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(28, 79, 138, 0.55), rgba(0, 0, 0, 0))",
+      "div.absolute.inset-0 → linear-gradient(to top, oklab(0.227946 -0.0132131 -0.0588108 / 0.7) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)"
+     ],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "div.mt-8.flex 302px",
+      "dl.border-t.border-white/10 350px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 1,
+     "blurred": 5,
+     "roundedBoxes": 11,
+     "boxRadius": 24,
+     "squareMedia": 0,
+     "roundedMedia": 1,
+     "mediaRadius": 32,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 4,
+       "iconTopped": true,
+       "rounded": true,
+       "top": 2289
+      },
+      {
+       "count": 5,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 4511
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.47
+     }
+    ],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 7182,
+    "margins": {
+     "left": 20,
+     "right": 20
+    },
+    "sections": [
+     {
+      "sel": "section.relative.isolate",
+      "tag": "section",
+      "top": 80,
+      "height": 1257,
+      "words": 49,
+      "media": 1,
+      "middle": 0,
+      "heading": null,
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 27,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.px-5.pb-4",
+      "tag": "section",
+      "top": 1337,
+      "height": 680,
+      "words": 34,
+      "media": 4,
+      "middle": 0,
+      "heading": {
+       "text": "Cakes made here",
+       "size": 30,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 39,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.px-5.py-14",
+      "tag": "section",
+      "top": 2017,
+      "height": 3954,
+      "words": 277,
+      "media": 4,
+      "middle": 0,
+      "heading": {
+       "text": "Tell us about your cake",
+       "size": 30,
+       "tag": "h2"
+      },
+      "left": 44,
+      "right": 0,
+      "textLeft": 44,
+      "textRight": -10,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 5971,
+      "height": 1211,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 30,
+       "tag": "span"
+      },
+      "left": 20,
+      "right": 24,
+      "textLeft": 20,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Custom cake request",
+      "size": 36,
+      "top": 700,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 20,
+      "n": 4
+     },
+     {
+      "x": 44,
+      "n": 4
+     },
+     {
+      "x": 64,
+      "n": 3
+     }
+    ],
+    "leftBlocks": 11,
+    "bodySize": 16,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "eyebrow",
+   "width": 1440,
+   "message": "1 eyebrow/kicker label(s) above headings: \"Made for celebrations\" (pill) above \"Custom cake request\"",
+   "fix": "Delete them. If the label carried real information, fold it into the headline or the supporting sentence.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "micro-label",
+   "width": 1440,
+   "message": "2 tiny uppercase letter-spaced label(s): \"Made for celebrations\", \"Free app\"",
+   "fix": "Prefer sentence case at body size.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "emoji",
+   "width": 1440,
+   "message": "Emoji in the page: 🎨 🕯 🎈 🛵",
+   "fix": "Remove. Use words or real imagery.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "gradient",
+   "width": 1440,
+   "message": "3 gradient fill(s): div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.12), rgba(0, 0, 0, 0)) | div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(28, 79, 138, 0.55), rgba(0, 0, 0, 0)) | div.absolute.inset-0 → linear-gradient(to top, oklab(0.227946 -0.0132131 -0.0588108 / 0.7) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)",
+   "fix": "Use a flat colour or a real image. The only gradient allowed by default is a neutral scrim over a photo for legibility.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "shadow",
+   "width": 1440,
+   "message": "33 box-shadow(s) on elements at rest: a.group.inline-flex → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0 | div.relative.aspect-[4/5] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0 | p.absolute.bottom-5 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
+   "fix": "Remove. Separate surfaces with a tone step or space. Shadows are for things that really float (menus, dialogs, sticky bars).",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "hairline",
+   "width": 1440,
+   "message": "2 thin rule(s)/divider line(s): div.mt-8.flex 784px | dl.border-t.border-white/10 408px",
+   "fix": "Delete. Separate with space, a tone change, or scale. Lines are only for real tables and form fields.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "outlined-box",
+   "width": 1440,
+   "message": "1 box(es) drawn with a 1px outline.",
+   "fix": "Prefer a filled surface or no box.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "dashed",
+   "width": 1440,
+   "message": "1 dashed/dotted border(s).",
+   "fix": "Remove unless it is a real drop zone.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "glass",
+   "width": 1440,
+   "message": "6 backdrop-blur surfaces.",
+   "fix": "One blurred sticky bar at most; glass cards are a tell.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "card-rows",
+   "width": 1440,
+   "message": "2 rows of identical boxed cards.",
+   "fix": "Vary the composition; not every section is a card grid."
+  },
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (section #fbfaf5).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "contrast",
+   "width": 1440,
+   "message": "Unreadable text: \"(optional)\" 2.1:1 (#a5aebb on #fbfaf5); \"(optional)\" 2.1:1 (#a5aebb on #fbfaf5); \"0 / 200\" 2.1:1 (#a5aebb on #fbfaf5)",
+   "fix": "Raise contrast to at least 4.5:1 for text, 3:1 for large display.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "size-count",
+   "width": 1440,
+   "message": "13 different font sizes (9, 10, 11, 12, 13, 14, 16, 18, 19, 20, 24, 36, 58).",
+   "fix": "A page needs about five: display, heading, lead, body, small.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  },
+  {
+   "level": "FAIL",
+   "id": "small-text",
+   "width": 1440,
+   "message": "12 text blocks under 13px.",
+   "fix": "Nothing meant to be read goes below 13px.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "focal-point",
+   "width": 1440,
+   "message": "The first screen has no dominant element: the largest type is 57.6px (4vw) and no single picture holds a third of the viewport.",
+   "fix": "Make one thing lead: the headline at display size, or one large picture. A grid of many small pictures is not one thing; in blind tests jurors marked a first screen without a headline down every time. On the strongest studied sites the largest type has a median of 8.4vw."
+  },
+  {
+   "level": "WARN",
+   "id": "off-centre",
+   "width": 1440,
+   "message": "The margins differ: 100px on the left, 84px on the right, at 1440px.",
+   "fix": "Put the navigation and the content on one pair of margins; check for padding on one side only, a scrollbar gutter, or a header on another inset than the page."
+  },
+  {
+   "level": "FAIL",
+   "id": "covered-text",
+   "width": 1440,
+   "message": "Large text lies under another element at some scroll position: \"Your cake\" (screen 2, 75% hidden)",
+   "fix": "Nothing may sit on top of a headline or statement. Move the picture, shorten the pinned run, or raise the text above it (z-index) and give it a ground."
+  },
+  {
+   "level": "WARN",
+   "id": "still-page",
+   "width": 1440,
+   "message": "Little motion: 13 element(s) moved while the page loaded and scrolled.",
+   "fix": "Give every section an entrance for its parts (not one fade of the whole block) and add one moving picture: a looping clip or a slow move on a photograph."
+  },
+  {
+   "level": "WARN",
+   "id": "measure",
+   "width": 768,
+   "message": "Longest paragraph runs about 101 characters per line.",
+   "fix": "Cap paragraphs at 45–75 characters (max-width: 60ch)."
+  },
+  {
+   "level": "FAIL",
+   "id": "late-title",
+   "width": 768,
+   "message": "The title is not readable 1.2s after the page loaded (something lies over it).",
+   "fix": "Put the headline in the HTML, painted on the first frame; the load sequence only adds arrival and is settled by 1.2s (references/motion.md, \"Load sequence in 1.2 seconds\"). No preloader, no gate, no waiting for the load event.",
+   "alsoAt": [
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "name-only-title",
+   "width": 768,
+   "message": "The h1 is a bare name (\"Custom cake request\") and nothing else on the first screen says what this is.",
+   "fix": "Keep the name if it leads, and give the line under it (18px or more) the plain words: what it is, for whom, where or when. In the study of 97 Sites of the Day, first screens that named nothing lost usability and content points.",
+   "alsoAt": [
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "icon-cards",
+   "width": 390,
+   "message": "1 row(s) of identical cards each topped with a small icon (4 cards).",
+   "fix": "Replace with one composed section from the direction: a narrative split, a list set in large type, or real imagery per item."
+  },
+  {
+   "level": "WARN",
+   "id": "first-action",
+   "width": 390,
+   "message": "No visible button in the first phone screen.",
+   "fix": "On a phone the first screen still holds the headline, the supporting sentence and the action; move navigation into one row or a menu so it does not push them down."
+  },
+  {
+   "level": "FAIL",
+   "id": "reduced-hidden",
+   "width": 1440,
+   "message": "With reduced motion requested, 57 text block(s) on the first screen stay invisible: \"Ice cream by the scoop\", \"Browse signature creations and treats.\", \"Browse all flavors\", \"Flavor tag\"",
+   "fix": "Put every hidden starting state inside @media (prefers-reduced-motion: no-preference); the reduced page is the finished page (references/motion.md §8)."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\custom-cake-before\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\custom-cake-before\\desktop-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\custom-cake-before\\desktop-page-02.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\custom-cake-before\\tablet-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\custom-cake-before\\tablet-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\custom-cake-before\\tablet-page-02.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\custom-cake-before\\mobile-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\custom-cake-before\\mobile-page-01.jpg",
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\custom-cake-before\\mobile-page-02.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

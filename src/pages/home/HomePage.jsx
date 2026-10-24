@@ -177,9 +177,8 @@ const flavorImageAlternates = {
 };
 const homeSlides = [
   {
-    eyebrow: "A little happiness in every scoop",
-    title: "Your next favorite",
-    accent: "starts here.",
+    title: "A little joy",
+    accent: "in each scoop.",
     description: "Signature creations, the full menu, and stores across Cameroon.",
     image: "/ice-images/ice-9.jpg",
     alt: "Colorful ice cream creations ready to enjoy",
@@ -190,9 +189,8 @@ const homeSlides = [
     secondaryTo: "/flavors",
   },
   {
-    eyebrow: "Ice cream cakes for every celebration",
-    title: "Celebrate with",
-    accent: "a cake to remember.",
+    title: "Ice cream cakes",
+    accent: "for celebrations.",
     description: "Creamy ice cream cakes for birthdays, parties, and every celebration.",
     image: "/cake-images/cake-11.webp",
     alt: "A chocolate ice cream cake held up for a celebration",
@@ -203,9 +201,8 @@ const homeSlides = [
     secondaryTo: "/menu?category=Ice%20Cream%20Cakes%20and%20Pies",
   },
   {
-    eyebrow: "Cool, creamy and full of crunch",
-    title: "Fresh mint,",
-    accent: "loaded with cookies.",
+    title: "Cool, creamy mint",
+    accent: "with cookie crunch.",
     description: "Mint ice cream with cookies and fudge, mixed fresh on a frozen stone.",
     image: "/menu-official/ice-cream/signature-creations/cookie-mintster.webp",
     alt: "Mint ice cream with chocolate cookies and fudge in a waffle cone",
@@ -1035,12 +1032,9 @@ export function HomePage() {
               {/* Copy */}
               <div className="relative z-10 lg:col-span-6">
                 <div className="home-hero-copy" key={activeSlide}>
-                  <p className="text-sm font-bold text-[#ffdc32] sm:text-base">
-                    {t(homeSlides[activeSlide].eyebrow)}
-                  </p>
-                  <h1 className="mt-4 max-w-[13ch] font-display text-[clamp(2.55rem,5vw,4.7rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-white sm:mt-5">
+                  <h1 className="max-w-none font-display text-[clamp(2.4rem,3.4vw,3.25rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-white">
                     {t(homeSlides[activeSlide].title)}
-                    <span className="mt-1 block text-white">
+                    <span className="block text-white">
                       {t(homeSlides[activeSlide].accent)}
                     </span>
                   </h1>
@@ -1324,12 +1318,11 @@ export function HomePage() {
             />
             <div className="mx-auto max-w-[1320px] px-5 pb-12 pt-10 sm:px-8 sm:pb-14 lg:px-12">
               <div className="flex flex-wrap items-center justify-between gap-6">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
-                  <span aria-hidden="true" className="h-px w-10 bg-[#ffdc32]" />
+                <h2 className="font-display text-xl font-extrabold text-white sm:text-2xl">
                   {t("Why people love us")}
-                </p>
+                </h2>
                 <Link
-                  className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.16em] text-white/70 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+                  className="inline-flex items-center gap-2 text-sm font-bold text-white/70 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
                   to="/locations"
                 >
                   <span
@@ -2248,15 +2241,11 @@ export function HomePage() {
               />
             </div>
             <div className="order-1 max-w-xl lg:order-2">
-              <p className="flex items-center gap-3 text-sm font-bold text-[#765c00]">
-                <span aria-hidden="true" className="h-px w-8 bg-[#a48700]" />
-                {t("A tropical scoop of vibe")}
-              </p>
               <h2
-                className="mt-5 max-w-[14ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-5xl"
+                className="max-w-[14ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-5xl"
                 id="sunshine-heading"
               >
-                {t("Hello, sunshine.")}
+                {t("Tropical mango sunshine.")}
               </h2>
               <p className="mt-6 max-w-lg text-lg font-medium leading-8 text-[#123b68]">
                 {t(
@@ -2302,15 +2291,11 @@ export function HomePage() {
               </figcaption>
             </figure>
             <div className="order-1 max-w-xl lg:order-2">
-              <p className="flex items-center gap-3 text-sm font-bold text-[#765c00]">
-                <span aria-hidden="true" className="h-px w-8 bg-[#a48700]" />
-                {t("The Cold Stone feeling")}
-              </p>
               <h2
-                className="mt-5 max-w-[12ch] font-display text-4xl font-extrabold leading-[1.04] tracking-tight text-[#092a53] sm:text-5xl"
+                className="max-w-[14ch] font-display text-4xl font-extrabold leading-[1.04] tracking-tight text-[#092a53] sm:text-5xl"
                 id="moments-heading"
               >
-                {t("Small moments. Sweet memories.")}
+                {t("Sweet moments at Cold Stone.")}
               </h2>
               <p className="mt-6 text-lg font-medium leading-8 text-[#123b68]">
                 {t(
@@ -2363,19 +2348,17 @@ export function HomePage() {
               {[
                 {
                   title: "The full menu",
-                  description: "Every category, from signature creations to sundaes and cakes.",
+                  description: "All categories, from signature creations to sundaes and cakes.",
                   cta: "Browse the full menu",
                   to: "/menu",
                   image: "/menu-official/ice-cream/signature-creations/our-dubai-chocolate-creation.webp",
-                  badge: "All categories",
                 },
                 {
                   title: "All flavors",
-                  description: "Fruity, chocolatey or classic — browse the whole flavor collection.",
+                  description: "Every flavor — fruity, chocolatey or classic — in one collection.",
                   cta: "View flavors",
                   to: "/flavors",
                   image: "/menu-official/ice-cream/signature-creations/our-strawberry-blonde-2.webp",
-                  badge: "Every flavor",
                 },
               ].map((card, cardIndex) => (
                 <article
@@ -2401,10 +2384,7 @@ export function HomePage() {
                     </div>
                     <div className="flex items-start justify-between gap-4 p-5 sm:p-7">
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#765c00]">
-                          {t(card.badge)}
-                        </p>
-                        <h3 className="mt-2 font-display text-2xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-3xl">
+                        <h3 className="font-display text-2xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-3xl">
                           {t(card.title)}
                         </h3>
                         <p className="mt-2 max-w-md text-sm leading-6 text-[#52647b] sm:text-base">
@@ -2441,10 +2421,10 @@ export function HomePage() {
             names as the visitor scrolled past them. */}
         <nav
           aria-label={t("Page sections")}
-          className={`fixed bottom-6 left-1/2 z-40 hidden -translate-x-1/2 transition duration-300 lg:block ${
+          className={`fixed bottom-6 left-1/2 z-40 -translate-x-1/2 lg:block ${
             pillVisible
-              ? "pointer-events-auto translate-y-0 opacity-100"
-              : "pointer-events-none translate-y-3 opacity-0"
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none hidden"
           }`}
         >
           <div className="flex items-center gap-1 rounded-full bg-[#092a53]/90 p-1.5 shadow-[0_12px_32px_rgba(9,42,83,0.35)] ring-1 ring-white/15 backdrop-blur-md">
@@ -2476,8 +2456,8 @@ export function HomePage() {
           aria-label={t("Back to top")}
           className={`fixed bottom-24 right-6 z-40 grid size-12 place-items-center rounded-full bg-[#092a53] text-white shadow-[0_10px_24px_rgba(9,42,83,0.35)] transition duration-300 hover:bg-[#14467c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 lg:bottom-6 ${
             showScrollTop
-              ? "pointer-events-auto translate-y-0 opacity-100"
-              : "pointer-events-none translate-y-4 opacity-0"
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none hidden"
           }`}
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           type="button"
@@ -2497,8 +2477,8 @@ export function HomePage() {
         <div
           className={`fixed inset-x-3 bottom-3 z-40 transition duration-300 lg:hidden ${
             showScrollTop
-              ? "pointer-events-auto translate-y-0 opacity-100"
-              : "pointer-events-none translate-y-6 opacity-0"
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none hidden"
           }`}
         >
           <Link

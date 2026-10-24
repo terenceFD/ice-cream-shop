@@ -10,26 +10,19 @@ import {
   isRunningAsInstalledApp,
 } from '../lib/installPrompt'
 
-const DISMISSED_KEY = 'cold-stone-install-dismissed'
 // Shown at most once per browser session, so revisits within a visit never nag.
 const SHOWN_THIS_SESSION_KEY = 'cold-stone-install-shown-this-session'
-const SNOOZE_MS = 14 * 24 * 60 * 60 * 1000
 const SHOW_AFTER_MS = 2500
 // Pages where a purchase or admin work is in progress are never interrupted.
 const QUIET_PATHS = ['/admin', '/checkout', '/payment']
 
 type Mode = 'install' | 'ios'
 
-function recentlyDismissed() {
-  try {
-    return Date.now() - Number(localStorage.getItem(DISMISSED_KEY) || 0) < SNOOZE_MS
-  } catch {
-    return false
-  }
-}
+let hasShownThisRuntime = false
 
 // One show per session, no matter how the card is closed or the site reloaded.
 function shownThisSession() {
+  if (hasShownThisRuntime) return true
   try {
     return sessionStorage.getItem(SHOWN_THIS_SESSION_KEY) === '1'
   } catch {
@@ -38,10 +31,11 @@ function shownThisSession() {
 }
 
 function markShownThisSession() {
+  hasShownThisRuntime = true
   try {
     sessionStorage.setItem(SHOWN_THIS_SESSION_KEY, '1')
   } catch {
-    // Without storage the card falls back to per-load showing.
+    // The in-memory guard still prevents duplicate prompts until the page reloads.
   }
 }
 
@@ -63,7 +57,7 @@ export function InstallAppPrompt() {
   const [isInstalling, setIsInstalling] = useState(false)
 
   useEffect(() => {
-    if (isRunningAsInstalledApp() || recentlyDismissed() || shownThisSession()) return undefined
+    if (isRunningAsInstalledApp() || shownThisSession()) return undefined
     let timer = 0
     let settled = false
     function offerInstall(nextMode: Mode) {
@@ -89,11 +83,6 @@ export function InstallAppPrompt() {
 
   function dismiss() {
     setIsVisible(false)
-    try {
-      localStorage.setItem(DISMISSED_KEY, String(Date.now()))
-    } catch {
-      // Without storage the card simply returns on the next visit.
-    }
   }
 
   async function install() {

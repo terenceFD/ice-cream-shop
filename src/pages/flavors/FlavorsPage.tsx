@@ -134,11 +134,7 @@ export function FlavorsPage() {
           <section aria-labelledby="shop-products-heading" className="scroll-mt-4" id="shop-products">
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#6f5a00]">
-                  <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                  {t("Find your flavors")}
-                </p>
-                <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight text-[#092a53] sm:text-5xl" id="shop-products-heading">
+                <h2 className="font-display text-4xl font-extrabold tracking-tight text-[#092a53] sm:text-5xl" id="shop-products-heading">
                   {t("A scoop for every mood")}
                 </h2>
               </div>

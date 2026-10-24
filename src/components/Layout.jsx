@@ -105,7 +105,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
           </svg>
         </summary>
 
-        <div className="invisible absolute left-1/2 top-full z-30 w-[min(44rem,calc(100vw-2rem))] -translate-x-1/2 translate-y-2 pt-3 opacity-0 transition duration-200 ease-out group-open:visible group-open:translate-y-0 group-open:opacity-100">
+        <div className="menu-popover absolute left-1/2 top-full z-30 w-[min(44rem,calc(100vw-2rem))] -translate-x-1/2 pt-3">
           <div className="grid overflow-hidden rounded-xl bg-white p-2 text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#d7e0ea] sm:grid-cols-[15rem_1fr]">
             {feature && (
               <Link
@@ -177,7 +177,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
       </summary>
       <div className={mobile
         ? "mt-1 grid gap-1 rounded-md bg-[#061f40] p-1.5"
-        : `invisible absolute left-1/2 top-full z-30 w-[min(24rem,calc(100vw-2rem))] -translate-x-1/2 translate-y-1 pt-3 opacity-0 transition duration-200 group-open:visible group-open:translate-y-0 group-open:opacity-100 ${links.length > 5 ? "lg:w-[min(38rem,calc(100vw-2rem))]" : ""}`
+        : `menu-popover absolute left-1/2 top-full z-30 -translate-x-1/2 pt-3 ${links.length > 5 ? "lg:w-[min(38rem,calc(100vw-2rem))]" : "w-[min(24rem,calc(100vw-2rem))]"}`
       }>
         <div className={mobile ? "grid gap-1" : "overflow-hidden rounded-xl bg-white p-3 text-sm shadow-[0_18px_44px_rgba(9,42,83,0.2)] ring-1 ring-[#d7e0ea]"}>
           {!mobile && (
@@ -268,7 +268,7 @@ function LanguageDropdown({ language, setLanguage, t }) {
           <path d="m2 4 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
         </svg>
       </summary>
-      <div className="invisible absolute right-0 top-full z-30 w-72 translate-y-2 pt-3 opacity-0 transition duration-200 ease-out group-open:visible group-open:translate-y-0 group-open:opacity-100">
+      <div className="menu-popover absolute right-0 top-full z-30 w-72 pt-3">
         <div className="overflow-hidden rounded-xl bg-white p-2 text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#d7e0ea]">
           <div className="px-3 pb-3 pt-2">
             <p className="text-sm font-bold text-[#092a53]">{t("Select language")}</p>
@@ -385,7 +385,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
           </svg>
         </summary>
 
-        <div className="invisible absolute right-0 top-full z-30 w-80 translate-y-2 pt-3 opacity-0 transition duration-200 ease-out group-open:visible group-open:translate-y-0 group-open:opacity-100">
+        <div className="menu-popover absolute right-0 top-full z-30 w-80 pt-3">
           <div className="overflow-hidden rounded-xl bg-white text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#d7e0ea]">
             {customer ? (
               <>
@@ -500,7 +500,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
       </summary>
       <div className={mobile
         ? "mt-1 grid gap-1 rounded-md bg-white/[0.04] p-2 ring-1 ring-white/10"
-        : "invisible absolute right-0 top-full z-30 w-64 translate-y-1 pt-3 opacity-0 transition duration-200 group-open:visible group-open:translate-y-0 group-open:opacity-100"
+        : "menu-popover absolute right-0 top-full z-30 w-64 pt-3"
       }>
         <div className={mobile ? "grid gap-1" : "overflow-hidden rounded-2xl border border-[#e7e3d9] bg-white p-2 text-sm shadow-[0_18px_48px_rgba(9,42,83,0.2)] ring-1 ring-black/[0.02]"}>
           {customer && (

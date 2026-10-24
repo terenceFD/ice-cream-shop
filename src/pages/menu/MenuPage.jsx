@@ -1432,12 +1432,8 @@ export function MenuPage() {
                 >
                   <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
                     <div className="lg:col-span-4">
-                      <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                        <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                        {t("What our customers are saying")}
-                      </p>
                       <h3
-                        className="mt-4 font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl"
+                        className="font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl"
                         id="menu-product-reviews-title"
                       >
                         {t("Customer reviews")}
@@ -1696,13 +1692,12 @@ export function MenuPage() {
                 id="menu-category-items"
               >
                 <div>
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                    <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
+                  <h3 className="font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl">
                     {t(activeCategory.title)}
-                  </p>
-                  <h3 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl">
-                    {t("Menu items")}
                   </h3>
+                  <p className="mt-2 text-sm font-semibold text-[#65748a]">
+                    {t("Menu items")}
+                  </p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">

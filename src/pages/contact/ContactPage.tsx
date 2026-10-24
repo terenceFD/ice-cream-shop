@@ -564,11 +564,7 @@ export function ContactPage() {
           <div className="contact-faq-layout mx-auto grid max-w-[1240px] gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="contact-faq-intro lg:col-span-5">
               <div className="lg:sticky lg:top-28">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">
-                  <span aria-hidden="true" className="h-px w-10 bg-[#a48700]" />
-                  {t('Here to help')}
-                </p>
-                <h2 className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl" id="contact-faq-heading">
+                <h2 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl" id="contact-faq-heading">
                   {t('Frequently Asked Questions')}
                 </h2>
                 <p className="mt-5 max-w-md text-base leading-7 text-[#52647b]">

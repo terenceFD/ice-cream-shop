@@ -493,7 +493,7 @@ body {
 
   .hero-sprinkle,
   .hero-star {
-    opacity: 0;
+    opacity: revert;
   }
 }
 
@@ -684,5 +684,37 @@ body {
   }
   .admin-stats .mt-4 {
     margin-top: 0;
+  }
+}
+
+/* Closed dropdown panels (header navigation): they start invisible and fade in on open.
+   With prefers-reduced-motion the closed panel must never be a hidden-but-rendered text
+   block, so the reduced page simply hides it (display) instead of visually masking it. */
+.menu-popover {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(0.5rem);
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out,
+    visibility 200ms;
+}
+
+.menu-popover[aria-hidden='false'],
+.group-open > .menu-popover {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-popover {
+    display: none;
+  }
+
+  .group-open > .menu-popover {
+    display: block;
+    opacity: 1;
+    transform: none;
   }
 }
