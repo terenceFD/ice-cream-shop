@@ -54,7 +54,19 @@ test('push is enabled when VAPID keys are set', () => {
 
 test('accepts a real browser subscription and rejects unsafe ones', () => {
   assert.deepEqual(
-    normalizePushSubscription({ endpoint: 'https://fcm.googleapis.com/fcm/send/abc', keys: validKeys }),
+    normalizePushSubscription({
+      endpoint: 'https://fcm.googleapis.com/fcm/send/abc',
+      expirationTime: null,
+      keys: validKeys,
+    }),
+    { endpoint: 'https://fcm.googleapis.com/fcm/send/abc', ...validKeys },
+  )
+  assert.deepEqual(
+    normalizePushSubscription({
+      endpoint: 'https://fcm.googleapis.com/fcm/send/abc',
+      expirationTime: Date.now() + 60_000,
+      keys: validKeys,
+    }),
     { endpoint: 'https://fcm.googleapis.com/fcm/send/abc', ...validKeys },
   )
   assert.equal(normalizePushSubscription({ endpoint: 'http://insecure.example/x', keys: validKeys }), null)

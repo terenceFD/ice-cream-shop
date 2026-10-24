@@ -89,6 +89,7 @@ const PushEndpointSchema = z.string()
   .transform((endpoint) => new URL(endpoint).toString())
 const PushSubscriptionSchema = z.object({
   endpoint: PushEndpointSchema,
+  expirationTime: z.number().nullable().optional(),
   keys: z.object({
     p256dh: z.string().trim().min(40).max(200).regex(BASE64URL),
     auth: z.string().trim().min(8).max(100).regex(BASE64URL),

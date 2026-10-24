@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { photoSrcSet, thumbnail } from '../../lib/thumbnails'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { apiRequest, getCustomerToken } from '../../api/api'
 import { useAuth } from '../../context/useAuth'
 import { ArrowIcon, Footer, Header } from '../../components/Layout'
@@ -9,6 +9,12 @@ import { useLanguage } from '../../language/useLanguage'
 import { getCameroonDate } from '../../../shared/cameroonDate'
 
 const toppingOptions = ['Sprinkles', 'Chocolate chips', 'Fresh fruit', 'Cookie pieces', 'Whipped cream']
+const cakeGallery = [
+  { photo: '/cake-images/cake-1.webp', name: 'Rose birthday cake' },
+  { photo: '/cake-images/cake-2.webp', name: 'Blue celebration cake' },
+  { photo: '/cake-images/cake-3.webp', name: 'Vanilla dream cake' },
+  { photo: '/cake-images/cake-4.webp', name: 'Party ice cream cake' },
+]
 
 type CakeQuote = {
   id: number
@@ -47,6 +53,7 @@ export function CustomCakeRequestPage() {
   const [success, setSuccess] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [toppings, setToppings] = useState<string[]>([])
+  const [selectedCakePhoto, setSelectedCakePhoto] = useState(0)
   const [stores, setStores] = useState<{ storeId: number; storeName: string; storeAddress: string; location: string; pickupEnabled: boolean }[]>([])
   const [selectedStoreId, setSelectedStoreId] = useState('')
   const [storeError, setStoreError] = useState('')
@@ -238,11 +245,12 @@ export function CustomCakeRequestPage() {
     { label: 'Chocolate', swatch: 'bg-[#6b3f26]' },
     { label: 'Strawberry', swatch: 'bg-[#f39bb0]' },
     { label: 'Mango', swatch: 'bg-[#f7b23b]' },
-    { label: 'Custom flavor — tell us below', swatch: 'bg-[conic-gradient(#ffdc32,#f56586,#7b4bd8,#4fc4e8,#ffdc32)]' },
+    { label: 'Custom flavor — tell us below', swatch: 'bg-[#4b6d82]' },
   ]
   const selectedStore = stores.find((store) => String(store.storeId) === selectedStoreId)
+  const previewCake = cakeGallery[selectedCakePhoto]
   const labelClass = 'block text-[13px] font-bold text-[#33455c]'
-  const fieldClass = 'mt-2 w-full rounded-2xl bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-[#092a53] outline-none! ring-1 ring-[#e5e1d7] transition placeholder:font-normal placeholder:text-[#a5aebb] hover:bg-white hover:ring-[#d6cfbd] focus:bg-white focus:ring-2 focus:ring-[#c9b24a]'
+  const fieldClass = 'mt-2 w-full rounded-md bg-[#f4f6f8] px-4 py-3.5 text-sm font-semibold text-[#092a53] outline-none! ring-1 ring-[#dce2e8] transition placeholder:font-normal placeholder:text-[#78879a] hover:bg-white hover:ring-[#9aa9ba] focus:bg-white focus:ring-2 focus:ring-[#bd9c00]'
   const stepHeading = (title: string, hint: string, id: string) => (
     <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
       <h3 className="font-display text-2xl font-extrabold tracking-tight text-[#092a53]" id={id}>
@@ -255,7 +263,7 @@ export function CustomCakeRequestPage() {
     value ? new Date(`${value}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'long' }) : ''
 
   return (
-    <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
+    <div className="min-h-screen bg-[#f3f5f7] text-[#102c50]">
       <Header />
       {paymentDialog && (
         <PaymentStatusDialog
@@ -284,150 +292,96 @@ export function CustomCakeRequestPage() {
         />
       )}
       <main id="main" tabIndex={-1}>
-        {/* Hero — same professional dark-navy design as the home page cake banner. */}
-        <section className="relative isolate overflow-hidden bg-[#081c38] text-white">
-          {/* Ambient decoration — subtle glows + dotted grid keep the dark section from feeling flat. */}
-          <div aria-hidden="true" className="pointer-events-none absolute -left-40 top-1/4 -z-10 size-[28rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),transparent)]" />
-          <div aria-hidden="true" className="pointer-events-none absolute -right-32 -bottom-24 -z-10 size-[24rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.55),transparent)]" />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.07]"
-            style={{ backgroundImage: "radial-gradient(rgb(255 255 255 / 0.9) 1px, transparent 1px)", backgroundSize: "26px 26px" }}
-          />
-          <div className="mx-auto grid max-w-[1320px] items-center gap-10 px-5 pb-20 pt-10 sm:px-8 sm:pb-24 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:px-12 lg:pb-28 lg:pt-16">
-            <div className="relative z-10 order-2 lg:order-1">
-              <nav aria-label={t('Breadcrumb')} className="mb-7 flex items-center gap-2 text-xs font-bold text-white/50">
-                <Link className="transition hover:text-white" to="/menu">{t('Menu')}</Link>
-                <span aria-hidden="true" className="text-white/30">/</span>
-                <span aria-current="page" className="text-[#ffdc32]">{t('Custom cake request')}</span>
-              </nav>
-              <p className="inline-flex items-center gap-2.5 rounded-full border border-[#ffdc32]/35 bg-[#ffdc32]/10 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">
-                <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                  <path d="M4 20h16M5 20v-7h14v7M8 13V9h8v4M12 9V5m0 0-2 2m2-2 2 2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-                </svg>
-                {t('Made for celebrations')}
-              </p>
-              <h1 className="mt-6 max-w-xl font-display text-4xl font-extrabold leading-[1.04] tracking-tight sm:text-5xl lg:text-[3.6rem]">
-                {t('Custom cake request')}
-              </h1>
-              <p className="mt-5 max-w-lg text-base leading-7 text-white/70 sm:text-lg sm:leading-8">
-                {t('Creamy ice cream cakes for birthdays, parties, and every celebration.')}
-              </p>
-              <ul className="mt-7 grid max-w-md gap-3 sm:grid-cols-2">
-                {[
-                  { icon: '🎨', label: 'Custom designs' },
-                  { icon: '🕯️', label: 'Fresh daily' },
-                  { icon: '🎈', label: 'Any occasion' },
-                  { icon: '🛵', label: 'Same-day delivery' },
-                ].map(({ icon, label }) => (
-                  <li
-                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm"
-                    key={label}
-                  >
-                    <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#ffdc32]/15 text-base">{icon}</span>
-                    <span className="text-[13px] font-bold text-white/85">{t(label)}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-9 flex flex-wrap items-center gap-4">
+        <section className="bg-[#092a53] text-white">
+          <div className="grid lg:min-h-[min(82svh,760px)] lg:grid-cols-[58%_42%]">
+            <div className="h-[48svh] min-h-[18rem] max-h-[34rem] overflow-hidden lg:h-auto lg:min-h-[min(82svh,760px)] lg:max-h-none">
+              <img
+                alt={t('Custom celebration cake')}
+                className="size-full object-cover object-center"
+                decoding="async"
+                fetchPriority="high"
+                sizes="(min-width: 1024px) 58vw, 100vw"
+                src={thumbnail('/cake-images/cake-11.webp')}
+                srcSet={photoSrcSet('/cake-images/cake-11.webp')}
+              />
+            </div>
+            <div className="flex items-center px-6 py-12 text-right sm:px-10 lg:px-12 xl:px-20">
+              <div className="ml-auto max-w-md">
+                <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
+                  {t('Custom ice cream cakes')}
+                </h1>
+                <p className="mt-5 text-base leading-7 text-white/80 sm:text-lg sm:leading-8">
+                  {t('Creamy ice cream cakes for birthdays, parties, and every celebration.')}
+                </p>
                 <a
-                  className="group inline-flex min-h-14 items-center gap-3 rounded-full bg-[#ffdc32] px-8 py-3.5 text-sm font-extrabold text-[#092a53] shadow-[0_14px_34px_rgba(255,220,50,0.3)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#ffe761] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081c38]"
+                  className="mt-8 inline-flex min-h-12 items-center justify-center bg-[#ffdc32] px-6 py-3 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
                   href="#cake-request-form"
                 >
                   {t('Start your request')}
-                  <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#092a53] text-[#ffdc32] transition-transform group-hover:translate-y-0.5">
-                    <svg className="size-4" fill="none" viewBox="0 0 24 24"><path d="M12 5v14m0 0-6-6m6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" /></svg>
-                  </span>
                 </a>
-                <span className="flex items-center gap-2 text-sm font-semibold text-white/60">
-                  <svg aria-hidden="true" className="size-5 text-[#ffdc32]" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 0 0 .95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.446a1 1 0 0 0-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.366-2.445a1 1 0 0 0-1.176 0l-3.367 2.445c-.784.57-1.838-.196-1.539-1.118l1.286-3.957a1 1 0 0 0-.363-1.118L2.063 9.385c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 0 0 .951-.69l1.285-3.958Z" />
-                  </svg>
-                  {t('4.9 rated by 1,200+ customers')}
-                </span>
-              </div>
-            </div>
-
-            <div className="relative order-1 lg:order-2">
-              <div className="relative mx-auto max-w-[520px]">
-                {/* Rotating sunburst ring behind the photo adds a premium, celebratory feel. */}
-                <div aria-hidden="true" className="cake-sunburst absolute inset-0 -m-6 rounded-full border border-dashed border-[#ffdc32]/25" />
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[32px] shadow-[0_30px_80px_rgba(0,0,0,0.45)] ring-1 ring-white/15">
-                  <img
-                    alt={t('Custom celebration cake')}
-                    className="absolute inset-0 size-full object-cover"
-                    decoding="async"
-                    loading="lazy"
-                    sizes="(min-width: 768px) 40vw, 90vw"
-                    src={thumbnail('/cake-images/cake-11.webp')}
-                    srcSet={photoSrcSet('/cake-images/cake-11.webp')}
-                  />
-                  <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#081c38]/70 via-transparent to-transparent" />
-                  <p className="absolute bottom-5 left-5 rounded-full border border-white/25 bg-white/15 px-4 py-2 text-xs font-extrabold text-white shadow-lg backdrop-blur-md sm:bottom-7 sm:left-7">
-                    {t('Cake meets ice cream')}
-                  </p>
-                </div>
-                {/* Floating accent cards give the image depth and sell the product. */}
-                <div className="absolute -left-4 top-10 hidden rounded-2xl border border-white/10 bg-white/95 px-4 py-3 shadow-[0_16px_40px_rgba(0,0,0,0.35)] backdrop-blur sm:block">
-                  <p className="font-display text-xl font-extrabold leading-none text-[#092a53]">48h+</p>
-                  <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-[#52647b]">{t('Cold-chain fresh')}</p>
-                </div>
-                <div className="cake-float absolute -bottom-5 -right-2 rounded-2xl border border-white/10 bg-[#ffdc32] px-4 py-3 shadow-[0_16px_40px_rgba(255,220,50,0.35)] sm:-right-5">
-                  <p className="font-display text-xl font-extrabold leading-none text-[#092a53]">100%</p>
-                  <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-[#092a53]/75">{t('Made to order')}</p>
-                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Specimen catalogue — the cakes this bakery has actually made, each on
-            a flat field like a field guide plate. The gallery is the argument: a
-            custom cake here is real, not a promise. */}
-        <section aria-labelledby="cake-gallery-title" className="px-5 pb-4 pt-14 sm:px-8 sm:pt-20 lg:px-12">
-          <div className="mx-auto max-w-[1320px]">
-            <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
-              <h2
-                className="max-w-xl font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl"
-                id="cake-gallery-title"
-              >
+        <section aria-labelledby="cake-gallery-title" className="bg-[#f3f5f7] px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
+          <div className="mx-auto grid max-w-[1320px] items-center gap-10 lg:grid-cols-12 lg:gap-16">
+            <figure className="lg:col-span-8">
+              <div className="aspect-[4/3] overflow-hidden bg-[#dce2e8] sm:aspect-[16/10]">
+                <img
+                  alt={t(previewCake.name)}
+                  className="size-full object-cover"
+                  decoding="async"
+                  loading="lazy"
+                  sizes="(min-width: 1024px) 58vw, 92vw"
+                  src={thumbnail(previewCake.photo)}
+                  srcSet={photoSrcSet(previewCake.photo)}
+                />
+              </div>
+              <figcaption className="mt-4 text-sm font-bold text-[#33455c]">{t(previewCake.name)}</figcaption>
+              <div aria-label={t('Custom cake request')} className="mt-4 flex gap-3" role="group">
+                {cakeGallery.map((cake, index) => (
+                  <button
+                    aria-label={`${t('Custom celebration cake')} ${index + 1}`}
+                    aria-pressed={selectedCakePhoto === index}
+                    className={`size-[4.5rem] shrink-0 overflow-hidden bg-[#dce2e8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${selectedCakePhoto === index ? 'ring-2 ring-[#092a53] ring-offset-2' : 'opacity-70 hover:opacity-100'}`}
+                    key={cake.photo}
+                    onClick={() => setSelectedCakePhoto(index)}
+                    type="button"
+                  >
+                    <img
+                      alt=""
+                      className="size-full object-cover"
+                      decoding="async"
+                      loading="eager"
+                      src={thumbnail(cake.photo, 'tiny')}
+                    />
+                  </button>
+                ))}
+              </div>
+            </figure>
+            <div className="lg:col-span-4">
+              <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl" id="cake-gallery-title">
                 {t('Cakes made here')}
               </h2>
-              <p className="max-w-md text-base leading-7 text-[#41546b]">
+              <p className="mt-5 text-base leading-7 text-[#33455c]">
                 {t('Every one of these started as a request like yours — a size, a flavour and an idea. Yours is next.')}
               </p>
+              <a
+                className="mt-7 inline-flex min-h-12 items-center bg-[#092a53] px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                href="#cake-request-form"
+              >
+                {t('Start your request')}
+              </a>
             </div>
-            <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-              {[
-                { field: 'bg-[#f6d9e3]', photo: '/cake-images/cake-1.webp', name: t('Rose birthday cake') },
-                { field: 'bg-[#d9e5e9]', photo: '/cake-images/cake-2.webp', name: t('Blue celebration cake') },
-                { field: 'bg-[#f2e8c9]', photo: '/cake-images/cake-3.webp', name: t('Vanilla dream cake') },
-                { field: 'bg-[#e6dced]', photo: '/cake-images/cake-4.webp', name: t('Party ice cream cake') },
-              ].map((plate, index) => (
-                <li className={index % 2 === 1 ? 'sm:mt-10' : ''} key={plate.photo}>
-                  <div className={`flex aspect-[4/5] flex-col justify-end overflow-hidden ${plate.field}`}>
-                    <img
-                      alt={plate.name}
-                      className="w-full flex-1 object-cover"
-                      decoding="async"
-                      loading="lazy"
-                      sizes="(min-width: 1024px) 300px, 45vw"
-                      src={thumbnail(plate.photo)}
-                      srcSet={photoSrcSet(plate.photo)}
-                    />
-                    <p className="px-4 py-3 text-[13px] font-extrabold leading-5 text-[#092a53]">{plate.name}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
           </div>
         </section>
 
-        <section className="px-5 py-14 sm:px-8 sm:py-20 lg:px-12">
+        <section className="bg-[#f3f5f7] px-5 py-14 sm:px-8 sm:py-20 lg:px-12">
           <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-12">
             {/* Form */}
             <form
-              className="scroll-mt-6 rounded-[32px] bg-white p-6 ring-1 ring-[#e9e4d6] sm:p-10 lg:col-span-8"
+              className="scroll-mt-6 bg-white p-6 sm:p-10 lg:col-span-8"
               id="cake-request-form"
               onSubmit={submitRequest}
             >
@@ -437,7 +391,7 @@ export function CustomCakeRequestPage() {
               </p>
 
               {/* Step 1 */}
-              <section aria-labelledby="cake-design-heading" className="mt-8 rounded-[24px] bg-[#fbfaf5] p-5 sm:p-7">
+              <section aria-labelledby="cake-design-heading" className="mt-10">
                 {stepHeading('Design your cake', 'Size, flavour and toppings', 'cake-design-heading')}
 
                 <fieldset className="mt-6">
@@ -448,7 +402,7 @@ export function CustomCakeRequestPage() {
                       const checked = size === option.label
                       return (
                         <label
-                          className={`relative flex cursor-pointer flex-col items-center justify-end gap-3 rounded-2xl px-3 pb-4 pt-5 text-center ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${checked ? 'bg-[#092a53] text-white ring-[#092a53]' : 'bg-[#fbfaf5] text-[#092a53] ring-[#ebe7dc] hover:ring-[#d6cfbd]'
+                          className={`relative flex cursor-pointer flex-col items-center justify-end gap-3 rounded-md px-3 pb-4 pt-5 text-center ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${checked ? 'bg-[#092a53] text-white ring-[#092a53]' : 'bg-white text-[#092a53] ring-[#dce2e8] hover:ring-[#9aa9ba]'
                             }`}
                           key={option.label}
                         >
@@ -471,12 +425,12 @@ export function CustomCakeRequestPage() {
                       const checked = flavor === option.label
                       return (
                         <label
-                          className={`inline-flex cursor-pointer items-center gap-2.5 rounded-full py-2 pl-2 pr-4 text-sm font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${checked ? 'bg-[#fbf6e3] text-[#092a53] ring-[#c9b24a]' : 'bg-white text-[#52647b] ring-[#e5e1d7] hover:ring-[#d6cfbd]'
+                          className={`inline-flex cursor-pointer items-center gap-2.5 rounded-md py-2 pl-2 pr-4 text-sm font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${checked ? 'bg-[#fff7cc] text-[#092a53] ring-[#bd9c00]' : 'bg-white text-[#52647b] ring-[#dce2e8] hover:ring-[#9aa9ba]'
                             }`}
                           key={option.label}
                         >
                           <input checked={checked} className="sr-only" name="flavor" onChange={() => setFlavor(option.label)} type="radio" value={value} />
-                          <span aria-hidden="true" className={`size-6 rounded-full ring-2 ring-white ${option.swatch} ${checked ? 'shadow-[0_0_0_2px_#c9b24a]' : 'shadow-[0_0_0_1px_#e5e1d7]'}`} />
+                          <span aria-hidden="true" className={`size-6 rounded-full ring-2 ring-white ${option.swatch} ${checked ? 'outline outline-2 outline-[#bd9c00]' : 'outline outline-1 outline-[#dce2e8]'}`} />
                           {value}
                         </label>
                       )
@@ -485,13 +439,13 @@ export function CustomCakeRequestPage() {
                 </fieldset>
 
                 <fieldset className="mt-7">
-                  <legend className={labelClass}>{t('Toppings')} <span className="font-semibold normal-case tracking-normal text-[#a5aebb]">({t('optional')})</span></legend>
+                  <legend className={labelClass}>{t('Toppings')} <span className="font-semibold normal-case tracking-normal text-[#52647b]">({t('optional')})</span></legend>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {toppingOptions.map((topping) => {
                       const checked = toppings.includes(topping)
                       return (
                         <label
-                          className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${checked ? 'bg-[#092a53] text-white ring-[#092a53]' : 'bg-white text-[#52647b] ring-[#e5e1d7] hover:ring-[#d6cfbd]'
+                          className={`inline-flex cursor-pointer items-center gap-2 rounded-md px-4 py-2.5 text-sm font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${checked ? 'bg-[#092a53] text-white ring-[#092a53]' : 'bg-white text-[#52647b] ring-[#dce2e8] hover:ring-[#9aa9ba]'
                             }`}
                           key={topping}
                         >
@@ -513,8 +467,8 @@ export function CustomCakeRequestPage() {
 
                 <label className="mt-7 block">
                   <span className="flex items-baseline justify-between gap-3">
-                    <span className={labelClass}>{t('Message on cake or special instructions')} <span className="font-semibold normal-case tracking-normal text-[#a5aebb]">({t('optional')})</span></span>
-                    <span className="shrink-0 text-[11px] font-semibold tabular-nums text-[#a5aebb]">{messageLength} / 200</span>
+                    <span className={labelClass}>{t('Message on cake or special instructions')} <span className="font-semibold normal-case tracking-normal text-[#52647b]">({t('optional')})</span></span>
+                    <span className="shrink-0 text-[13px] font-semibold tabular-nums text-[#65748a]">{messageLength} / 200</span>
                   </span>
                   <textarea
                     className={`${fieldClass} resize-y leading-7`}
@@ -528,7 +482,7 @@ export function CustomCakeRequestPage() {
               </section>
 
               {/* Step 2 */}
-              <section aria-labelledby="cake-pickup-heading" className="mt-8 rounded-[24px] bg-[#fbfaf5] p-5 sm:p-7">
+              <section aria-labelledby="cake-pickup-heading" className="mt-12">
                 {stepHeading('Pickup details', 'Where and when to collect it', 'cake-pickup-heading')}
                 <fieldset className="mt-6">
                   <legend className={labelClass}>{t('Selected store')} <span className="text-[#8a7000]">*</span></legend>
@@ -537,12 +491,12 @@ export function CustomCakeRequestPage() {
                       const checked = String(store.storeId) === selectedStoreId
                       return (
                         <label
-                          className={`flex min-w-0 cursor-pointer items-center gap-3 rounded-2xl p-3 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${checked ? 'bg-[#fbf6e3] ring-[#c9b24a]' : 'bg-white ring-[#e5e1d7] hover:ring-[#d6cfbd]'
+                          className={`flex min-w-0 cursor-pointer items-center gap-3 rounded-md p-3 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#092a53] ${checked ? 'bg-[#fff7cc] ring-[#bd9c00]' : 'bg-white ring-[#dce2e8] hover:ring-[#9aa9ba]'
                             }`}
                           key={store.storeId}
                         >
                           <input checked={checked} className="sr-only" name="storeId" onChange={() => setSelectedStoreId(String(store.storeId))} required type="radio" value={store.storeId} />
-                          <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-xl transition ${checked ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#f4f1e8] text-[#65748a]'}`}>
+                          <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md transition ${checked ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#e9edf1] text-[#65748a]'}`}>
                             <svg className="size-[18px]" fill="none" viewBox="0 0 24 24">
                               <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 1 1 13 0c0 5.4-6.5 11-6.5 11Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
                               <circle cx="12" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.8" />
@@ -550,7 +504,7 @@ export function CustomCakeRequestPage() {
                           </span>
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-sm font-extrabold text-[#092a53]">{t(store.storeName)}</span>
-                            <span className="mt-0.5 block truncate text-xs font-semibold text-[#65748a]">{t(store.storeAddress || store.location)}</span>
+                            <span className="mt-0.5 block truncate text-[13px] font-semibold text-[#52647b]">{t(store.storeAddress || store.location)}</span>
                           </span>
                           <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full ring-2 ${checked ? 'bg-[#092a53] ring-[#092a53]' : 'ring-[#ddd6c4]'}`}>
                             {checked && <span className="size-2 rounded-full bg-[#ffdc32]" />}
@@ -567,7 +521,7 @@ export function CustomCakeRequestPage() {
               </section>
 
               {/* Step 3 */}
-              <section aria-labelledby="cake-contact-heading" className="mt-8 rounded-[24px] bg-[#fbfaf5] p-5 sm:p-7">
+              <section aria-labelledby="cake-contact-heading" className="mt-12">
                 {stepHeading('Your contact details', 'So the store can reach you', 'cake-contact-heading')}
                 <div className="mt-6 grid gap-5 sm:grid-cols-2">
                   <label className="block">
@@ -586,16 +540,16 @@ export function CustomCakeRequestPage() {
               </section>
 
               {(error || storeError) && (
-                <p className="mt-8 flex gap-3 rounded-2xl bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100" role="alert">
-                  <span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-full bg-red-100 text-xs font-extrabold">!</span>
+                <p className="mt-8 flex gap-3 rounded-md bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100" role="alert">
+                  <span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-full bg-red-100 text-[13px] font-extrabold">!</span>
                   {error || storeError}
                 </p>
               )}
               {!storeError && !stores.length && (
-                <p className="mt-8 rounded-2xl bg-[#fffaf0] p-4 text-sm text-[#624f00] ring-1 ring-[#ecdfa6]" role="status">{t('No pickup locations are available right now. Please try again later.')}</p>
+                <p className="mt-8 rounded-md bg-[#fff7cc] p-4 text-sm text-[#624f00]" role="status">{t('No pickup locations are available right now. Please try again later.')}</p>
               )}
               {success && (
-                <p className="mt-8 flex items-start gap-3 rounded-2xl bg-[#f3f8ef] p-5 text-sm font-semibold leading-6 text-[#274d20] ring-1 ring-[#cfe2c4]" role="status">
+                <p className="mt-8 flex items-start gap-3 rounded-md bg-[#edf5ea] p-5 text-sm font-semibold leading-6 text-[#274d20]" role="status">
                   <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-[#4caf50] text-white">
                     <svg className="size-4" fill="none" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" /></svg>
                   </span>
@@ -603,10 +557,10 @@ export function CustomCakeRequestPage() {
                 </p>
               )}
 
-              <div className="mt-8 flex flex-col-reverse gap-4 border-t border-[#efece3] pt-6 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs leading-5 text-[#65748a]">{t('We’ll be in touch to confirm your request.')}</p>
+              <div className="mt-10 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm leading-6 text-[#52647b]">{t('We’ll be in touch to confirm your request.')}</p>
                 <button
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#092a53] px-8 py-4 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.22)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#092a53] px-8 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isSubmitting || !stores.length || Boolean(storeError)}
                   type="submit"
                 >
@@ -617,13 +571,24 @@ export function CustomCakeRequestPage() {
             </form>
 
             {/* Live summary */}
-            <aside className="space-y-5 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300 lg:col-span-4">
-              <div className="overflow-hidden rounded-[28px] bg-[#092a53] text-white">
-                <div className="p-6">
-                  <h2 className="font-display text-2xl font-extrabold">{t('Your cake')}</h2>
-                  <p className="mt-1.5 text-sm font-semibold text-white/60">{t('Your celebration, your cake')}</p>
+            <aside className="space-y-8 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300 lg:col-span-4">
+              <div className="overflow-hidden bg-[#092a53] text-white">
+                <div className="aspect-[16/10] overflow-hidden bg-[#163e6b]">
+                  <img
+                    alt={t(previewCake.name)}
+                    className="size-full object-cover"
+                    decoding="async"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 30vw, 90vw"
+                    src={thumbnail(previewCake.photo)}
+                    srcSet={photoSrcSet(previewCake.photo)}
+                  />
                 </div>
-                <dl aria-live="polite" className="border-t border-white/10 px-6">
+                <div className="px-6 pb-5 pt-6">
+                  <h2 className="font-display text-2xl font-extrabold">{t('Your cake')}</h2>
+                  <p className="mt-1.5 text-base font-semibold text-white/80">{t('Your celebration, your cake')}</p>
+                </div>
+                <dl aria-live="polite" className="bg-[#163e6b] px-6">
                   {[
                     { label: 'Cake size', value: t(size) },
                     { label: 'Cake flavor', value: t(flavor) },
@@ -639,60 +604,27 @@ export function CustomCakeRequestPage() {
                 </dl>
               </div>
 
-              <ol className="space-y-4 rounded-[24px] bg-[#fbfaf5] p-6">
+              <ol className="space-y-6">
                 {[
                   { title: 'Tell us what you love', detail: 'Choose a size, flavor and toppings.' },
                   { title: 'Pick a store and date', detail: 'Select a pickup location and preferred day.' },
                   { title: 'Pay the deposit to book it', detail: 'The store sends a quote. Pay the deposit to hold the cake and pickup date.' },
                 ].map((step) => (
-                  <li className="flex gap-3" key={step.title}>
-                    <span aria-hidden="true" className="mt-1.5 size-2 shrink-0 rounded-full bg-[#ffdc32]" />
+                  <li key={step.title}>
                     <div>
-                      <h3 className="text-sm font-extrabold text-[#092a53]">{t(step.title)}</h3>
-                      <p className="mt-0.5 text-[13px] leading-5 text-[#65748a]">{t(step.detail)}</p>
+                      <h3 className="text-base font-extrabold text-[#092a53]">{t(step.title)}</h3>
+                      <p className="mt-1 text-base leading-7 text-[#33455c]">{t(step.detail)}</p>
                     </div>
                   </li>
                 ))}
               </ol>
 
-              <div className="flex gap-3 rounded-[22px] bg-[#fffaf0] p-5 ring-1 ring-[#ecdfa6]">
-                <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-[#ffdc32]/40 font-display text-xs font-extrabold text-[#806a00]">i</span>
-                <div className="text-xs leading-5 text-[#624f00]">
-                  <p className="font-extrabold">{t('Please note')}</p>
-                  <p className="mt-0.5">{t('Sending this form is a request. The store will send a quote. The cake is booked when you pay the deposit.')}</p>
-                </div>
+              <div className="bg-[#fff1b8] p-5 text-[#092a53]">
+                <p className="text-base font-extrabold">{t('Please note')}</p>
+                <p className="mt-2 text-base leading-7">{t('Sending this form is a request. The store will send a quote. The cake is booked when you pay the deposit.')}</p>
               </div>
 
-              {/* The rail runs the full height of the form: real photos and the
-                  facts that answer the questions the form leaves open. */}
-              <div className="rounded-[24px] bg-white p-6 ring-1 ring-[#e9e4d6]">
-                <h3 className="font-display text-xl font-extrabold text-[#092a53]">{t('Cakes we have made')}</h3>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  {[
-                    '/cake-images/cake-1.webp',
-                    '/cake-images/cake-2.webp',
-                    '/cake-images/cake-3.webp',
-                    '/cake-images/cake-4.webp',
-                  ].map((photo) => (
-                    <div className="aspect-square overflow-hidden rounded-2xl bg-[#f4f1e8]" key={photo}>
-                      <img
-                        alt=""
-                        className="size-full object-cover"
-                        decoding="async"
-                        loading="lazy"
-                        sizes="(min-width: 1024px) 180px, 40vw"
-                        src={thumbnail(photo)}
-                        srcSet={photoSrcSet(photo)}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-3 text-[13px] leading-5 text-[#65748a]">
-                  {t('Every cake is drawn on ice cream by hand, so no two come out the same. Bring a photo or an idea and the decorators will take it from there.')}
-                </p>
-              </div>
-
-              <dl className="grid grid-cols-2 gap-x-6 gap-y-5 rounded-[24px] bg-[#f1f2ee] p-6">
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-6">
                 {[
                   { label: 'Order at least', value: t('48 hours ahead') },
                   { label: 'Cakes are', value: t('Made to order') },
@@ -700,8 +632,8 @@ export function CustomCakeRequestPage() {
                   { label: 'Serves', value: t('8 to 20 people') },
                 ].map((fact) => (
                   <div key={fact.label}>
-                    <dt className="text-[13px] font-semibold text-[#65748a]">{t(fact.label)}</dt>
-                    <dd className="mt-1 font-display text-base font-extrabold text-[#092a53]">{fact.value}</dd>
+                    <dt className="text-base font-semibold text-[#33455c]">{t(fact.label)}</dt>
+                    <dd className="mt-1 font-display text-lg font-extrabold text-[#092a53]">{fact.value}</dd>
                   </div>
                 ))}
               </dl>
@@ -713,34 +645,34 @@ export function CustomCakeRequestPage() {
               <h2 className="font-display text-2xl font-extrabold text-[#092a53]">{t('Your cake quotes')}</h2>
               <ul className="mt-5 grid gap-4 md:grid-cols-2">
                 {(payTokenRequest ? [payTokenRequest, ...quotes.filter((quote) => quote.id !== payTokenRequest.id)] : quotes).map((quote) => (
-                  <li className="rounded-[24px] bg-white p-5 ring-1 ring-[#ebe7dc]" key={quote.id}>
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">#{quote.id}</p>
+                  <li className="bg-white p-5 ring-1 ring-[#dce2e8]" key={quote.id}>
+                    <p className="text-sm font-extrabold text-[#52647b]">#{quote.id}</p>
                     <h3 className="mt-1 font-display text-lg font-extrabold text-[#092a53]">{t(quote.size)} {t(quote.flavor)}</h3>
-                    <p className="mt-1 text-sm text-[#65748a]">{t('Pickup date')}: {formatDate(quote.pickupDate)}{quote.storeName ? ` · ${t(quote.storeName)}` : ''}</p>
-                    <p className="mt-3 inline-flex rounded-full bg-[#f3f6fa] px-2.5 py-1 text-xs font-bold text-[#315982]">{t(CAKE_STATUS[quote.status] || quote.status)}</p>
+                    <p className="mt-1 text-base text-[#52647b]">{t('Pickup date')}: {formatDate(quote.pickupDate)}{quote.storeName ? ` · ${t(quote.storeName)}` : ''}</p>
+                    <p className="mt-3 inline-flex rounded-md bg-[#e9edf1] px-3 py-1.5 text-sm font-bold text-[#315982]">{t(CAKE_STATUS[quote.status] || quote.status)}</p>
                     {quote.quotedTotal && (
                       <p className="mt-3 text-sm font-extrabold text-[#092a53]">
                         {t('Total')}: {formatXaf(quote.quotedTotal, language)}
                         {quote.depositAmount ? ` · ${t('Deposit')}: ${formatXaf(quote.depositAmount, language)}` : ''}
                       </p>
                     )}
-                    {quote.adminNote && <p className="mt-2 text-sm leading-6 text-[#5c4a00]">{quote.adminNote}</p>}
+                    {quote.adminNote && <p className="mt-2 text-base leading-7 text-[#5c4a00]">{quote.adminNote}</p>}
                     {quote.status === 'contacted' && quote.depositAmount && (
                       <div className="mt-4">
                         <div className="grid grid-cols-2 gap-2">
                           {methods.card && (
-                            <button className={`rounded-2xl px-4 py-3 text-sm font-extrabold ${payMethod === 'card' ? 'bg-[#092a53] text-white' : 'bg-[#f6f3ea] text-[#092a53]'}`} onClick={() => setPayMethod('card')} type="button">{t('Card')}</button>
+                            <button className={`rounded-md px-4 py-3 text-sm font-extrabold ${payMethod === 'card' ? 'bg-[#092a53] text-white' : 'bg-[#e9edf1] text-[#092a53]'}`} onClick={() => setPayMethod('card')} type="button">{t('Card')}</button>
                           )}
                           {methods.campayMobileMoney && (
-                            <button className={`rounded-2xl px-4 py-3 text-sm font-extrabold ${payMethod === 'campay' ? 'bg-[#092a53] text-white' : 'bg-[#f6f3ea] text-[#092a53]'}`} onClick={() => setPayMethod('campay')} type="button">{t('Mobile Money')}</button>
+                            <button className={`rounded-md px-4 py-3 text-sm font-extrabold ${payMethod === 'campay' ? 'bg-[#092a53] text-white' : 'bg-[#e9edf1] text-[#092a53]'}`} onClick={() => setPayMethod('campay')} type="button">{t('Mobile Money')}</button>
                           )}
                         </div>
                         {payMethod === 'campay' && (
-                          <input className="mt-3 w-full rounded-2xl bg-white px-4 py-3 text-sm ring-1 ring-[#e5e1d7]" onChange={(event) => setPayPhone(event.target.value)} placeholder="6XX XX XX XX" type="tel" value={payPhone} />
+                          <input className="mt-3 w-full rounded-md bg-white px-4 py-3 text-sm ring-1 ring-[#dce2e8] focus:outline-none focus:ring-2 focus:ring-[#bd9c00]" onChange={(event) => setPayPhone(event.target.value)} placeholder="6XX XX XX XX" type="tel" value={payPhone} />
                         )}
                         {payError && payingId === quote.id && <p className="mt-2 text-sm font-semibold text-red-700">{payError}</p>}
                         <button
-                          className="mt-3 w-full rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] disabled:opacity-60"
+                          className="mt-3 w-full rounded-md bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#ffe761] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:opacity-60"
                           disabled={payingId === quote.id}
                           onClick={() => payDeposit(quote, searchParams.get('pay') || quote.payToken || undefined)}
                           type="button"

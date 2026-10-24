@@ -2473,31 +2473,6 @@ export function HomePage() {
           </svg>
         </button>
 
-        {/* Sticky mobile order bar — the main action stays one tap away after the hero. */}
-        <div
-          className={`fixed inset-x-3 bottom-3 z-40 transition duration-300 lg:hidden ${
-            showScrollTop
-              ? "pointer-events-auto opacity-100"
-              : "pointer-events-none hidden"
-          }`}
-        >
-          <Link
-            className="flex items-center justify-between gap-3 rounded-2xl bg-[#092a53]/95 py-3 pl-4 pr-3 text-white shadow-[0_16px_40px_rgba(9,42,83,0.45)] ring-1 ring-white/15 backdrop-blur-md"
-            to="/menu"
-          >
-            <span className="min-w-0">
-              <span className="block truncate font-display text-sm font-extrabold">
-                {t("Order now")}
-              </span>
-              <span className="block truncate text-[11px] font-semibold text-[#ffdc32]">
-                {t("Cards & Mobile Money accepted")}
-              </span>
-            </span>
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#ffdc32] text-[#092a53]">
-              <ArrowIcon />
-            </span>
-          </Link>
-        </div>
       </main>
       <Footer />
     </div>

@@ -497,37 +497,6 @@ body {
   }
 }
 
-/* Custom cake hero banner: slow-spinning sunburst ring + gently bobbing accent card */
-.cake-sunburst {
-  animation: cake-sunburst-spin 48s linear infinite;
-}
-
-@keyframes cake-sunburst-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.cake-float {
-  animation: cake-float-bob 5s ease-in-out infinite;
-}
-
-@keyframes cake-float-bob {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cake-sunburst,
-  .cake-float {
-    animation: none;
-  }
-}
-
 /* Admin drawers and dialogs */
 .admin-drawer-backdrop {
   animation: admin-fade-in 200ms ease-out both;
