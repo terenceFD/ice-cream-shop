@@ -414,11 +414,6 @@ body {
   animation: home-hero-copy-in 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-.home-hero-progress {
-  transform-origin: left;
-  animation: home-hero-progress 12000ms linear both;
-}
-
 /* Bag badge flash when an item is added from a card */
 @keyframes bag-pulse {
   0% {
@@ -460,16 +455,6 @@ body {
   }
 }
 
-@keyframes home-hero-progress {
-  from {
-    transform: scaleX(0);
-  }
-
-  to {
-    transform: scaleX(1);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .home-slide-image {
     transition: none;
@@ -477,10 +462,6 @@ body {
 
   .home-hero-copy {
     animation: none;
-  }
-
-  .home-hero-progress {
-    display: none;
   }
 
   .hero-blob-a,

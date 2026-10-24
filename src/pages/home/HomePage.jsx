@@ -25,7 +25,6 @@ const popularFlavorNames = [
   "Our Dubai Chocolate Creation",
   "Founder’s Favorite",
   "Birthday Cake Remix",
-  "Peanut Butter Cup Perfection",
 ];
 const popularFlavorColors = [
   "#e9f6dd",
@@ -183,10 +182,6 @@ const homeSlides = [
     image: "/ice-images/ice-9.jpg",
     alt: "Colorful ice cream creations ready to enjoy",
     caption: "The signature experience",
-    primaryCta: "Order ice cream",
-    primaryTo: "/menu?category=Ice%20Cream",
-    secondaryCta: "Explore flavors",
-    secondaryTo: "/flavors",
   },
   {
     title: "Ice cream cakes",
@@ -195,10 +190,6 @@ const homeSlides = [
     image: "/cake-images/cake-11.webp",
     alt: "A chocolate ice cream cake held up for a celebration",
     caption: "Made for celebrations",
-    primaryCta: "Order a cake",
-    primaryTo: "/custom-cake",
-    secondaryCta: "Explore the menu",
-    secondaryTo: "/menu?category=Ice%20Cream%20Cakes%20and%20Pies",
   },
   {
     title: "Cool, creamy mint",
@@ -207,10 +198,6 @@ const homeSlides = [
     image: "/menu-official/ice-cream/signature-creations/cookie-mintster.webp",
     alt: "Mint ice cream with chocolate cookies and fudge in a waffle cone",
     caption: "Mixed on a frozen stone",
-    primaryCta: "Explore signature creations",
-    primaryTo: "/menu?category=Ice%20Cream",
-    secondaryCta: "View all menu",
-    secondaryTo: "/menu/all",
   },
 ];
 
@@ -668,11 +655,6 @@ export function HomePage() {
     { id: "menu", label: "Menu" },
   ];
   const [activeSection, setActiveSection] = useState("");
-  // The hero pauses when the visitor hovers/focuses it or after they take control with the
-  // arrows, so no one is dragged to the next slide mid-read. Auto-rotation resumes on
-  // mouse leave/blur and resumes on its own after a while.
-  const [heroPaused, setHeroPaused] = useState(false);
-  const heroHoldTimer = useRef(undefined);
   const addedTimer = useRef(undefined);
   const cartNoticeTimer = useRef(undefined);
   const reviewsSentinel = useRef(null);
@@ -685,36 +667,6 @@ export function HomePage() {
       return current.includes(activeSlide) ? current : [...current, activeSlide];
     });
   }, [activeSlide]);
-
-  // Auto-rotate the hero every 12 seconds, unless the visitor paused it or asked the
-  // system to reduce motion. The photo preload above keeps running either way.
-  useEffect(() => {
-    if (heroPaused) return undefined;
-    if (
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return undefined;
-    }
-    const timer = window.setTimeout(
-      () => setActiveSlide((current) => (current + 1) % homeSlides.length),
-      12000,
-    );
-    return () => window.clearTimeout(timer);
-  }, [activeSlide, heroPaused]);
-
-  const holdHero = () => {
-    setHeroPaused(true);
-    window.clearTimeout(heroHoldTimer.current);
-  };
-
-  const releaseHeroSoon = () => {
-    window.clearTimeout(heroHoldTimer.current);
-    heroHoldTimer.current = window.setTimeout(
-      () => setHeroPaused(false),
-      8000,
-    );
-  };
 
   useEffect(() => {
     const node = popularSection.current;
@@ -843,11 +795,6 @@ export function HomePage() {
 
   useEffect(() => () => window.clearTimeout(addedTimer.current), []);
   useEffect(() => () => window.clearTimeout(cartNoticeTimer.current), []);
-  useEffect(
-    () => () => window.clearTimeout(heroHoldTimer.current),
-    [],
-  );
-
   // Measure section positions at most once per frame while scrolling.
   useEffect(() => {
     let frame = 0;
@@ -922,7 +869,7 @@ export function HomePage() {
       || t(flavor.catalogFlavor?.tag || "").toLocaleLowerCase().includes(query);
     return matchesMood && matchesSearch;
   });
-  const visibleFlavors = flavorFiltersActive ? matchingFlavors : flavorInspiration.slice(0, 8);
+  const visibleFlavors = flavorFiltersActive ? matchingFlavors : flavorInspiration.slice(0, 6);
 
   // Real menu prices for the flavor cards, so the teasers set expectations before clicking.
   const flavorMenuItems = new Map(
@@ -988,7 +935,7 @@ export function HomePage() {
       return typeOk && queryOk;
     });
     const hasActiveFilter = selectedCakeType !== "all" || cakeQuery.length > 0;
-    return hasActiveFilter ? items : items.slice(0, 8);
+    return hasActiveFilter ? items : items.slice(0, 4);
   }, [cakeMenuCategory, selectedCakeType, cakeQuery]);
   // Every cake card needs a slider (more than one photo), but many catalog items
   // only carry a single image and no gallery. For those, pair the item's own photo
@@ -1027,38 +974,34 @@ export function HomePage() {
         >
           <HeroBackground variant="navy" />
 
-          <div className="mx-auto w-full max-w-[1400px] px-5 pb-8 pt-7 sm:px-8 sm:pb-12 sm:pt-10 lg:px-12 lg:pb-14 lg:pt-12">
-            <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
+          <div className="mx-auto w-full max-w-[1400px] px-5 pb-5 pt-4 sm:px-8 sm:pb-12 sm:pt-10 lg:px-12 lg:pb-14 lg:pt-12">
+            <div className="grid items-center gap-5 lg:grid-cols-12 lg:gap-12">
               {/* Copy */}
               <div className="relative z-10 lg:col-span-6">
                 <div className="home-hero-copy" key={activeSlide}>
-                  <h1 className="max-w-none font-display text-[clamp(2.4rem,3.4vw,3.25rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-white">
+                  <h1 className="max-w-none font-display text-[clamp(2.2rem,3.4vw,3.25rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-white">
                     {t(homeSlides[activeSlide].title)}
                     <span className="block text-white">
                       {t(homeSlides[activeSlide].accent)}
                     </span>
                   </h1>
-                  <p className="mt-4 max-w-lg text-base leading-7 text-white/75 sm:mt-5 sm:text-lg sm:leading-8">
+                  <p className="mt-3 max-w-lg text-base leading-7 text-white/75 sm:mt-5 sm:text-lg sm:leading-8">
                     {t(homeSlides[activeSlide].description)}
                   </p>
                 </div>
 
-                {/* Both buttons follow the slide on screen, so the main action always
-                    matches what the copy is selling (e.g. "Order a cake" on the cake slide). */}
-                <div className="mt-5 flex flex-wrap items-center gap-3 sm:mt-7">
+                <div className="mt-4 flex flex-wrap items-center gap-3 sm:mt-7">
                   <Link
-                    className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#ffdc32] px-6 py-3 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
-                    to={homeSlides[activeSlide].primaryTo}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#ffdc32] px-4 py-3 text-xs font-extrabold text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] sm:min-h-12 sm:px-6 sm:text-sm"
+                    to="/menu?category=Ice%20Cream"
                   >
-                    {t(homeSlides[activeSlide].primaryCta)} <ArrowIcon />
+                    {t("Order ice cream")} <ArrowIcon />
                   </Link>
-                  {/* Kept on every screen size: on small screens it shares the row with
-                      the primary button (flex-wrap) so mobile visitors get both actions. */}
                   <Link
-                    className="inline-flex min-h-12 items-center gap-2 rounded-lg border border-white/30 px-5 py-3 text-sm font-bold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]"
-                    to={homeSlides[activeSlide].secondaryTo}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/30 px-4 py-3 text-xs font-bold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] sm:min-h-12 sm:px-5 sm:text-sm"
+                    to="/flavors"
                   >
-                    {t(homeSlides[activeSlide].secondaryCta)}{" "}
+                    {t("Explore flavors")}{" "}
                     <ArrowIcon diagonal />
                   </Link>
                 </div>
@@ -1098,8 +1041,6 @@ export function HomePage() {
                 aria-label={t("Featured treats")}
                 aria-roledescription={t("carousel")}
                 className="relative lg:col-span-6"
-                onBlur={releaseHeroSoon}
-                onFocusCapture={holdHero}
                 onKeyDown={(event) => {
                   if (event.key === "ArrowLeft") {
                     event.preventDefault();
@@ -1107,17 +1048,13 @@ export function HomePage() {
                       (current) =>
                         (current + homeSlides.length - 1) % homeSlides.length,
                     );
-                    holdHero();
                   } else if (event.key === "ArrowRight") {
                     event.preventDefault();
                     setActiveSlide(
                       (current) => (current + 1) % homeSlides.length,
                     );
-                    holdHero();
                   }
                 }}
-                onMouseEnter={holdHero}
-                onMouseLeave={releaseHeroSoon}
                 role="region"
               >
                 <div
@@ -1126,7 +1063,7 @@ export function HomePage() {
                   className="relative"
                   role="group"
                 >
-                  <div className="relative aspect-[5/4] overflow-hidden rounded-[20px] bg-[#0f3566] ring-1 ring-white/15 sm:rounded-[24px]">
+                  <div className="relative aspect-[16/10] overflow-hidden rounded-[20px] bg-[#0f3566] ring-1 ring-white/15 sm:aspect-[5/4] sm:rounded-[24px]">
                     {homeSlides.map((slide, index) => {
                       if (!loadedSlides.includes(index)) return null;
                       const isActive = activeSlide === index;
@@ -1173,14 +1110,13 @@ export function HomePage() {
                     <div className="flex shrink-0 items-center gap-2">
                       <button
                         aria-label={t("Previous slide")}
-                        className="grid size-10 place-items-center rounded-full border border-white/30 text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+                        className="grid size-11 place-items-center rounded-full border border-white/30 text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
                         onClick={() => {
                           setActiveSlide(
                             (current) =>
                               (current + homeSlides.length - 1) %
                               homeSlides.length,
                           );
-                          holdHero();
                         }}
                         type="button"
                       >
@@ -1201,36 +1137,17 @@ export function HomePage() {
                       </button>
                       <button
                         aria-label={t("Next slide")}
-                        className="grid size-10 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        className="grid size-11 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                         onClick={() => {
                           setActiveSlide(
                             (current) => (current + 1) % homeSlides.length,
                           );
-                          holdHero();
                         }}
                         type="button"
                       >
                         <ArrowIcon />
                       </button>
                     </div>
-                  </div>
-                  <div className="mt-3 flex items-center gap-3">
-                    <button
-                      aria-hidden="true"
-                      className="relative h-1.5 flex-1 cursor-pointer overflow-hidden rounded-full bg-white/20"
-                      onClick={() => {
-                        setActiveSlide((current) => (current + 1) % homeSlides.length);
-                        holdHero();
-                      }}
-                      tabIndex={-1}
-                      title={t("Next slide in {seconds} seconds", { seconds: 12 })}
-                      type="button"
-                    >
-                      <span
-                        className="home-hero-progress absolute inset-0 rounded-full bg-[#ffdc32]"
-                        key={activeSlide}
-                      />
-                    </button>
                   </div>
                 </div>
 
@@ -1255,7 +1172,6 @@ export function HomePage() {
                         key={slide.image}
                         onClick={() => {
                           setActiveSlide(index);
-                          holdHero();
                         }}
                         type="button"
                       >
@@ -1276,18 +1192,16 @@ export function HomePage() {
                   className="mt-2 flex justify-center sm:hidden"
                   role="group"
                 >
-                  {/* The dots stay small, but each one has a finger-sized (32px) tap area. */}
                   {homeSlides.map((slide, index) => (
                     <button
                       aria-current={activeSlide === index ? "true" : undefined}
                       aria-label={t("Show slide {number}", {
                         number: index + 1,
                       })}
-                      className="grid h-11 min-w-11 place-items-center px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] rounded-full"
+                      className="grid h-11 min-w-11 place-items-center rounded-full px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
                       key={slide.image}
                       onClick={() => {
                         setActiveSlide(index);
-                        holdHero();
                       }}
                       type="button"
                     >
@@ -1316,7 +1230,7 @@ export function HomePage() {
               aria-hidden="true"
               className="hero-blob-b pointer-events-none absolute -bottom-32 -right-24 -z-10 size-[20rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.45),rgb(28_79_138/0.45)_35%,transparent)]"
             />
-            <div className="mx-auto max-w-[1320px] px-5 pb-12 pt-10 sm:px-8 sm:pb-14 lg:px-12">
+            <div className="mx-auto max-w-[1320px] px-5 pb-8 pt-7 sm:px-8 sm:pb-14 lg:px-12">
               <div className="flex flex-wrap items-center justify-between gap-6">
                 <h2 className="font-display text-xl font-extrabold text-white sm:text-2xl">
                   {t("Why people love us")}
@@ -1332,7 +1246,7 @@ export function HomePage() {
                   {t("Pickup or delivery in Douala and Yaoundé.")}
                 </Link>
               </div>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-4">
                 {[
                   {
                     value: t("5 shops"),
@@ -1361,7 +1275,7 @@ export function HomePage() {
                   },
                 ].map((stat) => (
                   <div
-                    className="group relative flex h-full items-center gap-4 overflow-hidden rounded-3xl bg-white/[0.05] px-6 py-6 ring-1 ring-white/10 backdrop-blur-md transition duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09] hover:ring-[#ffdc32]/45 focus-within:ring-[#ffdc32]/45"
+                    className="group relative flex h-full min-w-0 items-center gap-2.5 overflow-hidden rounded-2xl bg-white/[0.05] px-3 py-4 ring-1 ring-white/10 backdrop-blur-md transition duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09] hover:ring-[#ffdc32]/45 focus-within:ring-[#ffdc32]/45 sm:gap-4 sm:rounded-3xl sm:px-6 sm:py-6"
                     key={stat.label}
                     title={stat.title}
                   >
@@ -1372,7 +1286,7 @@ export function HomePage() {
                       aria-hidden="true"
                       className="pointer-events-none absolute -right-10 -top-10 size-24 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.14),transparent)] opacity-0 transition duration-500 group-hover:opacity-100"
                     />
-                    <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#ffdc32]/15 text-[#ffdc32] ring-1 ring-[#ffdc32]/25 transition duration-300 group-hover:scale-105 group-hover:bg-[#ffdc32]/25">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#ffdc32]/15 text-[#ffdc32] ring-1 ring-[#ffdc32]/25 transition duration-300 group-hover:scale-105 group-hover:bg-[#ffdc32]/25 sm:size-12">
                       <svg
                         className="size-5"
                         fill={stat.outlineIcon ? "none" : "currentColor"}
@@ -1388,10 +1302,10 @@ export function HomePage() {
                       </svg>
                     </span>
                     <span className="flex flex-col">
-                      <span className="font-display text-2xl font-extrabold tabular-nums text-white">
+                      <span className="font-display text-lg font-extrabold tabular-nums text-white sm:text-2xl">
                         {stat.value}
                       </span>
-                      <span className="text-xs font-semibold leading-4 text-white/70">
+                      <span className="text-[11px] font-semibold leading-4 text-white/70 sm:text-xs">
                         {stat.label}
                       </span>
                     </span>
