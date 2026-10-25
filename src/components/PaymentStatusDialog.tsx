@@ -70,7 +70,7 @@ export function PaymentStatusDialog({
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">{eyebrow}</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#bd9c00]">{eyebrow}</p>
               <h2 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53]" id="payment-status-title">
                 {title}
               </h2>
@@ -80,7 +80,7 @@ export function PaymentStatusDialog({
             </div>
           </div>
           {isChecking ? (
-            <p className="mt-6 text-xs font-semibold text-[#8190a1]">{checkingMessage}</p>
+            <p className="mt-6 text-xs font-semibold text-[#65748a]">{checkingMessage}</p>
           ) : (
             <div className="mt-7 flex flex-col-reverse justify-center gap-3 sm:flex-row">
               {isPending && onRetry && (
@@ -96,7 +96,7 @@ export function PaymentStatusDialog({
                 </button>
               )}
               <button
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#ffdc32] px-6 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a7000] focus-visible:ring-offset-2"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#ffdc32] px-6 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
                 onClick={onClose}
                 type="button"
               >

@@ -372,26 +372,22 @@ function ReviewerAvatar({ name, picture, className, eager = false }) {
   ) : (
     <span
       aria-hidden="true"
-      className={`grid shrink-0 place-items-center rounded-full bg-[#e8edf2] font-display font-extrabold text-[#092a53] ${className}`}
+      className={`grid shrink-0 place-items-center rounded-full bg-[#f4f6f8] font-display font-extrabold text-[#092a53] ${className}`}
     >
       {name.charAt(0).toUpperCase()}
     </span>
   );
 }
 
-const LONG_REVIEW_LENGTH = 150;
-
-function ReviewCard({ review, language, t, eager = false }) {
-  const [expanded, setExpanded] = useState(false);
+function ReviewCard({ review, language, t, eager = false, wide = false }) {
   const customerName = review.customerName || t("Customer");
   const rawText = (review.review || "").trim();
   const text = rawText
     ? rawText.charAt(0).toUpperCase() + rawText.slice(1)
     : "";
-  const isLong = text.length > LONG_REVIEW_LENGTH;
   return (
     <li>
-      <article className="flex h-full flex-col rounded-2xl border border-[#dce3eb] bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-[#b8c6d5] hover:shadow-[0_16px_36px_rgba(9,42,83,0.10)] sm:p-7">
+      <article className={`rounded-2xl border border-[#dce3eb] bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-[#b8c6d5] hover:shadow-[0_16px_36px_rgba(9,42,83,0.10)] sm:p-7 ${wide ? "grid items-end gap-8 lg:grid-cols-[minmax(0,46rem)_auto] lg:gap-16 lg:p-8" : "flex h-full flex-col"}`}>
         <div className="flex-1">
           <div className="mb-5 flex min-h-5 items-center">
             <StarRating
@@ -403,28 +399,16 @@ function ReviewCard({ review, language, t, eager = false }) {
             />
           </div>
           {text ? (
-            <blockquote
-              className={`whitespace-pre-line text-[15px] font-medium leading-[1.75] text-[#20334c] ${isLong && !expanded ? "line-clamp-4" : ""}`}
-            >
+            <blockquote className={`whitespace-pre-line text-[15px] font-medium leading-[1.75] text-[#20334c] ${wide ? "max-w-[62ch]" : ""}`}>
               {text}
             </blockquote>
           ) : (
-            <p className="text-sm italic leading-7 text-[#52647b]">
+            <p className="text-sm italic leading-7 text-[#65748a]">
               {t("No written comment.")}
             </p>
           )}
-          {isLong && (
-            <button
-              aria-expanded={expanded}
-              className="mt-3 text-sm font-bold text-[#123b68] underline decoration-[#c8d2dd] underline-offset-4 transition hover:decoration-[#123b68] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-              onClick={() => setExpanded((current) => !current)}
-              type="button"
-            >
-              {t(expanded ? "Show less" : "Read more")}
-            </button>
-          )}
         </div>
-        <footer className="mt-6 flex items-center justify-between gap-3 border-t border-[#e8edf2] pt-5">
+        <footer className={`flex items-center gap-3 ${wide ? "mt-6 border-t border-[#f4f6f8] pt-5 lg:mt-0 lg:justify-self-end lg:border-t-0 lg:pt-0" : "mt-6 justify-between border-t border-[#f4f6f8] pt-5"}`}>
           <div className="flex min-w-0 items-center gap-3">
             <ReviewerAvatar
               className="size-10 shrink-0 text-sm"
@@ -436,7 +420,7 @@ function ReviewCard({ review, language, t, eager = false }) {
               <p className="truncate text-sm font-bold text-[#092a53]">
                 {customerName}
               </p>
-              <p className="mt-1 truncate text-xs font-medium text-[#52647b]">
+              <p className="mt-1 truncate text-xs font-medium text-[#65748a]">
                 {review.itemName ? t(review.itemName) : t("Verified purchase")}
               </p>
               {review.createdAt && (
@@ -543,7 +527,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
                   })}
                   value={average}
                 />
-                <span className="text-xs font-semibold text-[#52647b]">
+                <span className="text-xs font-semibold text-[#65748a]">
                   {t(
                     count === 1 ? "Based on 1 review" : "Based on {count} reviews",
                     { count },
@@ -556,7 +540,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
 
         {error ? (
           <p
-            className="mt-8 rounded-xl bg-white px-5 py-4 text-base leading-7 text-[#52647b] ring-1 ring-[#dce3eb]"
+            className="mt-8 rounded-xl bg-white px-5 py-4 text-base leading-7 text-[#65748a] ring-1 ring-[#dce3eb]"
             role="status"
           >
             {t("Customer reviews could not be loaded")}: {error}
@@ -567,7 +551,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
               <p className="font-display text-xl font-extrabold leading-tight text-[#092a53]">
                 {t("No reviews yet — be the first!")}
               </p>
-              <p className="mt-1.5 max-w-md text-base leading-7 text-[#52647b]">
+              <p className="mt-1.5 max-w-md text-base leading-7 text-[#65748a]">
                 {t("Ordered from us before? Share how it tasted and help the next customer choose.")}
               </p>
             </div>
@@ -580,7 +564,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
           </div>
         ) : (
           <ul
-            className={`mt-10 grid items-stretch gap-5 ${displayReviews.length >= 3 ? "md:grid-cols-2 xl:grid-cols-3" : displayReviews.length === 2 ? "md:grid-cols-2" : "max-w-2xl"}`}
+            className={`mt-10 grid items-stretch gap-5 ${displayReviews.length >= 3 ? "md:grid-cols-2 xl:grid-cols-3" : displayReviews.length === 2 ? "md:grid-cols-2" : ""}`}
           >
             {displayReviews.map((review, index) => (
               <ReviewCard
@@ -589,6 +573,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
                 language={language}
                 review={review}
                 t={t}
+                wide={displayReviews.length === 1}
               />
             ))}
           </ul>
@@ -614,57 +599,62 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
 }
 
 function HowItWorksSection({ t }) {
+  const steps = [
+    {
+      step: "1",
+      title: "Choose your treats",
+      description: "Browse the menu and add favorites to your bag.",
+    },
+    {
+      step: "2",
+      title: "Order online",
+      description: "Checkout with cards or Mobile Money in a few taps.",
+    },
+    {
+      step: "3",
+      title: "Pick up or get it delivered",
+      description: "Ready in about 30 minutes at your chosen store.",
+    },
+  ];
+
   return (
     <section
       aria-labelledby="how-it-works-heading"
-      className="scroll-mt-20 bg-[#f4f6f8] px-5 py-9 text-[#092a53] sm:px-8 sm:py-11 lg:px-10 lg:py-12"
+      className="scroll-mt-20 px-5 py-12 text-[#092a53] sm:px-8 sm:py-16 lg:px-10"
       id="how-it-works"
     >
       <div className="mx-auto max-w-[1320px]">
-        <div className="grid gap-3 sm:grid-cols-[1fr_0.85fr] sm:items-end sm:gap-8">
-          <h2
-            className="font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-4xl"
-            id="how-it-works-heading"
-          >
-            {t("How it works")}
-          </h2>
-          <p className="max-w-lg text-sm leading-6 text-[#52647b] sm:justify-self-end sm:text-base sm:leading-6">
-            {t("Choose your flavor, pay online, then collect your order or have it delivered.")}
-          </p>
-        </div>
-        <ol className="mt-7 grid gap-x-8 gap-y-6 sm:mt-8 sm:grid-cols-3 sm:gap-x-6 lg:gap-x-12">
-          {[
-            {
-              step: "1",
-              title: "Choose your treats",
-              description: "Browse the menu and add favorites to your bag.",
-            },
-            {
-              step: "2",
-              title: "Order online",
-              description: "Checkout with cards or Mobile Money in a few taps.",
-            },
-            {
-              step: "3",
-              title: "Pick up or get it delivered",
-              description: "Ready in about 30 minutes at your chosen store.",
-            },
-          ].map(({ step, title, description }) => (
-            <li
-              className="grid grid-cols-[3rem_minmax(0,1fr)] items-start gap-3 sm:grid-cols-1 sm:gap-3"
-              key={step}
-            >
-              <span
-                aria-hidden="true"
-                className="grid size-11 place-items-center rounded-full bg-[#ffdc32] font-display text-xl font-bold leading-none tabular-nums text-[#092a53] sm:size-12 sm:text-2xl"
-              >
-                {step}
+        <h2
+          className="max-w-[16ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl"
+          id="how-it-works-heading"
+        >
+          {t("How it works")}
+        </h2>
+        <p className="mt-3 max-w-xl text-base leading-7 text-[#65748a]">
+          {t("Choose your flavor, pay online, then collect your order or have it delivered.")}
+        </p>
+        <ol className="mt-8 sm:mt-10 sm:grid sm:grid-cols-3 sm:gap-x-8">
+          {steps.map(({ step, title, description }, index) => (
+            <li className="grid grid-cols-[2.75rem_minmax(0,1fr)] gap-x-4 sm:grid-cols-1 sm:gap-y-4" key={step}>
+              <span className="relative h-full">
+                <span
+                  aria-hidden="true"
+                  className="relative z-10 grid size-11 place-items-center rounded-full bg-[#ffdc32] font-display text-xl font-bold leading-none text-[#092a53]"
+                >
+                  {step}
+                </span>
+                {index < steps.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-1/2 top-11 bottom-0 w-0.5 -translate-x-1/2 bg-[#ffdc32] sm:left-11 sm:top-5 sm:bottom-auto sm:h-0.5 sm:w-[calc(100%-0.75rem)] sm:translate-x-0"
+                  />
+                )}
               </span>
-              <span className="min-w-0">
-                <span className="block font-display text-base font-bold leading-tight text-[#092a53] sm:text-lg">
+              <span className={`min-w-0 ${index < steps.length - 1 ? "pb-7 sm:pb-0" : ""}`}>
+                <span className="block font-display text-lg font-bold leading-tight text-[#092a53]">
                   {t(title)}
                 </span>
-                <span className="mt-1.5 block max-w-sm text-sm leading-5 text-[#52647b] sm:leading-6">
+                <span className="mt-1.5 block max-w-sm text-sm leading-6 text-[#65748a]">
                   {t(description)}
                 </span>
               </span>
@@ -706,31 +696,44 @@ export function HomePage() {
   const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
   // A gentle "back to top" helper for the long home page, shown after the first screen.
   const [showScrollTop, setShowScrollTop] = useState(false);
-  // The section pill hides while reading down and returns when scrolling up to navigate.
-  const [pillVisible, setPillVisible] = useState(false);
-  const lastScrollY = useRef(0);
-  // Slim sub-nav for jumping between the home page's sections; highlights as you scroll.
-  const homeSections = [
-    { id: "flavors", label: "Flavors" },
-    { id: "how-it-works", label: "How it works" },
-    { id: "cakes", label: "Cakes" },
-    { id: "favorites", label: "Favorites" },
-    { id: "reviews", label: "Reviews" },
-    { id: "menu", label: "Menu" },
-  ];
-  const [activeSection, setActiveSection] = useState("");
   const addedTimer = useRef(undefined);
   const cartNoticeTimer = useRef(undefined);
+  const heroHoldTimer = useRef(undefined);
+  const [heroPaused, setHeroPaused] = useState(false);
   const reviewsSentinel = useRef(null);
   const popularSection = useRef(null);
 
-  // Only download a slide photo when it becomes active. In particular, don't let the next
-  // slide compete with the initial hero image and other above-the-fold content.
+  // The photo on screen, plus the next one, so the crossfade has a picture ready.
   useEffect(() => {
     setLoadedSlides((current) => {
-      return current.includes(activeSlide) ? current : [...current, activeSlide];
+      const next = current.includes(activeSlide) ? current : [...current, activeSlide];
+      const upcoming = (activeSlide + 1) % homeSlides.length;
+      return next.includes(upcoming) ? next : [...next, upcoming];
     });
   }, [activeSlide]);
+
+  // The hero photo moves on its own. Hover, focus, or the arrow keys hold it still.
+  useEffect(() => {
+    if (heroPaused) return undefined;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    const timer = window.setTimeout(
+      () => setActiveSlide((current) => (current + 1) % homeSlides.length),
+      6500,
+    );
+    return () => window.clearTimeout(timer);
+  }, [activeSlide, heroPaused]);
+
+  useEffect(() => () => window.clearTimeout(heroHoldTimer.current), []);
+
+  const holdHero = () => {
+    setHeroPaused(true);
+    window.clearTimeout(heroHoldTimer.current);
+  };
+
+  const releaseHeroSoon = () => {
+    window.clearTimeout(heroHoldTimer.current);
+    heroHoldTimer.current = window.setTimeout(() => setHeroPaused(false), 4000);
+  };
 
   useEffect(() => {
     const node = popularSection.current;
@@ -859,33 +862,12 @@ export function HomePage() {
 
   useEffect(() => () => window.clearTimeout(addedTimer.current), []);
   useEffect(() => () => window.clearTimeout(cartNoticeTimer.current), []);
-  // Measure section positions at most once per frame while scrolling.
+  // Show the back-to-top control once the hero has left the screen.
   useEffect(() => {
     let frame = 0;
     const update = () => {
       frame = 0;
-      const scrollY = window.scrollY;
-      const viewportHeight = window.innerHeight;
-      const pastHero = scrollY > viewportHeight * 0.9;
-      // The pill covers whatever is at the bottom of the screen, so it only appears while the
-      // visitor is moving up the page, where they are looking to jump rather than to read.
-      const goingUp = scrollY < lastScrollY.current - 4;
-      const goingDown = scrollY > lastScrollY.current + 4;
-      let current = "";
-      if (pastHero) {
-        // Read all layout values before updating React state.
-        const sectionThreshold = viewportHeight * 0.4;
-        for (const { id } of homeSections) {
-          const node = document.getElementById(id);
-          if (node && node.getBoundingClientRect().top <= sectionThreshold) {
-            current = id;
-          }
-        }
-      }
-      if (goingUp || goingDown) setPillVisible(pastHero && goingUp);
-      lastScrollY.current = scrollY;
-      setShowScrollTop(pastHero);
-      setActiveSection(current);
+      setShowScrollTop(window.scrollY > window.innerHeight * 0.9);
     };
     const onScroll = () => {
       if (!frame) frame = window.requestAnimationFrame(update);
@@ -1029,7 +1011,7 @@ export function HomePage() {
     return [...new Set([...own, ...related, ...fallbacks])].slice(0, 4);
   };
   return (
-    <div className="min-h-screen overflow-clip bg-[#fbfaf5] text-[#102c50]">
+    <div className="min-h-screen overflow-clip bg-[#fbfaf5] text-[#092a53]">
       <Header />
       <main id="main" tabIndex={-1}>
         <section
@@ -1038,8 +1020,8 @@ export function HomePage() {
         >
           <HeroBackground quietOnMobile variant="navy" />
 
-          <div className="mx-auto w-full max-w-[1400px] px-5 pb-5 pt-4 sm:px-8 sm:pb-12 sm:pt-10 lg:px-12 lg:pb-14 lg:pt-12">
-            <div className="grid items-center gap-5 lg:grid-cols-12 lg:gap-12">
+          <div className="mx-auto w-full max-w-[1400px] px-5 pb-2 pt-3 sm:px-8 sm:pb-6 sm:pt-6 lg:px-12 lg:pb-8 lg:pt-8">
+            <div className="grid items-center gap-4 lg:grid-cols-12 lg:gap-10">
               {/* Copy */}
               <div className="relative z-10 lg:col-span-6">
                 <div className="home-hero-copy" key={activeSlide}>
@@ -1049,12 +1031,12 @@ export function HomePage() {
                       {t(homeSlides[activeSlide].accent)}
                     </span>
                   </h1>
-                  <p className="mt-3 max-w-lg text-base leading-7 text-white/75 sm:mt-5 sm:text-lg sm:leading-8">
+                  <p className="mt-3 max-w-lg text-base leading-6 text-white/75 sm:mt-4 sm:text-lg sm:leading-7">
                     {t(homeSlides[activeSlide].description)}
                   </p>
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center gap-3 sm:mt-7">
+                <div className="mt-4 flex flex-wrap items-center gap-3 sm:mt-5">
                   <Link
                     className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#ffdc32] px-4 py-3 text-xs font-extrabold text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] sm:min-h-12 sm:px-6 sm:text-sm"
                     to="/menu?category=Ice%20Cream"
@@ -1070,7 +1052,7 @@ export function HomePage() {
                   </Link>
                 </div>
 
-                <ul className="mt-7 hidden flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-white/80 sm:flex">
+                <ul className="mt-5 hidden flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-white/80 sm:flex">
                   {[
                     "Signature creations",
                     "A flavor for every mood",
@@ -1105,29 +1087,35 @@ export function HomePage() {
                 aria-label={t("Featured treats")}
                 aria-roledescription={t("carousel")}
                 className="relative lg:col-span-6"
+                onBlur={releaseHeroSoon}
+                onFocusCapture={holdHero}
                 onKeyDown={(event) => {
                   if (event.key === "ArrowLeft") {
                     event.preventDefault();
+                    holdHero();
                     setActiveSlide(
                       (current) =>
                         (current + homeSlides.length - 1) % homeSlides.length,
                     );
                   } else if (event.key === "ArrowRight") {
                     event.preventDefault();
+                    holdHero();
                     setActiveSlide(
                       (current) => (current + 1) % homeSlides.length,
                     );
                   }
                 }}
+                onMouseEnter={holdHero}
+                onMouseLeave={releaseHeroSoon}
                 role="region"
               >
                 <div
-                  aria-label={`${activeSlide + 1} / ${homeSlides.length}`}
+                  aria-label={t(homeSlides[activeSlide].caption)}
                   aria-roledescription={t("slide")}
                   className="relative"
                   role="group"
                 >
-                  <div className="relative aspect-[16/10] overflow-hidden rounded-[20px] bg-[#0f3566] ring-1 ring-white/15 sm:aspect-[5/4] sm:rounded-[24px]">
+                  <div className="relative aspect-[2/1] overflow-hidden rounded-[20px] bg-[#123b68] ring-1 ring-white/15 sm:rounded-[24px] lg:aspect-[16/9]">
                     {homeSlides.map((slide, index) => {
                       if (!loadedSlides.includes(index)) return null;
                       const isActive = activeSlide === index;
@@ -1150,24 +1138,9 @@ export function HomePage() {
                         />
                       );
                     })}
-                    <div className="absolute left-4 top-4 flex items-center gap-2 sm:left-5 sm:top-5">
-                      <span className="bg-[#f8f7f2] px-3 py-1.5 text-xs font-bold text-[#092a53]">
-                        {t("Featured")}
-                      </span>
-                      <span
-                        aria-live="polite"
-                        className="bg-[#092a53]/85 px-3 py-1.5 font-display text-xs font-bold tabular-nums text-white"
-                      >
-                        {String(activeSlide + 1).padStart(2, "0")}
-                        <span className="text-white/60">
-                          {" "}
-                          / {String(homeSlides.length).padStart(2, "0")}
-                        </span>
-                      </span>
-                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between gap-4 pt-4 text-white sm:pt-5">
+                  <div className="flex items-center justify-between gap-4 pt-3 text-white">
                     <p className="min-w-0 font-display text-lg font-bold leading-tight sm:text-xl">
                       {t(homeSlides[activeSlide].caption)}
                     </p>
@@ -1217,42 +1190,6 @@ export function HomePage() {
 
                 <div
                   aria-label={t("Choose a featured slide")}
-                  className="mt-3 hidden items-center justify-end gap-2 sm:flex"
-                  role="group"
-                >
-                  {homeSlides.map((slide, index) => {
-                    const isActive = activeSlide === index;
-                    return (
-                      <button
-                        aria-current={isActive ? "true" : undefined}
-                        aria-label={t("Show slide {number}", {
-                          number: index + 1,
-                        })}
-                        className={`relative size-12 overflow-hidden rounded-lg ring-offset-2 ring-offset-[#092a53] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
-                          isActive
-                            ? "ring-2 ring-[#ffdc32]"
-                            : "opacity-60 hover:opacity-100"
-                        }`}
-                        key={slide.image}
-                        onClick={() => {
-                          setActiveSlide(index);
-                        }}
-                        type="button"
-                      >
-                        <img
-                          decoding="async"
-                          loading="lazy"
-                          alt=""
-                          className="size-full object-cover"
-                          onError={photoErrorHandler(slide.image)}
-                          src={thumbnail(slide.image, "tiny")}
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-                <div
-                  aria-label={t("Choose a featured slide")}
                   className="mt-2 flex justify-center sm:hidden"
                   role="group"
                 >
@@ -1292,15 +1229,15 @@ export function HomePage() {
             />
             <div
               aria-hidden="true"
-              className="hero-blob-b pointer-events-none absolute -bottom-32 -right-24 -z-10 size-[20rem] rounded-full bg-[radial-gradient(closest-side,rgb(28_79_138/0.45),rgb(28_79_138/0.45)_35%,transparent)]"
+              className="hero-blob-b pointer-events-none absolute -bottom-32 -right-24 -z-10 size-[20rem] rounded-full bg-[radial-gradient(closest-side,rgb(18_59_104/0.45),rgb(18_59_104/0.45)_35%,transparent)]"
             />
-            <div className="mx-auto max-w-[1320px] px-5 pb-8 pt-7 sm:px-8 sm:pb-14 lg:px-12">
-              <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="mx-auto max-w-[1320px] px-5 pb-5 pt-4 sm:px-8 sm:pb-8 lg:px-12">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="font-display text-xl font-extrabold text-white sm:text-2xl">
                   {t("Why people love us")}
                 </h2>
                 <Link
-                  className="inline-flex items-center gap-2 text-sm font-bold text-white/70 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+                  className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-white/70 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] lg:min-h-0"
                   to="/locations"
                 >
                   <span
@@ -1310,7 +1247,7 @@ export function HomePage() {
                   {t("Pickup or delivery in Douala and Yaoundé.")}
                 </Link>
               </div>
-              <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-4">
+              <div className="mt-3 grid grid-cols-2 gap-2.5 sm:mt-4 sm:gap-3 lg:grid-cols-4">
                 {[
                   {
                     value: t("5 shops"),
@@ -1339,18 +1276,14 @@ export function HomePage() {
                   },
                 ].map((stat) => (
                   <div
-                    className="group relative flex h-full min-w-0 items-center gap-2.5 overflow-hidden rounded-2xl bg-white/[0.05] px-3 py-4 ring-1 ring-white/10 backdrop-blur-md transition duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09] hover:ring-[#ffdc32]/45 focus-within:ring-[#ffdc32]/45 sm:gap-4 sm:rounded-3xl sm:px-6 sm:py-6"
+                    className="flex h-full min-w-0 flex-col items-start gap-2 rounded-2xl bg-white/[0.05] px-3 py-3 ring-1 ring-white/10 sm:flex-row sm:items-center sm:gap-3 sm:rounded-3xl sm:px-5 sm:py-4"
                     key={stat.label}
                     title={stat.title}
                   >
                     {/* Not a native tooltip: also on the label, so the redemption rule is
                         readable on touch screens and by keyboard users. */}
                     {stat.title && <span className="sr-only">{stat.title}</span>}
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute -right-10 -top-10 size-24 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.14),transparent)] opacity-0 transition duration-500 group-hover:opacity-100"
-                    />
-                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#ffdc32]/15 text-[#ffdc32] ring-1 ring-[#ffdc32]/25 transition duration-300 group-hover:scale-105 group-hover:bg-[#ffdc32]/25 sm:size-12">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffdc32]/15 text-[#ffdc32] ring-1 ring-[#ffdc32]/25 sm:size-10">
                       <svg
                         className="size-5"
                         fill={stat.outlineIcon ? "none" : "currentColor"}
@@ -1366,10 +1299,10 @@ export function HomePage() {
                       </svg>
                     </span>
                     <span className="flex flex-col">
-                      <span className="font-display text-lg font-extrabold tabular-nums text-white sm:text-2xl">
+                      <span className="font-display text-[15px] font-extrabold leading-tight text-white sm:text-xl">
                         {stat.value}
                       </span>
-                      <span className="text-[11px] font-semibold leading-4 text-white/70 sm:text-xs">
+                      <span className="text-xs font-semibold leading-4 text-balance text-white/70">
                         {stat.label}
                       </span>
                     </span>
@@ -1439,7 +1372,7 @@ export function HomePage() {
                       className={`min-h-11 rounded-lg border px-4 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
                         selected
                           ? "border-[#092a53] bg-[#092a53] text-white"
-                          : "border-[#d7dee7] bg-white text-[#123b68] hover:border-[#092a53] hover:bg-[#f8fafb]"
+                          : "border-[#dce3eb] bg-white text-[#123b68] hover:border-[#092a53] hover:bg-[#f4f6f8]"
                       }`}
                       key={mood}
                       onClick={() => {
@@ -1460,7 +1393,7 @@ export function HomePage() {
                   <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
                 </svg>
                 <input
-                  className="min-h-11 w-full rounded-lg border border-[#d7dee7] bg-white py-2.5 pl-12 pr-10 text-sm font-semibold text-[#092a53] outline-none transition placeholder:text-[#8190a1] focus:border-[#092a53] focus:ring-2 focus:ring-[#092a53]/15"
+                  className="min-h-11 w-full rounded-lg border border-[#dce3eb] bg-white py-2.5 pl-12 pr-10 text-sm font-semibold text-[#092a53] outline-none transition placeholder:text-[#65748a] focus:border-[#092a53] focus:ring-2 focus:ring-[#092a53]/15"
                   onChange={(event) => {
                     const query = event.target.value;
                     setFlavorSearch(query);
@@ -1474,7 +1407,7 @@ export function HomePage() {
                 {flavorSearch && (
                   <button
                     aria-label={t("Clear search")}
-                    className="absolute right-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-[#65748a] transition before:absolute before:-inset-2 before:content-[''] hover:bg-[#edf1f5] hover:text-[#092a53]"
+                    className="absolute right-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-[#65748a] transition before:absolute before:-inset-2 before:content-[''] hover:bg-[#f4f6f8] hover:text-[#092a53]"
                     onClick={() => {
                       setFlavorSearch("");
                       if (selectedFlavorMood === "all") setShowAllFlavorResults(false);
@@ -1490,7 +1423,7 @@ export function HomePage() {
             </div>
 
             {flavorFiltersActive && (
-              <p aria-live="polite" className="mt-5 text-sm font-semibold text-[#52647b]">
+              <p aria-live="polite" className="mt-5 text-sm font-semibold text-[#65748a]">
                 {t("Showing {shown} of {total} flavors", {
                   shown: matchingFlavors.length,
                   total: allFlavorCards.length,
@@ -1499,7 +1432,7 @@ export function HomePage() {
             )}
             {visibleFlavors.length === 0 ? (
               <p
-                className="mt-8 rounded-xl bg-white px-5 py-8 text-center text-base leading-7 text-[#52647b]"
+                className="mt-8 rounded-xl bg-white px-5 py-8 text-center text-base leading-7 text-[#65748a]"
                 role="status"
               >
                 {t("No flavors match your filters.")}
@@ -1529,9 +1462,9 @@ export function HomePage() {
                       aria-hidden="true"
                       className="pointer-events-none absolute inset-0 z-20 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_30%,rgba(255,255,255,0.55)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
                     />
-                    <div className="relative bg-[#e8edf2]">
+                    <div className="relative bg-[#f4f6f8]">
                       <ProductImageSlider
-                        frameClassName="rounded-none bg-[#e8edf2] shadow-none"
+                        frameClassName="rounded-none bg-[#f4f6f8] shadow-none"
                         imageClassName="aspect-square transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none sm:aspect-[4/3]"
                         images={images}
                         name={t(flavor.title)}
@@ -1575,7 +1508,7 @@ export function HomePage() {
                         >
                           {t(flavor.title)}
                         </Link>
-                        <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#52647b] sm:text-sm">
+                        <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#65748a] sm:text-sm">
                           {t(flavor.detail || "")}
                         </p>
                       </div>
@@ -1595,7 +1528,7 @@ export function HomePage() {
                           aria-label={soldOut
                             ? t("Sold out")
                             : t("Add {name} to cart", { name: t(flavor.item) })}
-                          className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#52647b] sm:min-h-11 sm:px-4 sm:text-sm ${
+                          className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] sm:min-h-11 sm:px-4 sm:text-sm ${
                             added
                               ? "bg-[#4caf50] text-white"
                               : "bg-[#092a53] text-white hover:bg-[#163e6b]"
@@ -1616,7 +1549,7 @@ export function HomePage() {
             </ul>
             {selectedFlavorMood === "all" && !flavorSearch.trim() && allFlavorCards.length > 4 && (
               <div className="mt-6 flex flex-col items-center gap-3">
-                <p className="text-center text-sm leading-5 text-[#52647b]">
+                <p className="text-center text-sm leading-5 text-[#65748a]">
                   {t("Search or choose a craving to see more flavors.")}
                 </p>
                 <button
@@ -1654,7 +1587,7 @@ export function HomePage() {
                 >
                   {t("Cakes for every occasion")}
                 </h2>
-                <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-[#52647b] sm:text-base">
+                <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-[#65748a] sm:text-base">
                   {t("Creamy ice cream cakes for birthdays, parties, and every celebration.")}
                 </p>
               </div>
@@ -1688,7 +1621,7 @@ export function HomePage() {
                       className={`min-h-11 rounded-lg border px-4 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
                         selected
                           ? "border-[#092a53] bg-[#092a53] text-white"
-                          : "border-[#d7dee7] bg-white text-[#123b68] hover:border-[#092a53] hover:bg-[#f8fafb]"
+                          : "border-[#dce3eb] bg-white text-[#123b68] hover:border-[#092a53] hover:bg-[#f4f6f8]"
                       }`}
                       key={id}
                       onClick={() => {
@@ -1719,7 +1652,7 @@ export function HomePage() {
                     />
                   </svg>
                   <input
-                    className="min-h-11 w-full rounded-lg border border-[#d7dee7] bg-white py-2.5 pl-12 pr-4 text-sm font-semibold text-[#092a53] outline-none transition placeholder:font-medium placeholder:text-[#8190a1] hover:border-[#9eafc2] hover:shadow-[0_10px_28px_rgba(9,42,83,0.12)] focus:border-[#092a53] focus:ring-2 focus:ring-[#092a53]/15"
+                    className="min-h-11 w-full rounded-lg border border-[#dce3eb] bg-white py-2.5 pl-12 pr-4 text-sm font-semibold text-[#092a53] outline-none transition placeholder:font-medium placeholder:text-[#65748a] hover:border-[#9eafc2] hover:shadow-[0_10px_28px_rgba(9,42,83,0.12)] focus:border-[#092a53] focus:ring-2 focus:ring-[#092a53]/15"
                     onChange={(event) => setCakeSearch(event.target.value)}
                     placeholder={t("Search cakes\u2026")}
                     type="search"
@@ -1731,7 +1664,7 @@ export function HomePage() {
 
               {cakeCards.length === 0 ? (
                 <p
-                  className="mt-8 rounded-xl bg-white px-5 py-8 text-center text-base leading-7 text-[#52647b]"
+                  className="mt-8 rounded-xl bg-white px-5 py-8 text-center text-base leading-7 text-[#65748a]"
                   role="status"
                 >
                   {t("No cakes match your search \u2014 try another name or filter.")}
@@ -1761,9 +1694,9 @@ export function HomePage() {
                           aria-hidden="true"
                           className="pointer-events-none absolute inset-0 z-20 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_30%,rgba(255,255,255,0.55)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
                         />
-                        <div className="relative bg-[#e8edf2]">
+                        <div className="relative bg-[#f4f6f8]">
                           <ProductImageSlider
-                            frameClassName="rounded-none bg-[#e8edf2] shadow-none"
+                            frameClassName="rounded-none bg-[#f4f6f8] shadow-none"
                             imageClassName="aspect-square transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none sm:aspect-[4/3]"
                             images={images}
                             name={t(cake.name)}
@@ -1805,7 +1738,7 @@ export function HomePage() {
                             >
                               {t(cake.name)}
                             </Link>
-                            <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#52647b] sm:text-sm">
+                            <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#65748a] sm:text-sm">
                               {t(cake.detail)}
                             </p>
                           </div>
@@ -1823,7 +1756,7 @@ export function HomePage() {
                                   ? t("Added to your bag")
                                     : t("Add {name} to cart", { name: t(cake.name) })
                               }
-                              className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#52647b] sm:min-h-11 sm:px-4 sm:text-sm ${
+                              className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] sm:min-h-11 sm:px-4 sm:text-sm ${
                                 added
                                   ? "bg-[#4caf50] text-white"
                                   : "bg-[#092a53] text-white hover:bg-[#163e6b]"
@@ -1856,9 +1789,14 @@ export function HomePage() {
                   </button>
                 </div>
               )}
-              <div className="mt-6 flex justify-start">
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="max-w-xl text-sm leading-6 text-[#65748a]">
+                  {t(
+                    "A taste of the cake menu. See all designs on the cakes page \u2014 or build your own.",
+                  )}
+                </p>
                 <Link
-                  className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-lg border border-[#cfd8e1] bg-white px-6 py-3 text-sm font-bold text-[#092a53] transition duration-300 hover:-translate-y-0.5 hover:border-[#092a53] hover:bg-[#fafdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  className="group inline-flex min-h-12 shrink-0 items-center justify-center gap-3 self-start rounded-md bg-[#092a53] px-6 py-3 text-sm font-extrabold text-white transition duration-300 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 sm:self-auto"
                   to={`/menu?${new URLSearchParams({ category: "Cakes & Pies" })}`}
                 >
                   {t("Explore all cakes")}
@@ -1870,17 +1808,12 @@ export function HomePage() {
                   </span>
                 </Link>
               </div>
-              <p className="mt-5 text-sm leading-5 text-[#52647b]">
-                {t(
-                  "A taste of the cake menu. See all designs on the cakes page \u2014 or build your own.",
-                )}
-              </p>
           </div>
         </section>
 
         <section
           aria-labelledby="popular-flavors-heading"
-          className="scroll-mt-20 bg-[#e8edf2] px-5 pb-20 pt-12 sm:px-8 sm:pb-24 sm:pt-14 lg:px-10 lg:pb-28 lg:pt-16"
+          className="scroll-mt-20 bg-[#f4f6f8] px-5 pb-20 pt-12 sm:px-8 sm:pb-24 sm:pt-14 lg:px-10 lg:pb-28 lg:pt-16"
           id="favorites"
           ref={popularSection}
         >
@@ -1893,7 +1826,7 @@ export function HomePage() {
                 >
                   {t("Fan favorites")}
                 </h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-[#52647b]">
+                <p className="mt-4 max-w-xl text-base leading-7 text-[#65748a]">
                   {t(
                     "Our most-loved signature creations, mixed to order on the frozen stone.",
                   )}
@@ -2011,7 +1944,7 @@ export function HomePage() {
                             reviewCount={item.reviewCount}
                           />
                         </div>
-                        <p className="mt-2 max-w-lg text-sm leading-6 text-[#52647b] sm:text-base sm:leading-7">
+                        <p className="mt-2 max-w-lg text-sm leading-6 text-[#65748a] sm:text-base sm:leading-7">
                           {t(item.detail)}
                         </p>
                         <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-5">
@@ -2244,7 +2177,7 @@ export function HomePage() {
                 src={thumbnail("/images/vanilla.jpg")}
                 srcSet={photoSrcSet("/images/vanilla.jpg")}
               />
-              <figcaption className="mt-4 text-sm font-semibold text-[#52647b]">
+              <figcaption className="mt-4 text-sm font-semibold text-[#65748a]">
                 {t("Life's sweeter by the scoop")}
               </figcaption>
             </figure>
@@ -2260,7 +2193,7 @@ export function HomePage() {
                   "The first lick of a cone. The spoon you don't want to share. The scoop that turns an ordinary afternoon into a little celebration.",
                 )}
               </p>
-              <p className="mt-4 text-base leading-7 text-[#52647b]">
+              <p className="mt-4 text-base leading-7 text-[#65748a]">
                 {t(
                   "Welcome to our world of ice cream — where there's always room for a little more happy.",
                 )}
@@ -2296,7 +2229,7 @@ export function HomePage() {
                 >
                   {t("Menu highlights")}
                 </h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-[#52647b] sm:text-lg">
+                <p className="mt-4 max-w-xl text-base leading-7 text-[#65748a] sm:text-lg">
                   {t("Explore signature creations and discover every flavor.")}
                 </p>
               </div>
@@ -2327,7 +2260,7 @@ export function HomePage() {
                     className="block overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#092a53]"
                     to={card.to}
                   >
-                    <div className="aspect-[16/10] overflow-hidden bg-[#e8edf2]">
+                    <div className="aspect-[16/10] overflow-hidden bg-[#f4f6f8]">
                       <img
                         alt=""
                         className="size-full object-cover transition duration-500 ease-out group-hover:scale-[1.03]"
@@ -2345,7 +2278,7 @@ export function HomePage() {
                         <h3 className="font-display text-2xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-3xl">
                           {t(card.title)}
                         </h3>
-                        <p className="mt-2 max-w-md text-sm leading-6 text-[#52647b] sm:text-base">
+                        <p className="mt-2 max-w-md text-sm leading-6 text-[#65748a] sm:text-base">
                           {t(card.description)}
                         </p>
                       </div>
@@ -2362,7 +2295,7 @@ export function HomePage() {
             </div>
 
             {/* Payment reassurance for first-time buyers */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-sm font-semibold text-[#52647b]">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-sm font-semibold text-[#65748a]">
               <span>{t("Cards & Mobile Money accepted")}</span>
               <span aria-hidden="true" className="mx-1 hidden h-1 w-1 rounded-full bg-[#c9d2dc] sm:block" />
               <span>{t("Pay in FCFA with")}</span>
@@ -2374,45 +2307,10 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* Sticky section sub-nav — appears after the hero, highlights the section in view.
-            It sits at the bottom of the screen: at the top it covered headings and product
-            names as the visitor scrolled past them. */}
-        <nav
-          aria-label={t("Page sections")}
-          className={`fixed bottom-6 left-1/2 z-40 -translate-x-1/2 lg:block ${
-            pillVisible
-              ? "pointer-events-auto opacity-100"
-              : "pointer-events-none hidden"
-          }`}
-        >
-          <div className="flex items-center gap-1 rounded-full bg-[#092a53]/90 p-1.5 shadow-[0_12px_32px_rgba(9,42,83,0.35)] ring-1 ring-white/15 backdrop-blur-md">
-            {homeSections.map(({ id, label }) => (
-              <a
-                aria-current={activeSection === id ? "true" : undefined}
-                className={`rounded-full px-3 py-1.5 text-xs font-extrabold transition sm:px-4 sm:text-[13px] ${
-                  activeSection === id
-                    ? "bg-[#ffdc32] text-[#092a53]"
-                    : "text-white/85 hover:bg-white/10 hover:text-white"
-                }`}
-                href={`#${id}`}
-                key={id}
-                onClick={(event) => {
-                  event.preventDefault();
-                  document
-                    .getElementById(id)
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-              >
-                {t(label)}
-              </a>
-            ))}
-          </div>
-        </nav>
-
         {/* Back to top — appears after scrolling past the hero */}
         <button
           aria-label={t("Back to top")}
-          className={`fixed bottom-24 right-6 z-40 grid size-12 place-items-center rounded-full bg-[#092a53] text-white shadow-[0_10px_24px_rgba(9,42,83,0.35)] transition duration-300 hover:bg-[#14467c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 lg:bottom-6 ${
+          className={`fixed bottom-6 right-6 z-40 grid size-12 place-items-center rounded-full bg-[#092a53] text-white shadow-[0_10px_24px_rgba(9,42,83,0.35)] transition duration-300 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 ${
             showScrollTop
               ? "pointer-events-auto opacity-100"
               : "pointer-events-none hidden"

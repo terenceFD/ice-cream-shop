@@ -49,7 +49,7 @@ const STATUS: Record<string, { label: string; className: string }> = {
   quoted: { label: "Quote sent", className: "bg-[#fff3c4] text-[#7a5d00]" },
   deposit_paid: { label: "Deposit paid", className: "bg-[#e3f4e8] text-[#1f6b3e]" },
   confirmed: { label: "Confirmed", className: "bg-[#d9f0e1] text-[#165a33]" },
-  completed: { label: "Completed", className: "bg-[#eef2f7] text-[#4f6379]" },
+  completed: { label: "Completed", className: "bg-[#f4f6f8] text-[#65748a]" },
   declined: { label: "Declined", className: "bg-red-50 text-red-700" },
   cancelled: { label: "Cancelled", className: "bg-red-50 text-red-700" },
 };
@@ -61,7 +61,7 @@ const FILTERS = [
 ];
 
 const inputClass =
-  "mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] outline-none! transition focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25";
+  "mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] outline-none! transition focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25";
 
 function formatXaf(amount: number | null | undefined, language: string) {
   return `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-US").format(Math.round(amount || 0))} FCFA`;
@@ -180,7 +180,7 @@ export function AdminEventOrdersPage() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t("Parties & events")}</p>
+        <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t("Parties & events")}</p>
         <h1 className="mt-1 font-display text-3xl font-extrabold text-[#092a53]">{t("Event orders")}</h1>
         <p className="mt-1 text-sm text-[#65748a]">{t("Review requests, send quotes with a deposit, and confirm events once the deposit is paid.")}</p>
       </header>
@@ -197,7 +197,7 @@ export function AdminEventOrdersPage() {
         {FILTERS.map((entry) => (
           <button
             aria-selected={filter === entry.key}
-            className={`rounded-full px-4 py-2 text-sm font-bold transition ${filter === entry.key ? "bg-[#092a53] text-white" : "bg-white text-[#4f6379] ring-1 ring-[#e3e9f1] hover:text-[#092a53]"}`}
+            className={`rounded-full px-4 py-2 text-sm font-bold transition ${filter === entry.key ? "bg-[#092a53] text-white" : "bg-white text-[#65748a] ring-1 ring-[#e3e9f1] hover:text-[#092a53]"}`}
             key={entry.key}
             onClick={() => setFilter(entry.key)}
             role="tab"
@@ -211,7 +211,7 @@ export function AdminEventOrdersPage() {
       {loading ? (
         <p className="text-sm text-[#65748a]">{t("Loading…")}</p>
       ) : !visible.length ? (
-        <div className="rounded-[20px] border border-dashed border-[#d9e1ea] bg-white px-6 py-14 text-center">
+        <div className="rounded-[20px] border border-dashed border-[#dce3eb] bg-white px-6 py-14 text-center">
           <p className="font-display text-lg font-extrabold text-[#092a53]">{t("No event orders here")}</p>
           <p className="mt-1 text-sm text-[#65748a]">{t("New requests from the Parties & events page will appear here.")}</p>
         </div>
@@ -222,15 +222,15 @@ export function AdminEventOrdersPage() {
             return (
               <li key={order.id}>
                 <button
-                  className="h-full w-full rounded-[18px] border border-[#e5ebf3] bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.08)]"
+                  className="h-full w-full rounded-[18px] border border-[#dce3eb] bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.08)]"
                   onClick={() => setSelectedId(order.id)}
                   type="button"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-extrabold text-[#092a53]">#{order.id} · {t(EVENT_TYPE_LABELS[order.eventType] || "Event")}</p>
-                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${status.className}`}>{t(status.label)}</span>
+                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${status.className}`}>{t(status.label)}</span>
                   </div>
-                  <p className="mt-1 text-sm text-[#4f6379]">{order.eventDate} · {order.eventTime} · {t("{count} guests", { count: order.guestCount })}</p>
+                  <p className="mt-1 text-sm text-[#65748a]">{order.eventDate} · {order.eventTime} · {t("{count} guests", { count: order.guestCount })}</p>
                   <p className="mt-1 truncate text-sm text-[#65748a]">{order.customerName} · {t(order.storeName || "")}</p>
                   <p className="mt-3 text-sm font-extrabold tabular-nums text-[#092a53]">{formatXaf(order.quotedTotal ?? order.estimatedTotal, language)}</p>
                 </button>
@@ -244,26 +244,26 @@ export function AdminEventOrdersPage() {
         <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
           <button aria-label={t("Close")} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setSelectedId(null)} tabIndex={-1} type="button" />
           <section aria-labelledby="event-drawer-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[34rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
-            <header className="flex items-start justify-between gap-4 border-b border-[#edf1f5] px-6 py-5">
+            <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t(EVENT_TYPE_LABELS[selected.eventType] || "Event")}</p>
+                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t(EVENT_TYPE_LABELS[selected.eventType] || "Event")}</p>
                 <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="event-drawer-title">{t("Event order #{id}", { id: selected.id })}</h2>
                 <span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${(STATUS[selected.status] || STATUS.new).className}`}>{t((STATUS[selected.status] || STATUS.new).label)}</span>
               </div>
-              <button aria-label={t("Close")} className="grid size-9 place-items-center rounded-xl text-[#65748a] hover:bg-[#f1f4f8]" onClick={() => setSelectedId(null)} type="button">✕</button>
+              <button aria-label={t("Close")} className="grid size-9 place-items-center rounded-xl text-[#65748a] hover:bg-[#f4f6f8]" onClick={() => setSelectedId(null)} type="button">✕</button>
             </header>
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-6 text-sm">
               <dl className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-[#f7f9fc] p-3"><dt className="text-xs text-[#8592a3]">{t("Date & time")}</dt><dd className="font-bold">{selected.eventDate} · {selected.eventTime}</dd></div>
-                <div className="rounded-xl bg-[#f7f9fc] p-3"><dt className="text-xs text-[#8592a3]">{t("Guests")}</dt><dd className="font-bold">{selected.guestCount}</dd></div>
-                <div className="col-span-2 rounded-xl bg-[#f7f9fc] p-3">
+                <div className="rounded-xl bg-[#f4f6f8] p-3"><dt className="text-xs text-[#8592a3]">{t("Date & time")}</dt><dd className="font-bold">{selected.eventDate} · {selected.eventTime}</dd></div>
+                <div className="rounded-xl bg-[#f4f6f8] p-3"><dt className="text-xs text-[#8592a3]">{t("Guests")}</dt><dd className="font-bold">{selected.guestCount}</dd></div>
+                <div className="col-span-2 rounded-xl bg-[#f4f6f8] p-3">
                   <dt className="text-xs text-[#8592a3]">{t(selected.fulfillmentType === "pickup" ? "Pickup" : "Delivery")}</dt>
                   <dd className="font-bold">{t(selected.storeName || "")}{selected.deliveryAddress ? ` → ${selected.deliveryAddress}` : ""}</dd>
                 </div>
-                <div className="col-span-2 rounded-xl bg-[#f7f9fc] p-3">
+                <div className="col-span-2 rounded-xl bg-[#f4f6f8] p-3">
                   <dt className="text-xs text-[#8592a3]">{t("Customer")}</dt>
                   <dd className="font-bold">{selected.customerName}</dd>
-                  <dd><a className="text-[#355777] hover:underline" href={`mailto:${selected.customerEmail}`}>{selected.customerEmail}</a> · <a className="text-[#355777] hover:underline" href={`tel:${selected.customerPhone}`}>{selected.customerPhone}</a></dd>
+                  <dd><a className="text-[#123b68] hover:underline" href={`mailto:${selected.customerEmail}`}>{selected.customerEmail}</a> · <a className="text-[#123b68] hover:underline" href={`tel:${selected.customerPhone}`}>{selected.customerPhone}</a></dd>
                   {whatsappLink(selected.customerPhone, "") && (
                     <dd className="mt-2">
                       <a
@@ -280,7 +280,7 @@ export function AdminEventOrdersPage() {
                 </div>
               </dl>
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#8190a1]">{t("Items")}</p>
+                <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#65748a]">{t("Items")}</p>
                 <ul className="mt-2 divide-y divide-[#eef1f5] rounded-xl ring-1 ring-[#eef1f5]">
                   {selected.items.map((item) => (
                     <li className="flex justify-between gap-3 px-3 py-2" key={item.itemId}>
@@ -294,19 +294,19 @@ export function AdminEventOrdersPage() {
               {selected.notes && <p className="rounded-xl bg-[#fffbea] px-3 py-2.5 text-[#5c4a00]"><strong>{t("Customer notes")}:</strong> {selected.notes}</p>}
 
               {["new", "quoted"].includes(selected.status) && (
-                <fieldset className="space-y-3 rounded-2xl p-4 ring-1 ring-[#e8edf3]">
-                  <legend className="px-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t("Quote")}</legend>
+                <fieldset className="space-y-3 rounded-2xl p-4 ring-1 ring-[#dce3eb]">
+                  <legend className="px-1 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Quote")}</legend>
                   <div className="grid grid-cols-2 gap-3">
-                    <label className="block text-xs font-bold text-[#4f6379]">
+                    <label className="block text-xs font-bold text-[#65748a]">
                       {t("Total (FCFA)")}
                       <input className={inputClass} min={100} onChange={(event) => setQuotedTotal(event.target.value)} type="number" value={quotedTotal} />
                     </label>
-                    <label className="block text-xs font-bold text-[#4f6379]">
+                    <label className="block text-xs font-bold text-[#65748a]">
                       {t("Deposit (FCFA)")}
                       <input className={inputClass} min={100} onChange={(event) => setDepositAmount(event.target.value)} type="number" value={depositAmount} />
                     </label>
                   </div>
-                  <label className="block text-xs font-bold text-[#4f6379]">
+                  <label className="block text-xs font-bold text-[#65748a]">
                     {t("Note to the customer (optional)")}
                     <textarea className={`${inputClass} min-h-20 resize-y`} maxLength={500} onChange={(event) => setAdminNote(event.target.value)} placeholder={t("Example: Includes delivery and serving cups.")} value={adminNote} />
                   </label>
@@ -319,7 +319,7 @@ export function AdminEventOrdersPage() {
               )}
               {actionError && <p className="rounded-xl bg-red-50 px-3 py-2.5 font-semibold text-red-700" role="alert">{actionError}</p>}
             </div>
-            <footer className="flex flex-wrap justify-end gap-2.5 border-t border-[#edf1f5] bg-[#fafbfd] px-6 py-4">
+            <footer className="flex flex-wrap justify-end gap-2.5 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
               {selected.status === "declined" && (
                 <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-60" disabled={working || isDeleting} onClick={() => setIsDeleteConfirmOpen(true)} type="button">
                   {t("Delete order")}
@@ -360,7 +360,7 @@ export function AdminEventOrdersPage() {
             <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("This permanently deletes the declined event order. This cannot be undone.")}</p>
             {actionError && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{actionError}</p>}
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] disabled:opacity-60" disabled={isDeleting} onClick={() => setIsDeleteConfirmOpen(false)} type="button">{t("Cancel")}</button>
+              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] disabled:opacity-60" disabled={isDeleting} onClick={() => setIsDeleteConfirmOpen(false)} type="button">{t("Cancel")}</button>
               <button className="min-h-10 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60" disabled={isDeleting} onClick={deleteDeclinedOrder} type="button">{isDeleting ? t("Deleting…") : t("Delete")}</button>
             </div>
           </section>

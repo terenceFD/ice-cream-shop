@@ -10,16 +10,16 @@ import { PromotionAlertsSetting } from "../../components/PromotionAlerts";
 import { numberFormatter } from "../../lib/cartPricing";
 
 const fieldClass =
-  "mt-2 w-full rounded-xl border border-[#d7dee7] bg-white px-4 py-3.5 text-sm font-semibold text-[#102c50] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#b9c5d2] focus:border-[#bd9c00] focus:ring-4 focus:ring-[#ffdc32]/20 outline-none!";
-const labelClass = "block text-xs font-extrabold text-[#52647b]";
+  "mt-2 w-full rounded-xl border border-[#dce3eb] bg-white px-4 py-3.5 text-sm font-semibold text-[#092a53] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#b9c5d2] focus:border-[#bd9c00] focus:ring-4 focus:ring-[#ffdc32]/20 outline-none!";
+const labelClass = "block text-xs font-extrabold text-[#65748a]";
 const cardClass =
   "rounded-2xl bg-white p-5 ring-1 ring-[#e5e9ee] sm:p-7";
 const eyebrowClass =
-  "text-xs font-bold text-[#806800]";
+  "text-xs font-bold text-[#bd9c00]";
 const primaryButton =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#092a53] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-55";
 const ghostButton =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#d5dce5] bg-white px-4 py-2.5 text-xs font-bold text-[#52647b] transition-colors hover:border-[#092a53] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#d5dce5] bg-white px-4 py-2.5 text-xs font-bold text-[#65748a] transition-colors hover:border-[#092a53] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50";
 
 const PROFILE_IMAGE_DIMENSION = 256;
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -172,7 +172,7 @@ function SectionHeading({ eyebrow, title, description, action }) {
 function EmptyState({ icon, title, body, children }) {
   return (
     <div className="rounded-2xl border border-dashed border-[#cfd8e2] bg-white px-6 py-12 text-center">
-      <span className="mx-auto grid size-14 place-items-center rounded-xl bg-[#fff8d8] text-[#806800]">
+      <span className="mx-auto grid size-14 place-items-center rounded-xl bg-[#fff8d8] text-[#bd9c00]">
         <Icon className="size-6" path={icon} />
       </span>
       <h3 className="mt-4 font-display text-xl font-extrabold text-[#092a53]">
@@ -223,7 +223,7 @@ function OrderProgress({ order, t }) {
       className="rounded-xl bg-[#f3f6f8] p-4 sm:p-5"
     >
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <p className="flex items-center gap-2 text-xs font-extrabold text-[#102c50]">
+        <p className="flex items-center gap-2 text-xs font-extrabold text-[#092a53]">
           {!isDone && (
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#6c9c45] opacity-60 motion-reduce:hidden" />
@@ -261,7 +261,7 @@ function OrderProgress({ order, t }) {
                 key={step.key}
               >
                 <span
-                  className={`mx-auto grid size-[30px] place-items-center rounded-full text-[11px] font-extrabold ring-4 ring-[#f7f6f0] ${
+                  className={`mx-auto grid size-[30px] place-items-center rounded-full text-xs font-extrabold ring-4 ring-[#f7f6f0] ${
                     isComplete
                       ? "bg-[#6c9c45] text-white"
                       : isCurrent
@@ -276,9 +276,9 @@ function OrderProgress({ order, t }) {
                   )}
                 </span>
                 <span
-                  className={`mt-2 block px-1 text-[10px] leading-4 sm:text-xs ${
+                  className={`mt-2 block px-1 text-xs leading-4 sm:text-xs ${
                     isCurrent || isComplete
-                      ? "font-bold text-[#102c50]"
+                      ? "font-bold text-[#092a53]"
                       : "font-medium text-[#8b95a2]"
                   }`}
                 >
@@ -290,7 +290,7 @@ function OrderProgress({ order, t }) {
         </ol>
       </div>
       {!isDone && (
-        <p className="mt-4 text-[11px] leading-5 text-[#65748a]">
+        <p className="mt-4 text-xs leading-5 text-[#65748a]">
           {t(
             "This timeline refreshes automatically. Email updates are sent when your order status changes.",
           )}
@@ -384,10 +384,10 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
   }
 
   return (
-    <details className="group/review mt-5 scroll-mt-28 rounded-2xl ring-1 ring-[#ece8dc] open:bg-[#fdfcf7]" ref={detailsRef}>
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-sm font-extrabold text-[#102c50] transition hover:bg-[#f3f6f8] [&::-webkit-details-marker]:hidden">
+    <details className="group/review mt-5 scroll-mt-28 rounded-2xl ring-1 ring-[#fbfaf5] open:bg-[#fbfaf5]" ref={detailsRef}>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:bg-[#f3f6f8] [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-xl bg-[#fff6cc] text-[#8a7000]">
+          <span className="grid size-8 place-items-center rounded-xl bg-[#fff6cc] text-[#bd9c00]">
             <Icon className="size-4" path="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" />
           </span>
           {t("Review a purchased item")}
@@ -405,7 +405,7 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
         <form className="space-y-4 px-4 pb-4" onSubmit={submitReview}>
           <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
             {items.length > 1 && (
-              <label className="flex min-h-11 items-center gap-2.5 text-sm font-semibold text-[#52647b] sm:col-span-2">
+              <label className="flex min-h-11 items-center gap-2.5 text-sm font-semibold text-[#65748a] sm:col-span-2">
                 <input
                   checked={applyToAll}
                   className="size-4 accent-[#092a53]"
@@ -442,7 +442,7 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
               rows={3}
               value={review}
             />
-            <span aria-live="polite" className="mt-1 block text-right text-xs text-[#7b8796]">
+            <span aria-live="polite" className="mt-1 block text-right text-xs text-[#65748a]">
               {review.length}/200
             </span>
           </label>
@@ -478,7 +478,7 @@ function OrderCard({
     <article className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#e5e9ee]">
       <header className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 sm:px-7 sm:pt-6">
         <div className="flex min-w-0 items-center gap-3.5">
-          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#eef2f6] text-[#092a53]">
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#f4f6f8] text-[#092a53]">
             <Icon path="M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" />
           </span>
           <div className="min-w-0">
@@ -504,21 +504,21 @@ function OrderCard({
 
         <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,15rem)]">
           <div>
-            <ul className="divide-y divide-[#edf1f5]">
+            <ul className="divide-y divide-[#f4f6f8]">
               {order.items.map((item, index) => (
                 <li
                   className="flex items-center justify-between gap-4 py-2.5 text-sm first:pt-0"
                   key={`${order.id}-${index}`}
                 >
                   <span className="flex min-w-0 items-center gap-3">
-                    <span className="grid h-7 min-w-7 shrink-0 place-items-center rounded-md bg-[#f1f4f7] px-1.5 text-xs font-extrabold text-[#52647b]">
+                    <span className="grid h-7 min-w-7 shrink-0 place-items-center rounded-md bg-[#f4f6f8] px-1.5 text-xs font-extrabold text-[#65748a]">
                       {item.quantity}×
                     </span>
-                    <span className="truncate font-semibold text-[#102c50]">
+                    <span className="truncate font-semibold text-[#092a53]">
                       {item.name}
                     </span>
                   </span>
-                  <span className="shrink-0 font-bold text-[#52647b]">
+                  <span className="shrink-0 font-bold text-[#65748a]">
                     {formatPrice(item.lineTotalCents)}
                   </span>
                 </li>
@@ -534,8 +534,8 @@ function OrderCard({
 
           <dl className="space-y-3 text-sm">
             {order.scheduledFor && (
-              <div className="rounded-2xl bg-[#f3f6fa] px-4 py-3">
-                <dt className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
+              <div className="rounded-2xl bg-[#f4f6f8] px-4 py-3">
+                <dt className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
                   {t(
                     order.fulfillmentType === "pickup"
                       ? "Pickup scheduled"
@@ -550,8 +550,8 @@ function OrderCard({
                 </dd>
               </div>
             )}
-            <div className="rounded-2xl bg-[#f3f6fa] px-4 py-3">
-              <dt className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
+            <div className="rounded-2xl bg-[#f4f6f8] px-4 py-3">
+              <dt className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
                 {t("Assigned store")}
               </dt>
               <dd className="mt-1 font-bold text-[#092a53]">
@@ -564,11 +564,11 @@ function OrderCard({
               )}
             </div>
             {(order.deliveryResidence || order.deliveryCity) && (
-              <div className="rounded-2xl bg-[#f3f6fa] px-4 py-3">
-                <dt className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
+              <div className="rounded-2xl bg-[#f4f6f8] px-4 py-3">
+                <dt className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
                   {t(order.fulfillmentType === "pickup" ? "Pickup" : "Delivery")}
                 </dt>
-                <dd className="mt-1 text-xs font-semibold leading-5 text-[#52647b]">
+                <dd className="mt-1 text-xs font-semibold leading-5 text-[#65748a]">
                   {order.deliveryResidence ? `${order.deliveryResidence}, ` : ""}
                   {order.deliveryCity}
                 </dd>
@@ -578,7 +578,7 @@ function OrderCard({
         </div>
 
         {!paymentIssue && (
-          <div className="flex flex-wrap justify-end gap-2.5 border-t border-[#f0ece2] pt-5">
+          <div className="flex flex-wrap justify-end gap-2.5 border-t border-[#fbfaf5] pt-5">
             <button
               className={ghostButton}
               disabled={isSaving || isSaved}
@@ -665,7 +665,7 @@ function CustomerProfileDetails({ customer, onSave, t }) {
           </span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-extrabold text-[#102c50]">{t("Profile picture")}</p>
+          <p className="text-sm font-extrabold text-[#092a53]">{t("Profile picture")}</p>
           <p className="mt-1 text-xs leading-5 text-[#65748a]">
             {t("Optional. Image will be resized before saving (5 MB max).")}
           </p>
@@ -753,7 +753,7 @@ function CustomerProfileDetails({ customer, onSave, t }) {
         </label>
       </div>
 
-      <div className="flex flex-col-reverse gap-3 border-t border-[#f0ece2] pt-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col-reverse gap-3 border-t border-[#fbfaf5] pt-5 sm:flex-row sm:items-center sm:justify-between">
         <div aria-live="polite" className="min-h-5 text-sm">
           {error && (
             <p className="font-semibold text-red-700" role="alert">
@@ -792,7 +792,7 @@ function RewardsCard({ points, t, compact = false }) {
             <span className="ml-2 text-base font-semibold text-white/70">{t("points")}</span>
           </p>
         </div>
-        <span className="rounded-md bg-[#fff3b0] px-2.5 py-1 text-xs font-bold text-[#5e4c00]">
+        <span className="rounded-md bg-[#fff3b0] px-2.5 py-1 text-xs font-bold text-[#bd9c00]">
           {formatPoints(rewardsAvailable)} {t("Rewards available")}
         </span>
       </div>
@@ -1088,17 +1088,17 @@ export function CustomerOrdersPage() {
     <ul className="grid gap-3 sm:grid-cols-2">
       {list.map((favorite) => (
         <li
-          className="group flex items-center gap-3.5 rounded-xl bg-white p-3 ring-1 ring-[#e5e9ee] transition-colors hover:bg-[#f8fafb]"
+          className="group flex items-center gap-3.5 rounded-xl bg-white p-3 ring-1 ring-[#e5e9ee] transition-colors hover:bg-[#f4f6f8]"
           key={favorite.itemId}
         >
           <img decoding="async" loading="lazy"
             alt=""
-            className="size-16 shrink-0 rounded-xl bg-[#f1f4f7] object-cover"
+            className="size-16 shrink-0 rounded-xl bg-[#f4f6f8] object-cover"
             src={favorite.item.image}
           />
           <div className="min-w-0 flex-1">
             <Link
-              className="block truncate text-sm font-extrabold text-[#102c50] transition hover:text-[#806a00]"
+              className="block truncate text-sm font-extrabold text-[#092a53] transition hover:text-[#bd9c00]"
               to={favorite.item.itemType === "menu" ? "/menu" : "/flavors"}
             >
               {favorite.item.name}
@@ -1124,7 +1124,7 @@ export function CustomerOrdersPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f4f6f8] text-[#102c50]">
+    <div className="min-h-screen bg-[#f4f6f8] text-[#092a53]">
       <Header />
       <main id="main" tabIndex={-1}>
         {/* Hero */}
@@ -1229,21 +1229,21 @@ export function CustomerOrdersPage() {
                       className={`flex min-h-11 items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] lg:w-full ${
                         isCurrent
                           ? "bg-[#fff5c2] text-[#092a53]"
-                          : "bg-white text-[#52647b] ring-1 ring-[#e5e9ee] hover:bg-[#f5f7f9] hover:text-[#092a53] lg:bg-transparent lg:ring-0 lg:hover:bg-[#eef1f4]"
+                          : "bg-white text-[#65748a] ring-1 ring-[#e5e9ee] hover:bg-[#f4f6f8] hover:text-[#092a53] lg:bg-transparent lg:ring-0 lg:hover:bg-[#eef1f4]"
                       }`}
                       onClick={() => selectTab(tab.key)}
                       type="button"
                     >
                       <span
-                        className={`hidden size-5 shrink-0 place-items-center lg:grid ${isCurrent ? "text-[#806800]" : "text-[#718095]"}`}
+                        className={`hidden size-5 shrink-0 place-items-center lg:grid ${isCurrent ? "text-[#bd9c00]" : "text-[#718095]"}`}
                       >
                         <Icon path={tab.icon} />
                       </span>
                       <span className="flex-1 text-left">{t(tab.label)}</span>
                       {count > 0 && (
                         <span
-                          className={`rounded-md px-1.5 py-0.5 text-[11px] ${
-                            isCurrent ? "bg-white/70 text-[#5e4c00]" : "bg-[#f1f4f7] text-[#65748a]"
+                          className={`rounded-md px-1.5 py-0.5 text-xs ${
+                            isCurrent ? "bg-white/70 text-[#bd9c00]" : "bg-[#f4f6f8] text-[#65748a]"
                           }`}
                         >
                           {count}
@@ -1255,7 +1255,7 @@ export function CustomerOrdersPage() {
               })}
               <li className="lg:mt-2 lg:border-t lg:border-[#e5e9ee] lg:pt-2">
                 <button
-                  className="group/logout flex min-h-11 w-full items-center gap-3 whitespace-nowrap rounded-lg bg-white px-3 py-2.5 text-sm font-semibold text-[#52647b] ring-1 ring-[#e5e9ee] transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 lg:bg-transparent lg:ring-0"
+                  className="group/logout flex min-h-11 w-full items-center gap-3 whitespace-nowrap rounded-lg bg-white px-3 py-2.5 text-sm font-semibold text-[#65748a] ring-1 ring-[#e5e9ee] transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 lg:bg-transparent lg:ring-0"
                   onClick={handleLogout}
                   type="button"
                 >
@@ -1334,11 +1334,11 @@ export function CustomerOrdersPage() {
                         { label: t("Contact us"), to: "/contact", icon: "M4 6h16v12H4V6Zm0 0 8 7 8-7" },
                       ].map((action) => (
                         <Link
-                          className="group flex flex-col gap-3 rounded-xl bg-[#f3f6f8] p-4 text-sm font-extrabold text-[#102c50] transition-colors hover:bg-[#e9eef3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                          className="group flex flex-col gap-3 rounded-xl bg-[#f3f6f8] p-4 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#e9eef3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
                           key={action.to}
                           to={action.to}
                         >
-                          <span className="grid size-10 place-items-center rounded-lg bg-white text-[#806800] transition-colors group-hover:bg-[#ffdc32] group-hover:text-[#092a53]">
+                          <span className="grid size-10 place-items-center rounded-lg bg-white text-[#bd9c00] transition-colors group-hover:bg-[#ffdc32] group-hover:text-[#092a53]">
                             <Icon path={action.icon} />
                           </span>
                           {action.label}
@@ -1402,7 +1402,7 @@ export function CustomerOrdersPage() {
                     </div>
                     <button
                       aria-label={t("Refresh order status")}
-                      className="grid size-9 place-items-center rounded-lg bg-white text-[#52647b] ring-1 ring-[#e5e9ee] transition hover:text-[#092a53] disabled:opacity-50"
+                      className="grid size-9 place-items-center rounded-lg bg-white text-[#65748a] ring-1 ring-[#e5e9ee] transition hover:text-[#092a53] disabled:opacity-50"
                       disabled={loadingOrders}
                       onClick={() =>
                         refreshOrders().catch((loadError) => setError(loadError.message))
@@ -1463,7 +1463,7 @@ export function CustomerOrdersPage() {
                         return (
                           <li className={`${cardClass} flex flex-col sm:p-6`} key={savedCart.id}>
                             <div className="flex items-start gap-3.5">
-                              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#8a7000]">
+                              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#bd9c00]">
                                 <Icon path="M6 4h12v16l-6-4-6 4V4Z" />
                               </span>
                               <div className="min-w-0 flex-1">
@@ -1475,10 +1475,10 @@ export function CustomerOrdersPage() {
                                 </p>
                               </div>
                             </div>
-                            <ul className="mt-4 flex-1 space-y-1.5 text-sm text-[#52647b]">
+                            <ul className="mt-4 flex-1 space-y-1.5 text-sm text-[#65748a]">
                               {savedCart.items.slice(0, 3).map((item, index) => (
                                 <li className="flex gap-2" key={`${savedCart.id}-${index}`}>
-                                  <span className="font-extrabold text-[#102c50]">{item.quantity}×</span>
+                                  <span className="font-extrabold text-[#092a53]">{item.quantity}×</span>
                                   <span className="truncate">{item.name}</span>
                                 </li>
                               ))}
@@ -1488,7 +1488,7 @@ export function CustomerOrdersPage() {
                                 </li>
                               )}
                             </ul>
-                            <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#f0ece2] pt-4">
+                            <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#fbfaf5] pt-4">
                               <button
                                 className="text-xs font-bold text-[#a34d4d] transition hover:text-red-800 disabled:opacity-50"
                                 disabled={deletingSavedCartId === savedCart.id}
@@ -1554,7 +1554,7 @@ export function CustomerOrdersPage() {
                       {t("Points history")}
                     </h3>
                     {loyalty?.entries?.length ? (
-                      <ul className="mt-4 divide-y divide-[#f0ece2]">
+                      <ul className="mt-4 divide-y divide-[#fbfaf5]">
                         {loyalty.entries.map((entry) => (
                           <li className="flex items-center justify-between gap-3 py-3" key={entry.id}>
                             <div className="flex min-w-0 items-center gap-3">
@@ -1571,7 +1571,7 @@ export function CustomerOrdersPage() {
                                 />
                               </span>
                               <div className="min-w-0">
-                                <p className="truncate text-sm font-bold capitalize text-[#102c50]">
+                                <p className="truncate text-sm font-bold capitalize text-[#092a53]">
                                   {t(entry.entryType)}
                                 </p>
                                 <p className="text-xs text-[#65748a]">

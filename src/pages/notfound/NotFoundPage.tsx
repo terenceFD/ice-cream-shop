@@ -5,7 +5,7 @@ import { useLanguage } from '../../language/useLanguage'
 export function NotFoundPage() {
   const { t } = useLanguage()
   return (
-    <div className="flex min-h-screen flex-col bg-[#f8f7f2] text-[#102c50]">
+    <div className="flex min-h-screen flex-col bg-[#fbfaf5] text-[#092a53]">
       <Header />
       <main id="main" tabIndex={-1} className="flex flex-1 items-center justify-center px-5 py-16 text-center">
         <div>

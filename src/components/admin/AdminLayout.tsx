@@ -437,8 +437,8 @@ export function AdminLayout() {
   const currentLanguage = languageChoices.find((choice) => choice.id === language) || languageChoices[0]
 
   return (
-    <div className="min-h-screen bg-[#f3f6fa] text-[#102c50]">
-      <header className="sticky top-0 z-40 border-b border-[#e6ebf1] bg-white/90 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80">
+    <div className="min-h-screen bg-[#f4f6f8] text-[#092a53]">
+      <header className="sticky top-0 z-40 border-b border-[#dce3eb] bg-white/90 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80">
         <div aria-hidden="true" className="h-[3px] bg-gradient-to-r from-[#092a53] via-[#1d4f80] to-[#ffdc32]" />
         <div className="mx-auto flex h-[68px] max-w-[1600px] items-center gap-3 px-4 sm:gap-4 sm:px-6 lg:px-8">
           <Link aria-label={t('Admin portal')} className="group flex min-w-0 shrink-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#bd9c00]" to={isOwner ? '/admin' : '/admin/overview'}>
@@ -447,7 +447,7 @@ export function AdminLayout() {
               <span className="block truncate font-display text-[15px] font-extrabold leading-tight text-[#092a53]">
                 Cold Stone <span className="text-[#bd9c00]">Creamery</span>
               </span>
-              <span className="mt-0.5 block max-w-52 truncate text-[10px] font-bold uppercase tracking-[0.14em] text-[#8190a1]">
+              <span className="mt-0.5 block max-w-52 truncate text-xs font-bold uppercase tracking-[0.14em] text-[#65748a]">
                 {isOwner
                   ? t('Administration workspace')
                   : isBranchAdmin
@@ -462,14 +462,14 @@ export function AdminLayout() {
 
           {currentNavItem && (
             <>
-              <span aria-hidden="true" className="hidden h-7 w-px bg-[#e6ebf1] md:block" />
+              <span aria-hidden="true" className="hidden h-7 w-px bg-[#dce3eb] md:block" />
               <nav aria-label={t('Breadcrumb')} className="hidden min-w-0 items-center gap-2 text-sm md:flex">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#f1f5f9] text-[#355777]">
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#f1f5f9] text-[#123b68]">
                   <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
                     <path d={navIconPaths[currentNavItem.icon]} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                   </svg>
                 </span>
-                <span className="text-xs font-semibold text-[#8190a1]">{t(currentNavItem.group)}</span>
+                <span className="text-xs font-semibold text-[#65748a]">{t(currentNavItem.group)}</span>
                 <svg aria-hidden="true" className="size-3.5 text-[#c3ccd7]" fill="none" viewBox="0 0 24 24">
                   <path d="m9 6 6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 </svg>
@@ -489,7 +489,7 @@ export function AdminLayout() {
                   className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-1.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${
                     isBranchMenuOpen
                       ? 'border-[#d9c45b] bg-[#fffdf3] text-[#092a53]'
-                      : 'border-[#e3e9f0] bg-white text-[#173654] hover:border-[#c5d2e0] hover:bg-[#fbfcfd]'
+                      : 'border-[#dce3eb] bg-white text-[#173654] hover:border-[#c5d2e0] hover:bg-[#fbfcfd]'
                   }`}
                   onClick={() => {
                     setIsLanguageMenuOpen(false)
@@ -498,29 +498,29 @@ export function AdminLayout() {
                   }}
                   type="button"
                 >
-                  <span className="rounded-md bg-[#fff5c2] px-2 py-1 font-mono text-[11px] font-bold tracking-wide text-[#705a00]">
+                  <span className="rounded-md bg-[#fff5c2] px-2 py-1 font-mono text-xs font-bold tracking-wide text-[#bd9c00]">
                     {currentBranch.mark}
                   </span>
                   <span className="hidden min-w-0 text-left sm:block">
-                    <span className="block text-[11px] font-semibold text-[#8190a1]">{t('City')}</span>
+                    <span className="block text-xs font-semibold text-[#65748a]">{t('City')}</span>
                     <span className="block max-w-24 truncate text-xs font-bold sm:max-w-36">{currentBranch.title}</span>
                   </span>
-                  <svg aria-hidden="true" className={`size-3.5 shrink-0 text-[#8190a1] transition-transform ${isBranchMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24">
+                  <svg aria-hidden="true" className={`size-3.5 shrink-0 text-[#65748a] transition-transform ${isBranchMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24">
                     <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                   </svg>
                 </button>
                 {isBranchMenuOpen && (
                   <div
-                    className="admin-modal-panel fixed z-50 overflow-hidden rounded-xl border border-[#dfe5ec] bg-white shadow-[0_12px_32px_rgba(9,42,83,0.12)]"
+                    className="admin-modal-panel fixed z-50 overflow-hidden rounded-xl border border-[#dce3eb] bg-white shadow-[0_12px_32px_rgba(9,42,83,0.12)]"
                     style={branchMenuBox ?? undefined}
                     id="admin-branch-menu"
                     role="menu"
                   >
-                    <div className="border-b border-[#e8edf2] bg-[#fafbfc] px-4 py-3.5">
-                      <p className="text-[11px] font-bold text-[#8190a1]">{t('Current city')}</p>
+                    <div className="border-b border-[#f4f6f8] bg-[#fafbfc] px-4 py-3.5">
+                      <p className="text-xs font-bold text-[#65748a]">{t('Current city')}</p>
                       <div className="mt-1 flex items-center justify-between gap-3">
                         <p className="text-sm font-bold leading-tight text-[#092a53]">{currentBranch.title}</p>
-                        <span className="rounded-full bg-[#fff5c2] px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#705a00]">{currentBranch.mark}</span>
+                        <span className="rounded-full bg-[#fff5c2] px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-[#bd9c00]">{currentBranch.mark}</span>
                       </div>
                       <p className="mt-1 text-xs leading-5 text-[#65748a]">{t('Orders, customers and reports follow this city.')}</p>
                     </div>
@@ -531,7 +531,7 @@ export function AdminLayout() {
                           <button
                             aria-checked={isSelected}
                             className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] ${
-                              isSelected ? 'border-[#ead77c] bg-[#fffbea]' : 'border-transparent hover:bg-[#f7f9fc]'
+                              isSelected ? 'border-[#ead77c] bg-[#fffbea]' : 'border-transparent hover:bg-[#f4f6f8]'
                             } disabled:cursor-default`}
                             disabled={!isOwner || isSelected}
                             key={choice.id}
@@ -548,7 +548,7 @@ export function AdminLayout() {
                             role="menuitemradio"
                             type="button"
                           >
-                            <span className={`shrink-0 rounded-md px-2 py-1 font-mono text-[11px] font-bold tracking-wide ${isSelected ? 'bg-[#fff1a8] text-[#705a00]' : 'bg-[#f1f4f7] text-[#52667d]'}`}>
+                            <span className={`shrink-0 rounded-md px-2 py-1 font-mono text-xs font-bold tracking-wide ${isSelected ? 'bg-[#fff1a8] text-[#bd9c00]' : 'bg-[#f4f6f8] text-[#52667d]'}`}>
                               {choice.mark}
                             </span>
                             <span className="min-w-0 flex-1">
@@ -580,7 +580,7 @@ export function AdminLayout() {
                 className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-1.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${
                   isLanguageMenuOpen
                     ? 'border-[#d9c45b] bg-[#fffdf3] text-[#092a53]'
-                    : 'border-[#e3e9f0] bg-white text-[#173654] hover:border-[#c5d2e0] hover:bg-[#fbfcfd]'
+                    : 'border-[#dce3eb] bg-white text-[#173654] hover:border-[#c5d2e0] hover:bg-[#fbfcfd]'
                 }`}
                 onClick={() => {
                   setIsBranchMenuOpen(false)
@@ -588,28 +588,28 @@ export function AdminLayout() {
                 }}
                 type="button"
               >
-                <span className="rounded-md bg-[#fff5c2] px-2 py-1 font-mono text-[11px] font-bold tracking-wide text-[#705a00]">
+                <span className="rounded-md bg-[#fff5c2] px-2 py-1 font-mono text-xs font-bold tracking-wide text-[#bd9c00]">
                   {currentLanguage.mark}
                 </span>
                 <span className="hidden min-w-0 text-left sm:block">
-                  <span className="block text-[11px] font-semibold text-[#8190a1]">{t('Language')}</span>
+                  <span className="block text-xs font-semibold text-[#65748a]">{t('Language')}</span>
                   <span className="block max-w-[4.5rem] truncate text-xs font-bold sm:max-w-none">{currentLanguage.title}</span>
                 </span>
-                <svg aria-hidden="true" className={`size-3.5 shrink-0 text-[#8190a1] transition-transform ${isLanguageMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24">
+                <svg aria-hidden="true" className={`size-3.5 shrink-0 text-[#65748a] transition-transform ${isLanguageMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24">
                   <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 </svg>
               </button>
               {isLanguageMenuOpen && (
                 <div
-                  className="admin-modal-panel absolute right-0 top-[calc(100%+8px)] z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-[#dfe5ec] bg-white shadow-[0_12px_32px_rgba(9,42,83,0.12)]"
+                  className="admin-modal-panel absolute right-0 top-[calc(100%+8px)] z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-[#dce3eb] bg-white shadow-[0_12px_32px_rgba(9,42,83,0.12)]"
                   id="admin-language-menu"
                   role="menu"
                 >
-                  <div className="border-b border-[#e8edf2] bg-[#fafbfc] px-4 py-3.5">
-                    <p className="text-[11px] font-bold text-[#8190a1]">{t('Select language')}</p>
+                  <div className="border-b border-[#f4f6f8] bg-[#fafbfc] px-4 py-3.5">
+                    <p className="text-xs font-bold text-[#65748a]">{t('Select language')}</p>
                     <div className="mt-1 flex items-center justify-between gap-3">
                       <p className="text-sm font-bold leading-tight text-[#092a53]">{currentLanguage.title}</p>
-                      <span className="rounded-full bg-[#fff5c2] px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#705a00]">{currentLanguage.mark}</span>
+                      <span className="rounded-full bg-[#fff5c2] px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-[#bd9c00]">{currentLanguage.mark}</span>
                     </div>
                     <p className="mt-1 text-xs leading-5 text-[#65748a]">{t('Menus, labels and reports switch with this choice.')}</p>
                   </div>
@@ -620,7 +620,7 @@ export function AdminLayout() {
                         <button
                           aria-checked={isSelected}
                           className={`flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] ${
-                            isSelected ? 'border-[#ead77c] bg-[#fffbea]' : 'border-transparent hover:bg-[#f7f9fc]'
+                            isSelected ? 'border-[#ead77c] bg-[#fffbea]' : 'border-transparent hover:bg-[#f4f6f8]'
                           }`}
                           key={choice.id}
                           lang={choice.id}
@@ -631,7 +631,7 @@ export function AdminLayout() {
                           role="menuitemradio"
                           type="button"
                         >
-                          <span className={`shrink-0 rounded-md px-2 py-1 font-mono text-[11px] font-bold tracking-wide ${isSelected ? 'bg-[#fff1a8] text-[#705a00]' : 'bg-[#f1f4f7] text-[#52667d]'}`}>
+                          <span className={`shrink-0 rounded-md px-2 py-1 font-mono text-xs font-bold tracking-wide ${isSelected ? 'bg-[#fff1a8] text-[#bd9c00]' : 'bg-[#f4f6f8] text-[#52667d]'}`}>
                             {choice.mark}
                           </span>
                           <span className="min-w-0 flex-1">
@@ -655,7 +655,7 @@ export function AdminLayout() {
 
             <Link
               aria-label={t('View storefront')}
-              className="hidden size-10 place-items-center rounded-full text-[#4f6379] transition hover:bg-[#f1f5f9] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:grid"
+              className="hidden size-10 place-items-center rounded-full text-[#65748a] transition hover:bg-[#f1f5f9] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:grid"
               title={t('View storefront')}
               to="/flavors"
             >
@@ -667,7 +667,7 @@ export function AdminLayout() {
             <Link
               aria-label={`${t('Notifications')}${navigationCounts.notificationCount ? ` (${navigationCounts.notificationCount})` : ''}`}
               className={`relative grid size-10 place-items-center rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${
-                location.pathname === '/admin/notifications' ? 'bg-[#092a53] text-white' : 'text-[#4f6379] hover:bg-[#f1f5f9] hover:text-[#092a53]'
+                location.pathname === '/admin/notifications' ? 'bg-[#092a53] text-white' : 'text-[#65748a] hover:bg-[#f1f5f9] hover:text-[#092a53]'
               }`}
               title={t('Notifications')}
               to="/admin/notifications"
@@ -676,13 +676,13 @@ export function AdminLayout() {
                 <path d={navIconPaths.notifications} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
               </svg>
               {navigationCounts.notificationCount > 0 && (
-                <span className="absolute right-1 top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#e5484d] px-1 text-[10px] font-extrabold leading-none text-white ring-2 ring-white">
+                <span className="absolute right-1 top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#e5484d] px-1 text-xs font-extrabold leading-none text-white ring-2 ring-white">
                   {navigationCounts.notificationCount > 99 ? '99+' : navigationCounts.notificationCount}
                 </span>
               )}
             </Link>
 
-            <span aria-hidden="true" className="mx-0.5 hidden h-7 w-px bg-[#e6ebf1] sm:block" />
+            <span aria-hidden="true" className="mx-0.5 hidden h-7 w-px bg-[#dce3eb] sm:block" />
 
             <div className="relative" ref={accountMenuRef}>
               <button
@@ -690,7 +690,7 @@ export function AdminLayout() {
                 aria-expanded={isAccountMenuOpen}
                 aria-haspopup="menu"
                 className={`flex items-center gap-2.5 rounded-full py-1 pl-1 pr-2 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:pr-3 ${
-                  isAccountMenuOpen ? 'bg-[#f1f5f9]' : 'hover:bg-[#f6f8fb]'
+                  isAccountMenuOpen ? 'bg-[#f1f5f9]' : 'hover:bg-[#f4f6f8]'
                 }`}
                 onClick={() => {
                   setIsBranchMenuOpen(false)
@@ -709,19 +709,19 @@ export function AdminLayout() {
                 </span>
                 <span className="hidden min-w-0 text-left lg:block">
                   <span className="block max-w-36 truncate text-xs font-extrabold text-[#173654]">{currentAdmin?.name}</span>
-                  <span className="mt-0.5 block max-w-36 truncate text-[10px] font-semibold text-[#8190a1]">{isOwner ? t('Owner · all stores') : t(storeDisplayName || currentAdmin?.branchTown || 'Store admin')}</span>
+                  <span className="mt-0.5 block max-w-36 truncate text-xs font-semibold text-[#65748a]">{isOwner ? t('Owner · all stores') : t(storeDisplayName || currentAdmin?.branchTown || 'Store admin')}</span>
                   {currentAdmin?.role === 'store_admin' && currentAdmin.storeTown && (
                     <span className="block max-w-36 truncate text-[9px] font-medium uppercase text-[#91a0b1]">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</span>
                   )}
                 </span>
-                <svg aria-hidden="true" className={`hidden size-4 text-[#8190a1] transition sm:block ${isAccountMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24">
+                <svg aria-hidden="true" className={`hidden size-4 text-[#65748a] transition sm:block ${isAccountMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24">
                   <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 </svg>
               </button>
 
               {isAccountMenuOpen && (
                 <div
-                  className="admin-modal-panel absolute right-0 top-[calc(100%+10px)] w-72 overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.18)] ring-1 ring-[#e3e9f0]"
+                  className="admin-modal-panel absolute right-0 top-[calc(100%+10px)] w-72 overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.18)] ring-1 ring-[#dce3eb]"
                   id="admin-account-menu"
                   role="menu"
                 >
@@ -733,12 +733,12 @@ export function AdminLayout() {
                     )}
                     <div className="min-w-0">
                       <p className="truncate text-sm font-extrabold">{currentAdmin?.name}</p>
-                      <p className="truncate text-[11px] text-white/65">{currentAdmin?.email}</p>
+                      <p className="truncate text-xs text-white/65">{currentAdmin?.email}</p>
                       <span className="mt-1.5 inline-flex rounded-full bg-[#ffdc32] px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#092a53]">
                         {isOwner ? t('Owner') : t(isBranchAdmin ? 'Branch admin' : 'Store admin')}
                       </span>
                       {!isOwner && currentAdmin?.storeName && (
-                        <p className="mt-1 truncate text-[10px] font-semibold text-white/75">{t(storeDisplayName || currentAdmin.storeName)}</p>
+                        <p className="mt-1 truncate text-xs font-semibold text-white/75">{t(storeDisplayName || currentAdmin.storeName)}</p>
                       )}
                       {currentAdmin?.role === 'store_admin' && currentAdmin.storeTown && (
                         <p className="truncate text-[9px] font-medium uppercase text-white/55">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</p>
@@ -747,24 +747,24 @@ export function AdminLayout() {
                   </div>
                   <div className="p-1.5">
                     <button
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#355777] transition hover:bg-[#f4f7fa] hover:text-[#092a53] disabled:opacity-60"
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-60"
                       disabled={isSavingProfilePicture}
                       onClick={() => { setIsAccountMenuOpen(false); profilePictureInput.current?.click() }}
                       role="menuitem"
                       type="button"
                     >
-                      <svg aria-hidden="true" className="size-[18px] text-[#8190a1]" fill="none" viewBox="0 0 24 24">
+                      <svg aria-hidden="true" className="size-[18px] text-[#65748a]" fill="none" viewBox="0 0 24 24">
                         <path d="M4 8h3l2-3h6l2 3h3v11H4V8Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                       </svg>
                       {t(isSavingProfilePicture ? 'Saving…' : currentAdmin?.profilePicture ? 'Change profile picture' : 'Add profile picture')}
                     </button>
                     <Link
-                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#355777] transition hover:bg-[#f4f7fa] hover:text-[#092a53]"
+                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
                       onClick={() => setIsAccountMenuOpen(false)}
                       role="menuitem"
                       to="/flavors"
                     >
-                      <svg aria-hidden="true" className="size-[18px] text-[#8190a1]" fill="none" viewBox="0 0 24 24">
+                      <svg aria-hidden="true" className="size-[18px] text-[#65748a]" fill="none" viewBox="0 0 24 24">
                         <path d="M14 4h6v6m0-6L10 14M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                       </svg>
                       {t('View storefront')}
@@ -772,23 +772,23 @@ export function AdminLayout() {
                     {isOwner && (
                       <>
                         <button
-                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#355777] transition hover:bg-[#f4f7fa] hover:text-[#092a53]"
+                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
                           onClick={() => { setIsAccountMenuOpen(false); setSecurityDialogTab('password') }}
                           role="menuitem"
                           type="button"
                         >
-                          <svg aria-hidden="true" className="size-[18px] text-[#8190a1]" fill="none" viewBox="0 0 24 24">
+                          <svg aria-hidden="true" className="size-[18px] text-[#65748a]" fill="none" viewBox="0 0 24 24">
                             <path d="M6 11h12v9H6v-9Zm2 0V8a4 4 0 0 1 8 0v3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                           </svg>
                           {t('Change password')}
                         </button>
                         <button
-                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#355777] transition hover:bg-[#f4f7fa] hover:text-[#092a53]"
+                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
                           onClick={() => { setIsAccountMenuOpen(false); setSecurityDialogTab('email') }}
                           role="menuitem"
                           type="button"
                         >
-                          <svg aria-hidden="true" className="size-[18px] text-[#8190a1]" fill="none" viewBox="0 0 24 24">
+                          <svg aria-hidden="true" className="size-[18px] text-[#65748a]" fill="none" viewBox="0 0 24 24">
                             <path d="M4 6h16v12H4V6Zm0 0 8 7 8-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                           </svg>
                           {t('Change email')}
@@ -797,19 +797,19 @@ export function AdminLayout() {
                     )}
                     {isOwner && (
                       <Link
-                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#355777] transition hover:bg-[#f4f7fa] hover:text-[#092a53]"
+                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
                         onClick={() => setIsAccountMenuOpen(false)}
                         role="menuitem"
                         to="/admin/admins"
                       >
-                        <svg aria-hidden="true" className="size-[18px] text-[#8190a1]" fill="none" viewBox="0 0 24 24">
+                        <svg aria-hidden="true" className="size-[18px] text-[#65748a]" fill="none" viewBox="0 0 24 24">
                           <path d={navIconPaths.admins} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                         </svg>
                         {t('Admin accounts')}
                       </Link>
                     )}
                   </div>
-                  <div className="border-t border-[#eef2f6] p-1.5">
+                  <div className="border-t border-[#f4f6f8] p-1.5">
                     <button
                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#b2433a] transition hover:bg-red-50 disabled:opacity-60"
                       disabled={isLoggingOut}
@@ -849,7 +849,7 @@ export function AdminLayout() {
               </span>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t('Signed in successfully')}</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t('Signed in successfully')}</p>
               <p className="mt-1 font-display text-lg font-extrabold leading-snug">
                 {t('Welcome back, {name}!', { name: currentAdmin.name })} <span aria-hidden="true">👋</span>
               </p>
@@ -885,7 +885,7 @@ export function AdminLayout() {
                 onClick={() => hideDepositNotice(notice.id)}
                 to={`/admin/events?event=${notice.id}`}
               >
-                <p className="flex items-center gap-1.5 text-[11px] text-white/55">
+                <p className="flex items-center gap-1.5 text-xs text-white/55">
                   <span className="truncate">{window.location.host}</span>
                   <span aria-hidden="true">·</span>
                   <span>{t('now')}</span>
@@ -926,7 +926,7 @@ export function AdminLayout() {
                 onClick={() => hideCakeDepositNotice(notice.id)}
                 to="/admin/cake-requests"
               >
-                <p className="flex items-center gap-1.5 text-[11px] text-white/55">
+                <p className="flex items-center gap-1.5 text-xs text-white/55">
                   <span className="truncate">{window.location.host}</span>
                   <span aria-hidden="true">·</span>
                   <span>{t('now')}</span>
@@ -1007,14 +1007,14 @@ export function AdminLayout() {
             </button>
             <div className={`min-w-0 flex-1 ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>
               <p className="truncate text-sm font-bold">{currentAdmin?.name}</p>
-              <p className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-white/60">
+              <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-white/60">
                 <span className={`inline-flex rounded px-1 py-px text-[9px] font-extrabold uppercase tracking-wide ${isOwner ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/15 text-white'}`}>
                   {isOwner ? t('Owner') : t(isBranchAdmin ? 'Branch admin' : 'Store admin')}
                 </span>
                 {!isOwner && <span className="truncate">{t(storeDisplayName || currentAdmin?.branchTown || 'Store admin')}</span>}
               </p>
               {currentAdmin?.role === 'store_admin' && currentAdmin.storeTown && (
-                <p className="truncate pl-1 text-[10px] uppercase text-white/45">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</p>
+                <p className="truncate pl-1 text-xs uppercase text-white/45">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</p>
               )}
             </div>
             <button
@@ -1048,7 +1048,7 @@ export function AdminLayout() {
             </button>
           </div>
           {(profilePictureError || profilePictureSaved) && (
-            <p className={`mx-3 mt-3 rounded-lg px-3 py-2 text-[11px] font-semibold ${profilePictureError ? 'bg-red-500/15 text-red-100' : 'bg-[#35d07f]/15 text-[#b9f3c8]'} ${isSidebarCollapsed ? 'lg:hidden' : ''}`} role={profilePictureError ? 'alert' : 'status'}>
+            <p className={`mx-3 mt-3 rounded-lg px-3 py-2 text-xs font-semibold ${profilePictureError ? 'bg-red-500/15 text-red-100' : 'bg-[#35d07f]/15 text-[#b9f3c8]'} ${isSidebarCollapsed ? 'lg:hidden' : ''}`} role={profilePictureError ? 'alert' : 'status'}>
               {profilePictureError || t('Profile picture saved.')}
             </p>
           )}
@@ -1084,7 +1084,7 @@ export function AdminLayout() {
                 if (!groupItems.length) return null
                 return (
                   <section key={group}>
-                    <h2 className={`flex items-center gap-2 px-3 pb-1.5 pt-4 text-[10px] lg:pb-1 lg:pt-3 font-extrabold uppercase tracking-[0.16em] text-white/40 ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}>
+                    <h2 className={`flex items-center gap-2 px-3 pb-1.5 pt-4 text-xs lg:pb-1 lg:pt-3 font-extrabold uppercase tracking-[0.16em] text-white/40 ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}>
                       <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>{t(group)}</span>
                       <span aria-hidden="true" className={`h-px flex-1 bg-white/[0.08] ${isSidebarCollapsed ? 'lg:max-w-6' : ''}`} />
                     </h2>
@@ -1150,10 +1150,10 @@ export function AdminLayout() {
                               {count !== null && (
                                 <span
                                   aria-label={countLabel}
-                                  className={`inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[10px] font-extrabold tabular-nums ${
+                                  className={`inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-xs font-extrabold tabular-nums ${
                                     count > 0
                                       ? isActive ? 'bg-[#092a53] text-white' : 'bg-[#ffdc32] text-[#092a53]'
-                                      : isActive ? 'bg-[#eef2f6] text-[#8190a1]' : 'bg-white/10 text-white/50'
+                                      : isActive ? 'bg-[#f4f6f8] text-[#65748a]' : 'bg-white/10 text-white/50'
                                   } ${isSidebarCollapsed ? 'lg:hidden' : ''}`}
                                 >
                                   {count > 99 ? '99+' : count}
@@ -1173,7 +1173,7 @@ export function AdminLayout() {
             </nav>
 
             {countsError && (
-              <p className={`mx-3 mb-3 rounded-lg bg-red-500/15 px-3 py-2 text-[11px] text-red-100 ${isSidebarCollapsed ? 'lg:hidden' : ''}`} role="status">
+              <p className={`mx-3 mb-3 rounded-lg bg-red-500/15 px-3 py-2 text-xs text-red-100 ${isSidebarCollapsed ? 'lg:hidden' : ''}`} role="status">
                 {t('Unable to refresh navigation counts')}: {countsError}
               </p>
             )}

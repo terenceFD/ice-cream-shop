@@ -106,7 +106,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
         </summary>
 
         <div className="menu-popover absolute left-1/2 top-full z-30 w-[min(44rem,calc(100vw-2rem))] -translate-x-1/2 pt-3">
-          <div className="grid overflow-hidden rounded-xl bg-white p-2 text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#d7e0ea] sm:grid-cols-[15rem_1fr]">
+          <div className="grid overflow-hidden rounded-xl bg-white p-2 text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb] sm:grid-cols-[15rem_1fr]">
             {feature && (
               <Link
                 className="group/feature relative isolate hidden min-h-[17rem] flex-col justify-end overflow-hidden rounded-lg bg-[#092a53] p-5 text-white sm:flex"
@@ -138,13 +138,13 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                       {link.image && showImages ? (
                         <img decoding="async" alt="" aria-hidden="true" className="size-11 shrink-0 rounded-md object-cover transition duration-300 group-hover/link:scale-[1.04]" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image, "tiny")} />
                       ) : (
-                        <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-md bg-[#e8edf2] font-display text-base font-bold text-[#092a53]">{link.label.slice(0, 1)}</span>
+                        <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-md bg-[#f4f6f8] font-display text-base font-bold text-[#092a53]">{link.label.slice(0, 1)}</span>
                       )}
                       <span className="min-w-0 flex-1">
                         <span className="line-clamp-2 block text-sm font-extrabold leading-snug text-[#092a53]">{link.label}</span>
                         {link.meta && <span className="mt-0.5 block truncate text-xs font-semibold text-[#65748a]">{link.meta}</span>}
                       </span>
-                      <span aria-hidden="true" className="grid size-7 shrink-0 -translate-x-1 place-items-center rounded-full text-[#8a7000] opacity-0 transition group-hover/link:translate-x-0 group-hover/link:opacity-100 group-focus-visible/link:translate-x-0 group-focus-visible/link:opacity-100">
+                      <span aria-hidden="true" className="grid size-7 shrink-0 -translate-x-1 place-items-center rounded-full text-[#bd9c00] opacity-0 transition group-hover/link:translate-x-0 group-hover/link:opacity-100 group-focus-visible/link:translate-x-0 group-focus-visible/link:opacity-100">
                         <ArrowIcon />
                       </span>
                     </Link>
@@ -179,7 +179,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
         ? "mt-1 grid gap-1 rounded-md bg-[#061f40] p-1.5"
         : `menu-popover absolute left-1/2 top-full z-30 -translate-x-1/2 pt-3 ${links.length > 5 ? "lg:w-[min(38rem,calc(100vw-2rem))]" : "w-[min(24rem,calc(100vw-2rem))]"}`
       }>
-        <div className={mobile ? "grid gap-1" : "overflow-hidden rounded-xl bg-white p-3 text-sm shadow-[0_18px_44px_rgba(9,42,83,0.2)] ring-1 ring-[#d7e0ea]"}>
+        <div className={mobile ? "grid gap-1" : "overflow-hidden rounded-xl bg-white p-3 text-sm shadow-[0_18px_44px_rgba(9,42,83,0.2)] ring-1 ring-[#dce3eb]"}>
           {!mobile && (
             <div className="mb-2 flex items-center justify-between gap-3 px-2 pb-3 pt-1">
               <div>
@@ -193,7 +193,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
               <Link
                 className={mobile
                   ? "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-white/85 transition-colors hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffdc32]"
-                  : "group/link flex min-w-0 items-center gap-3 rounded-md px-3 py-2.5 text-left text-[#52647b] transition-colors hover:bg-[#f1f5f8] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00]"
+                  : "group/link flex min-w-0 items-center gap-3 rounded-md px-3 py-2.5 text-left text-[#65748a] transition-colors hover:bg-[#f1f5f8] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00]"
                 }
                 key={link.to}
                 onClick={(event) => {
@@ -206,7 +206,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                 {link.image && showImages ? (
                   <img decoding="async" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-md object-cover" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image, "tiny")} />
                 ) : (
-                  <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md text-sm font-extrabold ${mobile ? "bg-white/10 text-[#ffdc32]" : "bg-[#e8edf2] text-[#092a53]"}`}>
+                  <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md text-sm font-extrabold ${mobile ? "bg-white/10 text-[#ffdc32]" : "bg-[#f4f6f8] text-[#092a53]"}`}>
                     {link.label.slice(0, 1)}
                   </span>
                 )}
@@ -269,7 +269,7 @@ function LanguageDropdown({ language, setLanguage, t }) {
         </svg>
       </summary>
       <div className="menu-popover absolute right-0 top-full z-30 w-72 pt-3">
-        <div className="overflow-hidden rounded-xl bg-white p-2 text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#d7e0ea]">
+        <div className="overflow-hidden rounded-xl bg-white p-2 text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb]">
           <div className="px-3 pb-3 pt-2">
             <p className="text-sm font-bold text-[#092a53]">{t("Select language")}</p>
           </div>
@@ -280,7 +280,7 @@ function LanguageDropdown({ language, setLanguage, t }) {
                 <button
                   aria-pressed={selected}
                   className={`group/lang flex w-full items-center gap-3 rounded-md p-2.5 pr-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00] ${
-                    selected ? "bg-[#e8edf2] text-[#092a53]" : "hover:bg-[#f4f6f8]"
+                    selected ? "bg-[#f4f6f8] text-[#092a53]" : "hover:bg-[#f4f6f8]"
                   }`}
                   key={value}
                   lang={value}
@@ -292,11 +292,11 @@ function LanguageDropdown({ language, setLanguage, t }) {
                   type="button"
                 >
                   <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md font-display text-xs font-extrabold tracking-wide ${
-                    selected ? "bg-[#092a53] text-white" : "bg-[#e8edf2] text-[#52647b] group-hover/lang:bg-white"
+                    selected ? "bg-[#092a53] text-white" : "bg-[#f4f6f8] text-[#65748a] group-hover/lang:bg-white"
                   }`}>{code}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-extrabold">{nativeLabel}</span>
-                    <span className="mt-0.5 block text-[11px] font-semibold text-[#65748a]">{region}</span>
+                    <span className="mt-0.5 block text-xs font-semibold text-[#65748a]">{region}</span>
                   </span>
                   <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full ${selected ? "bg-[#092a53] text-white" : "text-transparent"}`}>
                     {selected && <svg className="size-3" fill="none" viewBox="0 0 16 16"><path d="m3 8 3.2 3.2L13 4.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>}
@@ -386,7 +386,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
         </summary>
 
         <div className="menu-popover absolute right-0 top-full z-30 w-80 pt-3">
-          <div className="overflow-hidden rounded-xl bg-white text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#d7e0ea]">
+          <div className="overflow-hidden rounded-xl bg-white text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb]">
             {customer ? (
               <>
                 <div className="flex items-center gap-4 bg-[#092a53] p-5 text-white">
@@ -403,13 +403,13 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
                       <Link
                         aria-current={current ? "page" : undefined}
                         className={`group/item flex items-center gap-3 rounded-md p-2.5 pr-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00] ${
-                          current ? "bg-[#e8edf2]" : "hover:bg-[#f4f6f8]"
+                          current ? "bg-[#f4f6f8]" : "hover:bg-[#f4f6f8]"
                         }`}
                         key={item.to}
                         onClick={closeDropdown}
                         to={item.to}
                       >
-                        <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md transition ${current ? "bg-[#092a53] text-white" : "bg-[#e8edf2] text-[#52647b] group-hover/item:bg-white group-hover/item:text-[#092a53]"}`}>
+                        <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md transition ${current ? "bg-[#092a53] text-white" : "bg-[#f4f6f8] text-[#65748a] group-hover/item:bg-white group-hover/item:text-[#092a53]"}`}>
                           <svg className="size-[18px]" fill="none" viewBox="0 0 24 24">{item.icon}</svg>
                         </span>
                         <span className="flex-1 font-extrabold">{item.label}</span>
@@ -422,7 +422,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
                 </nav>
                 <div className="bg-[#f4f6f8] p-2">
                   <button
-                    className="group/logout flex w-full items-center gap-3 rounded-md p-2.5 text-left font-bold text-[#52647b] transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-300"
+                    className="group/logout flex w-full items-center gap-3 rounded-md p-2.5 text-left font-bold text-[#65748a] transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-300"
                     onClick={(event) => {
                       closeDropdown(event);
                       handleLogout();
@@ -440,7 +440,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
               </>
             ) : (
               <div className="p-5">
-                <span aria-hidden="true" className="grid size-12 place-items-center rounded-md bg-[#e8edf2] text-[#092a53]">
+                <span aria-hidden="true" className="grid size-12 place-items-center rounded-md bg-[#f4f6f8] text-[#092a53]">
                   <svg className="size-6" fill="none" viewBox="0 0 24 24">
                     <circle cx="12" cy="8.5" r="3.5" stroke="currentColor" strokeWidth="1.8" />
                     <path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
@@ -506,14 +506,14 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
           {customer && (
             <div className={mobile
               ? "mb-1 flex min-w-0 items-center gap-3 rounded-md bg-white/[0.05] px-3 py-3"
-              : "mb-1 flex min-w-0 items-center gap-3 rounded-xl bg-[#f8f7f2] px-3 py-3"
+              : "mb-1 flex min-w-0 items-center gap-3 rounded-xl bg-[#fbfaf5] px-3 py-3"
             }>
               {customer.profilePicture
                 ? <img decoding="async" loading="lazy" alt="" className="size-10 shrink-0 rounded-full object-cover" src={customer.profilePicture} />
                 : <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53]">{(customer.name || "A").charAt(0).toUpperCase()}</span>}
               <div className="min-w-0">
                 <p className={`truncate text-sm font-extrabold ${mobile ? "text-white" : "text-[#092a53]"}`}>{customerName || t("Account")}</p>
-                <p className={`truncate text-[10px] ${mobile ? "text-white/60" : "text-[#65748a]"}`}>{customer.email}</p>
+                <p className={`truncate text-xs ${mobile ? "text-white/60" : "text-[#65748a]"}`}>{customer.email}</p>
               </div>
             </div>
           )}
@@ -522,7 +522,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
               aria-current={location.pathname === option.to ? "page" : undefined}
               className={mobile
                 ? `flex items-center gap-3 rounded-md px-3 py-3 text-sm transition ${location.pathname === option.to ? "bg-white/[0.12] font-bold text-[#ffdc32]" : "text-white/85 hover:bg-white/[0.08] hover:text-white"}`
-                : `flex items-center gap-3 rounded-xl px-3 py-3 text-left transition ${location.pathname === option.to ? "bg-[#fff8dc] font-extrabold text-[#806a00]" : "font-semibold text-[#52647b] hover:bg-[#f8f7f2] hover:text-[#092a53]"}`
+                : `flex items-center gap-3 rounded-xl px-3 py-3 text-left transition ${location.pathname === option.to ? "bg-[#fff8dc] font-extrabold text-[#bd9c00]" : "font-semibold text-[#65748a] hover:bg-[#fbfaf5] hover:text-[#092a53]"}`
               }
               key={option.to}
               onClick={closeDropdown}
@@ -672,7 +672,7 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
         <BagIcon />
         {cartCount > 0 && (
           <span
-            className={`absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] font-extrabold ring-2 ring-[#092a53] ${
+            className={`absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full px-1 text-xs font-extrabold ring-2 ring-[#092a53] ${
               bagJustUpdated
                 ? "animate-bag-pulse bg-[#4caf50] text-white"
                 : "bg-[#ffdc32] text-[#092a53]"
@@ -685,11 +685,11 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
       {isOpen && (
         <div
           aria-label={t("Shopping bag")}
-          className="admin-modal-panel absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.25)] ring-1 ring-[#d7e0ea]"
+          className="admin-modal-panel absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.25)] ring-1 ring-[#dce3eb]"
           role="dialog"
         >
           <div className="bg-[#092a53] px-4 py-3 text-white">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
               {t("Your bag")}
             </p>
             <p className="mt-0.5 font-display text-lg font-extrabold">
@@ -701,7 +701,7 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
           </div>
           {lastItems.length === 0 ? (
             <div className="px-4 py-8 text-center">
-              <p className="text-sm leading-6 text-[#52647b]">
+              <p className="text-sm leading-6 text-[#65748a]">
                 {t("Your bag is empty — add something sweet!")}
               </p>
             </div>
@@ -720,7 +720,7 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
                       src={thumbnail(entry.image, "tiny")}
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-bold text-[#0d2c4e]">
+                      <span className="block truncate text-sm font-bold text-[#092a53]">
                         {t(entry.name)}
                       </span>
                       <span className="block text-xs text-[#65748a]">
@@ -733,9 +733,9 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
                   </li>
                 ))}
               </ul>
-              <div className="border-t border-[#e6ebf1] px-4 py-3">
+              <div className="border-t border-[#dce3eb] px-4 py-3">
                 <p className="flex items-center justify-between text-sm">
-                  <span className="font-semibold text-[#52647b]">{t("Subtotal")}</span>
+                  <span className="font-semibold text-[#65748a]">{t("Subtotal")}</span>
                   <span className="font-display text-base font-extrabold tabular-nums text-[#092a53]">
                     {formatPrice(cartTotal)}
                   </span>
@@ -743,7 +743,7 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
               </div>
             </>
           )}
-          <div className="flex gap-2 border-t border-[#e6ebf1] p-3">
+          <div className="flex gap-2 border-t border-[#dce3eb] p-3">
             <Link
               className="flex-1 rounded-full bg-[#092a53] px-4 py-2.5 text-center text-sm font-extrabold text-white transition hover:bg-[#163e6b]"
               onClick={() => setIsOpen(false)}
@@ -1037,7 +1037,7 @@ export function Header() {
                   t={t}
                 />
                 <Link
-                  className="group hidden h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-[#ffdc32] px-3 text-[13px] font-extrabold leading-none text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white lg:inline-flex xl:px-4 xl:text-sm"
+                  className="group hidden h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-[#ffdc32] px-3 text-[13px] font-extrabold leading-none text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white lg:inline-flex xl:px-4 xl:text-sm"
                   to="/flavors"
                 >
                   {t("Order now")}
@@ -1147,7 +1147,7 @@ export function Header() {
                 ))}
               </div>
               <Link
-                className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe665]"
+                className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c]"
                 onClick={() => setIsMobileMenuOpen(false)}
                 to="/flavors"
               >
@@ -1262,12 +1262,12 @@ function PromotionCountdown() {
   return (
     <aside
       aria-label={t("Limited-time promotion")}
-      className="relative z-[51] overflow-hidden bg-gradient-to-r from-[#ffdc32] via-[#ffe566] to-[#ffdc32] text-[#092a53]"
+      className="relative z-[51] overflow-hidden bg-gradient-to-r from-[#ffdc32] via-[#ffe76c] to-[#ffdc32] text-[#092a53]"
     >
       <div aria-hidden="true" className="promo-shimmer pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/45 to-transparent" />
       <div className="relative mx-auto flex min-h-11 max-w-[1320px] items-center gap-2 px-3 py-1.5 sm:gap-4 sm:px-8 lg:px-12">
         <div className="flex min-w-0 flex-1 items-center justify-center gap-2 sm:gap-3">
-          <span className="hidden shrink-0 rounded-full bg-[#092a53] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#ffdc32] sm:inline-flex">
+          <span className="hidden shrink-0 rounded-full bg-[#092a53] px-2.5 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-[#ffdc32] sm:inline-flex">
             {t("Limited-time offer")}
           </span>
           <p className="min-w-0 truncate text-[13px] font-extrabold sm:text-sm">
@@ -1292,7 +1292,7 @@ function PromotionCountdown() {
           </button>
           <span className="sr-only" aria-live="polite">{copied ? t("Copied") : ""}</span>
           <div aria-label={t("Offer countdown")} className="hidden shrink-0 items-center gap-1 sm:flex" role="timer">
-            <span className="mr-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#092a53]/60">{t("Ends in")}</span>
+            <span className="mr-1 text-xs font-extrabold uppercase tracking-[0.12em] text-[#092a53]/60">{t("Ends in")}</span>
             {units.map(([value, label]) => (
               <span className="inline-flex min-w-[2.4rem] items-baseline justify-center gap-0.5 rounded-md bg-[#092a53] px-1.5 py-0.5 font-mono text-xs font-bold tabular-nums text-white" key={label}>
                 {String(value).padStart(2, "0")}
@@ -1373,7 +1373,7 @@ export function InstagramSection() {
                 <InstagramGlyph className="size-[18px]" />
               </span>
               <span className="leading-snug">
-                <span className="block text-xs font-semibold text-[#53657a]">{t("Follow us on Instagram")}</span>
+                <span className="block text-xs font-semibold text-[#65748a]">{t("Follow us on Instagram")}</span>
                 <span className="mt-0.5 block text-sm font-bold text-[#092a53]">@coldstonecameroon</span>
               </span>
             </a>

@@ -39,11 +39,11 @@ function SearchIcon({ className = "size-5" }) {
 function MenuItemCard({ category, item, formatPrice, onAdd, added, showCategory, t }) {
   const soldOut = isSoldOut(item);
   return (
-    <li className="group relative flex flex-col rounded-[20px] bg-white p-2 [content-visibility:auto] [contain-intrinsic-size:auto_420px] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_52px_rgba(9,42,83,0.13)] hover:ring-[#e2d39a] sm:rounded-[24px] sm:p-2.5">
+    <li className="group relative flex flex-col rounded-[20px] bg-white p-2 [content-visibility:auto] [contain-intrinsic-size:auto_420px] ring-1 ring-[#fbfaf5] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_52px_rgba(9,42,83,0.13)] hover:ring-[#e2d39a] sm:rounded-[24px] sm:p-2.5">
       <div className="relative aspect-square overflow-hidden rounded-[14px] bg-[#f1f2ee] sm:rounded-[18px]">
         <img
           alt=""
-          className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05] ${soldOut ? "opacity-70 grayscale-[70%]" : ""}`}
+          className={`size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06] group-focus-within:scale-[1.06] motion-reduce:transition-none ${soldOut ? "opacity-70 grayscale-[70%]" : ""}`}
           decoding="async"
           loading="lazy"
           onError={photoErrorHandler(item.image, FALLBACK_IMAGE)}
@@ -51,18 +51,22 @@ function MenuItemCard({ category, item, formatPrice, onAdd, added, showCategory,
           src={item.image}
           srcSet={photoSrcSet(item.image)}
         />
-        {showCategory && <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-[#102c50] sm:left-3 sm:top-3">
+        <span
+          aria-hidden="true"
+          className="menu-card-shine"
+        />
+        {showCategory && <span className="absolute left-2 top-2 z-10 max-w-[calc(100%-1rem)] truncate rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#092a53] sm:left-3 sm:top-3">
           {t(category.title)}
         </span>}
         {soldOut && (
-          <span className="absolute inset-x-0 bottom-0 bg-[#092a53]/85 py-1.5 text-center text-[10px] font-extrabold uppercase tracking-[0.16em] text-white">
+          <span className="absolute inset-x-0 bottom-0 z-10 bg-[#092a53]/85 py-1.5 text-center text-xs font-extrabold uppercase tracking-[0.16em] text-white">
             {t("Sold out")}
           </span>
         )}
       </div>
 
       <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3 sm:px-3 sm:pb-2 sm:pt-4">
-        <h3 className="line-clamp-2 text-[15px] font-bold leading-snug text-[#102c50] sm:text-lg">
+        <h3 className="line-clamp-2 text-[15px] font-bold leading-snug text-[#092a53] sm:text-lg">
           {/* The whole card opens the product; the add button sits above this link. */}
           <Link
             className="after:absolute after:inset-0 after:rounded-[24px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#bd9c00] sm:after:rounded-[28px]"
@@ -77,15 +81,15 @@ function MenuItemCard({ category, item, formatPrice, onAdd, added, showCategory,
             reviewCount={item.reviewCount}
           />
         </div>
-        <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[#41546b] sm:text-sm sm:leading-6">{t(item.detail)}</p>
+        <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[#65748a] sm:text-sm sm:leading-6">{t(item.detail)}</p>
 
         <div className="mt-auto flex flex-col gap-2 pt-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:pt-4">
-          <span className="text-sm font-extrabold tabular-nums text-[#102c50] sm:text-lg">
+          <span className="text-sm font-extrabold tabular-nums text-[#092a53] sm:text-lg">
             {formatPrice(item.priceXaf)}
           </span>
           <button
             aria-label={added ? t("Added to your bag") : t("Add {name} to cart", { name: t(item.name) })}
-            className={`relative z-10 inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-[11px] font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#ece8de] disabled:text-[#a5aebb] sm:w-auto sm:px-4 sm:text-xs ${
+            className={`relative z-10 inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#ece8de] disabled:text-[#a5aebb] sm:w-auto sm:px-4 sm:text-xs ${
               added ? "bg-[#37632c] text-white" : "bg-[#092a53] text-white hover:-translate-y-0.5 hover:bg-[#163e6b]"
             }`}
             disabled={soldOut}
@@ -209,7 +213,7 @@ export function AllMenuPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
+    <div className="min-h-screen bg-[#fbfaf5] text-[#092a53]">
       <Header />
       <main id="main" tabIndex={-1}>
         <PageHero
@@ -258,7 +262,7 @@ export function AllMenuPage() {
                 <span className="sr-only">{t("Search menu")}</span>
                 <SearchIcon className="pointer-events-none absolute left-5 size-5 text-[#65748a] transition group-focus-within:text-[#092a53]" />
                 <input
-                  className="w-full rounded-xl bg-transparent py-4 pl-14 pr-12 text-sm font-semibold text-[#102c50] outline-none! placeholder:font-normal placeholder:text-[#65748a]"
+                  className="w-full rounded-xl bg-transparent py-4 pl-14 pr-12 text-sm font-semibold text-[#092a53] outline-none! placeholder:font-normal placeholder:text-[#65748a]"
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder={t("Search cakes, shakes, mint, strawberry…")}
                   type="search"
@@ -267,7 +271,7 @@ export function AllMenuPage() {
                 {search && (
                   <button
                     aria-label={t("Clear search")}
-                    className="absolute right-3 grid size-8 place-items-center rounded-full text-[#65748a] transition hover:bg-[#f1ede2] hover:text-[#092a53]"
+                    className="absolute right-3 grid size-8 place-items-center rounded-full text-[#65748a] transition hover:bg-[#fbfaf5] hover:text-[#092a53]"
                     onClick={() => setSearch("")}
                     type="button"
                   >
@@ -278,9 +282,9 @@ export function AllMenuPage() {
                 )}
               </label>
               <label className="relative flex items-center rounded-xl bg-white md:w-64">
-                <span className="pointer-events-none absolute left-4 text-xs font-semibold text-[#53657a]">{t("Sort")}</span>
+                <span className="pointer-events-none absolute left-4 text-xs font-semibold text-[#65748a]">{t("Sort")}</span>
                 <select
-                  className="w-full cursor-pointer appearance-none rounded-xl bg-transparent py-4 pl-14 pr-10 text-sm font-bold text-[#102c50] outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+                  className="w-full cursor-pointer appearance-none rounded-xl bg-transparent py-4 pl-14 pr-10 text-sm font-bold text-[#092a53] outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
                   onChange={(event) => setSortBy(event.target.value)}
                   value={sortBy}
                 >
@@ -299,14 +303,14 @@ export function AllMenuPage() {
                   <button
                     aria-pressed={isActive}
                     className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] ${
-                      isActive ? "bg-[#092a53] text-white" : "bg-white text-[#102c50] hover:bg-[#e7e9e4]"
+                      isActive ? "bg-[#092a53] text-white" : "bg-white text-[#092a53] hover:bg-[#e7e9e4]"
                     }`}
                     key={chip.title || "all"}
                     onClick={() => chooseCategory(chip.title)}
                     type="button"
                   >
                     {chip.title ? t(chip.title) : t("All items")}
-                    <span className={`rounded-md px-1.5 py-0.5 text-[11px] tabular-nums ${isActive ? "bg-white/15 text-white" : "bg-[#eef0ed] text-[#53657a]"}`}>{chip.count}</span>
+                    <span className={`rounded-md px-1.5 py-0.5 text-xs tabular-nums ${isActive ? "bg-white/15 text-white" : "bg-[#eef0ed] text-[#65748a]"}`}>{chip.count}</span>
                   </button>
                 );
               })}
@@ -322,7 +326,7 @@ export function AllMenuPage() {
           </div>
 
           {matches.length === 0 ? (
-            <div className="mx-auto max-w-md rounded-[28px] bg-white px-6 py-12 text-center ring-1 ring-[#ebe7dc]">
+            <div className="mx-auto max-w-md rounded-[28px] bg-white px-6 py-12 text-center ring-1 ring-[#fbfaf5]">
               <span aria-hidden="true" className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#fff3b8] text-[#092a53]"><SearchIcon className="size-6" /></span>
               <h2 className="mt-5 font-display text-2xl font-extrabold text-[#092a53]">{t("No items match your search")}</h2>
               <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("Try another word, or show every category.")}</p>
@@ -340,7 +344,7 @@ export function AllMenuPage() {
                 // Sections further down are laid out only when they come near the screen, which keeps
                 // the first view quick with 90+ products on the page.
                 <section aria-labelledby={`all-menu-${getMenuItemId(category.title, "section")}`} className={index > 0 ? "[content-visibility:auto] [contain-intrinsic-size:auto_1400px]" : undefined} key={category.title}>
-                  <header className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-[#ebe7dc] pb-5">
+                  <header className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-[#fbfaf5] pb-5">
                     <div className="flex items-center gap-4">
                       <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-2xl shadow-[0_10px_24px_rgba(9,42,83,0.2)]">{category.icon}</span>
                       <div>
@@ -351,7 +355,7 @@ export function AllMenuPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="rounded-full bg-[#fff3b8] px-3 py-1 text-xs font-extrabold text-[#806a00]">
+                      <span className="rounded-full bg-[#fff3b8] px-3 py-1 text-xs font-extrabold text-[#bd9c00]">
                         {t(entries.length === 1 ? "1 item" : "{count} items", { count: entries.length })}
                       </span>
                       <Link className="-my-2 inline-flex items-center gap-1.5 py-3 text-sm font-extrabold text-[#092a53] underline-offset-4 hover:underline" to={`/menu?${new URLSearchParams({ category: category.title })}`}>

@@ -13,15 +13,15 @@ export function AdminIcon({ path, className = 'size-4' }) {
 
 export function AdminPageHeader({ icon, section, title, description, actions, t }) {
   return (
-    <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
+    <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
       <div className="flex min-w-0 items-center gap-4">
         <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
           <AdminIcon className="size-7" path={icon} />
         </span>
         <div className="min-w-0">
-          <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
+          <nav aria-label={t('Breadcrumb')} className="text-xs font-bold text-[#65748a]">
             {section} <span aria-hidden="true" className="mx-1">/</span>
-            <span className="text-[#8a7000]">{title}</span>
+            <span className="text-[#bd9c00]">{title}</span>
           </nav>
           <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{title}</h1>
           {description && <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">{description}</p>}
@@ -34,9 +34,9 @@ export function AdminPageHeader({ icon, section, title, description, actions, t 
 
 export function AdminStatCard({ icon, accent, value, label }) {
   return (
-    <div className="rounded-2xl border border-[#e5ebf3] bg-white p-4 sm:p-5">
+    <div className="rounded-2xl border border-[#dce3eb] bg-white p-4 sm:p-5">
       <span className={`grid size-9 place-items-center rounded-xl ${accent}`}><AdminIcon path={icon} /></span>
-      <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#102c50]">{value}</p>
+      <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#092a53]">{value}</p>
       <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{label}</p>
     </div>
   )
@@ -58,7 +58,7 @@ export function AdminNotice({ tone = 'success', children }) {
 // On/off switch styled like the menu inventory "On sale" toggle.
 export function AdminToggle({ checked, onChange, label, disabled = false }) {
   return (
-    <label className={`inline-flex cursor-pointer items-center gap-2.5 text-sm font-bold text-[#355777] ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}>
+    <label className={`inline-flex cursor-pointer items-center gap-2.5 text-sm font-bold text-[#123b68] ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}>
       <button
         aria-checked={checked}
         className={`relative h-6 w-11 shrink-0 rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${checked ? 'bg-[#2e9d5b]' : 'bg-[#d6dde6]'}`}

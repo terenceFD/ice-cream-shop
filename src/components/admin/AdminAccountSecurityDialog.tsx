@@ -81,9 +81,9 @@ function FormFooter({ canSubmit, isSaving, savingLabel, submitLabel, onCancel, c
 }) {
   const { t } = useLanguage()
   return (
-    <footer className="flex items-center justify-end gap-3 border-t border-[#edf1f5] bg-[#fafbfd] px-6 py-4">
+    <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
       <button
-        className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] hover:text-[#092a53] disabled:opacity-50"
+        className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-50"
         disabled={isSaving}
         onClick={onCancel}
         type="button"
@@ -181,7 +181,7 @@ function PinInput({ value, onChange, label, disabled = false, invalid = false, s
                   ? 'border-[#e5a29c] bg-red-50'
                   : filled
                     ? 'border-[#092a53] bg-white'
-                    : 'border-[#dfe5ec] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/30'
+                    : 'border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/30'
               } disabled:opacity-60`}
               disabled={disabled}
               inputMode="numeric"
@@ -257,10 +257,10 @@ function CreatePinStep({ onCreated, onCancel, onBusyChange }: { onCreated: () =>
     <form noValidate onSubmit={handleSubmit}>
       <div className="space-y-5 px-6 py-6">
         <div className="text-center">
-          <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#fff6d6] text-[#8a7000]">
+          <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#fff6d6] text-[#bd9c00]">
             <Icon className="size-6" path={iconPaths.key} />
           </span>
-          <p className="mt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8190a1]">
+          <p className="mt-3 text-xs font-extrabold uppercase tracking-[0.16em] text-[#65748a]">
             {t('Step {step} of 2', { step: step === 'choose' ? 1 : 2 })}
           </p>
           <h3 className="mt-1 font-display text-lg font-extrabold text-[#092a53]">
@@ -281,8 +281,8 @@ function CreatePinStep({ onCreated, onCancel, onBusyChange }: { onCreated: () =>
           shakeKey={shakeKey}
           value={value}
         />
-        <p className="flex items-start gap-2 rounded-xl bg-[#f7f9fc] px-3.5 py-3 text-xs leading-5 text-[#65748a] ring-1 ring-[#e8edf3]">
-          <Icon className="mt-0.5 size-4 shrink-0 text-[#355777]" path={iconPaths.shield} />
+        <p className="flex items-start gap-2 rounded-xl bg-[#f4f6f8] px-3.5 py-3 text-xs leading-5 text-[#65748a] ring-1 ring-[#dce3eb]">
+          <Icon className="mt-0.5 size-4 shrink-0 text-[#123b68]" path={iconPaths.shield} />
           {t('Keep this PIN private and different from your password. Avoid dates or repeated digits.')}
         </p>
         {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -363,7 +363,7 @@ function EnterPinStep({ notice, onVerified, onCancel, onBusyChange }: {
           shakeKey={shakeKey}
           value={pin}
         />
-        <p aria-live="polite" className="min-h-5 text-center text-xs font-semibold text-[#8190a1]">
+        <p aria-live="polite" className="min-h-5 text-center text-xs font-semibold text-[#65748a]">
           {isVerifying && (
             <span className="inline-flex items-center gap-2">
               <span aria-hidden="true" className="size-3.5 animate-spin rounded-full border-2 border-[#092a53] border-r-transparent" />
@@ -403,7 +403,7 @@ function PasswordPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
   const strengthMeta = [
     { label: t('Too short'), color: 'bg-[#d2544b]' },
     { label: t('Weak'), color: 'bg-[#d2544b]' },
-    { label: t('Fair'), color: 'bg-[#e0a100]' },
+    { label: t('Fair'), color: 'bg-[#bd9c00]' },
     { label: t('Good'), color: 'bg-[#35a36b]' },
     { label: t('Strong'), color: 'bg-[#1f7a46]' },
   ][newPassword.length >= MIN_LENGTH ? strength : 0]
@@ -479,18 +479,18 @@ function PasswordPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
               <div aria-hidden="true" className="grid flex-1 grid-cols-4 gap-1">
                 {[1, 2, 3, 4].map((step) => (
                   <span
-                    className={`h-1.5 rounded-full transition-colors ${newPassword.length >= MIN_LENGTH && step <= strength ? strengthMeta.color : 'bg-[#e6ebf1]'}`}
+                    className={`h-1.5 rounded-full transition-colors ${newPassword.length >= MIN_LENGTH && step <= strength ? strengthMeta.color : 'bg-[#dce3eb]'}`}
                     key={step}
                   />
                 ))}
               </div>
-              <span className="text-[11px] font-bold text-[#65748a]">{strengthMeta.label}</span>
+              <span className="text-xs font-bold text-[#65748a]">{strengthMeta.label}</span>
             </div>
           )}
           <ul aria-label={t('Password tips')} className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5">
             {requirements.map((requirement) => (
               <li
-                className={`flex items-center gap-1.5 text-[11px] font-semibold transition-colors ${requirement.met ? 'text-[#2c7a4f]' : 'text-[#8190a1]'}`}
+                className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${requirement.met ? 'text-[#2c7a4f]' : 'text-[#65748a]'}`}
                 key={requirement.label}
               >
                 <Icon className="size-3.5 shrink-0" path={requirement.met ? iconPaths.check : iconPaths.dot} />
@@ -499,7 +499,7 @@ function PasswordPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
             ))}
           </ul>
           {isSameAsCurrent && (
-            <p className="mt-2 text-[11px] font-bold text-[#b2433a]">{t('Choose a new password that is different from your current one.')}</p>
+            <p className="mt-2 text-xs font-bold text-[#b2433a]">{t('Choose a new password that is different from your current one.')}</p>
           )}
         </div>
 
@@ -514,15 +514,15 @@ function PasswordPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
             value={confirmPassword}
           />
           {confirmPassword && (
-            <p className={`mt-1.5 flex items-center gap-1.5 text-[11px] font-bold ${passwordsMatch ? 'text-[#2c7a4f]' : 'text-[#b2433a]'}`}>
+            <p className={`mt-1.5 flex items-center gap-1.5 text-xs font-bold ${passwordsMatch ? 'text-[#2c7a4f]' : 'text-[#b2433a]'}`}>
               <Icon className="size-3.5" path={passwordsMatch ? iconPaths.check : iconPaths.close} />
               {t(passwordsMatch ? 'Passwords match' : 'The passwords do not match.')}
             </p>
           )}
         </div>
 
-        <p className="flex items-start gap-2 rounded-xl bg-[#f7f9fc] px-3.5 py-3 text-xs leading-5 text-[#65748a] ring-1 ring-[#e8edf3]">
-          <Icon className="mt-0.5 size-4 shrink-0 text-[#355777]" path={iconPaths.shield} />
+        <p className="flex items-start gap-2 rounded-xl bg-[#f4f6f8] px-3.5 py-3 text-xs leading-5 text-[#65748a] ring-1 ring-[#dce3eb]">
+          <Icon className="mt-0.5 size-4 shrink-0 text-[#123b68]" path={iconPaths.shield} />
           {t('For your security, other devices signed in to this account will be signed out after the change.')}
         </p>
 
@@ -590,8 +590,8 @@ function EmailPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
   return (
     <form noValidate onSubmit={handleSubmit}>
       <div className="space-y-5 px-6 py-6">
-        <div className="rounded-2xl bg-[#f7f9fc] px-4 py-3 ring-1 ring-[#e8edf3]">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Current sign-in email')}</p>
+        <div className="rounded-2xl bg-[#f4f6f8] px-4 py-3 ring-1 ring-[#dce3eb]">
+          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Current sign-in email')}</p>
           <p className="mt-1 truncate text-sm font-bold text-[#092a53]">{currentAdmin?.email}</p>
         </div>
 
@@ -600,7 +600,7 @@ function EmailPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
             {t('New email address')}
             <input
               autoComplete="email"
-              className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#f8f7f2] px-4 py-3 font-normal outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+              className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 font-normal outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
               inputMode="email"
               maxLength={254}
               name="newEmail"
@@ -612,10 +612,10 @@ function EmailPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
             />
           </label>
           {newEmail.trim() && !isValidEmail && (
-            <p className="mt-1.5 text-[11px] font-bold text-[#b2433a]">{t('Enter a valid email address.')}</p>
+            <p className="mt-1.5 text-xs font-bold text-[#b2433a]">{t('Enter a valid email address.')}</p>
           )}
           {isSameAsCurrent && (
-            <p className="mt-1.5 text-[11px] font-bold text-[#b2433a]">{t('This is already your sign-in email.')}</p>
+            <p className="mt-1.5 text-xs font-bold text-[#b2433a]">{t('This is already your sign-in email.')}</p>
           )}
         </div>
 
@@ -710,7 +710,7 @@ function AuthenticatorPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
           <h3 className="font-display text-lg font-extrabold text-[#092a53]">{t('Save your new recovery codes')}</h3>
           <p className="mt-1 text-sm leading-6 text-[#65748a]">{t('These codes replace your previous recovery codes. Each can only be used once.')}</p>
         </div>
-        <div className="grid grid-cols-2 gap-2 rounded-xl bg-[#f3f6fa] p-3 font-mono text-sm font-bold tracking-wide text-[#102c50]">
+        <div className="grid grid-cols-2 gap-2 rounded-xl bg-[#f4f6f8] p-3 font-mono text-sm font-bold tracking-wide text-[#092a53]">
           {recoveryCodes.map((code) => <code key={code}>{code}</code>)}
         </div>
         <button
@@ -732,11 +732,11 @@ function AuthenticatorPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
             <h3 className="font-display text-lg font-extrabold text-[#092a53]">{t('Scan your new authenticator QR code')}</h3>
             <p className="mt-1 text-sm leading-6 text-[#65748a]">{t('The current authenticator remains active until you confirm a code from the new one.')}</p>
           </div>
-          <div className="flex justify-center rounded-2xl bg-[#f3f6fa] p-4">
+          <div className="flex justify-center rounded-2xl bg-[#f4f6f8] p-4">
             <QRCodeSVG
               aria-label={t('Authenticator setup QR code')}
               bgColor="#ffffff"
-              fgColor="#102c50"
+              fgColor="#092a53"
               includeMargin
               level="M"
               size={200}
@@ -744,17 +744,17 @@ function AuthenticatorPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
               value={setup.authenticatorUri}
             />
           </div>
-          <details className="rounded-xl bg-[#f7f9fc] p-3 text-sm">
-            <summary className="cursor-pointer font-bold text-[#52647b]">{t("Can't scan? Use manual setup")}</summary>
-            <code className="mt-2 block break-all rounded-lg bg-white p-3 font-mono font-bold tracking-wider text-[#102c50]">{setup.secret}</code>
-            <code className="mt-2 block break-all rounded-lg bg-white p-3 text-xs text-[#52647b]">{setup.authenticatorUri}</code>
+          <details className="rounded-xl bg-[#f4f6f8] p-3 text-sm">
+            <summary className="cursor-pointer font-bold text-[#65748a]">{t("Can't scan? Use manual setup")}</summary>
+            <code className="mt-2 block break-all rounded-lg bg-white p-3 font-mono font-bold tracking-wider text-[#092a53]">{setup.secret}</code>
+            <code className="mt-2 block break-all rounded-lg bg-white p-3 text-xs text-[#65748a]">{setup.authenticatorUri}</code>
           </details>
           <label className="block text-sm font-semibold text-[#65748a]">
             {t('Code from your new authenticator')}
             <input
               autoComplete="one-time-code"
               autoFocus
-              className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#f8f7f2] px-4 py-3 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#092a53] outline-none focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+              className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#092a53] outline-none focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
               inputMode="numeric"
               maxLength={6}
               onChange={(event) => { setNewCode(event.target.value.replace(/\D/g, '').slice(0, 6)); setError('') }}
@@ -793,7 +793,7 @@ function AuthenticatorPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
           {t('Code from your current authenticator')}
           <input
             autoComplete="one-time-code"
-            className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#f8f7f2] px-4 py-3 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#092a53] outline-none focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+            className="mt-1.5 w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#092a53] outline-none focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
             inputMode="numeric"
             maxLength={6}
             onChange={(event) => { setCurrentCode(event.target.value.replace(/\D/g, '').slice(0, 6)); setError('') }}
@@ -894,19 +894,19 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
         ref={dialogRef}
         role="dialog"
       >
-        <header className={`border-b border-[#edf1f5] px-6 ${stage === 'forms' ? 'pt-5' : 'py-5'}`}>
+        <header className={`border-b border-[#f4f6f8] px-6 ${stage === 'forms' ? 'pt-5' : 'py-5'}`}>
           <div className="flex items-start gap-4">
             <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
               <Icon className="size-5" path={iconPaths.shield} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t('Owner account')}</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t('Owner account')}</p>
               <h2 className="mt-0.5 font-display text-xl font-extrabold text-[#092a53]" id="account-security-title">{t('Account security')}</h2>
               <p className="mt-0.5 truncate text-xs text-[#65748a]">{currentAdmin?.email}</p>
             </div>
             <button
               aria-label={t('Close')}
-              className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f1f4f8] hover:text-[#092a53] disabled:opacity-50"
+              className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-50"
               disabled={isBusy}
               onClick={onClose}
               type="button"
@@ -920,7 +920,7 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
                 <button
                   aria-selected={tab === item.id}
                   className={`relative inline-flex min-h-10 items-center gap-2 rounded-t-xl px-4 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] disabled:opacity-50 ${
-                    tab === item.id ? 'text-[#092a53]' : 'text-[#8190a1] hover:bg-[#f6f8fb] hover:text-[#355777]'
+                    tab === item.id ? 'text-[#092a53]' : 'text-[#65748a] hover:bg-[#f4f6f8] hover:text-[#123b68]'
                   }`}
                   disabled={isBusy}
                   key={item.id}

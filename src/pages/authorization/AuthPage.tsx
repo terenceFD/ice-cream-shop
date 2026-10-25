@@ -207,7 +207,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const passwordsMatch = Boolean(confirmPassword) && password === confirmPassword
   const benefits = ['Track your orders', 'Save your favorites', 'Faster checkout']
   const brandImage = '/ice-images/ice-5.webp'
-  const inputShellClass = `group relative mt-2 flex items-center bg-white ring-1 transition hover:ring-[#d6cfbd] focus-within:ring-[#bd9c00] ${isSignup ? 'rounded-xl ring-[#d9e1ea]' : 'auth-login-input-shell rounded-xl ring-[#d9e1ea]'}`;
+  const inputShellClass = `group relative mt-2 flex items-center bg-white ring-1 transition hover:ring-[#d6cfbd] focus-within:ring-[#bd9c00] ${isSignup ? 'rounded-xl ring-[#dce3eb]' : 'auth-login-input-shell rounded-xl ring-[#dce3eb]'}`;
   const inputClass = `w-full bg-transparent py-3.5 pl-12 pr-4 text-sm font-semibold text-[#092a53] outline-none! placeholder:font-normal placeholder:text-[#a5aebb] ${isSignup ? 'rounded-xl' : 'auth-login-input rounded-xl'}`
   const iconClass = 'pointer-events-none absolute left-4 size-[18px] text-[#65748a] transition group-focus-within:text-[#092a53]'
   const labelClass = isSignup
@@ -215,7 +215,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     : 'auth-login-label text-[13px] font-bold text-[#334b65]'
 
   return (
-    <div className={`flex min-h-screen flex-col text-[#102c50] ${isSignup ? 'auth-signup-page' : 'auth-login-page'}`}>
+    <div className={`flex min-h-screen flex-col text-[#092a53] ${isSignup ? 'auth-signup-page' : 'auth-login-page'}`}>
       <Header />
       <main id="main" tabIndex={-1} className={`flex flex-1 justify-center px-4 py-8 sm:px-8 sm:py-12 lg:py-16 ${isSignup ? 'auth-signup-main' : 'auth-login-main'}`}>
         <div className={`grid w-full max-w-[1160px] ${isSignup ? 'auth-signup-layout' : 'gap-8 lg:grid-cols-12 lg:gap-12 auth-login-layout'}`}>
@@ -312,14 +312,14 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 )}
 
                 {isSignup && verificationId ? (
-                  <div className={isSignup ? 'auth-signup-verification' : 'rounded-2xl bg-white p-5 ring-1 ring-[#ebe7dc] sm:p-6'}>
+                  <div className={isSignup ? 'auth-signup-verification' : 'rounded-2xl bg-white p-5 ring-1 ring-[#fbfaf5] sm:p-6'}>
                     <div className="mx-auto grid size-11 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
                       <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
                         <rect height="14" rx="3" stroke="currentColor" strokeWidth="1.8" width="18" x="3" y="5" />
                         <path d="m4 7 8 6 8-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                       </svg>
                     </div>
-                    <p className="mt-4 text-center text-sm font-semibold text-[#52647b]">
+                    <p className="mt-4 text-center text-sm font-semibold text-[#65748a]">
                       {t('We sent a verification code to')}
                     </p>
                     <p className="mt-1 break-all text-center text-sm font-extrabold text-[#092a53]">{email}</p>
@@ -333,7 +333,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                         <input
                           aria-label={t('Digit {number} of 6', { number: index + 1 })}
                           autoComplete={index === 0 ? 'one-time-code' : 'off'}
-                          className="size-11 rounded-xl border border-[#dbe3ec] bg-[#f7f9fc] text-center text-xl font-extrabold text-[#092a53] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-[3px] focus:ring-[#ffdc32]/45 sm:size-12"
+                          className="size-11 rounded-xl border border-[#dbe3ec] bg-[#f4f6f8] text-center text-xl font-extrabold text-[#092a53] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-[3px] focus:ring-[#ffdc32]/45 sm:size-12"
                           inputMode="numeric"
                           key={index}
                           maxLength={6}
@@ -347,7 +347,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                         />
                       ))}
                     </div>
-                    <p className="mt-4 text-center text-xs leading-5 text-[#8190a1]">{t('The code expires in 10 minutes.')}</p>
+                    <p className="mt-4 text-center text-xs leading-5 text-[#65748a]">{t('The code expires in 10 minutes.')}</p>
                     <div className="mt-3 text-center">
                       <button className="text-xs font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 disabled:cursor-wait disabled:opacity-60" disabled={isSubmitting || resendCountdown > 0} onClick={resendVerificationCode} type="button">
                         {resendCountdown > 0 ? t('Resend code in {seconds}s', { seconds: resendCountdown }) : t('Resend code')}
@@ -378,7 +378,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                             <input
                               aria-label={t('Digit {number} of 6', { number: index + 1 })}
                               autoComplete={index === 0 ? 'one-time-code' : 'off'}
-                              className="size-11 rounded-xl border border-[#dbe3ec] bg-[#f7f9fc] text-center text-xl font-extrabold text-[#092a53] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-[3px] focus:ring-[#ffdc32]/45 sm:size-12"
+                              className="size-11 rounded-xl border border-[#dbe3ec] bg-[#f4f6f8] text-center text-xl font-extrabold text-[#092a53] outline-none transition focus:border-[#bd9c00] focus:bg-white focus:ring-[3px] focus:ring-[#ffdc32]/45 sm:size-12"
                               inputMode="numeric"
                               key={index}
                               maxLength={6}
@@ -392,7 +392,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                             />
                           ))}
                         </div>
-                        <p className="text-center text-xs leading-5 text-[#8190a1]">{t('The code expires in 10 minutes.')}</p>
+                        <p className="text-center text-xs leading-5 text-[#65748a]">{t('The code expires in 10 minutes.')}</p>
                         <PasswordField
                           autoComplete="new-password"
                           label={t('New password')}
@@ -452,9 +452,9 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                               <span className={`h-1 rounded-full transition-colors ${passwordScore >= step ? strengthColors[passwordScore] : 'bg-[#e5e1d7]'}`} key={step} />
                             ))}
                           </span>
-                          <span className="mt-1.5 flex justify-between text-[11px] font-semibold text-[#65748a]">
+                          <span className="mt-1.5 flex justify-between text-xs font-semibold text-[#65748a]">
                             <span>{t('At least 8 characters')}</span>
-                            {passwordScore > 0 && <span className="text-[#52647b]">{t('Password strength')}: {t(strengthLabels[passwordScore])}</span>}
+                            {passwordScore > 0 && <span className="text-[#65748a]">{t('Password strength')}: {t(strengthLabels[passwordScore])}</span>}
                           </span>
                         </span>
                       )}
@@ -490,7 +490,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                         variant="modern"
                       >
                         {passwordsMatch && (
-                          <span className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-[#37632c]" role="status">
+                          <span className="mt-2 flex items-center gap-1.5 text-xs font-bold text-[#37632c]" role="status">
                             <svg aria-hidden="true" className="size-3.5" fill="none" viewBox="0 0 24 24">
                               <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
                             </svg>
@@ -507,7 +507,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 )}
 
                 {canNotify && !verificationId && (
-                  <label className={`flex cursor-pointer items-start gap-3 rounded-xl bg-white px-4 py-3.5 text-sm leading-5 text-[#52647b] ring-1 ring-[#e5e1d7] transition hover:ring-[#d6cfbd] ${isSignup ? 'auth-signup-notifications' : ''}`}>
+                  <label className={`flex cursor-pointer items-start gap-3 rounded-xl bg-white px-4 py-3.5 text-sm leading-5 text-[#65748a] ring-1 ring-[#e5e1d7] transition hover:ring-[#d6cfbd] ${isSignup ? 'auth-signup-notifications' : ''}`}>
                     <input
                       checked={wantsNotifications}
                       className="mt-0.5 size-4 shrink-0 accent-[#092a53]"

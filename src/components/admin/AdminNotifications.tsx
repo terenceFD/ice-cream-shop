@@ -84,7 +84,7 @@ function initials(name: string) {
   return String(name || '?').trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join('')
 }
 
-const avatarTones = ['bg-[#e9f1fa] text-[#245281]', 'bg-[#fff4c2] text-[#7a6300]', 'bg-[#e5f4ea] text-[#2c7a4f]', 'bg-[#fdecea] text-[#a53f37]', 'bg-[#efe9fb] text-[#5b3fa0]']
+const avatarTones = ['bg-[#e9f1fa] text-[#245281]', 'bg-[#fff4c2] text-[#bd9c00]', 'bg-[#e5f4ea] text-[#2c7a4f]', 'bg-[#fdecea] text-[#a53f37]', 'bg-[#efe9fb] text-[#5b3fa0]']
 
 function avatarTone(name: string) {
   const sum = [...String(name)].reduce((total, character) => total + character.charCodeAt(0), 0)
@@ -290,18 +290,18 @@ export function AdminNotifications() {
 
   return (
     <div className="min-w-0 space-y-6">
-      <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <span className="relative grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
             <Icon className="size-7" path={icons.inbox} />
             {unreadCount > 0 && (
-              <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#e5484d] px-1 text-[10px] font-extrabold text-white ring-2 ring-white">{unreadCount}</span>
+              <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#e5484d] px-1 text-xs font-extrabold text-white ring-2 ring-white">{unreadCount}</span>
             )}
           </span>
           <div className="min-w-0">
-            <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
+            <nav aria-label={t('Breadcrumb')} className="text-xs font-bold text-[#65748a]">
               {t('Sales')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#8a7000]">{t('Notifications')}</span>
+              <span className="text-[#bd9c00]">{t('Notifications')}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Notifications')}</h1>
             <p className="mt-0.5 text-sm text-[#65748a]">{t('Stay on top of customer inquiries and follow up promptly.')}</p>
@@ -320,7 +320,7 @@ export function AdminNotifications() {
             </button>
           )}
           <button
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
             disabled={isRefreshing || isClearingAll}
             onClick={refresh}
             type="button"
@@ -338,22 +338,22 @@ export function AdminNotifications() {
         </p>
       )}
 
-      <section aria-label={t('Contact notifications')} className="grid min-h-[34rem] overflow-hidden rounded-[20px] border border-[#e5ebf3] bg-white xl:grid-cols-[minmax(20rem,26rem)_minmax(0,1fr)]">
+      <section aria-label={t('Contact notifications')} className="grid min-h-[34rem] overflow-hidden rounded-[20px] border border-[#dce3eb] bg-white xl:grid-cols-[minmax(20rem,26rem)_minmax(0,1fr)]">
         {/* Message list */}
-        <div className={`flex min-w-0 flex-col border-[#edf1f5] xl:border-r ${selectedMessage ? 'hidden xl:flex' : 'flex'}`}>
-          <div className="space-y-3 border-b border-[#edf1f5] p-4">
+        <div className={`flex min-w-0 flex-col border-[#f4f6f8] xl:border-r ${selectedMessage ? 'hidden xl:flex' : 'flex'}`}>
+          <div className="space-y-3 border-b border-[#f4f6f8] p-4">
             <label className="relative block">
               <span className="sr-only">{t('Search')}</span>
-              <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
+              <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
               <input
-                className="w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] py-2.5 pl-10 pr-3.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!"
+                className="w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] py-2.5 pl-10 pr-3.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!"
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder={t('Search messages')}
                 type="search"
                 value={search}
               />
             </label>
-            <div aria-label={t('Filter messages')} className="flex gap-1 overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
+            <div aria-label={t('Filter messages')} className="flex gap-1 overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
               {filters.map((option) => (
                 <button
                   aria-pressed={filter === option.key}
@@ -363,7 +363,7 @@ export function AdminNotifications() {
                   type="button"
                 >
                   {option.label}
-                  <span className={`rounded-full px-1.5 text-[10px] ${filter === option.key ? 'bg-[#092a53] text-white' : 'bg-white/70 text-[#8190a1]'}`}>{counts[option.key]}</span>
+                  <span className={`rounded-full px-1.5 text-xs ${filter === option.key ? 'bg-[#092a53] text-white' : 'bg-white/70 text-[#65748a]'}`}>{counts[option.key]}</span>
                 </button>
               ))}
             </div>
@@ -373,10 +373,10 @@ export function AdminNotifications() {
             <div aria-label={t('Loading…')} className="space-y-1 p-2" role="status">
               {[0, 1, 2, 3, 4].map((row) => (
                 <div className="flex animate-pulse gap-3 rounded-xl p-3" key={row}>
-                  <span className="size-10 shrink-0 rounded-full bg-[#eef2f6]" />
+                  <span className="size-10 shrink-0 rounded-full bg-[#f4f6f8]" />
                   <div className="flex-1 space-y-2">
-                    <span className="block h-3 w-1/2 rounded bg-[#eef2f6]" />
-                    <span className="block h-3 w-4/5 rounded bg-[#eef2f6]" />
+                    <span className="block h-3 w-1/2 rounded bg-[#f4f6f8]" />
+                    <span className="block h-3 w-4/5 rounded bg-[#f4f6f8]" />
                   </div>
                 </div>
               ))}
@@ -384,11 +384,11 @@ export function AdminNotifications() {
           ) : visibleMessages.length === 0 ? (
             <div className="grid flex-1 place-items-center px-6 py-14 text-center">
               <div>
-                <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f4f8] text-[#8190a1]"><Icon className="size-5" path={icons.inbox} /></span>
+                <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f4f6f8] text-[#65748a]"><Icon className="size-5" path={icons.inbox} /></span>
                 <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">
                   {messages.length ? t('No messages match this view.') : t('No contact messages yet.')}
                 </p>
-                <p className="mt-1 text-sm text-[#8190a1]">{t('Messages submitted through the website contact form.')}</p>
+                <p className="mt-1 text-sm text-[#65748a]">{t('Messages submitted through the website contact form.')}</p>
               </div>
             </div>
           ) : (
@@ -401,7 +401,7 @@ export function AdminNotifications() {
                     <button
                       aria-current={isSelected ? 'true' : undefined}
                       className={`relative flex w-full gap-3 rounded-xl p-3 text-left transition focus-visible:outline-2 focus-visible:outline-[#bd9c00] ${
-                        isSelected ? 'bg-[#092a53] text-white' : 'hover:bg-[#f6f8fb]'
+                        isSelected ? 'bg-[#092a53] text-white' : 'hover:bg-[#f4f6f8]'
                       } ${deletingId === message.id ? 'opacity-50' : ''}`}
                       onClick={() => openMessage(message)}
                       type="button"
@@ -412,21 +412,21 @@ export function AdminNotifications() {
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex items-baseline justify-between gap-2">
-                          <span className={`truncate text-sm ${message.isRead ? 'font-semibold' : 'font-extrabold'} ${isSelected ? 'text-white' : 'text-[#102c50]'}`}>{message.name}</span>
-                          <span className={`shrink-0 text-[11px] font-semibold ${isSelected ? 'text-white/65' : 'text-[#8190a1]'}`}>{shortDate(message.createdAt, language)}</span>
+                          <span className={`truncate text-sm ${message.isRead ? 'font-semibold' : 'font-extrabold'} ${isSelected ? 'text-white' : 'text-[#092a53]'}`}>{message.name}</span>
+                          <span className={`shrink-0 text-xs font-semibold ${isSelected ? 'text-white/65' : 'text-[#65748a]'}`}>{shortDate(message.createdAt, language)}</span>
                         </span>
-                        <span className={`block truncate text-xs ${message.isRead ? 'font-medium' : 'font-bold'} ${isSelected ? 'text-white/90' : 'text-[#355777]'}`}>{message.subject}</span>
-                        <span className={`mt-0.5 block truncate text-xs ${isSelected ? 'text-white/60' : 'text-[#8190a1]'}`}>{message.message}</span>
+                        <span className={`block truncate text-xs ${message.isRead ? 'font-medium' : 'font-bold'} ${isSelected ? 'text-white/90' : 'text-[#123b68]'}`}>{message.subject}</span>
+                        <span className={`mt-0.5 block truncate text-xs ${isSelected ? 'text-white/60' : 'text-[#65748a]'}`}>{message.message}</span>
                         {(isReplied || message.storeName) && (
                           <span className="mt-1.5 flex flex-wrap gap-1">
                             {isReplied && (
-                              <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isSelected ? 'bg-white/15 text-white' : 'bg-[#eaf6ee] text-[#246a46]'}`}>
+                              <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-bold ${isSelected ? 'bg-white/15 text-white' : 'bg-[#eaf6ee] text-[#246a46]'}`}>
                                 <Icon className="size-3" path={icons.reply} />
                                 {t('Replied')}
                               </span>
                             )}
                             {message.storeName && (
-                              <span className={`max-w-[10rem] truncate rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isSelected ? 'bg-white/15 text-white' : 'bg-[#f1f4f8] text-[#4f6379]'}`}>{t(message.storeName)}</span>
+                              <span className={`max-w-[10rem] truncate rounded-full px-1.5 py-0.5 text-xs font-bold ${isSelected ? 'bg-white/15 text-white' : 'bg-[#f4f6f8] text-[#65748a]'}`}>{t(message.storeName)}</span>
                             )}
                           </span>
                         )}
@@ -443,25 +443,25 @@ export function AdminNotifications() {
         <div className={`min-w-0 flex-col ${selectedMessage ? 'flex' : 'hidden xl:flex'}`}>
           {selectedMessage ? (
             <>
-              <div className="flex items-center justify-between gap-3 border-b border-[#edf1f5] px-4 py-3 sm:px-6">
+              <div className="flex items-center justify-between gap-3 border-b border-[#f4f6f8] px-4 py-3 sm:px-6">
                 <button
-                  className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-bold text-[#355777] transition hover:bg-[#f1f4f8] xl:hidden"
+                  className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8] xl:hidden"
                   onClick={() => setSelectedId(null)}
                   type="button"
                 >
                   <Icon path={icons.back} />
                   {t('Back to inbox')}
                 </button>
-                <span className="hidden text-[11px] font-semibold text-[#8190a1] xl:block">{formatDate(selectedMessage.createdAt, t, language)}</span>
+                <span className="hidden text-xs font-semibold text-[#65748a] xl:block">{formatDate(selectedMessage.createdAt, t, language)}</span>
                 <div className="flex items-center gap-1">
                   {!selectedMessage.isRead && (
-                    <button aria-label={t('Mark as read')} className="grid size-9 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53]" onClick={() => markRead(selectedMessage.id)} title={t('Mark as read')} type="button">
+                    <button aria-label={t('Mark as read')} className="grid size-9 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => markRead(selectedMessage.id)} title={t('Mark as read')} type="button">
                       <Icon path={icons.mailOpen} />
                     </button>
                   )}
                   <button
                     aria-label={t('Delete')}
-                    className="grid size-9 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                    className="grid size-9 place-items-center rounded-lg text-[#65748a] transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                     disabled={deletingId === selectedMessage.id || isClearingAll}
                     onClick={() => setConfirm({ type: 'delete', message: selectedMessage })}
                     title={t('Delete')}
@@ -469,7 +469,7 @@ export function AdminNotifications() {
                   >
                     <Icon path={icons.trash} />
                   </button>
-                  <button aria-label={t('Close')} className="hidden size-9 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53] xl:grid" onClick={() => setSelectedId(null)} title={t('Close')} type="button">
+                  <button aria-label={t('Close')} className="hidden size-9 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] xl:grid" onClick={() => setSelectedId(null)} title={t('Close')} type="button">
                     <Icon path={icons.close} />
                   </button>
                 </div>
@@ -477,22 +477,22 @@ export function AdminNotifications() {
 
               <article className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
                 <h2 className="font-display text-2xl font-extrabold leading-tight text-[#092a53]">{selectedMessage.subject}</h2>
-                <div className="mt-5 flex flex-wrap items-start justify-between gap-4 border-b border-[#edf1f5] pb-5">
+                <div className="mt-5 flex flex-wrap items-start justify-between gap-4 border-b border-[#f4f6f8] pb-5">
                   <div className="flex min-w-0 items-center gap-3">
                     <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full text-sm font-extrabold ${avatarTone(selectedMessage.name)}`}>{initials(selectedMessage.name)}</span>
                     <div className="min-w-0">
-                      <p className="truncate font-bold text-[#102c50]">{selectedMessage.name}</p>
+                      <p className="truncate font-bold text-[#092a53]">{selectedMessage.name}</p>
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                        <a className="inline-flex items-center gap-1 font-semibold text-[#355777] hover:underline" href={`mailto:${selectedMessage.email}`}>
+                        <a className="inline-flex items-center gap-1 font-semibold text-[#123b68] hover:underline" href={`mailto:${selectedMessage.email}`}>
                           <Icon className="size-3.5" path={icons.mail} />
                           {selectedMessage.email}
                         </a>
-                        <button className="inline-flex items-center gap-1 font-semibold text-[#8190a1] hover:text-[#092a53]" onClick={() => copyEmail(selectedMessage.email)} type="button">
+                        <button className="inline-flex items-center gap-1 font-semibold text-[#65748a] hover:text-[#092a53]" onClick={() => copyEmail(selectedMessage.email)} type="button">
                           <Icon className="size-3.5" path={copied ? icons.check : icons.copy} />
                           {t(copied ? 'Copied' : 'Copy')}
                         </button>
                         {selectedMessage.phone && (
-                          <a className="inline-flex items-center gap-1 font-semibold text-[#355777] hover:underline" href={`tel:${selectedMessage.phone}`}>
+                          <a className="inline-flex items-center gap-1 font-semibold text-[#123b68] hover:underline" href={`tel:${selectedMessage.phone}`}>
                             <Icon className="size-3.5" path={icons.phone} />
                             {selectedMessage.phone}
                           </a>
@@ -502,12 +502,12 @@ export function AdminNotifications() {
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedMessage.storeName && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[#f1f4f8] px-2.5 py-1 text-[11px] font-bold text-[#4f6379]">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#f4f6f8] px-2.5 py-1 text-xs font-bold text-[#65748a]">
                         <Icon className="size-3.5" path={icons.pin} />
                         {t(selectedMessage.storeName)}
                       </span>
                     )}
-                    <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 text-[11px] font-bold text-[#4f6379] xl:hidden">{formatDate(selectedMessage.createdAt, t, language)}</span>
+                    <span className="rounded-full bg-[#f4f6f8] px-2.5 py-1 text-xs font-bold text-[#65748a] xl:hidden">{formatDate(selectedMessage.createdAt, t, language)}</span>
                   </div>
                 </div>
 
@@ -523,16 +523,16 @@ export function AdminNotifications() {
                 )}
               </article>
 
-              <div className="border-t border-[#edf1f5] bg-[#fafbfd] p-4 sm:px-6">
+              <div className="border-t border-[#f4f6f8] bg-[#f4f6f8] p-4 sm:px-6">
                 {isComposing ? (
                   <form className="space-y-3" onSubmit={(event) => sendReply(event, selectedMessage)}>
-                    <label className="flex items-center justify-between gap-2 text-xs font-bold text-[#4f6379]" htmlFor={`reply-${selectedMessage.id}`}>
+                    <label className="flex items-center justify-between gap-2 text-xs font-bold text-[#65748a]" htmlFor={`reply-${selectedMessage.id}`}>
                       <span>{t('Reply to {name}', { name: selectedMessage.name })}</span>
                       <span className="font-semibold text-[#a3b0bf]">{replyDraft.length}/5000</span>
                     </label>
                     <textarea
                       autoFocus
-                      className="min-h-32 w-full resize-y rounded-xl border border-[#dde4ec] bg-white px-4 py-3 text-sm leading-6 text-[#102c50] transition placeholder:text-[#9aa5b3] focus:border-[#bd9c00] focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!"
+                      className="min-h-32 w-full resize-y rounded-xl border border-[#dce3eb] bg-white px-4 py-3 text-sm leading-6 text-[#092a53] transition placeholder:text-[#9aa5b3] focus:border-[#bd9c00] focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!"
                       id={`reply-${selectedMessage.id}`}
                       maxLength={5000}
                       onChange={(event) => setReplyDraft(event.target.value)}
@@ -548,7 +548,7 @@ export function AdminNotifications() {
                     )}
                     <div className="flex flex-wrap items-center justify-end gap-2">
                       <button
-                        className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] disabled:opacity-60"
+                        className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] disabled:opacity-60"
                         disabled={sendingId === selectedMessage.id}
                         onClick={() => { setIsComposing(false); setReplyDraft('') }}
                         type="button"
@@ -567,7 +567,7 @@ export function AdminNotifications() {
                   </form>
                 ) : (
                   <button
-                    className="flex w-full items-center gap-3 rounded-xl border border-[#dde4ec] bg-white px-4 py-3 text-left text-sm font-semibold text-[#8190a1] transition hover:border-[#c3cfdc] hover:text-[#092a53]"
+                    className="flex w-full items-center gap-3 rounded-xl border border-[#dce3eb] bg-white px-4 py-3 text-left text-sm font-semibold text-[#65748a] transition hover:border-[#dce3eb] hover:text-[#092a53]"
                     onClick={() => {
                       setIsComposing(true)
                       setReplyDraft('')
@@ -575,7 +575,7 @@ export function AdminNotifications() {
                     }}
                     type="button"
                   >
-                    <Icon className="size-[18px] text-[#355777]" path={icons.reply} />
+                    <Icon className="size-[18px] text-[#123b68]" path={icons.reply} />
                     {t('Reply to {name}', { name: selectedMessage.name })}…
                   </button>
                 )}
@@ -584,11 +584,11 @@ export function AdminNotifications() {
           ) : (
             <div className="grid flex-1 place-items-center px-6 py-14 text-center">
               <div>
-                <span className="mx-auto grid size-16 place-items-center rounded-3xl bg-[#f7f9fc] text-[#a3b0bf] ring-1 ring-[#e8edf3]">
+                <span className="mx-auto grid size-16 place-items-center rounded-3xl bg-[#f4f6f8] text-[#a3b0bf] ring-1 ring-[#dce3eb]">
                   <Icon className="size-7" path={icons.mail} />
                 </span>
                 <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t('Select a message')}</p>
-                <p className="mx-auto mt-1 max-w-xs text-sm text-[#8190a1]">
+                <p className="mx-auto mt-1 max-w-xs text-sm text-[#65748a]">
                   {counts.unread
                     ? t('You have {count} unread messages.', { count: counts.unread })
                     : t('You’re all caught up.')}
@@ -613,7 +613,7 @@ export function AdminNotifications() {
                 : t('Delete notification from {name}? This cannot be undone.', { name: confirm.message.name })}
             </p>
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6]" onClick={() => setConfirm(null)} type="button">{t('Cancel')}</button>
+              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setConfirm(null)} type="button">{t('Cancel')}</button>
               <button
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
                 disabled={isClearingAll || deletingId !== null}

@@ -1,5 +1,5 @@
 .auth-signup-page {
-  background: #f1f4f7;
+  background: #f4f6f8;
 }
 
 .auth-signup-main {
@@ -51,7 +51,7 @@
   display: flex;
   width: fit-content;
   gap: 1.75rem;
-  border-bottom: 1px solid #dfe5ec;
+  border-bottom: 1px solid #dce3eb;
 }
 
 .auth-signup-tab {
@@ -94,7 +94,7 @@
 .auth-signup-intro {
   max-width: 42ch;
   margin-top: 0.9rem;
-  color: #43566b;
+  color: #65748a;
   font-size: 0.9375rem;
   line-height: 1.65;
 }
@@ -109,7 +109,7 @@
 }
 
 .auth-signup-notifications {
-  border-color: #dfe5ec;
+  border-color: #dce3eb;
   background: #f7f9fb;
 }
 
@@ -197,7 +197,7 @@
 .auth-login-page {
   --auth-login-ground: #eef3f6;
   --auth-login-ink: #092a53;
-  --auth-login-copy: #43566b;
+  --auth-login-copy: #65748a;
   --auth-login-accent: #ffdc32;
   background: var(--auth-login-ground);
   color: var(--auth-login-ink);
@@ -290,7 +290,7 @@
   width: fit-content;
   min-width: 16rem;
   gap: 28px;
-  border-bottom: 1px solid #dfe5ec;
+  border-bottom: 1px solid #dce3eb;
 }
 
 .auth-login-tab {
@@ -299,7 +299,7 @@
   flex: 1 1 auto;
   padding: 12px 0 14px;
   border-radius: 0;
-  color: #52647b;
+  color: #65748a;
   font-size: 14px;
   font-weight: 700;
   text-align: center;
@@ -376,7 +376,7 @@
 }
 
 .auth-login-submit:hover {
-  background: #ffe66b;
+  background: #ffe76c;
 }
 
 .auth-login-submit:disabled {
@@ -386,7 +386,7 @@
 
 .auth-login-form-inner > p:last-child {
   margin-top: 26px;
-  color: #52647b;
+  color: #65748a;
 }
 
 .auth-login-form-inner > p:last-child a {

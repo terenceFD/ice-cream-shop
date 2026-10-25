@@ -145,7 +145,7 @@ export function PromotionAlertsPrompt() {
               </span>
             </span>
             <div className="min-w-0">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t("Stay in the loop")}</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t("Stay in the loop")}</p>
               <h2 className="mt-0.5 font-display text-lg font-extrabold leading-tight" id="promotion-alerts-title">
                 {t("Order updates and sweet deals")}
               </h2>
@@ -164,7 +164,7 @@ export function PromotionAlertsPrompt() {
               {t("Not now")}
             </button>
             <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#ffdc32] px-4 text-sm font-extrabold text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:bg-[#ffe55c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-wait disabled:opacity-70"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#ffdc32] px-4 text-sm font-extrabold text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:bg-[#ffe76c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-wait disabled:opacity-70"
               disabled={isWorking}
               onClick={turnOn}
               type="button"
@@ -213,8 +213,8 @@ export function PromotionAlertsSetting() {
   }
 
   return (
-    <div className="flex items-start gap-4 rounded-[22px] bg-white p-5 shadow-[0_12px_30px_-18px_rgba(9,42,83,0.35)] ring-1 ring-[#e5ebf3]">
-      <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-2xl ${isOn ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#eef2f7] text-[#4f6379]"}`}>
+    <div className="flex items-start gap-4 rounded-[22px] bg-white p-5 shadow-[0_12px_30px_-18px_rgba(9,42,83,0.35)] ring-1 ring-[#dce3eb]">
+      <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-2xl ${isOn ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#f4f6f8] text-[#65748a]"}`}>
         <BellIcon />
       </span>
       <div className="min-w-0 flex-1">
@@ -226,7 +226,7 @@ export function PromotionAlertsSetting() {
         <button
           aria-checked={isOn}
           aria-labelledby="promotion-alerts-setting"
-          className={`relative mt-1 h-7 w-12 shrink-0 rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60 ${isOn ? "bg-[#35a36b]" : "bg-[#cfd7e1]"}`}
+          className={`relative mt-1 h-7 w-12 shrink-0 rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60 ${isOn ? "bg-[#35a36b]" : "bg-[#dce3eb]"}`}
           disabled={isWorking}
           onClick={toggle}
           role="switch"

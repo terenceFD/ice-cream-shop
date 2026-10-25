@@ -7,8 +7,8 @@ import { useLanguage } from '../../language/useLanguage'
 import { stockBarPercent } from './stockMeter'
 import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from './adminTable'
 
-const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
-const labelClassName = 'block text-xs font-bold text-[#4f6379]'
+const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
+const labelClassName = 'block text-xs font-bold text-[#65748a]'
 const LOW_STOCK_THRESHOLD = 10
 const FALLBACK_IMAGE = '/images/hero-ice-cream.jpg'
 const initialForm = {
@@ -74,16 +74,16 @@ function itemStatus(item: MenuItem): ItemStatus {
 
 const statusStyles: Record<ItemStatus, { badge: string; dot: string; bar: string; label: string }> = {
   ok: { badge: 'bg-[#eaf6ee] text-[#246a46] ring-[#cfe8d8]', dot: 'bg-[#35a36b]', bar: 'bg-[#35a36b]', label: 'Available' },
-  low: { badge: 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]', dot: 'bg-[#e0a100]', bar: 'bg-[#e0a100]', label: 'Low stock' },
+  low: { badge: 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]', dot: 'bg-[#bd9c00]', bar: 'bg-[#bd9c00]', label: 'Low stock' },
   'sold-out': { badge: 'bg-[#fdeeee] text-[#a53f37] ring-[#f3d1ce]', dot: 'bg-[#d2544b]', bar: 'bg-[#d2544b]', label: 'Sold out' },
-  hidden: { badge: 'bg-[#f1f4f8] text-[#5b6b7d] ring-[#e1e7ee]', dot: 'bg-[#94a3b4]', bar: 'bg-[#94a3b4]', label: 'Hidden' },
+  hidden: { badge: 'bg-[#f4f6f8] text-[#65748a] ring-[#dce3eb]', dot: 'bg-[#94a3b4]', bar: 'bg-[#94a3b4]', label: 'Hidden' },
 }
 
 function Thumb({ src, className = 'size-12' }: { src: string; className?: string }) {
   const [failed, setFailed] = useState(false)
   if (!src) {
     return (
-      <span className={`${className} grid shrink-0 place-items-center rounded-xl bg-[#f1f4f8] text-[#a3b0bf]`}>
+      <span className={`${className} grid shrink-0 place-items-center rounded-xl bg-[#f4f6f8] text-[#a3b0bf]`}>
         <Icon className="size-5" path={icons.image} />
       </span>
     )
@@ -91,7 +91,7 @@ function Thumb({ src, className = 'size-12' }: { src: string; className?: string
   return (
     <img decoding="async"
       alt=""
-      className={`${className} shrink-0 rounded-xl bg-[#f1f4f8] object-cover`}
+      className={`${className} shrink-0 rounded-xl bg-[#f4f6f8] object-cover`}
       loading="lazy"
       onError={() => setFailed(true)}
       src={failed ? FALLBACK_IMAGE : src}
@@ -321,7 +321,7 @@ export function AdminMenuPage() {
   const StatusBadge = ({ item }: { item: MenuItem }) => {
     const style = statusStyles[itemStatus(item)]
     return (
-      <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ${style.badge}`}>
+      <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${style.badge}`}>
         <span aria-hidden="true" className={`size-1.5 rounded-full ${style.dot}`} />
         {t(style.label)}
       </span>
@@ -334,10 +334,10 @@ export function AdminMenuPage() {
     return (
       <div className="min-w-[7rem]">
         <div className="flex items-baseline justify-between gap-2 text-xs">
-          <span className="font-extrabold tabular-nums text-[#102c50]">{item.availableQuantity}</span>
-          <span className="text-[11px] text-[#8190a1]">{t('Alert at {count}', { count: LOW_STOCK_THRESHOLD })}</span>
+          <span className="font-extrabold tabular-nums text-[#092a53]">{item.availableQuantity}</span>
+          <span className="text-xs text-[#65748a]">{t('Alert at {count}', { count: LOW_STOCK_THRESHOLD })}</span>
         </div>
-        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#edf1f5]">
+        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#f4f6f8]">
           <div className={`h-full rounded-full ${style.bar}`} style={{ width: `${percent}%` }} />
         </div>
       </div>
@@ -348,7 +348,7 @@ export function AdminMenuPage() {
     <div className="flex items-center justify-end gap-1">
       <button
         aria-label={`${t('Edit')} ${item.name}`}
-        className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-[#bd9c00]"
+        className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-[#bd9c00]"
         onClick={() => handleEdit(item)}
         title={t('Edit')}
         type="button"
@@ -357,7 +357,7 @@ export function AdminMenuPage() {
       </button>
       <button
         aria-label={`${t('Delete')} ${item.name}`}
-        className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-red-400"
+        className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-red-400"
         onClick={() => { setError(''); setItemToDelete(item) }}
         title={t('Delete')}
         type="button"
@@ -371,15 +371,15 @@ export function AdminMenuPage() {
 
   return (
     <div className="min-w-0 space-y-6">
-      <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
             <Icon className="size-7" path={icons.menu} />
           </span>
           <div className="min-w-0">
-            <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
+            <nav aria-label={t('Breadcrumb')} className="text-xs font-bold text-[#65748a]">
               {t('Store management')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#8a7000]">{t('Menu')}</span>
+              <span className="text-[#bd9c00]">{t('Menu')}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">
               {t('Menu management')}
@@ -391,7 +391,7 @@ export function AdminMenuPage() {
         </div>
         <div className="flex flex-wrap gap-2.5">
           <Link
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
             to="/menu"
           >
             <Icon path={icons.external} />
@@ -428,7 +428,7 @@ export function AdminMenuPage() {
             <button
               aria-pressed={isActive}
               className={`group rounded-2xl border bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:p-5 ${
-                isActive ? 'border-[#092a53] shadow-[0_0_0_1px_#092a53]' : 'border-[#e5ebf3]'
+                isActive ? 'border-[#092a53] shadow-[0_0_0_1px_#092a53]' : 'border-[#dce3eb]'
               }`}
               key={metric.label}
               onClick={() => setStatusFilter(isActive ? 'all' : metric.filter)}
@@ -439,33 +439,33 @@ export function AdminMenuPage() {
                   <Icon path={metric.icon} />
                 </span>
                 {metric.filter !== 'all' && (
-                  <span className="text-[10px] font-bold text-[#a3b0bf] opacity-0 transition group-hover:opacity-100">
+                  <span className="text-xs font-bold text-[#a3b0bf] opacity-0 transition group-hover:opacity-100">
                     {t(isActive ? 'Clear filter' : 'Filter')}
                   </span>
                 )}
               </div>
-              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#102c50]">{metric.value.toLocaleString()}</p>
+              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#092a53]">{metric.value.toLocaleString()}</p>
               <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{t(metric.label)}</p>
             </button>
           )
         })}
       </section>
 
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl bg-[#f7f9fc] px-4 py-3 text-xs ring-1 ring-[#e8edf3]">
-        <span className="flex items-center gap-2 font-bold text-[#4f6379]">
-          <Icon className="size-4 text-[#8190a1]" path={icons.box} />
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl bg-[#f4f6f8] px-4 py-3 text-xs ring-1 ring-[#dce3eb]">
+        <span className="flex items-center gap-2 font-bold text-[#65748a]">
+          <Icon className="size-4 text-[#65748a]" path={icons.box} />
           {remainingUnits.toLocaleString()} {t('Remaining units')}
         </span>
-        <span className="font-semibold text-[#8190a1]">
+        <span className="font-semibold text-[#65748a]">
           {t('{count} categories in use', { count: usedCategories.length })}
         </span>
-        <span className="font-semibold text-[#8190a1]">
+        <span className="font-semibold text-[#65748a]">
           {t('Low stock = {count} or fewer available', { count: LOW_STOCK_THRESHOLD })}
         </span>
       </div>
 
-      <section aria-labelledby="menu-catalog-title" className="min-w-0 rounded-[20px] border border-[#e5ebf3] bg-white">
-        <div className="flex flex-col gap-4 border-b border-[#edf1f5] p-4 sm:p-5">
+      <section aria-labelledby="menu-catalog-title" className="min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
+        <div className="flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="menu-catalog-title">{t('Added menu items')}</h2>
@@ -473,7 +473,7 @@ export function AdminMenuPage() {
                 {t('Showing {shown} of {total} items', { shown: filteredItems.length, total: items.length })}
               </p>
             </div>
-            <div aria-label={t('View')} className="inline-flex rounded-xl bg-[#f1f4f8] p-1" role="group">
+            <div aria-label={t('View')} className="inline-flex rounded-xl bg-[#f4f6f8] p-1" role="group">
               {([
                 { key: 'table', icon: icons.list, label: t('Table view') },
                 { key: 'grid', icon: icons.grid, label: t('Grid view') },
@@ -481,7 +481,7 @@ export function AdminMenuPage() {
                 <button
                   aria-label={option.label}
                   aria-pressed={view === option.key}
-                  className={`grid size-8 place-items-center rounded-lg transition ${view === option.key ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#8190a1] hover:text-[#092a53]'}`}
+                  className={`grid size-8 place-items-center rounded-lg transition ${view === option.key ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
                   key={option.key}
                   onClick={() => setView(option.key)}
                   title={option.label}
@@ -496,7 +496,7 @@ export function AdminMenuPage() {
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
             <label className="relative block">
               <span className="sr-only">{t('Search menu items')}</span>
-              <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
+              <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
               <input
                 className={`${inputClassName} mt-0 pl-10`}
                 onChange={(event) => setSearch(event.target.value)}
@@ -524,7 +524,7 @@ export function AdminMenuPage() {
                 <option value="stock">{t('Sort: Lowest stock first')}</option>
               </select>
             </label>
-            <div aria-label={t('Availability')} className="flex overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
+            <div aria-label={t('Availability')} className="flex overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
               {([
                 { key: 'all', label: t('All') },
                 { key: 'available', label: t('Available') },
@@ -556,15 +556,15 @@ export function AdminMenuPage() {
           <div aria-label={t('Loading menu items…')} className="space-y-3 p-4 sm:p-5" role="status">
             {[0, 1, 2, 3].map((row) => (
               <div className="flex animate-pulse items-center gap-4" key={row}>
-                <span className="size-12 rounded-xl bg-[#eef2f6]" />
-                <span className="h-3 flex-1 rounded bg-[#eef2f6]" />
-                <span className="h-3 w-24 rounded bg-[#eef2f6]" />
+                <span className="size-12 rounded-xl bg-[#f4f6f8]" />
+                <span className="h-3 flex-1 rounded bg-[#f4f6f8]" />
+                <span className="h-3 w-24 rounded bg-[#f4f6f8]" />
               </div>
             ))}
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="px-6 py-14 text-center">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f4f8] text-[#8190a1]">
+            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f4f6f8] text-[#65748a]">
               <Icon className="size-5" path={items.length ? icons.search : icons.menu} />
             </span>
             <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">
@@ -578,7 +578,7 @@ export function AdminMenuPage() {
             <div className="mt-4 flex justify-center">
               {hasActiveFilters ? (
                 <button
-                  className="min-h-9 rounded-xl border border-[#dce5ef] px-4 text-xs font-bold text-[#355777] transition hover:bg-[#f6f9fc]"
+                  className="min-h-9 rounded-xl border border-[#dce5ef] px-4 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8]"
                   onClick={() => { setSearch(''); setCategoryFilter(''); setStatusFilter('all') }}
                   type="button"
                 >
@@ -601,7 +601,7 @@ export function AdminMenuPage() {
           <div className="relative overflow-x-auto">
             <table className="w-full min-w-[800px] text-left text-sm">
               <thead>
-                <tr className="border-b border-[#edf1f5] text-[11px] uppercase tracking-[0.08em] text-[#8190a1]">
+                <tr className="border-b border-[#f4f6f8] text-xs uppercase tracking-[0.08em] text-[#65748a]">
                   <th className="px-5 py-3 font-extrabold" scope="col">{t('Menu item')}</th>
                   <th className="px-3 py-3 font-extrabold" scope="col">{t('Category')}</th>
                   <th className="px-3 py-3 text-right font-extrabold" scope="col">{t('Price')}</th>
@@ -610,24 +610,24 @@ export function AdminMenuPage() {
                   <th className={`px-5 py-3 ${PINNED_ACTION_HEAD}`} scope="col"><span className="sr-only">{t('Actions')}</span></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f0f3f7]">
+              <tbody className="divide-y divide-[#f4f6f8]">
                 {filteredItems.map((item) => (
-                  <tr className={`group transition hover:bg-[#fafbfd] ${deletingItemId === item.id ? 'opacity-50' : ''}`} key={item.id}>
+                  <tr className={`group transition hover:bg-[#f4f6f8] ${deletingItemId === item.id ? 'opacity-50' : ''}`} key={item.id}>
                     <td className="px-5 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <Thumb src={item.image} />
                         <div className="min-w-0">
-                          <p className="truncate font-bold text-[#102c50]">{item.name}</p>
-                          <p className="max-w-[14rem] truncate text-xs text-[#7b8796]">{item.detail}</p>
+                          <p className="truncate font-bold text-[#092a53]">{item.name}</p>
+                          <p className="max-w-[14rem] truncate text-xs text-[#65748a]">{item.detail}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-3 py-3">
-                      <span className="inline-block max-w-[11rem] truncate rounded-full bg-[#eef3f9] px-2.5 py-1 text-[11px] font-bold text-[#355777]">
+                      <span className="inline-block max-w-[11rem] truncate rounded-full bg-[#eef3f9] px-2.5 py-1 text-xs font-bold text-[#123b68]">
                         {t(item.categoryTitle)}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3 text-right font-bold tabular-nums text-[#102c50]">{formatPrice(item.priceXaf)}</td>
+                    <td className="whitespace-nowrap px-3 py-3 text-right font-bold tabular-nums text-[#092a53]">{formatPrice(item.priceXaf)}</td>
                     <td className="px-3 py-3"><StockMeter item={item} /></td>
                     <td className="px-3 py-3"><StatusBadge item={item} /></td>
                     <td className={`px-5 py-3 ${PINNED_ACTION_CELL}`}>{rowActions(item)}</td>
@@ -643,7 +643,7 @@ export function AdminMenuPage() {
                 className="group flex flex-col overflow-hidden rounded-2xl border border-[#e7edf4] bg-white transition hover:-translate-y-0.5 hover:border-[#cbd8e6] hover:shadow-[0_14px_30px_rgba(16,44,80,0.09)]"
                 key={item.id}
               >
-                <div className="relative aspect-[1.75] overflow-hidden bg-[#f1f4f7]">
+                <div className="relative aspect-[1.75] overflow-hidden bg-[#f4f6f8]">
                   <img decoding="async"
                     alt={item.name}
                     className="size-full object-cover transition duration-500 group-hover:scale-[1.03]"
@@ -652,19 +652,19 @@ export function AdminMenuPage() {
                     src={item.image}
                   />
                   <span className="absolute left-3 top-3"><StatusBadge item={item} /></span>
-                  <span className="absolute right-3 top-3 max-w-[50%] truncate rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#355777] shadow-sm">
+                  <span className="absolute right-3 top-3 max-w-[50%] truncate rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-[#123b68] shadow-sm">
                     {t(item.categoryTitle)}
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="truncate font-display text-lg font-extrabold text-[#123253]">{item.name}</h3>
+                      <h3 className="truncate font-display text-lg font-extrabold text-[#092a53]">{item.name}</h3>
                       <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-[#65748a]">{item.detail}</p>
                     </div>
-                    <p className="shrink-0 text-sm font-extrabold tabular-nums text-[#123253]">{formatPrice(item.priceXaf)}</p>
+                    <p className="shrink-0 text-sm font-extrabold tabular-nums text-[#092a53]">{formatPrice(item.priceXaf)}</p>
                   </div>
-                  <div className="mt-auto flex items-end justify-between gap-3 border-t border-[#edf1f5] pt-3">
+                  <div className="mt-auto flex items-end justify-between gap-3 border-t border-[#f4f6f8] pt-3">
                     <StockMeter item={item} />
                     {rowActions(item)}
                   </div>
@@ -684,9 +684,9 @@ export function AdminMenuPage() {
             className="admin-drawer-panel relative flex h-full w-full max-w-[34rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]"
             role="dialog"
           >
-            <header className="flex items-start justify-between gap-4 border-b border-[#edf1f5] px-6 py-5">
+            <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t(editingItemId ? 'Edit menu item' : 'Menu editor')}</p>
+                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t(editingItemId ? 'Edit menu item' : 'Menu editor')}</p>
                 <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="menu-drawer-title">
                   {t(editingItemId ? 'Edit menu item' : 'Add a menu item')}
                 </h2>
@@ -694,24 +694,24 @@ export function AdminMenuPage() {
                   {t(editingItemId ? 'Changes will appear in the shop right away.' : 'Add menu items to an existing category. New items are saved and shown in the public menu.')}
                 </p>
               </div>
-              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f1f4f8] hover:text-[#092a53]" onClick={cancelEdit} type="button">
+              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={cancelEdit} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
 
             <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
               <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
-                <div className="flex items-center gap-4 rounded-2xl bg-[#f7f9fc] p-3 ring-1 ring-[#e8edf3]">
+                <div className="flex items-center gap-4 rounded-2xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
                   <Thumb className="size-20" key={form.image} src={form.image.trim()} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Live preview')}</p>
+                    <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Live preview')}</p>
                     <p className="mt-1 truncate font-display text-lg font-extrabold text-[#092a53]">{form.name || t('Menu item name')}</p>
                     <p className="truncate text-xs text-[#65748a]">{form.categoryTitle ? t(form.categoryTitle) : t('Select a category')}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-extrabold text-[#102c50]">
+                      <span className="text-sm font-extrabold text-[#092a53]">
                         {Number.isFinite(previewPrice) && previewPrice > 0 ? formatPrice(previewPrice) : '— FCFA'}
                       </span>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${form.isAvailable ? 'bg-[#eaf6ee] text-[#246a46]' : 'bg-[#f1f4f8] text-[#5b6b7d]'}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-extrabold ${form.isAvailable ? 'bg-[#eaf6ee] text-[#246a46]' : 'bg-[#f4f6f8] text-[#65748a]'}`}>
                         {t(form.isAvailable ? 'Available' : 'Hidden')}
                       </span>
                     </div>
@@ -719,7 +719,7 @@ export function AdminMenuPage() {
                 </div>
 
                 <fieldset className="space-y-4">
-                  <legend className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Basics')}</legend>
+                  <legend className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Basics')}</legend>
                   <label className={labelClassName}>
                     {t('Menu category')}
                     <select className={inputClassName} name="categoryTitle" onChange={handleChange} required value={form.categoryTitle}>
@@ -743,13 +743,13 @@ export function AdminMenuPage() {
                 </fieldset>
 
                 <fieldset className="space-y-4">
-                  <legend className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Pricing & stock')}</legend>
+                  <legend className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Pricing & stock')}</legend>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <label className={labelClassName}>
                       {t('Price (FCFA)')}
                       <span className="relative block">
                         <input className={`${inputClassName} pr-16`} min={1} name="priceXaf" onChange={handleChange} required step={1} type="number" value={form.priceXaf} />
-                        <span className="pointer-events-none absolute right-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-[11px] font-extrabold text-[#8190a1]">FCFA</span>
+                        <span className="pointer-events-none absolute right-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-xs font-extrabold text-[#65748a]">FCFA</span>
                       </span>
                     </label>
                     <label className={labelClassName}>
@@ -757,36 +757,36 @@ export function AdminMenuPage() {
                       <input className={inputClassName} min={0} name="stock" onChange={handleChange} required step={1} type="number" value={form.stock} />
                     </label>
                   </div>
-                  <label className="flex cursor-pointer items-center gap-4 rounded-xl bg-[#f7f9fc] p-4 ring-1 ring-[#e8edf3] transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00]">
+                  <label className="flex cursor-pointer items-center gap-4 rounded-xl bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb] transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00]">
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-bold text-[#102c50]">{t('Available to order')}</span>
-                      <span className="block text-xs text-[#7b8796]">{t('Turn off to hide this item from the public menu.')}</span>
+                      <span className="block text-sm font-bold text-[#092a53]">{t('Available to order')}</span>
+                      <span className="block text-xs text-[#65748a]">{t('Turn off to hide this item from the public menu.')}</span>
                     </span>
                     <input checked={form.isAvailable} className="peer sr-only" name="isAvailable" onChange={handleChange} type="checkbox" />
-                    <span aria-hidden="true" className="relative h-6 w-11 shrink-0 rounded-full bg-[#cfd7e1] transition after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:bg-[#35a36b] peer-checked:after:translate-x-5" />
+                    <span aria-hidden="true" className="relative h-6 w-11 shrink-0 rounded-full bg-[#dce3eb] transition after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:bg-[#35a36b] peer-checked:after:translate-x-5" />
                   </label>
                 </fieldset>
 
                 <fieldset className="space-y-4">
-                  <legend className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Image')}</legend>
+                  <legend className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Image')}</legend>
                   <label
                     className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition has-[:focus-visible]:border-[#bd9c00] ${
-                      isUploading ? 'cursor-wait border-[#e0c95a] bg-[#fffbea]' : 'border-[#d8e0ea] bg-[#fafbfd] hover:border-[#9fb3c8] hover:bg-[#f5f8fb]'
+                      isUploading ? 'cursor-wait border-[#e0c95a] bg-[#fffbea]' : 'border-[#d8e0ea] bg-[#f4f6f8] hover:border-[#9fb3c8] hover:bg-[#f5f8fb]'
                     }`}
                   >
-                    <span className={`grid size-10 place-items-center rounded-xl ${isUploading ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white text-[#355777] shadow-sm'}`}>
+                    <span className={`grid size-10 place-items-center rounded-xl ${isUploading ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white text-[#123b68] shadow-sm'}`}>
                       {isUploading
                         ? <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
                         : <Icon className="size-5" path={icons.upload} />}
                     </span>
-                    <span className="text-sm font-bold text-[#102c50]">{isUploading ? t('Uploading image…') : t('Click to upload an image')}</span>
-                    <span className="text-xs text-[#7b8796]">{t('Upload a JPEG, PNG, WebP, or GIF image (max 5 MB).')}</span>
+                    <span className="text-sm font-bold text-[#092a53]">{isUploading ? t('Uploading image…') : t('Click to upload an image')}</span>
+                    <span className="text-xs text-[#65748a]">{t('Upload a JPEG, PNG, WebP, or GIF image (max 5 MB).')}</span>
                     <input accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" disabled={isUploading} onChange={handleImageUpload} type="file" />
                   </label>
                   <label className={labelClassName}>
                     {t('Image URL or path')}
                     <input className={inputClassName} maxLength={2000} name="image" onChange={handleChange} placeholder="/images/menu-item.webp" required value={form.image} />
-                    <span className="mt-1 block text-[11px] font-medium text-[#8190a1]">{t('Use a site image path or an HTTPS image URL.')}</span>
+                    <span className="mt-1 block text-xs font-medium text-[#65748a]">{t('Use a site image path or an HTTPS image URL.')}</span>
                   </label>
                 </fieldset>
 
@@ -798,8 +798,8 @@ export function AdminMenuPage() {
                 )}
               </div>
 
-              <footer className="flex items-center justify-end gap-3 border-t border-[#edf1f5] bg-[#fafbfd] px-6 py-4">
-                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] hover:text-[#092a53]" onClick={cancelEdit} type="button">
+              <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
+                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={cancelEdit} type="button">
                   {t('Cancel')}
                 </button>
                 <button
@@ -831,17 +831,17 @@ export function AdminMenuPage() {
             <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="delete-menu-item-title">
               {t('Delete menu item "{name}"?', { name: itemToDelete.name })}
             </h2>
-            <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#f7f9fc] p-3 ring-1 ring-[#e8edf3]">
+            <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
               <Thumb src={itemToDelete.image} />
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-[#102c50]">{itemToDelete.name}</p>
-                <p className="text-xs text-[#7b8796]">{t(itemToDelete.categoryTitle)} · {formatPrice(itemToDelete.priceXaf)}</p>
+                <p className="truncate text-sm font-bold text-[#092a53]">{itemToDelete.name}</p>
+                <p className="text-xs text-[#65748a]">{t(itemToDelete.categoryTitle)} · {formatPrice(itemToDelete.priceXaf)}</p>
               </div>
             </div>
             <p className="mt-3 text-sm leading-6 text-[#65748a]">{t('It will be removed from the public menu. This cannot be undone.')}</p>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6]" onClick={() => setItemToDelete(null)} type="button">
+              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setItemToDelete(null)} type="button">
                 {t('Cancel')}
               </button>
               <button

@@ -4,8 +4,8 @@ import { useAdminAuth } from './useAdminAuth'
 import { useLanguage } from '../../language/useLanguage'
 
 const freshForm: DiscountCodeForm = { code: '', discountType: 'percent', discountValue: '', minimumTotal: 0, maxUses: '', expiresAt: '', isActive: true }
-const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
-const labelClassName = 'block text-xs font-bold text-[#4f6379]'
+const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
+const labelClassName = 'block text-xs font-bold text-[#65748a]'
 const MAX_NOTIFICATION_MESSAGE = 180
 
 interface NotificationResult {
@@ -129,9 +129,9 @@ function codeStatus(code: DiscountCode): CodeStatus {
 
 const statusMeta: Record<CodeStatus, { label: string; badge: string; dot: string; stub: string }> = {
   active: { label: 'Active', badge: 'bg-[#eaf6ee] text-[#246a46] ring-[#cfe8d8]', dot: 'bg-[#35a36b]', stub: 'bg-[#092a53] text-[#ffdc32]' },
-  inactive: { label: 'Inactive', badge: 'bg-[#f1f4f8] text-[#5b6b7d] ring-[#e1e7ee]', dot: 'bg-[#94a3b4]', stub: 'bg-[#e6ebf1] text-[#65748a]' },
-  expired: { label: 'Expired', badge: 'bg-[#fdeeee] text-[#a53f37] ring-[#f3d1ce]', dot: 'bg-[#d2544b]', stub: 'bg-[#e6ebf1] text-[#65748a]' },
-  exhausted: { label: 'Fully redeemed', badge: 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]', dot: 'bg-[#e0a100]', stub: 'bg-[#e6ebf1] text-[#65748a]' },
+  inactive: { label: 'Inactive', badge: 'bg-[#f4f6f8] text-[#65748a] ring-[#dce3eb]', dot: 'bg-[#94a3b4]', stub: 'bg-[#dce3eb] text-[#65748a]' },
+  expired: { label: 'Expired', badge: 'bg-[#fdeeee] text-[#a53f37] ring-[#f3d1ce]', dot: 'bg-[#d2544b]', stub: 'bg-[#dce3eb] text-[#65748a]' },
+  exhausted: { label: 'Fully redeemed', badge: 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]', dot: 'bg-[#bd9c00]', stub: 'bg-[#dce3eb] text-[#65748a]' },
 }
 
 function formatExpiry(value: string | null, language: string) {
@@ -386,20 +386,20 @@ export function AdminPromotionsPage() {
     { label: 'Total codes', value: counts.all, icon: icons.tag, accent: 'bg-[#e9f1fa] text-[#315982]', filter: 'all' as const },
     { label: 'Active now', value: counts.active, icon: icons.check, accent: 'bg-[#e5f4ea] text-[#2c7a4f]', filter: 'active' as const },
     { label: 'Expired', value: counts.expired, icon: icons.clock, accent: 'bg-[#fff1dc] text-[#a86a00]', filter: 'expired' as const },
-    { label: 'Total redemptions', value: totalUses, icon: icons.chart, accent: 'bg-[#fff4c2] text-[#8a6f00]', filter: null },
+    { label: 'Total redemptions', value: totalUses, icon: icons.chart, accent: 'bg-[#fff4c2] text-[#bd9c00]', filter: null },
   ]
 
   return (
     <div className="min-w-0 space-y-6">
-      <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
             <Icon className="size-7" path={icons.tag} />
           </span>
           <div className="min-w-0">
-            <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
+            <nav aria-label={t('Breadcrumb')} className="text-xs font-bold text-[#65748a]">
               {t('Sales promotions')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#8a7000]">{t('Promotions')}</span>
+              <span className="text-[#bd9c00]">{t('Promotions')}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Promotions and discount codes')}</h1>
             <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">{t('Create percentage or fixed FCFA discounts. Codes are validated and applied on the server when an order is created.')}</p>
@@ -446,14 +446,14 @@ export function AdminPromotionsPage() {
           const body = (
             <>
               <span className={`grid size-9 place-items-center rounded-xl ${metric.accent}`}><Icon path={metric.icon} /></span>
-              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#102c50]">{metric.value.toLocaleString()}</p>
+              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#092a53]">{metric.value.toLocaleString()}</p>
               <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{t(metric.label)}</p>
             </>
           )
           return metric.filter ? (
             <button
               aria-pressed={isActive}
-              className={`rounded-2xl border bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:p-5 ${isActive ? 'border-[#092a53] shadow-[0_0_0_1px_#092a53]' : 'border-[#e5ebf3]'}`}
+              className={`rounded-2xl border bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:p-5 ${isActive ? 'border-[#092a53] shadow-[0_0_0_1px_#092a53]' : 'border-[#dce3eb]'}`}
               key={metric.label}
               onClick={() => setStatusFilter(isActive || metric.filter === 'all' ? 'all' : metric.filter!)}
               type="button"
@@ -461,13 +461,13 @@ export function AdminPromotionsPage() {
               {body}
             </button>
           ) : (
-            <article className="rounded-2xl border border-[#e5ebf3] bg-white p-4 sm:p-5" key={metric.label}>{body}</article>
+            <article className="rounded-2xl border border-[#dce3eb] bg-white p-4 sm:p-5" key={metric.label}>{body}</article>
           )
         })}
       </section>
 
-      <section aria-labelledby="promo-library-title" className="min-w-0 rounded-[20px] border border-[#e5ebf3] bg-white">
-        <div className="flex flex-col gap-4 border-b border-[#edf1f5] p-4 sm:p-5 lg:flex-row lg:items-end lg:justify-between">
+      <section aria-labelledby="promo-library-title" className="min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
+        <div className="flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="promo-library-title">{t('Current codes')}</h2>
             <p className="mt-0.5 text-xs text-[#65748a]">{t('{count} codes', { count: visibleCodes.length })}</p>
@@ -475,10 +475,10 @@ export function AdminPromotionsPage() {
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
             <label className="relative block shrink-0 sm:w-60">
               <span className="sr-only">{t('Search')}</span>
-              <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
+              <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
               <input className={`${inputClassName} mt-0 pl-10 font-mono uppercase placeholder:font-sans placeholder:normal-case`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search codes')} type="search" value={search} />
             </label>
-            <div aria-label={t('Status')} className="flex min-w-0 overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
+            <div aria-label={t('Status')} className="flex min-w-0 overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
               {([
                 { key: 'all', label: t('All') },
                 { key: 'active', label: t('Active') },
@@ -494,7 +494,7 @@ export function AdminPromotionsPage() {
                   type="button"
                 >
                   {option.label}
-                  <span className="rounded-full bg-[#e6ebf1] px-1.5 text-[10px] text-[#65748a]">{counts[option.key]}</span>
+                  <span className="rounded-full bg-[#dce3eb] px-1.5 text-xs text-[#65748a]">{counts[option.key]}</span>
                 </button>
               ))}
             </div>
@@ -503,14 +503,14 @@ export function AdminPromotionsPage() {
 
         {loading ? (
           <div aria-live="polite" className="grid gap-4 p-4 sm:p-5 lg:grid-cols-2 2xl:grid-cols-3">
-            {[0, 1, 2].map((item) => <div aria-hidden="true" className="h-40 animate-pulse rounded-2xl bg-[#f4f7fa]" key={item} />)}
+            {[0, 1, 2].map((item) => <div aria-hidden="true" className="h-40 animate-pulse rounded-2xl bg-[#f4f6f8]" key={item} />)}
             <p className="sr-only">{t('Loading discount codes…')}</p>
           </div>
         ) : visibleCodes.length === 0 ? (
           <div className="px-6 py-14 text-center">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f4f8] text-[#8190a1]"><Icon className="size-5" path={icons.tag} /></span>
+            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f4f6f8] text-[#65748a]"><Icon className="size-5" path={icons.tag} /></span>
             <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{codes.length ? t('No codes match your filters.') : t('No discount codes yet')}</p>
-            <p className="mx-auto mt-1 max-w-xs text-sm text-[#8190a1]">{t('Your new codes will appear here after you create them.')}</p>
+            <p className="mx-auto mt-1 max-w-xs text-sm text-[#65748a]">{t('Your new codes will appear here after you create them.')}</p>
             {!codes.length && (
               <button className="mt-4 inline-flex min-h-9 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-xs font-bold text-white transition hover:bg-[#163e6b]" onClick={openCreate} type="button">
                 <Icon path={icons.plus} />
@@ -527,60 +527,60 @@ export function AdminPromotionsPage() {
               const expiry = formatExpiry(code.expiresAt, language)
               return (
                 <li
-                  className={`group relative flex overflow-hidden rounded-2xl bg-white ring-1 ring-[#e3e9f0] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(16,44,80,0.09)] ${deletingId === code.id ? 'opacity-50' : ''}`}
+                  className={`group relative flex overflow-hidden rounded-2xl bg-white ring-1 ring-[#dce3eb] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(16,44,80,0.09)] ${deletingId === code.id ? 'opacity-50' : ''}`}
                   key={code.id}
                 >
                   <div className={`relative flex w-28 shrink-0 flex-col items-center justify-center px-3 py-5 text-center ${meta.stub}`}>
                     <p className="font-display text-2xl font-extrabold leading-none">
                       {code.discountType === 'percent' ? `${code.discountValue}%` : numberFormat.format(code.discountValue)}
                     </p>
-                    <p className="mt-1 text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">{code.discountType === 'percent' ? t('off') : `FCFA ${t('off')}`}</p>
-                    <span aria-hidden="true" className="absolute -right-2.5 -top-2.5 size-5 rounded-full bg-white ring-1 ring-[#e3e9f0]" />
-                    <span aria-hidden="true" className="absolute -bottom-2.5 -right-2.5 size-5 rounded-full bg-white ring-1 ring-[#e3e9f0]" />
+                    <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.14em] opacity-80">{code.discountType === 'percent' ? t('off') : `FCFA ${t('off')}`}</p>
+                    <span aria-hidden="true" className="absolute -right-2.5 -top-2.5 size-5 rounded-full bg-white ring-1 ring-[#dce3eb]" />
+                    <span aria-hidden="true" className="absolute -bottom-2.5 -right-2.5 size-5 rounded-full bg-white ring-1 ring-[#dce3eb]" />
                   </div>
-                  <div className="flex min-w-0 flex-1 flex-col border-l-2 border-dashed border-[#e3e9f0] p-4">
+                  <div className="flex min-w-0 flex-1 flex-col border-l-2 border-dashed border-[#dce3eb] p-4">
                     <div className="flex items-start justify-between gap-2">
                       <button
-                        className="flex min-w-0 items-center gap-1.5 rounded-lg font-mono text-base font-extrabold tracking-wide text-[#102c50] hover:text-[#355777]"
+                        className="flex min-w-0 items-center gap-1.5 rounded-lg font-mono text-base font-extrabold tracking-wide text-[#092a53] hover:text-[#123b68]"
                         onClick={() => copyCode(code)}
                         title={t('Copy')}
                         type="button"
                       >
                         <span className="truncate">{code.code}</span>
-                        <Icon className="size-3.5 shrink-0 text-[#8190a1]" path={copiedId === code.id ? icons.check : icons.copy} />
+                        <Icon className="size-3.5 shrink-0 text-[#65748a]" path={copiedId === code.id ? icons.check : icons.copy} />
                       </button>
-                      <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ${meta.badge}`}>
+                      <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-bold ring-1 ${meta.badge}`}>
                         <span aria-hidden="true" className={`size-1.5 rounded-full ${meta.dot}`} />
                         {t(meta.label)}
                       </span>
                     </div>
-                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
-                      <dt className="text-[#8190a1]">{t('Minimum order')}</dt>
-                      <dd className="text-right font-bold text-[#355777]">{Number(code.minimumTotal) ? `${numberFormat.format(code.minimumTotal)} ${t('items')}` : t('None')}</dd>
-                      <dt className="text-[#8190a1]">{t('Expires at')}</dt>
-                      <dd className="truncate text-right font-bold text-[#355777]" title={expiry || undefined}>{expiry || t('No expiry')}</dd>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                      <dt className="text-[#65748a]">{t('Minimum order')}</dt>
+                      <dd className="text-right font-bold text-[#123b68]">{Number(code.minimumTotal) ? `${numberFormat.format(code.minimumTotal)} ${t('items')}` : t('None')}</dd>
+                      <dt className="text-[#65748a]">{t('Expires at')}</dt>
+                      <dd className="truncate text-right font-bold text-[#123b68]" title={expiry || undefined}>{expiry || t('No expiry')}</dd>
                     </dl>
                     <div className="mt-3">
-                      <div className="flex justify-between text-[11px]">
-                        <span className="text-[#8190a1]">{t('Redemptions')}</span>
-                        <span className="font-bold text-[#355777]">{code.uses}{code.maxUses != null ? ` / ${code.maxUses}` : ` · ${t('No limit')}`}</span>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-[#65748a]">{t('Redemptions')}</span>
+                        <span className="font-bold text-[#123b68]">{code.uses}{code.maxUses != null ? ` / ${code.maxUses}` : ` · ${t('No limit')}`}</span>
                       </div>
                       {code.maxUses != null && (
-                        <div aria-label={t('{used} of {max} redemptions', { used: code.uses, max: code.maxUses })} className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#edf1f5]" role="img">
-                          <span className={`block h-full rounded-full ${status === 'exhausted' ? 'bg-[#e0a100]' : 'bg-[#35a36b]'}`} style={{ width: `${usagePercent}%` }} />
+                        <div aria-label={t('{used} of {max} redemptions', { used: code.uses, max: code.maxUses })} className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#f4f6f8]" role="img">
+                          <span className={`block h-full rounded-full ${status === 'exhausted' ? 'bg-[#bd9c00]' : 'bg-[#35a36b]'}`} style={{ width: `${usagePercent}%` }} />
                         </div>
                       )}
                     </div>
                     <div className="mt-auto flex justify-end gap-1 pt-3">
                       {code.isActive && (
-                        <button aria-label={`${t('Notify customers')} ${code.code}`} className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#fff6d6] hover:text-[#8a6d00]" onClick={() => { setNotifyError(''); setResendMessage(''); setCodeToNotify(code) }} title={t('Notify customers')} type="button">
+                        <button aria-label={`${t('Notify customers')} ${code.code}`} className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#fff6d6] hover:text-[#8a6d00]" onClick={() => { setNotifyError(''); setResendMessage(''); setCodeToNotify(code) }} title={t('Notify customers')} type="button">
                           <Icon path={icons.bell} />
                         </button>
                       )}
-                      <button aria-label={`${t('Edit')} ${code.code}`} className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53]" onClick={() => edit(code)} title={t('Edit')} type="button">
+                      <button aria-label={`${t('Edit')} ${code.code}`} className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => edit(code)} title={t('Edit')} type="button">
                         <Icon path={icons.edit} />
                       </button>
-                      <button aria-label={`${t('Delete')} ${code.code}`} className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-red-50 hover:text-red-600" onClick={() => { setError(''); setCodeToDelete(code) }} title={t('Delete')} type="button">
+                      <button aria-label={`${t('Delete')} ${code.code}`} className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-red-50 hover:text-red-600" onClick={() => { setError(''); setCodeToDelete(code) }} title={t('Delete')} type="button">
                         <Icon path={icons.trash} />
                       </button>
                     </div>
@@ -596,27 +596,27 @@ export function AdminPromotionsPage() {
         <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
           <button aria-label={t('Close')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setIsEditorOpen(false)} tabIndex={-1} type="button" />
           <section aria-labelledby="promo-drawer-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[32rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
-            <header className="flex items-start justify-between gap-4 border-b border-[#edf1f5] px-6 py-5">
+            <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t('Promotion library')}</p>
+                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t('Promotion library')}</p>
                 <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="promo-drawer-title">{t(editingId ? 'Edit discount code' : 'Create a discount')}</h2>
                 <p className="mt-1 text-sm text-[#65748a]">{t('Set up an offer customers can use at checkout.')}</p>
               </div>
-              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f1f4f8] hover:text-[#092a53]" onClick={() => setIsEditorOpen(false)} type="button">
+              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsEditorOpen(false)} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
 
             <form className="flex min-h-0 flex-1 flex-col" onSubmit={submit}>
               <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
-                <div className="flex overflow-hidden rounded-2xl ring-1 ring-[#e3e9f0]">
-                  <div className={`relative flex w-28 shrink-0 flex-col items-center justify-center px-3 py-5 text-center ${form.isActive ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#e6ebf1] text-[#65748a]'}`}>
+                <div className="flex overflow-hidden rounded-2xl ring-1 ring-[#dce3eb]">
+                  <div className={`relative flex w-28 shrink-0 flex-col items-center justify-center px-3 py-5 text-center ${form.isActive ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#dce3eb] text-[#65748a]'}`}>
                     <p className="font-display text-2xl font-extrabold leading-none">{form.discountValue ? (form.discountType === 'percent' ? `${form.discountValue}%` : numberFormat.format(Number(form.discountValue))) : '—'}</p>
-                    <p className="mt-1 text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">{form.discountType === 'percent' ? t('off') : `FCFA ${t('off')}`}</p>
+                    <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.14em] opacity-80">{form.discountType === 'percent' ? t('off') : `FCFA ${t('off')}`}</p>
                   </div>
-                  <div className="min-w-0 flex-1 border-l-2 border-dashed border-[#e3e9f0] bg-[#fafbfd] p-4">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Offer preview')}</p>
-                    <p className="mt-1 truncate font-mono text-lg font-extrabold tracking-wide text-[#102c50]">{form.code || t('Your code')}</p>
+                  <div className="min-w-0 flex-1 border-l-2 border-dashed border-[#dce3eb] bg-[#f4f6f8] p-4">
+                    <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Offer preview')}</p>
+                    <p className="mt-1 truncate font-mono text-lg font-extrabold tracking-wide text-[#092a53]">{form.code || t('Your code')}</p>
                     <p className="mt-1 text-xs text-[#65748a]">
                       {previewValue} {t('off')}
                       {Number(form.minimumTotal) ? ` · ${t('Minimum order')} ${numberFormat.format(Number(form.minimumTotal))} ${t('items')}` : ''}
@@ -628,11 +628,11 @@ export function AdminPromotionsPage() {
                   {t('Code')}
                   <span className="mt-1.5 flex gap-2">
                     <span className="relative block flex-1">
-                      <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.tag} />
+                      <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.tag} />
                       <input className={`${inputClassName} mt-0 pl-10 font-mono font-bold uppercase tracking-[0.08em]`} maxLength={30} onChange={(event) => setField('code', event.target.value.toUpperCase())} pattern="[A-Za-z0-9_\-]{3,30}" placeholder="SWEET10" required value={form.code} />
                     </span>
                     <button
-                      className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[#dde4ec] bg-white px-3 text-xs font-bold text-[#355777] transition hover:border-[#c3cfdc] hover:text-[#092a53]"
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[#dce3eb] bg-white px-3 text-xs font-bold text-[#123b68] transition hover:border-[#dce3eb] hover:text-[#092a53]"
                       onClick={() => setField('code', randomCode())}
                       type="button"
                     >
@@ -640,7 +640,7 @@ export function AdminPromotionsPage() {
                       {t('Generate')}
                     </button>
                   </span>
-                  <span className="mt-1 block text-[11px] font-medium text-[#8190a1]">{t('3–30 letters, numbers, dashes or underscores.')}</span>
+                  <span className="mt-1 block text-xs font-medium text-[#65748a]">{t('3–30 letters, numbers, dashes or underscores.')}</span>
                 </label>
 
                 <fieldset>
@@ -651,12 +651,12 @@ export function AdminPromotionsPage() {
                       { key: 'fixed', label: t('Fixed FCFA'), hint: 'FCFA' },
                     ] as const).map((option) => (
                       <label
-                        className={`flex cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] ${form.discountType === option.key ? 'bg-[#fffbea] ring-2 ring-[#bd9c00]' : 'bg-white ring-[#dde4ec] hover:ring-[#c3cfdc]'}`}
+                        className={`flex cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] ${form.discountType === option.key ? 'bg-[#fffbea] ring-2 ring-[#bd9c00]' : 'bg-white ring-[#dce3eb] hover:ring-[#dce3eb]'}`}
                         key={option.key}
                       >
                         <input checked={form.discountType === option.key} className="sr-only" name="discountType" onChange={() => setField('discountType', option.key)} type="radio" />
-                        <span className={`grid size-8 place-items-center rounded-lg text-xs font-extrabold ${form.discountType === option.key ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#f1f4f8] text-[#65748a]'}`}>{option.hint === '%' ? '%' : 'F'}</span>
-                        <span className="text-sm font-bold text-[#102c50]">{option.label}</span>
+                        <span className={`grid size-8 place-items-center rounded-lg text-xs font-extrabold ${form.discountType === option.key ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-[#f4f6f8] text-[#65748a]'}`}>{option.hint === '%' ? '%' : 'F'}</span>
+                        <span className="text-sm font-bold text-[#092a53]">{option.label}</span>
                       </label>
                     ))}
                   </div>
@@ -667,14 +667,14 @@ export function AdminPromotionsPage() {
                     {t('Discount value')}
                     <span className="relative block">
                       <input className={`${inputClassName} pr-14`} max={form.discountType === 'percent' ? 100 : undefined} min="1" onChange={(event) => setField('discountValue', event.target.value)} required type="number" value={form.discountValue} />
-                      <span className="pointer-events-none absolute right-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-[11px] font-extrabold text-[#8190a1]">{form.discountType === 'percent' ? '%' : 'FCFA'}</span>
+                      <span className="pointer-events-none absolute right-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-xs font-extrabold text-[#65748a]">{form.discountType === 'percent' ? '%' : 'FCFA'}</span>
                     </span>
                   </label>
                   <label className={labelClassName}>
                     {t('Minimum order')}
                     <span className="relative block">
                       <input className={`${inputClassName} pr-14`} min="0" onChange={(event) => setField('minimumTotal', event.target.value)} step="1" type="number" value={form.minimumTotal} />
-                      <span className="pointer-events-none absolute right-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-[11px] font-extrabold text-[#8190a1]">{t('items')}</span>
+                      <span className="pointer-events-none absolute right-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-xs font-extrabold text-[#65748a]">{t('items')}</span>
                     </span>
                   </label>
                   <label className={labelClassName}>
@@ -694,7 +694,7 @@ export function AdminPromotionsPage() {
                     { label: t('No expiry'), days: null },
                   ].map((preset) => (
                     <button
-                      className="rounded-lg bg-[#f1f4f8] px-2.5 py-1 text-[11px] font-bold text-[#4f6379] transition hover:bg-[#e3e9f0] hover:text-[#092a53]"
+                      className="rounded-lg bg-[#f4f6f8] px-2.5 py-1 text-xs font-bold text-[#65748a] transition hover:bg-[#dce3eb] hover:text-[#092a53]"
                       key={preset.label}
                       onClick={() => setExpiryInDays(preset.days)}
                       type="button"
@@ -704,29 +704,29 @@ export function AdminPromotionsPage() {
                   ))}
                 </div>
 
-                <label className="flex cursor-pointer items-center gap-4 rounded-xl bg-[#f7f9fc] p-4 ring-1 ring-[#e8edf3] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00]">
+                <label className="flex cursor-pointer items-center gap-4 rounded-xl bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00]">
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-bold text-[#102c50]">{t('Active')}</span>
-                    <span className="block text-xs text-[#7b8796]">{t('Available for customers to use')}</span>
+                    <span className="block text-sm font-bold text-[#092a53]">{t('Active')}</span>
+                    <span className="block text-xs text-[#65748a]">{t('Available for customers to use')}</span>
                   </span>
                   <input checked={form.isActive} className="peer sr-only" onChange={(event) => setField('isActive', event.target.checked)} type="checkbox" />
-                  <span aria-hidden="true" className="relative h-6 w-11 shrink-0 rounded-full bg-[#cfd7e1] transition after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:bg-[#35a36b] peer-checked:after:translate-x-5" />
+                  <span aria-hidden="true" className="relative h-6 w-11 shrink-0 rounded-full bg-[#dce3eb] transition after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:bg-[#35a36b] peer-checked:after:translate-x-5" />
                 </label>
 
                 {!editingId && (
-                  <fieldset className="space-y-4 rounded-2xl p-4 ring-1 ring-[#e8edf3]">
-                    <legend className="px-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Customer notification')}</legend>
+                  <fieldset className="space-y-4 rounded-2xl p-4 ring-1 ring-[#dce3eb]">
+                    <legend className="px-1 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Customer notification')}</legend>
                     <label className="flex cursor-pointer items-center gap-4 has-[:focus-visible]:rounded-lg has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00]">
                       <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-bold text-[#102c50]">{t('Notify customers')}</span>
-                        <span className="block text-xs text-[#7b8796]">
+                        <span className="block text-sm font-bold text-[#092a53]">{t('Notify customers')}</span>
+                        <span className="block text-xs text-[#65748a]">
                           {form.isActive
                             ? t('Sends a notification to every customer account that turned on promotion alerts.')
                             : t('Inactive codes are saved quietly. Turn on Active to notify customers.')}
                         </span>
                       </span>
                       <input checked={notifyCustomers} className="peer sr-only" disabled={!form.isActive} onChange={(event) => setNotifyCustomers(event.target.checked)} type="checkbox" />
-                      <span aria-hidden="true" className="relative h-6 w-11 shrink-0 rounded-full bg-[#cfd7e1] transition after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:bg-[#35a36b] peer-checked:after:translate-x-5 peer-disabled:opacity-50" />
+                      <span aria-hidden="true" className="relative h-6 w-11 shrink-0 rounded-full bg-[#dce3eb] transition after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:bg-[#35a36b] peer-checked:after:translate-x-5 peer-disabled:opacity-50" />
                     </label>
 
                     {notifyCustomers && form.isActive && (
@@ -745,7 +745,7 @@ export function AdminPromotionsPage() {
                             placeholder={t('Example: Weekend treat! 20% off every sundae until Sunday.')}
                             value={notificationMessage}
                           />
-                          <span className="mt-1.5 block font-medium text-[#8190a1]">
+                          <span className="mt-1.5 block font-medium text-[#65748a]">
                             {t('Optional. Leave empty to use a message written from the discount details. The code is added if your message leaves it out.')}
                           </span>
                         </label>
@@ -754,11 +754,11 @@ export function AdminPromotionsPage() {
                           const preview = previewNotification(form, notificationMessage)
                           return (
                             <div>
-                              <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t('Preview on a phone')}</p>
+                              <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Preview on a phone')}</p>
                               <div className="mt-2 flex gap-3 rounded-2xl bg-[#202124] p-3.5 text-white shadow-inner">
                                 <img decoding="async" loading="lazy" alt="" className="size-10 shrink-0 rounded-full" height={40} src="/icons/icon-192.png" width={40} />
                                 <div className="min-w-0 flex-1">
-                                  <p className="flex items-center gap-1.5 text-[11px] text-white/55">
+                                  <p className="flex items-center gap-1.5 text-xs text-white/55">
                                     <span className="truncate">{window.location.host}</span>
                                     <span aria-hidden="true">·</span>
                                     <span>{t('now')}</span>
@@ -783,8 +783,8 @@ export function AdminPromotionsPage() {
                 )}
               </div>
 
-              <footer className="flex items-center justify-end gap-3 border-t border-[#edf1f5] bg-[#fafbfd] px-6 py-4">
-                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] hover:text-[#092a53]" onClick={() => setIsEditorOpen(false)} type="button">{t('Cancel')}</button>
+              <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
+                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsEditorOpen(false)} type="button">{t('Cancel')}</button>
                 <button
                   className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
                   disabled={saving}
@@ -840,7 +840,7 @@ export function AdminPromotionsPage() {
               </div>
               {notifyError && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{notifyError}</p>}
               <div className="mt-6 flex justify-end gap-2.5">
-                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6]" onClick={() => setCodeToNotify(null)} type="button">{t('Cancel')}</button>
+                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setCodeToNotify(null)} type="button">{t('Cancel')}</button>
                 <button
                   className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#163e6b] disabled:cursor-wait disabled:opacity-60"
                   disabled={isNotifying || !pushStatus?.configured}
@@ -868,14 +868,14 @@ export function AdminPromotionsPage() {
                 : t('Customers will no longer be able to use it.')}
             </p>
             {codeToDelete.isActive && (
-              <p className="mt-3 flex items-start gap-2 rounded-xl bg-[#f7f9fc] px-3 py-2.5 text-xs font-semibold text-[#4f6379]">
+              <p className="mt-3 flex items-start gap-2 rounded-xl bg-[#f4f6f8] px-3 py-2.5 text-xs font-semibold text-[#65748a]">
                 <Icon className="mt-0.5 size-3.5 shrink-0" path={icons.pause} />
                 {t('Tip: switch it to inactive instead if you may reuse it later.')}
               </p>
             )}
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6]" onClick={() => setCodeToDelete(null)} type="button">{t('Cancel')}</button>
+              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setCodeToDelete(null)} type="button">{t('Cancel')}</button>
               <button
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
                 disabled={deletingId === codeToDelete.id}
