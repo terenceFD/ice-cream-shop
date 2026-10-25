@@ -1337,86 +1337,90 @@ export function InstagramSection() {
   const { t } = useLanguage();
   const instagramUrl = "https://www.instagram.com/coldstonecameroon/";
   const instagramImages = [
+    { alt: "Custom ice cream cake", src: "/cake-images/cake-9.webp" },
     { alt: "Celebration cake", src: "/cake-images/cake-4.webp" },
     { alt: "Milkshake", src: "/milk/mk-5.webp" },
     { alt: "Ice cream shake", src: "/ice-images/ice-2.jpg" },
-    { alt: "Custom ice cream cake", src: "/cake-images/cake-9.webp" },
     { alt: "Fruit smoothie", src: "/milk/mk-9.webp" },
   ];
+  const [featured, ...feed] = instagramImages;
 
   return (
     <section
       aria-labelledby="instagram-heading"
-      className="bg-[#f1f2ee] py-16 sm:py-20"
+      className="bg-[#f1f2ee] py-20 sm:py-24 lg:py-28"
     >
-      {/* Same width and side padding as the page content above, so the edges line up. */}
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-        <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:gap-14">
-          <div className="max-w-lg">
-            <h2
-              className="font-display text-4xl font-bold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
-              id="instagram-heading"
-            >
-              {t("A little more joy in your feed.")}
-            </h2>
-            <p className="mt-5 max-w-md text-base leading-7 text-[#263d57]">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+          <h2
+            className="max-w-[12em] font-display text-4xl font-extrabold leading-[0.95] tracking-[-0.03em] text-[#092a53] sm:text-6xl"
+            id="instagram-heading"
+          >
+            {t("A little more joy in your feed.")}
+          </h2>
+          <div className="flex max-w-sm flex-col items-start gap-6 lg:items-end lg:text-right">
+            <p className="text-base font-medium leading-7 text-[#092a53] sm:text-lg">
               {t("Get a glimpse of our latest creations and sweet moments.")}
             </p>
-
             <a
-              className="mt-7 inline-flex min-h-12 items-center gap-3 rounded-xl bg-white px-4 py-2.5 text-left ring-1 ring-[#dfe3df] transition hover:ring-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+              className="inline-flex min-h-12 items-center gap-3 bg-[#092a53] px-5 text-sm font-extrabold text-white transition duration-300 hover:bg-[#ffdc32] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none"
               href={instagramUrl}
               rel="noreferrer"
               target="_blank"
             >
-              <span className="grid size-10 place-items-center rounded-lg bg-[#092a53] text-white">
-                <InstagramGlyph className="size-[18px]" />
-              </span>
-              <span className="leading-snug">
-                <span className="block text-xs font-semibold text-[#65748a]">{t("Follow us on Instagram")}</span>
-                <span className="mt-0.5 block text-sm font-bold text-[#092a53]">@coldstonecameroon</span>
-              </span>
-            </a>
-            <a
-              className="mt-4 inline-flex min-h-12 items-center gap-3 rounded-xl bg-[#092a53] px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-              href={instagramUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {t("Visit Instagram")}
-              <ArrowIcon diagonal />
+              <InstagramGlyph className="size-5" />
+              @coldstonecameroon
             </a>
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:grid-rows-2 lg:gap-4">
-            {instagramImages.map((image, index) => (
+        <div className="instagram-grid mt-12 grid gap-2 sm:mt-14 sm:gap-3 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:items-stretch">
+          <a
+            aria-label={`${t(featured.alt)} — ${t("Visit Instagram")}`}
+            className="instagram-photo group relative block aspect-[4/3] overflow-hidden bg-[#e7e8e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-4 lg:aspect-auto lg:h-full"
+            href={instagramUrl}
+            rel="noreferrer"
+            target="_blank"
+          >
+            <img
+              alt={t(featured.alt)}
+              className="size-full object-cover object-[center_35%] transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06] group-focus-visible:scale-[1.06] motion-reduce:transform-none motion-reduce:transition-none lg:absolute lg:inset-0 lg:h-full"
+              decoding="async"
+              loading="lazy"
+              onError={photoErrorHandler(featured.src)}
+              sizes="(min-width: 1024px) 55vw, 100vw"
+              src={featured.src}
+              srcSet={photoSrcSet(featured.src)}
+            />
+            <span
+              aria-hidden="true"
+              className="absolute inset-x-0 bottom-0 z-10 h-1 origin-left scale-x-0 bg-[#ffdc32] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
+            />
+          </a>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            {feed.map((image) => (
               <a
                 aria-label={`${t(image.alt)} — ${t("Visit Instagram")}`}
-                className={`group relative overflow-hidden rounded-2xl bg-[#dfe3df] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4 ${
-                  index === 0 ? "col-span-2 aspect-[4/3] lg:row-span-2 lg:aspect-auto" : "aspect-square"
-                }`}
+                className="instagram-photo group relative block aspect-square overflow-hidden bg-[#e7e8e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-4"
                 href={instagramUrl}
                 key={image.src}
                 rel="noreferrer"
                 target="_blank"
               >
-                <img decoding="async"
+                <img
                   alt={t(image.alt)}
-                  className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06]"
+                  className="size-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06] group-focus-visible:scale-[1.06] motion-reduce:transform-none motion-reduce:transition-none"
+                  decoding="async"
                   loading="lazy"
                   onError={photoErrorHandler(image.src)}
-                  sizes={index === 0 ? "(min-width: 1024px) 50vw, 100vw" : "(min-width: 1024px) 25vw, 50vw"}
+                  sizes="(min-width: 1024px) 22vw, 50vw"
                   src={image.src}
                   srcSet={photoSrcSet(image.src)}
                 />
                 <span
                   aria-hidden="true"
-                  className="absolute inset-0 grid place-items-center bg-[#092a53]/0 transition duration-300 group-hover:bg-[#092a53]/45 group-focus-visible:bg-[#092a53]/45"
-                >
-                  <span className="grid size-12 scale-75 place-items-center rounded-xl bg-white text-[#092a53] opacity-0 shadow-lg transition duration-300 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100">
-                    <InstagramGlyph />
-                  </span>
-                </span>
+                  className="absolute inset-x-0 bottom-0 z-10 h-1 origin-left scale-x-0 bg-[#ffdc32] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
+                />
               </a>
             ))}
           </div>

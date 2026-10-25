@@ -240,17 +240,9 @@ function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, adde
   const soldOut = item.isAvailable === false || item.availableQuantity < 1;
   const isCakeCategory = category.title === "Cakes & Pies";
   return (
-    <div
-      className={`group relative flex h-full flex-col ${
-        isCakeCategory
-          ? ""
-          : "rounded-[22px] bg-white p-1.5 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#fbfaf5] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)] hover:ring-[#e2d39a] sm:rounded-[28px] sm:p-2.5"
-      }`}
-    >
+    <div className="group relative flex h-full flex-col">
       <button
-        className={`flex flex-1 flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 ${
-          isCakeCategory ? "" : "rounded-[22px] sm:rounded-[28px]"
-        }`}
+        className="flex flex-1 flex-col text-left"
         onClick={() => onSelect(category, item)}
         type="button"
       >
@@ -258,7 +250,7 @@ function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, adde
         className={`relative flex items-center justify-center overflow-hidden ${
           isCakeCategory
             ? `aspect-square ${CAKE_SPECIMEN_FIELDS[itemIndex % CAKE_SPECIMEN_FIELDS.length]}`
-            : "aspect-square rounded-[17px] bg-gradient-to-br from-[#fff8dd] via-[#fbfaf5] to-[#fbfaf5] sm:rounded-[22px]"
+            : "aspect-square rounded-[20px] bg-[#f4f6f8]"
         }`}
       >
         <MenuImage
@@ -266,7 +258,7 @@ function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, adde
           className={`transition duration-700 ease-out motion-reduce:transition-none ${
             isCakeCategory
               ? "size-[90%] object-contain group-hover:scale-[1.04] group-focus-within:scale-[1.04]"
-              : "size-full object-cover group-hover:scale-[1.06] group-focus-within:scale-[1.06]"
+              : "size-full object-cover group-hover:scale-[1.04] group-focus-within:scale-[1.04]"
           } ${soldOut ? "opacity-70 grayscale-[70%]" : ""}`}
           sizes="(min-width: 1024px) 25vw, 50vw"
           src={item.image}
@@ -275,63 +267,33 @@ function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, adde
           aria-hidden="true"
           className="menu-card-shine"
         />
-        {(soldOut || !isCakeCategory) && (
-          <span
-            className={`absolute left-2 top-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] shadow-sm backdrop-blur-sm sm:left-3 sm:top-3 sm:px-2.5 sm:text-xs ${
-              soldOut ? "text-red-700" : "text-[#37632c]"
-            }`}
-          >
-            <span aria-hidden="true" className={`size-1.5 rounded-full ${soldOut ? "bg-red-500" : "bg-[#4caf50]"}`} />
-            {soldOut ? t("Sold out") : t("Available")}
+        {soldOut && (
+          <span className="absolute inset-x-0 bottom-0 z-10 bg-[#092a53] px-3 py-2 text-center text-xs font-bold text-white">
+            {t("Sold out")}
           </span>
         )}
       </div>
 
-      <div
-        className={`flex flex-1 flex-col ${
-          isCakeCategory
-            ? "px-0 pb-0 pt-4 sm:pt-5"
-            : "px-1.5 pb-1.5 pt-3 sm:px-3 sm:pb-2.5 sm:pt-4"
-        }`}
-      >
-        <h3 className={`line-clamp-2 font-display font-extrabold leading-snug text-[#092a53] ${
-          isCakeCategory
-            ? "text-base sm:text-lg"
-            : "text-[15px] sm:text-lg"
-        }`}>
+      <div className={`flex flex-1 flex-col ${isCakeCategory ? "pt-4 sm:pt-5" : "pt-4"}`}>
+        <h3 className="line-clamp-2 font-display text-base font-extrabold leading-snug text-[#092a53] sm:text-lg">
           {t(item.name)}
         </h3>
-        <div className="mt-1.5">
-          <RatingBadge
-            averageRating={item.averageRating}
-            reviewCount={item.reviewCount}
-          />
-        </div>
-        <p className={`mt-1.5 line-clamp-2 text-xs leading-5 text-[#65748a] sm:mt-2 sm:text-sm sm:leading-6 ${
+        {item.reviewCount > 0 && item.averageRating != null && (
+          <div className="mt-1.5">
+            <RatingBadge
+              averageRating={item.averageRating}
+              reviewCount={item.reviewCount}
+            />
+          </div>
+        )}
+        <p className={`mt-1.5 line-clamp-2 text-sm leading-6 text-[#65748a] ${
           isCakeCategory ? "min-h-[3.25rem]" : ""
         }`}>
           {t(item.detail)}
         </p>
-        <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-4">
-          <span className="font-display text-sm font-extrabold tabular-nums text-[#bd9c00] sm:text-lg">
-            {formatPrice(item.priceXaf)}
-          </span>
-          <span className="inline-flex shrink-0 items-center gap-2 text-xs font-extrabold uppercase tracking-[0.12em] text-[#65748a] transition group-hover:text-[#092a53]">
-              <span className="sr-only">{t("View details")}</span>
-              <span
-                aria-hidden="true"
-                className={`grid size-8 place-items-center rounded-full transition duration-300 sm:size-9 ${
-                  isCakeCategory
-                    ? "bg-[#e9edf0] text-[#092a53] group-hover:bg-[#092a53] group-hover:text-white"
-                    : "bg-[#fbfaf5] text-[#092a53] group-hover:bg-[#092a53] group-hover:text-white"
-                }`}
-              >
-                <svg className="size-4" fill="none" viewBox="0 0 24 24">
-                  <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-              </span>
-          </span>
-        </div>
+        <span className="mt-auto pt-3 font-display text-base font-extrabold tabular-nums text-[#092a53] sm:text-lg">
+          {formatPrice(item.priceXaf)}
+        </span>
       </div>
       </button>
       <button
@@ -340,19 +302,15 @@ function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, adde
             ? t("{name} is sold out", { name: t(item.name) })
             : t("Add {name} to cart", { name: t(item.name) })
         }
-        className={`mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 px-3 text-xs font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-not-allowed sm:text-xs ${
-          isCakeCategory
-            ? "rounded-md"
-            : "rounded-full"
-        } ${
+        className={`mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg px-3 text-center text-sm font-bold leading-tight disabled:cursor-not-allowed ${
           added
-            ? "bg-[#4caf50] text-white"
+            ? "bg-[#ffdc32] text-[#092a53]"
             : soldOut
-              ? "bg-[#e8ebe7] text-[#8793a0]"
-              : "bg-[#092a53] text-white hover:-translate-y-0.5 hover:bg-[#163e6b] hover:shadow-[0_8px_20px_rgba(9,42,83,0.18)]"
+              ? "bg-[#f4f6f8] text-[#65748a]"
+              : "bg-[#092a53] text-white hover:bg-[#163e6b]"
         }`}
         disabled={soldOut}
-        onClick={() => onQuickAdd(category, item)}
+        onClick={() => onQuickAdd?.(category, item)}
         type="button"
       >
         {added ? (
@@ -371,53 +329,47 @@ function SimilarProductCard({ category, item, onSelect, showCategory, t, formatP
   const soldOut = item.isAvailable === false || item.availableQuantity < 1;
   return (
     <button
-      className="group relative isolate flex aspect-[3/4] flex-col overflow-hidden rounded-[20px] bg-white text-left text-[#092a53] ring-1 ring-[#e4e7e3] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_54px_rgba(9,42,83,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-4 sm:rounded-[26px]"
+      className="similar-card group flex h-full flex-col bg-white text-left text-[#092a53] transition-opacity duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-4"
       onClick={() => onSelect(category, item)}
       type="button"
     >
-      <span className="relative min-h-0 flex-1 overflow-hidden bg-[#f1f2ee]">
+      <span className="relative aspect-square overflow-hidden bg-[#e7e8e4]">
         <MenuImage
           alt=""
-          className={`absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.06] group-focus-within:scale-[1.06] motion-reduce:transition-none ${soldOut ? "grayscale-[60%]" : ""}`}
+          className={`size-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.08] group-focus-visible:scale-[1.08] motion-reduce:transform-none motion-reduce:transition-none ${soldOut ? "grayscale" : ""}`}
           sizes="(min-width: 1024px) 25vw, 50vw"
           src={item.image}
         />
+        <span aria-hidden="true" className="menu-card-shine" />
         <span
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#061d3a] from-15% via-[#061d3a]/60 via-50% to-transparent to-75% transition duration-500 group-hover:via-[#061d3a]/70"
+          className="absolute inset-x-0 bottom-0 z-10 h-1 origin-left scale-x-0 bg-[#ffdc32] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
         />
-        <span
-          aria-hidden="true"
-          className="menu-card-shine"
-        />
-        <span className="absolute inset-x-3 top-3 z-10 flex items-start justify-between gap-2 sm:inset-x-5 sm:top-5">
-          {showCategory && (
-            <span className="max-w-[80%] truncate rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-[#092a53] max-sm:hidden">
-              {t(category.title)}
-            </span>
-          )}
-          {soldOut && (
-            <span className="ml-auto rounded-lg bg-white px-2.5 py-1.5 text-xs font-bold text-red-700">
-              {t("Sold out")}
-            </span>
-          )}
-        </span>
+        {soldOut && (
+          <span className="absolute left-0 top-0 z-10 bg-[#092a53] px-3 py-2 text-xs font-extrabold text-white">
+            {t("Sold out")}
+          </span>
+        )}
       </span>
-
-      <span className="flex flex-col p-3.5 sm:p-5">
-        <span className="line-clamp-2 font-display text-base font-bold leading-snug text-[#092a53] sm:text-xl">
+      <span className="flex flex-1 flex-col px-4 pb-4 pt-4 sm:px-5 sm:pb-5">
+        {showCategory && (
+          <span className="mb-1 truncate text-sm font-semibold text-[#65748a]">
+            {t(category.title)}
+          </span>
+        )}
+        <span className="line-clamp-2 font-display text-base font-extrabold leading-tight tracking-tight text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-[6px] decoration-transparent transition-[text-decoration-color] duration-300 group-hover:decoration-[#ffdc32] group-focus-visible:decoration-[#ffdc32] sm:text-lg">
           {t(item.name)}
         </span>
-        <span className="mt-1 line-clamp-2 max-h-0 text-sm leading-6 text-[#65748a] opacity-0 transition-all duration-500 group-hover:max-h-12 group-hover:opacity-100 group-focus-visible:max-h-12 group-focus-visible:opacity-100 max-sm:hidden">
+        <span className="mt-2 line-clamp-2 text-sm font-medium leading-6 text-[#40556f]">
           {t(item.detail)}
         </span>
-        <span className="mt-3 flex items-center justify-between gap-2 border-t border-[#e4e7e3] pt-3 sm:mt-4 sm:pt-4">
-          <span className="font-display text-sm font-bold tabular-nums text-[#092a53] sm:text-base">
+        <span className="mt-auto flex items-center justify-between gap-3 pt-4">
+          <span className="font-display text-base font-extrabold tabular-nums text-[#092a53]">
             {formatPrice(item.priceXaf)}
           </span>
           <span
             aria-hidden="true"
-            className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#092a53] text-white transition duration-300 group-hover:-rotate-45 group-hover:bg-[#ffdc32] group-hover:text-[#092a53] sm:size-10"
+            className="grid size-9 shrink-0 place-items-center bg-[#092a53] text-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1 group-hover:-rotate-45 group-hover:bg-[#ffdc32] group-hover:text-[#092a53] group-focus-visible:translate-x-1 group-focus-visible:-rotate-45 group-focus-visible:bg-[#ffdc32] group-focus-visible:text-[#092a53] motion-reduce:transform-none"
           >
             <ArrowIcon />
           </span>
@@ -1200,7 +1152,7 @@ export function MenuPage() {
                 </h2>
               </div>
               {filteredItems.length ? (
-                <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredItems.map(({ category, item }) => (
                     <MenuProductCard
                       category={category}
@@ -1245,36 +1197,32 @@ export function MenuPage() {
                 </span>
               </nav>
 
-              <div className="grid gap-8 lg:grid-cols-12 lg:gap-10">
-                <div className="lg:col-span-7">
-                  <div className="lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300">
-                    <ProductImageSlider
-                      imageClassName={`aspect-[4/3] lg:aspect-[5/4] ${selectedSoldOut ? "grayscale-[60%]" : ""}`}
-                      images={[selectedItem.image, ...normalizePhotoGallery(selectedItem.gallery)]}
-                      name={t(selectedItem.name)}
-                      priority
-                      overlay={
-                        <span
-                          className={`absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-xs font-extrabold uppercase tracking-[0.12em] shadow-sm backdrop-blur-sm sm:left-6 sm:top-6 ${selectedSoldOut ? "text-red-700" : "text-[#37632c]"}`}
-                        >
-                          <span
-                            aria-hidden="true"
-                            className={`size-1.5 rounded-full ${selectedSoldOut ? "bg-red-500" : "bg-[#4caf50]"}`}
-                          />
-                          {selectedSoldOut ? t("Sold out") : t("Available")}
+              <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] lg:gap-14">
+                <div className="lg:sticky lg:top-[calc(var(--site-header-offset,0px)+1.5rem)]">
+                  <ProductImageSlider
+                    frameClassName="rounded-[20px]! bg-[#f4f6f8] shadow-none!"
+                    imageClassName={`aspect-[4/3] lg:aspect-[5/4] ${selectedSoldOut ? "grayscale-[60%]" : ""}`}
+                    images={[selectedItem.image, ...normalizePhotoGallery(selectedItem.gallery)]}
+                    name={t(selectedItem.name)}
+                    priority
+                    overlay={
+                      selectedSoldOut ? (
+                        <span className="absolute left-4 top-4 rounded-full bg-[#092a53] px-3 py-1.5 text-xs font-bold text-white">
+                          {t("Sold out")}
                         </span>
-                      }
-                      resetKey={selectedItem.id || selectedItem.name}
-                    />
-                  </div>
+                      ) : null
+                    }
+                    resetKey={selectedItem.id || selectedItem.name}
+                    showScrim={false}
+                  />
                 </div>
 
-                <div className="flex min-w-0 flex-col rounded-[24px] bg-white p-5 sm:p-8 lg:col-span-5 lg:p-8">
-                  <p className="inline-flex w-fit items-center rounded-lg bg-[#f1f2ee] px-3 py-1.5 text-sm font-bold text-[#092a53]">
+                <div className="flex min-w-0 flex-col lg:py-2">
+                  <p className="w-fit text-sm font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4">
                     {t(activeCategory.title)}
                   </p>
                   <h2
-                    className="mt-5 break-words font-display text-4xl font-bold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl"
+                    className="mt-3 break-words font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl"
                     id="menu-product-title"
                   >
                     {t(selectedItem.name)}
@@ -1290,30 +1238,29 @@ export function MenuPage() {
                         aria-label={t("{rating} out of 5 stars", {
                           rating: reviews.averageRating,
                         })}
-                        className="text-base tracking-[0.1em] text-[#d4ad00]"
+                        className="text-base text-[#ffdc32]"
                       >
                         {"★".repeat(Math.round(reviews.averageRating))}
-                        <span className="text-[#e2ddd0]">
+                        <span className="text-[#dce3eb]">
                           {"★".repeat(5 - Math.round(reviews.averageRating))}
                         </span>
                       </span>
                       <span className="text-[#092a53]">{reviews.averageRating}</span>
-                      <span aria-hidden="true">·</span>
-                      <span className="underline decoration-[#d9d4c7] underline-offset-4">
+                      <span className="underline decoration-[#ffdc32] decoration-2 underline-offset-4">
                         {reviews.reviewCount} {t("reviews")}
                       </span>
                     </a>
                   )}
 
-                  <p className="mt-6 text-base leading-7 text-[#263d57] sm:text-lg sm:leading-8">
+                  <p className="mt-5 max-w-xl text-base leading-7 text-[#123b68]">
                     {t(selectedItem.detail)}
                   </p>
 
                   {selectedItem.dietaryTags?.length > 0 && (
-                    <ul className="mt-6 flex flex-wrap gap-2">
+                    <ul className="mt-4 flex flex-wrap gap-2">
                       {selectedItem.dietaryTags.map((tag) => (
                         <li
-                          className="rounded-lg bg-[#eaf2e7] px-3 py-1.5 text-sm font-semibold capitalize text-[#31572b]"
+                          className="rounded-full bg-[#f4f6f8] px-3 py-1.5 text-sm font-semibold text-[#092a53]"
                           key={tag}
                         >
                           {t(tag)}
@@ -1322,21 +1269,16 @@ export function MenuPage() {
                     </ul>
                   )}
 
-                  <div className="mt-8 rounded-2xl bg-[#f1f2ee] px-5 py-4">
-                    <p className="text-sm font-semibold text-[#65748a]">
-                      {t("Price")}
-                    </p>
-                    <p className="mt-1 font-display text-4xl font-bold tabular-nums text-[#092a53]">
-                      {formatPrice(selectedItem.priceXaf)}
-                    </p>
-                  </div>
+                  <p className="mt-8 font-display text-4xl font-extrabold tabular-nums leading-none text-[#092a53]">
+                    {formatPrice(selectedItem.priceXaf)}
+                  </p>
 
                   <div className="mt-6 flex gap-3">
                     {!selectedSoldOut && (
-                      <div aria-label={t("Quantity")} className="flex shrink-0 items-center rounded-xl bg-[#f1f2ee] p-1" role="group">
+                      <div aria-label={t("Quantity")} className="flex shrink-0 items-center rounded-lg bg-[#f4f6f8] p-1" role="group">
                         <button
                           aria-label={t("Decrease quantity")}
-                          className="grid size-11 place-items-center rounded-lg text-lg font-bold text-[#092a53] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
+                          className="grid size-11 place-items-center rounded-md text-lg font-bold text-[#092a53] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#65748a] disabled:hover:bg-transparent"
                           disabled={quantity <= 1}
                           onClick={() => setQuantity((current) => Math.max(1, current - 1))}
                           type="button"
@@ -1348,7 +1290,7 @@ export function MenuPage() {
                         </output>
                         <button
                           aria-label={t("Increase quantity")}
-                          className="grid size-11 place-items-center rounded-lg text-lg font-bold text-[#092a53] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#c9c3b4] disabled:hover:bg-transparent"
+                          className="grid size-11 place-items-center rounded-md text-lg font-bold text-[#092a53] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#65748a] disabled:hover:bg-transparent"
                           disabled={quantity >= maxQuantity}
                           onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
                           type="button"
@@ -1358,10 +1300,8 @@ export function MenuPage() {
                       </div>
                     )}
                     <button
-                      className={`inline-flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-4 text-sm font-extrabold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-[#e7e3d9] disabled:text-[#65748a] disabled:shadow-none sm:px-6 ${
-                        justAdded
-                          ? "bg-[#3d8b40]"
-                          : "bg-[#092a53] hover:-translate-y-0.5 hover:bg-[#163e6b] hover:shadow-[0_12px_28px_rgba(9,42,83,0.22)]"
+                      className={`inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-extrabold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dce3eb] disabled:text-[#65748a] sm:px-6 ${
+                        justAdded ? "bg-[#3d8b40]" : "bg-[#092a53] hover:bg-[#163e6b]"
                       }`}
                       disabled={selectedSoldOut}
                       onClick={addSelectedItem}
@@ -1373,7 +1313,7 @@ export function MenuPage() {
                           {justAdded ? t("Added") : (
                             <>
                               {t("Add to bag")}
-                              <span className="max-sm:hidden"> · {formatPrice(selectedItem.priceXaf * quantity)}</span>
+                              <span className="max-sm:hidden"> {formatPrice(selectedItem.priceXaf * quantity)}</span>
                             </>
                           )}
                         </span>
@@ -1387,10 +1327,10 @@ export function MenuPage() {
                             : t("Save to favorites")
                         }
                         aria-pressed={selectedIsFavorite}
-                        className={`grid size-[52px] shrink-0 place-items-center rounded-xl border text-xl transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 ${
+                        className={`grid size-12 shrink-0 place-items-center rounded-lg border text-xl transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 ${
                           selectedIsFavorite
                             ? "border-[#f56586] bg-[#fff0f3] text-[#e0435f]"
-                            : "border-[#d9d4c7] bg-white text-[#65748a] hover:border-[#092a53] hover:text-[#092a53]"
+                            : "border-[#dce3eb] bg-white text-[#65748a] hover:border-[#092a53] hover:text-[#092a53]"
                         }`}
                         onClick={saveFavorite}
                         title={
@@ -1405,26 +1345,26 @@ export function MenuPage() {
                     )}
                   </div>
                   {cartNotice && (
-                    <p className="mt-3 text-xs leading-5 text-red-700" role="alert">
+                    <p className="mt-3 text-sm leading-5 text-red-700" role="alert">
                       {cartNotice}
                     </p>
                   )}
-                  <Link
-                    className="mt-4 inline-flex w-fit items-center gap-2 text-sm font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 transition hover:decoration-[#092a53]"
-                    to="/cart"
-                  >
-                    {t("View cart")} <ArrowIcon />
-                  </Link>
                   {favoriteError && (
-                    <p className="mt-3 text-xs leading-5 text-red-700" role="alert">
+                    <p className="mt-3 text-sm leading-5 text-red-700" role="alert">
                       {favoriteError}
                     </p>
                   )}
+                  <Link
+                    className="mt-4 w-fit text-sm font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4"
+                    to="/cart"
+                  >
+                    {t("View cart")}
+                  </Link>
 
-                  <ul className="mt-8 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2">
                     {["Mixed to order", "Made to your taste", "Freshly made"].map((label) => (
-                      <li className="flex items-center gap-2 rounded-xl bg-[#f1f2ee] px-3 py-3 text-sm font-semibold leading-5 text-[#092a53]" key={label}>
-                        <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-[#d4ad00]" />
+                      <li className="inline-flex items-center gap-2 text-sm font-semibold text-[#092a53]" key={label}>
+                        <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-[#ffdc32]" />
                         {t(label)}
                       </li>
                     ))}
@@ -1513,29 +1453,24 @@ export function MenuPage() {
 
               <section
                 aria-labelledby="similar-products-title"
-                className="mt-20 rounded-[24px] bg-[#f1f2ee] p-5 sm:p-8"
+                className="-mx-5 mt-20 bg-[#f1f2ee] px-5 py-12 sm:-mx-8 sm:px-8 sm:py-16 lg:-mx-12 lg:px-12"
               >
-                <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-[#65748a]">
-                      {t("You may also like")}
-                    </p>
-                    <h3
-                      className="mt-2 font-display text-3xl font-bold tracking-tight text-[#092a53] sm:text-4xl"
-                      id="similar-products-title"
-                    >
-                      {t("Similar products")}
-                    </h3>
-                  </div>
+                <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+                  <h3
+                    className="max-w-[14ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl"
+                    id="similar-products-title"
+                  >
+                    {t("Similar products")}
+                  </h3>
                   <button
-                    className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#092a53] ring-1 ring-[#e4e7e3] transition hover:-translate-y-0.5 hover:ring-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                    className="inline-flex min-h-12 shrink-0 items-center self-start bg-[#092a53] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 sm:self-auto"
                     onClick={() => setSelectedItemState(null)}
                     type="button"
                   >
                     {t("Back to category")}: {t(activeCategory.title)}
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+                <div className="similar-grid mt-10 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
                   {similarItems.map(({ category, item }) => (
                     <SimilarProductCard
                       category={category}
@@ -1708,7 +1643,7 @@ export function MenuPage() {
                   </p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4">
                 {activeCategory.items.map((item, itemIndex) => (
                   <MenuProductCard
                     added={

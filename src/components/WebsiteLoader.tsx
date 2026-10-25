@@ -1,27 +1,27 @@
 import { useEffect, useState } from 'react'
 import { useLanguage } from '../language/useLanguage'
 
-// Show on each full page load; the app-level component stays mounted during client-side navigation.
-const EXIT_MS = 380
+// Hold long enough for the bar to fill, then leave once the language pack is ready.
+const MIN_VISIBLE_MS = 1100
+const EXIT_MS = 420
 
 export function WebsiteLoader() {
   const { isReady, t } = useLanguage()
+  const [hasHeld, setHasHeld] = useState(false)
   const [isLeaving, setIsLeaving] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
-    if (!isReady) return undefined
-    let removeTimer = 0
-    const exitTimer = window.setTimeout(() => {
-      setIsLeaving(true)
-      removeTimer = window.setTimeout(() => setIsVisible(false), EXIT_MS)
-    }, 0)
+    const holdTimer = window.setTimeout(() => setHasHeld(true), MIN_VISIBLE_MS)
+    return () => window.clearTimeout(holdTimer)
+  }, [])
 
-    return () => {
-      window.clearTimeout(exitTimer)
-      window.clearTimeout(removeTimer)
-    }
-  }, [isReady])
+  useEffect(() => {
+    if (!isReady || !hasHeld) return undefined
+    setIsLeaving(true)
+    const removeTimer = window.setTimeout(() => setIsVisible(false), EXIT_MS)
+    return () => window.clearTimeout(removeTimer)
+  }, [hasHeld, isReady])
 
   if (!isVisible) return null
 
@@ -32,17 +32,22 @@ export function WebsiteLoader() {
       role="status"
     >
       <div className="website-loader__content">
-        <div className="website-loader__brand">
-          <img alt="" className="website-loader__logo" decoding="async" height={96} loading="eager" src="/logo.png" width={96} />
-          <p className="website-loader__wordmark">
-            Cold Stone <span>Creamery</span>
-          </p>
+        <img
+          alt=""
+          className="website-loader__logo"
+          decoding="async"
+          height={80}
+          loading="eager"
+          src="/logo.png"
+          width={80}
+        />
+        <p className="website-loader__wordmark">
+          <span>Cold Stone</span>
+          <span>Creamery</span>
+        </p>
+        <div aria-hidden="true" className="website-loader__bar">
+          <span className="website-loader__fill" />
         </div>
-
-        <div aria-hidden="true" className="website-loader__scoop-track">
-          <span className="website-loader__scoop" />
-        </div>
-
         <p className="website-loader__message">{t('Preparing your Cold Stone experience')}</p>
       </div>
     </div>

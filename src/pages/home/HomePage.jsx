@@ -379,7 +379,7 @@ function ReviewerAvatar({ name, picture, className, eager = false }) {
   );
 }
 
-function ReviewCard({ review, language, t, eager = false, wide = false }) {
+function ReviewCard({ review, language, t, eager = false }) {
   const customerName = review.customerName || t("Customer");
   const rawText = (review.review || "").trim();
   const text = rawText
@@ -387,51 +387,45 @@ function ReviewCard({ review, language, t, eager = false, wide = false }) {
     : "";
   return (
     <li>
-      <article className={`rounded-2xl border border-[#dce3eb] bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-[#b8c6d5] hover:shadow-[0_16px_36px_rgba(9,42,83,0.10)] sm:p-7 ${wide ? "grid items-end gap-8 lg:grid-cols-[minmax(0,46rem)_auto] lg:gap-16 lg:p-8" : "flex h-full flex-col"}`}>
-        <div className="flex-1">
-          <div className="mb-5 flex min-h-5 items-center">
-            <StarRating
-              className="size-4"
-              emptyClassName="text-[#dce3eb]"
-              filledClassName="text-[#d9a900]"
-              label={t("{rating} out of 5 stars", { rating: review.rating })}
-              value={Number(review.rating) || 0}
-            />
-          </div>
-          {text ? (
-            <blockquote className={`whitespace-pre-line text-[15px] font-medium leading-[1.75] text-[#20334c] ${wide ? "max-w-[62ch]" : ""}`}>
-              {text}
-            </blockquote>
-          ) : (
-            <p className="text-sm italic leading-7 text-[#65748a]">
-              {t("No written comment.")}
+      <article className="flex h-full flex-col rounded-[20px] border border-[#dce3eb] bg-white p-5 sm:p-6">
+        <StarRating
+          className="size-4"
+          emptyClassName="text-[#dce3eb]"
+          filledClassName="text-[#bd9c00]"
+          label={t("{rating} out of 5 stars", { rating: review.rating })}
+          value={Number(review.rating) || 0}
+        />
+        {text ? (
+          <blockquote className="mt-3 max-w-[48ch] flex-1 text-base leading-7 text-[#092a53]">
+            {text}
+          </blockquote>
+        ) : (
+          <p className="mt-3 flex-1 text-sm leading-7 text-[#65748a]">
+            {t("No written comment.")}
+          </p>
+        )}
+        <footer className="mt-5 flex items-center gap-3 border-t border-[#f4f6f8] pt-4">
+          <ReviewerAvatar
+            className="size-9 bg-white text-sm"
+            eager={eager}
+            name={customerName}
+            picture={review.profilePicture}
+          />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-[#092a53]">
+              {customerName}
             </p>
-          )}
-        </div>
-        <footer className={`flex items-center gap-3 ${wide ? "mt-6 border-t border-[#f4f6f8] pt-5 lg:mt-0 lg:justify-self-end lg:border-t-0 lg:pt-0" : "mt-6 justify-between border-t border-[#f4f6f8] pt-5"}`}>
-          <div className="flex min-w-0 items-center gap-3">
-            <ReviewerAvatar
-              className="size-10 shrink-0 text-sm"
-              eager={eager}
-              name={customerName}
-              picture={review.profilePicture}
-            />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-[#092a53]">
-                {customerName}
-              </p>
-              <p className="mt-1 truncate text-xs font-medium text-[#65748a]">
-                {review.itemName ? t(review.itemName) : t("Verified purchase")}
-              </p>
-              {review.createdAt && (
-                <time
-                  className="mt-1 block text-xs font-medium text-[#65748a]"
-                  dateTime={review.createdAt}
-                >
-                  {formatReviewDate(review.createdAt, language)}
-                </time>
-              )}
-            </div>
+            <p className="mt-0.5 truncate text-xs font-medium text-[#65748a]">
+              {review.itemName ? t(review.itemName) : t("Verified purchase")}
+            </p>
+            {review.createdAt && (
+              <time
+                className="mt-0.5 block text-xs font-medium text-[#65748a]"
+                dateTime={review.createdAt}
+              >
+                {formatReviewDate(review.createdAt, language)}
+              </time>
+            )}
           </div>
         </footer>
       </article>
@@ -444,7 +438,7 @@ function SkeletonCard({ className = "" }) {
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse rounded-2xl border border-[#dce3eb] bg-white p-6 ${className}`}
+      className={`animate-pulse rounded-[20px] border border-[#dce3eb] bg-white p-5 sm:p-6 ${className}`}
     >
       <div className="h-4 w-3/4 rounded-full bg-[#e4e8ee]" />
       <div className="mt-3 h-3 w-full rounded-full bg-[#e4e8ee]" />
@@ -486,11 +480,6 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
   const average = stats.average;
   const roundedAverage = Math.round(average * 10) / 10;
   const count = stats.count;
-  const distribution = stats.distribution || {};
-  const busiest = Math.max(
-    1,
-    ...[1, 2, 3, 4, 5].map((stars) => distribution[stars] || 0),
-  );
   return (
     <section
       aria-labelledby="real-reviews-heading"
@@ -501,71 +490,56 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <h2
-              className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl lg:text-6xl"
+              className="font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl"
               id="real-reviews-heading"
             >
               {t("Real Reviews")}
             </h2>
-            <p className="mt-4 max-w-xl text-lg leading-8 font-medium text-[#5b6d84]">
+            <p className="mt-3 max-w-xl text-base leading-7 text-[#65748a]">
               {t(
                 "Honest feedback from customers who ordered and tasted it themselves.",
               )}
             </p>
-          </div>
-          {hasReviews && (
-            <div className="flex shrink-0 items-center gap-4 rounded-xl bg-white px-5 py-4 ring-1 ring-[#dce3eb] lg:mb-1">
-              <span className="font-display text-3xl font-extrabold leading-none tracking-tight text-[#092a53]">
-                {roundedAverage.toFixed(1)}
-              </span>
-              <span className="flex flex-col gap-1.5">
+            {hasReviews && (
+              <p className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="font-display text-2xl font-extrabold leading-none text-[#092a53]">
+                  {roundedAverage.toFixed(1)}
+                </span>
                 <StarRating
                   className="size-4"
                   emptyClassName="text-[#dce3eb]"
-                  filledClassName="text-[#d9a900]"
+                  filledClassName="text-[#bd9c00]"
                   label={t("{rating} out of 5 stars", {
                     rating: roundedAverage.toFixed(1),
                   })}
                   value={average}
                 />
-                <span className="text-xs font-semibold text-[#65748a]">
+                <span className="text-sm font-semibold text-[#65748a]">
                   {t(
                     count === 1 ? "Based on 1 review" : "Based on {count} reviews",
                     { count },
                   )}
                 </span>
-              </span>
-            </div>
-          )}
+              </p>
+            )}
+          </div>
         </div>
 
         {error ? (
-          <p
-            className="mt-8 rounded-xl bg-white px-5 py-4 text-base leading-7 text-[#65748a] ring-1 ring-[#dce3eb]"
-            role="status"
-          >
+          <p className="mt-8 max-w-xl text-base leading-7 text-[#65748a]" role="status">
             {t("Customer reviews could not be loaded")}: {error}
           </p>
         ) : !hasReviews ? (
-          <div className="mt-8 flex flex-col items-start gap-4 rounded-xl bg-white px-6 py-8 ring-1 ring-[#dce3eb] sm:flex-row sm:items-center sm:justify-between sm:px-8">
-            <div>
-              <p className="font-display text-xl font-extrabold leading-tight text-[#092a53]">
-                {t("No reviews yet — be the first!")}
-              </p>
-              <p className="mt-1.5 max-w-md text-base leading-7 text-[#65748a]">
-                {t("Ordered from us before? Share how it tasted and help the next customer choose.")}
-              </p>
-            </div>
-            <Link
-              className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#092a53] px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-              to="/account/orders"
-            >
-              {t("Write a review")} <ArrowIcon />
-            </Link>
+          <div className="mt-8 max-w-xl">
+            <p className="font-display text-2xl font-extrabold leading-tight text-[#092a53]">
+              {t("No reviews yet — be the first!")}
+            </p>
+            <p className="mt-2 text-base leading-7 text-[#65748a]">
+              {t("Ordered from us before? Share how it tasted and help the next customer choose.")}
+            </p>
           </div>
         ) : (
-          <ul
-            className={`mt-10 grid items-stretch gap-5 ${displayReviews.length >= 3 ? "md:grid-cols-2 xl:grid-cols-3" : displayReviews.length === 2 ? "md:grid-cols-2" : ""}`}
-          >
+          <ul className="mt-10 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
             {displayReviews.map((review, index) => (
               <ReviewCard
                 eager={index === 0}
@@ -573,21 +547,20 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
                 language={language}
                 review={review}
                 t={t}
-                wide={displayReviews.length === 1}
               />
             ))}
           </ul>
         )}
 
-        <div className="mt-8 flex flex-wrap items-center gap-3">
+        <div className="mt-10 flex flex-wrap items-center gap-3">
           <Link
-            className="inline-flex items-center gap-2 rounded-lg bg-[#092a53] px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+            className="inline-flex min-h-12 items-center rounded-lg bg-[#092a53] px-6 text-sm font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2"
             to="/account/orders"
           >
-            {t("Write a review")} <ArrowIcon />
+            {t("Write a review")}
           </Link>
           <Link
-            className="inline-flex items-center gap-2 rounded-lg border border-[#cfd8e1] bg-white px-6 py-3.5 text-sm font-bold text-[#123b68] transition hover:-translate-y-0.5 hover:border-[#092a53] hover:bg-[#fafdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+            className="inline-flex min-h-12 items-center rounded-lg px-4 text-sm font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4"
             to="/menu"
           >
             {t("Explore the menu")}
@@ -661,6 +634,97 @@ function HowItWorksSection({ t }) {
             </li>
           ))}
         </ol>
+      </div>
+    </section>
+  );
+}
+
+function MomentGallery({ t }) {
+  const frames = [
+    {
+      id: "sunshine-heading",
+      title: "Tropical mango sunshine.",
+      src: "/images/mango.jpg",
+      alt: "Mango ice cream scoops with a spoon",
+      position: "object-[center_38%]",
+      copy: [
+        "Golden mango. A cool, creamy scoop. And a little daydream of somewhere sunny. This is your cue to take a sweet escape.",
+      ],
+      cta: "Find your fruity mood",
+      to: "/menu?category=Ice%20Cream",
+    },
+    {
+      id: "moments-heading",
+      title: "Sweet moments at Cold Stone.",
+      src: "/images/vanilla.jpg",
+      alt: "A hand scooping vanilla ice cream from a bowl with a strawberry scoop beside it",
+      position: "object-[center_28%]",
+      copy: [
+        "The first lick of a cone. The spoon you don't want to share. The scoop that turns an ordinary afternoon into a little celebration.",
+        "Welcome to our world of ice cream — where there's always room for a little more happy.",
+        "Life's sweeter by the scoop",
+      ],
+      cta: "Step into our world",
+      to: "/about",
+    },
+  ];
+
+  return (
+    <section
+      aria-labelledby="moments-gallery-heading"
+      className="px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+    >
+      <div className="mx-auto max-w-[1320px]">
+        <h2 className="sr-only" id="moments-gallery-heading">
+          {t("Sweet moments at Cold Stone.")}
+        </h2>
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-5">
+          {frames.map((frame) => (
+            <Link
+              className="moment-card group relative block overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#092a53] lg:overflow-hidden"
+              key={frame.id}
+              to={frame.to}
+            >
+              <div className="relative h-[min(16rem,52svh)] overflow-hidden sm:h-[min(20rem,46svh)] lg:h-[min(30rem,calc(100svh-14rem))]">
+                <img
+                  alt={t(frame.alt)}
+                  className={`size-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none ${frame.position}`}
+                  decoding="async"
+                  loading="lazy"
+                  onError={photoErrorHandler(frame.src)}
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  src={thumbnail(frame.src)}
+                  srcSet={photoSrcSet(frame.src)}
+                />
+              </div>
+              <div className="moment-copy mt-5 lg:absolute lg:inset-0 lg:z-10 lg:mt-0 lg:flex lg:flex-col lg:justify-end lg:bg-[#092a53]/88 lg:p-8 xl:p-10">
+                <h3
+                  className="max-w-[18ch] font-display text-3xl font-extrabold leading-[0.95] tracking-[-0.03em] text-[#092a53] lg:max-w-[14ch] lg:text-4xl lg:text-white"
+                  id={frame.id}
+                >
+                  {t(frame.title)}
+                </h3>
+                {frame.copy.map((paragraph) => (
+                  <p
+                    className="mt-3 max-w-[42ch] text-sm font-medium leading-6 text-[#092a53] lg:text-base lg:leading-7 lg:text-white"
+                    key={paragraph}
+                  >
+                    {t(paragraph)}
+                  </p>
+                ))}
+                <span className="mt-6 inline-flex min-h-12 w-fit items-center gap-3 bg-[#ffdc32] px-5 text-sm font-extrabold text-[#092a53]">
+                  {t(frame.cta)}
+                  <span
+                    aria-hidden="true"
+                    className="transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1 motion-reduce:transform-none"
+                  >
+                    <ArrowIcon />
+                  </span>
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -2112,130 +2176,27 @@ export function HomePage() {
           </div>
         )}
 
-        <section
-          aria-labelledby="sunshine-heading"
-          className="bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
-        >
-          <div className="mx-auto grid max-w-[1320px] items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
-            <div className="order-2 overflow-hidden lg:order-1">
-              <img
-                alt={t(
-                  "Mango ice cream scoops with a spoon",
-                )}
-                className="aspect-[4/3] w-full object-cover transition duration-500 hover:scale-[1.02]"
-                decoding="async"
-                loading="lazy"
-                onError={photoErrorHandler("/images/mango.jpg")}
-                sizes="(min-width: 1024px) 58vw, 100vw"
-                src={thumbnail("/images/mango.jpg")}
-                srcSet={photoSrcSet("/images/mango.jpg")}
-              />
-            </div>
-            <div className="order-1 max-w-xl lg:order-2">
-              <h2
-                className="max-w-[14ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-5xl"
-                id="sunshine-heading"
-              >
-                {t("Tropical mango sunshine.")}
-              </h2>
-              <p className="mt-6 max-w-lg text-lg font-medium leading-8 text-[#123b68]">
-                {t(
-                  "Golden mango. A cool, creamy scoop. And a little daydream of somewhere sunny. This is your cue to take a sweet escape.",
-                )}
-              </p>
-              <Link
-                className="group mt-8 inline-flex min-h-12 items-center gap-3 rounded-lg bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f6f8]"
-                to="/menu?category=Ice%20Cream"
-              >
-                {t("Find your fruity mood")}
-                <span
-                  aria-hidden="true"
-                  className="text-[#ffdc32] transition-transform duration-300 group-hover:translate-x-0.5"
-                >
-                  <ArrowIcon />
-                </span>
-              </Link>
-            </div>
-          </div>
-        </section>
+        <MomentGallery t={t} />
 
-        <section
-          aria-labelledby="moments-heading"
-          className="bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
-        >
-          <div className="mx-auto grid max-w-[1320px] items-center gap-9 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
-            <figure className="scroll-story-frame order-2 min-w-0 lg:order-2">
-              <img
-                alt={t(
-                  "A hand scooping vanilla ice cream from a bowl with a strawberry scoop beside it",
-                )}
-                className="aspect-[4/3] w-full object-cover"
-                decoding="async"
-                loading="lazy"
-                onError={photoErrorHandler("/images/vanilla.jpg")}
-                sizes="(min-width: 1024px) 58vw, 100vw"
-                src={thumbnail("/images/vanilla.jpg")}
-                srcSet={photoSrcSet("/images/vanilla.jpg")}
-              />
-              <figcaption className="mt-4 text-sm font-semibold text-[#65748a]">
-                {t("Life's sweeter by the scoop")}
-              </figcaption>
-            </figure>
-            <div className="order-1 max-w-xl lg:order-1">
-              <h2
-                className="max-w-[14ch] font-display text-4xl font-extrabold leading-[1.04] tracking-tight text-[#092a53] sm:text-5xl"
-                id="moments-heading"
-              >
-                {t("Sweet moments at Cold Stone.")}
-              </h2>
-              <p className="mt-6 text-lg font-medium leading-8 text-[#123b68]">
-                {t(
-                  "The first lick of a cone. The spoon you don't want to share. The scoop that turns an ordinary afternoon into a little celebration.",
-                )}
-              </p>
-              <p className="mt-4 text-base leading-7 text-[#65748a]">
-                {t(
-                  "Welcome to our world of ice cream — where there's always room for a little more happy.",
-                )}
-              </p>
-              <Link
-                className="group mt-8 inline-flex min-h-12 items-center gap-3 rounded-lg bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-                to="/about"
-              >
-                {t("Step into our world")}
-                <span
-                  aria-hidden="true"
-                  className="text-[#ffdc32] transition-transform duration-300 group-hover:translate-x-0.5"
-                >
-                  <ArrowIcon />
-                </span>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        
         <section
           aria-labelledby="home-menu-heading"
           className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="menu"
         >
-          <div className="mx-auto max-w-[1320px]">
-            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-              <div>
-                <h2
-                  className="max-w-xl font-display text-4xl font-extrabold leading-[1.03] tracking-tight sm:text-5xl lg:text-6xl"
-                  id="home-menu-heading"
-                >
-                  {t("Menu highlights")}
-                </h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-[#65748a] sm:text-lg">
-                  {t("Explore signature creations and discover every flavor.")}
-                </p>
-              </div>
+          <div className="mx-auto max-w-5xl">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2
+                className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl"
+                id="home-menu-heading"
+              >
+                {t("Menu highlights")}
+              </h2>
+              <p className="mt-4 text-base leading-7 text-[#65748a] sm:text-lg">
+                {t("Explore signature creations and discover every flavor.")}
+              </p>
             </div>
 
-            <div className="mt-9 grid gap-5 md:grid-cols-2 lg:gap-7">
+            <ul className="mt-10 grid gap-10 sm:grid-cols-2 sm:gap-8 lg:gap-10">
               {[
                 {
                   title: "The full menu",
@@ -2251,59 +2212,41 @@ export function HomePage() {
                   to: "/flavors",
                   image: "/menu-official/ice-cream/signature-creations/our-strawberry-blonde-2.webp",
                 },
-              ].map((card, cardIndex) => (
-                <article
-                  className="group overflow-hidden rounded-2xl bg-white ring-1 ring-[#dce3eb] transition duration-300 hover:-translate-y-1 hover:ring-[#b8c6d5] hover:shadow-[0_16px_36px_rgba(9,42,83,0.10)]"
-                  key={card.to}
-                >
-                  <Link
-                    className="block overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#092a53]"
-                    to={card.to}
-                  >
-                    <div className="aspect-[16/10] overflow-hidden bg-[#f4f6f8]">
+              ].map((item, itemIndex) => (
+                <li key={item.to}>
+                  <Link className="group block" to={item.to}>
+                    <span className="relative block aspect-[4/3] overflow-hidden rounded-[20px] bg-[#fbfaf5]">
                       <img
                         alt=""
-                        className="size-full object-cover transition duration-500 ease-out group-hover:scale-[1.03]"
-                        decoding={cardIndex === 0 ? "sync" : "async"}
-                        fetchPriority={cardIndex === 0 ? "high" : "auto"}
-                        loading={cardIndex === 0 ? "eager" : "lazy"}
-                        onError={photoErrorHandler(card.image)}
-                        sizes="(min-width: 1024px) 50vw, 100vw"
-                        src={card.image}
-                        srcSet={photoSrcSet(card.image)}
+                        className="size-full object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03] group-focus-visible:scale-[1.03] motion-reduce:transition-none"
+                        decoding={itemIndex === 0 ? "sync" : "async"}
+                        fetchPriority={itemIndex === 0 ? "high" : "auto"}
+                        loading={itemIndex === 0 ? "eager" : "lazy"}
+                        onError={photoErrorHandler(item.image)}
+                        sizes="(min-width: 1024px) 32rem, (min-width: 640px) 46vw, 100vw"
+                        src={item.image}
+                        srcSet={photoSrcSet(item.image)}
                       />
-                    </div>
-                    <div className="flex items-start justify-between gap-4 p-5 sm:p-7">
-                      <div className="min-w-0">
-                        <h3 className="font-display text-2xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-3xl">
-                          {t(card.title)}
-                        </h3>
-                        <p className="mt-2 max-w-md text-sm leading-6 text-[#65748a] sm:text-base">
-                          {t(card.description)}
-                        </p>
-                      </div>
-                      <span
-                        aria-hidden="true"
-                        className="mt-1 grid size-10 shrink-0 place-items-center rounded-full bg-[#f4f6f8] text-[#092a53] transition duration-300 group-hover:bg-[#092a53] group-hover:text-white"
-                      >
-                        <ArrowIcon diagonal />
+                    </span>
+                    <span className="mt-5 block">
+                      <h3 className="font-display text-2xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-3xl">
+                        {t(item.title)}
+                      </h3>
+                      <p className="mt-2 text-base leading-7 text-[#65748a]">
+                        {t(item.description)}
+                      </p>
+                      <span className="mt-3 inline-flex min-h-12 items-center font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4">
+                        {t(item.cta)}
                       </span>
-                    </div>
+                    </span>
                   </Link>
-                </article>
+                </li>
               ))}
-            </div>
+            </ul>
 
-            {/* Payment reassurance for first-time buyers */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-sm font-semibold text-[#65748a]">
-              <span>{t("Cards & Mobile Money accepted")}</span>
-              <span aria-hidden="true" className="mx-1 hidden h-1 w-1 rounded-full bg-[#c9d2dc] sm:block" />
-              <span>{t("Pay in FCFA with")}</span>
-              <span className="rounded-md bg-white px-3 py-1.5 text-xs font-bold text-[#092a53] ring-1 ring-[#dce3eb]">Visa</span>
-              <span className="rounded-md bg-white px-3 py-1.5 text-xs font-bold text-[#092a53] ring-1 ring-[#dce3eb]">Mastercard</span>
-              <span className="rounded-md bg-white px-3 py-1.5 text-xs font-bold text-[#092a53] ring-1 ring-[#dce3eb]">MTN MoMo</span>
-              <span className="rounded-md bg-white px-3 py-1.5 text-xs font-bold text-[#092a53] ring-1 ring-[#dce3eb]">Orange Money</span>
-            </div>
+            <p className="mx-auto mt-10 max-w-2xl text-center text-sm leading-6 text-[#65748a]">
+              {t("Cards & Mobile Money accepted")}. {t("Pay in FCFA with")} Visa, Mastercard, MTN MoMo, {t("Orange Money")}.
+            </p>
           </div>
         </section>
 

@@ -4,13 +4,42 @@ import { useLanguage } from '../language/useLanguage'
 type PasswordFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
   label: string
   labelClassName?: string
-  variant?: 'default' | 'modern'
+  variant?: 'default' | 'modern' | 'plain'
   children?: ReactNode
 }
 
 export function PasswordField({ label, labelClassName, variant = 'default', children, ...inputProps }: PasswordFieldProps) {
   const [isVisible, setIsVisible] = useState(false)
   const { t } = useLanguage()
+
+  if (variant === 'plain') {
+    return (
+      <label className="block">
+        <span className={labelClassName ?? 'text-sm font-bold text-[#092a53]'}>{label}</span>
+        <span className="relative mt-2 flex items-center bg-[#f4f6f8] focus-within:ring-2 focus-within:ring-[#092a53]">
+          <input
+            {...inputProps}
+            className="w-full bg-transparent py-3.5 pl-4 pr-14 text-sm font-semibold text-[#092a53] outline-none placeholder:font-normal placeholder:text-[#8b97a8]"
+            type={isVisible ? 'text' : 'password'}
+          />
+          <button
+            aria-label={`${t(isVisible ? 'Hide' : 'Show')} ${label.toLowerCase()}`}
+            aria-pressed={isVisible}
+            className="absolute right-1 grid size-10 place-items-center text-[#65748a] transition hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53]"
+            onClick={() => setIsVisible((visible) => !visible)}
+            type="button"
+          >
+            <svg aria-hidden="true" className="size-[18px]" fill="none" viewBox="0 0 24 24">
+              <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+              <circle cx="12" cy="12" r="2.8" stroke="currentColor" strokeWidth="1.8" />
+              {isVisible && <path d="M4 20 20 4" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />}
+            </svg>
+          </button>
+        </span>
+        {children}
+      </label>
+    )
+  }
 
   if (variant === 'modern') {
     return (
