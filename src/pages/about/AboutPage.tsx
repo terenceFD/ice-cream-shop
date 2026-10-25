@@ -40,7 +40,7 @@ function ExperiencePhoto({
   t: (value: string) => string
 }) {
   return (
-    <figure className={`relative isolate overflow-hidden bg-[#e8edf2] ${className}`}>
+    <figure className={`relative isolate overflow-hidden bg-[#f4f6f8] ${className}`}>
       {experienceSteps.map((step, index) => (
         <img
           alt={index === activeIndex ? t('Ice cream treats') : ''}
@@ -99,7 +99,7 @@ export function AboutPage() {
                   {t('Explore the menu')}
                 </Link>
                 <Link
-                  className="inline-flex min-h-12 items-center text-sm font-bold text-[#092a53] transition-colors hover:text-[#52647b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                  className="inline-flex min-h-12 items-center text-sm font-bold text-[#092a53] transition-colors hover:text-[#65748a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
                   to="/locations"
                 >
                   {t('Available locations')}
@@ -132,7 +132,7 @@ export function AboutPage() {
                 <p className="mt-4 text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
                   {t('Choose your ice cream, pick your mix-ins and watch it all come together on the frozen stone. Visit us in Douala or Yaoundé, or order online for pickup or delivery.')}
                 </p>
-                <figure className="scroll-story-frame mt-8 bg-[#e8edf2]">
+                <figure className="scroll-story-frame mt-8 bg-[#f4f6f8]">
                   <img
                     alt={t('A child enjoying ice cream')}
                     className="aspect-[4/3] w-full object-cover"
@@ -207,7 +207,7 @@ export function AboutPage() {
 
             <section
               aria-labelledby="locations-heading"
-              className="bg-[#e8edf2] px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24 xl:px-16"
+              className="bg-[#f4f6f8] px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24 xl:px-16"
             >
               <div className="max-w-[46rem]">
                 <h2
@@ -230,7 +230,7 @@ export function AboutPage() {
                   ))}
                 </div>
                 <Link
-                  className="mt-8 inline-flex min-h-12 items-center justify-center bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 focus-visible:ring-offset-[#e8edf2]"
+                  className="mt-8 inline-flex min-h-12 items-center justify-center bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f6f8]"
                   to="/locations"
                 >
                   {t('Browse locations')}

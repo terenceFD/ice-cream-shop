@@ -7,8 +7,8 @@ import { cameroonLocations } from '../../../shared/data'
 import { useLanguage } from '../../language/useLanguage'
 import './ContactPage.css'
 
-const inputClassName = 'w-full rounded-2xl border border-transparent bg-[#fbfaf5] px-5 py-4 text-sm font-medium text-[#092a53] outline-none! ring-1 ring-[#ebe7dc] transition placeholder:font-normal placeholder:text-[#a5aebb] hover:ring-[#ddd6c4] focus:bg-white focus:ring-[#bd9c00]'
-const labelClassName = 'text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]'
+const inputClassName = 'w-full rounded-2xl border border-transparent bg-[#fbfaf5] px-5 py-4 text-sm font-medium text-[#092a53] outline-none! ring-1 ring-[#fbfaf5] transition placeholder:font-normal placeholder:text-[#a5aebb] hover:ring-[#ddd6c4] focus:bg-white focus:ring-[#bd9c00]'
+const labelClassName = 'text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]'
 
 interface ContactFormData {
   name: string
@@ -190,7 +190,7 @@ function StoreSelect({
         className={`mt-2 flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left ring-1 outline-none! transition disabled:cursor-not-allowed disabled:opacity-60 ${
           open
             ? 'bg-white shadow-[0_10px_30px_rgba(9,42,83,0.08)] ring-[#bd9c00]'
-            : 'bg-[#fbfaf5] ring-[#ebe7dc] hover:ring-[#ddd6c4]'
+            : 'bg-[#fbfaf5] ring-[#fbfaf5] hover:ring-[#ddd6c4]'
         }`}
         disabled={disabled}
         onClick={() => (open ? setOpen(false) : openList())}
@@ -201,7 +201,7 @@ function StoreSelect({
         <span
           aria-hidden="true"
           className={`grid size-10 shrink-0 place-items-center rounded-xl transition ${
-            selected ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-white text-[#65748a] ring-1 ring-[#ebe7dc]'
+            selected ? 'bg-[#092a53] text-[#ffdc32]' : 'bg-white text-[#65748a] ring-1 ring-[#fbfaf5]'
           }`}
         >
           <PinIcon />
@@ -210,7 +210,7 @@ function StoreSelect({
           {selected ? (
             <>
               <span className="block truncate text-sm font-extrabold text-[#092a53]">{selected.name}</span>
-              <span className="mt-0.5 block truncate text-xs font-semibold text-[#7b8796]">{selected.location}</span>
+              <span className="mt-0.5 block truncate text-xs font-semibold text-[#65748a]">{selected.location}</span>
             </>
           ) : (
             <span className="block truncate text-sm font-medium text-[#a5aebb]">{placeholder}</span>
@@ -229,7 +229,7 @@ function StoreSelect({
       <ul
         aria-activedescendant={open ? `${id}-option-${activeIndex}` : undefined}
         aria-labelledby={`${id}-label`}
-        className={`absolute inset-x-0 top-[calc(100%+8px)] z-40 max-h-80 origin-top overflow-y-auto overscroll-contain rounded-2xl bg-white p-2 shadow-[0_28px_64px_rgba(9,42,83,0.18),0_2px_6px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] outline-none! transition duration-150 ease-out ${
+        className={`absolute inset-x-0 top-[calc(100%+8px)] z-40 max-h-80 origin-top overflow-y-auto overscroll-contain rounded-2xl bg-white p-2 shadow-[0_28px_64px_rgba(9,42,83,0.18),0_2px_6px_rgba(9,42,83,0.06)] ring-1 ring-[#fbfaf5] outline-none! transition duration-150 ease-out ${
           open ? 'visible translate-y-0 scale-100 opacity-100' : 'invisible -translate-y-1 scale-[0.98] opacity-0'
         }`}
         id={`${id}-list`}
@@ -255,7 +255,7 @@ function StoreSelect({
               <span
                 aria-hidden="true"
                 className={`grid size-9 shrink-0 place-items-center rounded-lg transition ${
-                  isSelected ? 'bg-[#092a53] text-[#ffdc32]' : isActive ? 'bg-white text-[#8a7000]' : 'bg-[#fbfaf5] text-[#65748a]'
+                  isSelected ? 'bg-[#092a53] text-[#ffdc32]' : isActive ? 'bg-white text-[#bd9c00]' : 'bg-[#fbfaf5] text-[#65748a]'
                 }`}
               >
                 <PinIcon />
@@ -342,7 +342,7 @@ export function ContactPage() {
   ]
 
   return (
-    <div className="contact-page min-h-screen bg-[#fbfaf5] text-[#102c50]">
+    <div className="contact-page min-h-screen bg-[#fbfaf5] text-[#092a53]">
       <Header />
       <main id="main" tabIndex={-1}>
         <div className="contact-page-hero">
@@ -367,11 +367,11 @@ export function ContactPage() {
                     <MailIcon />
                   </span>
                   <span className="contact-card-copy leading-tight">
-                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">{t('Contact a store')}</span>
+                    <span className="block text-xs font-extrabold uppercase tracking-[0.14em] text-[#bd9c00]">{t('Contact a store')}</span>
                     <span className="mt-0.5 block font-display text-base font-extrabold sm:text-lg">{t('Send us a message')}</span>
                   </span>
                 </span>
-                <span className="contact-card-detail mt-4 block text-sm leading-6 text-[#52647b]">
+                <span className="contact-card-detail mt-4 block text-sm leading-6 text-[#65748a]">
                   {t(steps[0].detail)}
                 </span>
                 <span className="contact-card-action mt-4 flex">
@@ -397,7 +397,7 @@ export function ContactPage() {
                   </span>
                 </span>
                 <span className="min-w-0 leading-tight">
-                  <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#ffdc32]">{t('Local social page')}</span>
+                  <span className="block text-xs font-extrabold uppercase tracking-[0.14em] text-[#ffdc32]">{t('Local social page')}</span>
                   <span className="mt-0.5 block truncate text-sm font-extrabold">@coldstonecameroon</span>
                 </span>
               </a>
@@ -410,7 +410,7 @@ export function ContactPage() {
                   <PinIcon className="size-5" />
                 </span>
                 <span className="min-w-0 leading-tight">
-                  <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#806a00]">{t('Listed locations')}</span>
+                  <span className="block text-xs font-extrabold uppercase tracking-[0.14em] text-[#bd9c00]">{t('Listed locations')}</span>
                   <span className="mt-0.5 block truncate text-sm font-extrabold">{t('{count} public listings', { count: cameroonLocations.length })}</span>
                 </span>
               </Link>
@@ -426,7 +426,7 @@ export function ContactPage() {
                 {t('Your message goes to the right store')}
               </h2>
 
-              <ol className="contact-steps relative mt-8 space-y-7 before:absolute before:bottom-6 before:left-[23px] before:top-6 before:w-0.5 before:bg-gradient-to-b before:from-[#ffdc32] before:to-[#ebe7dc]">
+              <ol className="contact-steps relative mt-8 space-y-7 before:absolute before:bottom-6 before:left-[23px] before:top-6 before:w-0.5 before:bg-gradient-to-b before:from-[#ffdc32] before:to-[#fbfaf5]">
                 {steps.map((step, index) => (
                   <li className="contact-step group relative flex gap-5" key={step.title}>
                     <span className="relative z-10 grid size-12 shrink-0 place-items-center rounded-2xl bg-[#092a53] font-display text-sm font-extrabold tabular-nums text-[#ffdc32] shadow-[0_10px_22px_rgba(9,42,83,0.2)] ring-4 ring-[#fbfaf5] transition duration-300 group-hover:-rotate-6 group-hover:bg-[#ffdc32] group-hover:text-[#092a53]">
@@ -457,11 +457,11 @@ export function ContactPage() {
             <section
               aria-labelledby="contact-form-title"
               id="contact-form"
-              className="contact-form-panel relative scroll-mt-28 overflow-hidden rounded-[32px] bg-white p-6 before:absolute before:inset-x-0 before:top-0 before:h-1.5 before:bg-gradient-to-r before:from-[#ffdc32] before:via-[#ffe76c] before:to-[#ffdc32] shadow-[0_1px_0_rgba(9,42,83,0.04),0_24px_60px_rgba(9,42,83,0.08)] ring-1 ring-[#ebe7dc] sm:p-10 lg:col-span-8 lg:p-12"
+              className="contact-form-panel relative scroll-mt-28 overflow-hidden rounded-[32px] bg-white p-6 before:absolute before:inset-x-0 before:top-0 before:h-1.5 before:bg-gradient-to-r before:from-[#ffdc32] before:via-[#ffe76c] before:to-[#ffdc32] shadow-[0_1px_0_rgba(9,42,83,0.04),0_24px_60px_rgba(9,42,83,0.08)] ring-1 ring-[#fbfaf5] sm:p-10 lg:col-span-8 lg:p-12"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a7000]">{t('Contact a store')}</p>
+                  <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#bd9c00]">{t('Contact a store')}</p>
                   <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl" id="contact-form-title">
                     {t('Send us a message')}
                   </h2>
@@ -535,14 +535,14 @@ export function ContactPage() {
                   <label className="block">
                     <span className="flex items-baseline justify-between gap-3">
                       <span className={labelClassName}>{t('Message')}</span>
-                      <span className="text-[11px] font-semibold tabular-nums text-[#a5aebb]">{form.message.length} / 5000</span>
+                      <span className="text-xs font-semibold tabular-nums text-[#a5aebb]">{form.message.length} / 5000</span>
                     </span>
                     <textarea className={`${inputClassName} mt-2 min-h-44 resize-y leading-7`} maxLength={5000} name="message" onChange={handleChange} placeholder={t('Write your message here…')} required value={form.message} />
                   </label>
 
                   {error && <p className="flex gap-3 rounded-2xl bg-red-50 px-5 py-4 text-sm text-red-700" role="alert"><span aria-hidden="true" className="font-extrabold">!</span>{error}</p>}
 
-                  <div className="flex flex-col-reverse gap-4 border-t border-[#efece3] pt-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col-reverse gap-4 border-t border-[#fbfaf5] pt-6 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-xs leading-5 text-[#65748a]">{t('Please complete all required fields before sending.')}</p>
                     <button
                       className="inline-flex items-center justify-center gap-2 rounded-full bg-[#092a53] px-8 py-4 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.22)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] disabled:translate-y-0 disabled:cursor-wait disabled:opacity-60"
@@ -567,7 +567,7 @@ export function ContactPage() {
                 <h2 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl" id="contact-faq-heading">
                   {t('Frequently Asked Questions')}
                 </h2>
-                <p className="mt-5 max-w-md text-base leading-7 text-[#52647b]">
+                <p className="mt-5 max-w-md text-base leading-7 text-[#65748a]">
                   {t('Quick answers about ordering, delivery, payment and our branches.')}
                 </p>
 
@@ -603,7 +603,7 @@ export function ContactPage() {
                 {contactFaqs.map(({ question, answer }, index) => (
                   <details className="group border-b border-[#e5e1d7] transition-colors open:border-[#092a53]/20" key={question} open={index === 0}>
                     <summary className="flex cursor-pointer list-none items-start gap-5 py-6 marker:content-none focus-visible:outline-none sm:gap-7 sm:py-7 [&::-webkit-details-marker]:hidden">
-                      <span aria-hidden="true" className="pt-1 font-display text-sm font-extrabold tabular-nums text-[#8a7000] transition-colors group-open:text-[#092a53]">
+                      <span aria-hidden="true" className="pt-1 font-display text-sm font-extrabold tabular-nums text-[#bd9c00] transition-colors group-open:text-[#092a53]">
                         {String(index + 1).padStart(2, '0')}
                       </span>
                       <span className="flex-1 font-display text-lg font-extrabold leading-snug text-[#092a53] transition-colors group-hover:text-[#163e6b] sm:text-xl">
@@ -614,7 +614,7 @@ export function ContactPage() {
                         <span className="absolute h-3.5 w-0.5 rounded-full bg-current transition duration-300 group-open:rotate-90 group-open:opacity-0" />
                       </span>
                     </summary>
-                    <p className="-mt-2 max-w-2xl pb-7 pl-11 pr-14 text-base leading-7 text-[#52647b] sm:pl-14">{t(answer)}</p>
+                    <p className="-mt-2 max-w-2xl pb-7 pl-11 pr-14 text-base leading-7 text-[#65748a] sm:pl-14">{t(answer)}</p>
                   </details>
                 ))}
               </div>

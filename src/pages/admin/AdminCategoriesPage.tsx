@@ -4,8 +4,8 @@ import { useAdminAuth } from './useAdminAuth'
 import { useLanguage } from '../../language/useLanguage'
 
 const emptyCategory = { title: '', description: '', image: '', icon: '🍦', sortOrder: 0 }
-const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
-const labelClassName = 'block text-xs font-bold text-[#4f6379]'
+const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
+const labelClassName = 'block text-xs font-bold text-[#65748a]'
 const iconSuggestions = ['🍦', '🍨', '🍧', '🎂', '🧁', '🥤', '☕', '🍪', '🍫', '🍓']
 
 interface MenuCategory {
@@ -223,22 +223,22 @@ export function AdminCategoriesPage() {
   }
 
   const metrics = [
-    { label: 'Total categories', value: categories.length, icon: icons.grid, accent: 'bg-[#fff4c2] text-[#8a6f00]', filter: 'all' as const },
+    { label: 'Total categories', value: categories.length, icon: icons.grid, accent: 'bg-[#fff4c2] text-[#bd9c00]', filter: 'all' as const },
     { label: 'Built-in categories', value: builtInCount, icon: icons.lock, accent: 'bg-[#e9f1fa] text-[#315982]', filter: 'built-in' as const },
     { label: 'Custom categories', value: customCount, icon: icons.sparkle, accent: 'bg-[#e5f4ea] text-[#2c7a4f]', filter: 'custom' as const },
   ]
 
   return (
     <div className="min-w-0 space-y-6">
-      <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
             <Icon className="size-7" path={icons.grid} />
           </span>
           <div className="min-w-0">
-            <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
+            <nav aria-label={t('Breadcrumb')} className="text-xs font-bold text-[#65748a]">
               {t('Catalog organization')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#8a7000]">{t('Categories')}</span>
+              <span className="text-[#bd9c00]">{t('Categories')}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Menu categories')}</h1>
             <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">
@@ -278,27 +278,27 @@ export function AdminCategoriesPage() {
             <button
               aria-pressed={isActive}
               className={`group rounded-2xl border bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:p-5 ${
-                isActive ? 'border-[#092a53] shadow-[0_0_0_1px_#092a53]' : 'border-[#e5ebf3]'
+                isActive ? 'border-[#092a53] shadow-[0_0_0_1px_#092a53]' : 'border-[#dce3eb]'
               }`}
               key={metric.label}
               onClick={() => setTypeFilter(isActive ? 'all' : metric.filter)}
               type="button"
             >
               <span className={`grid size-9 place-items-center rounded-xl ${metric.accent}`}><Icon path={metric.icon} /></span>
-              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#102c50]">{metric.value.toLocaleString()}</p>
+              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#092a53]">{metric.value.toLocaleString()}</p>
               <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{t(metric.label)}</p>
             </button>
           )
         })}
-        <div className="rounded-2xl border border-dashed border-[#d8e0ea] bg-[#fafbfd] p-4 sm:p-5">
-          <span className="grid size-9 place-items-center rounded-xl bg-[#f1f4f8] text-[#65748a]"><Icon path={icons.alert} /></span>
-          <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#102c50]">{emptyCount}</p>
+        <div className="rounded-2xl border border-dashed border-[#d8e0ea] bg-[#f4f6f8] p-4 sm:p-5">
+          <span className="grid size-9 place-items-center rounded-xl bg-[#f4f6f8] text-[#65748a]"><Icon path={icons.alert} /></span>
+          <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#092a53]">{emptyCount}</p>
           <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{t('Empty categories')}</p>
         </div>
       </section>
 
-      <section aria-labelledby="category-list-title" className="min-w-0 rounded-[20px] border border-[#e5ebf3] bg-white">
-        <div className="flex flex-col gap-4 border-b border-[#edf1f5] p-4 sm:p-5 lg:flex-row lg:items-end lg:justify-between">
+      <section aria-labelledby="category-list-title" className="min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
+        <div className="flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="category-list-title">{t('Current categories')}</h2>
             <p className="mt-0.5 text-xs text-[#65748a]">
@@ -308,10 +308,10 @@ export function AdminCategoriesPage() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <label className="relative block sm:w-72">
               <span className="sr-only">{t('Search')}</span>
-              <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
+              <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
               <input className={`${inputClassName} mt-0 pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search categories')} type="search" value={search} />
             </label>
-            <div aria-label={t('Category type')} className="flex rounded-xl bg-[#f1f4f8] p-1" role="group">
+            <div aria-label={t('Category type')} className="flex rounded-xl bg-[#f4f6f8] p-1" role="group">
               {([
                 { key: 'all', label: t('All') },
                 { key: 'built-in', label: t('Built-in') },
@@ -335,53 +335,53 @@ export function AdminCategoriesPage() {
           <div aria-label={t('Loading…')} className="space-y-3 p-4 sm:p-5" role="status">
             {[0, 1, 2, 3].map((row) => (
               <div className="flex animate-pulse items-center gap-4" key={row}>
-                <span className="size-14 rounded-2xl bg-[#eef2f6]" />
-                <span className="h-3 flex-1 rounded bg-[#eef2f6]" />
-                <span className="h-3 w-24 rounded bg-[#eef2f6]" />
+                <span className="size-14 rounded-2xl bg-[#f4f6f8]" />
+                <span className="h-3 flex-1 rounded bg-[#f4f6f8]" />
+                <span className="h-3 w-24 rounded bg-[#f4f6f8]" />
               </div>
             ))}
           </div>
         ) : filteredCategories.length === 0 ? (
           <div className="px-6 py-14 text-center">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f4f8] text-[#8190a1]"><Icon className="size-5" path={icons.grid} /></span>
+            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f4f6f8] text-[#65748a]"><Icon className="size-5" path={icons.grid} /></span>
             <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">
               {t(categories.length ? 'No categories match your search.' : 'No categories yet.')}
             </p>
           </div>
         ) : (
-          <ol className="divide-y divide-[#f0f3f7]">
+          <ol className="divide-y divide-[#f4f6f8]">
             {filteredCategories.map((category) => {
               const index = categories.findIndex((entry) => entry.id === category.id)
               const count = itemCounts[category.title] ?? 0
               return (
-                <li className={`group flex flex-col gap-4 px-4 py-4 transition hover:bg-[#fafbfd] sm:flex-row sm:items-center sm:px-5 ${movingId === category.id ? 'opacity-60' : ''}`} key={category.id}>
+                <li className={`group flex flex-col gap-4 px-4 py-4 transition hover:bg-[#f4f6f8] sm:flex-row sm:items-center sm:px-5 ${movingId === category.id ? 'opacity-60' : ''}`} key={category.id}>
                   <div className="flex min-w-0 flex-1 items-center gap-4">
                     <span className="w-7 shrink-0 text-center font-display text-sm font-extrabold tabular-nums text-[#a3b0bf]">{index + 1}</span>
                     <div className="relative shrink-0">
                       <CategoryVisual category={category} className="size-14 rounded-2xl ring-1 ring-black/5" />
-                      <span aria-hidden="true" className="absolute -bottom-1.5 -right-1.5 grid size-7 place-items-center rounded-lg bg-white text-sm shadow-sm ring-1 ring-[#e3e9f0]">{category.icon}</span>
+                      <span aria-hidden="true" className="absolute -bottom-1.5 -right-1.5 grid size-7 place-items-center rounded-lg bg-white text-sm shadow-sm ring-1 ring-[#dce3eb]">{category.icon}</span>
                     </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="truncate font-display text-base font-extrabold text-[#102c50]">{category.title}</h3>
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${category.baseTitle ? 'bg-[#e9f1fa] text-[#315982]' : 'bg-[#e5f4ea] text-[#2c7a4f]'}`}>
+                        <h3 className="truncate font-display text-base font-extrabold text-[#092a53]">{category.title}</h3>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${category.baseTitle ? 'bg-[#e9f1fa] text-[#315982]' : 'bg-[#e5f4ea] text-[#2c7a4f]'}`}>
                           <Icon className="size-3" path={category.baseTitle ? icons.lock : icons.sparkle} />
                           {category.baseTitle ? t('Built-in') : t('Custom')}
                         </span>
                       </div>
-                      <p className="mt-0.5 line-clamp-1 max-w-xl text-xs text-[#7b8796]">{category.description || t('No description provided.')}</p>
+                      <p className="mt-0.5 line-clamp-1 max-w-xl text-xs text-[#65748a]">{category.description || t('No description provided.')}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between gap-3 pl-11 sm:justify-end sm:pl-0">
-                    <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${count ? 'bg-[#f1f4f8] text-[#355777]' : 'bg-[#fff6e5] text-[#9a6200]'}`}>
+                    <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ${count ? 'bg-[#f4f6f8] text-[#123b68]' : 'bg-[#fff6e5] text-[#9a6200]'}`}>
                       {t('{count} items', { count })}
                     </span>
                     <div className="flex items-center gap-1">
-                      <div className="mr-1 flex rounded-lg ring-1 ring-[#e3e9f0]">
+                      <div className="mr-1 flex rounded-lg ring-1 ring-[#dce3eb]">
                         <button
                           aria-label={t('Move up')}
-                          className="grid size-8 place-items-center rounded-l-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53] disabled:opacity-30 disabled:hover:bg-transparent"
+                          className="grid size-8 place-items-center rounded-l-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-30 disabled:hover:bg-transparent"
                           disabled={!canReorder || index === 0 || movingId !== null}
                           onClick={() => move(category, -1)}
                           title={t('Move up')}
@@ -391,7 +391,7 @@ export function AdminCategoriesPage() {
                         </button>
                         <button
                           aria-label={t('Move down')}
-                          className="grid size-8 place-items-center rounded-r-lg border-l border-[#e3e9f0] text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53] disabled:opacity-30 disabled:hover:bg-transparent"
+                          className="grid size-8 place-items-center rounded-r-lg border-l border-[#dce3eb] text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-30 disabled:hover:bg-transparent"
                           disabled={!canReorder || index === categories.length - 1 || movingId !== null}
                           onClick={() => move(category, 1)}
                           title={t('Move down')}
@@ -402,7 +402,7 @@ export function AdminCategoriesPage() {
                       </div>
                       <button
                         aria-label={`${t('Edit')} ${category.title}`}
-                        className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-[#bd9c00]"
+                        className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-[#bd9c00]"
                         onClick={() => edit(category)}
                         title={t('Edit')}
                         type="button"
@@ -411,7 +411,7 @@ export function AdminCategoriesPage() {
                       </button>
                       <button
                         aria-label={`${t('Delete')} ${category.title}`}
-                        className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-red-400 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#6b7d91]"
+                        className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-red-400 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#65748a]"
                         disabled={count > 0}
                         onClick={() => { setError(''); setCategoryToDelete(category) }}
                         title={count > 0 ? t('Move or remove all menu items before deleting this category.') : t('Delete')}
@@ -432,22 +432,22 @@ export function AdminCategoriesPage() {
         <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
           <button aria-label={t('Close')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setIsEditorOpen(false)} tabIndex={-1} type="button" />
           <section aria-labelledby="category-drawer-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[32rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
-            <header className="flex items-start justify-between gap-4 border-b border-[#edf1f5] px-6 py-5">
+            <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">{t(editingId ? 'Edit category' : 'Category setup')}</p>
+                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t(editingId ? 'Edit category' : 'Category setup')}</p>
                 <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="category-drawer-title">{t(editingId ? 'Edit category' : 'Add category')}</h2>
                 <p className="mt-1 text-sm text-[#65748a]">{t('Define the name, visual identity, and order customers will see.')}</p>
               </div>
-              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f1f4f8] hover:text-[#092a53]" onClick={() => setIsEditorOpen(false)} type="button">
+              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsEditorOpen(false)} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
 
             <form className="flex min-h-0 flex-1 flex-col" onSubmit={submit}>
               <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
-                <div className="overflow-hidden rounded-2xl ring-1 ring-[#e8edf3]">
+                <div className="overflow-hidden rounded-2xl ring-1 ring-[#dce3eb]">
                   <CategoryVisual category={form} className="aspect-[2.4] w-full" key={form.image} />
-                  <div className="flex items-center gap-3 bg-[#f7f9fc] p-3">
+                  <div className="flex items-center gap-3 bg-[#f4f6f8] p-3">
                     <span aria-hidden="true" className="grid size-10 place-items-center rounded-xl bg-white text-xl shadow-sm">{form.icon || '🍦'}</span>
                     <div className="min-w-0">
                       <p className="truncate font-display text-base font-extrabold text-[#092a53]">{form.title || t('Category name')}</p>
@@ -470,7 +470,7 @@ export function AdminCategoriesPage() {
                 <label className={labelClassName}>
                   {t('Image URL or path')}
                   <input className={inputClassName} onChange={(event) => setForm({ ...form, image: event.target.value })} placeholder="/images/category.jpg" value={form.image} />
-                  <span className="mt-1 block text-[11px] font-medium text-[#8190a1]">{t('Use a site image path or an HTTPS image URL.')}</span>
+                  <span className="mt-1 block text-xs font-medium text-[#65748a]">{t('Use a site image path or an HTTPS image URL.')}</span>
                 </label>
 
                 <fieldset>
@@ -480,7 +480,7 @@ export function AdminCategoriesPage() {
                       <button
                         aria-label={icon}
                         aria-pressed={form.icon === icon}
-                        className={`grid size-10 place-items-center rounded-xl text-lg transition ${form.icon === icon ? 'bg-[#fff6cc] ring-2 ring-[#bd9c00]' : 'bg-[#f7f9fc] ring-1 ring-[#e3e9f0] hover:ring-[#c3cfdc]'}`}
+                        className={`grid size-10 place-items-center rounded-xl text-lg transition ${form.icon === icon ? 'bg-[#fff6cc] ring-2 ring-[#bd9c00]' : 'bg-[#f4f6f8] ring-1 ring-[#dce3eb] hover:ring-[#dce3eb]'}`}
                         key={icon}
                         onClick={() => setForm({ ...form, icon })}
                         type="button"
@@ -490,7 +490,7 @@ export function AdminCategoriesPage() {
                     ))}
                     <input
                       aria-label={t('Custom icon')}
-                      className="h-10 w-20 rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-2 text-center text-lg outline-none! focus:border-[#bd9c00] focus:ring-4 focus:ring-[#ffdc32]/25"
+                      className="h-10 w-20 rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-2 text-center text-lg outline-none! focus:border-[#bd9c00] focus:ring-4 focus:ring-[#ffdc32]/25"
                       maxLength={12}
                       onChange={(event) => setForm({ ...form, icon: event.target.value })}
                       value={form.icon}
@@ -501,7 +501,7 @@ export function AdminCategoriesPage() {
                 <label className={labelClassName}>
                   {t('Display order')}
                   <input className={`${inputClassName} sm:w-40`} min="0" onChange={(event) => setForm({ ...form, sortOrder: event.target.value })} type="number" value={form.sortOrder} />
-                  <span className="mt-1 block text-[11px] font-medium text-[#8190a1]">{t('Lower numbers appear first on the menu.')}</span>
+                  <span className="mt-1 block text-xs font-medium text-[#65748a]">{t('Lower numbers appear first on the menu.')}</span>
                 </label>
 
                 {error && (
@@ -512,8 +512,8 @@ export function AdminCategoriesPage() {
                 )}
               </div>
 
-              <footer className="flex items-center justify-end gap-3 border-t border-[#edf1f5] bg-[#fafbfd] px-6 py-4">
-                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] hover:text-[#092a53]" onClick={() => setIsEditorOpen(false)} type="button">
+              <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
+                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsEditorOpen(false)} type="button">
                   {t('Cancel')}
                 </button>
                 <button
@@ -541,7 +541,7 @@ export function AdminCategoriesPage() {
             <p className="mt-2 text-sm leading-6 text-[#65748a]">{t('It will be removed from the public menu. This cannot be undone.')}</p>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6]" onClick={() => setCategoryToDelete(null)} type="button">{t('Cancel')}</button>
+              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setCategoryToDelete(null)} type="button">{t('Cancel')}</button>
               <button
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
                 disabled={isDeleting}

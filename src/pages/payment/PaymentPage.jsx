@@ -283,7 +283,7 @@ export function PaymentPage() {
     <section
       aria-live="polite"
       className={`relative mx-auto max-w-2xl overflow-hidden rounded-[32px] bg-white text-center shadow-[0_24px_60px_rgba(18,44,80,0.1)] ring-1 ${
-        tone === "error" ? "ring-[#f2d6cf]" : tone === "success" ? "ring-[#d6e8c7]" : "ring-[#ebe7dc]"
+        tone === "error" ? "ring-[#f2d6cf]" : tone === "success" ? "ring-[#d6e8c7]" : "ring-[#fbfaf5]"
       }`}
       role="status"
     >
@@ -292,7 +292,7 @@ export function PaymentPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
+    <div className="min-h-screen bg-[#fbfaf5] text-[#092a53]">
       <Header />
 
       <main id="main" tabIndex={-1}>
@@ -309,7 +309,7 @@ export function PaymentPage() {
                       <Icon className="size-10" path={icons.check} />
                     </span>
                   </span>
-                  <p className="mt-6 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
+                  <p className="mt-6 text-xs font-extrabold uppercase tracking-[0.2em] text-[#ffdc32]">
                     {t("Payment confirmed")}
                   </p>
                   <h1 className="mt-2 font-display text-3xl font-extrabold leading-tight sm:text-[2.6rem]">
@@ -325,23 +325,23 @@ export function PaymentPage() {
 
                 <div className="p-6 text-left sm:p-10">
                   <dl className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]">
-                      <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">{t("Order number")}</dt>
+                    <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#fbfaf5]">
+                      <dt className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">{t("Order number")}</dt>
                       <dd className="mt-1 font-display text-2xl font-extrabold text-[#092a53]">#{order?.id}</dd>
                     </div>
-                    <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]">
-                      <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">{t("Amount paid")}</dt>
+                    <div className="rounded-2xl bg-[#fbfaf5] p-4 ring-1 ring-[#fbfaf5]">
+                      <dt className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">{t("Amount paid")}</dt>
                       <dd className="mt-1 font-display text-2xl font-extrabold text-[#092a53]">
                         {formatMoney(order?.totalCents || 0, order?.currency, language)}
                       </dd>
                     </div>
                     {order?.storeName && (
-                      <div className="flex items-start gap-3 rounded-2xl bg-[#f3f6fa] p-4 sm:col-span-2">
+                      <div className="flex items-start gap-3 rounded-2xl bg-[#f4f6f8] p-4 sm:col-span-2">
                         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-[#092a53] shadow-sm">
                           <Icon path={icons.pin} />
                         </span>
                         <div className="min-w-0">
-                          <dt className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">{t("Assigned store")}</dt>
+                          <dt className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">{t("Assigned store")}</dt>
                           <dd className="mt-0.5 text-sm font-extrabold text-[#092a53]">{t(order.storeName)}</dd>
                           {order.storeAddress && <dd className="text-xs leading-5 text-[#65748a]">{t(order.storeAddress)}</dd>}
                         </div>
@@ -350,7 +350,7 @@ export function PaymentPage() {
                   </dl>
 
                   <div className="mt-7">
-                    <p className="text-xs font-extrabold text-[#52647b]">{t("What happens next")}</p>
+                    <p className="text-xs font-extrabold text-[#65748a]">{t("What happens next")}</p>
                     <ol className="mt-3 space-y-3">
                       {[
                         { title: t("Payment confirmed"), body: t("A receipt is on its way to your inbox."), done: true },
@@ -359,14 +359,14 @@ export function PaymentPage() {
                       ].map((step, index) => (
                         <li className="flex items-start gap-3" key={step.title}>
                           <span
-                            className={`grid size-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold ${
+                            className={`grid size-7 shrink-0 place-items-center rounded-full text-xs font-extrabold ${
                               step.done ? "bg-[#6c9c45] text-white" : "bg-[#f1eee4] text-[#8b95a2]"
                             }`}
                           >
                             {step.done ? <Icon className="size-3.5" path={icons.check} /> : index + 1}
                           </span>
                           <span>
-                            <span className="block text-sm font-extrabold text-[#102c50]">{step.title}</span>
+                            <span className="block text-sm font-extrabold text-[#092a53]">{step.title}</span>
                             <span className="block text-xs leading-5 text-[#65748a]">{step.body}</span>
                           </span>
                         </li>
@@ -427,7 +427,7 @@ export function PaymentPage() {
                 <span className="mx-auto grid size-20 place-items-center rounded-full bg-red-50 text-red-600 shadow-[0_0_0_8px_rgba(254,226,226,0.6)]">
                   <Icon className="size-9" path={icons.alert} />
                 </span>
-                <p className="mt-6 text-[10px] font-extrabold uppercase tracking-[0.2em] text-red-700">
+                <p className="mt-6 text-xs font-extrabold uppercase tracking-[0.2em] text-red-700">
                   {t("Payment not confirmed")}
                 </p>
                 <h1 className="mt-2 font-display text-3xl font-extrabold text-[#092a53]">
@@ -477,7 +477,7 @@ export function PaymentPage() {
 
                 <div className="mt-6 flex flex-wrap items-end justify-between gap-8">
                   <div className="min-w-0">
-                    <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32] before:h-px before:w-6 before:bg-[#ffdc32]/70">
+                    <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.2em] text-[#ffdc32] before:h-px before:w-6 before:bg-[#ffdc32]/70">
                       {t("Final step")}
                     </p>
                     <h1 className="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-[3.4rem]">
@@ -499,7 +499,7 @@ export function PaymentPage() {
                               isCurrent ? "bg-[#ffdc32] text-[#092a53]" : "bg-white/10 text-white ring-1 ring-white/15"
                             }`}
                           >
-                            <span className={`grid size-6 place-items-center rounded-full text-[11px] ${isCurrent ? "bg-[#092a53] text-[#ffdc32]" : "bg-[#6c9c45] text-white"}`}>
+                            <span className={`grid size-6 place-items-center rounded-full text-xs ${isCurrent ? "bg-[#092a53] text-[#ffdc32]" : "bg-[#6c9c45] text-white"}`}>
                               {isCurrent ? index + 1 : <Icon className="size-3.5" path={icons.check} />}
                             </span>
                             {step}
@@ -528,10 +528,10 @@ export function PaymentPage() {
               <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_390px] xl:gap-10">
                 <div className="min-w-0 space-y-5">
                   {checkoutDetails && (
-                    <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:p-8">
+                    <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#fbfaf5] sm:p-8">
                       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#8a7000] before:h-px before:w-5 before:bg-[#d6bd4a]">
+                          <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#bd9c00] before:h-px before:w-5 before:bg-[#d6bd4a]">
                             {t("Delivery details")}
                           </p>
                           <h2 className="mt-2 font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
@@ -539,7 +539,7 @@ export function PaymentPage() {
                           </h2>
                         </div>
                         <Link
-                          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-extrabold text-[#52647b] ring-1 ring-[#dcd8cc] transition hover:text-[#092a53] hover:ring-[#092a53]"
+                          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-extrabold text-[#65748a] ring-1 ring-[#dcd8cc] transition hover:text-[#092a53] hover:ring-[#092a53]"
                           state={{ checkoutDetails }}
                           to="/checkout"
                         >
@@ -570,8 +570,8 @@ export function PaymentPage() {
                             lines: [scheduledDateLabel, checkoutDetails.timeSlotLabel ? t(checkoutDetails.timeSlotLabel) : ""],
                           },
                         ].map((block) => (
-                          <div className="rounded-[20px] bg-[#fbfaf5] p-4 ring-1 ring-[#ece8dc]" key={block.label}>
-                            <dt className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">
+                          <div className="rounded-[20px] bg-[#fbfaf5] p-4 ring-1 ring-[#fbfaf5]" key={block.label}>
+                            <dt className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[#8b95a2]">
                               <span className="grid size-7 place-items-center rounded-lg bg-white text-[#092a53] shadow-sm">
                                 <Icon className="size-3.5" path={block.icon} />
                               </span>
@@ -579,7 +579,7 @@ export function PaymentPage() {
                             </dt>
                             {block.lines.filter(Boolean).map((line, index) => (
                               <dd
-                                className={`break-words ${index === 0 ? "mt-3 text-sm font-extrabold text-[#102c50]" : "mt-0.5 text-xs leading-5 text-[#65748a]"}`}
+                                className={`break-words ${index === 0 ? "mt-3 text-sm font-extrabold text-[#092a53]" : "mt-0.5 text-xs leading-5 text-[#65748a]"}`}
                                 key={`${block.label}-${index}`}
                               >
                                 {line}
@@ -591,10 +591,10 @@ export function PaymentPage() {
                     </section>
                   )}
 
-                  <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:p-8">
+                  <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#fbfaf5] sm:p-8">
                     <fieldset>
                       <legend className="w-full">
-                        <span className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#8a7000] before:h-px before:w-5 before:bg-[#d6bd4a]">
+                        <span className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#bd9c00] before:h-px before:w-5 before:bg-[#d6bd4a]">
                           {t("Payment method")}
                         </span>
                         <span className="mt-2 block font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
@@ -608,7 +608,7 @@ export function PaymentPage() {
                             <label
                               className={`flex items-center gap-4 rounded-[22px] p-4 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] sm:p-5 ${
                                 !method.available
-                                  ? "cursor-not-allowed bg-[#fbfaf5] ring-[#ece8dc]"
+                                  ? "cursor-not-allowed bg-[#fbfaf5] ring-[#fbfaf5]"
                                   : isSelected
                                     ? "cursor-pointer bg-[#fffbea] ring-2 ring-[#bd9c00] shadow-[0_8px_20px_rgba(189,156,0,0.12)]"
                                     : "cursor-pointer bg-white ring-[#e3dfd3] hover:ring-[#cfcabb]"
@@ -630,7 +630,7 @@ export function PaymentPage() {
                                     ? "bg-[#f1eee4] text-[#9aa3af]"
                                     : isSelected
                                       ? "bg-[#092a53] text-[#ffdc32]"
-                                      : "bg-[#f4f1e8] text-[#52647b]"
+                                      : "bg-[#fbfaf5] text-[#65748a]"
                                 }`}
                               >
                                 <Icon className="size-6" path={method.icon} />
@@ -641,7 +641,7 @@ export function PaymentPage() {
                                     {t(method.label)}
                                   </span>
                                   <span
-                                    className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${
+                                    className={`rounded-full px-2 py-0.5 text-xs font-extrabold uppercase tracking-wide ${
                                       method.available ? "bg-[#eef6e8] text-[#3f6b22]" : "bg-[#ecebe5] text-[#8b95a2]"
                                     }`}
                                   >
@@ -663,7 +663,7 @@ export function PaymentPage() {
                       </div>
                     </fieldset>
 
-                    <p className="mt-5 flex items-start gap-3 rounded-2xl bg-[#f3f6fa] p-4 text-xs leading-5 text-[#52647b]">
+                    <p className="mt-5 flex items-start gap-3 rounded-2xl bg-[#f4f6f8] p-4 text-xs leading-5 text-[#65748a]">
                       <Icon className="mt-0.5 size-4 shrink-0 text-[#092a53]" path={icons.shield} />
                       {t(selectedPaymentMethod === "campay"
                         ? "Mobile Money is completed on CamPay’s secure checkout. This website never asks for your payment PIN."
@@ -678,9 +678,9 @@ export function PaymentPage() {
                 </div>
 
                 <aside aria-labelledby="payment-summary-heading" className="relative z-10 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300">
-                  <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_18px_50px_rgba(18,44,80,0.09)] ring-1 ring-[#ebe7dc]">
+                  <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_18px_50px_rgba(18,44,80,0.09)] ring-1 ring-[#fbfaf5]">
                     <div className="bg-[#092a53] px-6 py-5 text-white sm:px-7">
-                      <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">{t("Your order")}</p>
+                      <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">{t("Your order")}</p>
                       <h2 className="mt-1 font-display text-2xl font-extrabold" id="payment-summary-heading">{t("Order summary")}</h2>
                     </div>
 
@@ -689,20 +689,20 @@ export function PaymentPage() {
                         {cartItems.map((item) => (
                           <li className="flex items-center gap-3.5" key={item.id}>
                             <span className="relative shrink-0">
-                              <img decoding="async" loading="lazy" alt="" className={`size-14 rounded-2xl object-cover ring-1 ring-black/5 ${item.color || "bg-[#f4f1e7]"}`} src={item.image} />
-                              <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#092a53] px-1 text-[10px] font-extrabold text-white ring-2 ring-white">
+                              <img decoding="async" loading="lazy" alt="" className={`size-14 rounded-2xl object-cover ring-1 ring-black/5 ${item.color || "bg-[#fbfaf5]"}`} src={item.image} />
+                              <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#092a53] px-1 text-xs font-extrabold text-white ring-2 ring-white">
                                 {item.quantity}
                               </span>
                             </span>
-                            <p className="min-w-0 flex-1 truncate text-sm font-extrabold text-[#102c50]">{t(item.name)}</p>
-                            <span className="shrink-0 whitespace-nowrap text-sm font-bold tabular-nums text-[#102c50]">
+                            <p className="min-w-0 flex-1 truncate text-sm font-extrabold text-[#092a53]">{t(item.name)}</p>
+                            <span className="shrink-0 whitespace-nowrap text-sm font-bold tabular-nums text-[#092a53]">
                               {money(item.price * item.quantity)}
                             </span>
                           </li>
                         ))}
                       </ul>
 
-                      <dl className="mt-6 space-y-3 border-t border-[#f0ece2] pt-5 text-sm">
+                      <dl className="mt-6 space-y-3 border-t border-[#fbfaf5] pt-5 text-sm">
                         <div className="flex justify-between gap-4">
                           <dt className="text-[#65748a]">{t("Subtotal")}</dt>
                           <dd className="font-bold tabular-nums">{money(subtotal)}</dd>
@@ -771,7 +771,7 @@ export function PaymentPage() {
                           </>
                         )}
                       </button>
-                      <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-[11px] font-semibold text-[#8b95a2]">
+                      <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs font-semibold text-[#8b95a2]">
                         <Icon className="size-3.5" path={icons.shield} />
                         {t(selectedPaymentMethod === "campay" ? "Secured by CamPay" : "Secured by Stripe")}
                       </p>
@@ -779,7 +779,7 @@ export function PaymentPage() {
                   </div>
 
                   <Link
-                    className="mt-4 flex items-center justify-center gap-2 text-sm font-extrabold text-[#806a00] transition hover:text-[#092a53]"
+                    className="mt-4 flex items-center justify-center gap-2 text-sm font-extrabold text-[#bd9c00] transition hover:text-[#092a53]"
                     state={{ checkoutDetails }}
                     to="/checkout"
                   >

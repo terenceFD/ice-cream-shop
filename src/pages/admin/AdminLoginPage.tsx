@@ -143,7 +143,7 @@ export function AdminLoginPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f3f6fa] text-[#102c50] lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+    <div className="min-h-screen bg-[#f4f6f8] text-[#092a53] lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
       {/* Brand panel */}
       <aside className="relative isolate hidden overflow-hidden bg-[#092a53] text-white lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
         <img decoding="async" loading="lazy" alt="" className="absolute inset-0 -z-30 size-full object-cover opacity-25" src="/images/hero-ice-cream.jpg" />
@@ -156,12 +156,12 @@ export function AdminLoginPage() {
           <img decoding="async" loading="eager" alt="" aria-hidden="true" className="size-12 rounded-full shadow-[0_10px_24px_rgba(0,0,0,0.3)] transition group-hover:rotate-[-6deg]" height={48} src="/logo.png" width={48} />
           <span>
             <span className="block font-display text-lg font-extrabold leading-tight">Cold Stone <span className="text-[#ffdc32]">Creamery</span></span>
-            <span className="block text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/55">{t("Admin portal")}</span>
+            <span className="block text-xs font-extrabold uppercase tracking-[0.2em] text-white/55">{t("Admin portal")}</span>
           </span>
         </Link>
 
         <div className="max-w-lg">
-          <p className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32] before:h-px before:w-8 before:bg-[#ffdc32]/70">
+          <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.2em] text-[#ffdc32] before:h-px before:w-8 before:bg-[#ffdc32]/70">
             {t("Staff only")}
           </p>
           <h2 className="mt-4 font-display text-4xl font-extrabold leading-[1.08] xl:text-[3.2rem]">
@@ -186,8 +186,8 @@ export function AdminLoginPage() {
         <div aria-hidden="true" className="relative max-w-md">
           <div className="rounded-2xl bg-white/[0.07] p-4 ring-1 ring-white/10 backdrop-blur-sm">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/50">{t("Kitchen pipeline")}</span>
-              <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#7ee2a8]">
+              <span className="text-xs font-extrabold uppercase tracking-[0.16em] text-white/50">{t("Kitchen pipeline")}</span>
+              <span className="flex items-center gap-1.5 text-xs font-bold text-[#7ee2a8]">
                 <span className="size-1.5 rounded-full bg-[#35d07f]" />
                 {t("Live")}
               </span>
@@ -204,8 +204,8 @@ export function AdminLoginPage() {
           <div className="absolute -right-6 -top-8 flex items-center gap-2.5 rounded-xl bg-white px-3 py-2 text-[#092a53] shadow-[0_14px_30px_rgba(0,0,0,0.25)]">
             <span className="grid size-7 place-items-center rounded-lg bg-[#eaf6ee] text-[#2c7a4f]"><Icon className="size-3.5" path={icons.check} /></span>
             <span>
-              <span className="block text-[11px] font-extrabold">{t("Order #{id}", { id: 128 })}</span>
-              <span className="block text-[10px] text-[#65748a]">{t("Delivered")}</span>
+              <span className="block text-xs font-extrabold">{t("Order #{id}", { id: 128 })}</span>
+              <span className="block text-xs text-[#65748a]">{t("Delivered")}</span>
             </span>
           </div>
         </div>
@@ -214,15 +214,15 @@ export function AdminLoginPage() {
       {/* Sign-in panel */}
       <main id="main" tabIndex={-1} className="flex min-h-screen flex-col px-5 py-6 sm:px-10 lg:px-12 xl:px-20">
         <div className="flex items-center justify-between gap-4">
-          <Link className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-bold text-[#4f6379] transition hover:bg-white hover:text-[#092a53]" to="/">
+          <Link className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-bold text-[#65748a] transition hover:bg-white hover:text-[#092a53]" to="/">
             <Icon path={icons.back} />
             {t("Return to the shop")}
           </Link>
-          <div aria-label={t("Select language")} className="inline-flex items-center rounded-full bg-white p-1 shadow-sm ring-1 ring-[#e3e9f0]" role="group">
+          <div aria-label={t("Select language")} className="inline-flex items-center rounded-full bg-white p-1 shadow-sm ring-1 ring-[#dce3eb]" role="group">
             {(["en", "fr"] as const).map((option) => (
               <button
                 aria-pressed={language === option}
-                className={`min-h-7 min-w-9 rounded-full px-2 text-[10px] font-extrabold tracking-wide transition ${language === option ? "bg-[#092a53] text-white" : "text-[#7b8a9c] hover:text-[#092a53]"}`}
+                className={`min-h-7 min-w-9 rounded-full px-2 text-xs font-extrabold tracking-wide transition ${language === option ? "bg-[#092a53] text-white" : "text-[#7b8a9c] hover:text-[#092a53]"}`}
                 key={option}
                 onClick={() => setLanguage(option)}
                 type="button"
@@ -257,7 +257,7 @@ export function AdminLoginPage() {
               <section aria-labelledby="recovery-codes-title" className="mt-8 rounded-2xl bg-white p-5 ring-1 ring-[#e7ecf2]">
                 <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="recovery-codes-title">{t("Save your recovery codes")}</h2>
                 <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("These codes are shown only once. Keep them somewhere private. Each code can be used once if you cannot access your authenticator.")}</p>
-                <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-[#f3f6fa] p-3 font-mono text-sm font-bold tracking-wide text-[#102c50]">
+                <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-[#f4f6f8] p-3 font-mono text-sm font-bold tracking-wide text-[#092a53]">
                   {recoveryCodes.map((code) => <code key={code}>{code}</code>)}
                 </div>
                 <button
@@ -274,7 +274,7 @@ export function AdminLoginPage() {
                 {mfaStage === "password" ? (
                   <>
                     <label className="block">
-                      <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]">{t("Admin email")}</span>
+                      <span className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Admin email")}</span>
                       <span className="group relative mt-2 flex items-center rounded-2xl bg-white ring-1 ring-[#e3e1d8] transition hover:ring-[#d6cfbd] focus-within:ring-2 focus-within:ring-[#bd9c00]">
                         <Icon className="pointer-events-none absolute left-4 size-[18px] text-[#65748a] transition group-focus-within:text-[#092a53]" path={icons.mail} />
                         <input
@@ -313,14 +313,14 @@ export function AdminLoginPage() {
                 ) : (
                   <>
                     {mfaStage === "setup" && (
-                      <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-[#52647b] ring-1 ring-[#e7ecf2]">
+                      <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-[#65748a] ring-1 ring-[#e7ecf2]">
                         <h2 className="font-display text-lg font-extrabold text-[#092a53]">{t("Set up your authenticator app")}</h2>
                         <p className="mt-2">{t("Scan this QR code with Google Authenticator, Microsoft Authenticator, or 1Password.")}</p>
-                        <div className="mt-4 flex justify-center rounded-2xl bg-[#f3f6fa] p-4">
+                        <div className="mt-4 flex justify-center rounded-2xl bg-[#f4f6f8] p-4">
                           <QRCodeSVG
                             aria-label={t("Authenticator setup QR code")}
                             bgColor="#ffffff"
-                            fgColor="#102c50"
+                            fgColor="#092a53"
                             includeMargin
                             level="M"
                             size={200}
@@ -331,16 +331,16 @@ export function AdminLoginPage() {
                         <details className="mt-4">
                           <summary className="cursor-pointer font-bold">{t("Can't scan? Use manual setup")}</summary>
                           <p className="mt-2">{t("Enter this setup key in your authenticator app:")}</p>
-                          <code className="mt-2 block break-all rounded-xl bg-[#f3f6fa] p-3 text-base font-extrabold tracking-[0.12em] text-[#102c50]">{authenticatorSecret}</code>
+                          <code className="mt-2 block break-all rounded-xl bg-[#f4f6f8] p-3 text-base font-extrabold tracking-[0.12em] text-[#092a53]">{authenticatorSecret}</code>
                           <details className="mt-3">
                             <summary className="cursor-pointer font-bold">{t("Show manual setup URI")}</summary>
-                            <code className="mt-2 block break-all rounded-xl bg-[#f3f6fa] p-3 text-xs">{authenticatorUri}</code>
+                            <code className="mt-2 block break-all rounded-xl bg-[#f4f6f8] p-3 text-xs">{authenticatorUri}</code>
                           </details>
                         </details>
                       </div>
                     )}
                     <label className="block">
-                      <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]">{t(mfaStage === "setup" ? "Authenticator code" : "Authenticator or recovery code")}</span>
+                      <span className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t(mfaStage === "setup" ? "Authenticator code" : "Authenticator or recovery code")}</span>
                       <input
                         autoComplete="one-time-code"
                         autoCapitalize="characters"
@@ -377,7 +377,7 @@ export function AdminLoginPage() {
                   )}
                 </button>
                 {mfaStage !== "password" && (
-                  <button className="w-full py-2 text-sm font-bold text-[#52647b] hover:text-[#092a53]" onClick={restartSignIn} type="button">
+                  <button className="w-full py-2 text-sm font-bold text-[#65748a] hover:text-[#092a53]" onClick={restartSignIn} type="button">
                     {t("Start sign-in again")}
                   </button>
                 )}
@@ -389,14 +389,14 @@ export function AdminLoginPage() {
                 <Icon path={icons.shield} />
               </span>
               <p>
-                <span className="block font-bold text-[#102c50]">{t("Protected area")}</span>
+                <span className="block font-bold text-[#092a53]">{t("Protected area")}</span>
                 {t("Admin credentials are created by the store owner using the server’s secure bootstrap process.")}
               </p>
             </div>
           </div>
         </div>
 
-        <p className="flex items-center justify-center gap-1.5 text-center text-[11px] font-semibold text-[#a3b0bf]">
+        <p className="flex items-center justify-center gap-1.5 text-center text-xs font-semibold text-[#a3b0bf]">
           <Icon className="size-3.5" path={icons.lock} />
           {t("Secure sign-in · Cold Stone Creamery")}
         </p>

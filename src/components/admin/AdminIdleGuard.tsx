@@ -94,7 +94,7 @@ export function AdminIdleGuard() {
         </p>
         <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
           <button
-            className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] ring-1 ring-[#e3e9f0] transition hover:bg-[#eef2f6] hover:text-[#092a53]"
+            className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] ring-1 ring-[#dce3eb] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
             onClick={() => { lastActivityRef.current = 1 }}
             type="button"
           >

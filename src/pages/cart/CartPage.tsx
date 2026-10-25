@@ -182,7 +182,7 @@ export function CartPage() {
                       aria-current={index === 0 ? 'step' : undefined}
                       className={`inline-flex min-h-9 items-center gap-2 whitespace-nowrap ${index === 0 ? 'text-[#ffdc32]' : 'text-white/60'}`}
                     >
-                      <span className={`grid size-6 place-items-center rounded-full text-[11px] ${index === 0 ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/10 text-white/75'}`}>
+                      <span className={`grid size-6 place-items-center rounded-full text-xs ${index === 0 ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/10 text-white/75'}`}>
                         {index + 1}
                       </span>
                       {step}
@@ -199,11 +199,11 @@ export function CartPage() {
           {cartItems.length === 0 ? (
             <section className="mx-auto grid max-w-5xl gap-8 bg-white px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-14 lg:px-14">
               <div>
-                <span className="grid size-14 place-items-center rounded-full bg-[#e8edf2] text-[#092a53]">
+                <span className="grid size-14 place-items-center rounded-full bg-[#f4f6f8] text-[#092a53]">
                   <Icon className="size-7" path={icons.bag} />
                 </span>
                 <h2 className="mt-5 font-display text-3xl font-extrabold text-[#092a53] sm:text-4xl">{t('Your bag is empty')}</h2>
-                <p className="mt-3 max-w-md text-sm leading-6 text-[#52647b] sm:text-base sm:leading-7">
+                <p className="mt-3 max-w-md text-sm leading-6 text-[#65748a] sm:text-base sm:leading-7">
                   {t('Start adding your favorite flavors and get ready for a sweet treat!')}
                 </p>
                 <div className="mt-7 flex flex-wrap gap-3">
@@ -230,7 +230,7 @@ export function CartPage() {
             <div className="grid min-w-0 items-start gap-7 lg:grid-cols-[minmax(0,1fr)_380px] xl:gap-10">
               <section aria-labelledby="cart-items-heading" className="min-w-0 space-y-5">
                 {scoopCount > 0 && (
-                  <div className="flex flex-col gap-4 bg-[#e8edf2] p-5 sm:flex-row sm:items-center sm:p-6">
+                  <div className="flex flex-col gap-4 bg-[#f4f6f8] p-5 sm:flex-row sm:items-center sm:p-6">
                     <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white text-[#092a53]">
                       <Icon className="size-6" path={icons.gift} />
                     </span>
@@ -271,10 +271,10 @@ export function CartPage() {
                 )}
 
                 <div className="overflow-hidden bg-white">
-                  <div className="flex flex-wrap items-center justify-between gap-3 bg-[#e8edf2] px-5 py-4 sm:px-7 sm:py-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3 bg-[#f4f6f8] px-5 py-4 sm:px-7 sm:py-5">
                     <h2 className="flex items-center gap-2.5 font-display text-xl font-extrabold text-[#092a53]" id="cart-items-heading">
                       {t('Items in your bag')}
-                      <span className="rounded-full bg-white px-2.5 py-0.5 font-sans text-xs font-extrabold text-[#52647b]">{cartCount}</span>
+                      <span className="rounded-full bg-white px-2.5 py-0.5 font-sans text-xs font-extrabold text-[#65748a]">{cartCount}</span>
                     </h2>
                     {confirmClear ? (
                       <span className="flex items-center gap-2 text-xs font-bold">
@@ -289,7 +289,7 @@ export function CartPage() {
                         >
                           {t('Yes, clear')}
                         </button>
-                        <button className="rounded-md px-3 py-1.5 text-[#52647b] transition hover:bg-white" onClick={() => setConfirmClear(false)} type="button">
+                        <button className="rounded-md px-3 py-1.5 text-[#65748a] transition hover:bg-white" onClick={() => setConfirmClear(false)} type="button">
                           {t('Cancel')}
                         </button>
                       </span>
@@ -305,11 +305,11 @@ export function CartPage() {
                     )}
                   </div>
 
-                  <ul className="divide-y divide-[#e8edf2]">
+                  <ul className="divide-y divide-[#f4f6f8]">
                     {cartItems.map((item) => {
                       const isShort = item.availableQuantity !== undefined && item.availableQuantity < item.quantity
                       return (
-                        <li className="group flex min-w-0 gap-4 px-5 py-5 transition-colors hover:bg-[#f8fafb] sm:gap-6 sm:px-7 sm:py-6" key={item.id}>
+                        <li className="group flex min-w-0 gap-4 px-5 py-5 transition-colors hover:bg-[#f4f6f8] sm:gap-6 sm:px-7 sm:py-6" key={item.id}>
                           <Link
                             aria-label={t(item.name)}
                             className={`relative size-24 shrink-0 overflow-hidden rounded-lg ${item.color} sm:size-32`}
@@ -335,7 +335,7 @@ export function CartPage() {
                                   {t(item.name)}
                                 </Link>
                                 {item.detail && (
-                                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#52647b] sm:text-sm">{t(item.detail)}</p>
+                                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#65748a] sm:text-sm">{t(item.detail)}</p>
                                 )}
                               </div>
                               <button
@@ -360,10 +360,10 @@ export function CartPage() {
 
                             <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
                               <div className="flex items-center gap-3">
-                                <div className="inline-flex items-center rounded-lg bg-[#e8edf2] p-1">
+                                <div className="inline-flex items-center rounded-lg bg-[#f4f6f8] p-1">
                                   <button
                                     aria-label={t('Decrease quantity')}
-                                    className="grid size-8 place-items-center rounded-md text-[#52647b] transition hover:bg-white hover:text-[#092a53]"
+                                    className="grid size-8 place-items-center rounded-md text-[#65748a] transition hover:bg-white hover:text-[#092a53]"
                                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
                                     type="button"
                                   >
@@ -374,7 +374,7 @@ export function CartPage() {
                                   </span>
                                   <button
                                     aria-label={t('Increase quantity')}
-                                    className="grid size-8 place-items-center rounded-md text-[#52647b] transition hover:bg-white hover:text-[#092a53] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent"
+                                    className="grid size-8 place-items-center rounded-md text-[#65748a] transition hover:bg-white hover:text-[#092a53] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent"
                                     disabled={item.quantity >= item.availableQuantity}
                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                     type="button"
@@ -383,7 +383,7 @@ export function CartPage() {
                                   </button>
                                 </div>
                                 {item.availableQuantity <= 3 && !isShort && (
-                                  <span className="rounded-full bg-[#fff3e0] px-2.5 py-1 text-[11px] font-bold text-[#8b5e00]">
+                                  <span className="rounded-full bg-[#fff3e0] px-2.5 py-1 text-xs font-bold text-[#8b5e00]">
                                     {t('{count} left', { count: item.availableQuantity })}
                                   </span>
                                 )}
@@ -393,7 +393,7 @@ export function CartPage() {
                                   {money(item.price * item.quantity)}
                                 </p>
                                 {item.quantity > 1 && (
-                                  <p className="text-[11px] font-semibold text-[#8b95a2]">
+                                  <p className="text-xs font-semibold text-[#8b95a2]">
                                     {money(item.price)} {t('each')}
                                   </p>
                                 )}
@@ -413,7 +413,7 @@ export function CartPage() {
                   </div>
                 </div>
 
-                <p className="flex gap-3 bg-[#e8edf2] px-4 py-3.5 text-xs leading-5 text-[#334e6e] sm:px-5">
+                <p className="flex gap-3 bg-[#f4f6f8] px-4 py-3.5 text-xs leading-5 text-[#334e6e] sm:px-5">
                   <Icon className="mt-0.5 size-4 shrink-0" path={icons.info} />
                   {t("Prices are in FCFA. Any delivery fee is shown at checkout before you pay.")}
                 </p>
@@ -431,7 +431,7 @@ export function CartPage() {
                         <dt className="text-[#65748a]">
                           {t('Subtotal')} <span className="text-[#9aa3af]">({cartCount})</span>
                         </dt>
-                        <dd className="font-bold tabular-nums text-[#102c50]">{money(subtotal)}</dd>
+                        <dd className="font-bold tabular-nums text-[#092a53]">{money(subtotal)}</dd>
                       </div>
                       {discount > 0 && (
                         <div className="flex justify-between gap-3 rounded-xl bg-[#eef6e8] px-3 py-2.5 ring-1 ring-[#d6e8c7]">
@@ -448,7 +448,7 @@ export function CartPage() {
                       </div>
                     </dl>
 
-                    <div className="flex items-end justify-between gap-3 border-t border-[#e8edf2] pt-5">
+                    <div className="flex items-end justify-between gap-3 border-t border-[#f4f6f8] pt-5">
                       <span className="font-display text-lg font-extrabold text-[#092a53]">{t('Total')}</span>
                       <span className="font-display text-3xl font-extrabold tabular-nums leading-none text-[#092a53]">{money(total)}</span>
                     </div>
@@ -460,7 +460,7 @@ export function CartPage() {
 
                     {hasUnavailableItems ? (
                       <button
-                        className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-[#e8edf2] px-5 py-4 text-sm font-extrabold text-[#65748a]"
+                        className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-[#f4f6f8] px-5 py-4 text-sm font-extrabold text-[#65748a]"
                         disabled
                         type="button"
                       >
@@ -487,12 +487,12 @@ export function CartPage() {
                     { icon: icons.clock, title: t('Made fresh'), body: t('Prepared when your order is confirmed.') },
                   ].map((perk) => (
                     <li className="flex items-center gap-3" key={perk.title}>
-                      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#e8edf2] text-[#092a53]">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#f4f6f8] text-[#092a53]">
                         <Icon className="size-4" path={perk.icon} />
                       </span>
                       <span className="min-w-0">
-                        <span className="block font-extrabold text-[#102c50]">{perk.title}</span>
-                        <span className="block text-[#7b8796]">{perk.body}</span>
+                        <span className="block font-extrabold text-[#092a53]">{perk.title}</span>
+                        <span className="block text-[#65748a]">{perk.body}</span>
                       </span>
                     </li>
                   ))}
@@ -507,7 +507,7 @@ export function CartPage() {
               <Link className="text-sm font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4" to="/menu">{t('Browse the menu')}</Link>
             </div>
             {suggestionsLoading && (
-              <p className="bg-white px-4 py-3 text-sm text-[#52647b]" role="status">{t('Loading menu suggestions…')}</p>
+              <p className="bg-white px-4 py-3 text-sm text-[#65748a]" role="status">{t('Loading menu suggestions…')}</p>
             )}
             {suggestionsError && (
               <p className="bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{t(suggestionsError)}</p>
@@ -518,9 +518,10 @@ export function CartPage() {
                   const itemId = item.id || getMenuItemId(category.title, item.name)
                   const added = addedSuggestionId === itemId
                   return (
-                    <li className="flex min-w-0 flex-col overflow-hidden bg-white p-2 sm:p-3" key={itemId}>
-                      <Link className="overflow-hidden bg-[#e8edf2]" to={`/menu?${new URLSearchParams({ category: category.title, item: item.name })}`}>
-                        <img alt={t(item.name)} className="aspect-square w-full object-cover transition duration-500 hover:scale-[1.04]" loading="lazy" onError={photoErrorHandler(item.image)} sizes="(min-width: 1024px) 25vw, 50vw" src={item.image} srcSet={photoSrcSet(item.image)} />
+                    <li className="group flex min-w-0 flex-col overflow-hidden bg-white p-2 sm:p-3" key={itemId}>
+                      <Link className="relative overflow-hidden bg-[#f4f6f8]" to={`/menu?${new URLSearchParams({ category: category.title, item: item.name })}`}>
+                        <img alt={t(item.name)} className="aspect-square w-full object-cover transition duration-700 ease-out group-hover:scale-[1.06] group-focus-within:scale-[1.06] motion-reduce:transition-none" loading="lazy" onError={photoErrorHandler(item.image)} sizes="(min-width: 1024px) 25vw, 50vw" src={item.image} srcSet={photoSrcSet(item.image)} />
+                        <span aria-hidden="true" className="menu-card-shine" />
                       </Link>
                       <div className="flex flex-1 flex-col px-1 pb-1 pt-3 sm:px-1.5">
                         <h3 className="line-clamp-2 min-h-[2.5em] font-display text-sm font-extrabold leading-snug text-[#092a53] sm:text-base">{t(item.name)}</h3>
@@ -540,7 +541,7 @@ export function CartPage() {
               </ul>
             )}
             {!suggestionsLoading && !suggestionsError && orderedRecommendations.length === 0 && (
-              <p className="bg-white px-4 py-3 text-sm text-[#52647b]" role="status">{t('No menu suggestions are available right now.')}</p>
+              <p className="bg-white px-4 py-3 text-sm text-[#65748a]" role="status">{t('No menu suggestions are available right now.')}</p>
             )}
             {suggestionError && <p className="mt-3 text-sm font-semibold text-red-700" role="alert">{suggestionError}</p>}
           </section>

@@ -116,7 +116,7 @@ export function InstallAppPrompt() {
       className="install-app-card fixed inset-x-3 bottom-3 z-[55] max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[26rem]"
       role="dialog"
     >
-      <div className="overflow-hidden rounded-[20px] bg-white text-[#102c50] shadow-[0_20px_56px_rgba(9,42,83,0.24)] ring-1 ring-[#102c50]/10">
+      <div className="overflow-hidden rounded-[20px] bg-white text-[#092a53] shadow-[0_20px_56px_rgba(9,42,83,0.24)] ring-1 ring-[#092a53]/10">
         <div className="flex items-start justify-between gap-4 px-5 pt-5 sm:px-6 sm:pt-6">
           <div className="flex min-w-0 items-center gap-3.5">
             <img decoding="async" loading="lazy" alt="" className="size-12 shrink-0 rounded-[14px] bg-[#f4f6f8]" height={48} src="/icons/icon-192.png" width={48} />
@@ -126,7 +126,7 @@ export function InstallAppPrompt() {
           </div>
           <button
             aria-label={t('Close')}
-            className="grid size-9 shrink-0 place-items-center rounded-full text-[#52647b] transition-colors hover:bg-[#f1f4f7] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+            className="grid size-9 shrink-0 place-items-center rounded-full text-[#65748a] transition-colors hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
             onClick={dismiss}
             type="button"
           >
@@ -139,7 +139,7 @@ export function InstallAppPrompt() {
         <div className="px-5 pb-5 pt-3 sm:px-6 sm:pb-6">
           {mode === 'install' ? (
             <>
-              <p className="text-sm leading-6 text-[#52647b]" id="install-app-description">
+              <p className="text-sm leading-6 text-[#65748a]" id="install-app-description">
                 {t('Install for quick access to the menu and your orders.')}
               </p>
               <ul className="mt-4 grid gap-2.5">
@@ -154,7 +154,7 @@ export function InstallAppPrompt() {
               </ul>
               <div className="mt-5 flex items-center justify-end gap-3">
                 <button
-                  className="min-h-11 rounded-lg px-4 text-sm font-bold text-[#52647b] transition-colors hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+                  className="min-h-11 rounded-lg px-4 text-sm font-bold text-[#65748a] transition-colors hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
                   onClick={dismiss}
                   type="button"
                 >
@@ -175,7 +175,7 @@ export function InstallAppPrompt() {
             </>
           ) : (
             <>
-              <p className="text-sm leading-6 text-[#52647b]" id="install-app-description">
+              <p className="text-sm leading-6 text-[#65748a]" id="install-app-description">
                 {t('Add the site to your home screen in two quick steps.')}
               </p>
               <ol className="mt-4 grid gap-3 text-sm leading-5 text-[#344b66]">

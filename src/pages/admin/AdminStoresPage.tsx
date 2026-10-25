@@ -128,7 +128,7 @@ function StarGlyph({ className = 'size-3.5' }: { className?: string }) {
 
 function StarRating({ value, reviews, language, t }: { value: number; reviews: number; language: string; t: Translate }) {
   if (!reviews) {
-    return <span className="text-sm text-[#8190a1]">{t('No reviews yet')}</span>
+    return <span className="text-sm text-[#65748a]">{t('No reviews yet')}</span>
   }
   const clamped = Math.max(0, Math.min(5, value))
   return (
@@ -142,7 +142,7 @@ function StarRating({ value, reviews, language, t }: { value: number; reviews: n
         </span>
       </span>
       <span className="font-display text-sm font-extrabold tabular-nums text-[#092a53]">{formatRating(clamped)}</span>
-      <span className="text-xs text-[#8190a1]">({formatCount(reviews, language)})</span>
+      <span className="text-xs text-[#65748a]">({formatCount(reviews, language)})</span>
     </span>
   )
 }
@@ -266,7 +266,7 @@ export function AdminStoresPage() {
               </span>
             )}
             <button
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#355777] ring-1 ring-[#dce4ed] transition hover:bg-[#f7f9fc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#123b68] ring-1 ring-[#dce4ed] transition hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
               disabled={isRefreshing}
               onClick={refresh}
               type="button"
@@ -295,12 +295,12 @@ export function AdminStoresPage() {
 
       {stores === null ? (error ? null : (
         <div aria-label={t('Loading…')} className="space-y-6" role="status">
-          <div className="h-44 animate-pulse rounded-[24px] bg-[#eef2f6]" />
-          <div className="h-[28rem] animate-pulse rounded-[20px] bg-[#eef2f6]" />
+          <div className="h-44 animate-pulse rounded-[24px] bg-[#f4f6f8]" />
+          <div className="h-[28rem] animate-pulse rounded-[20px] bg-[#f4f6f8]" />
         </div>
       )) : !stores.length ? (
-        <div className="rounded-[20px] border border-dashed border-[#d9e1ea] bg-white px-6 py-14 text-center">
-          <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f5f9] text-[#355777]">
+        <div className="rounded-[20px] border border-dashed border-[#dce3eb] bg-white px-6 py-14 text-center">
+          <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f5f9] text-[#123b68]">
             <AdminIcon className="size-6" path={icons.store} />
           </span>
           <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t('No stores found.')}</p>
@@ -308,8 +308,8 @@ export function AdminStoresPage() {
         </div>
       ) : (
         <>
-          <section aria-labelledby="network-title" className="overflow-hidden rounded-[24px] border border-[#e5ebf3] bg-white">
-            <div className="border-b border-[#edf1f5] bg-[#092a53] px-5 py-5 text-white sm:px-7 sm:py-6">
+          <section aria-labelledby="network-title" className="overflow-hidden rounded-[24px] border border-[#dce3eb] bg-white">
+            <div className="border-b border-[#f4f6f8] bg-[#092a53] px-5 py-5 text-white sm:px-7 sm:py-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div className="min-w-0">
                   <h2 className="text-sm font-semibold text-white/65" id="network-title">{t('Network overview')}</h2>
@@ -345,7 +345,7 @@ export function AdminStoresPage() {
               </div>
             </div>
 
-            <dl className="grid grid-cols-2 divide-x divide-y divide-[#edf1f5] sm:grid-cols-3 xl:grid-cols-6 xl:divide-y-0">
+            <dl className="grid grid-cols-2 divide-x divide-y divide-[#f4f6f8] sm:grid-cols-3 xl:grid-cols-6 xl:divide-y-0">
               {[
                 { label: t('Paid orders'), value: formatCount(network.totals.paidOrders, language), hint: t('{paid} paid of {total} orders', { paid: formatCount(network.totals.paidOrders, language), total: formatCount(network.totals.orders, language) }) },
                 { label: t('Customers'), value: formatCount(network.totals.customers, language) },
@@ -369,21 +369,21 @@ export function AdminStoresPage() {
                 },
               ].map((metric) => (
                 <div className={`px-4 py-4 sm:px-5 ${metric.warn ? 'bg-[#fff8e8]' : ''}`} key={metric.label}>
-                  <dt className={`text-xs font-semibold ${metric.warn ? 'text-[#8a6f00]' : 'text-[#8190a1]'}`}>{metric.label}</dt>
-                  <dd className={`mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight ${metric.warn ? 'text-[#8a6f00]' : metric.accent ? 'text-[#bd9c00]' : 'text-[#092a53]'}`}>
+                  <dt className={`text-xs font-semibold ${metric.warn ? 'text-[#bd9c00]' : 'text-[#65748a]'}`}>{metric.label}</dt>
+                  <dd className={`mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight ${metric.warn ? 'text-[#bd9c00]' : metric.accent ? 'text-[#bd9c00]' : 'text-[#092a53]'}`}>
                     {metric.value}
                     {metric.accent && network.totals.reviews > 0 && (
                       <span className="ml-1 text-base font-bold text-[#bd9c00]/70">/ 5</span>
                     )}
                   </dd>
-                  {metric.hint && <p className="mt-1.5 text-xs text-[#8190a1]">{metric.hint}</p>}
+                  {metric.hint && <p className="mt-1.5 text-xs text-[#65748a]">{metric.hint}</p>}
                 </div>
               ))}
             </dl>
           </section>
 
-          <section aria-labelledby="stores-title" className="@container overflow-hidden rounded-[20px] border border-[#e5ebf3] bg-white">
-            <div className="flex flex-col gap-3 border-b border-[#edf1f5] px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+          <section aria-labelledby="stores-title" className="@container overflow-hidden rounded-[20px] border border-[#dce3eb] bg-white">
+            <div className="flex flex-col gap-3 border-b border-[#f4f6f8] px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="stores-title">{t('Store summary')}</h2>
                 <p className="mt-0.5 text-sm text-[#65748a]">
@@ -396,7 +396,7 @@ export function AdminStoresPage() {
                 {towns.length > 1 && (
                   <div className="flex items-center gap-2">
                     <span className="sr-only" id="stores-town-label">{t('Filter by town')}</span>
-                    <div aria-labelledby="stores-town-label" className="inline-flex flex-wrap rounded-xl bg-[#f1f4f8] p-1" role="group">
+                    <div aria-labelledby="stores-town-label" className="inline-flex flex-wrap rounded-xl bg-[#f4f6f8] p-1" role="group">
                       {[{ value: 'all', label: t('All towns') }, ...towns.map((town) => ({ value: town, label: town }))].map((option) => {
                         const selected = townFilter === option.value
                         return (
@@ -416,7 +416,7 @@ export function AdminStoresPage() {
                 )}
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-[#65748a]" id="stores-sort-label">{t('Sort by')}</span>
-                  <div aria-labelledby="stores-sort-label" className="inline-flex flex-wrap rounded-xl bg-[#f1f4f8] p-1" role="group">
+                  <div aria-labelledby="stores-sort-label" className="inline-flex flex-wrap rounded-xl bg-[#f4f6f8] p-1" role="group">
                     {sortOptions.map((option) => {
                       const selected = sortKey === option.key
                       return (
@@ -439,8 +439,8 @@ export function AdminStoresPage() {
             {!network.sorted.length ? (
               <p className="px-5 py-12 text-center text-sm text-[#65748a]">{t('No stores found.')}</p>
             ) : (
-              <ul className="divide-y divide-[#edf1f5]">
-                <li className="hidden px-5 py-2.5 text-[11px] font-bold text-[#8e9bab] @[48rem]:grid @[48rem]:grid-cols-[minmax(13rem,1.4fr)_minmax(8rem,0.85fr)_minmax(9.5rem,1fr)_minmax(5.5rem,0.55fr)_minmax(6rem,0.6fr)]">
+              <ul className="divide-y divide-[#f4f6f8]">
+                <li className="hidden px-5 py-2.5 text-xs font-bold text-[#8e9bab] @[48rem]:grid @[48rem]:grid-cols-[minmax(13rem,1.4fr)_minmax(8rem,0.85fr)_minmax(9.5rem,1fr)_minmax(5.5rem,0.55fr)_minmax(6rem,0.6fr)]">
                   <span>{t('Store')}</span>
                   <span>{t('Paid sales')}</span>
                   <span>{t('Rating')}</span>
@@ -506,7 +506,7 @@ function StoreRow({
       <button
         aria-current={isSelected ? 'true' : undefined}
         className={`grid w-full gap-4 px-4 py-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] sm:px-5 @[48rem]:grid-cols-[minmax(13rem,1.4fr)_minmax(8rem,0.85fr)_minmax(9.5rem,1fr)_minmax(5.5rem,0.55fr)_minmax(6rem,0.6fr)] @[48rem]:items-center ${
-          isSelected ? 'bg-[#f4f7fb]' : store.isActive ? 'hover:bg-[#f8fafc]' : 'bg-[#fafbfc] hover:bg-[#f3f5f8]'
+          isSelected ? 'bg-[#f4f7fb]' : store.isActive ? 'hover:bg-[#f4f6f8]' : 'bg-[#fafbfc] hover:bg-[#f3f5f8]'
         }`}
         onClick={onSelect}
         type="button"
@@ -523,7 +523,7 @@ function StoreRow({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="truncate font-display text-base font-extrabold text-[#092a53]">{store.area || store.name}</h3>
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-bold ${store.isActive ? 'bg-[#eaf6ee] text-[#1f6b3e]' : 'bg-[#f3f4f6] text-[#6b7280]'}`}>
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-bold ${store.isActive ? 'bg-[#eaf6ee] text-[#1f6b3e]' : 'bg-[#f3f4f6] text-[#6b7280]'}`}>
                 <span aria-hidden="true" className={`size-1.5 rounded-full ${store.isActive ? 'bg-[#2e9d5b]' : 'bg-[#9aa3af]'}`} />
                 {t(store.isActive ? 'Active' : 'Not taking orders')}
               </span>
@@ -533,14 +533,14 @@ function StoreRow({
         </div>
 
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold text-[#8e9bab] @[48rem]:sr-only">{t('Paid sales')}</p>
+          <p className="text-xs font-semibold text-[#8e9bab] @[48rem]:sr-only">{t('Paid sales')}</p>
           <p className="font-display text-lg font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">
             {formatXaf(store.sales, language)}
           </p>
-          <div aria-hidden="true" className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#eef2f6]">
+          <div aria-hidden="true" className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#f4f6f8]">
             <div className="h-full rounded-full" style={{ width: `${Math.max(share > 0 ? 4 : 0, share * 100)}%`, backgroundColor: tone }} />
           </div>
-          <p className="mt-1.5 text-xs text-[#8190a1]">
+          <p className="mt-1.5 text-xs text-[#65748a]">
             {store.paidOrderCount
               ? `${t('{count} paid', { count: formatCount(store.paidOrderCount, language) })} · ${formatShare(share)}`
               : t('No orders yet')}
@@ -548,17 +548,17 @@ function StoreRow({
         </div>
 
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold text-[#8e9bab] @[48rem]:sr-only">{t('Rating')}</p>
+          <p className="text-xs font-semibold text-[#8e9bab] @[48rem]:sr-only">{t('Rating')}</p>
           <StarRating language={language} reviews={store.reviewCount} t={t} value={store.averageRating} />
         </div>
 
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold text-[#8e9bab] @[48rem]:sr-only">{t('Customers')}</p>
+          <p className="text-xs font-semibold text-[#8e9bab] @[48rem]:sr-only">{t('Customers')}</p>
           <p className="font-display text-lg font-extrabold tabular-nums leading-none text-[#092a53]">{formatCount(store.customerCount, language)}</p>
         </div>
 
         <div className="min-w-0 @[48rem]:text-right">
-          <p className="text-[11px] font-semibold text-[#8e9bab] @[48rem]:sr-only">{t('Waiting')}</p>
+          <p className="text-xs font-semibold text-[#8e9bab] @[48rem]:sr-only">{t('Waiting')}</p>
           {waitingTotal > 0 ? (
             <p className="inline-flex items-center gap-1.5 rounded-full bg-[#fff6d6] px-2.5 py-1 text-xs font-bold text-[#7a5600]">
               {waitingTotal === 1 ? t('1 item waiting') : t('{count} items waiting', { count: waitingTotal })}
@@ -610,7 +610,7 @@ function StoreDetailDrawer({
         className="admin-drawer-panel relative flex h-full w-full max-w-[32rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]"
         role="dialog"
       >
-        <header className="border-b border-[#edf1f5] px-6 py-5">
+        <header className="border-b border-[#f4f6f8] px-6 py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 items-start gap-3">
               <span
@@ -621,7 +621,7 @@ function StoreDetailDrawer({
                 {storeInitials(store)}
               </span>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold text-[#8a7000]">{store.town} · {store.area}</p>
+                <p className="text-xs font-semibold text-[#bd9c00]">{store.town} · {store.area}</p>
                 <h2 className="mt-0.5 font-display text-2xl font-extrabold leading-tight text-[#092a53]" id="store-drawer-title">
                   {store.name}
                 </h2>
@@ -633,7 +633,7 @@ function StoreDetailDrawer({
             </div>
             <button
               aria-label={t('Close')}
-              className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f1f4f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+              className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
               onClick={onClose}
               type="button"
             >
@@ -644,21 +644,21 @@ function StoreDetailDrawer({
 
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
           <section>
-            <h3 className="text-xs font-semibold text-[#8190a1]">{t('Contact')}</h3>
+            <h3 className="text-xs font-semibold text-[#65748a]">{t('Contact')}</h3>
             <dl className="mt-3 space-y-3">
-              <div className="rounded-2xl bg-[#f7f9fc] px-4 py-3">
+              <div className="rounded-2xl bg-[#f4f6f8] px-4 py-3">
                 <dt className="text-xs text-[#8592a3]">{t('Address')}</dt>
                 <dd className="mt-1 flex items-start gap-2 text-sm font-semibold text-[#092a53]">
-                  <AdminIcon className="mt-0.5 size-4 shrink-0 text-[#8190a1]" path={icons.pin} />
+                  <AdminIcon className="mt-0.5 size-4 shrink-0 text-[#65748a]" path={icons.pin} />
                   <span>{address || t('No address provided')}</span>
                 </dd>
               </div>
               {store.phone && (
-                <div className="rounded-2xl bg-[#f7f9fc] px-4 py-3">
+                <div className="rounded-2xl bg-[#f4f6f8] px-4 py-3">
                   <dt className="text-xs text-[#8592a3]">{t('Phone')}</dt>
                   <dd className="mt-1">
                     <a
-                      className="inline-flex items-center gap-2 text-sm font-bold text-[#355777] hover:text-[#092a53] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+                      className="inline-flex items-center gap-2 text-sm font-bold text-[#123b68] hover:text-[#092a53] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
                       href={`tel:${store.phone}`}
                     >
                       <AdminIcon className="size-4 shrink-0" path={icons.phone} />
@@ -667,10 +667,10 @@ function StoreDetailDrawer({
                   </dd>
                 </div>
               )}
-              <div className="rounded-2xl bg-[#f7f9fc] px-4 py-3">
+              <div className="rounded-2xl bg-[#f4f6f8] px-4 py-3">
                 <dt className="text-xs text-[#8592a3]">{t('Pickup & delivery')}</dt>
                 <dd className="mt-1 flex items-start gap-2 text-sm font-semibold text-[#092a53]">
-                  <AdminIcon className="mt-0.5 size-4 shrink-0 text-[#8190a1]" path={icons.truck} />
+                  <AdminIcon className="mt-0.5 size-4 shrink-0 text-[#65748a]" path={icons.truck} />
                   <span>
                     {fulfillmentLabel(store, t)}
                     {store.deliveryEnabled && store.deliveryFee > 0
@@ -683,7 +683,7 @@ function StoreDetailDrawer({
           </section>
 
           <section>
-            <h3 className="text-xs font-semibold text-[#8190a1]">{t('Sales')}</h3>
+            <h3 className="text-xs font-semibold text-[#65748a]">{t('Sales')}</h3>
             <div className="mt-3 rounded-2xl bg-[#092a53] px-5 py-4 text-white">
               <p className="text-xs font-semibold text-white/60">{t('Paid sales')}</p>
               <p className="mt-1 font-display text-[1.85rem] font-extrabold tabular-nums leading-none tracking-tight">
@@ -699,17 +699,17 @@ function StoreDetailDrawer({
               </p>
             </div>
             <dl className="mt-3 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-[#f7f9fc] px-4 py-3">
+              <div className="rounded-2xl bg-[#f4f6f8] px-4 py-3">
                 <dt className="text-xs text-[#8592a3]">{t('Customers')}</dt>
                 <dd className="mt-1 font-display text-xl font-extrabold tabular-nums text-[#092a53]">{formatCount(store.customerCount, language)}</dd>
               </div>
-              <div className="rounded-2xl bg-[#f7f9fc] px-4 py-3">
+              <div className="rounded-2xl bg-[#f4f6f8] px-4 py-3">
                 <dt className="text-xs text-[#8592a3]">{t('Average rating')}</dt>
                 <dd className="mt-1 font-display text-xl font-extrabold tabular-nums text-[#092a53]">
                   {store.reviewCount ? `${store.averageRating.toFixed(1)} / 5` : '—'}
                 </dd>
               </div>
-              <div className="col-span-2 rounded-2xl bg-[#f7f9fc] px-4 py-3">
+              <div className="col-span-2 rounded-2xl bg-[#f4f6f8] px-4 py-3">
                 <dt className="text-xs text-[#8592a3]">{t('Latest order')}</dt>
                 <dd className="mt-1 text-sm font-semibold text-[#092a53]" title={lastOrder ? fullDate(lastOrder, language) : undefined}>
                   {lastOrder ? relativeTime(lastOrder, language) : t('No orders yet')}
@@ -720,24 +720,24 @@ function StoreDetailDrawer({
 
           <section>
             <div className="flex items-baseline justify-between gap-3">
-              <h3 className="text-xs font-semibold text-[#8190a1]">{t('Waiting on this store')}</h3>
+              <h3 className="text-xs font-semibold text-[#65748a]">{t('Waiting on this store')}</h3>
               {waitingTotal > 0 && (
-                <span className="text-xs font-bold text-[#8a6f00]">
+                <span className="text-xs font-bold text-[#bd9c00]">
                   {waitingTotal === 1 ? t('1 item waiting') : t('{count} items waiting', { count: waitingTotal })}
                 </span>
               )}
             </div>
             {waiting.length ? (
-              <ul className="mt-3 divide-y divide-[#edf1f5] overflow-hidden rounded-2xl ring-1 ring-[#e8edf3]">
+              <ul className="mt-3 divide-y divide-[#f4f6f8] overflow-hidden rounded-2xl ring-1 ring-[#dce3eb]">
                 {waiting.map((row) => (
                   <li key={row.key}>
                     <Link
-                      className="flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-[#092a53] transition hover:bg-[#f7f9fc] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00]"
+                      className="flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-[#092a53] transition hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00]"
                       onClick={onClose}
                       to={row.to}
                     >
                       <span className="inline-flex items-center gap-2">
-                        <AdminIcon className="size-4 text-[#8a6f00]" path={row.key === 'orders' ? icons.receipt : row.key === 'events' ? icons.calendar : row.key === 'cakes' ? icons.cake : icons.chat} />
+                        <AdminIcon className="size-4 text-[#bd9c00]" path={row.key === 'orders' ? icons.receipt : row.key === 'events' ? icons.calendar : row.key === 'cakes' ? icons.cake : icons.chat} />
                         {row.label}
                       </span>
                       <AdminIcon className="size-3.5 shrink-0 text-[#9aa7b5]" path={icons.chevron} />
@@ -754,7 +754,7 @@ function StoreDetailDrawer({
           </section>
         </div>
 
-        <footer className="border-t border-[#edf1f5] px-6 py-4">
+        <footer className="border-t border-[#f4f6f8] px-6 py-4">
           <Link
             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#0d355f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
             onClick={onClose}

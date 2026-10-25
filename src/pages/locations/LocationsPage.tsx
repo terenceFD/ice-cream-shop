@@ -62,7 +62,7 @@ export function LocationsPage() {
         <path d="M180 300c70-10 120-60 230-70" fill="none" stroke="#ffdc32" strokeDasharray="8 10" strokeLinecap="round" strokeOpacity="0.7" strokeWidth="3" />
       </svg>
 
-      <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/80 backdrop-blur-sm">
+      <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.16em] text-white/80 backdrop-blur-sm">
         <Icon className="size-3.5 text-[#ffdc32]" path={PIN_PATH} />
         {t('Cameroon')}
       </span>
@@ -75,7 +75,7 @@ export function LocationsPage() {
             <div className="flex flex-col items-center">
               <div className="mb-2 whitespace-nowrap rounded-2xl bg-white px-3.5 py-2 text-center text-[#092a53] shadow-[0_16px_36px_rgba(2,12,28,0.35)]">
                 <p className="font-display text-sm font-extrabold leading-tight sm:text-base">{t(town)}</p>
-                <p className="text-[10px] font-bold text-[#65748a]">{listingsLabel(countIn(town))}</p>
+                <p className="text-xs font-bold text-[#65748a]">{listingsLabel(countIn(town))}</p>
               </div>
               <span className="relative grid size-11 place-items-center">
                 <span aria-hidden="true" className="absolute inset-0 rounded-full bg-[#ffdc32]/40 motion-safe:animate-ping" />
@@ -91,7 +91,7 @@ export function LocationsPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#fbfaf5] text-[#102c50]">
+    <div className="min-h-screen bg-[#fbfaf5] text-[#092a53]">
       <Header />
       <main id="main" tabIndex={-1}>
         <PageHero
@@ -123,21 +123,21 @@ export function LocationsPage() {
                 {t('Listed locations')}
               </h2>
             </div>
-            <div aria-label={t('Filter by city')} className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-white p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc]" role="group">
+            <div aria-label={t('Filter by city')} className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-white p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#fbfaf5]" role="group">
               {['', ...towns].map((town) => {
                 const active = city === town
                 return (
                   <button
                     aria-pressed={active}
                     className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-extrabold transition sm:px-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] ${
-                      active ? 'bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.2)]' : 'text-[#52647b] hover:bg-[#fbfaf5] hover:text-[#092a53]'
+                      active ? 'bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.2)]' : 'text-[#65748a] hover:bg-[#fbfaf5] hover:text-[#092a53]'
                     }`}
                     key={town || 'all'}
                     onClick={() => setCity(town)}
                     type="button"
                   >
                     {town ? t(town) : t('All cities')}
-                    <span className={`grid min-w-5 place-items-center rounded-full px-1.5 py-0.5 text-[10px] tabular-nums ${active ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-[#f1ede2] text-[#65748a]'}`}>
+                    <span className={`grid min-w-5 place-items-center rounded-full px-1.5 py-0.5 text-xs tabular-nums ${active ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-[#fbfaf5] text-[#65748a]'}`}>
                       {town ? countIn(town) : cameroonLocations.length}
                     </span>
                   </button>
@@ -154,7 +154,7 @@ export function LocationsPage() {
               const more = extraLink(location)
               return (
                 <li key={`${location.town}-${location.area}`}>
-                  <article className="group flex h-full flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_30px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.12)] hover:ring-[#e2d39a]">
+                  <article className="group flex h-full flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_30px_rgba(9,42,83,0.06)] ring-1 ring-[#fbfaf5] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.12)] hover:ring-[#e2d39a]">
                     <div className="relative h-28 shrink-0 bg-[#092a53]">
                       <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
                         <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.09)_1px,transparent_1px)] [background-size:18px_18px]" />
@@ -164,29 +164,29 @@ export function LocationsPage() {
                         </svg>
                         <div className="absolute -right-10 -top-16 size-44 rounded-full bg-[#3f86d6]/30 blur-2xl" />
                       </div>
-                      <span className="absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full bg-[#ffdc32] px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#092a53]">
+                      <span className="absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full bg-[#ffdc32] px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.14em] text-[#092a53]">
                         <Icon className="size-3.5" path={PIN_PATH} />
                         {t(location.town)}
                       </span>
                       <span aria-hidden="true" className="absolute right-5 top-3 font-display text-5xl font-extrabold tabular-nums text-white/10">
                         {String(number).padStart(2, '0')}
                       </span>
-                      <span aria-hidden="true" className="absolute -bottom-6 left-5 grid size-12 place-items-center rounded-2xl bg-white text-[#092a53] shadow-[0_12px_26px_rgba(9,42,83,0.18)] ring-1 ring-[#ebe7dc] transition duration-300 group-hover:-rotate-6 group-hover:bg-[#ffdc32]">
+                      <span aria-hidden="true" className="absolute -bottom-6 left-5 grid size-12 place-items-center rounded-2xl bg-white text-[#092a53] shadow-[0_12px_26px_rgba(9,42,83,0.18)] ring-1 ring-[#fbfaf5] transition duration-300 group-hover:-rotate-6 group-hover:bg-[#ffdc32]">
                         <Icon path={PIN_PATH} />
                       </span>
                     </div>
 
                     <div className="flex flex-1 flex-col px-5 pb-5 pt-10 sm:px-6 sm:pb-6">
-                      <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Cold Stone Creamery')}</p>
+                      <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Cold Stone Creamery')}</p>
                       <h3 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]">{t(location.area)}</h3>
 
                       <dl className="mt-5 space-y-3">
                         <div className="flex items-start gap-3">
                           <dt className="sr-only">{t('Address or landmark')}</dt>
-                          <span aria-hidden="true" className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-[#fff6d1] text-[#806a00]">
+                          <span aria-hidden="true" className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-[#fff6d1] text-[#bd9c00]">
                             <Icon className="size-4" path={PIN_PATH} />
                           </span>
-                          <dd className="text-sm font-semibold leading-6 text-[#52647b]">{t(location.address)}</dd>
+                          <dd className="text-sm font-semibold leading-6 text-[#65748a]">{t(location.address)}</dd>
                         </div>
                         {location.phone && (
                           <div className="flex items-center gap-3">
@@ -239,7 +239,7 @@ export function LocationsPage() {
             })}
           </ul>
 
-          <aside className="mt-10 flex flex-col gap-5 rounded-[28px] bg-white p-6 shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_30px_rgba(9,42,83,0.06)] ring-1 ring-[#ebe7dc] sm:flex-row sm:items-center sm:p-8">
+          <aside className="mt-10 flex flex-col gap-5 rounded-[28px] bg-white p-6 shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_30px_rgba(9,42,83,0.06)] ring-1 ring-[#fbfaf5] sm:flex-row sm:items-center sm:p-8">
             <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#092a53] font-display text-lg font-extrabold text-[#ffdc32]">i</span>
             <div className="flex-1">
               <h2 className="font-display text-lg font-extrabold text-[#092a53]">{t('Before you go')}</h2>

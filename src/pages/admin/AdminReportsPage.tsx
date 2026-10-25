@@ -105,11 +105,11 @@ export function AdminReportsPage() {
   if (!report) {
     return (
       <div aria-label={t('Loading…')} className="space-y-6" role="status">
-        <div className="h-20 animate-pulse rounded-2xl bg-[#eef2f6]" />
+        <div className="h-20 animate-pulse rounded-2xl bg-[#f4f6f8]" />
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => <div className="h-32 animate-pulse rounded-2xl bg-[#eef2f6]" key={index} />)}
+          {Array.from({ length: 4 }).map((_, index) => <div className="h-32 animate-pulse rounded-2xl bg-[#f4f6f8]" key={index} />)}
         </div>
-        <div className="h-80 animate-pulse rounded-[20px] bg-[#eef2f6]" />
+        <div className="h-80 animate-pulse rounded-[20px] bg-[#f4f6f8]" />
       </div>
     )
   }
@@ -195,21 +195,21 @@ export function AdminReportsPage() {
   const kpis = [
     { label: t('Paid sales'), value: formatXaf(report.summary.sales, language), hint: weekChange === null ? t('All time') : t('{change}% vs. previous week', { change: weekChange > 0 ? `+${weekChange}` : weekChange }), trend: weekChange, icon: icons.money, accent: 'bg-[#e5f4ea] text-[#2c7a4f]' },
     { label: t('Total orders'), value: report.summary.orderCount.toLocaleString(locale), hint: t('{count} in the last 30 days', { count: periodOrders }), trend: null, icon: icons.receipt, accent: 'bg-[#e9f1fa] text-[#315982]' },
-    { label: t('Average paid order'), value: formatXaf(report.summary.averageOrder, language), hint: t('Per paid order'), trend: null, icon: icons.basket, accent: 'bg-[#fff4c2] text-[#8a6f00]' },
+    { label: t('Average paid order'), value: formatXaf(report.summary.averageOrder, language), hint: t('Per paid order'), trend: null, icon: icons.basket, accent: 'bg-[#fff4c2] text-[#bd9c00]' },
     { label: t('Orders placed'), value: report.summary.placedCount.toLocaleString(locale), hint: t('{rate}% of orders paid', { rate: completion }), trend: null, icon: icons.check, accent: 'bg-[#efe9fb] text-[#5b3fa0]' },
   ]
 
   return (
     <div className="min-w-0 space-y-6">
-      <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
             <Icon className="size-7" path={icons.chart} />
           </span>
           <div className="min-w-0">
-            <nav aria-label={t('Breadcrumb')} className="text-[11px] font-bold text-[#8190a1]">
+            <nav aria-label={t('Breadcrumb')} className="text-xs font-bold text-[#65748a]">
               {t('Store analytics')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#8a7000]">{t('Reports')}</span>
+              <span className="text-[#bd9c00]">{t('Reports')}</span>
             </nav>
             <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Sales and inventory reports')}</h1>
             <p className="mt-0.5 text-sm text-[#65748a]">{t('Track performance, demand, and stock health across your store in one place.')}</p>
@@ -217,7 +217,7 @@ export function AdminReportsPage() {
         </div>
         <div className="flex flex-wrap gap-2.5 print:hidden">
           <button
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53]"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53]"
             onClick={() => window.print()}
             type="button"
           >
@@ -237,11 +237,11 @@ export function AdminReportsPage() {
 
       <section aria-label={t('Summary')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {kpis.map((kpi) => (
-          <article className="rounded-2xl border border-[#e5ebf3] bg-white p-4 sm:p-5" key={kpi.label}>
+          <article className="rounded-2xl border border-[#dce3eb] bg-white p-4 sm:p-5" key={kpi.label}>
             <span className={`grid size-9 place-items-center rounded-xl ${kpi.accent}`}><Icon path={kpi.icon} /></span>
-            <p className="mt-4 truncate font-display text-[1.6rem] font-extrabold leading-none tracking-tight text-[#102c50]">{kpi.value}</p>
+            <p className="mt-4 truncate font-display text-[1.6rem] font-extrabold leading-none tracking-tight text-[#092a53]">{kpi.value}</p>
             <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{kpi.label}</p>
-            <p className={`mt-0.5 truncate text-[11px] font-semibold ${kpi.trend === null ? 'text-[#a3b0bf]' : kpi.trend >= 0 ? 'text-[#2c7a4f]' : 'text-[#b2433a]'}`}>
+            <p className={`mt-0.5 truncate text-xs font-semibold ${kpi.trend === null ? 'text-[#a3b0bf]' : kpi.trend >= 0 ? 'text-[#2c7a4f]' : 'text-[#b2433a]'}`}>
               {kpi.trend !== null && <span aria-hidden="true">{kpi.trend >= 0 ? '▲ ' : '▼ '}</span>}
               {kpi.hint}
             </p>
@@ -249,7 +249,7 @@ export function AdminReportsPage() {
         ))}
       </section>
 
-      <section aria-labelledby="trend-title" className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 sm:p-6">
+      <section aria-labelledby="trend-title" className="rounded-[20px] border border-[#dce3eb] bg-white p-4 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="trend-title">{t('Daily sales — last 30 days')}</h2>
@@ -258,7 +258,7 @@ export function AdminReportsPage() {
               {bestDay?.sales > 0 && ` · ${t('Best day: {date}', { date: bestDay.date.toLocaleDateString(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' }) })}`}
             </p>
           </div>
-          <div aria-label={t('Chart metric')} className="flex rounded-xl bg-[#f1f4f8] p-1 print:hidden" role="group">
+          <div aria-label={t('Chart metric')} className="flex rounded-xl bg-[#f4f6f8] p-1 print:hidden" role="group">
             {([
               { key: 'sales', label: t('Sales') },
               { key: 'orders', label: t('Orders') },
@@ -277,7 +277,7 @@ export function AdminReportsPage() {
         </div>
 
         <div className="relative mt-6">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex w-12 flex-col justify-between pb-6 text-right text-[10px] font-semibold text-[#a3b0bf]">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex w-12 flex-col justify-between pb-6 text-right text-xs font-semibold text-[#a3b0bf]">
             {[...gridLines].reverse().map((ratio) => (
               <span key={ratio}>{chartMetric === 'sales' ? compactXaf(axis.max * ratio, language) : Math.round(axis.max * ratio)}</span>
             ))}
@@ -298,7 +298,7 @@ export function AdminReportsPage() {
               viewBox={`0 0 ${chartWidth} ${chartHeight}`}
             >
               {gridLines.map((ratio) => (
-                <line key={ratio} stroke="#eef2f6" strokeWidth="1" vectorEffect="non-scaling-stroke" x1="0" x2={chartWidth} y1={chartHeight - ratio * chartHeight} y2={chartHeight - ratio * chartHeight} />
+                <line key={ratio} stroke="#f4f6f8" strokeWidth="1" vectorEffect="non-scaling-stroke" x1="0" x2={chartWidth} y1={chartHeight - ratio * chartHeight} y2={chartHeight - ratio * chartHeight} />
               ))}
               {hoverIndex !== null && (
                 <rect fill="#092a53" fillOpacity="0.05" height={chartHeight} width={slotWidth} x={hoverIndex * slotWidth} y="0" />
@@ -324,7 +324,7 @@ export function AdminReportsPage() {
                 </div>
               </>
             )}
-            <div className="mt-2 flex justify-between text-[10px] font-semibold text-[#a3b0bf]">
+            <div className="mt-2 flex justify-between text-xs font-semibold text-[#a3b0bf]">
               {[0, 7, 14, 21, 29].map((index) => (
                 <span key={index}>{series[index].date.toLocaleDateString(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' })}</span>
               ))}
@@ -334,13 +334,13 @@ export function AdminReportsPage() {
       </section>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <section aria-labelledby="best-sellers-title" className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 sm:p-6">
+        <section aria-labelledby="best-sellers-title" className="rounded-[20px] border border-[#dce3eb] bg-white p-4 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <span className="grid size-9 place-items-center rounded-xl bg-[#fff4c2] text-[#8a6f00]"><Icon path={icons.trophy} /></span>
+              <span className="grid size-9 place-items-center rounded-xl bg-[#fff4c2] text-[#bd9c00]"><Icon path={icons.trophy} /></span>
               <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="best-sellers-title">{t('Best-selling products')}</h2>
             </div>
-            {popularTotal > 0 && <p className="text-xs font-bold text-[#4f6379]">{formatXaf(popularTotal, language)}</p>}
+            {popularTotal > 0 && <p className="text-xs font-bold text-[#65748a]">{formatXaf(popularTotal, language)}</p>}
           </div>
           {report.popularItems.length ? (
             <ol className="mt-5 space-y-3.5">
@@ -350,36 +350,36 @@ export function AdminReportsPage() {
                   <li key={item.name}>
                     <div className="flex items-center justify-between gap-3 text-sm">
                       <span className="flex min-w-0 items-center gap-3">
-                        <span className={`grid size-7 shrink-0 place-items-center rounded-lg text-xs font-extrabold ${index === 0 ? 'bg-[#ffdc32] text-[#092a53]' : index < 3 ? 'bg-[#092a53] text-white' : 'bg-[#f1f4f8] text-[#65748a]'}`}>{index + 1}</span>
-                        <span className="truncate font-bold text-[#102c50]">{item.name}</span>
-                        <span className="shrink-0 text-xs text-[#8190a1]">{item.quantity} {t('sold')}</span>
+                        <span className={`grid size-7 shrink-0 place-items-center rounded-lg text-xs font-extrabold ${index === 0 ? 'bg-[#ffdc32] text-[#092a53]' : index < 3 ? 'bg-[#092a53] text-white' : 'bg-[#f4f6f8] text-[#65748a]'}`}>{index + 1}</span>
+                        <span className="truncate font-bold text-[#092a53]">{item.name}</span>
+                        <span className="shrink-0 text-xs text-[#65748a]">{item.quantity} {t('sold')}</span>
                       </span>
-                      <span className="shrink-0 font-bold tabular-nums text-[#102c50]">{formatXaf(item.sales, language)}</span>
+                      <span className="shrink-0 font-bold tabular-nums text-[#092a53]">{formatXaf(item.sales, language)}</span>
                     </div>
                     <div className="ml-10 mt-1.5 flex items-center gap-2">
-                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#f1f4f8]">
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#f4f6f8]">
                         <div className={`h-full rounded-full ${index === 0 ? 'bg-[#ffdc32]' : 'bg-[#092a53]'}`} style={{ width: `${(item.sales / topSales) * 100}%` }} />
                       </div>
-                      <span className="w-9 text-right text-[11px] font-bold text-[#8190a1]">{share}%</span>
+                      <span className="w-9 text-right text-xs font-bold text-[#65748a]">{share}%</span>
                     </div>
                   </li>
                 )
               })}
             </ol>
           ) : (
-            <p className="mt-5 rounded-xl bg-[#f7f9fc] p-5 text-center text-sm text-[#8190a1]">{t('No paid orders yet.')}</p>
+            <p className="mt-5 rounded-xl bg-[#f4f6f8] p-5 text-center text-sm text-[#65748a]">{t('No paid orders yet.')}</p>
           )}
         </section>
 
         {report.lowStock && (
-          <section aria-labelledby="low-stock-title" className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 sm:p-6">
+          <section aria-labelledby="low-stock-title" className="rounded-[20px] border border-[#dce3eb] bg-white p-4 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <span className="grid size-9 place-items-center rounded-xl bg-[#fdecea] text-[#b2433a]"><Icon path={icons.alert} /></span>
                 <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="low-stock-title">{t('Low stock')}</h2>
               </div>
               {report.lowStock.length > 0 && (
-                <span className="rounded-full bg-[#fdecea] px-2.5 py-1 text-[11px] font-extrabold text-[#a53f37]">{report.lowStock.length}</span>
+                <span className="rounded-full bg-[#fdecea] px-2.5 py-1 text-xs font-extrabold text-[#a53f37]">{report.lowStock.length}</span>
               )}
             </div>
             {report.lowStock.length ? (
@@ -389,17 +389,17 @@ export function AdminReportsPage() {
                   const level = Math.min(100, Math.max(0, (availableUnits / Math.max(1, item.stock || item.availableQuantity || 1)) * 100))
                   const isOut = availableUnits === 0 || !item.isAvailable
                   return (
-                    <li className="rounded-xl bg-[#fafbfd] p-3 ring-1 ring-[#eef2f6]" key={item.itemId}>
+                    <li className="rounded-xl bg-[#f4f6f8] p-3 ring-1 ring-[#f4f6f8]" key={item.itemId}>
                       <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-sm font-bold text-[#102c50]">{item.name || item.itemId}</p>
-                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${isOut ? 'bg-[#fdeeee] text-[#a53f37]' : 'bg-[#fff6e5] text-[#9a6200]'}`}>
+                        <p className="truncate text-sm font-bold text-[#092a53]">{item.name || item.itemId}</p>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-extrabold ${isOut ? 'bg-[#fdeeee] text-[#a53f37]' : 'bg-[#fff6e5] text-[#9a6200]'}`}>
                           {isOut ? t('Sold out') : `${availableUnits} ${t('available')}`}
                         </span>
                       </div>
-                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#edf1f5]">
-                        <div className={`h-full rounded-full ${isOut ? 'bg-[#d2544b]' : 'bg-[#e0a100]'}`} style={{ width: `${Math.max(isOut ? 0 : 4, level)}%` }} />
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#f4f6f8]">
+                        <div className={`h-full rounded-full ${isOut ? 'bg-[#d2544b]' : 'bg-[#bd9c00]'}`} style={{ width: `${Math.max(isOut ? 0 : 4, level)}%` }} />
                       </div>
-                      <div className="mt-1.5 flex justify-between text-[11px] text-[#8190a1]">
+                      <div className="mt-1.5 flex justify-between text-xs text-[#65748a]">
                         <span>{t('Stock')} {item.stock}</span>
                         <span>{t('Reserved')} {item.reservedStock}</span>
                       </div>
@@ -417,7 +417,7 @@ export function AdminReportsPage() {
         )}
       </div>
 
-      <details className="group rounded-[20px] border border-[#e5ebf3] bg-white open:pb-2">
+      <details className="group rounded-[20px] border border-[#dce3eb] bg-white open:pb-2">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 sm:px-6 [&::-webkit-details-marker]:hidden">
           <span className="flex items-center gap-3">
             <span className="grid size-9 place-items-center rounded-xl bg-[#e9f1fa] text-[#315982]"><Icon path={icons.box} /></span>
@@ -426,34 +426,34 @@ export function AdminReportsPage() {
               <span className="block text-xs text-[#65748a]">{t('{count} days with sales', { count: report.recentSales.length })}</span>
             </span>
           </span>
-          <Icon className="size-5 text-[#8190a1] transition group-open:rotate-180" path={icons.chevron} />
+          <Icon className="size-5 text-[#65748a] transition group-open:rotate-180" path={icons.chevron} />
         </summary>
         <div className="relative overflow-x-auto px-2 sm:px-4">
           <table className="w-full min-w-[420px] text-left text-sm">
             <thead>
-              <tr className="border-b border-[#edf1f5] text-[11px] uppercase tracking-[0.08em] text-[#8190a1]">
+              <tr className="border-b border-[#f4f6f8] text-xs uppercase tracking-[0.08em] text-[#65748a]">
                 <th className="px-3 py-2.5 font-extrabold" scope="col">{t('Date')}</th>
                 <th className="px-3 py-2.5 text-right font-extrabold" scope="col">{t('Orders')}</th>
                 <th className="px-3 py-2.5 text-right font-extrabold" scope="col">{t('Sales')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f0f3f7]">
+            <tbody className="divide-y divide-[#f4f6f8]">
               {[...report.recentSales].reverse().map((row) => (
-                <tr className="hover:bg-[#fafbfd]" key={row.date}>
-                  <td className="px-3 py-2.5 font-semibold text-[#102c50]">
+                <tr className="hover:bg-[#f4f6f8]" key={row.date}>
+                  <td className="px-3 py-2.5 font-semibold text-[#092a53]">
                     {new Date(`${String(row.date).slice(0, 10)}T00:00:00Z`).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}
                   </td>
-                  <td className="px-3 py-2.5 text-right tabular-nums text-[#4f6379]">{row.orders}</td>
-                  <td className="px-3 py-2.5 text-right font-bold tabular-nums text-[#102c50]">{formatXaf(row.sales, language)}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums text-[#65748a]">{row.orders}</td>
+                  <td className="px-3 py-2.5 text-right font-bold tabular-nums text-[#092a53]">{formatXaf(row.sales, language)}</td>
                 </tr>
               ))}
               {!report.recentSales.length && (
-                <tr><td className="px-3 py-6 text-center text-[#8190a1]" colSpan={3}>{t('No paid orders yet.')}</td></tr>
+                <tr><td className="px-3 py-6 text-center text-[#65748a]" colSpan={3}>{t('No paid orders yet.')}</td></tr>
               )}
             </tbody>
             {report.recentSales.length > 0 && (
               <tfoot>
-                <tr className="border-t-2 border-[#e3e9f0]">
+                <tr className="border-t-2 border-[#dce3eb]">
                   <th className="px-3 py-3 font-extrabold text-[#092a53]" scope="row">{t('Total')}</th>
                   <td className="px-3 py-3 text-right font-extrabold tabular-nums text-[#092a53]">{periodOrders}</td>
                   <td className="px-3 py-3 text-right font-extrabold tabular-nums text-[#092a53]">{formatXaf(periodSales, language)}</td>

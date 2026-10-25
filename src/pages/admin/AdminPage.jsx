@@ -11,8 +11,8 @@ import { stockBarPercent } from "./stockMeter";
 import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from "./adminTable";
 
 const inputClassName =
-  "mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition placeholder:text-[#9aa5b3] hover:border-[#c9d4e0] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
-const labelClassName = "block text-xs font-bold text-[#4f6379]";
+  "mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
+const labelClassName = "block text-xs font-bold text-[#65748a]";
 const LOW_STOCK_THRESHOLD = 10;
 
 const icons = {
@@ -49,14 +49,14 @@ function stockState(flavor) {
 
 const stockStyles = {
   ok: { badge: "bg-[#eaf6ee] text-[#246a46] ring-[#cfe8d8]", dot: "bg-[#35a36b]", bar: "bg-[#35a36b]", label: "In stock" },
-  low: { badge: "bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]", dot: "bg-[#e0a100]", bar: "bg-[#e0a100]", label: "Low stock" },
+  low: { badge: "bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]", dot: "bg-[#bd9c00]", bar: "bg-[#bd9c00]", label: "Low stock" },
   "sold-out": { badge: "bg-[#fdeeee] text-[#a53f37] ring-[#f3d1ce]", dot: "bg-[#d2544b]", bar: "bg-[#d2544b]", label: "Sold out" },
 };
 
 function StockBadge({ flavor, t }) {
   const style = stockStyles[stockState(flavor)];
   return (
-    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ${style.badge}`}>
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${style.badge}`}>
       <span aria-hidden="true" className={`size-1.5 rounded-full ${style.dot}`} />
       {t(style.label)}
     </span>
@@ -69,12 +69,12 @@ function StockMeter({ flavor, t }) {
   return (
     <div className="min-w-[7.5rem]">
       <div className="flex items-baseline justify-between gap-2 text-xs">
-        <span className="font-extrabold tabular-nums text-[#102c50]">{flavor.availableQuantity}</span>
-        <span className="text-[11px] text-[#8190a1]">
+        <span className="font-extrabold tabular-nums text-[#092a53]">{flavor.availableQuantity}</span>
+        <span className="text-xs text-[#65748a]">
           {flavor.reservedStock ? `${flavor.reservedStock} ${t("reserved")}` : t("Alert at {count}", { count: LOW_STOCK_THRESHOLD })}
         </span>
       </div>
-      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#edf1f5]">
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#f4f6f8]">
         <div className={`h-full rounded-full ${style.bar}`} style={{ width: `${percent}%` }} />
       </div>
     </div>
@@ -85,7 +85,7 @@ function FlavorThumb({ src, alt = "", className = "size-12" }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) {
     return (
-      <span className={`${className} grid shrink-0 place-items-center rounded-xl bg-[#f1f4f8] text-[#a3b0bf]`}>
+      <span className={`${className} grid shrink-0 place-items-center rounded-xl bg-[#f4f6f8] text-[#a3b0bf]`}>
         <Icon className="size-5" path={icons.image} />
       </span>
     );
@@ -93,7 +93,7 @@ function FlavorThumb({ src, alt = "", className = "size-12" }) {
   return (
     <img decoding="async"
       alt={alt}
-      className={`${className} shrink-0 rounded-xl bg-[#f1f4f8] object-cover`}
+      className={`${className} shrink-0 rounded-xl bg-[#f4f6f8] object-cover`}
       loading="lazy"
       onError={() => setFailed(true)}
       src={src}
@@ -162,9 +162,9 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
         className="admin-drawer-panel relative flex h-full w-full max-w-[34rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]"
         role="dialog"
       >
-        <header className="flex items-start justify-between gap-4 border-b border-[#edf1f5] px-6 py-5">
+        <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8a7000]">
+            <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">
               {t(isEdit ? "Edit flavor" : "Catalog setup")}
             </p>
             <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="flavor-drawer-title">
@@ -176,7 +176,7 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
           </div>
           <button
             aria-label={t("Close")}
-            className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f1f4f8] hover:text-[#092a53]"
+            className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
             onClick={onClose}
             type="button"
           >
@@ -186,27 +186,27 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
 
         <form className="flex min-h-0 flex-1 flex-col" onSubmit={onSubmit}>
           <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
-            <div className="flex items-center gap-4 rounded-2xl bg-[#f7f9fc] p-3 ring-1 ring-[#e8edf3]">
+            <div className="flex items-center gap-4 rounded-2xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
               <FlavorThumb className="size-20" key={values.image} src={values.image.trim()} />
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t("Live preview")}</p>
+                <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Live preview")}</p>
                 <p className="mt-1 truncate font-display text-lg font-extrabold text-[#092a53]">
                   {values.name || t("Flavor name")}
                 </p>
                 <p className="truncate text-xs text-[#65748a]">{values.detail || t("Short description")}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-extrabold text-[#102c50]">
+                  <span className="text-sm font-extrabold text-[#092a53]">
                     {Number.isFinite(price) && price > 0 ? formatCartMoney(price, "xaf") : "— FCFA"}
                   </span>
                   {values.tag && (
-                    <span className="rounded-full bg-[#ffdc32] px-2 py-0.5 text-[10px] font-extrabold text-[#092a53]">{values.tag}</span>
+                    <span className="rounded-full bg-[#ffdc32] px-2 py-0.5 text-xs font-extrabold text-[#092a53]">{values.tag}</span>
                   )}
                 </div>
               </div>
             </div>
 
             <fieldset className="space-y-4">
-              <legend className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t("Basics")}</legend>
+              <legend className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Basics")}</legend>
               <label className={labelClassName}>
                 {t("Flavor name")}
                 <input className={inputClassName} name="name" onChange={onChange} required value={values.name} />
@@ -222,20 +222,20 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
             </fieldset>
 
             <fieldset className="space-y-4">
-              <legend className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t("Pricing & stock")}</legend>
+              <legend className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Pricing & stock")}</legend>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className={labelClassName}>
                   {t("Price per scoop (FCFA)")}
                   <span className="relative block">
                     <input className={`${inputClassName} pr-16`} min="1" name="price" onChange={onChange} required step="1" type="number" value={values.price} />
-                    <span className="pointer-events-none absolute right-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-[11px] font-extrabold text-[#8190a1]">FCFA</span>
+                    <span className="pointer-events-none absolute right-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-xs font-extrabold text-[#65748a]">FCFA</span>
                   </span>
                 </label>
                 <label className={labelClassName}>
                   {t(isEdit ? "Stock quantity" : "Starting stock")}
                   <input className={inputClassName} min={isEdit ? reservedStock : 0} name="stock" onChange={onChange} required step="1" type="number" value={values.stock} />
                   {isEdit && reservedStock > 0 && (
-                    <span className="mt-1 block text-[11px] font-medium text-[#8190a1]">
+                    <span className="mt-1 block text-xs font-medium text-[#65748a]">
                       {reservedStock} {t("reserved for pending checkouts.")}
                     </span>
                   )}
@@ -244,11 +244,11 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
             </fieldset>
 
             <fieldset className="space-y-4">
-              <legend className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8190a1]">{t("Presentation")}</legend>
+              <legend className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Presentation")}</legend>
               <div className={labelClassName}>
                 {t("Flavor image")}
                 <div
-                  className={`mt-1.5 flex items-center gap-4 rounded-2xl border-2 border-dashed p-3 transition ${isDraggingImage ? "border-[#bd9c00] bg-[#fffbea]" : "border-[#dde4ec] bg-[#f8fafc]"}`}
+                  className={`mt-1.5 flex items-center gap-4 rounded-2xl border-2 border-dashed p-3 transition ${isDraggingImage ? "border-[#bd9c00] bg-[#fffbea]" : "border-[#dce3eb] bg-[#f4f6f8]"}`}
                   onDragLeave={() => setIsDraggingImage(false)}
                   onDragOver={(event) => { event.preventDefault(); setIsDraggingImage(true); }}
                   onDrop={handleImageDrop}
@@ -268,7 +268,7 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
                         type="file"
                       />
                     </label>
-                    <p className="mt-1.5 text-[11px] font-medium leading-4 text-[#8190a1]">
+                    <p className="mt-1.5 text-xs font-medium leading-4 text-[#65748a]">
                       {t("Choose a photo or drag it here. JPEG, PNG, WebP, or GIF. Large photos are resized automatically.")}
                     </p>
                   </div>
@@ -304,9 +304,9 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
             )}
           </div>
 
-          <footer className="flex items-center justify-end gap-3 border-t border-[#edf1f5] bg-[#fafbfd] px-6 py-4">
+          <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
             <button
-              className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] hover:text-[#092a53]"
+              className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
               onClick={onClose}
               type="button"
             >
@@ -555,7 +555,7 @@ export function AdminPage() {
   }
 
   const metrics = [
-    { label: "Total flavors", value: flavors.length, icon: icons.scoop, accent: "bg-[#fff4c2] text-[#8a6f00]", filter: "all" },
+    { label: "Total flavors", value: flavors.length, icon: icons.scoop, accent: "bg-[#fff4c2] text-[#bd9c00]", filter: "all" },
     { label: "In stock", value: inStockCount, icon: icons.check, accent: "bg-[#e5f4ea] text-[#2c7a4f]", filter: "available" },
     { label: "Low stock", value: lowStockCount, icon: icons.alert, accent: "bg-[#fff1dc] text-[#a86a00]", filter: "low" },
     { label: "Sold out", value: soldOutCount, icon: icons.close, accent: "bg-[#fdecea] text-[#b2433a]", filter: "sold-out" },
@@ -565,7 +565,7 @@ export function AdminPage() {
     <div className="flex items-center justify-end gap-1">
       <Link
         aria-label={`${t("View")} ${flavor.name}`}
-        className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53]"
+        className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
         title={t("View")}
         to={`/flavor/${flavor.id}`}
       >
@@ -573,7 +573,7 @@ export function AdminPage() {
       </Link>
       <button
         aria-label={`${t("Edit")} ${flavor.name}`}
-        className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-[#eef2f7] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-[#bd9c00]"
+        className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-[#bd9c00]"
         onClick={() => openEditForm(flavor)}
         title={t("Edit")}
         type="button"
@@ -582,7 +582,7 @@ export function AdminPage() {
       </button>
       <button
         aria-label={`${t("Delete")} ${flavor.name}`}
-        className="grid size-8 place-items-center rounded-lg text-[#6b7d91] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-red-400"
+        className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-red-400"
         onClick={() => setFlavorToDelete(flavor)}
         title={t("Delete")}
         type="button"
@@ -595,15 +595,15 @@ export function AdminPage() {
   return (
     <div className="min-w-0 space-y-6">
       {/* Page header */}
-      <header className="flex flex-col gap-5 border-b border-[#edf1f5] pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
             <Icon className="size-7" path={icons.scoop} />
           </span>
           <div className="min-w-0">
-            <nav aria-label={t("Breadcrumb")} className="text-[11px] font-bold text-[#8190a1]">
+            <nav aria-label={t("Breadcrumb")} className="text-xs font-bold text-[#65748a]">
               {t("Catalog")} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#8a7000]">{t("Flavors")}</span>
+              <span className="text-[#bd9c00]">{t("Flavors")}</span>
             </nav>
             <h1 className="mt-1 truncate font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">
               {t("Flavors")}
@@ -615,7 +615,7 @@ export function AdminPage() {
         </div>
         <div className="flex flex-wrap gap-2.5">
           <Link
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
             to="/flavors"
           >
             <Icon path={icons.external} />
@@ -660,7 +660,7 @@ export function AdminPage() {
             <button
               aria-pressed={isActive}
               className={`group rounded-2xl border bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:p-5 ${
-                isActive ? "border-[#092a53] shadow-[0_0_0_1px_#092a53]" : "border-[#e5ebf3]"
+                isActive ? "border-[#092a53] shadow-[0_0_0_1px_#092a53]" : "border-[#dce3eb]"
               }`}
               key={metric.label}
               onClick={() => setStockFilter(isActive ? "all" : metric.filter)}
@@ -671,12 +671,12 @@ export function AdminPage() {
                   <Icon path={metric.icon} />
                 </span>
                 {metric.filter !== "all" && (
-                  <span className="text-[10px] font-bold text-[#a3b0bf] opacity-0 transition group-hover:opacity-100">
+                  <span className="text-xs font-bold text-[#a3b0bf] opacity-0 transition group-hover:opacity-100">
                     {t(isActive ? "Clear filter" : "Filter")}
                   </span>
                 )}
               </div>
-              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#102c50]">
+              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#092a53]">
                 {metric.value.toLocaleString()}
               </p>
               <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{t(metric.label)}</p>
@@ -685,26 +685,26 @@ export function AdminPage() {
         })}
       </section>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-[#f7f9fc] px-4 py-3 text-xs ring-1 ring-[#e8edf3]">
-        <span className="flex items-center gap-2 font-bold text-[#4f6379]">
-          <Icon className="size-4 text-[#8190a1]" path={icons.box} />
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-[#f4f6f8] px-4 py-3 text-xs ring-1 ring-[#dce3eb]">
+        <span className="flex items-center gap-2 font-bold text-[#65748a]">
+          <Icon className="size-4 text-[#65748a]" path={icons.box} />
           {totalStock.toLocaleString()} {t("Units in stock")}
         </span>
         {flavors.length > 0 && (
-          <div aria-hidden="true" className="flex h-2 min-w-40 flex-1 overflow-hidden rounded-full bg-[#e6ebf1]">
+          <div aria-hidden="true" className="flex h-2 min-w-40 flex-1 overflow-hidden rounded-full bg-[#dce3eb]">
             <span className="bg-[#35a36b]" style={{ width: `${((inStockCount - lowStockCount) / flavors.length) * 100}%` }} />
-            <span className="bg-[#e0a100]" style={{ width: `${(lowStockCount / flavors.length) * 100}%` }} />
+            <span className="bg-[#bd9c00]" style={{ width: `${(lowStockCount / flavors.length) * 100}%` }} />
             <span className="bg-[#d2544b]" style={{ width: `${(soldOutCount / flavors.length) * 100}%` }} />
           </div>
         )}
-        <span className="font-semibold text-[#8190a1]">
+        <span className="font-semibold text-[#65748a]">
           {t("Low stock = {count} or fewer available", { count: LOW_STOCK_THRESHOLD })}
         </span>
       </div>
 
       {/* Catalog */}
-      <section aria-labelledby="flavor-catalog-title" className="min-w-0 rounded-[20px] border border-[#e5ebf3] bg-white">
-        <div className="flex flex-col gap-4 border-b border-[#edf1f5] p-4 sm:p-5">
+      <section aria-labelledby="flavor-catalog-title" className="min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
+        <div className="flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="flavor-catalog-title">
@@ -714,7 +714,7 @@ export function AdminPage() {
                 {t("Showing {shown} of {total} flavors", { shown: filteredFlavors.length, total: flavors.length })}
               </p>
             </div>
-            <div aria-label={t("View")} className="inline-flex rounded-xl bg-[#f1f4f8] p-1" role="group">
+            <div aria-label={t("View")} className="inline-flex rounded-xl bg-[#f4f6f8] p-1" role="group">
               {[
                 { key: "table", icon: icons.list, label: t("Table view") },
                 { key: "grid", icon: icons.grid, label: t("Grid view") },
@@ -723,7 +723,7 @@ export function AdminPage() {
                   aria-label={option.label}
                   aria-pressed={view === option.key}
                   className={`grid size-8 place-items-center rounded-lg transition ${
-                    view === option.key ? "bg-white text-[#092a53] shadow-sm" : "text-[#8190a1] hover:text-[#092a53]"
+                    view === option.key ? "bg-white text-[#092a53] shadow-sm" : "text-[#65748a] hover:text-[#092a53]"
                   }`}
                   key={option.key}
                   onClick={() => setView(option.key)}
@@ -739,7 +739,7 @@ export function AdminPage() {
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
             <label className="relative block">
               <span className="sr-only">{t("Search flavors")}</span>
-              <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
+              <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
               <input
                 className={`${inputClassName} mt-0 pl-10`}
                 onChange={(event) => setFlavorSearch(event.target.value)}
@@ -770,7 +770,7 @@ export function AdminPage() {
                 <option value="stock">{t("Sort: Lowest stock first")}</option>
               </select>
             </label>
-            <div aria-label={t("Stock status")} className="flex overflow-x-auto rounded-xl bg-[#f1f4f8] p-1" role="group">
+            <div aria-label={t("Stock status")} className="flex overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
               {[
                 { key: "all", label: t("All") },
                 { key: "available", label: t("In stock") },
@@ -804,15 +804,15 @@ export function AdminPage() {
           <div aria-label={t("Loading flavors from the database…")} className="space-y-3 p-4 sm:p-5" role="status">
             {[0, 1, 2, 3].map((row) => (
               <div className="flex animate-pulse items-center gap-4" key={row}>
-                <span className="size-12 rounded-xl bg-[#eef2f6]" />
-                <span className="h-3 flex-1 rounded bg-[#eef2f6]" />
-                <span className="h-3 w-24 rounded bg-[#eef2f6]" />
+                <span className="size-12 rounded-xl bg-[#f4f6f8]" />
+                <span className="h-3 flex-1 rounded bg-[#f4f6f8]" />
+                <span className="h-3 w-24 rounded bg-[#f4f6f8]" />
               </div>
             ))}
           </div>
         ) : filteredFlavors.length === 0 ? (
           <div className="px-6 py-14 text-center">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f4f8] text-[#8190a1]">
+            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f4f6f8] text-[#65748a]">
               <Icon className="size-5" path={icons.search} />
             </span>
             <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">
@@ -821,7 +821,7 @@ export function AdminPage() {
             <div className="mt-4 flex justify-center gap-2">
               {hasActiveFilters ? (
                 <button
-                  className="min-h-9 rounded-xl border border-[#dce5ef] px-4 text-xs font-bold text-[#355777] transition hover:bg-[#f6f9fc]"
+                  className="min-h-9 rounded-xl border border-[#dce5ef] px-4 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8]"
                   onClick={resetFilters}
                   type="button"
                 >
@@ -843,7 +843,7 @@ export function AdminPage() {
           <div className="relative overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead>
-                <tr className="border-b border-[#edf1f5] text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8190a1]">
+                <tr className="border-b border-[#f4f6f8] text-xs font-extrabold uppercase tracking-[0.08em] text-[#65748a]">
                   <th className="px-5 py-3 font-extrabold" scope="col">{t("Flavor")}</th>
                   <th className="px-3 py-3 font-extrabold" scope="col">{t("Badge")}</th>
                   <th className="px-3 py-3 text-right font-extrabold" scope="col">{t("Price")}</th>
@@ -852,28 +852,28 @@ export function AdminPage() {
                   <th className={`px-5 py-3 text-right font-extrabold ${PINNED_ACTION_HEAD}`} scope="col"><span className="sr-only">{t("Actions")}</span></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f0f3f7]">
+              <tbody className="divide-y divide-[#f4f6f8]">
                 {filteredFlavors.map((flavor) => (
-                  <tr className="group transition hover:bg-[#fafbfd]" key={flavor.id}>
+                  <tr className="group transition hover:bg-[#f4f6f8]" key={flavor.id}>
                     <td className="px-5 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <FlavorThumb alt="" src={flavor.image} />
                         <div className="min-w-0">
-                          <p className="truncate font-bold text-[#102c50]">{flavor.name}</p>
-                          <p className="max-w-[14rem] truncate text-xs text-[#7b8796]">{flavor.detail}</p>
+                          <p className="truncate font-bold text-[#092a53]">{flavor.name}</p>
+                          <p className="max-w-[14rem] truncate text-xs text-[#65748a]">{flavor.detail}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-3 py-3">
                       {flavor.tag ? (
-                        <span className="inline-block max-w-[9rem] truncate rounded-full bg-[#fff6cc] px-2.5 py-1 text-[11px] font-bold text-[#7a6300]">
+                        <span className="inline-block max-w-[9rem] truncate rounded-full bg-[#fff6cc] px-2.5 py-1 text-xs font-bold text-[#bd9c00]">
                           {t(flavor.tag)}
                         </span>
                       ) : (
                         <span className="text-[#a3b0bf]">—</span>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3 text-right font-bold tabular-nums text-[#102c50]">
+                    <td className="whitespace-nowrap px-3 py-3 text-right font-bold tabular-nums text-[#092a53]">
                       {formatCartMoney(flavor.price, "xaf")}
                     </td>
                     <td className="px-3 py-3"><StockMeter flavor={flavor} t={t} /></td>
@@ -891,7 +891,7 @@ export function AdminPage() {
                 className="group flex flex-col overflow-hidden rounded-2xl border border-[#e7edf4] bg-white transition hover:-translate-y-0.5 hover:border-[#cbd8e6] hover:shadow-[0_14px_30px_rgba(16,44,80,0.09)]"
                 key={flavor.id}
               >
-                <div className="relative h-40 overflow-hidden bg-[#f1f4f7]">
+                <div className="relative h-40 overflow-hidden bg-[#f4f6f8]">
                   <img decoding="async"
                     alt={flavor.name}
                     className="size-full object-cover transition duration-300 group-hover:scale-[1.03]"
@@ -900,7 +900,7 @@ export function AdminPage() {
                   />
                   <span className="absolute left-3 top-3"><StockBadge flavor={flavor} t={t} /></span>
                   {flavor.tag && (
-                    <span className="absolute right-3 top-3 max-w-[50%] truncate rounded-full bg-[#ffdc32] px-2.5 py-1 text-[10px] font-extrabold text-[#092a53] shadow-sm">
+                    <span className="absolute right-3 top-3 max-w-[50%] truncate rounded-full bg-[#ffdc32] px-2.5 py-1 text-xs font-extrabold text-[#092a53] shadow-sm">
                       {t(flavor.tag)}
                     </span>
                   )}
@@ -908,12 +908,12 @@ export function AdminPage() {
                 <div className="flex flex-1 flex-col p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="truncate font-display text-lg font-extrabold text-[#123253]">{flavor.name}</h3>
+                      <h3 className="truncate font-display text-lg font-extrabold text-[#092a53]">{flavor.name}</h3>
                       <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-[#65748a]">{flavor.detail}</p>
                     </div>
-                    <p className="shrink-0 text-sm font-extrabold tabular-nums text-[#123253]">{formatCartMoney(flavor.price, "xaf")}</p>
+                    <p className="shrink-0 text-sm font-extrabold tabular-nums text-[#092a53]">{formatCartMoney(flavor.price, "xaf")}</p>
                   </div>
-                  <div className="mt-auto flex items-end justify-between gap-3 border-t border-[#edf1f5] pt-3 [&>div:first-child]:mt-0">
+                  <div className="mt-auto flex items-end justify-between gap-3 border-t border-[#f4f6f8] pt-3 [&>div:first-child]:mt-0">
                     <StockMeter flavor={flavor} t={t} />
                     {rowActions(flavor)}
                   </div>
@@ -972,11 +972,11 @@ export function AdminPage() {
             <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="delete-flavor-title">
               {t("Remove this flavor?")}
             </h2>
-            <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#f7f9fc] p-3 ring-1 ring-[#e8edf3]">
+            <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
               <FlavorThumb src={flavorToDelete.image} />
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-[#102c50]">{flavorToDelete.name}</p>
-                <p className="text-xs text-[#7b8796]">{formatCartMoney(flavorToDelete.price, "xaf")}</p>
+                <p className="truncate text-sm font-bold text-[#092a53]">{flavorToDelete.name}</p>
+                <p className="text-xs text-[#65748a]">{formatCartMoney(flavorToDelete.price, "xaf")}</p>
               </div>
             </div>
             <p className="mt-3 text-sm leading-6 text-[#65748a]">
@@ -987,7 +987,7 @@ export function AdminPage() {
             )}
             <div className="mt-6 flex justify-end gap-2.5">
               <button
-                className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6]"
+                className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]"
                 onClick={() => setFlavorToDelete(null)}
                 type="button"
               >

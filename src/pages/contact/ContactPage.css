@@ -1,6 +1,6 @@
 .contact-page {
   --contact-ink: #092a53;
-  --contact-muted: #52647b;
+  --contact-muted: #65748a;
   --contact-ground: #f4f6f8;
   --contact-line: #dfe5eb;
   --contact-field: #c9d2dd;
@@ -102,9 +102,9 @@
   align-content: center;
   gap: 12px;
   aspect-ratio: auto;
-  border: 1px solid #e0e6ed;
+  border: 1px solid #dce3eb;
   border-radius: 12px;
-  background: #edf1f5;
+  background: #f4f6f8;
   padding: 16px;
 }
 
@@ -131,7 +131,7 @@
   width: 38px;
   height: 38px;
   border-radius: 7px;
-  background: #edf1f5 !important;
+  background: #f4f6f8 !important;
   color: var(--contact-ink) !important;
   box-shadow: none !important;
 }
@@ -179,11 +179,11 @@
   width: 36px;
   height: 36px;
   border-radius: 7px;
-  background: #edf1f5;
+  background: #f4f6f8;
 }
 
 .contact-hero-visual > a:nth-of-type(2) > span:first-child > span {
-  background: #edf1f5 !important;
+  background: #f4f6f8 !important;
 }
 
 .contact-hero-visual > a:nth-of-type(2) > span:first-child > span > svg {
@@ -243,7 +243,7 @@
   border: 1px solid #d8e0e9;
   border-radius: 50%;
   background: #fff;
-  color: #52647b;
+  color: #65748a;
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 650;
@@ -336,7 +336,7 @@
   width: 40px;
   height: 40px;
   border-radius: 7px;
-  background: #edf1f5;
+  background: #f4f6f8;
   color: var(--contact-ink);
   box-shadow: none;
 }
@@ -399,7 +399,7 @@
   width: 30px;
   height: 30px;
   border-radius: 5px;
-  background: #edf1f5;
+  background: #f4f6f8;
   color: var(--contact-ink);
   box-shadow: none;
 }

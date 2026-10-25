@@ -96,18 +96,18 @@ function eventTypeFromSearch(params: URLSearchParams) {
 }
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
-  new: { label: "Waiting for the store's quote", className: "bg-[#eef2f7] text-[#33475e]" },
+  new: { label: "Waiting for the store's quote", className: "bg-[#f4f6f8] text-[#33475e]" },
   quoted: { label: "Quote ready: pay the deposit", className: "bg-[#fff3c4] text-[#7a5d00]" },
   deposit_paid: { label: "Deposit paid", className: "bg-[#e3f4e8] text-[#1f6b3e]" },
   confirmed: { label: "Confirmed", className: "bg-[#e3f4e8] text-[#1f6b3e]" },
-  completed: { label: "Completed", className: "bg-[#eef2f7] text-[#33475e]" },
+  completed: { label: "Completed", className: "bg-[#f4f6f8] text-[#33475e]" },
   declined: { label: "Declined", className: "bg-red-50 text-red-700" },
   cancelled: { label: "Cancelled", className: "bg-red-50 text-red-700" },
 };
 
 const fieldClass =
-  "mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-3 text-sm font-medium text-[#102c50] outline-none! transition placeholder:text-[#9aa5b3] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25";
-const labelClass = "block text-xs font-bold text-[#4f6379]";
+  "mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-3 text-sm font-medium text-[#092a53] outline-none! transition placeholder:text-[#9aa5b3] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25";
+const labelClass = "block text-xs font-bold text-[#65748a]";
 
 const EVENT_ICONS: Record<string, string> = {
   birthday: "M4 20h16M6 20v-3.5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2V20M8 14.5c1.2.8 2.2-.7 3.4 0s2.2.9 3.2 0 2.2.8 3.4 0M12 12V8.5M12 6.2v.01",
@@ -457,7 +457,7 @@ export function EventOrdersPage() {
   }
 
   return (
-    <div className="event-orders-page min-h-screen bg-[#f5f7fa] text-[#102c50]">
+    <div className="event-orders-page min-h-screen bg-[#f4f6f8] text-[#092a53]">
       <Header />
       {paymentDialog && (
         <PaymentStatusDialog
@@ -491,7 +491,7 @@ export function EventOrdersPage() {
                 <h1 className="mt-0 max-w-xl font-display text-4xl font-extrabold leading-[1.06] tracking-tight text-[#092a53] sm:text-5xl">
                   {t(EVENT_HERO_COPY[chosen.id].title)}
                 </h1>
-                <p className="mt-4 max-w-lg text-base leading-7 text-[#4f6379]">
+                <p className="mt-4 max-w-lg text-base leading-7 text-[#65748a]">
                   {t(EVENT_HERO_COPY[chosen.id].description)}
                 </p>
                 <a className="event-hero-action" href="#event-type">{t("Start an event order")}</a>
@@ -584,7 +584,7 @@ export function EventOrdersPage() {
                           <button
                             aria-pressed={selected}
                             className={`event-fulfillment-choice flex items-center gap-3 rounded-2xl px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 ${
-                              selected ? "bg-[#092a53] text-white" : "bg-[#f6f3ea] text-[#092a53] hover:bg-[#efe8d6]"
+                              selected ? "bg-[#092a53] text-white" : "bg-[#fbfaf5] text-[#092a53] hover:bg-[#efe8d6]"
                             }`}
                             key={type}
                             onClick={() => setFulfillmentType(type)}
@@ -631,7 +631,7 @@ export function EventOrdersPage() {
                       </div>
                       <input
                         aria-label={t("Search treats")}
-                        className="h-11 w-full rounded-full bg-[#f6f3ea] px-4 text-sm font-semibold text-[#092a53] outline-none transition placeholder:font-medium placeholder:text-[#8592a3] focus:bg-white focus:ring-2 focus:ring-[#ffdc32] sm:w-56"
+                        className="h-11 w-full rounded-full bg-[#fbfaf5] px-4 text-sm font-semibold text-[#092a53] outline-none transition placeholder:font-medium placeholder:text-[#8592a3] focus:bg-white focus:ring-2 focus:ring-[#ffdc32] sm:w-56"
                         onChange={(event) => setItemSearch(event.target.value)}
                         placeholder={t("Search treats")}
                         type="search"
@@ -648,7 +648,7 @@ export function EventOrdersPage() {
                                 const quantity = quantities[item.itemId] || 0;
                                 const picked = quantity > 0;
                                 return (
-                                  <li className={`event-treat-row flex items-center gap-3 rounded-2xl px-3 py-2.5 ${picked ? "bg-[#092a53] text-white" : "bg-[#f6f3ea] text-[#092a53]"}`} data-selected={picked} key={item.itemId}>
+                                  <li className={`event-treat-row flex items-center gap-3 rounded-2xl px-3 py-2.5 ${picked ? "bg-[#092a53] text-white" : "bg-[#fbfaf5] text-[#092a53]"}`} data-selected={picked} key={item.itemId}>
                                     <div className="min-w-0 flex-1">
                                       <p className="line-clamp-2 text-sm font-extrabold leading-5">{t(item.name)}</p>
                                       <p className={`text-xs font-semibold tabular-nums ${picked ? "text-[#ffdc32]" : "text-[#65748a]"}`}>{formatXaf(item.price, language)}</p>
@@ -756,7 +756,7 @@ export function EventOrdersPage() {
                               <p className="mt-1 text-sm text-[#65748a]">{order.eventDate} · {order.eventTime} · {t("{count} guests", { count: order.guestCount })}</p>
                             </div>
                           </div>
-                          <p className="mt-4 text-sm leading-6 text-[#4f6379]">
+                          <p className="mt-4 text-sm leading-6 text-[#65748a]">
                             {order.items.map((item) => `${item.quantity} × ${t(item.name)}`).join(", ")}
                           </p>
                           <dl className="mt-4 flex gap-8 border-t border-[#efe8d6] pt-4 text-sm">
@@ -771,7 +771,7 @@ export function EventOrdersPage() {
                           </dl>
                           {order.adminNote && <p className="mt-4 rounded-2xl bg-[#fff8d6] px-4 py-3 text-sm leading-6 text-[#5c4a00]">{t("Note from the store")}: {order.adminNote}</p>}
                           {order.status === "quoted" && order.depositAmount && (
-                            <div className="mt-4 rounded-2xl bg-[#f6f3ea] p-4">
+                            <div className="mt-4 rounded-2xl bg-[#fbfaf5] p-4">
                               <p className="text-sm font-extrabold text-[#092a53]">{t("Pay the deposit to book your date")}</p>
                               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                                 {methods.card && (
@@ -795,7 +795,7 @@ export function EventOrdersPage() {
                           )}
                           {["new", "quoted", "declined", "cancelled"].includes(order.status) && (
                             confirmDeleteId === order.id ? (
-                              <div className="mt-4 rounded-2xl bg-[#f6f3ea] p-4">
+                              <div className="mt-4 rounded-2xl bg-[#fbfaf5] p-4">
                                 <p className="text-sm font-extrabold text-[#092a53]">{t("Delete this event?")}</p>
                                 <p className="mt-1 text-sm leading-6 text-[#65748a]">{t("This removes the request. It cannot be undone.")}</p>
                                 {deleteError && <p className="mt-2 text-sm font-semibold text-red-700" role="alert">{deleteError}</p>}
@@ -809,7 +809,7 @@ export function EventOrdersPage() {
                                 </div>
                               </div>
                             ) : (
-                              <button className="mt-4 inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold text-[#092a53] ring-1 ring-[#d7deea] transition hover:bg-[#f6f3ea] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2" onClick={() => { setConfirmDeleteId(order.id); setDeleteError(""); }} type="button">
+                              <button className="mt-4 inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold text-[#092a53] ring-1 ring-[#d7deea] transition hover:bg-[#fbfaf5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2" onClick={() => { setConfirmDeleteId(order.id); setDeleteError(""); }} type="button">
                                 {t("Delete event")}
                               </button>
                             )

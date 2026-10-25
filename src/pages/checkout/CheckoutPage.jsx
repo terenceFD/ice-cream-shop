@@ -9,8 +9,8 @@ import { useAuth } from "../../context/useAuth";
 import { getCameroonDate } from "../../../shared/cameroonDate";
 
 const inputClassName =
-  "mt-2 w-full rounded-2xl border border-[#e3dfd3] bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-[#102c50] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#cfcabb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
-const labelClassName = "block text-xs font-extrabold text-[#52647b]";
+  "mt-2 w-full rounded-2xl border border-[#e3dfd3] bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-[#092a53] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#cfcabb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
+const labelClassName = "block text-xs font-extrabold text-[#65748a]";
 
 const icons = {
   arrow: "M5 12h14m-5-5 5 5-5 5",
@@ -50,11 +50,11 @@ function Icon({ path, className = "size-[18px]" }) {
 
 function StepCard({ number, icon, title, description, children }) {
   return (
-    <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#ebe7dc] sm:p-8">
+    <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#fbfaf5] sm:p-8">
       <header className="mb-6 flex items-start gap-4">
         <span className="relative grid size-12 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
           <Icon path={icon} />
-          <span className="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-[#ffdc32] text-[10px] font-extrabold text-[#092a53] ring-2 ring-white">
+          <span className="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-[#ffdc32] text-xs font-extrabold text-[#092a53] ring-2 ring-white">
             {number}
           </span>
         </span>
@@ -273,7 +273,7 @@ export function CheckoutPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8f7f2] text-[#102c50]">
+    <div className="min-h-screen bg-[#fbfaf5] text-[#092a53]">
       <Header />
 
       <main id="main" tabIndex={-1}>
@@ -310,7 +310,7 @@ export function CheckoutPage() {
 
             <div className="mt-6 flex flex-wrap items-end justify-between gap-8">
               <div className="min-w-0">
-                <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#ffdc32] before:h-px before:w-6 before:bg-[#ffdc32]/70">
+                <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.2em] text-[#ffdc32] before:h-px before:w-6 before:bg-[#ffdc32]/70">
                   {t("Almost there")}
                 </p>
                 <h1 className="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-[3.4rem]">
@@ -343,7 +343,7 @@ export function CheckoutPage() {
                         }`}
                       >
                         <span
-                          className={`grid size-6 place-items-center rounded-full text-[11px] ${
+                          className={`grid size-6 place-items-center rounded-full text-xs ${
                             isCurrent
                               ? "bg-[#092a53] text-[#ffdc32]"
                               : isDone
@@ -376,7 +376,7 @@ export function CheckoutPage() {
         <div className="mx-auto max-w-[1240px] px-5 py-8 sm:px-8 sm:py-12 lg:px-12">
           {!customer && !isLoading && (
             <div className="mb-6 flex flex-col gap-4 rounded-[24px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#efe0a0] sm:flex-row sm:items-center sm:p-6">
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#8a7000]">
+              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#bd9c00]">
                 <Icon className="size-6" path={icons.user} />
               </span>
               <div className="min-w-0 flex-1">
@@ -501,7 +501,7 @@ export function CheckoutPage() {
                             value={option.value}
                           />
                           <span
-                            className={`grid size-11 shrink-0 place-items-center rounded-2xl transition ${isSelected ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#f4f1e8] text-[#52647b]"}`}
+                            className={`grid size-11 shrink-0 place-items-center rounded-2xl transition ${isSelected ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#fbfaf5] text-[#65748a]"}`}
                           >
                             <Icon path={option.icon} />
                           </span>
@@ -553,7 +553,7 @@ export function CheckoutPage() {
                   </SelectField>
 
                   {selectedZone && (
-                    <div className="flex flex-col gap-4 rounded-[20px] bg-[#f3f6fa] p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-4 rounded-[20px] bg-[#f4f6f8] p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-start gap-3">
                         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-[#092a53] shadow-sm">
                           <Icon path={icons.pin} />
@@ -567,7 +567,7 @@ export function CheckoutPage() {
                             {t(selectedZone.storeTown)}
                           </p>
                           {selectedZone.storePhone && (
-                            <p className="mt-0.5 text-xs font-semibold text-[#52647b]">
+                            <p className="mt-0.5 text-xs font-semibold text-[#65748a]">
                               {selectedZone.storePhone}
                             </p>
                           )}
@@ -583,7 +583,7 @@ export function CheckoutPage() {
                         )}
                         {selectedZone.storeMapQuery && (
                           <a
-                            className="inline-flex items-center gap-1 text-xs font-extrabold text-[#806a00] transition hover:text-[#092a53]"
+                            className="inline-flex items-center gap-1 text-xs font-extrabold text-[#bd9c00] transition hover:text-[#092a53]"
                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedZone.storeMapQuery)}`}
                             rel="noreferrer"
                             target="_blank"
@@ -648,7 +648,7 @@ export function CheckoutPage() {
                             className={`flex cursor-pointer items-center justify-center rounded-2xl px-3 py-3 text-center text-sm font-extrabold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] ${
                               isSelected
                                 ? "bg-[#092a53] text-white ring-[#092a53] shadow-[0_8px_18px_rgba(9,42,83,0.2)]"
-                                : "bg-[#fbfaf5] text-[#52647b] ring-[#e3dfd3] hover:text-[#092a53] hover:ring-[#cfcabb]"
+                                : "bg-[#fbfaf5] text-[#65748a] ring-[#e3dfd3] hover:text-[#092a53] hover:ring-[#cfcabb]"
                             }`}
                             key={slot.id}
                           >
@@ -723,7 +723,7 @@ export function CheckoutPage() {
                   <label
                     className={`mt-5 flex items-center gap-4 rounded-[20px] p-4 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] ${
                       loyaltyBlocked
-                        ? "cursor-not-allowed bg-[#fbfaf5] ring-[#ece8dc]"
+                        ? "cursor-not-allowed bg-[#fbfaf5] ring-[#fbfaf5]"
                         : redeemLoyalty
                           ? "cursor-pointer bg-[#fffbea] ring-[#bd9c00]"
                           : "cursor-pointer bg-white ring-[#e3dfd3] hover:ring-[#cfcabb]"
@@ -796,10 +796,10 @@ export function CheckoutPage() {
               aria-labelledby="checkout-summary-heading"
               className="relative z-10 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300"
             >
-              <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_18px_50px_rgba(18,44,80,0.09)] ring-1 ring-[#ebe7dc]">
+              <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_18px_50px_rgba(18,44,80,0.09)] ring-1 ring-[#fbfaf5]">
                 <div className="flex items-end justify-between gap-3 bg-[#092a53] px-6 py-5 text-white sm:px-7">
                   <div>
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">
+                    <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">
                       {t("Your order")}
                     </p>
                     <h2
@@ -826,29 +826,29 @@ export function CheckoutPage() {
                             decoding="async"
                             loading="lazy"
                             alt=""
-                            className={`size-14 rounded-2xl object-cover ring-1 ring-black/5 ${item.color || "bg-[#f4f1e7]"}`}
+                            className={`size-14 rounded-2xl object-cover ring-1 ring-black/5 ${item.color || "bg-[#fbfaf5]"}`}
                             src={item.image}
                           />
-                          <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#092a53] px-1 text-[10px] font-extrabold text-white ring-2 ring-white">
+                          <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#092a53] px-1 text-xs font-extrabold text-white ring-2 ring-white">
                             {item.quantity}
                           </span>
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-extrabold text-[#102c50]">
+                          <p className="truncate text-sm font-extrabold text-[#092a53]">
                             {t(item.name)}
                           </p>
                           <p className="text-xs text-[#8b95a2]">
                             {money(item.price)} {t("each")}
                           </p>
                         </div>
-                        <span className="shrink-0 whitespace-nowrap text-sm font-bold tabular-nums text-[#102c50]">
+                        <span className="shrink-0 whitespace-nowrap text-sm font-bold tabular-nums text-[#092a53]">
                           {money(item.price * item.quantity)}
                         </span>
                       </li>
                     ))}
                   </ul>
 
-                  <dl className="mt-6 space-y-3 border-t border-[#f0ece2] pt-5 text-sm">
+                  <dl className="mt-6 space-y-3 border-t border-[#fbfaf5] pt-5 text-sm">
                     <div className="flex justify-between gap-4">
                       <dt className="text-[#65748a]">
                         {t("Subtotal")}{" "}
@@ -931,7 +931,7 @@ export function CheckoutPage() {
                       path={icons.arrow}
                     />
                   </button>
-                  <p className="mt-3 text-center text-[11px] font-medium text-[#8b95a2]">
+                  <p className="mt-3 text-center text-xs font-medium text-[#8b95a2]">
                     {t(
                       "You can review everything before confirming your order.",
                     )}
@@ -940,7 +940,7 @@ export function CheckoutPage() {
               </div>
 
               <Link
-                className="mt-4 flex items-center justify-center gap-2 text-sm font-extrabold text-[#806a00] transition hover:text-[#092a53]"
+                className="mt-4 flex items-center justify-center gap-2 text-sm font-extrabold text-[#bd9c00] transition hover:text-[#092a53]"
                 to="/cart"
               >
                 <Icon className="size-4 rotate-180" path={icons.arrow} />

@@ -40,7 +40,7 @@ interface ProductImageSliderProps {
 // Product photos with arrows, thumbnails, swipe on touch screens and left/right arrow keys.
 // Photos advance every few seconds, pausing while a mouse rests on them or a keyboard user is inside.
 // A single photo shows on its own, without controls.
-export function ProductImageSlider({ images: sourceImages, name, imageClassName = "aspect-square", frameClassName = "bg-[#f4f1e7]", overlay, priority = false, showThumbnails = true, showScrim = true, sizes = "(min-width: 1024px) 600px, 100vw", resetKey }: ProductImageSliderProps) {
+export function ProductImageSlider({ images: sourceImages, name, imageClassName = "aspect-square", frameClassName = "bg-[#fbfaf5]", overlay, priority = false, showThumbnails = true, showScrim = true, sizes = "(min-width: 1024px) 600px, 100vw", resetKey }: ProductImageSliderProps) {
   const { t } = useLanguage();
   const images = [...new Set(sourceImages.filter(Boolean))];
   const [active, setActive] = useState(0);
@@ -126,7 +126,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
         {hasSlides && showThumbnails && (
           <>
             <div className="absolute right-5 top-5 flex items-center gap-2 sm:right-6 sm:top-6">
-              <span aria-live={paused ? "polite" : "off"} className="rounded-full bg-[#092a53]/80 px-3 py-1.5 text-[11px] font-extrabold tabular-nums text-white backdrop-blur-sm">
+              <span aria-live={paused ? "polite" : "off"} className="rounded-full bg-[#092a53]/80 px-3 py-1.5 text-xs font-extrabold tabular-nums text-white backdrop-blur-sm">
                 {current + 1} / {images.length}
               </span>
               <button

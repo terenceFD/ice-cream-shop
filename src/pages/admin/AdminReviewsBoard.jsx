@@ -4,7 +4,7 @@ import { useLanguage } from '../../language/useLanguage'
 import { useAdminAuth } from './useAdminAuth'
 
 const inputClassName =
-  'w-full rounded-lg border border-[#dce3eb] bg-white px-3 py-2 text-sm font-medium text-[#102c50] transition placeholder:text-[#8190a1] hover:border-[#bac7d5] focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/25 outline-none!'
+  'w-full rounded-lg border border-[#dce3eb] bg-white px-3 py-2 text-sm font-medium text-[#092a53] transition placeholder:text-[#65748a] hover:border-[#bac7d5] focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/25 outline-none!'
 const STAR_PATH = 'M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z'
 
 const icons = {
@@ -223,23 +223,23 @@ export function AdminReviewsBoard() {
 
   return (
     <div className="min-w-0 space-y-4">
-      <header className="flex items-start justify-between gap-3 border-b border-[#e5ebf3] pb-4 sm:items-end sm:pb-5">
+      <header className="flex items-start justify-between gap-3 border-b border-[#dce3eb] pb-4 sm:items-end sm:pb-5">
         <div className="min-w-0 flex-1">
           <nav aria-label={t('Breadcrumb')} className="hidden text-xs font-medium text-[#65748a] sm:block">
             {t('Review management')} <span aria-hidden="true" className="mx-1.5 text-[#a3b0bf]">/</span>
-            <span className="font-semibold text-[#355777]">{t('Customer reviews')}</span>
+            <span className="font-semibold text-[#123b68]">{t('Customer reviews')}</span>
           </nav>
           <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-[#092a53]">{t('Customer reviews')}</h1>
           <p aria-label={t('Review overview')} className="mt-1 text-xs font-medium text-[#65748a] sm:hidden">
-            {t('Average rating')} <span className="font-semibold text-[#102c50]">{approvedReviews.length ? publishedAverage.toFixed(1) : '—'}</span>
+            {t('Average rating')} <span className="font-semibold text-[#092a53]">{approvedReviews.length ? publishedAverage.toFixed(1) : '—'}</span>
             <span aria-hidden="true" className="mx-1.5 text-[#a3b0bf]">·</span>
-            {t('5-star reviews')} <span className="font-semibold text-[#102c50]">{approvedReviews.length ? `${fiveStarShare}%` : '—'}</span>
+            {t('5-star reviews')} <span className="font-semibold text-[#092a53]">{approvedReviews.length ? `${fiveStarShare}%` : '—'}</span>
           </p>
           <p className="mt-1 hidden max-w-2xl text-sm leading-5 text-[#65748a] sm:block">{t('Review customer feedback, approve what is ready to publish, and manage live reviews.')}</p>
         </div>
         <button
           aria-label={t('Refresh')}
-          className="inline-flex min-h-10 min-w-10 items-center justify-center gap-2 rounded-lg border border-[#dce3eb] bg-white px-2.5 text-sm font-semibold text-[#355777] transition hover:border-[#bacbdc] hover:bg-[#f6f9fc] hover:text-[#092a53] disabled:cursor-wait disabled:opacity-60 sm:min-w-0 sm:px-3.5"
+          className="inline-flex min-h-10 min-w-10 items-center justify-center gap-2 rounded-lg border border-[#dce3eb] bg-white px-2.5 text-sm font-semibold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:cursor-wait disabled:opacity-60 sm:min-w-0 sm:px-3.5"
           disabled={isRefreshing || bulkProgress !== null}
           onClick={refresh}
           type="button"
@@ -264,12 +264,12 @@ export function AdminReviewsBoard() {
         </p>
       )}
 
-      <section aria-label={t('Review overview')} className="hidden grid-cols-2 divide-x divide-[#e5ebf3] overflow-hidden rounded-xl border border-[#e5ebf3] bg-[#fbfcfe] sm:grid">
+      <section aria-label={t('Review overview')} className="hidden grid-cols-2 divide-x divide-[#dce3eb] overflow-hidden rounded-xl border border-[#dce3eb] bg-[#fbfcfe] sm:grid">
         {metrics.map((metric) => {
           const body = (
             <div className="flex min-h-16 flex-col justify-center gap-1.5 px-3 py-2.5 sm:min-h-[76px] sm:px-4 sm:py-3">
               <p className="text-xs font-semibold leading-4 text-[#65748a] sm:text-[13px]">{t(metric.label)}</p>
-              <p className="font-display text-2xl font-bold leading-none tracking-tight text-[#102c50] tabular-nums">{metric.value}</p>
+              <p className="font-display text-2xl font-bold leading-none tracking-tight text-[#092a53] tabular-nums">{metric.value}</p>
               {metric.hint && <p className="text-xs leading-4 text-[#65748a]">{metric.hint}</p>}
             </div>
           )
@@ -313,7 +313,7 @@ export function AdminReviewsBoard() {
           <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2.5">
             <label className="relative block min-w-0">
               <span className="sr-only">{t('Search reviews')}</span>
-              <Icon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8190a1]" path={icons.search} />
+              <Icon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
               <input className={`${inputClassName} pl-9`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search reviews')} type="search" value={search} />
             </label>
             <label className="block min-w-0">
@@ -330,7 +330,7 @@ export function AdminReviewsBoard() {
           <div aria-label={t('Rating breakdown')} className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group">
             <button
               aria-pressed={ratingFilter === 'all'}
-              className={`inline-flex min-h-9 shrink-0 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${ratingFilter === 'all' ? 'border-[#d1a900] bg-[#fff9df] text-[#5e4c00]' : 'border-[#dce3eb] text-[#4f6379] hover:bg-[#f6f8fb]'}`}
+              className={`inline-flex min-h-9 shrink-0 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${ratingFilter === 'all' ? 'border-[#d1a900] bg-[#fff9df] text-[#bd9c00]' : 'border-[#dce3eb] text-[#65748a] hover:bg-[#f4f6f8]'}`}
               onClick={() => setRatingFilter('all')}
               type="button"
             >
@@ -342,7 +342,7 @@ export function AdminReviewsBoard() {
                 <button
                   aria-label={`${t('{rating} out of 5 stars', { rating: bucket.rating })}, ${t('{count} reviews', { count: bucket.count })}`}
                   aria-pressed={isActive}
-                  className={`inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold tabular-nums transition disabled:cursor-default disabled:opacity-50 ${isActive ? 'border-[#d1a900] bg-[#fff9df] text-[#5e4c00]' : 'border-[#dce3eb] text-[#4f6379] hover:bg-[#f6f8fb]'}`}
+                  className={`inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold tabular-nums transition disabled:cursor-default disabled:opacity-50 ${isActive ? 'border-[#d1a900] bg-[#fff9df] text-[#bd9c00]' : 'border-[#dce3eb] text-[#65748a] hover:bg-[#f4f6f8]'}`}
                   disabled={!bucket.count}
                   key={bucket.rating}
                   onClick={() => setRatingFilter(isActive ? 'all' : String(bucket.rating))}
@@ -350,7 +350,7 @@ export function AdminReviewsBoard() {
                 >
                   {bucket.rating}
                   <svg aria-hidden="true" className="size-3.5 text-[#d1a900]" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
-                  <span className="text-[#8190a1]">{bucket.count}</span>
+                  <span className="text-[#65748a]">{bucket.count}</span>
                 </button>
               )
             })}
@@ -361,7 +361,7 @@ export function AdminReviewsBoard() {
         </div>
 
         {loading ? (
-          <div className="divide-y divide-[#edf1f5]" role="status">
+          <div className="divide-y divide-[#f4f6f8]" role="status">
             <span className="sr-only">{t('Loading reviews…')}</span>
             {[0, 1, 2].map((row) => (
               <div aria-hidden="true" className="flex gap-3 py-5" key={row}>
@@ -375,23 +375,23 @@ export function AdminReviewsBoard() {
             ))}
           </div>
         ) : visibleReviews.length ? (
-          <ul className="divide-y divide-[#edf1f5]">
+          <ul className="divide-y divide-[#f4f6f8]">
             {visibleReviews.map((review) => {
               const isUpdating = updatingIds.includes(review.id)
               return (
                 <li className={`py-5 transition-opacity ${isUpdating ? 'opacity-50' : ''}`} key={review.id}>
                   <article className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-                    <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-[#eef2f6] text-sm font-bold text-[#355777]">
+                    <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f4f6f8] text-sm font-bold text-[#123b68]">
                       {initials(review.customerName)}
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                        <h3 className="font-semibold text-[#102c50]">{review.customerName}</h3>
+                        <h3 className="font-semibold text-[#092a53]">{review.customerName}</h3>
                         <span aria-label={t('{rating} out of 5 stars', { rating: review.rating })} role="img"><Stars className="size-3.5" rating={Number(review.rating)} /></span>
                         <span className="text-xs font-medium text-[#65748a]" title={parseDate(review.createdAt)?.toLocaleString() || ''}>{relativeTime(review.createdAt, language)}</span>
                       </div>
                       <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                        <span className="inline-flex items-center gap-1.5 font-semibold text-[#355777]">
+                        <span className="inline-flex items-center gap-1.5 font-semibold text-[#123b68]">
                           <Icon className="size-3.5 text-[#65748a]" path={icons.scoop} />
                           {review.itemName}
                         </span>
@@ -413,13 +413,13 @@ export function AdminReviewsBoard() {
                       </a>
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-col sm:items-end">
-                      <span className={`inline-flex min-h-7 items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-semibold ${showApproved ? 'bg-[#eef2f6] text-[#4f6379]' : 'bg-[#fff6cc] text-[#705b00]'}`}>
+                      <span className={`inline-flex min-h-7 items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-semibold ${showApproved ? 'bg-[#f4f6f8] text-[#65748a]' : 'bg-[#fff6cc] text-[#705b00]'}`}>
                         <span aria-hidden="true" className={`size-1.5 rounded-full ${showApproved ? 'bg-[#65748a]' : 'bg-[#bd9c00]'}`} />
                         {t(showApproved ? 'Published' : 'Awaiting approval')}
                       </span>
                       {showApproved ? (
                         <button
-                          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-[#4f6379] transition hover:bg-[#f1f4f8] hover:text-[#092a53] disabled:cursor-wait sm:min-h-9"
+                          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:cursor-wait sm:min-h-9"
                           disabled={isUpdating || bulkProgress !== null}
                           onClick={() => setApproval(review, false)}
                           type="button"
@@ -464,7 +464,7 @@ export function AdminReviewsBoard() {
               {reviews.length ? t('Try a different search or rating filter.') : t(showApproved ? 'New customer reviews will appear here.' : 'You’re all caught up.')}
             </p>
             {hasActiveFilters && (
-              <button className="mt-4 min-h-10 rounded-lg border border-[#dce3eb] px-4 text-sm font-semibold text-[#355777] transition hover:bg-[#f6f9fc]" onClick={() => { setSearch(''); setRatingFilter('all') }} type="button">
+              <button className="mt-4 min-h-10 rounded-lg border border-[#dce3eb] px-4 text-sm font-semibold text-[#123b68] transition hover:bg-[#f4f6f8]" onClick={() => { setSearch(''); setRatingFilter('all') }} type="button">
                 {t('Clear filters')}
               </button>
             )}
@@ -490,7 +490,7 @@ export function AdminReviewsBoard() {
               </p>
             )}
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6]" onClick={() => setIsConfirmingBulk(false)} type="button">{t('Cancel')}</button>
+              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setIsConfirmingBulk(false)} type="button">{t('Cancel')}</button>
               <button className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#35a36b] px-4 text-sm font-bold text-white transition hover:bg-[#2c8a59]" onClick={approveAllVisible} type="button">
                 <Icon path={icons.checks} />
                 {t('Approve')}
@@ -527,7 +527,7 @@ export function AdminReviewsBoard() {
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
             <div className="mt-6 flex justify-end gap-2.5">
               <button
-                className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#4f6379] transition hover:bg-[#eef2f6] disabled:opacity-60"
+                className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] disabled:opacity-60"
                 disabled={deletingReviewId === reviewToReject.id}
                 onClick={() => setReviewToReject(null)}
                 type="button"

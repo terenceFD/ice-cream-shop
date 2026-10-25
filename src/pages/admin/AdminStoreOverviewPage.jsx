@@ -190,13 +190,13 @@ export function AdminStoreOverviewPage() {
   if (isLoading) {
     return (
       <div aria-label={t("Loading…")} className="space-y-6" role="status">
-        <div className="h-40 animate-pulse rounded-[24px] bg-[#eef2f6]" />
+        <div className="h-40 animate-pulse rounded-[24px] bg-[#f4f6f8]" />
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-          {[0, 1, 2, 3].map((item) => <div className="h-28 animate-pulse rounded-2xl bg-[#eef2f6]" key={item} />)}
+          {[0, 1, 2, 3].map((item) => <div className="h-28 animate-pulse rounded-2xl bg-[#f4f6f8]" key={item} />)}
         </div>
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <div className="h-80 animate-pulse rounded-[20px] bg-[#eef2f6]" />
-          <div className="h-80 animate-pulse rounded-[20px] bg-[#eef2f6]" />
+          <div className="h-80 animate-pulse rounded-[20px] bg-[#f4f6f8]" />
+          <div className="h-80 animate-pulse rounded-[20px] bg-[#f4f6f8]" />
         </div>
       </div>
     );
@@ -207,7 +207,7 @@ export function AdminStoreOverviewPage() {
     { key: "payment", count: view.awaitingPayment.length, label: t("awaiting payment"), to: "/admin/orders", icon: icons.clock, tone: "bg-[#e9f1fa] text-[#315982]" },
     { key: "messages", count: data.unreadCount, label: t("unread messages"), to: "/admin/notifications", icon: icons.inbox, tone: "bg-[#efe9fb] text-[#5b3fa0]" },
     { key: "reviews", count: data.reviews.length, label: t("reviews to approve"), to: "/admin/reviews", icon: icons.chat, tone: "bg-[#e5f4ea] text-[#2c7a4f]" },
-    { key: "cakes", count: view.newCakes, label: t("new cake requests"), to: "/admin/cake-requests", icon: icons.cake, tone: "bg-[#fff4c2] text-[#8a6f00]" },
+    { key: "cakes", count: view.newCakes, label: t("new cake requests"), to: "/admin/cake-requests", icon: icons.cake, tone: "bg-[#fff4c2] text-[#bd9c00]" },
   ] : [];
   const openTasks = tasks.filter((task) => task.count > 0);
 
@@ -273,21 +273,21 @@ export function AdminStoreOverviewPage() {
         <>
           {/* Needs attention */}
           <section aria-labelledby="attention-title">
-            <h2 className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#8190a1]" id="attention-title">{t("Needs your attention")}</h2>
+            <h2 className="mb-3 text-xs font-extrabold uppercase tracking-[0.16em] text-[#65748a]" id="attention-title">{t("Needs your attention")}</h2>
             {openTasks.length ? (
               <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                 {tasks.map((task) => (
                   <li key={task.key}>
                     <Link
-                      className={`group flex h-full items-center gap-3 rounded-2xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${task.count ? "border-[#e5ebf3]" : "border-dashed border-[#e5ebf3] opacity-60"}`}
+                      className={`group flex h-full items-center gap-3 rounded-2xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${task.count ? "border-[#dce3eb]" : "border-dashed border-[#dce3eb] opacity-60"}`}
                       to={task.to}
                     >
                       <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${task.tone}`}><Icon path={task.icon} /></span>
                       <span className="min-w-0 flex-1">
-                        <span className="block font-display text-2xl font-extrabold leading-none text-[#102c50]">{task.count}</span>
+                        <span className="block font-display text-2xl font-extrabold leading-none text-[#092a53]">{task.count}</span>
                         <span className="mt-1 block truncate text-xs font-semibold text-[#65748a]">{task.label}</span>
                       </span>
-                      <Icon className="size-4 text-[#c3cfdc] transition group-hover:translate-x-0.5 group-hover:text-[#092a53]" path={icons.arrow} />
+                      <Icon className="size-4 text-[#dce3eb] transition group-hover:translate-x-0.5 group-hover:text-[#092a53]" path={icons.arrow} />
                     </Link>
                   </li>
                 ))}
@@ -308,11 +308,11 @@ export function AdminStoreOverviewPage() {
               { label: t("Paid orders in progress"), value: money(view.openRevenue), hint: t("{count} orders", { count: view.processing.length }), icon: icons.flame, accent: "bg-[#fff1dc] text-[#a86a00]" },
               { label: t("Last 7 days"), value: money(view.weekTotal), hint: t("Average {amount} per day", { amount: money(Math.round(view.weekTotal / 7)) }), icon: icons.chart, accent: "bg-[#efe9fb] text-[#5b3fa0]" },
             ].map((kpi) => (
-              <article className="rounded-2xl border border-[#e5ebf3] bg-white p-4 sm:p-5" key={kpi.label}>
+              <article className="rounded-2xl border border-[#dce3eb] bg-white p-4 sm:p-5" key={kpi.label}>
                 <span className={`grid size-9 place-items-center rounded-xl ${kpi.accent}`}><Icon path={kpi.icon} /></span>
-                <p className="mt-4 truncate font-display text-[1.6rem] font-extrabold leading-none tracking-tight text-[#102c50]">{kpi.value}</p>
+                <p className="mt-4 truncate font-display text-[1.6rem] font-extrabold leading-none tracking-tight text-[#092a53]">{kpi.value}</p>
                 <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{kpi.label}</p>
-                <p className="mt-0.5 truncate text-[11px] text-[#a3b0bf]">{kpi.hint}</p>
+                <p className="mt-0.5 truncate text-xs text-[#a3b0bf]">{kpi.hint}</p>
               </article>
             ))}
           </section>
@@ -320,19 +320,19 @@ export function AdminStoreOverviewPage() {
           <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
             <div className="min-w-0 space-y-6">
               {/* Kitchen */}
-              <section aria-labelledby="kitchen-title" className="rounded-[20px] border border-[#e5ebf3] bg-white">
-                <header className="flex items-center justify-between gap-3 border-b border-[#edf1f5] p-4 sm:px-5">
+              <section aria-labelledby="kitchen-title" className="rounded-[20px] border border-[#dce3eb] bg-white">
+                <header className="flex items-center justify-between gap-3 border-b border-[#f4f6f8] p-4 sm:px-5">
                   <div>
                     <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="kitchen-title">{t("Kitchen pipeline")}</h2>
                     <p className="text-xs text-[#65748a]">{t("Oldest orders first — keep them moving.")}</p>
                   </div>
-                  <Link className="text-xs font-bold text-[#355777] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/orders">{t("View all")}</Link>
+                  <Link className="text-xs font-bold text-[#123b68] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/orders">{t("View all")}</Link>
                 </header>
                 <ol className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-4 sm:px-5">
                   {Object.keys(stageLabels).map((stage, index) => (
-                    <li className="rounded-xl bg-[#f7f9fc] px-3 py-2.5 ring-1 ring-[#eef2f6]" key={stage}>
-                      <p className="flex items-start gap-1.5 text-[11px] font-bold leading-tight text-[#65748a]">
-                        <span className="grid size-5 shrink-0 place-items-center rounded-md bg-white text-[10px] font-extrabold text-[#355777] ring-1 ring-[#e3e9f0]">{index + 1}</span>
+                    <li className="rounded-xl bg-[#f4f6f8] px-3 py-2.5 ring-1 ring-[#f4f6f8]" key={stage}>
+                      <p className="flex items-start gap-1.5 text-xs font-bold leading-tight text-[#65748a]">
+                        <span className="grid size-5 shrink-0 place-items-center rounded-md bg-white text-xs font-extrabold text-[#123b68] ring-1 ring-[#dce3eb]">{index + 1}</span>
                         <span className="pt-0.5">{t(stageLabels[stage])}</span>
                       </p>
                       <p className="mt-1.5 font-display text-2xl font-extrabold text-[#092a53]">{view.stageCounts[stage] || 0}</p>
@@ -340,27 +340,27 @@ export function AdminStoreOverviewPage() {
                   ))}
                 </ol>
                 {view.liveOrders.length ? (
-                  <ul className="divide-y divide-[#f0f3f7] border-t border-[#edf1f5]">
+                  <ul className="divide-y divide-[#f4f6f8] border-t border-[#f4f6f8]">
                     {view.liveOrders.map((order) => {
                       const created = parseDate(order.createdAt);
                       const ageMinutes = created ? Math.round((Date.now() - created.getTime()) / 60000) : 0;
                       const stage = order.deliveryStage || order.fulfillmentStatus || "preparing";
                       return (
                         <li key={order.id}>
-                          <Link className="flex items-center gap-3 px-4 py-3 transition hover:bg-[#fafbfd] sm:px-5" to="/admin/orders">
-                            <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${ageMinutes > 45 ? "bg-[#fdecea] text-[#b2433a]" : "bg-[#f1f4f8] text-[#355777]"}`}>
+                          <Link className="flex items-center gap-3 px-4 py-3 transition hover:bg-[#f4f6f8] sm:px-5" to="/admin/orders">
+                            <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${ageMinutes > 45 ? "bg-[#fdecea] text-[#b2433a]" : "bg-[#f4f6f8] text-[#123b68]"}`}>
                               <Icon path={order.fulfillmentType === "pickup" ? icons.store : icons.truck} />
                             </span>
                             <span className="min-w-0 flex-1">
-                              <span className="flex items-center gap-2 text-sm font-bold text-[#102c50]">
+                              <span className="flex items-center gap-2 text-sm font-bold text-[#092a53]">
                                 #{order.id}
-                                <span className="truncate font-semibold text-[#4f6379]">{order.customerName}</span>
+                                <span className="truncate font-semibold text-[#65748a]">{order.customerName}</span>
                               </span>
-                              <span className="block truncate text-xs text-[#8190a1]">{order.items.map((item) => `${item.quantity}× ${item.flavorName}`).join(", ")}</span>
+                              <span className="block truncate text-xs text-[#65748a]">{order.items.map((item) => `${item.quantity}× ${item.flavorName}`).join(", ")}</span>
                             </span>
                             <span className="shrink-0 text-right">
-                              <span className="block rounded-full bg-[#e9f1fa] px-2 py-0.5 text-[10px] font-bold text-[#245281]">{t(stageLabels[stage] || stage)}</span>
-                              <span className={`mt-1 block text-[11px] font-semibold ${ageMinutes > 45 ? "text-[#b2433a]" : "text-[#a3b0bf]"}`}>{relativeTime(created, language)}</span>
+                              <span className="block rounded-full bg-[#e9f1fa] px-2 py-0.5 text-xs font-bold text-[#245281]">{t(stageLabels[stage] || stage)}</span>
+                              <span className={`mt-1 block text-xs font-semibold ${ageMinutes > 45 ? "text-[#b2433a]" : "text-[#a3b0bf]"}`}>{relativeTime(created, language)}</span>
                             </span>
                           </Link>
                         </li>
@@ -368,28 +368,28 @@ export function AdminStoreOverviewPage() {
                     })}
                   </ul>
                 ) : (
-                  <p className="border-t border-[#edf1f5] px-5 py-8 text-center text-sm text-[#8190a1]">{t("No paid orders in progress right now.")}</p>
+                  <p className="border-t border-[#f4f6f8] px-5 py-8 text-center text-sm text-[#65748a]">{t("No paid orders in progress right now.")}</p>
                 )}
               </section>
 
               {/* Weekly sales */}
-              <section aria-labelledby="week-title" className="rounded-[20px] border border-[#e5ebf3] bg-white p-4 sm:p-5">
+              <section aria-labelledby="week-title" className="rounded-[20px] border border-[#dce3eb] bg-white p-4 sm:p-5">
                 <div className="flex items-end justify-between gap-3">
                   <div>
                     <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="week-title">{t("Sales this week")}</h2>
                     <p className="text-xs text-[#65748a]">{t("{sales} from {orders} orders", { sales: money(view.weekTotal), orders: view.week.reduce((sum, day) => sum + day.orders, 0) })}</p>
                   </div>
-                  <Link className="text-xs font-bold text-[#355777] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/reports">{t("Reports")}</Link>
+                  <Link className="text-xs font-bold text-[#123b68] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/reports">{t("Reports")}</Link>
                 </div>
                 <ol className="mt-5 flex h-36 items-end gap-2">
                   {view.week.map((day, index) => {
                     const isToday = index === view.week.length - 1;
                     return (
                       <li className="group relative flex h-full flex-1 flex-col items-center justify-end gap-1.5" key={day.key}>
-                        <span className="pointer-events-none absolute bottom-full z-10 mb-1 hidden whitespace-nowrap rounded-lg bg-[#092a53] px-2.5 py-1.5 text-[11px] font-bold text-white shadow-lg group-hover:block">
+                        <span className="pointer-events-none absolute bottom-full z-10 mb-1 hidden whitespace-nowrap rounded-lg bg-[#092a53] px-2.5 py-1.5 text-xs font-bold text-white shadow-lg group-hover:block">
                           {money(day.sales)} · {t("{count} orders", { count: day.orders })}
                         </span>
-                        <span className="relative flex w-full flex-1 items-end rounded-lg bg-[#f4f6f9]">
+                        <span className="relative flex w-full flex-1 items-end rounded-lg bg-[#f4f6f8]">
                           <span
                             aria-label={`${day.date.toLocaleDateString(locale, { weekday: "long", timeZone: "UTC" })}: ${money(day.sales)}`}
                             className={`w-full rounded-lg transition-[height] duration-500 ${isToday ? "bg-[#ffdc32]" : "bg-[#092a53] group-hover:bg-[#1d4f80]"}`}
@@ -397,7 +397,7 @@ export function AdminStoreOverviewPage() {
                             style={{ height: `${day.sales ? Math.max(6, (day.sales / view.weekMax) * 100) : 0}%` }}
                           />
                         </span>
-                        <span className={`text-[11px] font-bold ${isToday ? "text-[#8a7000]" : "text-[#a3b0bf]"}`}>
+                        <span className={`text-xs font-bold ${isToday ? "text-[#bd9c00]" : "text-[#a3b0bf]"}`}>
                           {day.date.toLocaleDateString(locale, { weekday: "short", timeZone: "UTC" })}
                         </span>
                       </li>
@@ -409,84 +409,84 @@ export function AdminStoreOverviewPage() {
 
             <div className="min-w-0 space-y-6">
               {/* Cake pickups */}
-              <section aria-labelledby="pickups-title" className="rounded-[20px] border border-[#e5ebf3] bg-white">
-                <header className="flex items-center justify-between gap-3 border-b border-[#edf1f5] p-4 sm:px-5">
+              <section aria-labelledby="pickups-title" className="rounded-[20px] border border-[#dce3eb] bg-white">
+                <header className="flex items-center justify-between gap-3 border-b border-[#f4f6f8] p-4 sm:px-5">
                   <h2 className="flex items-center gap-2 font-display text-lg font-extrabold text-[#092a53]" id="pickups-title">
-                    <Icon className="size-5 text-[#8a7000]" path={icons.cake} />
+                    <Icon className="size-5 text-[#bd9c00]" path={icons.cake} />
                     {t("Cake pickups this week")}
                   </h2>
-                  <Link className="text-xs font-bold text-[#355777] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/cake-requests">{t("View all")}</Link>
+                  <Link className="text-xs font-bold text-[#123b68] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/cake-requests">{t("View all")}</Link>
                 </header>
                 {view.upcomingCakes.length ? (
-                  <ul className="divide-y divide-[#f0f3f7]">
+                  <ul className="divide-y divide-[#f4f6f8]">
                     {view.upcomingCakes.slice(0, 5).map((cake) => (
                       <li className="flex items-center gap-3 px-4 py-3 sm:px-5" key={cake.id}>
-                        <span className={`grid w-12 shrink-0 place-items-center rounded-xl py-1.5 text-center ${cake.days <= 1 ? "bg-[#fff1dc] text-[#a86a00]" : "bg-[#f1f4f8] text-[#355777]"}`}>
-                          <span className="text-[10px] font-extrabold uppercase">{cake.date.toLocaleDateString(locale, { month: "short" })}</span>
+                        <span className={`grid w-12 shrink-0 place-items-center rounded-xl py-1.5 text-center ${cake.days <= 1 ? "bg-[#fff1dc] text-[#a86a00]" : "bg-[#f4f6f8] text-[#123b68]"}`}>
+                          <span className="text-xs font-extrabold uppercase">{cake.date.toLocaleDateString(locale, { month: "short" })}</span>
                           <span className="font-display text-lg font-extrabold leading-none">{cake.date.getDate()}</span>
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-bold text-[#102c50]">{cake.size} · {cake.flavor}</span>
-                          <span className="block truncate text-xs text-[#8190a1]">{cake.customerName}</span>
+                          <span className="block truncate text-sm font-bold text-[#092a53]">{cake.size} · {cake.flavor}</span>
+                          <span className="block truncate text-xs text-[#65748a]">{cake.customerName}</span>
                         </span>
-                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold capitalize ${cake.status === "confirmed" ? "bg-[#eaf6ee] text-[#246a46]" : cake.status === "contacted" ? "bg-[#e9f1fa] text-[#245281]" : "bg-[#fff6e5] text-[#9a6200]"}`}>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold capitalize ${cake.status === "confirmed" ? "bg-[#eaf6ee] text-[#246a46]" : cake.status === "contacted" ? "bg-[#e9f1fa] text-[#245281]" : "bg-[#fff6e5] text-[#9a6200]"}`}>
                           {t(cake.status)}
                         </span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="px-5 py-8 text-center text-sm text-[#8190a1]">{t("No cake pickups in the next 7 days.")}</p>
+                  <p className="px-5 py-8 text-center text-sm text-[#65748a]">{t("No cake pickups in the next 7 days.")}</p>
                 )}
               </section>
 
               {/* Messages */}
-              <section aria-labelledby="messages-title" className="rounded-[20px] border border-[#e5ebf3] bg-white">
-                <header className="flex items-center justify-between gap-3 border-b border-[#edf1f5] p-4 sm:px-5">
+              <section aria-labelledby="messages-title" className="rounded-[20px] border border-[#dce3eb] bg-white">
+                <header className="flex items-center justify-between gap-3 border-b border-[#f4f6f8] p-4 sm:px-5">
                   <h2 className="flex items-center gap-2 font-display text-lg font-extrabold text-[#092a53]" id="messages-title">
                     <Icon className="size-5 text-[#5b3fa0]" path={icons.inbox} />
                     {t("Unread messages")}
-                    {data.unreadCount > 0 && <span className="rounded-full bg-[#e5484d] px-1.5 text-[11px] font-extrabold text-white">{data.unreadCount}</span>}
+                    {data.unreadCount > 0 && <span className="rounded-full bg-[#e5484d] px-1.5 text-xs font-extrabold text-white">{data.unreadCount}</span>}
                   </h2>
-                  <Link className="text-xs font-bold text-[#355777] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/notifications">{t("Open inbox")}</Link>
+                  <Link className="text-xs font-bold text-[#123b68] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/notifications">{t("Open inbox")}</Link>
                 </header>
                 {view.unreadMessages.length ? (
-                  <ul className="divide-y divide-[#f0f3f7]">
+                  <ul className="divide-y divide-[#f4f6f8]">
                     {view.unreadMessages.map((message) => (
                       <li key={message.id}>
-                        <Link className="block px-4 py-3 transition hover:bg-[#fafbfd] sm:px-5" to="/admin/notifications">
+                        <Link className="block px-4 py-3 transition hover:bg-[#f4f6f8] sm:px-5" to="/admin/notifications">
                           <span className="flex items-baseline justify-between gap-2">
-                            <span className="truncate text-sm font-extrabold text-[#102c50]">{message.name}</span>
-                            <span className="shrink-0 text-[11px] text-[#a3b0bf]">{relativeTime(parseDate(message.createdAt), language)}</span>
+                            <span className="truncate text-sm font-extrabold text-[#092a53]">{message.name}</span>
+                            <span className="shrink-0 text-xs text-[#a3b0bf]">{relativeTime(parseDate(message.createdAt), language)}</span>
                           </span>
-                          <span className="block truncate text-xs font-semibold text-[#355777]">{message.subject}</span>
-                          <span className="block truncate text-xs text-[#8190a1]">{message.message}</span>
+                          <span className="block truncate text-xs font-semibold text-[#123b68]">{message.subject}</span>
+                          <span className="block truncate text-xs text-[#65748a]">{message.message}</span>
                         </Link>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="px-5 py-8 text-center text-sm text-[#8190a1]">{t("You’re all caught up.")}</p>
+                  <p className="px-5 py-8 text-center text-sm text-[#65748a]">{t("You’re all caught up.")}</p>
                 )}
               </section>
 
               {/* Reviews waiting */}
               {data.reviews.length > 0 && (
-                <Link className="group flex items-center gap-4 rounded-[20px] border border-[#e5ebf3] bg-white p-4 transition hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] sm:px-5" to="/admin/reviews">
-                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#fff4c2] text-[#8a7000]">
+                <Link className="group flex items-center gap-4 rounded-[20px] border border-[#dce3eb] bg-white p-4 transition hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] sm:px-5" to="/admin/reviews">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#fff4c2] text-[#bd9c00]">
                     <svg aria-hidden="true" className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-bold text-[#102c50]">{t("{count} reviews waiting for approval", { count: data.reviews.length })}</span>
-                    <span className="block truncate text-xs text-[#8190a1]">“{data.reviews[0].review || data.reviews[0].itemName}” — {data.reviews[0].customerName}</span>
+                    <span className="block font-bold text-[#092a53]">{t("{count} reviews waiting for approval", { count: data.reviews.length })}</span>
+                    <span className="block truncate text-xs text-[#65748a]">“{data.reviews[0].review || data.reviews[0].itemName}” — {data.reviews[0].customerName}</span>
                   </span>
-                  <Icon className="size-4 text-[#c3cfdc] transition group-hover:translate-x-0.5 group-hover:text-[#092a53]" path={icons.arrow} />
+                  <Icon className="size-4 text-[#dce3eb] transition group-hover:translate-x-0.5 group-hover:text-[#092a53]" path={icons.arrow} />
                 </Link>
               )}
 
               {/* Quick links */}
               <section aria-labelledby="shortcuts-title">
-                <h2 className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#8190a1]" id="shortcuts-title">{t("Shortcuts")}</h2>
+                <h2 className="mb-3 text-xs font-extrabold uppercase tracking-[0.16em] text-[#65748a]" id="shortcuts-title">{t("Shortcuts")}</h2>
                 <div className="grid grid-cols-2 gap-2.5">
                   {[
                     { label: t("Delivered"), to: "/admin/delivered", icon: icons.check },
@@ -494,8 +494,8 @@ export function AdminStoreOverviewPage() {
                     { label: t("Customer accounts"), to: "/admin/customers", icon: icons.users },
                     { label: t("Reports"), to: "/admin/reports", icon: icons.chart },
                   ].map((shortcut) => (
-                    <Link className="group flex items-center gap-2.5 rounded-xl bg-white p-3 text-sm font-bold text-[#102c50] ring-1 ring-[#e5ebf3] transition hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(18,44,80,0.07)]" key={shortcut.to} to={shortcut.to}>
-                      <span className="grid size-8 place-items-center rounded-lg bg-[#f1f4f8] text-[#355777] transition group-hover:bg-[#ffdc32] group-hover:text-[#092a53]"><Icon path={shortcut.icon} /></span>
+                    <Link className="group flex items-center gap-2.5 rounded-xl bg-white p-3 text-sm font-bold text-[#092a53] ring-1 ring-[#dce3eb] transition hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(18,44,80,0.07)]" key={shortcut.to} to={shortcut.to}>
+                      <span className="grid size-8 place-items-center rounded-lg bg-[#f4f6f8] text-[#123b68] transition group-hover:bg-[#ffdc32] group-hover:text-[#092a53]"><Icon path={shortcut.icon} /></span>
                       <span className="truncate">{shortcut.label}</span>
                     </Link>
                   ))}

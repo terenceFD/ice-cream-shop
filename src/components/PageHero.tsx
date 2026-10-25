@@ -89,8 +89,8 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
       <div className={`mx-auto grid max-w-[1320px] items-center gap-12 px-5 pt-8 ${compactOnMobile ? "pb-16" : "pb-24"} sm:px-8 sm:pb-28 sm:pt-12 lg:grid-cols-12 lg:gap-8 lg:px-12 lg:pb-32 lg:pt-14`}>
         <div className="lg:col-span-6">
           {breadcrumb && <div className="mb-8 text-xs font-bold text-white/55">{breadcrumb}</div>}
-          <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pl-2 pr-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[var(--hero-accent)] backdrop-blur-sm">
-            <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[var(--hero-accent)] text-[10px] text-[var(--hero-surface,#092a53)]">✦</span>
+          <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pl-2 pr-4 text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--hero-accent)] backdrop-blur-sm">
+            <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[var(--hero-accent)] text-xs text-[var(--hero-surface,#092a53)]">✦</span>
             {eyebrow}
           </p>
           <h1 className={`mt-6 font-display font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl ${compactOnMobile ? "text-4xl" : "text-5xl"}`}>
@@ -106,7 +106,7 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
             <dl className={`mt-10 w-fit grid-flow-col divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[0.05] backdrop-blur-sm ${compactOnMobile ? "hidden sm:grid" : "grid"}`}>
               {stats.map((stat) => (
                 <div className="px-5 py-4 sm:px-7" key={stat.label}>
-                  <dt className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/50">{stat.label}</dt>
+                  <dt className="text-xs font-extrabold uppercase tracking-[0.16em] text-white/50">{stat.label}</dt>
                   <dd className={`mt-1 font-display text-2xl font-extrabold tabular-nums sm:text-3xl ${stat.accent ? "text-[var(--hero-accent)]" : "text-white"}`}>
                     {stat.value}
                   </dd>
@@ -142,7 +142,7 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
                 {badge.mark}
               </span>
               <div className="leading-tight">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#8a7000]">{badge.eyebrow}</p>
+                <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#bd9c00]">{badge.eyebrow}</p>
                 <p className="mt-1 text-xs font-bold leading-4 sm:text-sm sm:leading-5">{badge.text}</p>
               </div>
             </div>

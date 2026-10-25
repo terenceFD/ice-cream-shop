@@ -61,7 +61,7 @@ export function HeroBackground({
     variant === "navy"
       ? [
         { className: "hero-blob-a absolute -right-40 -top-40 size-[38rem]", background: "rgb(255_220_50/0.12)" },
-        { className: "hero-blob-b absolute -bottom-56 -left-40 size-[34rem]", background: "rgb(28_79_138/0.5)" },
+        { className: "hero-blob-b absolute -bottom-56 -left-40 size-[34rem]", background: "rgb(18_59_104/0.5)" },
       ]
       : [
         { className: "hero-blob-a absolute -right-48 -top-48 size-[36rem]", background: "rgb(255_220_50/0.14)" },

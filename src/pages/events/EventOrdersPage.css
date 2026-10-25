@@ -1,7 +1,7 @@
 .event-orders-page {
-  --event-ink: #102c50;
+  --event-ink: #092a53;
   --event-muted: #53677e;
-  --event-ground: #f2f5f8;
+  --event-ground: #f4f6f8;
   --event-line: #dfe6ee;
   --event-control: #cbd4df;
   --event-accent: #ffdc32;
@@ -172,7 +172,7 @@
 
 .event-occasion-tile {
   border-radius: 5px;
-  background: #edf1f5;
+  background: #f4f6f8;
 }
 
 .event-occasion-tile img {
@@ -190,7 +190,7 @@
 .event-occasion-caption > span:first-child {
   width: 22px;
   height: 22px;
-  background: #edf1f5;
+  background: #f4f6f8;
   color: var(--event-ink);
 }
 
@@ -300,7 +300,7 @@
 }
 
 .event-orders-page label {
-  color: #43566b;
+  color: #65748a;
   font-size: 13px;
   font-weight: 600;
 }
@@ -353,7 +353,7 @@
 .event-fulfillment-choice > span:first-child {
   width: 32px;
   height: 32px;
-  background: #edf1f5;
+  background: #f4f6f8;
   color: var(--event-ink);
 }
 
@@ -375,7 +375,7 @@
 }
 
 .event-treat-section h3 {
-  color: #43566b;
+  color: #65748a;
   font-size: 13px;
   font-weight: 650;
 }
@@ -389,7 +389,7 @@
 }
 
 .event-treat-row[data-selected="true"] {
-  background: #f5f7f9;
+  background: #f4f6f8;
 }
 
 .event-treat-row p:first-child {
@@ -413,7 +413,7 @@
 .event-treat-row button {
   width: 32px;
   height: 32px;
-  background: #edf1f5;
+  background: #f4f6f8;
   color: var(--event-ink);
 }
 
@@ -493,7 +493,7 @@
   height: 34px;
   border: 0;
   border-radius: 6px;
-  background: #edf1f5;
+  background: #f4f6f8;
   color: var(--event-ink);
 }
 

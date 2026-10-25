@@ -104,37 +104,37 @@ export function AdminFulfillmentPage() {
 
       <section aria-label={t('Overview')} className="admin-stats grid grid-cols-2 gap-3 lg:grid-cols-4">
         <AdminStatCard accent="bg-[#e9f1fa] text-[#315982]" icon={adminIcons.store} label={t('Active branches')} value={activeZones.length} />
-        <AdminStatCard accent="bg-[#fff4c2] text-[#8a6f00]" icon={adminIcons.box} label={t('Offer pickup')} value={activeZones.filter((zone) => zone.pickupEnabled).length} />
+        <AdminStatCard accent="bg-[#fff4c2] text-[#bd9c00]" icon={adminIcons.box} label={t('Offer pickup')} value={activeZones.filter((zone) => zone.pickupEnabled).length} />
         <AdminStatCard accent="bg-[#e5f4ea] text-[#2c7a4f]" icon={adminIcons.truck} label={t('Offer delivery')} value={activeZones.filter((zone) => zone.deliveryEnabled).length} />
         <AdminStatCard accent="bg-[#f3ecfb] text-[#6b4aa0]" icon={adminIcons.clock} label={t('Active time slots')} value={slots.filter((slot) => slot.isActive).length} />
       </section>
 
-      <form className="rounded-[20px] border border-[#e5ebf3] bg-white" onSubmit={saveZones}>
-        <div className="border-b border-[#edf1f5] p-4 sm:p-5">
+      <form className="rounded-[20px] border border-[#dce3eb] bg-white" onSubmit={saveZones}>
+        <div className="border-b border-[#f4f6f8] p-4 sm:p-5">
           <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t('Store branches and service areas')}</h2>
           <p className="mt-0.5 text-xs text-[#65748a]">{t('Switch a branch off to hide it from checkout. The delivery fee is only used when delivery is on.')}</p>
         </div>
-        <ul className="divide-y divide-[#f0f3f7]">
+        <ul className="divide-y divide-[#f4f6f8]">
           {zones.map((zone) => (
-            <li className={`grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center ${zone.isActive ? '' : 'bg-[#fafbfd]'}`} key={zone.id}>
+            <li className={`grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center ${zone.isActive ? '' : 'bg-[#f4f6f8]'}`} key={zone.id}>
               <div className="min-w-0">
                 <p className="flex flex-wrap items-center gap-2 text-sm font-extrabold text-[#092a53]">
                   {t(zone.storeName)}
-                  {!zone.isActive && <span className="rounded-full bg-[#eef1f5] px-2 py-0.5 text-[10px] font-bold text-[#65748a]">{t('Hidden at checkout')}</span>}
+                  {!zone.isActive && <span className="rounded-full bg-[#eef1f5] px-2 py-0.5 text-xs font-bold text-[#65748a]">{t('Hidden at checkout')}</span>}
                 </p>
                 <p className="mt-1 text-xs text-[#65748a]">{t(zone.location)}{zone.storeAddress ? ` · ${t(zone.storeAddress)}` : ''}</p>
-                {zone.storePhone && <p className="mt-1 text-xs font-semibold text-[#52647b]">{zone.storePhone}</p>}
+                {zone.storePhone && <p className="mt-1 text-xs font-semibold text-[#65748a]">{zone.storePhone}</p>}
               </div>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                 <AdminToggle checked={zone.isActive} disabled={isSavingBranches} label={t('Active')} onChange={(isActive) => updateZone(zone.id, { isActive })} />
                 <AdminToggle checked={zone.pickupEnabled} disabled={isSavingBranches || !zone.isActive} label={t('Pickup')} onChange={(pickupEnabled) => updateZone(zone.id, { pickupEnabled })} />
                 <AdminToggle checked={zone.deliveryEnabled} disabled={isSavingBranches || !zone.isActive} label={t('Delivery')} onChange={(deliveryEnabled) => updateZone(zone.id, { deliveryEnabled })} />
                 {zone.deliveryEnabled && (
-                  <label className="flex items-center gap-2 text-xs font-bold text-[#4f6379]">
+                  <label className="flex items-center gap-2 text-xs font-bold text-[#65748a]">
                     {t('Delivery fee')}
-                    <span className="flex items-center rounded-xl border border-[#dde4ec] bg-[#f8fafc] pr-3 focus-within:border-[#bd9c00] focus-within:bg-white">
-                      <input className="w-24 bg-transparent px-3 py-2 text-sm font-bold tabular-nums text-[#102c50] outline-none!" min="0" onChange={(event) => updateZone(zone.id, { deliveryFee: event.target.value })} type="number" value={zone.deliveryFee} />
-                      <span className="text-[10px] font-extrabold text-[#8190a1]">FCFA</span>
+                    <span className="flex items-center rounded-xl border border-[#dce3eb] bg-[#f4f6f8] pr-3 focus-within:border-[#bd9c00] focus-within:bg-white">
+                      <input className="w-24 bg-transparent px-3 py-2 text-sm font-bold tabular-nums text-[#092a53] outline-none!" min="0" onChange={(event) => updateZone(zone.id, { deliveryFee: event.target.value })} type="number" value={zone.deliveryFee} />
+                      <span className="text-xs font-extrabold text-[#65748a]">FCFA</span>
                     </span>
                   </label>
                 )}
@@ -142,7 +142,7 @@ export function AdminFulfillmentPage() {
             </li>
           ))}
         </ul>
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-[#edf1f5] p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-[#f4f6f8] p-4 sm:p-5">
           {message && (
             <p className="text-sm font-semibold text-[#1f5d3c]" role="status">{message}</p>
           )}
@@ -153,22 +153,22 @@ export function AdminFulfillmentPage() {
         </div>
       </form>
 
-      <form className="rounded-[20px] border border-[#e5ebf3] bg-white" onSubmit={saveSlots}>
-        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#edf1f5] p-4 sm:p-5">
+      <form className="rounded-[20px] border border-[#dce3eb] bg-white" onSubmit={saveSlots}>
+        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#f4f6f8] p-4 sm:p-5">
           <div>
             <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t('Available time slots')}</h2>
             <p className="mt-0.5 text-xs text-[#65748a]">{t('Customers choose one of the active slots at checkout.')}</p>
           </div>
-          <button className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dde4ec] px-4 text-sm font-bold text-[#092a53] transition hover:border-[#092a53] disabled:opacity-50" disabled={slots.length >= 20} onClick={() => setSlots((current) => [...current, { label: '', startTime: '10:00', endTime: '12:00', isActive: true }])} type="button">
+          <button className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce3eb] px-4 text-sm font-bold text-[#092a53] transition hover:border-[#092a53] disabled:opacity-50" disabled={slots.length >= 20} onClick={() => setSlots((current) => [...current, { label: '', startTime: '10:00', endTime: '12:00', isActive: true }])} type="button">
             <AdminIcon path={adminIcons.plus} /> {t('Add time slot')}
           </button>
         </div>
-        <ul className="divide-y divide-[#f0f3f7]">
+        <ul className="divide-y divide-[#f4f6f8]">
           {slots.map((slot, index) => (
             <li className="grid items-end gap-3 p-4 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto] sm:p-5" key={slot.id ?? `new-${index}`}>
-              <label className="text-xs font-bold text-[#4f6379]">{t('Slot label')}<input className={slotInputClassName} maxLength={60} onChange={(event) => updateSlot(index, { label: event.target.value })} required value={slot.label} /></label>
-              <label className="text-xs font-bold text-[#4f6379]">{t('Starts')}<input className={slotInputClassName} onChange={(event) => updateSlot(index, { startTime: event.target.value })} required type="time" value={slot.startTime} /></label>
-              <label className="text-xs font-bold text-[#4f6379]">{t('Ends')}<input className={slotInputClassName} onChange={(event) => updateSlot(index, { endTime: event.target.value })} required type="time" value={slot.endTime} /></label>
+              <label className="text-xs font-bold text-[#65748a]">{t('Slot label')}<input className={slotInputClassName} maxLength={60} onChange={(event) => updateSlot(index, { label: event.target.value })} required value={slot.label} /></label>
+              <label className="text-xs font-bold text-[#65748a]">{t('Starts')}<input className={slotInputClassName} onChange={(event) => updateSlot(index, { startTime: event.target.value })} required type="time" value={slot.startTime} /></label>
+              <label className="text-xs font-bold text-[#65748a]">{t('Ends')}<input className={slotInputClassName} onChange={(event) => updateSlot(index, { endTime: event.target.value })} required type="time" value={slot.endTime} /></label>
               <div className="pb-2"><AdminToggle checked={slot.isActive} label={t('Active')} onChange={(isActive) => updateSlot(index, { isActive })} /></div>
               <button aria-label={t('Remove time slot')} className="mb-1 grid size-9 place-items-center rounded-lg text-[#a3352f] transition hover:bg-red-50" onClick={() => setSlots((current) => current.filter((_, slotIndex) => slotIndex !== index))} title={t('Remove')} type="button">
                 <AdminIcon path={adminIcons.trash} />
@@ -176,7 +176,7 @@ export function AdminFulfillmentPage() {
             </li>
           ))}
         </ul>
-        <div className="flex justify-end border-t border-[#edf1f5] p-4 sm:p-5">
+        <div className="flex justify-end border-t border-[#f4f6f8] p-4 sm:p-5">
           <button className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b] disabled:opacity-50" disabled={!slots.length} type="submit">{t('Save time slots')}</button>
         </div>
       </form>
@@ -184,7 +184,7 @@ export function AdminFulfillmentPage() {
   )
 }
 
-const slotInputClassName = 'mt-1.5 w-full rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3.5 py-2.5 text-sm font-medium text-[#102c50] transition focus:border-[#bd9c00] focus:bg-white outline-none!'
+const slotInputClassName = 'mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition focus:border-[#bd9c00] focus:bg-white outline-none!'
 
 export function AdminCakeRequestsPage() {
   return <AdminCakeRequestsBoard />
@@ -254,30 +254,30 @@ export function AdminStockAlertsPage() {
       <section aria-label={t('Overview')} className="admin-stats grid grid-cols-3 gap-3">
         <AdminStatCard accent="bg-[#fff4e0] text-[#a35f00]" icon={adminIcons.alert} label={t('Need attention')} value={items.length} />
         <AdminStatCard accent="bg-red-50 text-red-700" icon={adminIcons.box} label={t('Sold out')} value={soldOutCount} />
-        <AdminStatCard accent="bg-[#eef1f5] text-[#52647b]" icon={adminIcons.store} label={t('Unavailable')} value={unavailableCount} />
+        <AdminStatCard accent="bg-[#eef1f5] text-[#65748a]" icon={adminIcons.store} label={t('Unavailable')} value={unavailableCount} />
       </section>
 
-      <section className="rounded-[20px] border border-[#e5ebf3] bg-white">
+      <section className="rounded-[20px] border border-[#dce3eb] bg-white">
         {items.length ? (
-          <ul className="divide-y divide-[#f0f3f7]">
+          <ul className="divide-y divide-[#f4f6f8]">
             {items.map((item) => {
               const soldOut = item.availableQuantity < 1
               return (
                 <li className="grid gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-5" key={item.itemId}>
                   <div className="min-w-0">
-                    <p className="flex flex-wrap items-center gap-2 font-bold text-[#102c50]">
+                    <p className="flex flex-wrap items-center gap-2 font-bold text-[#092a53]">
                       {item.name}
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ${!item.isAvailable ? 'bg-[#eef1f5] text-[#52647b] ring-[#dde4ec]' : soldOut ? 'bg-red-50 text-red-700 ring-red-100' : 'bg-[#fff4e0] text-[#8a5200] ring-[#f3dcb0]'}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ring-1 ${!item.isAvailable ? 'bg-[#eef1f5] text-[#65748a] ring-[#dce3eb]' : soldOut ? 'bg-red-50 text-red-700 ring-red-100' : 'bg-[#fff4e0] text-[#8a5200] ring-[#f3dcb0]'}`}>
                         {!item.isAvailable ? t('Unavailable') : soldOut ? t('Sold out') : t('Low stock')}
                       </span>
                     </p>
                     <p className="mt-1 text-xs text-[#65748a]">{t(item.category)} · {t('{count} left', { count: Math.max(0, item.availableQuantity) })}</p>
                   </div>
                   <div className="flex items-end gap-2">
-                    <label className="text-xs font-bold text-[#4f6379]">{t('Alert at or below')}
-                      <input className="mt-1.5 block w-24 rounded-xl border border-[#dde4ec] bg-[#f8fafc] px-3 py-2 text-sm font-bold tabular-nums text-[#102c50] outline-none! focus:border-[#bd9c00] focus:bg-white" min="0" onChange={(event) => setThresholds((current) => ({ ...current, [item.itemId]: event.target.value }))} type="number" value={thresholds[item.itemId] ?? 5} />
+                    <label className="text-xs font-bold text-[#65748a]">{t('Alert at or below')}
+                      <input className="mt-1.5 block w-24 rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3 py-2 text-sm font-bold tabular-nums text-[#092a53] outline-none! focus:border-[#bd9c00] focus:bg-white" min="0" onChange={(event) => setThresholds((current) => ({ ...current, [item.itemId]: event.target.value }))} type="number" value={thresholds[item.itemId] ?? 5} />
                     </label>
-                    <button className="inline-flex min-h-10 items-center rounded-xl border border-[#dde4ec] px-4 text-sm font-bold text-[#092a53] transition hover:border-[#092a53]" onClick={() => saveThreshold(item)} type="button">{t('Save threshold')}</button>
+                    <button className="inline-flex min-h-10 items-center rounded-xl border border-[#dce3eb] px-4 text-sm font-bold text-[#092a53] transition hover:border-[#092a53]" onClick={() => saveThreshold(item)} type="button">{t('Save threshold')}</button>
                   </div>
                 </li>
               )
@@ -297,11 +297,11 @@ export function AdminStockAlertsPage() {
 const AREA_LABELS = { catalog: 'Catalog', orders: 'Orders', customers: 'Customers', promotions: 'Promotions', settings: 'Settings', account: 'Accounts and sign-in' }
 const AREA_ICONS = { catalog: adminIcons.box, orders: adminIcons.truck, customers: adminIcons.user, promotions: adminIcons.check, settings: adminIcons.store, account: adminIcons.user }
 const AREA_STYLES = {
-  catalog: 'bg-[#fff4c2] text-[#8a6f00]',
+  catalog: 'bg-[#fff4c2] text-[#bd9c00]',
   orders: 'bg-[#e9f1fa] text-[#315982]',
   customers: 'bg-[#f3ecfb] text-[#6b4aa0]',
   promotions: 'bg-[#e5f4ea] text-[#2c7a4f]',
-  settings: 'bg-[#eef1f5] text-[#52647b]',
+  settings: 'bg-[#eef1f5] text-[#65748a]',
   account: 'bg-[#fdeaea] text-[#a3352f]',
 }
 const AREA_DOTS = {
@@ -398,7 +398,7 @@ export function AdminActivityPage() {
       <AdminPageHeader
         actions={(
           <button
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#355777] ring-1 ring-[#dce4ed] transition hover:bg-[#f7f9fc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#123b68] ring-1 ring-[#dce4ed] transition hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
             disabled={isRefreshing}
             onClick={refresh}
             type="button"
@@ -426,13 +426,13 @@ export function AdminActivityPage() {
 
       {activity === null ? (error ? null : (
         <div aria-label={t('Loading…')} className="space-y-6" role="status">
-          <div className="h-44 animate-pulse rounded-[24px] bg-[#eef2f6]" />
-          <div className="h-[28rem] animate-pulse rounded-[20px] bg-[#eef2f6]" />
+          <div className="h-44 animate-pulse rounded-[24px] bg-[#f4f6f8]" />
+          <div className="h-[28rem] animate-pulse rounded-[20px] bg-[#f4f6f8]" />
         </div>
       )) : (
         <>
-          <section aria-labelledby="activity-overview-title" className="overflow-hidden rounded-[24px] border border-[#e5ebf3] bg-white">
-            <div className="border-b border-[#edf1f5] bg-[#092a53] px-5 py-5 text-white sm:px-7 sm:py-6">
+          <section aria-labelledby="activity-overview-title" className="overflow-hidden rounded-[24px] border border-[#dce3eb] bg-white">
+            <div className="border-b border-[#f4f6f8] bg-[#092a53] px-5 py-5 text-white sm:px-7 sm:py-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div className="min-w-0">
                   <h2 className="text-sm font-semibold text-white/65" id="activity-overview-title">{t('Activity overview')}</h2>
@@ -455,42 +455,42 @@ export function AdminActivityPage() {
               </div>
             </div>
 
-            <dl className="grid grid-cols-2 divide-x divide-y divide-[#edf1f5] sm:grid-cols-4 sm:divide-y-0">
+            <dl className="grid grid-cols-2 divide-x divide-y divide-[#f4f6f8] sm:grid-cols-4 sm:divide-y-0">
               <div className="px-4 py-4 sm:px-5">
-                <dt className="text-xs font-semibold text-[#8190a1]">{t('Today')}</dt>
+                <dt className="text-xs font-semibold text-[#65748a]">{t('Today')}</dt>
                 <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.today}</dd>
               </div>
               <div className="px-4 py-4 sm:px-5">
-                <dt className="text-xs font-semibold text-[#8190a1]">{t('People')}</dt>
+                <dt className="text-xs font-semibold text-[#65748a]">{t('People')}</dt>
                 <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.people}</dd>
               </div>
               <div className="px-4 py-4 sm:px-5">
-                <dt className="text-xs font-semibold text-[#8190a1]">{t('Areas touched')}</dt>
+                <dt className="text-xs font-semibold text-[#65748a]">{t('Areas touched')}</dt>
                 <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.areaCounts.length}</dd>
               </div>
               <div className="px-4 py-4 sm:px-5">
-                <dt className="text-xs font-semibold text-[#8190a1]">{t('In this view')}</dt>
+                <dt className="text-xs font-semibold text-[#65748a]">{t('In this view')}</dt>
                 <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{shown.length}</dd>
               </div>
             </dl>
 
             {summary.areaCounts.length > 0 && (
-              <div className="border-t border-[#edf1f5] px-4 py-4 sm:px-5">
-                <p className="text-xs font-semibold text-[#8190a1]">{t('By area')}</p>
+              <div className="border-t border-[#f4f6f8] px-4 py-4 sm:px-5">
+                <p className="text-xs font-semibold text-[#65748a]">{t('By area')}</p>
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {summary.areaCounts.map((row) => (
                     <li key={row.value}>
                       <button
                         aria-pressed={area === row.value}
                         className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${
-                          area === row.value ? 'bg-[#092a53] text-white' : 'bg-[#f1f4f8] text-[#355777] hover:bg-[#e8edf4]'
+                          area === row.value ? 'bg-[#092a53] text-white' : 'bg-[#f4f6f8] text-[#123b68] hover:bg-[#e8edf4]'
                         }`}
                         onClick={() => setArea((current) => (current === row.value ? '' : row.value))}
                         type="button"
                       >
                         <span aria-hidden="true" className={`size-2 rounded-full ${area === row.value ? 'bg-[#ffdc32]' : AREA_DOTS[row.value]}`} />
                         {t(AREA_LABELS[row.value])}
-                        <span className={`tabular-nums ${area === row.value ? 'text-white/70' : 'text-[#8190a1]'}`}>{row.count}</span>
+                        <span className={`tabular-nums ${area === row.value ? 'text-white/70' : 'text-[#65748a]'}`}>{row.count}</span>
                       </button>
                     </li>
                   ))}
@@ -499,8 +499,8 @@ export function AdminActivityPage() {
             )}
           </section>
 
-          <section aria-labelledby="activity-timeline-title" className="overflow-hidden rounded-[20px] border border-[#e5ebf3] bg-white">
-            <div className="flex flex-col gap-3 border-b border-[#edf1f5] px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+          <section aria-labelledby="activity-timeline-title" className="overflow-hidden rounded-[20px] border border-[#dce3eb] bg-white">
+            <div className="flex flex-col gap-3 border-b border-[#f4f6f8] px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="activity-timeline-title">{t('Change timeline')}</h2>
                 <p className="mt-0.5 text-sm text-[#65748a]">
@@ -510,7 +510,7 @@ export function AdminActivityPage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-[#65748a]" id="activity-area-label">{t('Area')}</span>
-                  <div aria-labelledby="activity-area-label" className="inline-flex flex-wrap rounded-xl bg-[#f1f4f8] p-1" role="group">
+                  <div aria-labelledby="activity-area-label" className="inline-flex flex-wrap rounded-xl bg-[#f4f6f8] p-1" role="group">
                     <button
                       aria-pressed={!area}
                       className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${!area ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
@@ -539,7 +539,7 @@ export function AdminActivityPage() {
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-semibold text-[#65748a]" htmlFor="activity-person">{t('Person')}</label>
                     <select
-                      className="min-h-9 rounded-xl border border-[#dde4ec] bg-white px-3 text-xs font-bold text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+                      className="min-h-9 rounded-xl border border-[#dce3eb] bg-white px-3 text-xs font-bold text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
                       id="activity-person"
                       onChange={(event) => setPerson(event.target.value)}
                       value={person}
@@ -554,7 +554,7 @@ export function AdminActivityPage() {
 
             {!entries.length ? (
               <div className="px-6 py-14 text-center">
-                <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f5f9] text-[#355777]">
+                <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f5f9] text-[#123b68]">
                   <AdminIcon className="size-6" path={adminIcons.history} />
                 </span>
                 <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t('No admin changes have been recorded yet.')}</p>
@@ -565,7 +565,7 @@ export function AdminActivityPage() {
                 <p className="font-display text-lg font-extrabold text-[#092a53]">{t('No matching changes')}</p>
                 <p className="mt-1 text-sm text-[#65748a]">{t('Try another person or area filter.')}</p>
                 <button
-                  className="mt-4 text-sm font-bold text-[#355777] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+                  className="mt-4 text-sm font-bold text-[#123b68] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
                   onClick={() => { setPerson(''); setArea('') }}
                   type="button"
                 >
@@ -573,17 +573,17 @@ export function AdminActivityPage() {
                 </button>
               </div>
             ) : (
-              <div className="divide-y divide-[#edf1f5]">
+              <div className="divide-y divide-[#f4f6f8]">
                 {dayGroups.map((group) => (
                   <section aria-labelledby={`activity-day-${group.day}`} key={group.day}>
-                    <div className="sticky top-[68px] z-10 flex items-center justify-between gap-3 border-b border-[#edf1f5] bg-[#f7f9fc]/95 px-4 py-2.5 backdrop-blur-sm sm:px-5">
+                    <div className="sticky top-[68px] z-10 flex items-center justify-between gap-3 border-b border-[#f4f6f8] bg-[#f4f6f8]/95 px-4 py-2.5 backdrop-blur-sm sm:px-5">
                       <h3 className="text-xs font-extrabold text-[#65748a]" id={`activity-day-${group.day}`}>{group.day}</h3>
-                      <span className="text-[11px] font-semibold tabular-nums text-[#91a0b1]">
+                      <span className="text-xs font-semibold tabular-nums text-[#91a0b1]">
                         {group.entries.length === 1 ? t('1 change') : t('{count} changes', { count: group.entries.length })}
                       </span>
                     </div>
                     <ol className="relative">
-                      <span aria-hidden="true" className="absolute bottom-4 left-[2.15rem] top-4 w-px bg-[#e6ebf1] sm:left-[2.4rem]" />
+                      <span aria-hidden="true" className="absolute bottom-4 left-[2.15rem] top-4 w-px bg-[#dce3eb] sm:left-[2.4rem]" />
                       {group.entries.map((entry) => {
                         const createdAtLabel = formatAdminTime(entry.createdAt, language)
                         return (
@@ -594,25 +594,25 @@ export function AdminActivityPage() {
                             <div className="min-w-0 pt-0.5">
                               <div className="flex flex-wrap items-center gap-2">
                                 <p className="text-sm font-extrabold text-[#092a53]">{t(entry.label, { id: entry.id ?? '' })}</p>
-                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${AREA_STYLES[entry.area]}`}>
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold ${AREA_STYLES[entry.area]}`}>
                                   {t(AREA_LABELS[entry.area])}
                                 </span>
                               </div>
                               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#65748a]">
-                                <span className="inline-flex items-center gap-1.5 font-semibold text-[#355777]">
-                                  <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#eef2f6] text-[9px] font-extrabold text-[#355777]">
+                                <span className="inline-flex items-center gap-1.5 font-semibold text-[#123b68]">
+                                  <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#f4f6f8] text-[9px] font-extrabold text-[#123b68]">
                                     {adminInitials(entry.adminName)}
                                   </span>
                                   {entry.adminName}
                                 </span>
                                 {!entry.known && (
-                                  <span className="truncate font-mono text-[11px] text-[#91a0b1]">{entry.method} {entry.path}</span>
+                                  <span className="truncate font-mono text-xs text-[#91a0b1]">{entry.method} {entry.path}</span>
                                 )}
                               </div>
                             </div>
                             {createdAtLabel && (
                               <time
-                                className="inline-flex shrink-0 items-center gap-1.5 pt-1 text-xs font-semibold tabular-nums text-[#8190a1]"
+                                className="inline-flex shrink-0 items-center gap-1.5 pt-1 text-xs font-semibold tabular-nums text-[#65748a]"
                                 dateTime={activityDateTime(entry.createdAt)}
                               >
                                 <AdminIcon className="size-3.5 text-[#b0bbc8]" path={adminIcons.clock} />
