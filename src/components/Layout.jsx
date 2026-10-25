@@ -1233,12 +1233,6 @@ function PromotionCountdown() {
   const discount = promotion.discountType === "percent"
     ? `${promotion.discountValue}% ${t("off")}`
     : `${numberFormat.format(promotion.discountValue)} FCFA ${t("off")}`;
-  const units = [
-    [days, t("d")],
-    [hours, t("h")],
-    [minutes, t("m")],
-    [seconds, t("s")],
-  ].filter(([value], index) => index > 0 || value > 0);
 
   async function copyCode() {
     try {
@@ -1259,57 +1253,55 @@ function PromotionCountdown() {
     }
   }
 
+  const clock = (value) => String(value).padStart(2, "0");
+  const countdown = days > 0
+    ? `${days}${t("d")} ${clock(hours)}${t("h")} ${clock(minutes)}${t("m")}`
+    : `${clock(hours)}${t("h")} ${clock(minutes)}${t("m")} ${clock(seconds)}${t("s")}`;
+  const minimum = promotion.minimumTotal > 0
+    ? t("Minimum order: {count} items", { count: numberFormat.format(promotion.minimumTotal) })
+    : "";
+
   return (
     <aside
       aria-label={t("Limited-time promotion")}
-      className="relative z-[51] overflow-hidden bg-gradient-to-r from-[#ffdc32] via-[#ffe76c] to-[#ffdc32] text-[#092a53]"
+      className="relative z-[51] border-b border-[#bd9c00] bg-[#ffdc32] text-[#092a53]"
     >
-      <div aria-hidden="true" className="promo-shimmer pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/45 to-transparent" />
-      <div className="relative mx-auto flex min-h-11 max-w-[1320px] items-center gap-2 px-3 py-1.5 sm:gap-4 sm:px-8 lg:px-12">
-        <div className="flex min-w-0 flex-1 items-center justify-center gap-2 sm:gap-3">
-          <span className="hidden shrink-0 rounded-full bg-[#092a53] px-2.5 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-[#ffdc32] sm:inline-flex">
-            {t("Limited-time offer")}
-          </span>
-          <p className="min-w-0 truncate text-[13px] font-extrabold sm:text-sm">
-            {discount}
-            {promotion.minimumTotal > 0 && (
-              <span className="hidden font-semibold text-[#092a53]/70 md:inline">
-                {" · "}{t("Minimum order: {count} items", { count: numberFormat.format(promotion.minimumTotal) })}
-              </span>
+      <div className="mx-auto flex max-w-[1320px] items-center gap-3 px-4 py-2 sm:gap-5 sm:px-8 lg:px-12">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
+          <div className="min-w-0">
+            <p className="font-display text-xl font-extrabold leading-none tracking-[-0.03em] sm:text-2xl">
+              {discount}
+            </p>
+            {minimum && (
+              <p className="mt-1 text-[13px] font-medium leading-4 text-[#123b68] sm:hidden">{minimum}</p>
             )}
-          </p>
+          </div>
+          {minimum && (
+            <p className="hidden text-sm font-medium text-[#123b68] sm:block">{minimum}</p>
+          )}
           <button
             aria-label={t("Copy code {code}", { code: promotion.code })}
-            className="group inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-dashed border-[#092a53]/40 bg-white/70 px-2 py-1 font-mono text-xs font-extrabold tracking-wider transition hover:border-[#092a53] hover:bg-white"
+            className="inline-flex min-h-9 items-center rounded-md bg-[#092a53] px-2.5 text-sm font-bold text-[#ffdc32] outline-none! hover:bg-[#123b68] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#092a53]"
             onClick={copyCode}
-            title={t("Copy")}
             type="button"
           >
-            {promotion.code}
-            <svg aria-hidden="true" className="size-3.5 opacity-60 transition group-hover:opacity-100" fill="none" viewBox="0 0 24 24">
-              <path d={copied ? "m5 12.5 4.5 4.5L19 7.5" : "M9 9h10v10H9V9Zm-4 6V5h10"} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg>
+            {copied ? t("Copied") : promotion.code}
           </button>
           <span className="sr-only" aria-live="polite">{copied ? t("Copied") : ""}</span>
-          <div aria-label={t("Offer countdown")} className="hidden shrink-0 items-center gap-1 sm:flex" role="timer">
-            <span className="mr-1 text-xs font-extrabold uppercase tracking-[0.12em] text-[#092a53]/60">{t("Ends in")}</span>
-            {units.map(([value, label]) => (
-              <span className="inline-flex min-w-[2.4rem] items-baseline justify-center gap-0.5 rounded-md bg-[#092a53] px-1.5 py-0.5 font-mono text-xs font-bold tabular-nums text-white" key={label}>
-                {String(value).padStart(2, "0")}
-                <span className="text-[9px] font-semibold text-[#ffdc32]">{label}</span>
-              </span>
-            ))}
-          </div>
-          <Link className="hidden shrink-0 items-center gap-1 text-xs font-extrabold underline decoration-2 underline-offset-4 transition hover:decoration-[#092a53]/40 lg:inline-flex" to="/flavors">
+          <p className="text-sm font-semibold tabular-nums sm:ml-auto" role="timer">
+            <span className="sr-only">{t("Offer countdown")}. </span>
+            {t("Ends in")} {countdown}
+          </p>
+          <Link
+            className="inline-flex items-center py-1 text-sm font-bold underline decoration-2 decoration-[#092a53] underline-offset-4 outline-none! focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#092a53] sm:min-h-11 sm:py-0"
+            to="/flavors"
+          >
             {t("Shop offer")}
-            <svg aria-hidden="true" className="size-3.5" fill="none" viewBox="0 0 24 24">
-              <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg>
           </Link>
         </div>
         <button
           aria-label={t("Dismiss")}
-          className="grid size-8 shrink-0 place-items-center rounded-full text-[#092a53]/70 transition hover:bg-[#092a53]/10 hover:text-[#092a53]"
+          className="grid size-11 shrink-0 place-items-center self-start rounded-md text-[#092a53] outline-none! hover:bg-[#092a53]/10 focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#092a53] sm:self-center"
           onClick={dismiss}
           type="button"
         >

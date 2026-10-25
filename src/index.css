@@ -668,20 +668,9 @@ body {
   animation: admin-slide-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-/* Promotion bar highlight sweep */
-.promo-shimmer {
-  animation: promo-shimmer 4.5s ease-in-out infinite;
-}
-
-@keyframes promo-shimmer {
-  0%, 55% { transform: translateX(0); }
-  100% { transform: translateX(450%); }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .site-drawer-backdrop,
-  .site-drawer-panel,
-  .promo-shimmer {
+  .site-drawer-panel {
     animation: none;
   }
 }
