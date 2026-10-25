@@ -610,7 +610,7 @@ export function PaymentPage() {
                                 !method.available
                                   ? "cursor-not-allowed bg-[#fbfaf5] ring-[#ece8dc]"
                                   : isSelected
-                                    ? "cursor-pointer bg-[#fffbea] ring-2 ring-[#e8c400] shadow-[0_8px_20px_rgba(189,156,0,0.12)]"
+                                    ? "cursor-pointer bg-[#fffbea] ring-2 ring-[#bd9c00] shadow-[0_8px_20px_rgba(189,156,0,0.12)]"
                                     : "cursor-pointer bg-white ring-[#e3dfd3] hover:ring-[#cfcabb]"
                               }`}
                               key={method.id}

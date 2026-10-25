@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
 import { Header, Footer, ArrowIcon } from "../../components/Layout";
+import { ProductImageSlider } from "../../components/ProductImageSlider";
 import { useCart } from "../../context/useCart";
 import { type Flavor } from "../../context/FlavorContext";
 import { useFlavors } from "../../context/useFlavors";
 import { useLanguage } from "../../language/useLanguage";
 import { formatCartMoney } from "../../lib/cartPricing";
+import { coldStoneMenuCategories } from "../../../shared/data";
+import { normalizePhotoGallery } from "../../../shared/photoSizes.js";
 import { metaForFlavor, metaForPath } from "../../seo/pageMeta.js";
 import { useDocumentMeta } from "../../seo/useDocumentMeta";
 import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
@@ -37,6 +40,19 @@ type InfoTab = "about" | "contains" | "details";
 function flavorTint(color?: string) {
   const match = color?.match(/#(?:[0-9a-f]{6}|[0-9a-f]{3})\b/i);
   return match ? match[0] : "#fff1cf";
+}
+
+function getFlavorImages(flavor: Flavor) {
+  const menuItems = coldStoneMenuCategories.flatMap((category) => category.items || []);
+  const matchingMenuItem = menuItems.find((item) =>
+    [item.image, ...normalizePhotoGallery(item.gallery)].includes(flavor.image),
+  );
+  return [...new Set([
+    flavor.image,
+    ...(matchingMenuItem
+      ? [matchingMenuItem.image, ...normalizePhotoGallery(matchingMenuItem.gallery)]
+      : []),
+  ].filter(Boolean))];
 }
 
 export function FlavorDetailPage() {
@@ -131,6 +147,7 @@ export function FlavorDetailPage() {
   const allergens = flavor.allergies || [];
   const mainAdded = addedKey === `main-${flavor.id}`;
   const tint = flavorTint(flavor.color);
+  const flavorImages = getFlavorImages(flavor);
   const infoTabs: { key: InfoTab; label: string }[] = [
     { key: "about", label: t("Description") },
     { key: "contains", label: t("Contains") },
@@ -179,16 +196,31 @@ export function FlavorDetailPage() {
 
             <div className="grid items-start gap-8 lg:grid-cols-12 lg:gap-12">
               <div className="relative mx-auto w-full max-w-[520px] lg:col-span-7 lg:max-w-none">
-                <figure className={`scroll-story-frame aspect-[4/3] rounded-[24px] sm:rounded-[32px] ${flavor.color}`}>
-                  <img decoding="async" fetchPriority="high" loading="eager" alt={t(flavor.name)} className="size-full object-cover" onError={photoErrorHandler(flavor.image)} sizes={FLAVOR_PHOTO_SIZES} src={flavor.image} srcSet={photoSrcSet(flavor.image)} />
-                </figure>
-
-                {lowStock && (
-                  <span className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-sm font-bold text-[#806a00]">
-                    <span aria-hidden="true" className="size-1.5 animate-pulse rounded-full bg-[#d4ad00] motion-reduce:animate-none" />
-                    {t("{count} left", { count: flavor.availableQuantity })}
-                  </span>
-                )}
+                <ProductImageSlider
+                  frameClassName={`bg-[#e8edf2] ${flavor.color || ""}`}
+                  imageClassName="aspect-[4/3] lg:aspect-[5/4]"
+                  images={flavorImages}
+                  name={t(flavor.name)}
+                  overlay={
+                    <>
+                      {flavor.tag && (
+                        <span className="absolute left-4 top-4 rounded-full border border-white/80 bg-white/95 px-3.5 py-2 text-[11px] font-extrabold text-[#092a53] shadow-sm backdrop-blur-sm sm:left-6 sm:top-6 sm:text-xs">
+                          {t(flavor.tag)}
+                        </span>
+                      )}
+                      {lowStock && (
+                        <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-xs font-bold text-[#806a00] shadow-sm backdrop-blur-sm sm:bottom-6 sm:left-6 sm:text-sm">
+                          <span aria-hidden="true" className="size-1.5 animate-pulse rounded-full bg-[#d4ad00] motion-reduce:animate-none" />
+                          {t("{count} left", { count: flavor.availableQuantity })}
+                        </span>
+                      )}
+                    </>
+                  }
+                  priority
+                  resetKey={flavor.id}
+                  showScrim={false}
+                  sizes={FLAVOR_PHOTO_SIZES}
+                />
               </div>
 
               <div className="min-w-0 rounded-[24px] bg-white p-6 sm:p-9 lg:col-span-5">
@@ -356,55 +388,95 @@ export function FlavorDetailPage() {
         </section>
 
         {relatedFlavors.length > 0 && (
-          <section aria-labelledby="related-flavors-title" className="mt-16 bg-[#f1efe7] py-16 sm:mt-20 sm:py-20">
-            <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-              <div className="mb-8 flex flex-wrap items-end justify-between gap-4 sm:mb-10">
-                <h2 className="max-w-[14ch] font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#092a53] sm:text-5xl" id="related-flavors-title">
-                  {t("You might also love")}
-                </h2>
-                <Link className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffdc32]" to="/flavors">
-                  {t("Browse all flavors")} <ArrowIcon />
+          <section
+            aria-labelledby="related-flavors-title"
+            className="relative overflow-hidden bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+            id="related-flavors"
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-40 -top-48 size-[32rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),transparent)]"
+            />
+            <div className="relative mx-auto max-w-[1320px]">
+              <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-2xl">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#123b68]">
+                    {t("Follow your flavor")}
+                  </p>
+                  <h2
+                    className="mt-4 max-w-[14ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl lg:text-6xl"
+                    id="related-flavors-title"
+                  >
+                    {t("You might also love")}
+                  </h2>
+                </div>
+                <Link
+                  className="group inline-flex min-h-14 items-center gap-3 rounded-full border-2 border-[#092a53] bg-white/60 px-8 py-3.5 text-base font-extrabold text-[#092a53] shadow-[0_6px_18px_rgba(9,42,83,0.08)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white hover:shadow-[0_12px_28px_rgba(9,42,83,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  to="/flavors"
+                >
+                  {t("Browse all flavors")}
+                  <ArrowIcon />
                 </Link>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+
+              <div className="mt-8 grid auto-rows-fr grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
                 {relatedFlavors.map((relatedFlavor) => {
                   const added = addedKey === `related-${relatedFlavor.id}`;
                   return (
                     <article
-                      className="group relative flex flex-col overflow-hidden rounded-[20px] bg-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.14)]"
+                      className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-lg bg-white ring-1 ring-[#d7dee7] transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[#ffdc32]/70 focus-within:-translate-y-2 focus-within:rotate-[0.4deg] focus-within:shadow-[0_24px_48px_rgba(9,42,83,0.18)] focus-within:ring-[#ffdc32]/70 motion-reduce:transform-none motion-reduce:transition-none"
                       key={relatedFlavor.id}
                     >
-                      <div className={`relative aspect-[4/3] overflow-hidden ${relatedFlavor.color}`}>
-                        <img decoding="async" alt="" className="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.05]" loading="lazy" onError={photoErrorHandler(relatedFlavor.image)} sizes="(min-width: 1024px) 25vw, 50vw" src={relatedFlavor.image} srcSet={photoSrcSet(relatedFlavor.image)} />
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 z-20 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_30%,rgba(255,255,255,0.55)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] group-focus-within:translate-x-[130%] motion-reduce:hidden"
+                      />
+                      <div className="relative bg-[#e8edf2]">
+                        <div className={`relative overflow-hidden ${relatedFlavor.color}`}>
+                          <img
+                            decoding="async"
+                            alt=""
+                            className="aspect-[4/3] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06] group-focus-within:scale-[1.06] motion-reduce:transform-none sm:aspect-[3/2]"
+                            loading="lazy"
+                            onError={photoErrorHandler(relatedFlavor.image)}
+                            sizes="(min-width: 1024px) 25vw, 50vw"
+                            src={relatedFlavor.image}
+                            srcSet={photoSrcSet(relatedFlavor.image)}
+                          />
+                        </div>
                         {relatedFlavor.tag && (
-                          <span className="absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#092a53]">
+                          <span className="absolute left-3 top-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-2 border-l-[3px] border-[#ffdc32] bg-[#092a53] px-2.5 py-1.5 text-xs font-bold leading-tight text-white transition-transform duration-500 ease-out group-hover:-rotate-3 group-hover:scale-105 group-focus-within:-rotate-3 group-focus-within:scale-105 motion-reduce:transform-none sm:left-4 sm:top-4">
                             {t(relatedFlavor.tag)}
                           </span>
                         )}
                       </div>
-                      <div className="@container flex flex-1 flex-col px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
-                        <h3 className="line-clamp-2 font-display text-[15px] font-extrabold leading-snug text-[#092a53] sm:text-xl">
-                          <Link className="after:absolute after:inset-0 after:rounded-[20px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#bd9c00]" to={`/flavor/${relatedFlavor.id}`}>
+                      <div className="flex flex-1 flex-col justify-between gap-3 p-3 sm:gap-3.5 sm:p-4">
+                        <div>
+                          <Link
+                            className="line-clamp-2 min-h-[2.4em] font-display text-base font-extrabold leading-tight text-[#092a53] transition-colors duration-300 hover:text-[#163e6b] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:text-lg"
+                            to={`/flavor/${relatedFlavor.id}`}
+                          >
                             {t(relatedFlavor.name)}
                           </Link>
-                        </h3>
-                        <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[#65748a] sm:mt-2 sm:text-sm sm:leading-6">{t(relatedFlavor.detail)}</p>
-                        <div className="mt-auto flex flex-col gap-2.5 pt-4 sm:gap-3 sm:pt-5 @[16.5rem]:flex-row @[16.5rem]:items-center @[16.5rem]:justify-between">
-                          <span className="whitespace-nowrap font-display text-sm font-extrabold tabular-nums text-[#092a53] sm:text-lg">
+                          <p className="mt-1 line-clamp-1 text-xs font-medium leading-5 text-[#52647b] sm:text-sm">
+                            {t(relatedFlavor.detail)}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+                          <span className="whitespace-nowrap font-display text-sm font-extrabold tabular-nums text-[#092a53]">
                             {formatCartMoney(relatedFlavor.price, "xaf", language)}
                           </span>
                           <button
                             aria-label={t("Add {name} to cart", { name: t(relatedFlavor.name) })}
-                            className={`relative z-10 inline-flex w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-extrabold transition sm:py-3 sm:w-auto @[16.5rem]:w-full @[16.5rem]:py-2.5 duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${
-                              added ? "bg-[#4caf50] text-white" : "bg-[#ffdc32] text-[#092a53] hover:-translate-y-0.5 hover:bg-[#092a53] hover:text-white"
+                            className={`min-h-9 w-full whitespace-nowrap rounded-md px-3 text-xs font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 motion-reduce:transform-none sm:w-auto sm:px-3.5 ${
+                              added ? "bg-[#4caf50] text-white" : "bg-[#092a53] text-white hover:bg-[#163e6b]"
                             }`}
                             onClick={() => {
                               if (addToCart(relatedFlavor)) flashAdded(`related-${relatedFlavor.id}`);
                             }}
                             type="button"
                           >
-                            {added ? <CheckIcon /> : <BagIcon />}
-                            <span aria-live="polite">{added ? t("Added") : t("Add to cart")}</span>
+                            {added ? t("Added") : t("Add to cart")}
                           </button>
                         </div>
                       </div>

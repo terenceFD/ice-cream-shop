@@ -486,7 +486,7 @@ export function CheckoutPage() {
                         <label
                           className={`relative flex cursor-pointer items-center gap-4 rounded-[20px] p-4 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-45 ${
                             isSelected
-                              ? "bg-[#fffbea] ring-2 ring-[#e8c400] shadow-[0_8px_20px_rgba(189,156,0,0.12)]"
+                              ? "bg-[#fffbea] ring-2 ring-[#bd9c00] shadow-[0_8px_20px_rgba(189,156,0,0.12)]"
                               : "bg-white ring-[#e3dfd3] hover:ring-[#cfcabb]"
                           }`}
                           key={option.value}
@@ -683,7 +683,7 @@ export function CheckoutPage() {
                 <label className={labelClassName} htmlFor="discount-code">
                   {t("Discount code")}
                 </label>
-                <div className="mt-2 flex gap-2 rounded-2xl bg-[#fbfaf5] p-1.5 ring-1 ring-[#e3dfd3] transition focus-within:bg-white focus-within:ring-2 focus-within:ring-[#e8c400]">
+                <div className="mt-2 flex gap-2 rounded-2xl bg-[#fbfaf5] p-1.5 ring-1 ring-[#e3dfd3] transition focus-within:bg-white focus-within:ring-2 focus-within:ring-[#bd9c00]">
                   <input
                     autoComplete="off"
                     className="min-w-0 flex-1 bg-transparent px-3 text-sm font-extrabold uppercase tracking-[0.08em] text-[#092a53] placeholder:font-semibold placeholder:normal-case placeholder:tracking-normal placeholder:text-[#9aa3af] outline-none!"
@@ -725,7 +725,7 @@ export function CheckoutPage() {
                       loyaltyBlocked
                         ? "cursor-not-allowed bg-[#fbfaf5] ring-[#ece8dc]"
                         : redeemLoyalty
-                          ? "cursor-pointer bg-[#fffbea] ring-[#e8c400]"
+                          ? "cursor-pointer bg-[#fffbea] ring-[#bd9c00]"
                           : "cursor-pointer bg-white ring-[#e3dfd3] hover:ring-[#cfcabb]"
                     }`}
                   >

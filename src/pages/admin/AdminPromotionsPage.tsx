@@ -651,7 +651,7 @@ export function AdminPromotionsPage() {
                       { key: 'fixed', label: t('Fixed FCFA'), hint: 'FCFA' },
                     ] as const).map((option) => (
                       <label
-                        className={`flex cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] ${form.discountType === option.key ? 'bg-[#fffbea] ring-2 ring-[#e8c400]' : 'bg-white ring-[#dde4ec] hover:ring-[#c3cfdc]'}`}
+                        className={`flex cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] ${form.discountType === option.key ? 'bg-[#fffbea] ring-2 ring-[#bd9c00]' : 'bg-white ring-[#dde4ec] hover:ring-[#c3cfdc]'}`}
                         key={option.key}
                       >
                         <input checked={form.discountType === option.key} className="sr-only" name="discountType" onChange={() => setField('discountType', option.key)} type="radio" />

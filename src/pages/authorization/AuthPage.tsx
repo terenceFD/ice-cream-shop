@@ -207,7 +207,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const passwordsMatch = Boolean(confirmPassword) && password === confirmPassword
   const benefits = ['Track your orders', 'Save your favorites', 'Faster checkout']
   const brandImage = '/ice-images/ice-5.webp'
-  const inputShellClass = `group relative mt-2 flex items-center bg-white ring-1 transition hover:ring-[#d6cfbd] focus-within:ring-[#c9b24a] ${isSignup ? 'rounded-xl ring-[#d9e1ea]' : 'auth-login-input-shell rounded-xl ring-[#d9e1ea]'}`
+  const inputShellClass = `group relative mt-2 flex items-center bg-white ring-1 transition hover:ring-[#d6cfbd] focus-within:ring-[#bd9c00] ${isSignup ? 'rounded-xl ring-[#d9e1ea]' : 'auth-login-input-shell rounded-xl ring-[#d9e1ea]'}`;
   const inputClass = `w-full bg-transparent py-3.5 pl-12 pr-4 text-sm font-semibold text-[#092a53] outline-none! placeholder:font-normal placeholder:text-[#a5aebb] ${isSignup ? 'rounded-xl' : 'auth-login-input rounded-xl'}`
   const iconClass = 'pointer-events-none absolute left-4 size-[18px] text-[#65748a] transition group-focus-within:text-[#092a53]'
   const labelClass = isSignup

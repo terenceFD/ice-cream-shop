@@ -21,8 +21,8 @@ import {
 import { numberFormatter } from "../../lib/cartPricing";
 
 const popularFlavorNames = [
-  "Cookie Mintster",
-  "Our Dubai Chocolate Creation",
+  "Chocolate Devotion",
+  "Cheesecake Fantasy",
   "Founder’s Favorite",
   "Birthday Cake Remix",
 ];
@@ -31,7 +31,6 @@ const popularFlavorColors = [
   "#fff0df",
   "#fff5d2",
   "#fff5c8",
-  "#ffeadc",
 ];
 const cakeSliderFallbacks = {
   birthday: ["/cake-images/cake-1.webp", "/cake-images/cake-2.webp", "/cake-images/cake-6.webp"],
@@ -511,7 +510,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
   return (
     <section
       aria-labelledby="real-reviews-heading"
-      className="bg-[#f4f6f8] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+      className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
       id="reviews"
     >
       <div className="mx-auto max-w-[1320px]">
@@ -614,6 +613,69 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
   );
 }
 
+function HowItWorksSection({ t }) {
+  return (
+    <section
+      aria-labelledby="how-it-works-heading"
+      className="scroll-mt-20 bg-[#f4f6f8] px-5 py-9 text-[#092a53] sm:px-8 sm:py-11 lg:px-10 lg:py-12"
+      id="how-it-works"
+    >
+      <div className="mx-auto max-w-[1320px]">
+        <div className="grid gap-3 sm:grid-cols-[1fr_0.85fr] sm:items-end sm:gap-8">
+          <h2
+            className="font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-4xl"
+            id="how-it-works-heading"
+          >
+            {t("How it works")}
+          </h2>
+          <p className="max-w-lg text-sm leading-6 text-[#52647b] sm:justify-self-end sm:text-base sm:leading-6">
+            {t("Choose your flavor, pay online, then collect your order or have it delivered.")}
+          </p>
+        </div>
+        <ol className="mt-7 grid gap-x-8 gap-y-6 sm:mt-8 sm:grid-cols-3 sm:gap-x-6 lg:gap-x-12">
+          {[
+            {
+              step: "1",
+              title: "Choose your treats",
+              description: "Browse the menu and add favorites to your bag.",
+            },
+            {
+              step: "2",
+              title: "Order online",
+              description: "Checkout with cards or Mobile Money in a few taps.",
+            },
+            {
+              step: "3",
+              title: "Pick up or get it delivered",
+              description: "Ready in about 30 minutes at your chosen store.",
+            },
+          ].map(({ step, title, description }) => (
+            <li
+              className="grid grid-cols-[3rem_minmax(0,1fr)] items-start gap-3 sm:grid-cols-1 sm:gap-3"
+              key={step}
+            >
+              <span
+                aria-hidden="true"
+                className="grid size-11 place-items-center rounded-full bg-[#ffdc32] font-display text-xl font-bold leading-none tabular-nums text-[#092a53] sm:size-12 sm:text-2xl"
+              >
+                {step}
+              </span>
+              <span className="min-w-0">
+                <span className="block font-display text-base font-bold leading-tight text-[#092a53] sm:text-lg">
+                  {t(title)}
+                </span>
+                <span className="mt-1.5 block max-w-sm text-sm leading-5 text-[#52647b] sm:leading-6">
+                  {t(description)}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
 export function HomePage() {
   const { language, t } = useLanguage();
   const { addToCart } = useCart();
@@ -638,6 +700,7 @@ export function HomePage() {
   const [showAllFlavorResults, setShowAllFlavorResults] = useState(false);
   const [selectedCakeType, setSelectedCakeType] = useState("all");
   const [cakeSearch, setCakeSearch] = useState("");
+  const [showAllCakeResults, setShowAllCakeResults] = useState(false);
   const [loadedSlides, setLoadedSlides] = useState([0]);
   const [addedItemKey, setAddedItemKey] = useState(null);
   const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
@@ -649,6 +712,7 @@ export function HomePage() {
   // Slim sub-nav for jumping between the home page's sections; highlights as you scroll.
   const homeSections = [
     { id: "flavors", label: "Flavors" },
+    { id: "how-it-works", label: "How it works" },
     { id: "cakes", label: "Cakes" },
     { id: "favorites", label: "Favorites" },
     { id: "reviews", label: "Reviews" },
@@ -869,7 +933,7 @@ export function HomePage() {
       || t(flavor.catalogFlavor?.tag || "").toLocaleLowerCase().includes(query);
     return matchesMood && matchesSearch;
   });
-  const visibleFlavors = flavorFiltersActive ? matchingFlavors : flavorInspiration.slice(0, 6);
+  const visibleFlavors = flavorFiltersActive ? matchingFlavors : flavorInspiration.slice(0, 4);
 
   // Real menu prices for the flavor cards, so the teasers set expectations before clicking.
   const flavorMenuItems = new Map(
@@ -935,8 +999,8 @@ export function HomePage() {
       return typeOk && queryOk;
     });
     const hasActiveFilter = selectedCakeType !== "all" || cakeQuery.length > 0;
-    return hasActiveFilter ? items : items.slice(0, 4);
-  }, [cakeMenuCategory, selectedCakeType, cakeQuery]);
+    return hasActiveFilter || showAllCakeResults ? items : items.slice(0, 4);
+  }, [cakeMenuCategory, selectedCakeType, cakeQuery, showAllCakeResults]);
   // Every cake card needs a slider (more than one photo), but many catalog items
   // only carry a single image and no gallery. For those, pair the item's own photo
   // with attractive cake photos from the same family (petite/sibling views of the
@@ -972,7 +1036,7 @@ export function HomePage() {
           id="home"
           className="relative isolate w-full overflow-clip bg-[#092a53] text-white"
         >
-          <HeroBackground variant="navy" />
+          <HeroBackground quietOnMobile variant="navy" />
 
           <div className="mx-auto w-full max-w-[1400px] px-5 pb-5 pt-4 sm:px-8 sm:pb-12 sm:pt-10 lg:px-12 lg:pb-14 lg:pt-12">
             <div className="grid items-center gap-5 lg:grid-cols-12 lg:gap-12">
@@ -1316,68 +1380,9 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* How ordering works — answers the first-time visitor's questions in one glance. */}
-        <section
-          aria-labelledby="how-it-works-heading"
-          className="bg-[#f4f6f8] px-5 py-14 text-[#092a53] sm:px-8 sm:py-18 lg:px-10 lg:py-20"
-        >
-          <div className="mx-auto max-w-[1320px]">
-            <div className="grid gap-4 sm:grid-cols-[1fr_0.85fr] sm:items-end sm:gap-10">
-              <h2
-                className="font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
-                id="how-it-works-heading"
-              >
-                {t("How it works")}
-              </h2>
-              <p className="max-w-lg text-base leading-7 text-[#52647b] sm:justify-self-end sm:text-lg sm:leading-8">
-                {t("Choose your flavor, pay online, then collect your order or have it delivered.")}
-              </p>
-            </div>
-            <ol className="mt-10 grid gap-x-10 gap-y-8 sm:mt-12 sm:grid-cols-3 sm:gap-x-8 lg:gap-x-16">
-              {[
-                {
-                  step: "1",
-                  title: "Choose your treats",
-                  description: "Browse the menu and add favorites to your bag.",
-                },
-                {
-                  step: "2",
-                  title: "Order online",
-                  description: "Checkout with cards or Mobile Money in a few taps.",
-                },
-                {
-                  step: "3",
-                  title: "Pick up or get it delivered",
-                  description: "Ready in about 30 minutes at your chosen store.",
-                },
-              ].map(({ step, title, description }) => (
-                <li
-                  className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-4 sm:grid-cols-1 sm:gap-5"
-                  key={step}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="grid size-12 place-items-center rounded-full bg-[#ffdc32] font-display text-2xl font-bold leading-none tabular-nums text-[#092a53] sm:size-14 sm:text-3xl"
-                  >
-                    {step}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block font-display text-lg font-bold leading-tight text-[#092a53] sm:text-xl">
-                      {t(title)}
-                    </span>
-                    <span className="mt-2 block max-w-sm text-sm leading-6 text-[#52647b] sm:text-base sm:leading-7">
-                      {t(description)}
-                    </span>
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
         <section
           aria-labelledby="flavor-inspiration-heading"
-          className="bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="flavors"
         >
           <div className="mx-auto max-w-[1320px]">
@@ -1389,13 +1394,13 @@ export function HomePage() {
                 >
                   {t("Find your flavor")}
                 </h2>
-              </div>
-              <div className="max-w-[360px] lg:mb-2">
-                <p className="text-lg leading-8 font-medium text-[#123b68]">
+                <p className="mt-3 max-w-[520px] text-base leading-7 font-medium text-[#123b68]">
                   {t(
                     "Fruity, chocolatey or beautifully classic. Let your cravings lead the way.",
                   )}
                 </p>
+              </div>
+              <div className="max-w-[360px] lg:mb-2">
                 <Link
                   className="group mt-6 inline-flex min-h-12 items-center gap-3 rounded-lg bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition-colors duration-300 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
                   to="/flavors"
@@ -1501,6 +1506,7 @@ export function HomePage() {
               </p>
             ) : null}
             <ul
+              id="home-flavor-results"
               className={visibleFlavors.length === 0 ? "hidden" : "mt-8 grid auto-rows-fr grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6"}
             >
               {visibleFlavors.map((flavor) => {
@@ -1608,20 +1614,35 @@ export function HomePage() {
                 );
               })}
             </ul>
-            {!flavorFiltersActive && visibleFlavors.length > 0 && (
-              <p className="mt-5 text-sm leading-5 text-[#52647b]">
-                {t("Search or choose a craving to see more flavors.")}
-              </p>
+            {selectedFlavorMood === "all" && !flavorSearch.trim() && allFlavorCards.length > 4 && (
+              <div className="mt-6 flex flex-col items-center gap-3">
+                <p className="text-center text-sm leading-5 text-[#52647b]">
+                  {t("Search or choose a craving to see more flavors.")}
+                </p>
+                <button
+                  aria-controls="home-flavor-results"
+                  aria-expanded={showAllFlavorResults}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#092a53] bg-white px-5 py-2.5 text-sm font-bold text-[#092a53] transition-colors hover:bg-[#092a53] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  onClick={() => setShowAllFlavorResults((current) => !current)}
+                  type="button"
+                >
+                  {t(showAllFlavorResults ? "Show fewer flavors" : "Show all {count} flavors", {
+                    count: allFlavorCards.length,
+                  })}
+                </button>
+              </div>
             )}
 
           </div>
         </section>
 
+        <HowItWorksSection t={t} />
+
         {/* Cake cards — same card design/animations/search as "Follow your flavor", with a
             "Request a custom cake" button that leads to the cake builder page. */}
         <section
           aria-labelledby="cakes-heading"
-          className="relative overflow-hidden bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          className="relative scroll-mt-20 overflow-hidden bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="cakes"
         >
           <div className="relative mx-auto max-w-[1320px]">
@@ -1633,37 +1654,23 @@ export function HomePage() {
                 >
                   {t("Cakes for every occasion")}
                 </h2>
-              </div>
-              <div className="max-w-[360px] lg:mb-2">
-                <p className="text-lg font-medium leading-8 text-[#123b68]">
+                <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-[#52647b] sm:text-base">
                   {t("Creamy ice cream cakes for birthdays, parties, and every celebration.")}
                 </p>
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <Link
-                    className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-lg bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-                    to="/custom-cake"
+              </div>
+              <div className="max-w-[360px] lg:mb-2">
+                <Link
+                  className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-lg bg-[#092a53] px-6 py-3 text-sm font-bold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  to="/custom-cake"
+                >
+                  {t("Request a custom cake")}
+                  <span
+                    aria-hidden="true"
+                    className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-transform duration-300 group-hover:translate-x-0.5"
                   >
-                    {t("Request a custom cake")}
-                    <span
-                      aria-hidden="true"
-                      className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-transform duration-300 group-hover:translate-x-0.5"
-                    >
-                      <ArrowIcon />
-                    </span>
-                  </Link>
-                  <Link
-                    className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-lg border border-[#cfd8e1] bg-white px-6 py-3 text-sm font-bold text-[#092a53] transition duration-300 hover:-translate-y-0.5 hover:border-[#092a53] hover:bg-[#fafdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
-                    to={`/menu?${new URLSearchParams({ category: "Cakes & Pies" })}`}
-                  >
-                    {t("Explore all cakes")}
-                    <span
-                      aria-hidden="true"
-                      className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-transform duration-300 group-hover:translate-x-0.5"
-                    >
-                      <ArrowIcon />
-                    </span>
-                  </Link>
-                </div>
+                    <ArrowIcon />
+                  </span>
+                </Link>
               </div>
             </div>
 
@@ -1684,7 +1691,10 @@ export function HomePage() {
                           : "border-[#d7dee7] bg-white text-[#123b68] hover:border-[#092a53] hover:bg-[#f8fafb]"
                       }`}
                       key={id}
-                      onClick={() => setSelectedCakeType(id)}
+                      onClick={() => {
+                        setSelectedCakeType(id);
+                        if (id !== "all") setShowAllCakeResults(false);
+                      }}
                       type="button"
                     >
                       {t(label)}
@@ -1727,7 +1737,10 @@ export function HomePage() {
                   {t("No cakes match your search \u2014 try another name or filter.")}
                 </p>
               ) : (
-                <ul className="mt-8 grid auto-rows-fr grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
+                <ul
+                  className="mt-8 grid auto-rows-fr grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6"
+                  id="home-cake-results"
+                >
                   {cakeCards.map((cake) => {
                     const cakeKey = cake.id || getMenuItemId("Cakes & Pies", cake.name);
                     const added = addedItemKey === cakeKey;
@@ -1828,6 +1841,35 @@ export function HomePage() {
                   })}
                 </ul>
               )}
+              {selectedCakeType === "all" && !cakeQuery && cakeMenuCategory.items.length > 4 && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    aria-controls="home-cake-results"
+                    aria-expanded={showAllCakeResults}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#092a53] bg-white px-5 py-2.5 text-sm font-bold text-[#092a53] transition-colors hover:bg-[#092a53] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                    onClick={() => setShowAllCakeResults((current) => !current)}
+                    type="button"
+                  >
+                    {t(showAllCakeResults ? "Show fewer cakes" : "Show all {count} cakes", {
+                      count: cakeMenuCategory.items.length,
+                    })}
+                  </button>
+                </div>
+              )}
+              <div className="mt-6 flex justify-start">
+                <Link
+                  className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-lg border border-[#cfd8e1] bg-white px-6 py-3 text-sm font-bold text-[#092a53] transition duration-300 hover:-translate-y-0.5 hover:border-[#092a53] hover:bg-[#fafdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                  to={`/menu?${new URLSearchParams({ category: "Cakes & Pies" })}`}
+                >
+                  {t("Explore all cakes")}
+                  <span
+                    aria-hidden="true"
+                    className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-transform duration-300 group-hover:translate-x-0.5"
+                  >
+                    <ArrowIcon />
+                  </span>
+                </Link>
+              </div>
               <p className="mt-5 text-sm leading-5 text-[#52647b]">
                 {t(
                   "A taste of the cake menu. See all designs on the cakes page \u2014 or build your own.",
@@ -1838,7 +1880,7 @@ export function HomePage() {
 
         <section
           aria-labelledby="popular-flavors-heading"
-          className="bg-[#e8edf2] px-5 pb-20 pt-12 sm:px-8 sm:pb-24 sm:pt-14 lg:px-10 lg:pb-28 lg:pt-16"
+          className="scroll-mt-20 bg-[#e8edf2] px-5 pb-20 pt-12 sm:px-8 sm:pb-24 sm:pt-14 lg:px-10 lg:pb-28 lg:pt-16"
           id="favorites"
           ref={popularSection}
         >
@@ -2116,7 +2158,9 @@ export function HomePage() {
         {cartNotice && (
           <div
             aria-live="polite"
-            className={`fixed bottom-24 left-1/2 z-50 flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 items-center justify-between gap-4 rounded-2xl px-4 py-3 text-sm font-semibold shadow-[0_16px_40px_rgba(9,42,83,0.28)] ring-1 ${
+            className={`fixed bottom-24 left-1/2 z-50 ${
+              cartNoticeIsError ? "flex" : "hidden sm:flex"
+            } w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 items-center justify-between gap-4 rounded-2xl px-4 py-3 text-sm font-semibold shadow-[0_16px_40px_rgba(9,42,83,0.28)] ring-1 ${
               cartNoticeIsError
                 ? "bg-red-50 text-red-800 ring-red-200"
                 : "bg-[#092a53] text-white ring-white/15"
@@ -2186,8 +2230,8 @@ export function HomePage() {
           aria-labelledby="moments-heading"
           className="bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
         >
-          <div className="mx-auto grid max-w-[1320px] items-center gap-9 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
-            <figure className="scroll-story-frame order-2 min-w-0 lg:order-1">
+          <div className="mx-auto grid max-w-[1320px] items-center gap-9 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
+            <figure className="scroll-story-frame order-2 min-w-0 lg:order-2">
               <img
                 alt={t(
                   "A hand scooping vanilla ice cream from a bowl with a strawberry scoop beside it",
@@ -2204,7 +2248,7 @@ export function HomePage() {
                 {t("Life's sweeter by the scoop")}
               </figcaption>
             </figure>
-            <div className="order-1 max-w-xl lg:order-2">
+            <div className="order-1 max-w-xl lg:order-1">
               <h2
                 className="max-w-[14ch] font-display text-4xl font-extrabold leading-[1.04] tracking-tight text-[#092a53] sm:text-5xl"
                 id="moments-heading"
@@ -2240,7 +2284,7 @@ export function HomePage() {
         
         <section
           aria-labelledby="home-menu-heading"
-          className="bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-[#092a53] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="menu"
         >
           <div className="mx-auto max-w-[1320px]">

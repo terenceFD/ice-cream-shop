@@ -480,7 +480,7 @@ export function AdminCategoriesPage() {
                       <button
                         aria-label={icon}
                         aria-pressed={form.icon === icon}
-                        className={`grid size-10 place-items-center rounded-xl text-lg transition ${form.icon === icon ? 'bg-[#fff6cc] ring-2 ring-[#e8c400]' : 'bg-[#f7f9fc] ring-1 ring-[#e3e9f0] hover:ring-[#c3cfdc]'}`}
+                        className={`grid size-10 place-items-center rounded-xl text-lg transition ${form.icon === icon ? 'bg-[#fff6cc] ring-2 ring-[#bd9c00]' : 'bg-[#f7f9fc] ring-1 ring-[#e3e9f0] hover:ring-[#c3cfdc]'}`}
                         key={icon}
                         onClick={() => setForm({ ...form, icon })}
                         type="button"

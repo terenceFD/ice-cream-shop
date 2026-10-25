@@ -7,7 +7,7 @@ import { cameroonLocations } from '../../../shared/data'
 import { useLanguage } from '../../language/useLanguage'
 import './ContactPage.css'
 
-const inputClassName = 'w-full rounded-2xl border border-transparent bg-[#fbfaf5] px-5 py-4 text-sm font-medium text-[#092a53] outline-none! ring-1 ring-[#ebe7dc] transition placeholder:font-normal placeholder:text-[#a5aebb] hover:ring-[#ddd6c4] focus:bg-white focus:ring-[#c9b24a]'
+const inputClassName = 'w-full rounded-2xl border border-transparent bg-[#fbfaf5] px-5 py-4 text-sm font-medium text-[#092a53] outline-none! ring-1 ring-[#ebe7dc] transition placeholder:font-normal placeholder:text-[#a5aebb] hover:ring-[#ddd6c4] focus:bg-white focus:ring-[#bd9c00]'
 const labelClassName = 'text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]'
 
 interface ContactFormData {
@@ -189,7 +189,7 @@ function StoreSelect({
         aria-labelledby={`${id}-label ${id}-value`}
         className={`mt-2 flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left ring-1 outline-none! transition disabled:cursor-not-allowed disabled:opacity-60 ${
           open
-            ? 'bg-white shadow-[0_10px_30px_rgba(9,42,83,0.08)] ring-[#c9b24a]'
+            ? 'bg-white shadow-[0_10px_30px_rgba(9,42,83,0.08)] ring-[#bd9c00]'
             : 'bg-[#fbfaf5] ring-[#ebe7dc] hover:ring-[#ddd6c4]'
         }`}
         disabled={disabled}

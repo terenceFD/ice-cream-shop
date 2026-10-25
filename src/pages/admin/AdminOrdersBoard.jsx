@@ -676,7 +676,7 @@ export function AdminOrdersBoard() {
                             aria-current={isCurrent ? "step" : undefined}
                             className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition disabled:cursor-wait ${
                               isCurrent
-                                ? "bg-[#fffbea] text-[#092a53] ring-2 ring-[#e8c400]"
+                                ? "bg-[#fffbea] text-[#092a53] ring-2 ring-[#bd9c00]"
                                 : isDone
                                   ? "text-[#2c7a4f] hover:bg-[#f4faf6]"
                                   : "text-[#65748a] ring-1 ring-[#e8edf3] hover:bg-[#f7f9fc] hover:text-[#092a53]"

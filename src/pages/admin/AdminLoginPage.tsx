@@ -275,7 +275,7 @@ export function AdminLoginPage() {
                   <>
                     <label className="block">
                       <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#52647b]">{t("Admin email")}</span>
-                      <span className="group relative mt-2 flex items-center rounded-2xl bg-white ring-1 ring-[#e3e1d8] transition hover:ring-[#d6cfbd] focus-within:ring-2 focus-within:ring-[#c9b24a]">
+                      <span className="group relative mt-2 flex items-center rounded-2xl bg-white ring-1 ring-[#e3e1d8] transition hover:ring-[#d6cfbd] focus-within:ring-2 focus-within:ring-[#bd9c00]">
                         <Icon className="pointer-events-none absolute left-4 size-[18px] text-[#65748a] transition group-focus-within:text-[#092a53]" path={icons.mail} />
                         <input
                           autoComplete="username"
@@ -345,7 +345,7 @@ export function AdminLoginPage() {
                         autoComplete="one-time-code"
                         autoCapitalize="characters"
                         autoFocus
-                        className="mt-2 w-full rounded-2xl bg-white px-4 py-3.5 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#092a53] outline-none ring-1 ring-[#e3e1d8] focus:ring-2 focus:ring-[#c9b24a]"
+                        className="mt-2 w-full rounded-2xl bg-white px-4 py-3.5 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#092a53] outline-none ring-1 ring-[#e3e1d8] focus:ring-2 focus:ring-[#bd9c00]"
                         inputMode={mfaStage === "setup" ? "numeric" : "text"}
                         maxLength={mfaStage === "setup" ? 6 : 19}
                         onChange={(event) => setAuthenticatorCode(event.target.value)}
