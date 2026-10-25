@@ -362,7 +362,7 @@ function formatReviewDate(value, language) {
 function ReviewerAvatar({ name, picture, className, eager = false }) {
   return picture ? (
     <img
-      decoding={eager ? "sync" : "async"}
+      decoding="async"
       alt=""
       className={`shrink-0 rounded-full object-cover ${className}`}
       fetchPriority={eager ? "high" : "auto"}
@@ -2219,7 +2219,7 @@ export function HomePage() {
                       <img
                         alt=""
                         className="size-full object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03] group-focus-visible:scale-[1.03] motion-reduce:transition-none"
-                        decoding={itemIndex === 0 ? "sync" : "async"}
+                        decoding="async"
                         fetchPriority={itemIndex === 0 ? "high" : "auto"}
                         loading={itemIndex === 0 ? "eager" : "lazy"}
                         onError={photoErrorHandler(item.image)}

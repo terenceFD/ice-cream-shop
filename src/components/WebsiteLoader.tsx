@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useLanguage } from '../language/useLanguage'
 
-// Hold long enough for the bar to fill, then leave once the language pack is ready.
-const MIN_VISIBLE_MS = 1100
-const EXIT_MS = 420
+// A short hold keeps the mark from flashing, then the page shows as soon as language is ready.
+const MIN_VISIBLE_MS = 420
+const EXIT_MS = 280
 
 export function WebsiteLoader() {
   const { isReady, t } = useLanguage()
