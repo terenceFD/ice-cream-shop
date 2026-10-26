@@ -38,13 +38,21 @@ function usePromotionAlertState(enabled: boolean) {
       return undefined;
     }
     let cancelled = false;
-    getPromotionAlertState()
-      .then((next) => { if (!cancelled) setState(next); })
-      .catch(() => { if (!cancelled) setState("unsupported"); });
+    const refresh = () => {
+      getPromotionAlertState()
+        .then((next) => { if (!cancelled) setState(next); })
+        .catch(() => { if (!cancelled) setState("error"); });
+    };
+    refresh();
+    const onVisible = () => { if (!document.hidden) refresh(); };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVisible);
     const onChange = (event: Event) => setState((event as CustomEvent<PromotionAlertState>).detail);
     window.addEventListener(PROMOTION_ALERTS_CHANGED_EVENT, onChange);
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener(PROMOTION_ALERTS_CHANGED_EVENT, onChange);
     };
   }, [enabled]);
@@ -190,13 +198,14 @@ export function PromotionAlertsSetting() {
   if (!customer || state === null || state === "unavailable") return null;
 
   const isOn = state === "on";
-  const canToggle = state === "on" || state === "off";
+  const canToggle = state === "on" || state === "off" || state === "error";
   const help = {
     on: t("You'll get a notification on this device at each step of your orders and when we launch a new promotion."),
     off: t("Turn on to follow your orders (preparing, out for delivery, delivered) and hear about new promotions on this device."),
     denied: t("Notifications are blocked for this site. Allow them in your browser settings, then come back here."),
     "needs-install": t("On iPhone and iPad, add this site to your Home Screen first, then open it from there to turn on alerts."),
     unsupported: t("This browser can't show notifications from websites."),
+    error: t("Notifications could not be loaded. Check your connection and tap to retry."),
   }[state];
 
   async function toggle() {
@@ -204,7 +213,13 @@ export function PromotionAlertsSetting() {
     setError("");
     try {
       const token = getCustomerToken();
-      setState(isOn ? await disablePromotionAlerts(token) : await enablePromotionAlerts(token));
+      if (state === "error") {
+        setState(await getPromotionAlertState());
+        return;
+      }
+      const next = isOn ? await disablePromotionAlerts(token) : await enablePromotionAlerts(token);
+      setState(next);
+      if (!isOn && next === "off") setError(t("Notification permission was not granted. Tap again and choose Allow to turn on alerts."));
     } catch (alertError) {
       setError(alertError instanceof Error ? t(alertError.message) : t("Notifications could not be updated. Please try again."));
     } finally {
@@ -213,26 +228,31 @@ export function PromotionAlertsSetting() {
   }
 
   return (
-    <div className="flex items-start gap-4 rounded-[22px] bg-white p-5 shadow-[0_12px_30px_-18px_rgba(9,42,83,0.35)] ring-1 ring-[#dce3eb]">
+    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-[22px] bg-white p-4 shadow-[0_12px_30px_-18px_rgba(9,42,83,0.35)] ring-1 ring-[#dce3eb] sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-4 sm:p-5">
       <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-2xl ${isOn ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#f4f6f8] text-[#65748a]"}`}>
         <BellIcon />
       </span>
       <div className="min-w-0 flex-1">
         <p className="font-bold text-[#092a53]" id="promotion-alerts-setting">{t("Order updates and promotions")}</p>
-        <p className="mt-1 text-sm leading-6 text-[#65748a]">{help}</p>
+        <p className="mt-1 text-sm leading-6 text-[#65748a]" role="status">{help}</p>
+        {state === "needs-install" && <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("In Safari, tap Share, then Add to Home Screen. Open the installed app and sign in, then enable notifications here. Requires iOS or iPadOS 16.4 or later.")}</p>}
         {error && <p className="mt-2 text-sm font-semibold text-red-700" role="alert">{error}</p>}
       </div>
       {canToggle && (
         <button
           aria-checked={isOn}
           aria-labelledby="promotion-alerts-setting"
-          className={`relative mt-1 h-7 w-12 shrink-0 rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60 ${isOn ? "bg-[#35a36b]" : "bg-[#dce3eb]"}`}
+          aria-busy={isWorking}
+          className="col-start-2 inline-flex min-h-11 items-center justify-between gap-3 justify-self-start rounded-xl bg-[#f4f6f8] px-3 py-2 text-sm font-semibold text-[#092a53] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60 sm:col-start-3 sm:row-start-1"
           disabled={isWorking}
           onClick={toggle}
           role="switch"
           type="button"
         >
-          <span className={`absolute left-0.5 top-0.5 size-6 rounded-full bg-white shadow transition ${isOn ? "translate-x-5" : ""}`} />
+          <span>{isWorking ? t("Updating…") : state === "error" ? t("Try again") : isOn ? t("Enabled") : t("Enable notifications")}</span>
+          <span aria-hidden="true" className={`relative h-7 w-12 shrink-0 rounded-full ${isOn ? "bg-[#35a36b]" : "bg-[#c4cedb]"}`}>
+            <span className={`absolute left-0.5 top-0.5 size-6 rounded-full bg-white shadow transition ${isOn ? "translate-x-5" : ""}`} />
+          </span>
         </button>
       )}
     </div>

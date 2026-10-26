@@ -8,14 +8,13 @@ import { cameroonDeliveryLocations } from "../../../shared/data";
 import { useLanguage } from "../../language/useLanguage";
 import { PromotionAlertsSetting } from "../../components/PromotionAlerts";
 import { numberFormatter } from "../../lib/cartPricing";
+import "./CustomerAccount.css";
 
 const fieldClass =
   "mt-2 w-full rounded-xl border border-[#dce3eb] bg-white px-4 py-3.5 text-sm font-semibold text-[#092a53] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#b9c5d2] focus:border-[#bd9c00] focus:ring-4 focus:ring-[#ffdc32]/20 outline-none!";
 const labelClass = "block text-xs font-extrabold text-[#65748a]";
-const cardClass =
-  "rounded-2xl bg-white p-5 ring-1 ring-[#e5e9ee] sm:p-7";
-const eyebrowClass =
-  "text-xs font-bold text-[#bd9c00]";
+const cardClass = "rounded-2xl bg-white p-5 ring-1 ring-[#e5e9ee] sm:p-7";
+const eyebrowClass = "text-xs font-bold text-[#bd9c00]";
 const primaryButton =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#092a53] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-55";
 const ghostButton =
@@ -27,17 +26,48 @@ const POINTS_PER_REWARD = 100;
 const REWARD_VALUE_FCFA = 1000;
 
 const TABS = [
-  { key: "overview", label: "Overview", icon: "M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z" },
-  { key: "orders", label: "Orders", icon: "M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" },
-  { key: "saved", label: "Saved", icon: "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" },
-  { key: "rewards", label: "Rewards", icon: "M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" },
-  { key: "profile", label: "Profile", icon: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" },
+  {
+    key: "overview",
+    label: "Overview",
+    icon: "M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z",
+  },
+  {
+    key: "orders",
+    label: "Orders",
+    icon: "M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1",
+  },
+  {
+    key: "saved",
+    label: "Saved",
+    icon: "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z",
+  },
+  {
+    key: "rewards",
+    label: "Rewards",
+    icon: "M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z",
+  },
+  {
+    key: "profile",
+    label: "Profile",
+    icon: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0",
+  },
 ];
 
 function Icon({ path, className = "size-[18px]" }) {
   return (
-    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
-      <path d={path} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d={path}
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
     </svg>
   );
 }
@@ -91,7 +121,9 @@ function orderStatus(order, t) {
 }
 
 function isPaymentIssue(order) {
-  return order.status === "pending_payment" || order.status === "payment_failed";
+  return (
+    order.status === "pending_payment" || order.status === "payment_failed"
+  );
 }
 
 function isCompleted(order) {
@@ -111,8 +143,7 @@ function statusTone(order) {
     return "bg-red-50 text-red-700 ring-red-200";
   if (order.status === "pending_payment")
     return "bg-orange-50 text-orange-700 ring-orange-200";
-  if (isCompleted(order))
-    return "bg-[#eef6e8] text-[#3f6b22] ring-[#cfe3bf]";
+  if (isCompleted(order)) return "bg-[#eef6e8] text-[#3f6b22] ring-[#cfe3bf]";
   return "bg-[#fff6cc] text-[#715e00] ring-[#efdc85]";
 }
 
@@ -135,7 +166,9 @@ function formatPoints(points) {
 
 function Avatar({ customer, size = "size-20", text = "text-3xl" }) {
   return customer.profilePicture ? (
-    <img decoding="async" loading="lazy"
+    <img
+      decoding="async"
+      loading="lazy"
       alt={customer.name || ""}
       className={`${size} shrink-0 rounded-full object-cover`}
       src={customer.profilePicture}
@@ -213,14 +246,15 @@ function OrderProgress({ order, t }) {
         ? steps.findIndex((step) => step.key === "ready")
         : 0;
   const isDone = currentStage === "delivered";
-  const fill = steps.length > 1 ? (currentIndex / (steps.length - 1)) * 100 : 100;
+  const fill =
+    steps.length > 1 ? (currentIndex / (steps.length - 1)) * 100 : 100;
 
   return (
     <section
       aria-label={t("Live order tracking")}
       aria-live="polite"
       aria-atomic="true"
-      className="rounded-xl bg-[#f3f6f8] p-4 sm:p-5"
+      className="account-order-tracking rounded-xl bg-[#f3f6f8] p-4 sm:p-5"
     >
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
         <p className="flex items-center gap-2 text-xs font-extrabold text-[#092a53]">
@@ -249,7 +283,9 @@ function OrderProgress({ order, t }) {
         </div>
         <ol
           className="relative grid items-start"
-          style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
+          style={{
+            gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))`,
+          }}
         >
           {steps.map((step, index) => {
             const isComplete = index < currentIndex || isDone;
@@ -319,7 +355,9 @@ function StarRating({ value, onChange, t }) {
             <svg
               aria-hidden="true"
               className={`size-8 rounded-md transition peer-focus-visible:ring-2 peer-focus-visible:ring-[#bd9c00] ${
-                star <= value ? "text-[#f5b800]" : "text-[#e2ded2] hover:text-[#f5d76e]"
+                star <= value
+                  ? "text-[#f5b800]"
+                  : "text-[#e2ded2] hover:text-[#f5d76e]"
               }`}
               fill="currentColor"
               viewBox="0 0 24 24"
@@ -335,14 +373,14 @@ function StarRating({ value, onChange, t }) {
 
 function OrderReviewForm({ order, token, t, autoOpen = false }) {
   const detailsRef = useRef(null);
-  const items = [...new Map(
-    order.items
-      .filter((item) => item.productId)
-      .map((item) => [item.productId, item]),
-  ).values()];
-  const [itemId, setItemId] = useState(
-    items[0]?.productId || "",
-  );
+  const items = [
+    ...new Map(
+      order.items
+        .filter((item) => item.productId)
+        .map((item) => [item.productId, item]),
+    ).values(),
+  ];
+  const [itemId, setItemId] = useState(items[0]?.productId || "");
   const [applyToAll, setApplyToAll] = useState(items.length > 1);
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState("");
@@ -384,15 +422,24 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
   }
 
   return (
-    <details className="group/review mt-5 scroll-mt-28 rounded-2xl ring-1 ring-[#fbfaf5] open:bg-[#fbfaf5]" ref={detailsRef}>
+    <details
+      className="group/review mt-5 scroll-mt-28 rounded-2xl ring-1 ring-[#fbfaf5] open:bg-[#fbfaf5]"
+      ref={detailsRef}
+    >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:bg-[#f3f6f8] [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2.5">
           <span className="grid size-8 place-items-center rounded-xl bg-[#fff6cc] text-[#bd9c00]">
-            <Icon className="size-4" path="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z" />
+            <Icon
+              className="size-4"
+              path="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z"
+            />
           </span>
           {t("Review a purchased item")}
         </span>
-        <Icon className="size-4 text-[#8b95a2] transition group-open/review:rotate-180" path="m6 9 6 6 6-6" />
+        <Icon
+          className="size-4 text-[#8b95a2] transition group-open/review:rotate-180"
+          path="m6 9 6 6 6-6"
+        />
       </summary>
       {message ? (
         <p
@@ -442,12 +489,18 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
               rows={3}
               value={review}
             />
-            <span aria-live="polite" className="mt-1 block text-right text-xs text-[#65748a]">
+            <span
+              aria-live="polite"
+              className="mt-1 block text-right text-xs text-[#65748a]"
+            >
               {review.length}/200
             </span>
           </label>
           {error && (
-            <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700" role="alert">
+            <p
+              className="rounded-xl bg-red-50 p-3 text-sm text-red-700"
+              role="alert"
+            >
               {error}
             </p>
           )}
@@ -471,11 +524,14 @@ function OrderCard({
   onSave,
   onReorder,
 }) {
-  const itemCount = order.items.reduce((count, item) => count + item.quantity, 0);
+  const itemCount = order.items.reduce(
+    (count, item) => count + item.quantity,
+    0,
+  );
   const paymentIssue = isPaymentIssue(order);
 
   return (
-    <article className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#e5e9ee]">
+    <article className="account-order-card overflow-hidden rounded-2xl bg-white ring-1 ring-[#e5e9ee]">
       <header className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 sm:px-7 sm:pt-6">
         <div className="flex min-w-0 items-center gap-3.5">
           <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#f4f6f8] text-[#092a53]">
@@ -487,14 +543,19 @@ function OrderCard({
             </h3>
             <p className="mt-0.5 text-xs font-medium text-[#65748a]">
               {formatOrderDate(order.createdAt, language, t)} ·{" "}
-              {t(itemCount === 1 ? "{count} item" : "{count} items", { count: itemCount })}
+              {t(itemCount === 1 ? "{count} item" : "{count} items", {
+                count: itemCount,
+              })}
             </p>
           </div>
         </div>
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold ring-1 ${statusTone(order)}`}
         >
-          <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+          <span
+            aria-hidden="true"
+            className="size-1.5 rounded-full bg-current"
+          />
           {orderStatus(order, t)}
         </span>
       </header>
@@ -525,7 +586,9 @@ function OrderCard({
               ))}
             </ul>
             <div className="mt-3 flex items-center justify-between rounded-xl bg-[#f3f6f8] px-4 py-3">
-              <span className="text-sm font-bold text-[#65748a]">{t("Total")}</span>
+              <span className="text-sm font-bold text-[#65748a]">
+                {t("Total")}
+              </span>
               <span className="font-display text-xl font-extrabold text-[#092a53]">
                 {formatPrice(order.totalCents)}
               </span>
@@ -566,10 +629,14 @@ function OrderCard({
             {(order.deliveryResidence || order.deliveryCity) && (
               <div className="rounded-2xl bg-[#f4f6f8] px-4 py-3">
                 <dt className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
-                  {t(order.fulfillmentType === "pickup" ? "Pickup" : "Delivery")}
+                  {t(
+                    order.fulfillmentType === "pickup" ? "Pickup" : "Delivery",
+                  )}
                 </dt>
                 <dd className="mt-1 text-xs font-semibold leading-5 text-[#65748a]">
-                  {order.deliveryResidence ? `${order.deliveryResidence}, ` : ""}
+                  {order.deliveryResidence
+                    ? `${order.deliveryResidence}, `
+                    : ""}
                   {order.deliveryCity}
                 </dd>
               </div>
@@ -587,9 +654,15 @@ function OrderCard({
             >
               <Icon
                 className="size-4"
-                path={isSaved ? "m5 12.5 4.5 4.5L19 7.5" : "M6 4h12v16l-6-4-6 4V4Z"}
+                path={
+                  isSaved ? "m5 12.5 4.5 4.5L19 7.5" : "M6 4h12v16l-6-4-6 4V4Z"
+                }
               />
-              {isSaving ? t("Saving…") : isSaved ? t("Saved for later") : t("Save cart")}
+              {isSaving
+                ? t("Saving…")
+                : isSaved
+                  ? t("Saved for later")
+                  : t("Save cart")}
             </button>
             <button
               className={`${primaryButton} px-4 py-2.5 text-xs`}
@@ -597,7 +670,10 @@ function OrderCard({
               onClick={onReorder}
               type="button"
             >
-              <Icon className="size-4" path="M4 12a8 8 0 0 1 13.7-5.7L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.7L4 15.5M4 20v-4.5h4.5" />
+              <Icon
+                className="size-4"
+                path="M4 12a8 8 0 0 1 13.7-5.7L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.7L4 15.5M4 20v-4.5h4.5"
+              />
               {isReordering ? t("Adding…") : t("Reorder")}
             </button>
           </div>
@@ -652,26 +728,39 @@ function CustomerProfileDetails({ customer, onSave, t }) {
   }
 
   return (
-    <form className="space-y-6" onSubmit={saveProfile}>
+    <form className="account-profile-form space-y-6" onSubmit={saveProfile}>
       <div className="flex flex-col gap-5 rounded-2xl bg-[#f3f6f8] p-5 sm:flex-row sm:items-center">
         <div className="relative w-fit">
           <Avatar
-            customer={{ name: profile.name, profilePicture: profile.profilePicture }}
+            customer={{
+              name: profile.name,
+              profilePicture: profile.profilePicture,
+            }}
             size="size-24"
             text="text-4xl"
           />
           <span className="absolute -bottom-1 -right-1 grid size-9 place-items-center rounded-full bg-[#092a53] text-white ring-4 ring-[#f3f6f8]">
-            <Icon className="size-4" path="M4 8h3l2-3h6l2 3h3v11H4V8Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+            <Icon
+              className="size-4"
+              path="M4 8h3l2-3h6l2 3h3v11H4V8Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
+            />
           </span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-extrabold text-[#092a53]">{t("Profile picture")}</p>
+          <p className="text-sm font-extrabold text-[#092a53]">
+            {t("Profile picture")}
+          </p>
           <p className="mt-1 text-xs leading-5 text-[#65748a]">
             {t("Optional. Image will be resized before saving (5 MB max).")}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <label className={`${ghostButton} cursor-pointer focus-within:ring-2 focus-within:ring-[#bd9c00]`}>
-              <Icon className="size-4" path="M12 16V4m0 0L7 9m5-5 5 5M5 20h14" />
+            <label
+              className={`${ghostButton} cursor-pointer focus-within:ring-2 focus-within:ring-[#bd9c00]`}
+            >
+              <Icon
+                className="size-4"
+                path="M12 16V4m0 0L7 9m5-5 5 5M5 20h14"
+              />
               {t("Upload photo")}
               <input
                 accept="image/*"
@@ -700,7 +789,9 @@ function CustomerProfileDetails({ customer, onSave, t }) {
             autoComplete="name"
             className={fieldClass}
             maxLength={100}
-            onChange={(event) => setProfile({ ...profile, name: event.target.value })}
+            onChange={(event) =>
+              setProfile({ ...profile, name: event.target.value })
+            }
             required
             value={profile.name}
           />
@@ -712,7 +803,9 @@ function CustomerProfileDetails({ customer, onSave, t }) {
             className={fieldClass}
             inputMode="tel"
             maxLength={40}
-            onChange={(event) => setProfile({ ...profile, phone: event.target.value })}
+            onChange={(event) =>
+              setProfile({ ...profile, phone: event.target.value })
+            }
             value={profile.phone}
           />
         </label>
@@ -761,7 +854,10 @@ function CustomerProfileDetails({ customer, onSave, t }) {
             </p>
           )}
           {message && (
-            <p className="flex items-center gap-2 font-semibold text-[#3f6b22]" role="status">
+            <p
+              className="flex items-center gap-2 font-semibold text-[#3f6b22]"
+              role="status"
+            >
               <Icon className="size-4" path="m5 12.5 4.5 4.5L19 7.5" />
               {message}
             </p>
@@ -781,7 +877,7 @@ function RewardsCard({ points, t, compact = false }) {
   const remaining = POINTS_PER_REWARD - progress;
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-[#092a53] p-5 text-white sm:p-7">
+    <div className="account-rewards-card overflow-hidden rounded-2xl bg-[#092a53] p-5 text-white sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold text-white/70">
@@ -789,7 +885,9 @@ function RewardsCard({ points, t, compact = false }) {
           </p>
           <p className="mt-2 font-display text-4xl font-extrabold leading-none sm:text-5xl">
             {formatPoints(points)}
-            <span className="ml-2 text-base font-semibold text-white/70">{t("points")}</span>
+            <span className="ml-2 text-base font-semibold text-white/70">
+              {t("points")}
+            </span>
           </p>
         </div>
         <span className="rounded-md bg-[#fff3b0] px-2.5 py-1 text-xs font-bold text-[#bd9c00]">
@@ -799,7 +897,9 @@ function RewardsCard({ points, t, compact = false }) {
 
       <div className="mt-6">
         <div className="flex flex-wrap justify-between gap-2 text-xs font-semibold text-white/75">
-          <span>{t("{points} points to your next reward", { points: remaining })}</span>
+          <span>
+            {t("{points} points to your next reward", { points: remaining })}
+          </span>
           <span>
             {progress}/{POINTS_PER_REWARD}
           </span>
@@ -823,8 +923,10 @@ function RewardsCard({ points, t, compact = false }) {
         <div className="mt-5 flex flex-wrap items-baseline gap-x-2 border-t border-white/15 pt-4">
           <p className="text-xs font-semibold text-white/70">{t("Worth")}</p>
           <p className="font-display text-xl font-bold text-[#ffdc32]">
-              {new Intl.NumberFormat("fr-CM").format(rewardsAvailable * REWARD_VALUE_FCFA)}{" "}
-              <span className="text-sm text-white/80">FCFA</span>
+            {new Intl.NumberFormat("fr-CM").format(
+              rewardsAvailable * REWARD_VALUE_FCFA,
+            )}{" "}
+            <span className="text-sm text-white/80">FCFA</span>
           </p>
         </div>
       )}
@@ -917,12 +1019,14 @@ export function CustomerOrdersPage() {
         {t("Loading account…")}
       </div>
     );
-  if (!customer) return <Navigate replace state={{ from: "/account/orders" }} to="/login" />;
+  if (!customer)
+    return <Navigate replace state={{ from: "/account/orders" }} to="/login" />;
 
   const formatPrice = (amount) =>
     `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(amount)} FCFA`;
   const points = loyalty?.points ?? customer.loyaltyPoints ?? 0;
-  const firstName = (customer.name || "").trim().split(/\s+/)[0] || customer.name;
+  const firstName =
+    (customer.name || "").trim().split(/\s+/)[0] || customer.name;
   const activeOrders = orders.filter(isActive);
   const currentOrder = activeOrders[0];
   const lastCompletedOrder = orders.find(isCompleted);
@@ -1058,7 +1162,9 @@ export function CustomerOrdersPage() {
   }
 
   const renderOrderCard = (order) => {
-    const isSaved = savedCarts.some((savedCart) => savedCart.sourceOrderId === order.id);
+    const isSaved = savedCarts.some(
+      (savedCart) => savedCart.sourceOrderId === order.id,
+    );
     return (
       <div key={order.id}>
         <OrderCard
@@ -1091,7 +1197,9 @@ export function CustomerOrdersPage() {
           className="group flex items-center gap-3.5 rounded-xl bg-white p-3 ring-1 ring-[#e5e9ee] transition-colors hover:bg-[#f4f6f8]"
           key={favorite.itemId}
         >
-          <img decoding="async" loading="lazy"
+          <img
+            decoding="async"
+            loading="lazy"
             alt=""
             className="size-16 shrink-0 rounded-xl bg-[#f4f6f8] object-cover"
             src={favorite.item.image}
@@ -1114,7 +1222,12 @@ export function CustomerOrdersPage() {
             title={t("Remove")}
             type="button"
           >
-            <svg aria-hidden="true" className="size-[18px]" fill="currentColor" viewBox="0 0 24 24">
+            <svg
+              aria-hidden="true"
+              className="size-[18px]"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" />
             </svg>
           </button>
@@ -1124,13 +1237,13 @@ export function CustomerOrdersPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f4f6f8] text-[#092a53]">
+    <div className="customer-account min-h-screen bg-[#f4f6f8] text-[#092a53]">
       <Header />
       <main id="main" tabIndex={-1}>
         {/* Hero */}
-        <section className="bg-[#092a53] text-white">
-          <div className="mx-auto max-w-[1200px] px-5 pb-7 pt-7 sm:px-8 sm:pb-8 sm:pt-9 lg:px-10">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <section className="account-masthead bg-[#092a53] text-white">
+          <div className="account-masthead-inner mx-auto max-w-[1200px] px-5 pb-7 pt-7 sm:px-8 sm:pb-8 sm:pt-9 lg:px-10">
+            <div className="account-identity-row flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-4 sm:gap-5">
                 <Avatar
                   customer={customer}
@@ -1138,11 +1251,17 @@ export function CustomerOrdersPage() {
                   text="text-2xl sm:text-3xl"
                 />
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-white/65">{t("My account")}</p>
+                  <p className="account-context text-xs font-semibold text-white/65">
+                    {t("Cold Stone Creamery")}
+                  </p>
                   <h1 className="mt-1 break-words font-display text-2xl font-bold leading-tight sm:text-3xl">
-                    {t("Welcome back, {name}", { name: firstName })}
+                    {t("My account")}
                   </h1>
-                  <p className="mt-1 truncate text-sm text-white/70">{customer.email}</p>
+                  <p className="account-identity-detail mt-1 truncate text-sm text-white/70">
+                    <span>{customer.name || firstName}</span>
+                    <span aria-hidden="true"> · </span>
+                    {customer.email}
+                  </p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2.5 sm:shrink-0">
@@ -1162,19 +1281,27 @@ export function CustomerOrdersPage() {
               </div>
             </div>
 
-            <dl className="mt-7 grid grid-cols-2 border-t border-white/20 pt-4 sm:grid-cols-4">
+            <dl className="account-summary mt-7 grid grid-cols-2 border-t border-white/20 pt-4 sm:grid-cols-4">
               {[
                 { label: t("Orders"), value: orders.length },
                 { label: t("Active orders"), value: activeOrders.length },
                 { label: t("Saved favorites"), value: favorites.length },
-                { label: t("Loyalty rewards"), value: `${formatPoints(points)} ${t("pts")}`, accent: true },
+                {
+                  label: t("Loyalty rewards"),
+                  value: `${formatPoints(points)} ${t("pts")}`,
+                  accent: true,
+                },
               ].map((stat, index) => (
                 <div
                   className={`min-w-0 py-2 sm:py-1 ${index % 2 === 1 ? "border-l border-white/15 pl-3" : "pr-3"} ${index > 0 ? "sm:border-l sm:border-white/20 sm:pl-5" : ""} ${index >= 2 ? "border-t border-white/15 sm:border-t-0 sm:pt-1" : ""} ${index === 2 ? "sm:pl-5" : ""}`}
                   key={stat.label}
                 >
-                  <dt className="truncate text-xs font-medium text-white/65">{stat.label}</dt>
-                  <dd className={`mt-1 truncate font-display text-xl font-bold tabular-nums sm:text-2xl ${stat.accent ? "text-[#ffdc32]" : "text-white"}`}>
+                  <dt className="truncate text-xs font-medium text-white/65">
+                    {stat.label}
+                  </dt>
+                  <dd
+                    className={`mt-1 truncate font-display text-xl font-bold tabular-nums sm:text-2xl ${stat.accent ? "text-[#ffdc32]" : "text-white"}`}
+                  >
                     {stat.value}
                   </dd>
                 </div>
@@ -1183,437 +1310,553 @@ export function CustomerOrdersPage() {
           </div>
         </section>
 
-        <div className="mx-auto max-w-[1200px] px-5 pb-16 pt-5 sm:px-8 sm:pt-7 lg:px-10">
-
-        {(accountError || accountNotice) && (
-          <div className="mt-5 space-y-3">
-            {accountError && (
-              <p
-                className="flex items-start gap-3 rounded-2xl bg-red-50 p-4 text-sm font-semibold text-red-700 ring-1 ring-red-100"
-                role="alert"
-              >
-                <Icon className="mt-px size-[18px] shrink-0" path="M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
-                {accountError}
-              </p>
-            )}
-            {accountNotice && (
-              <div
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#eef6e8] p-4 text-sm font-semibold text-[#3f6b22] ring-1 ring-[#cfe3bf]"
-                role="status"
-              >
-                <span>{accountNotice}</span>
-                {showCartLink && (
-                  <Link className="font-extrabold underline underline-offset-4" to="/cart">
-                    {t("View shopping bag")}
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="mt-4 grid items-start gap-5 lg:mt-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10">
-          {/* Navigation */}
-          <nav
-            aria-label={t("Account sections")}
-            className="relative z-10 -mx-5 overflow-x-auto px-5 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+1.5rem)] lg:transition-[top] lg:duration-300 lg:mx-0 lg:overflow-visible lg:px-0"
-          >
-            <ul className="flex w-max gap-1.5 lg:w-auto lg:flex-col lg:gap-1">
-              {TABS.map((tab) => {
-                const isCurrent = tab.key === activeTab;
-                const count = tabCounts[tab.key];
-                return (
-                  <li key={tab.key}>
-                    <button
-                      aria-current={isCurrent ? "page" : undefined}
-                      className={`flex min-h-11 items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] lg:w-full ${
-                        isCurrent
-                          ? "bg-[#fff5c2] text-[#092a53]"
-                          : "bg-white text-[#65748a] ring-1 ring-[#e5e9ee] hover:bg-[#f4f6f8] hover:text-[#092a53] lg:bg-transparent lg:ring-0 lg:hover:bg-[#eef1f4]"
-                      }`}
-                      onClick={() => selectTab(tab.key)}
-                      type="button"
-                    >
-                      <span
-                        className={`hidden size-5 shrink-0 place-items-center lg:grid ${isCurrent ? "text-[#bd9c00]" : "text-[#718095]"}`}
-                      >
-                        <Icon path={tab.icon} />
-                      </span>
-                      <span className="flex-1 text-left">{t(tab.label)}</span>
-                      {count > 0 && (
-                        <span
-                          className={`rounded-md px-1.5 py-0.5 text-xs ${
-                            isCurrent ? "bg-white/70 text-[#bd9c00]" : "bg-[#f4f6f8] text-[#65748a]"
-                          }`}
-                        >
-                          {count}
-                        </span>
-                      )}
-                    </button>
-                  </li>
-                );
-              })}
-              <li className="lg:mt-2 lg:border-t lg:border-[#e5e9ee] lg:pt-2">
-                <button
-                  className="group/logout flex min-h-11 w-full items-center gap-3 whitespace-nowrap rounded-lg bg-white px-3 py-2.5 text-sm font-semibold text-[#65748a] ring-1 ring-[#e5e9ee] transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 lg:bg-transparent lg:ring-0"
-                  onClick={handleLogout}
-                  type="button"
+        <div className="account-body mx-auto max-w-[1200px] px-5 pb-16 pt-5 sm:px-8 sm:pt-7 lg:px-10">
+          {(accountError || accountNotice) && (
+            <div className="mt-5 space-y-3">
+              {accountError && (
+                <p
+                  className="flex items-start gap-3 rounded-2xl bg-red-50 p-4 text-sm font-semibold text-red-700 ring-1 ring-red-100"
+                  role="alert"
                 >
-                  <span className="hidden size-5 shrink-0 place-items-center lg:grid">
-                    <Icon path="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H4" />
-                  </span>
-                  {t("Log out")}
-                </button>
-              </li>
-            </ul>
-          </nav>
-
-          {/* Panels */}
-          <div className="min-w-0 scroll-mt-24" id="account-panel">
-            {activeTab === "overview" && (
-              <div className="space-y-8">
-                <PromotionAlertsSetting />
-                <section>
-                  <SectionHeading
-                    action={
-                      orders.length > 0 && (
-                        <button className={ghostButton} onClick={() => selectTab("orders")} type="button">
-                          {t("View all orders")}
-                          <Icon className="size-4" path="M5 12h14m-5-5 5 5-5 5" />
-                        </button>
-                      )
-                    }
-                    eyebrow={t("Right now")}
-                    title={t("Current order")}
+                  <Icon
+                    className="mt-px size-[18px] shrink-0"
+                    path="M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"
                   />
-                  {loadingOrders ? (
-                    <div className="h-64 animate-pulse rounded-2xl bg-white ring-1 ring-[#e5e9ee]" />
-                  ) : currentOrder ? (
-                    renderOrderCard(currentOrder)
-                  ) : (
-                    <EmptyState
-                      body={t("When you place an order, you can follow it here in real time.")}
-                      icon="M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1"
-                      title={t("No active orders")}
+                  {accountError}
+                </p>
+              )}
+              {accountNotice && (
+                <div
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#eef6e8] p-4 text-sm font-semibold text-[#3f6b22] ring-1 ring-[#cfe3bf]"
+                  role="status"
+                >
+                  <span>{accountNotice}</span>
+                  {showCartLink && (
+                    <Link
+                      className="font-extrabold underline underline-offset-4"
+                      to="/cart"
                     >
-                      <div className="mt-6 flex flex-wrap justify-center gap-3">
-                        <Link className={primaryButton} to="/menu">
-                          {t("Browse the menu")}
-                        </Link>
-                        {lastCompletedOrder && (
-                          <button
-                            className={ghostButton}
-                            disabled={reorderingId === lastCompletedOrder.id}
-                            onClick={() =>
-                              reorderItems(lastCompletedOrder.items, lastCompletedOrder.id)
-                            }
-                            type="button"
-                          >
-                            {reorderingId === lastCompletedOrder.id
-                              ? t("Adding…")
-                              : t("Order your last treat again")}
-                          </button>
-                        )}
-                      </div>
-                    </EmptyState>
+                      {t("View shopping bag")}
+                    </Link>
                   )}
-                </section>
+                </div>
+              )}
+            </div>
+          )}
 
-                <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                  <RewardsCard points={points} t={t} />
-                  <div className={cardClass}>
-                    <p className={eyebrowClass}>{t("Shortcuts")}</p>
-                    <h2 className="mt-2 font-display text-xl font-extrabold text-[#092a53]">
-                      {t("Quick actions")}
-                    </h2>
-                    <div className="mt-5 grid grid-cols-2 gap-3">
-                      {[
-                        { label: t("Browse the menu"), to: "/menu", icon: "M4 6h16M4 12h16M4 18h10" },
-                        { label: t("Design a custom cake"), to: "/custom-cake", icon: "M4 20h16M5 20v-7h14v7M8 13V9h8v4M12 9V5" },
-                        { label: t("Flavors"), to: "/flavors", icon: "M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" },
-                        { label: t("Contact us"), to: "/contact", icon: "M4 6h16v12H4V6Zm0 0 8 7 8-7" },
-                      ].map((action) => (
-                        <Link
-                          className="group flex flex-col gap-3 rounded-xl bg-[#f3f6f8] p-4 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#e9eef3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
-                          key={action.to}
-                          to={action.to}
+          <div className="account-workspace mt-4 grid items-start gap-5 lg:mt-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10">
+            {/* Navigation */}
+            <nav
+              aria-label={t("Account sections")}
+              className="account-navigation relative z-10 -mx-5 overflow-x-auto px-5 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+1.5rem)] lg:transition-[top] lg:duration-300 lg:mx-0 lg:overflow-visible lg:px-0"
+            >
+              <ul className="flex w-max gap-1.5 lg:w-auto lg:flex-col lg:gap-1">
+                {TABS.map((tab) => {
+                  const isCurrent = tab.key === activeTab;
+                  const count = tabCounts[tab.key];
+                  return (
+                    <li key={tab.key}>
+                      <button
+                        aria-current={isCurrent ? "page" : undefined}
+                        className={`flex min-h-11 items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] lg:w-full ${
+                          isCurrent
+                            ? "bg-[#fff5c2] text-[#092a53]"
+                            : "bg-white text-[#65748a] ring-1 ring-[#e5e9ee] hover:bg-[#f4f6f8] hover:text-[#092a53] lg:bg-transparent lg:ring-0 lg:hover:bg-[#eef1f4]"
+                        }`}
+                        onClick={() => selectTab(tab.key)}
+                        type="button"
+                      >
+                        <span
+                          className={`hidden size-5 shrink-0 place-items-center lg:grid ${isCurrent ? "text-[#bd9c00]" : "text-[#718095]"}`}
                         >
-                          <span className="grid size-10 place-items-center rounded-lg bg-white text-[#bd9c00] transition-colors group-hover:bg-[#ffdc32] group-hover:text-[#092a53]">
-                            <Icon path={action.icon} />
+                          <Icon path={tab.icon} />
+                        </span>
+                        <span className="flex-1 text-left">{t(tab.label)}</span>
+                        {count > 0 && (
+                          <span
+                            className={`rounded-md px-1.5 py-0.5 text-xs ${
+                              isCurrent
+                                ? "bg-white/70 text-[#bd9c00]"
+                                : "bg-[#f4f6f8] text-[#65748a]"
+                            }`}
+                          >
+                            {count}
                           </span>
-                          {action.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </section>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+                <li className="lg:mt-2 lg:border-t lg:border-[#e5e9ee] lg:pt-2">
+                  <button
+                    className="group/logout flex min-h-11 w-full items-center gap-3 whitespace-nowrap rounded-lg bg-white px-3 py-2.5 text-sm font-semibold text-[#65748a] ring-1 ring-[#e5e9ee] transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 lg:bg-transparent lg:ring-0"
+                    onClick={handleLogout}
+                    type="button"
+                  >
+                    <span className="hidden size-5 shrink-0 place-items-center lg:grid">
+                      <Icon path="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H4" />
+                    </span>
+                    {t("Log out")}
+                  </button>
+                </li>
+              </ul>
+            </nav>
 
-                {favorites.length > 0 && (
+            {/* Panels */}
+            <div
+              className="account-sheet min-w-0 scroll-mt-24"
+              id="account-panel"
+              aria-label={t(
+                TABS.find((tab) => tab.key === activeTab)?.label || "Overview",
+              )}
+            >
+              {activeTab === "overview" && (
+                <div className="space-y-8">
                   <section>
                     <SectionHeading
                       action={
-                        <button className={ghostButton} onClick={() => selectTab("saved")} type="button">
-                          {t("View all")}
-                          <Icon className="size-4" path="M5 12h14m-5-5 5 5-5 5" />
-                        </button>
+                        orders.length > 0 && (
+                          <button
+                            className={ghostButton}
+                            onClick={() => selectTab("orders")}
+                            type="button"
+                          >
+                            {t("View all orders")}
+                            <Icon
+                              className="size-4"
+                              path="M5 12h14m-5-5 5 5-5 5"
+                            />
+                          </button>
+                        )
                       }
-                      eyebrow={t("Your collection")}
-                      title={t("Saved favorites")}
+                      eyebrow={t("Right now")}
+                      title={t("Current order")}
                     />
-                    {favoritesGrid(favorites.slice(0, 4))}
+                    {loadingOrders ? (
+                      <div className="h-64 animate-pulse rounded-2xl bg-white ring-1 ring-[#e5e9ee]" />
+                    ) : currentOrder ? (
+                      renderOrderCard(currentOrder)
+                    ) : (
+                      <EmptyState
+                        body={t(
+                          "When you place an order, you can follow it here in real time.",
+                        )}
+                        icon="M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1"
+                        title={t("No active orders")}
+                      >
+                        <div className="mt-6 flex flex-wrap justify-center gap-3">
+                          <Link className={primaryButton} to="/menu">
+                            {t("Browse the menu")}
+                          </Link>
+                          {lastCompletedOrder && (
+                            <button
+                              className={ghostButton}
+                              disabled={reorderingId === lastCompletedOrder.id}
+                              onClick={() =>
+                                reorderItems(
+                                  lastCompletedOrder.items,
+                                  lastCompletedOrder.id,
+                                )
+                              }
+                              type="button"
+                            >
+                              {reorderingId === lastCompletedOrder.id
+                                ? t("Adding…")
+                                : t("Order your last treat again")}
+                            </button>
+                          )}
+                        </div>
+                      </EmptyState>
+                    )}
                   </section>
-                )}
-              </div>
-            )}
 
-            {activeTab === "orders" && (
-              <section aria-labelledby="account-orders-title">
-                <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-                  <div>
-                    <p className={eyebrowClass}>{t("My account")}</p>
-                    <h2
-                      className="mt-2 font-display text-2xl font-extrabold text-[#092a53] sm:text-[1.75rem]"
-                      id="account-orders-title"
-                    >
-                      {t("Order history and status")}
-                    </h2>
+                  <section className="account-benefits grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                    <RewardsCard points={points} t={t} />
+                    <div className={cardClass}>
+                      <p className={eyebrowClass}>{t("Shortcuts")}</p>
+                      <h2 className="mt-2 font-display text-xl font-extrabold text-[#092a53]">
+                        {t("Quick actions")}
+                      </h2>
+                      <div className="account-shortcuts mt-5 grid grid-cols-2 gap-3">
+                        {[
+                          {
+                            label: t("Browse the menu"),
+                            to: "/menu",
+                            icon: "M4 6h16M4 12h16M4 18h10",
+                          },
+                          {
+                            label: t("Design a custom cake"),
+                            to: "/custom-cake",
+                            icon: "M4 20h16M5 20v-7h14v7M8 13V9h8v4M12 9V5",
+                          },
+                          {
+                            label: t("Flavors"),
+                            to: "/flavors",
+                            icon: "M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1",
+                          },
+                          {
+                            label: t("Contact us"),
+                            to: "/contact",
+                            icon: "M4 6h16v12H4V6Zm0 0 8 7 8-7",
+                          },
+                        ].map((action) => (
+                          <Link
+                            className="group flex flex-col gap-3 rounded-xl bg-[#f3f6f8] p-4 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#e9eef3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                            key={action.to}
+                            to={action.to}
+                          >
+                            <span className="grid size-10 place-items-center rounded-lg bg-white text-[#bd9c00] transition-colors group-hover:bg-[#ffdc32] group-hover:text-[#092a53]">
+                              <Icon path={action.icon} />
+                            </span>
+                            {action.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+
+                  <PromotionAlertsSetting />
+                  {favorites.length > 0 && (
+                    <section>
+                      <SectionHeading
+                        action={
+                          <button
+                            className={ghostButton}
+                            onClick={() => selectTab("saved")}
+                            type="button"
+                          >
+                            {t("View all")}
+                            <Icon
+                              className="size-4"
+                              path="M5 12h14m-5-5 5 5-5 5"
+                            />
+                          </button>
+                        }
+                        eyebrow={t("Your collection")}
+                        title={t("Saved favorites")}
+                      />
+                      {favoritesGrid(favorites.slice(0, 4))}
+                    </section>
+                  )}
+                </div>
+              )}
+
+              {activeTab === "orders" && (
+                <section aria-labelledby="account-orders-title">
+                  <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                      <p className={eyebrowClass}>{t("My account")}</p>
+                      <h2
+                        className="mt-2 font-display text-2xl font-extrabold text-[#092a53] sm:text-[1.75rem]"
+                        id="account-orders-title"
+                      >
+                        {t("Order history and status")}
+                      </h2>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div
+                        className="flex rounded-lg bg-white p-1 ring-1 ring-[#e5e9ee]"
+                        role="group"
+                        aria-label={t("Filter orders")}
+                      >
+                        {[
+                          { key: "all", label: t("All") },
+                          { key: "active", label: t("In progress") },
+                          { key: "completed", label: t("Completed") },
+                        ].map((filter) => (
+                          <button
+                            aria-pressed={orderFilter === filter.key}
+                            className={`rounded-md px-3.5 py-1.5 text-xs font-extrabold transition ${
+                              orderFilter === filter.key
+                                ? "bg-[#092a53] text-white"
+                                : "text-[#65748a] hover:text-[#092a53]"
+                            }`}
+                            key={filter.key}
+                            onClick={() => setOrderFilter(filter.key)}
+                            type="button"
+                          >
+                            {filter.label}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        aria-label={t("Refresh order status")}
+                        className="grid size-9 place-items-center rounded-lg bg-white text-[#65748a] ring-1 ring-[#e5e9ee] transition hover:text-[#092a53] disabled:opacity-50"
+                        disabled={loadingOrders}
+                        onClick={() =>
+                          refreshOrders().catch((loadError) =>
+                            setError(loadError.message),
+                          )
+                        }
+                        title={t("Refresh order status")}
+                        type="button"
+                      >
+                        <Icon
+                          className="size-4"
+                          path="M4 12a8 8 0 0 1 13.7-5.7L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.7L4 15.5M4 20v-4.5h4.5"
+                        />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex rounded-lg bg-white p-1 ring-1 ring-[#e5e9ee]" role="group" aria-label={t("Filter orders")}>
-                      {[
-                        { key: "all", label: t("All") },
-                        { key: "active", label: t("In progress") },
-                        { key: "completed", label: t("Completed") },
-                      ].map((filter) => (
-                        <button
-                          aria-pressed={orderFilter === filter.key}
-                          className={`rounded-md px-3.5 py-1.5 text-xs font-extrabold transition ${
-                            orderFilter === filter.key
-                              ? "bg-[#092a53] text-white"
-                              : "text-[#65748a] hover:text-[#092a53]"
-                          }`}
-                          key={filter.key}
-                          onClick={() => setOrderFilter(filter.key)}
-                          type="button"
-                        >
-                          {filter.label}
-                        </button>
+                  {error && (
+                    <p
+                      className="mb-4 rounded-2xl bg-red-50 p-4 text-sm font-semibold text-red-700 ring-1 ring-red-100"
+                      role="alert"
+                    >
+                      {error}
+                    </p>
+                  )}
+                  {loadingOrders ? (
+                    <div className="space-y-4">
+                      {[0, 1].map((key) => (
+                        <div
+                          className="h-56 animate-pulse rounded-2xl bg-white ring-1 ring-[#e5e9ee]"
+                          key={key}
+                        />
                       ))}
                     </div>
-                    <button
-                      aria-label={t("Refresh order status")}
-                      className="grid size-9 place-items-center rounded-lg bg-white text-[#65748a] ring-1 ring-[#e5e9ee] transition hover:text-[#092a53] disabled:opacity-50"
-                      disabled={loadingOrders}
-                      onClick={() =>
-                        refreshOrders().catch((loadError) => setError(loadError.message))
+                  ) : filteredOrders.length ? (
+                    <div className="space-y-5">
+                      {filteredOrders.map(renderOrderCard)}
+                    </div>
+                  ) : (
+                    <EmptyState
+                      body={
+                        orders.length
+                          ? t("No orders match this filter.")
+                          : t("You have not placed any orders yet.")
                       }
-                      title={t("Refresh order status")}
-                      type="button"
+                      icon="M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1"
+                      title={t("No orders yet")}
                     >
-                      <Icon className="size-4" path="M4 12a8 8 0 0 1 13.7-5.7L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.7L4 15.5M4 20v-4.5h4.5" />
-                    </button>
-                  </div>
-                </div>
-                {error && (
-                  <p className="mb-4 rounded-2xl bg-red-50 p-4 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
-                    {error}
-                  </p>
-                )}
-                {loadingOrders ? (
-                  <div className="space-y-4">
-                    {[0, 1].map((key) => (
-                      <div className="h-56 animate-pulse rounded-2xl bg-white ring-1 ring-[#e5e9ee]" key={key} />
-                    ))}
-                  </div>
-                ) : filteredOrders.length ? (
-                  <div className="space-y-5">{filteredOrders.map(renderOrderCard)}</div>
-                ) : (
-                  <EmptyState
-                    body={
-                      orders.length
-                        ? t("No orders match this filter.")
-                        : t("You have not placed any orders yet.")
-                    }
-                    icon="M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1"
-                    title={t("No orders yet")}
-                  >
-                    <Link className={`${primaryButton} mt-6`} to="/menu">
-                      {t("Browse the menu")}
-                    </Link>
-                  </EmptyState>
-                )}
-              </section>
-            )}
-
-            {activeTab === "saved" && (
-              <div className="space-y-10">
-                <section>
-                  <SectionHeading
-                    description={t("Current prices and stock are checked when you add a saved cart.")}
-                    eyebrow={t("Your collection")}
-                    title={t("Saved carts")}
-                  />
-                  {savedCarts.length ? (
-                    <ul className="grid gap-4 md:grid-cols-2">
-                      {savedCarts.map((savedCart) => {
-                        const count = savedCart.items.reduce(
-                          (total, item) => total + item.quantity,
-                          0,
-                        );
-                        return (
-                          <li className={`${cardClass} flex flex-col sm:p-6`} key={savedCart.id}>
-                            <div className="flex items-start gap-3.5">
-                              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#bd9c00]">
-                                <Icon path="M6 4h12v16l-6-4-6 4V4Z" />
-                              </span>
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate font-display text-lg font-extrabold text-[#092a53]">
-                                  {t(savedCart.label)}
-                                </p>
-                                <p className="text-xs font-semibold text-[#65748a]">
-                                  {t("{count} items", { count })}
-                                </p>
-                              </div>
-                            </div>
-                            <ul className="mt-4 flex-1 space-y-1.5 text-sm text-[#65748a]">
-                              {savedCart.items.slice(0, 3).map((item, index) => (
-                                <li className="flex gap-2" key={`${savedCart.id}-${index}`}>
-                                  <span className="font-extrabold text-[#092a53]">{item.quantity}×</span>
-                                  <span className="truncate">{item.name}</span>
-                                </li>
-                              ))}
-                              {savedCart.items.length > 3 && (
-                                <li className="text-xs font-semibold text-[#8b95a2]">
-                                  {t("+{count} more", { count: savedCart.items.length - 3 })}
-                                </li>
-                              )}
-                            </ul>
-                            <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#fbfaf5] pt-4">
-                              <button
-                                className="text-xs font-bold text-[#a34d4d] transition hover:text-red-800 disabled:opacity-50"
-                                disabled={deletingSavedCartId === savedCart.id}
-                                onClick={() => removeSavedCart(savedCart)}
-                                type="button"
-                              >
-                                {deletingSavedCartId === savedCart.id ? t("Removing…") : t("Remove")}
-                              </button>
-                              <button
-                                className={`${primaryButton} px-4 py-2.5 text-xs`}
-                                disabled={reorderingId === `saved-${savedCart.id}`}
-                                onClick={() => reorderItems(savedCart.items, `saved-${savedCart.id}`)}
-                                type="button"
-                              >
-                                {reorderingId === `saved-${savedCart.id}`
-                                  ? t("Adding…")
-                                  : t("Add saved cart to bag")}
-                              </button>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  ) : (
-                    <EmptyState
-                      body={t("No saved carts yet. Save a paid order to quickly rebuild its cart later.")}
-                      icon="M6 4h12v16l-6-4-6 4V4Z"
-                      title={t("Nothing saved yet")}
-                    />
-                  )}
-                </section>
-
-                <section>
-                  <SectionHeading eyebrow={t("Your collection")} title={t("Saved favorites")} />
-                  {favorites.length ? (
-                    favoritesGrid(favorites)
-                  ) : (
-                    <EmptyState
-                      body={t("Tap the heart on any treat to keep it here.")}
-                      icon="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"
-                      title={t("No saved favorites yet.")}
-                    >
-                      <Link className={`${primaryButton} mt-6`} to="/flavors">
-                        {t("Explore flavors")}
+                      <Link className={`${primaryButton} mt-6`} to="/menu">
+                        {t("Browse the menu")}
                       </Link>
                     </EmptyState>
                   )}
                 </section>
-              </div>
-            )}
+              )}
 
-            {activeTab === "rewards" && (
-              <section>
-                <SectionHeading
-                  description={t("Earn 1 point per 100 FCFA. Redeem 100 points for 1,000 FCFA off.")}
-                  eyebrow={t("Loyalty rewards")}
-                  title={t("Your rewards")}
-                />
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-                  <RewardsCard points={points} t={t} />
-                  <div className={cardClass}>
-                    <h3 className="font-display text-lg font-extrabold text-[#092a53]">
-                      {t("Points history")}
-                    </h3>
-                    {loyalty?.entries?.length ? (
-                      <ul className="mt-4 divide-y divide-[#fbfaf5]">
-                        {loyalty.entries.map((entry) => (
-                          <li className="flex items-center justify-between gap-3 py-3" key={entry.id}>
-                            <div className="flex min-w-0 items-center gap-3">
-                              <span
-                                className={`grid size-9 shrink-0 place-items-center rounded-xl ${
-                                  entry.pointsDelta > 0
-                                    ? "bg-[#eef6e8] text-[#3f6b22]"
-                                    : "bg-[#fff0ed] text-[#b44947]"
-                                }`}
-                              >
-                                <Icon
-                                  className="size-4"
-                                  path={entry.pointsDelta > 0 ? "M12 19V5m-6 6 6-6 6 6" : "M12 5v14m6-6-6 6-6-6"}
-                                />
-                              </span>
-                              <div className="min-w-0">
-                                <p className="truncate text-sm font-bold capitalize text-[#092a53]">
-                                  {t(entry.entryType)}
-                                </p>
-                                <p className="text-xs text-[#65748a]">
-                                  {t("Order #{id}", { id: entry.orderId })}
-                                </p>
-                              </div>
-                            </div>
-                            <span
-                              className={`shrink-0 font-display text-lg font-extrabold ${
-                                entry.pointsDelta > 0 ? "text-[#3f6b22]" : "text-[#b44947]"
-                              }`}
+              {activeTab === "saved" && (
+                <div className="space-y-10">
+                  <section>
+                    <SectionHeading
+                      description={t(
+                        "Current prices and stock are checked when you add a saved cart.",
+                      )}
+                      eyebrow={t("Your collection")}
+                      title={t("Saved carts")}
+                    />
+                    {savedCarts.length ? (
+                      <ul className="grid gap-4 md:grid-cols-2">
+                        {savedCarts.map((savedCart) => {
+                          const count = savedCart.items.reduce(
+                            (total, item) => total + item.quantity,
+                            0,
+                          );
+                          return (
+                            <li
+                              className={`${cardClass} flex flex-col sm:p-6`}
+                              key={savedCart.id}
                             >
-                              {entry.pointsDelta > 0 ? "+" : ""}
-                              {entry.pointsDelta}
-                            </span>
-                          </li>
-                        ))}
+                              <div className="flex items-start gap-3.5">
+                                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#bd9c00]">
+                                  <Icon path="M6 4h12v16l-6-4-6 4V4Z" />
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate font-display text-lg font-extrabold text-[#092a53]">
+                                    {t(savedCart.label)}
+                                  </p>
+                                  <p className="text-xs font-semibold text-[#65748a]">
+                                    {t("{count} items", { count })}
+                                  </p>
+                                </div>
+                              </div>
+                              <ul className="mt-4 flex-1 space-y-1.5 text-sm text-[#65748a]">
+                                {savedCart.items
+                                  .slice(0, 3)
+                                  .map((item, index) => (
+                                    <li
+                                      className="flex gap-2"
+                                      key={`${savedCart.id}-${index}`}
+                                    >
+                                      <span className="font-extrabold text-[#092a53]">
+                                        {item.quantity}×
+                                      </span>
+                                      <span className="truncate">
+                                        {item.name}
+                                      </span>
+                                    </li>
+                                  ))}
+                                {savedCart.items.length > 3 && (
+                                  <li className="text-xs font-semibold text-[#8b95a2]">
+                                    {t("+{count} more", {
+                                      count: savedCart.items.length - 3,
+                                    })}
+                                  </li>
+                                )}
+                              </ul>
+                              <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#fbfaf5] pt-4">
+                                <button
+                                  className="text-xs font-bold text-[#a34d4d] transition hover:text-red-800 disabled:opacity-50"
+                                  disabled={
+                                    deletingSavedCartId === savedCart.id
+                                  }
+                                  onClick={() => removeSavedCart(savedCart)}
+                                  type="button"
+                                >
+                                  {deletingSavedCartId === savedCart.id
+                                    ? t("Removing…")
+                                    : t("Remove")}
+                                </button>
+                                <button
+                                  className={`${primaryButton} px-4 py-2.5 text-xs`}
+                                  disabled={
+                                    reorderingId === `saved-${savedCart.id}`
+                                  }
+                                  onClick={() =>
+                                    reorderItems(
+                                      savedCart.items,
+                                      `saved-${savedCart.id}`,
+                                    )
+                                  }
+                                  type="button"
+                                >
+                                  {reorderingId === `saved-${savedCart.id}`
+                                    ? t("Adding…")
+                                    : t("Add saved cart to bag")}
+                                </button>
+                              </div>
+                            </li>
+                          );
+                        })}
                       </ul>
                     ) : (
-                      <p className="mt-4 rounded-xl bg-[#f3f6f8] p-5 text-sm leading-6 text-[#65748a]">
-                        {t("Your points will appear here after your first paid order.")}
-                      </p>
+                      <EmptyState
+                        body={t(
+                          "No saved carts yet. Save a paid order to quickly rebuild its cart later.",
+                        )}
+                        icon="M6 4h12v16l-6-4-6 4V4Z"
+                        title={t("Nothing saved yet")}
+                      />
                     )}
-                  </div>
-                </div>
-              </section>
-            )}
+                  </section>
 
-            {activeTab === "profile" && (
-              <section>
-                <SectionHeading
-                  description={t("Keep your contact and delivery information up to date.")}
-                  eyebrow={t("Account profile")}
-                  title={t("Saved delivery details")}
-                />
-                <div className={cardClass}>
-                  <CustomerProfileDetails customer={customer} onSave={updateProfile} t={t} />
+                  <section>
+                    <SectionHeading
+                      eyebrow={t("Your collection")}
+                      title={t("Saved favorites")}
+                    />
+                    {favorites.length ? (
+                      favoritesGrid(favorites)
+                    ) : (
+                      <EmptyState
+                        body={t("Tap the heart on any treat to keep it here.")}
+                        icon="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"
+                        title={t("No saved favorites yet.")}
+                      >
+                        <Link className={`${primaryButton} mt-6`} to="/flavors">
+                          {t("Explore flavors")}
+                        </Link>
+                      </EmptyState>
+                    )}
+                  </section>
                 </div>
-              </section>
-            )}
+              )}
+
+              {activeTab === "rewards" && (
+                <section>
+                  <SectionHeading
+                    description={t(
+                      "Earn 1 point per 100 FCFA. Redeem 100 points for 1,000 FCFA off.",
+                    )}
+                    eyebrow={t("Loyalty rewards")}
+                    title={t("Your rewards")}
+                  />
+                  <div className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                    <RewardsCard points={points} t={t} />
+                    <div className={cardClass}>
+                      <h3 className="font-display text-lg font-extrabold text-[#092a53]">
+                        {t("Points history")}
+                      </h3>
+                      {loyalty?.entries?.length ? (
+                        <ul className="mt-4 divide-y divide-[#fbfaf5]">
+                          {loyalty.entries.map((entry) => (
+                            <li
+                              className="flex items-center justify-between gap-3 py-3"
+                              key={entry.id}
+                            >
+                              <div className="flex min-w-0 items-center gap-3">
+                                <span
+                                  className={`grid size-9 shrink-0 place-items-center rounded-xl ${
+                                    entry.pointsDelta > 0
+                                      ? "bg-[#eef6e8] text-[#3f6b22]"
+                                      : "bg-[#fff0ed] text-[#b44947]"
+                                  }`}
+                                >
+                                  <Icon
+                                    className="size-4"
+                                    path={
+                                      entry.pointsDelta > 0
+                                        ? "M12 19V5m-6 6 6-6 6 6"
+                                        : "M12 5v14m6-6-6 6-6-6"
+                                    }
+                                  />
+                                </span>
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-bold capitalize text-[#092a53]">
+                                    {t(entry.entryType)}
+                                  </p>
+                                  <p className="text-xs text-[#65748a]">
+                                    {t("Order #{id}", { id: entry.orderId })}
+                                  </p>
+                                </div>
+                              </div>
+                              <span
+                                className={`shrink-0 font-display text-lg font-extrabold ${
+                                  entry.pointsDelta > 0
+                                    ? "text-[#3f6b22]"
+                                    : "text-[#b44947]"
+                                }`}
+                              >
+                                {entry.pointsDelta > 0 ? "+" : ""}
+                                {entry.pointsDelta}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="mt-4 rounded-xl bg-[#f3f6f8] p-5 text-sm leading-6 text-[#65748a]">
+                          {t(
+                            "Your points will appear here after your first paid order.",
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {activeTab === "profile" && (
+                <section>
+                  <SectionHeading
+                    description={t(
+                      "Keep your contact and delivery information up to date.",
+                    )}
+                    eyebrow={t("Account profile")}
+                    title={t("Saved delivery details")}
+                  />
+                  <div className={cardClass}>
+                    <CustomerProfileDetails
+                      customer={customer}
+                      onSave={updateProfile}
+                      t={t}
+                    />
+                  </div>
+                </section>
+              )}
+            </div>
           </div>
-        </div>
         </div>
       </main>
       <Footer />

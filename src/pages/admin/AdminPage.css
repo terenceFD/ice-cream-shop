@@ -1,0 +1,537 @@
+.admin-flavors-page {
+  --flavor-surface: #ffffff;
+  --flavor-ink: #092a53;
+  --flavor-muted: #53657b;
+  --flavor-rule: #e8edf2;
+  --flavor-control: #cbd5df;
+  --flavor-accent: #bd9c00;
+  color: var(--flavor-ink);
+  font-family: var(--font-sans);
+}
+
+.admin-flavors-header {
+  align-items: flex-end;
+  padding-bottom: 4px;
+}
+
+.admin-flavors-title {
+  font-family: var(--font-sans);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.admin-flavors-header p {
+  color: var(--flavor-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.admin-flavor-header-actions {
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.admin-flavor-header-actions a,
+.admin-flavor-header-actions button {
+  min-height: 38px;
+  border-radius: 7px;
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.admin-flavor-secondary {
+  border-color: #cbd5df;
+  color: var(--flavor-ink);
+}
+
+.admin-flavor-primary {
+  background: var(--flavor-ink);
+}
+
+.admin-flavor-message {
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+.admin-flavor-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--flavor-rule);
+  border-radius: 8px;
+  background: var(--flavor-surface);
+}
+
+.admin-flavor-stat {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 74px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 18px;
+  border: 0;
+  border-right: 1px solid var(--flavor-rule);
+  border-bottom: 2px solid transparent;
+  background: var(--flavor-surface);
+  transition: background-color 140ms ease;
+}
+
+.admin-flavor-stat:last-child {
+  border-right: 0;
+}
+
+.admin-flavor-stat:hover {
+  background: #f9fafb;
+}
+
+.admin-flavor-stat.is-active {
+  background: #fff9df;
+  border-bottom-color: var(--flavor-accent);
+}
+
+.admin-flavor-stat-label {
+  color: var(--flavor-muted);
+  font-size: 0.8125rem;
+  font-weight: 550;
+  line-height: 1.25;
+}
+
+.admin-flavor-stat-value {
+  color: var(--flavor-ink);
+  font-size: 1.375rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.admin-inventory-summary {
+  min-height: 42px;
+  align-items: center;
+  gap: 14px;
+  padding: 0 2px;
+  color: var(--flavor-muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.admin-inventory-total {
+  display: inline-flex;
+  flex: none;
+  align-items: baseline;
+  gap: 6px;
+  font-weight: 550;
+}
+
+.admin-inventory-total-value {
+  color: var(--flavor-ink);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.admin-stock-breakdown {
+  min-width: 5rem;
+  max-width: 23rem;
+  height: 5px;
+  border-radius: 2px;
+  background: #e2e8ef;
+}
+
+.admin-stock-breakdown span {
+  min-width: 0;
+}
+
+.admin-stock-breakdown-available {
+  background: #247b50;
+}
+
+.admin-stock-breakdown-low {
+  background: #a87900;
+}
+
+.admin-stock-breakdown-sold {
+  background: #a83b37;
+}
+
+.admin-inventory-threshold {
+  margin-left: auto;
+  color: var(--flavor-muted);
+}
+
+.admin-flavor-catalog {
+  overflow: hidden;
+  border-color: var(--flavor-rule);
+  border-radius: 8px;
+  background: var(--flavor-surface);
+}
+
+.admin-flavor-catalog-toolbar {
+  gap: 18px;
+  padding: 18px 20px 16px;
+  border-color: var(--flavor-rule);
+}
+
+.admin-flavor-catalog-title {
+  color: var(--flavor-ink);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.admin-flavor-result-count {
+  margin-top: 4px;
+  color: var(--flavor-muted);
+  font-size: 0.75rem;
+}
+
+.admin-flavor-filters {
+  align-items: center;
+  gap: 10px;
+  grid-template-columns: minmax(220px, 1fr) minmax(130px, auto) minmax(160px, auto) auto;
+}
+
+.admin-flavor-control {
+  min-height: 36px;
+  border-color: var(--flavor-control);
+  border-radius: 6px;
+  background-color: #fff;
+  color: var(--flavor-ink);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.admin-flavor-control:focus {
+  border-color: var(--flavor-accent);
+  box-shadow: 0 0 0 2px rgb(189 156 0 / 16%);
+}
+
+.admin-flavor-stock-filters {
+  min-height: 36px;
+  align-items: center;
+  gap: 2px;
+  border-radius: 6px;
+  background: #f2f4f6;
+  padding: 3px;
+}
+
+.admin-flavor-stock-filter {
+  min-height: 28px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0 9px;
+  color: #53657b;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.admin-flavor-stock-filter[aria-pressed="true"] {
+  border-color: #e4e8ed;
+  background: #fff;
+  color: var(--flavor-ink);
+}
+
+.admin-flavor-error {
+  margin-inline: 20px;
+  border-radius: 6px;
+}
+
+.admin-flavor-loading {
+  padding: 18px 20px;
+}
+
+.admin-flavor-table {
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.admin-flavor-table-head {
+  height: 38px;
+  border-color: var(--flavor-rule);
+  background: #fafbfc;
+  color: var(--flavor-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.admin-flavor-table-head th {
+  padding-top: 9px;
+  padding-bottom: 9px;
+  font-weight: 600;
+}
+
+.admin-flavor-table-row {
+  height: 68px;
+  border-color: #edf0f3;
+  background: #fff;
+}
+
+.admin-flavor-table-row:hover {
+  background: #fafbfc;
+}
+
+.admin-flavor-table-row td {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.admin-flavor-table-row td:first-child img {
+  border-radius: 6px;
+}
+
+.admin-flavor-table-row td:nth-child(2) > span {
+  border-radius: 4px;
+  background: #fff7d7;
+  color: #735b00;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.admin-flavor-table-row td:nth-child(2) > span[aria-hidden="true"] {
+  background: transparent;
+  color: #6b7280;
+}
+
+.admin-flavor-table-row td:nth-child(3) {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.admin-flavor-grid-card {
+  border-color: var(--flavor-rule);
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.admin-flavor-grid-card:hover {
+  border-color: #cbd5df;
+  box-shadow: none;
+  transform: none;
+}
+
+.admin-flavor-grid-card > div:first-child {
+  height: 148px;
+  background: #f1f3f5;
+}
+
+.admin-flavor-grid-card .font-display {
+  font-family: var(--font-sans);
+}
+
+.admin-flavor-drawer {
+  box-shadow: -16px 0 36px rgb(9 42 83 / 12%);
+}
+
+.admin-flavor-drawer > header {
+  border-color: var(--flavor-rule);
+}
+
+@media (max-width: 1279px) {
+  .admin-flavor-filters {
+    grid-template-columns: minmax(180px, 1fr) minmax(120px, auto) minmax(145px, auto);
+  }
+
+  .admin-flavor-stock-filters {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-flavors-header {
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .admin-flavors-title {
+    font-size: 1.5rem;
+  }
+
+  .admin-flavor-header-actions {
+    width: 100%;
+  }
+
+  .admin-flavor-header-actions a,
+  .admin-flavor-header-actions button {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding-inline: 12px;
+  }
+
+  .admin-flavor-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-flavor-stat {
+    min-height: 64px;
+    padding: 12px 14px;
+  }
+
+  .admin-flavor-stat:nth-child(2) {
+    border-right: 0;
+  }
+
+  .admin-flavor-stat:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--flavor-rule);
+  }
+
+  .admin-flavor-stat.is-active:nth-child(-n + 2) {
+    border-bottom-color: var(--flavor-accent);
+    border-bottom-width: 2px;
+  }
+
+  .admin-flavor-stat-value {
+    font-size: 1.25rem;
+  }
+
+  .admin-inventory-summary {
+    gap: 8px 12px;
+    padding: 2px 0;
+  }
+
+  .admin-stock-breakdown {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .admin-inventory-threshold {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .admin-flavor-catalog-toolbar {
+    gap: 14px;
+    padding: 15px 14px 14px;
+  }
+
+  .admin-flavor-filters {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .admin-flavor-filters > label:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .admin-flavor-filters select {
+    width: 100%;
+  }
+
+  .admin-flavor-stock-filters {
+    grid-column: 1 / -1;
+    overflow-x: auto;
+  }
+
+  .admin-flavor-stock-filter {
+    flex: 1 0 auto;
+    justify-content: center;
+  }
+
+  .admin-flavor-table {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-flavor-table thead {
+    display: none;
+  }
+
+  .admin-flavor-table tbody {
+    display: grid;
+  }
+
+  .admin-flavor-table-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 4px 12px;
+    height: auto;
+    min-height: 86px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--flavor-rule);
+  }
+
+  .admin-flavor-table-row td {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .admin-flavor-table-row td:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .admin-flavor-table-row td:nth-child(2) {
+    grid-column: 1;
+    grid-row: 2;
+    padding-left: 60px;
+  }
+
+  .admin-flavor-table-row td:nth-child(3) {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 0;
+    text-align: right;
+    font-size: 0.8125rem;
+  }
+
+  .admin-flavor-table-row td:nth-child(4) {
+    grid-column: 1;
+    grid-row: 3;
+    padding-left: 60px;
+  }
+
+  .admin-flavor-table-row td:nth-child(4) > div {
+    max-width: 11rem;
+  }
+
+  .admin-flavor-table-row td:nth-child(5) {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+
+  .admin-flavor-table-row td:last-child {
+    grid-column: 2;
+    grid-row: 3;
+    justify-self: end;
+    padding: 0;
+  }
+
+  .admin-flavor-table-row td:last-child > div {
+    gap: 0;
+  }
+
+  .admin-flavor-table-row td:last-child a,
+  .admin-flavor-table-row td:last-child button {
+    width: 30px;
+    height: 30px;
+  }
+
+  .admin-flavor-table-row td:nth-child(2) > span {
+    display: inline-block;
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-flavor-stat,
+  .admin-flavor-grid-card {
+    transition: none;
+  }
+}

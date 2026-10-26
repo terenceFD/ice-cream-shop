@@ -1,0 +1,1604 @@
+{
+ "url": "http://localhost:5173/locations",
+ "at": "2026-10-25T22:47:36.591Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 1,
+   "filled": [
+    0
+   ],
+   "motion": {
+    "elements": 4,
+    "css": 3,
+    "transitions": 1,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 2558,
+     "screens": 2.8,
+     "words": 273,
+     "img": 6,
+     "video": 0,
+     "canvas": 0,
+     "svg": 55,
+     "sections": 2,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Find us in Cameroon",
+     "words": 4,
+     "chars": 19,
+     "lines": 2,
+     "size": 72,
+     "vw": 5,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "left",
+     "widthRatio": 0.33,
+     "top": 353,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Find us in Cameroon",
+     "words": 4,
+     "lines": 2,
+     "size": 72,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Find us in Cameroon",
+      "words": 4,
+      "chars": 19,
+      "lines": 2,
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.33,
+      "top": 353,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Listed locations",
+      "words": 2,
+      "chars": 16,
+      "lines": 1,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.23,
+      "top": 1048,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.28,
+      "top": 1952,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 3,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.93,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.07,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      24,
+      36,
+      48,
+      72
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 16,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 8
+     },
+     "measureChars": 82,
+     "max": {
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "text": "Find us in Cameroon"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.03,
+     "centerShare": 0.02,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f5f8fb",
+       "top": 0,
+       "hsl": {
+        "h": 210,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#edf3f8",
+       "top": 80,
+       "hsl": {
+        "h": 207,
+        "s": 0.44,
+        "l": 0.95
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 1888,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.5
+      },
+      {
+       "color": "#334c63",
+       "share": 0.37
+      },
+      {
+       "color": "#092a53",
+       "share": 0.12
+      },
+      {
+       "color": "#ffdc32",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#092a53",
+      "hsl": {
+       "h": 213,
+       "s": 0.8,
+       "l": 0.18
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 15,
+     "inHero": 5,
+     "radius": "pill",
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Order now",
+      "Browse locations ↓",
+      "Explore the menu"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 4,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 10,
+     "boxRadius": 24,
+     "squareMedia": 0,
+     "roundedMedia": 4,
+     "mediaRadius": 22,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "svg",
+      "ratio": 0.2
+     },
+     {
+      "type": "img",
+      "ratio": 0.11
+     },
+     {
+      "type": "img",
+      "ratio": 0.11
+     }
+    ],
+    "nav": {
+     "links": 15,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 2558,
+    "margins": {
+     "left": 60,
+     "right": 108
+    },
+    "sections": [
+     {
+      "sel": "section.relative.overflow-hidden",
+      "tag": "section",
+      "top": 80,
+      "height": 888,
+      "words": 54,
+      "media": 4,
+      "middle": 82,
+      "heading": {
+       "text": "Find us in Cameroon",
+       "size": 72,
+       "tag": "h1"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 252,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#listed-locations.mx-auto.max-w-[1320px]",
+      "tag": "section",
+      "top": 968,
+      "height": 920,
+      "words": 102,
+      "media": 0,
+      "middle": 76,
+      "heading": {
+       "text": "Listed locations",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 144,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 1888,
+      "height": 627,
+      "words": 81,
+      "media": 0,
+      "middle": 190,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 124,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Find us in Cameroon",
+      "size": 72,
+      "top": 353,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 108,
+      "n": 3
+     },
+     {
+      "x": 192,
+      "n": 2
+     },
+     {
+      "x": 641,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 6,
+    "bodySize": 16,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0.08,
+    "voidBox": {
+     "x": 0,
+     "y": 120,
+     "w": 600,
+     "h": 180
+    }
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 4,
+   "filled": [
+    0.84,
+    0.7,
+    0.76,
+    0.86
+   ],
+   "motion": {
+    "elements": 26,
+    "css": 21,
+    "transitions": 5,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 3457,
+     "screens": 3.4,
+     "words": 301,
+     "img": 7,
+     "video": 0,
+     "canvas": 0,
+     "svg": 60,
+     "sections": 3,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 4,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "rond-point-bonanjo-douala.jpg",
+      "rue-de-narvik-yaounde-cameroon.jpg",
+      "rue-de-bonamoussadi-quifeurou.jpg",
+      "carrefour-bastos.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Find us in Cameroon",
+     "words": 4,
+     "chars": 19,
+     "lines": 2,
+     "size": 60,
+     "vw": 7.8,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "left",
+     "widthRatio": 0.53,
+     "top": 160,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Find us in Cameroon",
+     "words": 4,
+     "lines": 2,
+     "size": 60,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Find us in Cameroon",
+      "words": 4,
+      "chars": 19,
+      "lines": 2,
+      "size": 60,
+      "vw": 7.8,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.53,
+      "top": 160,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Listed locations",
+      "words": 2,
+      "chars": 16,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 1358,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.53,
+      "top": 2634,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 3,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.92,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.08,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      24,
+      36,
+      48,
+      60
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 16,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 8
+     },
+     "measureChars": 56,
+     "max": {
+      "size": 60,
+      "vw": 7.8,
+      "font": "Fredoka",
+      "text": "Find us in Cameroon"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.02,
+     "centerShare": 0.03,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f5f8fb",
+       "top": 0,
+       "hsl": {
+        "h": 210,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#edf3f8",
+       "top": 80,
+       "hsl": {
+        "h": 207,
+        "s": 0.44,
+        "l": 0.95
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 2578,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.44
+      },
+      {
+       "color": "#334c63",
+       "share": 0.34
+      },
+      {
+       "color": "#092a53",
+       "share": 0.13
+      },
+      {
+       "color": "#344b66",
+       "share": 0.05
+      },
+      {
+       "color": "#65748a",
+       "share": 0.03
+      }
+     ],
+     "button": {
+      "bg": "#092a53",
+      "hsl": {
+       "h": 213,
+       "s": 0.8,
+       "l": 0.18
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 14,
+     "inHero": 4,
+     "radius": "pill",
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Browse locations ↓",
+      "Explore the menu",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 5,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 11,
+     "boxRadius": 24,
+     "squareMedia": 0,
+     "roundedMedia": 4,
+     "mediaRadius": 22,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "svg",
+      "ratio": 0.29
+     },
+     {
+      "type": "img",
+      "ratio": 0.18
+     },
+     {
+      "type": "img",
+      "ratio": 0.14
+     }
+    ],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 3457,
+    "margins": {
+     "left": 32,
+     "right": 32
+    },
+    "sections": [
+     {
+      "sel": "section.relative.overflow-hidden",
+      "tag": "section",
+      "top": 80,
+      "height": 1198,
+      "words": 54,
+      "media": 5,
+      "middle": 0,
+      "heading": {
+       "text": "Find us in Cameroon",
+       "size": 60,
+       "tag": "h1"
+      },
+      "left": 32,
+      "right": 0,
+      "textLeft": 32,
+      "textRight": 46,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#listed-locations.mx-auto.max-w-[1320px]",
+      "tag": "section",
+      "top": 1278,
+      "height": 1300,
+      "words": 102,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Listed locations",
+       "size": 48,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 68,
+      "textLeft": 32,
+      "textRight": 68,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 2578,
+      "height": 811,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 46,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Find us in Cameroon",
+      "size": 60,
+      "top": 160,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 32,
+      "n": 4
+     },
+     {
+      "x": 116,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 6,
+    "bodySize": 16,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 5,
+   "filled": [
+    0.75,
+    0.61,
+    0.43,
+    0.73,
+    0.77
+   ],
+   "motion": {
+    "elements": 26,
+    "css": 21,
+    "transitions": 5,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 4134,
+     "screens": 4.9,
+     "words": 300,
+     "img": 7,
+     "video": 0,
+     "canvas": 0,
+     "svg": 60,
+     "sections": 3,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 1,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "rond-point-bonanjo-douala.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Find us in Cameroon",
+     "words": 4,
+     "chars": 19,
+     "lines": 2,
+     "size": 48,
+     "vw": 12.3,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.025,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.83,
+     "top": 136,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Find us in Cameroon",
+     "words": 4,
+     "lines": 2,
+     "size": 48,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Find us in Cameroon",
+      "words": 4,
+      "chars": 19,
+      "lines": 2,
+      "size": 48,
+      "vw": 12.3,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.83,
+      "top": 136,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Listed locations",
+      "words": 2,
+      "chars": 16,
+      "lines": 1,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.11,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 987,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Bonanjo",
+      "words": 1,
+      "chars": 7,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.79,
+      "top": 1251,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Bonamoussadi",
+      "words": 1,
+      "chars": 12,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.79,
+      "top": 1507,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Bonabéri",
+      "words": 1,
+      "chars": 8,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.79,
+      "top": 1767,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Ange Raphaël",
+      "words": 2,
+      "chars": 12,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.79,
+      "top": 2027,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Bastos",
+      "words": 1,
+      "chars": 6,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.79,
+      "top": 2311,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.89,
+      "top": 2903,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 8,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 1,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.92,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.08,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      13,
+      14,
+      16,
+      18,
+      20,
+      24,
+      30,
+      36,
+      48
+     ],
+     "sizeCount": 9,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 16,
+      "leading": 1.75,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 8
+     },
+     "measureChars": 39,
+     "max": {
+      "size": 48,
+      "vw": 12.3,
+      "font": "Fredoka",
+      "text": "Find us in Cameroon"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.02,
+     "centerShare": 0.03,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f5f8fb",
+       "top": 0,
+       "hsl": {
+        "h": 210,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#edf3f8",
+       "top": 80,
+       "hsl": {
+        "h": 207,
+        "s": 0.44,
+        "l": 0.95
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 2855,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 522,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.44
+      },
+      {
+       "color": "#334c63",
+       "share": 0.34
+      },
+      {
+       "color": "#092a53",
+       "share": 0.13
+      },
+      {
+       "color": "#344b66",
+       "share": 0.05
+      },
+      {
+       "color": "#65748a",
+       "share": 0.03
+      }
+     ],
+     "button": {
+      "bg": "#092a53",
+      "hsl": {
+       "h": 213,
+       "s": 0.8,
+       "l": 0.18
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 13,
+     "inHero": 3,
+     "radius": "pill",
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Browse locations ↓",
+      "Explore the menu",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 5,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 8,
+     "boxRadius": 24,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "svg",
+      "ratio": 0.11
+     },
+     {
+      "type": "img",
+      "ratio": 0.09
+     },
+     {
+      "type": "img",
+      "ratio": 0.09
+     }
+    ],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 4134,
+    "margins": {
+     "left": 20,
+     "right": 22
+    },
+    "sections": [
+     {
+      "sel": "section.relative.overflow-hidden",
+      "tag": "section",
+      "top": 80,
+      "height": 851,
+      "words": 54,
+      "media": 2,
+      "middle": 0,
+      "heading": {
+       "text": "Find us in Cameroon",
+       "size": 48,
+       "tag": "h1"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 30,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.flex.flex-col",
+      "tag": "div",
+      "top": 987,
+      "height": 160,
+      "words": 6,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Listed locations",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 125,
+      "textLeft": 20,
+      "textRight": 125,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "ul.mt-8.grid",
+      "tag": "ul",
+      "top": 1179,
+      "height": 1300,
+      "words": 67,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Bonanjo",
+       "size": 24,
+       "tag": "h3"
+      },
+      "left": 40,
+      "right": 52,
+      "textLeft": 40,
+      "textRight": 52,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "aside.location-reveal.mt-8",
+      "tag": "aside",
+      "top": 2511,
+      "height": 288,
+      "words": 29,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Before you go",
+       "size": 18,
+       "tag": "h2"
+      },
+      "left": 40,
+      "right": 40,
+      "textLeft": 40,
+      "textRight": 40,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 2855,
+      "height": 1211,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 30,
+       "tag": "span"
+      },
+      "left": 20,
+      "right": 24,
+      "textLeft": 20,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Find us in Cameroon",
+      "size": 48,
+      "top": 136,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 20,
+      "n": 4
+     },
+     {
+      "x": 40,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 6,
+    "bodySize": 16,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "WARN",
+   "id": "size-count",
+   "width": 1440,
+   "message": "11 different font sizes (9, 12, 13, 14, 16, 18, 19, 24, 36, 48, 72).",
+   "fix": "A page needs about five: display, heading, lead, body, small.",
+   "alsoAt": [
+    768
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "few-pictures",
+   "width": 1440,
+   "message": "Only 0 picture(s) on the page (0 photographs, footage or raster images, 0 interface fragments). Drawings in SVG do not count.",
+   "fix": "Find real pictures of the subject's world with scripts/assets.mjs (photographs, archival images, maps, engravings, footage), download them to assets/ and give them room: a hero picture, one per section that has a subject, a full-width band. At least four, usually six to twelve."
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  },
+  {
+   "level": "WARN",
+   "id": "off-centre",
+   "width": 1440,
+   "message": "The margins differ: 60px on the left, 108px on the right, at 1440px.",
+   "fix": "Put the navigation and the content on one pair of margins; check for padding on one side only, a scrollbar gutter, or a header on another inset than the page."
+  },
+  {
+   "level": "FAIL",
+   "id": "still-page",
+   "width": 1440,
+   "message": "Only 4 element(s) moved while the page loaded and scrolled.",
+   "fix": "Build the motion layer (SKILL.md step 9, references/motion.md): the signature move, an entrance for the parts of every section, feedback on every control, and one moving picture. Transform and opacity only, with a reduced-motion fallback."
+  },
+  {
+   "level": "FAIL",
+   "id": "covered-text",
+   "width": 768,
+   "message": "Large text lies under another element at some scroll position: \"Ange Raphaël\" (screen 2, 100% hidden)",
+   "fix": "Nothing may sit on top of a headline or statement. Move the picture, shorten the pinned run, or raise the text above it (z-index) and give it a ground.",
+   "alsoAt": [
+    390
+   ]
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect-locations\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect-locations\\desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect-locations\\tablet-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect-locations\\tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect-locations\\mobile-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect-locations\\mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

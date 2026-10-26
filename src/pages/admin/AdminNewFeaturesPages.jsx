@@ -239,54 +239,90 @@ export function AdminStockAlertsPage() {
   const unavailableCount = items.filter((item) => !item.isAvailable).length
   const soldOutCount = items.filter((item) => item.isAvailable && item.availableQuantity < 1).length
 
-  return (
-    <div className="min-w-0 space-y-6">
-      <AdminPageHeader
-        description={t('Items at or below their threshold and items marked unavailable appear here automatically.')}
-        icon={adminIcons.alert}
-        section={t('Catalog')}
-        t={t}
-        title={t('Low-stock alerts')}
-      />
-      <AdminNotice tone="error">{error}</AdminNotice>
-      <AdminNotice>{message}</AdminNotice>
+  const metrics = [
+    { label: 'Need attention', value: String(items.length), hint: t('At or below their threshold') },
+    { label: 'Sold out', value: String(soldOutCount), hint: t('Available, nothing left') },
+    { label: 'Unavailable', value: String(unavailableCount), hint: t('Hidden from the menu') },
+  ]
 
-      <section aria-label={t('Overview')} className="admin-stats grid grid-cols-3 gap-3">
-        <AdminStatCard accent="bg-[#fff4e0] text-[#a35f00]" icon={adminIcons.alert} label={t('Need attention')} value={items.length} />
-        <AdminStatCard accent="bg-red-50 text-red-700" icon={adminIcons.box} label={t('Sold out')} value={soldOutCount} />
-        <AdminStatCard accent="bg-[#eef1f5] text-[#65748a]" icon={adminIcons.store} label={t('Unavailable')} value={unavailableCount} />
+  return (
+    <div className="min-w-0 space-y-4">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <nav aria-label={t('Breadcrumb')} className="text-xs text-[#6b6b6b]">
+            {t('Catalog')} <span aria-hidden="true" className="mx-1">/</span>
+            {t('Low-stock alerts')}
+          </nav>
+          <h1 className="mt-1 text-2xl font-bold tracking-[-0.01em] text-[#111827]">{t('Low-stock alerts')}</h1>
+          <p className="mt-1 text-sm text-[#6b6b6b]">
+            {t('Items at or below their threshold and items marked unavailable appear here automatically.')}
+          </p>
+        </div>
+      </header>
+
+      {error && (
+        <p className="flex items-start gap-2 rounded-lg bg-[#ffedea] px-4 py-3 text-sm font-medium text-[#831c1e]" role="alert">
+          <AdminIcon className="mt-0.5 size-4 shrink-0" path={adminIcons.alert} />
+          {error}
+        </p>
+      )}
+      {message && (
+        <p className="flex items-start gap-2 rounded-lg bg-[#f4f6f8] px-4 py-3 text-sm font-medium text-[#111827]" role="status">
+          <AdminIcon className="mt-0.5 size-4 shrink-0 text-[#247b50]" path={adminIcons.check} />
+          {message}
+        </p>
+      )}
+
+      <section aria-label={t('Overview')} className="admin-stats grid grid-cols-1 overflow-hidden rounded-lg border border-[#e8e8e8] bg-white sm:grid-cols-3 sm:divide-x sm:divide-[#e8e8e8]">
+        {metrics.map((metric, index) => (
+          <article className={`px-4 py-4 sm:px-5 ${index === 0 ? 'border-b border-[#e8e8e8] sm:border-b-0' : ''}`} key={metric.label}>
+            <p className="text-xs text-[#6b6b6b]">{t(metric.label)}</p>
+            <p className="num mt-1.5 truncate text-2xl font-semibold leading-none tracking-[-0.01em] text-[#111827]">{metric.value}</p>
+            <p className="mt-1.5 truncate text-xs text-[#6b6b6b]">{metric.hint}</p>
+          </article>
+        ))}
       </section>
 
-      <section className="rounded-[20px] border border-[#dce3eb] bg-white">
+      <section aria-label={t('Low-stock alerts')} className="overflow-hidden rounded-lg border border-[#e8e8e8] bg-white">
         {items.length ? (
-          <ul className="divide-y divide-[#f4f6f8]">
+          <ul className="divide-y divide-[#f2f3f5]">
             {items.map((item) => {
               const soldOut = item.availableQuantity < 1
               return (
                 <li className="grid gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-5" key={item.itemId}>
                   <div className="min-w-0">
-                    <p className="flex flex-wrap items-center gap-2 font-bold text-[#092a53]">
-                      {item.name}
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ring-1 ${!item.isAvailable ? 'bg-[#eef1f5] text-[#65748a] ring-[#dce3eb]' : soldOut ? 'bg-red-50 text-red-700 ring-red-100' : 'bg-[#fff4e0] text-[#8a5200] ring-[#f3dcb0]'}`}>
-                        {!item.isAvailable ? t('Unavailable') : soldOut ? t('Sold out') : t('Low stock')}
-                      </span>
-                    </p>
-                    <p className="mt-1 text-xs text-[#65748a]">{t(item.category)} · {t('{count} left', { count: Math.max(0, item.availableQuantity) })}</p>
+                    <p className="flex flex-wrap items-center gap-2 font-medium text-[#111827]">{item.name}</p>
+                    <p className="mt-0.5 text-xs text-[#6b6b6b]">{t(item.category)}</p>
                   </div>
-                  <div className="flex items-end gap-2">
-                    <label className="text-xs font-bold text-[#65748a]">{t('Alert at or below')}
-                      <input className="mt-1.5 block w-24 rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3 py-2 text-sm font-bold tabular-nums text-[#092a53] outline-none! focus:border-[#bd9c00] focus:bg-white" min="0" onChange={(event) => setThresholds((current) => ({ ...current, [item.itemId]: event.target.value }))} type="number" value={thresholds[item.itemId] ?? 5} />
-                    </label>
-                    <button className="inline-flex min-h-10 items-center rounded-xl border border-[#dce3eb] px-4 text-sm font-bold text-[#092a53] transition hover:border-[#092a53]" onClick={() => saveThreshold(item)} type="button">{t('Save threshold')}</button>
+                  <div className="flex flex-wrap items-end gap-x-5 gap-y-3">
+                    <div className="min-w-[10rem]">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className={`inline-flex flex-none whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${!item.isAvailable ? 'bg-[#f3f4f6] text-[#5f6368]' : soldOut ? 'bg-[#ffedea] text-[#831c1e]' : 'bg-[#fffbeb] text-[#92400e]'}`}>
+                          {!item.isAvailable ? t('Unavailable') : soldOut ? t('Sold out') : t('Low stock')}
+                        </span>
+                        <span className="num whitespace-nowrap text-xs text-[#6b6b6b]">
+                          <span className="font-semibold text-[#111827]">{Math.max(0, item.availableQuantity)}</span> {t('left')}
+                        </span>
+                      </div>
+                      <div aria-hidden="true" className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#f3f4f6]">
+                        <span className={`block h-full rounded-full ${soldOut ? 'bg-[#c4242a]' : 'bg-[#e0b400]'}`} style={{ width: `${Math.min(100, Math.max(soldOut ? 0 : 4, (Math.max(0, item.availableQuantity) / Math.max(1, item.stock || 1)) * 100))}%` }} />
+                      </div>
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <label className="text-xs font-medium text-[#6b6b6b]">{t('Alert at or below')}
+                        <input className="mt-1 block w-20 rounded-lg border border-[#d1d5db] bg-white px-3 py-1.5 text-sm font-medium tabular-nums text-[#111827] outline-none! focus:border-[#111827]" min="0" onChange={(event) => setThresholds((current) => ({ ...current, [item.itemId]: event.target.value }))} type="number" value={thresholds[item.itemId] ?? 5} />
+                      </label>
+                      <button className="inline-flex min-h-9 items-center rounded-lg border border-[#d1d5db] bg-white px-3 text-sm font-medium text-[#111827] transition hover:border-[#9aa2ad]" onClick={() => saveThreshold(item)} type="button">{t('Save threshold')}</button>
+                    </div>
                   </div>
                 </li>
               )
             })}
           </ul>
         ) : (
-          <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-            <span className="grid size-12 place-items-center rounded-2xl bg-[#e5f4ea] text-[#2c7a4f]"><AdminIcon className="size-6" path={adminIcons.check} /></span>
-            <p className="font-display text-lg font-extrabold text-[#092a53]">{t('Everything is above its low-stock threshold.')}</p>
+          <div className="px-6 py-12 text-center">
+            <p className="text-sm font-medium text-[#111827]">{t('Everything is above its low-stock threshold.')}</p>
+            <p className="mx-auto mt-1 max-w-sm text-sm text-[#6b6b6b]">{t('You will get an alert here when an item runs low.')}</p>
           </div>
         )}
       </section>
@@ -544,13 +580,13 @@ export function AdminActivityPage() {
                       onChange={(event) => setPerson(event.target.value)}
                       value={person}
                     >
-                      <option value="">{t('Everyone')}</option>
-                      {people.map((name) => <option key={name} value={name}>{name}</option>)}
-                    </select>
+              <option value="">{t('Everyone')}</option>
+              {people.map((name) => <option key={name} value={name}>{name}</option>)}
+            </select>
                   </div>
                 )}
-              </div>
-            </div>
+          </div>
+        </div>
 
             {!entries.length ? (
               <div className="px-6 py-14 text-center">
@@ -580,7 +616,7 @@ export function AdminActivityPage() {
                       <h3 className="text-xs font-extrabold text-[#65748a]" id={`activity-day-${group.day}`}>{group.day}</h3>
                       <span className="text-xs font-semibold tabular-nums text-[#91a0b1]">
                         {group.entries.length === 1 ? t('1 change') : t('{count} changes', { count: group.entries.length })}
-                      </span>
+                    </span>
                     </div>
                     <ol className="relative">
                       <span aria-hidden="true" className="absolute bottom-4 left-[2.15rem] top-4 w-px bg-[#dce3eb] sm:left-[2.4rem]" />
@@ -609,7 +645,7 @@ export function AdminActivityPage() {
                                   <span className="truncate font-mono text-xs text-[#91a0b1]">{entry.method} {entry.path}</span>
                                 )}
                               </div>
-                            </div>
+                  </div>
                             {createdAtLabel && (
                               <time
                                 className="inline-flex shrink-0 items-center gap-1.5 pt-1 text-xs font-semibold tabular-nums text-[#65748a]"
@@ -619,15 +655,15 @@ export function AdminActivityPage() {
                                 {createdAtLabel}
                               </time>
                             )}
-                          </li>
-                        )
-                      })}
-                    </ol>
+                </li>
+              )
+            })}
+          </ol>
                   </section>
                 ))}
               </div>
-            )}
-          </section>
+        )}
+      </section>
         </>
       )}
     </div>

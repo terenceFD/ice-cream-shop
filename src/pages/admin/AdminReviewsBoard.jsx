@@ -104,7 +104,20 @@ export function AdminReviewsBoard() {
     }
   }, [request])
 
-  useEffect(() => { refresh() }, [refresh])
+  useEffect(() => {
+    refresh()
+    const interval = window.setInterval(() => {
+      if (!document.hidden) refresh()
+    }, 30_000)
+    function handleVisibilityChange() {
+      if (!document.hidden) refresh()
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      window.clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [refresh])
 
   useEffect(() => {
     if (!message) return undefined

@@ -1,29 +1,21 @@
 {
- "url": "http://localhost:5174/",
- "at": "2026-10-25T09:04:11.744Z",
+ "url": "http://localhost:5173/admin/categories",
+ "at": "2026-10-25T21:17:19.429Z",
  "allow": [],
  "viewports": [
   {
    "width": 1440,
    "height": 900,
    "load": "load",
-   "screens": 9,
+   "screens": 1,
    "filled": [
-    1,
-    0.9,
-    0.99,
-    0.88,
-    1,
-    0.88,
-    0.84,
-    0.72,
-    0.9
+    0.12
    ],
    "motion": {
-    "elements": 46,
-    "css": 16,
-    "transitions": 22,
-    "scripted": 8,
+    "elements": 4,
+    "css": 3,
+    "transitions": 1,
+    "scripted": 0,
     "videos": 0,
     "playingVideos": 0
    },
@@ -33,1078 +25,23 @@
      "h": 900
     },
     "page": {
-     "height": 8362,
-     "screens": 9.3,
-     "words": 800,
-     "img": 44,
+     "height": 900,
+     "screens": 1,
+     "words": 66,
+     "img": 2,
      "video": 0,
      "canvas": 0,
-     "svg": 125,
-     "sections": 9,
+     "svg": 0,
+     "sections": 0,
      "horizontalOverflow": 0,
      "overflowCulprits": [],
      "uiFragments": 0,
      "uiAbuse": false,
-     "realPictures": 24,
+     "realPictures": 1,
      "videoCount": 0,
      "uiPictures": 0,
      "pictureSamples": [
-      "ice-9.webp",
-      "our-strawberry-blonde.webp",
-      "our-strawberry-blonde-2.webp",
-      "mango-sunshine.webp",
-      "mango-pineapple.webp",
-      "chocolate-devotion.webp",
-      "chocolate-devotion-2.webp",
-      "cookie-doughnt-you-want-some.webp"
-     ],
-     "blendText": 0,
-     "sideScrollers": 1,
-     "brokenImages": [],
-     "emoji": [],
-     "videosNoPoster": 0
-    },
-    "hero": {
-     "text": "A little joy in each scoop.",
-     "words": 6,
-     "chars": 27,
-     "lines": 2,
-     "size": 49,
-     "vw": 3.4,
-     "font": "Fredoka",
-     "weight": 800,
-     "tracking": -0.04,
-     "leading": 1.04,
-     "upper": false,
-     "italic": false,
-     "mono": false,
-     "align": "left",
-     "position": "left",
-     "widthRatio": 0.44,
-     "top": 286,
-     "tag": "h1",
-     "kind": "heading"
-    },
-    "h1": {
-     "text": "A little joy in each scoop.",
-     "words": 6,
-     "lines": 2,
-     "size": 49,
-     "font": "Fredoka"
-    },
-    "headings": [
-     {
-      "text": "A little joy in each scoop.",
-      "words": 6,
-      "chars": 27,
-      "lines": 2,
-      "size": 49,
-      "vw": 3.4,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.04,
-      "leading": 1.04,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.44,
-      "top": 286,
-      "tag": "h1",
-      "kind": "heading"
-     },
-     {
-      "text": "Find your flavor",
-      "words": 3,
-      "chars": 16,
-      "lines": 1,
-      "size": 60,
-      "vw": 4.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.02,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.29,
-      "top": 1241,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "How it works",
-      "words": 3,
-      "chars": 12,
-      "lines": 1,
-      "size": 48,
-      "vw": 3.3,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.48,
-      "top": 2164,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "1",
-      "words": 1,
-      "chars": 1,
-      "lines": 1,
-      "size": 30,
-      "vw": 2.1,
-      "font": "Fredoka",
-      "weight": 700,
-      "tracking": 0,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.04,
-      "top": 2272,
-      "tag": "span",
-      "kind": "statement"
-     },
-     {
-      "text": "2",
-      "words": 1,
-      "chars": 1,
-      "lines": 1,
-      "size": 30,
-      "vw": 2.1,
-      "font": "Fredoka",
-      "weight": 700,
-      "tracking": 0,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.04,
-      "top": 2272,
-      "tag": "span",
-      "kind": "statement"
-     },
-     {
-      "text": "3",
-      "words": 1,
-      "chars": 1,
-      "lines": 1,
-      "size": 30,
-      "vw": 2.1,
-      "font": "Fredoka",
-      "weight": 700,
-      "tracking": 0,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "right",
-      "widthRatio": 0.04,
-      "top": 2272,
-      "tag": "span",
-      "kind": "statement"
-     },
-     {
-      "text": "Cakes for every occasion",
-      "words": 4,
-      "chars": 24,
-      "lines": 1,
-      "size": 60,
-      "vw": 4.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.02,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.44,
-      "top": 2738,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Fan favorites",
-      "words": 2,
-      "chars": 13,
-      "lines": 1,
-      "size": 48,
-      "vw": 3.3,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.05,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.37,
-      "top": 3749,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Chocolate Devotion",
-      "words": 2,
-      "chars": 18,
-      "lines": 1,
-      "size": 30,
-      "vw": 2.1,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": 0,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.19,
-      "top": 4318,
-      "tag": "h3",
-      "kind": "heading"
-     },
-     {
-      "text": "Real Reviews",
-      "words": 2,
-      "chars": 12,
-      "lines": 1,
-      "size": 60,
-      "vw": 4.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.05,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.4,
-      "top": 4668,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "5.0",
-      "words": 1,
-      "chars": 3,
-      "lines": 1,
-      "size": 30,
-      "vw": 2.1,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "right",
-      "widthRatio": 0.03,
-      "top": 4757,
-      "tag": "span",
-      "kind": "heading"
-     },
-     {
-      "text": "Tropical mango sunshine.",
-      "words": 3,
-      "chars": 24,
-      "lines": 2,
-      "size": 48,
-      "vw": 3.3,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.02,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "right",
-      "widthRatio": 0.26,
-      "top": 5548,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Sweet moments at Cold Stone.",
-      "words": 5,
-      "chars": 28,
-      "lines": 2,
-      "size": 48,
-      "vw": 3.3,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.04,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "right",
-      "widthRatio": 0.26,
-      "top": 6248,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Menu highlights",
-      "words": 2,
-      "chars": 15,
-      "lines": 1,
-      "size": 60,
-      "vw": 4.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.03,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.31,
-      "top": 6884,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "The full menu",
-      "words": 3,
-      "chars": 13,
-      "lines": 1,
-      "size": 30,
-      "vw": 2.1,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.31,
-      "top": 7457,
-      "tag": "h3",
-      "kind": "heading"
-     },
-     {
-      "text": "All flavors",
-      "words": 2,
-      "chars": 11,
-      "lines": 1,
-      "size": 30,
-      "vw": 2.1,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "right",
-      "widthRatio": 0.31,
-      "top": 7457,
-      "tag": "h3",
-      "kind": "heading"
-     },
-     {
-      "text": "Cold Stone Creamery",
-      "words": 3,
-      "chars": 19,
-      "lines": 1,
-      "size": 36,
-      "vw": 2.5,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.28,
-      "top": 7799,
-      "tag": "a",
-      "kind": "heading"
-     }
-    ],
-    "headingSummary": {
-     "count": 17,
-     "maxLines": 2,
-     "over2Lines": 0,
-     "statements": 3,
-     "centered": 0,
-     "medianWords": 2,
-     "mixedFontHeadings": 0
-    },
-    "type": {
-     "families": [
-      {
-       "family": "DM Sans",
-       "share": 0.83,
-       "mono": false
-      },
-      {
-       "family": "Fredoka",
-       "share": 0.17,
-       "mono": false
-      }
-     ],
-     "familyCount": 2,
-     "sizes": [
-      9,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      18,
-      19,
-      20,
-      24,
-      30,
-      36,
-      48,
-      49,
-      60
-     ],
-     "sizeCount": 16,
-     "notLoaded": [],
-     "body": {
-      "font": "DM Sans",
-      "size": 14,
-      "leading": 1.43,
-      "weight": 500,
-      "tracking": 0,
-      "contrast": 6.1
-     },
-     "measureChars": 82,
-     "max": {
-      "size": 60,
-      "vw": 4.2,
-      "font": "Fredoka",
-      "text": "Find your flavor"
-     },
-     "monoShare": 0,
-     "monoProseShare": 0,
-     "monoFamilies": [],
-     "monoSamples": [],
-     "microLabels": 0,
-     "microLabelShare": 0,
-     "microSamples": [],
-     "upperShare": 0.03,
-     "centerShare": 0.08,
-     "smallText": 7
-    },
-    "eyebrows": [],
-    "numbered": [
-     {
-      "text": "01",
-      "size": 12,
-      "top": 148
-     },
-     {
-      "text": "/ 03",
-      "size": 12,
-      "top": 154
-     }
-    ],
-    "color": {
-     "bodyBg": "#ffffff",
-     "bodyBgHsl": {
-      "h": 0,
-      "s": 0,
-      "l": 1
-     },
-     "dark": false,
-     "sectionBgs": [
-      {
-       "color": "#fbfaf5",
-       "top": 0,
-       "hsl": {
-        "h": 50,
-        "s": 0.43,
-        "l": 0.97
-       }
-      },
-      {
-       "color": "#092a53",
-       "top": 80,
-       "hsl": {
-        "h": 213,
-        "s": 0.8,
-        "l": 0.18
-       }
-      },
-      {
-       "color": "#f4f6f8",
-       "top": 1062,
-       "hsl": {
-        "h": 210,
-        "s": 0.22,
-        "l": 0.96
-       }
-      },
-      {
-       "color": "#e8edf2",
-       "top": 3685,
-       "hsl": {
-        "h": 210,
-        "s": 0.28,
-        "l": 0.93
-       }
-      },
-      {
-       "color": "#ffffff",
-       "top": 6048,
-       "hsl": {
-        "h": 0,
-        "s": 0,
-        "l": 1
-       }
-      },
-      {
-       "color": "#061f40",
-       "top": 7735,
-       "hsl": {
-        "h": 214,
-        "s": 0.83,
-        "l": 0.14
-       }
-      }
-     ],
-     "textColors": [
-      {
-       "color": "#52647b",
-       "share": 0.3
-      },
-      {
-       "color": "#ffffff",
-       "share": 0.28
-      },
-      {
-       "color": "#092a53",
-       "share": 0.19
-      },
-      {
-       "color": "#123b68",
-       "share": 0.11
-      },
-      {
-       "color": "#65748a",
-       "share": 0.05
-      }
-     ],
-     "button": {
-      "bg": "#092a53",
-      "hsl": {
-       "h": 213,
-       "s": 0.8,
-       "l": 0.18
-      },
-      "fg": "#ffffff"
-     },
-     "lowContrast": [
-      {
-       "text": "Cheesecake Ice Cream with graham crust, ",
-       "ratio": 4,
-       "need": 4.5,
-       "size": 14,
-       "fg": "#65748a",
-       "bg": "#e8edf2"
-      },
-      {
-       "text": "Sweet Cream Ice Cream with pecans, brown",
-       "ratio": 4,
-       "need": 4.5,
-       "size": 14,
-       "fg": "#65748a",
-       "bg": "#e8edf2"
-      },
-      {
-       "text": "Cake Batter Ice Cream with rainbow sprin",
-       "ratio": 4,
-       "need": 4.5,
-       "size": 14,
-       "fg": "#65748a",
-       "bg": "#e8edf2"
-      }
-     ]
-    },
-    "buttons": {
-     "count": 47,
-     "inHero": 5,
-     "radius": 8,
-     "height": 44,
-     "withShadow": 0,
-     "withGradient": 0,
-     "mono": 0,
-     "upper": 0,
-     "heroLabels": [
-      "Order now",
-      "Order ice cream",
-      "Explore flavors"
-     ]
-    },
-    "surfaces": {
-     "shadowStatic": 29,
-     "shadowOverlay": 3,
-     "shadowSamples": [
-      "div.relative.aspect-[16/10] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
-      "button.relative.size-12 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(9, 42, 8",
-      "div.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
-      "span.grid.size-9 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
-     ],
-     "gradients": 6,
-     "scrims": 9,
-     "gradientSamples": [
-      "div.hero-blob-a.pointer-events-none → radial-gradient(closest-side, rgba(255, 220, 50, 0.08), rgba(255, 220, 50, 0.08) 35%, rgba(0, 0, 0, 0))",
-      "div.hero-blob-b.pointer-events-none → radial-gradient(closest-side, rgba(28, 79, 138, 0.45), rgba(28, 79, 138, 0.45) 35%, rgba(0, 0, 0, 0))",
-      "div.pointer-events-none.absolute → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.3) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)",
-      "div.pointer-events-none.absolute → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.3) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)"
-     ],
-     "gradientText": 0,
-     "hairlines": 2,
-     "hairlineSamples": [
-      "footer.mt-6.flex 614px",
-      "div.pointer-events-none.absolute 1440px rule"
-     ],
-     "outlinedBoxes": 1,
-     "dashed": 0,
-     "blurred": 6,
-     "roundedBoxes": 16,
-     "boxRadius": 12,
-     "squareMedia": 21,
-     "roundedMedia": 3,
-     "mediaRadius": 16,
-     "textShadow": 0,
-     "cardRows": [
-      {
-       "count": 4,
-       "iconTopped": true,
-       "rounded": true,
-       "top": 894
-      },
-      {
-       "count": 4,
-       "iconTopped": false,
-       "rounded": true,
-       "top": 1418
-      },
-      {
-       "count": 4,
-       "iconTopped": false,
-       "rounded": true,
-       "top": 2915
-      },
-      {
-       "count": 3,
-       "iconTopped": false,
-       "rounded": false,
-       "top": 3892
-      }
-     ]
-    },
-    "heroMedia": [
-     {
-      "type": "img",
-      "ratio": 0.24
-     }
-    ],
-    "nav": {
-     "links": 15,
-     "fixed": true,
-     "height": 80,
-     "floatingPill": false,
-     "blur": false
-    },
-    "fontsLoaded": [
-     "dm sans",
-     "fredoka"
-    ]
-   },
-   "layout": {
-    "viewport": {
-     "w": 1440,
-     "h": 900
-    },
-    "pageH": 8362,
-    "margins": {
-     "left": 60,
-     "right": 60
-    },
-    "sections": [
-     {
-      "sel": "section#home.relative.isolate",
-      "tag": "section",
-      "top": 80,
-      "height": 982,
-      "words": 77,
-      "media": 1,
-      "middle": 77,
-      "heading": {
-       "text": "A little joy",
-       "size": 49,
-       "tag": "h1"
-      },
-      "left": 68,
-      "right": 68,
-      "textLeft": 68,
-      "textRight": 108,
-      "fullBleed": false,
-      "footer": false,
-      "hero": true,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#flavors.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 1062,
-      "height": 1018,
-      "words": 90,
-      "media": 8,
-      "middle": 0,
-      "heading": {
-       "text": "Find your flavor",
-       "size": 60,
-       "tag": "h2"
-      },
-      "left": 60,
-      "right": 0,
-      "textLeft": 60,
-      "textRight": 86,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#how-it-works.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 2080,
-      "height": 409,
-      "words": 56,
-      "media": 0,
-      "middle": 108,
-      "heading": {
-       "text": "How it works",
-       "size": 48,
-       "tag": "h2"
-      },
-      "left": 60,
-      "right": 98,
-      "textLeft": 60,
-      "textRight": 98,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#cakes.relative.scroll-mt-20",
-      "tag": "section",
-      "top": 2489,
-      "height": 1196,
-      "words": 152,
-      "media": 10,
-      "middle": 252,
-      "heading": {
-       "text": "Cakes for every occasion",
-       "size": 60,
-       "tag": "h2"
-      },
-      "left": 0,
-      "right": 0,
-      "textLeft": 60,
-      "textRight": 92,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#favorites.scroll-mt-20.bg-[#e8edf2]",
-      "tag": "section",
-      "top": 3685,
-      "height": 886,
-      "words": 85,
-      "media": 1,
-      "middle": 40,
-      "heading": {
-       "text": "Fan favorites",
-       "size": 48,
-       "tag": "h2"
-      },
-      "left": 60,
-      "right": 76,
-      "textLeft": 60,
-      "textRight": 92,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#reviews.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 4572,
-      "height": 773,
-      "words": 71,
-      "media": 0,
-      "middle": 507,
-      "heading": {
-       "text": "Real Reviews",
-       "size": 60,
-       "tag": "h2"
-      },
-      "left": 60,
-      "right": 80,
-      "textLeft": 60,
-      "textRight": 80,
-      "fullBleed": false,
-      "footer": true,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section.bg-[#f4f6f8].px-5",
-      "tag": "section",
-      "top": 5345,
-      "height": 704,
-      "words": 28,
-      "media": 1,
-      "middle": 80,
-      "heading": {
-       "text": "Tropical mango sunshine.",
-       "size": 48,
-       "tag": "h2"
-      },
-      "left": 60,
-      "right": 114,
-      "textLeft": 822,
-      "textRight": 114,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section.bg-white.px-5",
-      "tag": "section",
-      "top": 6049,
-      "height": 740,
-      "words": 55,
-      "media": 1,
-      "middle": 65,
-      "heading": {
-       "text": "Sweet moments at Cold Stone.",
-       "size": 48,
-       "tag": "h2"
-      },
-      "left": 45,
-      "right": 66,
-      "textLeft": 60,
-      "textRight": 66,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#menu.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 6788,
-      "height": 947,
-      "words": 52,
-      "media": 2,
-      "middle": 20,
-      "heading": {
-       "text": "Menu highlights",
-       "size": 60,
-       "tag": "h2"
-      },
-      "left": 60,
-      "right": 60,
-      "textLeft": 60,
-      "textRight": 300,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "footer.bg-[#061f40].text-white",
-      "tag": "footer",
-      "top": 7735,
-      "height": 627,
-      "words": 81,
-      "media": 0,
-      "middle": 190,
-      "heading": {
-       "text": "Cold Stone Creamery",
-       "size": 36,
-       "tag": "span"
-      },
-      "left": 108,
-      "right": 108,
-      "textLeft": 108,
-      "textRight": 124,
-      "fullBleed": false,
-      "footer": true,
-      "hero": false,
-      "continues": false,
-      "pinned": false
-     }
-    ],
-    "gaps": [],
-    "h1s": [
-     {
-      "text": "A little joy in each scoop.",
-      "size": 49,
-      "top": 286,
-      "firstScreen": true
-     }
-    ],
-    "edgeText": [],
-    "edges": [
-     {
-      "x": 60,
-      "n": 14
-     },
-     {
-      "x": 748,
-      "n": 6
-     },
-     {
-      "x": 822,
-      "n": 5
-     },
-     {
-      "x": 88,
-      "n": 2
-     },
-     {
-      "x": 762,
-      "n": 2
-     },
-     {
-      "x": 1020,
-      "n": 2
-     },
-     {
-      "x": 108,
-      "n": 1
-     },
-     {
-      "x": 868,
-      "n": 1
-     }
-    ],
-    "leftBlocks": 33,
-    "bodySize": 14,
-    "stage": false,
-    "explains": true,
-    "slivers": [],
-    "voidShare": 0.1,
-    "voidBox": {
-     "x": 0,
-     "y": 600,
-     "w": 720,
-     "h": 180
-    }
-   },
-   "app": null,
-   "consoleErrors": []
-  },
-  {
-   "width": 768,
-   "height": 1024,
-   "load": "load",
-   "screens": 11,
-   "filled": [
-    0.96,
-    0.97,
-    0.69,
-    0.96,
-    0.96,
-    0.95,
-    1,
-    0.73,
-    0.77,
-    0.76,
-    0.84
-   ],
-   "motion": {
-    "elements": 40,
-    "css": 15,
-    "transitions": 17,
-    "scripted": 8,
-    "videos": 0,
-    "playingVideos": 0
-   },
-   "metrics": {
-    "viewport": {
-     "w": 768,
-     "h": 1024
-    },
-    "page": {
-     "height": 11500,
-     "screens": 11.2,
-     "words": 781,
-     "img": 44,
-     "video": 0,
-     "canvas": 0,
-     "svg": 125,
-     "sections": 9,
-     "horizontalOverflow": 0,
-     "overflowCulprits": [],
-     "uiFragments": 0,
-     "uiAbuse": false,
-     "realPictures": 24,
-     "videoCount": 0,
-     "uiPictures": 0,
-     "pictureSamples": [
-      "ice-9.webp",
-      "our-strawberry-blonde.webp",
-      "our-strawberry-blonde-2.webp",
-      "mango-sunshine.webp",
-      "mango-pineapple.webp",
-      "chocolate-devotion.webp",
-      "chocolate-devotion-2.webp",
-      "cookie-doughnt-you-want-some.webp"
+      "hero-ice-cream.jpg"
      ],
      "blendText": 0,
      "sideScrollers": 0,
@@ -1113,397 +50,78 @@
      "videosNoPoster": 0
     },
     "hero": {
-     "text": "A little joy in each scoop.",
-     "words": 6,
-     "chars": 27,
-     "lines": 2,
-     "size": 35.2,
-     "vw": 4.6,
+     "text": "Welcome back",
+     "words": 2,
+     "chars": 12,
+     "lines": 1,
+     "size": 36,
+     "vw": 2.5,
      "font": "Fredoka",
      "weight": 800,
-     "tracking": -0.04,
-     "leading": 1.04,
-     "upper": false,
-     "italic": false,
-     "mono": false,
-     "align": "left",
-     "position": "center",
-     "widthRatio": 0.92,
-     "top": 119,
+     "tracking": -0.03,
+     "leading": 1.11,
+     "top": 259,
      "tag": "h1",
-     "kind": "heading"
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
     },
     "h1": {
-     "text": "A little joy in each scoop.",
-     "words": 6,
-     "lines": 2,
-     "size": 35.2,
+     "text": "Welcome back",
+     "words": 2,
+     "lines": 1,
+     "size": 36,
      "font": "Fredoka"
     },
     "headings": [
      {
-      "text": "A little joy in each scoop.",
-      "words": 6,
-      "chars": 27,
-      "lines": 2,
-      "size": 35.2,
-      "vw": 4.6,
+      "text": "Welcome back",
+      "words": 2,
+      "chars": 12,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
       "font": "Fredoka",
       "weight": 800,
-      "tracking": -0.04,
-      "leading": 1.04,
+      "tracking": -0.03,
+      "leading": 1.11,
       "upper": false,
       "italic": false,
       "mono": false,
       "align": "left",
-      "position": "center",
-      "widthRatio": 0.92,
-      "top": 119,
+      "position": "right",
+      "widthRatio": 0.31,
+      "top": 259,
       "tag": "h1",
       "kind": "heading"
      },
      {
-      "text": "Find your flavor",
-      "words": 3,
-      "chars": 16,
-      "lines": 1,
-      "size": 48,
-      "vw": 6.3,
+      "text": "Every scoop, order and store — in one place.",
+      "words": 9,
+      "chars": 44,
+      "lines": 2,
+      "size": 37.6,
+      "vw": 2.6,
       "font": "Fredoka",
       "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.02,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.85,
-      "top": 1584,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "How it works",
-      "words": 3,
-      "chars": 12,
-      "lines": 1,
-      "size": 36,
-      "vw": 4.7,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.47,
-      "top": 3267,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "1",
-      "words": 1,
-      "chars": 1,
-      "lines": 1,
-      "size": 30,
-      "vw": 3.9,
-      "font": "Fredoka",
-      "weight": 700,
-      "tracking": 0,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.07,
-      "top": 3360,
-      "tag": "span",
-      "kind": "statement"
-     },
-     {
-      "text": "2",
-      "words": 1,
-      "chars": 1,
-      "lines": 1,
-      "size": 30,
-      "vw": 3.9,
-      "font": "Fredoka",
-      "weight": 700,
-      "tracking": 0,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.07,
-      "top": 3360,
-      "tag": "span",
-      "kind": "statement"
-     },
-     {
-      "text": "3",
-      "words": 1,
-      "chars": 1,
-      "lines": 1,
-      "size": 30,
-      "vw": 3.9,
-      "font": "Fredoka",
-      "weight": 700,
-      "tracking": 0,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "right",
-      "widthRatio": 0.07,
-      "top": 3360,
-      "tag": "span",
-      "kind": "statement"
-     },
-     {
-      "text": "Cakes for every occasion",
-      "words": 4,
-      "chars": 24,
-      "lines": 1,
-      "size": 48,
-      "vw": 6.3,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.02,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.85,
-      "top": 3702,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Fan favorites",
-      "words": 2,
-      "chars": 13,
-      "lines": 1,
-      "size": 48,
-      "vw": 6.3,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
+      "tracking": -0.03,
       "leading": 1.05,
       "upper": false,
       "italic": false,
       "mono": false,
       "align": "left",
       "position": "left",
-      "widthRatio": 0.69,
-      "top": 5596,
+      "widthRatio": 0.43,
+      "top": 529,
       "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Chocolate Devotion",
-      "words": 2,
-      "chars": 18,
-      "lines": 1,
-      "size": 30,
-      "vw": 3.9,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": 0,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.35,
-      "top": 6290,
-      "tag": "h3",
-      "kind": "heading"
-     },
-     {
-      "text": "Real Reviews",
-      "words": 2,
-      "chars": 12,
-      "lines": 1,
-      "size": 48,
-      "vw": 6.3,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.05,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.88,
-      "top": 7053,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "5.0",
-      "words": 1,
-      "chars": 3,
-      "lines": 1,
-      "size": 30,
-      "vw": 3.9,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.05,
-      "top": 7227,
-      "tag": "span",
-      "kind": "heading"
-     },
-     {
-      "text": "Tropical mango sunshine.",
-      "words": 3,
-      "chars": 24,
-      "lines": 2,
-      "size": 48,
-      "vw": 6.3,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.02,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.49,
-      "top": 7875,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Sweet moments at Cold Stone.",
-      "words": 5,
-      "chars": 28,
-      "lines": 2,
-      "size": 48,
-      "vw": 6.3,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.04,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.49,
-      "top": 8901,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Menu highlights",
-      "words": 2,
-      "chars": 15,
-      "lines": 1,
-      "size": 48,
-      "vw": 6.3,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.03,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.58,
-      "top": 10000,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "The full menu",
-      "words": 3,
-      "chars": 13,
-      "lines": 1,
-      "size": 30,
-      "vw": 3.9,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.3,
-      "top": 10372,
-      "tag": "h3",
-      "kind": "heading"
-     },
-     {
-      "text": "All flavors",
-      "words": 2,
-      "chars": 11,
-      "lines": 1,
-      "size": 30,
-      "vw": 3.9,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "right",
-      "widthRatio": 0.3,
-      "top": 10372,
-      "tag": "h3",
-      "kind": "heading"
-     },
-     {
-      "text": "Cold Stone Creamery",
-      "words": 3,
-      "chars": 19,
-      "lines": 1,
-      "size": 36,
-      "vw": 4.7,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.53,
-      "top": 10749,
-      "tag": "a",
       "kind": "heading"
      }
     ],
     "headingSummary": {
-     "count": 17,
+     "count": 2,
      "maxLines": 2,
      "over2Lines": 0,
-     "statements": 3,
+     "statements": 0,
      "centered": 0,
      "medianWords": 2,
      "mixedFontHeadings": 0
@@ -1512,48 +130,32 @@
      "families": [
       {
        "family": "DM Sans",
-       "share": 0.82,
+       "share": 0.8,
        "mono": false
       },
       {
        "family": "Fredoka",
-       "share": 0.18,
+       "share": 0.2,
        "mono": false
       }
      ],
      "familyCount": 2,
      "sizes": [
-      9,
-      11,
-      12,
       14,
-      15,
       16,
       18,
-      19,
-      20,
-      24,
-      30,
-      35,
       36,
-      48
+      38
      ],
-     "sizeCount": 14,
+     "sizeCount": 5,
      "notLoaded": [],
-     "body": {
-      "font": "DM Sans",
-      "size": 14,
-      "leading": 1.43,
-      "weight": 500,
-      "tracking": 0,
-      "contrast": 6.1
-     },
-     "measureChars": 82,
+     "body": null,
+     "measureChars": null,
      "max": {
-      "size": 48,
-      "vw": 6.3,
+      "size": 37.6,
+      "vw": 2.6,
       "font": "Fredoka",
-      "text": "Find your flavor"
+      "text": "Every scoop, order and store —"
      },
      "monoShare": 0,
      "monoProseShare": 0,
@@ -1562,23 +164,12 @@
      "microLabels": 0,
      "microLabelShare": 0,
      "microSamples": [],
-     "upperShare": 0.03,
-     "centerShare": 0.08,
-     "smallText": 7
+     "upperShare": 0,
+     "centerShare": 0.07,
+     "smallText": 0
     },
     "eyebrows": [],
-    "numbered": [
-     {
-      "text": "01",
-      "size": 12,
-      "top": 441
-     },
-     {
-      "text": "/ 03",
-      "size": 12,
-      "top": 447
-     }
-    ],
+    "numbered": [],
     "color": {
      "bodyBg": "#ffffff",
      "bodyBgHsl": {
@@ -1589,98 +180,27 @@
      "dark": false,
      "sectionBgs": [
       {
-       "color": "#fbfaf5",
-       "top": 0,
-       "hsl": {
-        "h": 50,
-        "s": 0.43,
-        "l": 0.97
-       }
-      },
-      {
-       "color": "#092a53",
-       "top": 79,
-       "hsl": {
-        "h": 213,
-        "s": 0.8,
-        "l": 0.18
-       }
-      },
-      {
-       "color": "#0f3566",
-       "top": 421,
-       "hsl": {
-        "h": 214,
-        "s": 0.74,
-        "l": 0.23
-       }
-      },
-      {
-       "color": "#f4f6f8",
-       "top": 1504,
-       "hsl": {
-        "h": 210,
-        "s": 0.22,
-        "l": 0.96
-       }
-      },
-      {
-       "color": "#e8edf2",
-       "top": 5540,
-       "hsl": {
-        "h": 210,
-        "s": 0.28,
-        "l": 0.93
-       }
-      },
-      {
-       "color": "#e9f6dd",
-       "top": 5738,
-       "hsl": {
-        "h": 91,
-        "s": 0.58,
-        "l": 0.92
-       }
-      },
-      {
        "color": "#ffffff",
-       "top": 8821,
+       "top": 0,
        "hsl": {
         "h": 0,
         "s": 0,
         "l": 1
        }
-      },
-      {
-       "color": "#061f40",
-       "top": 10693,
-       "hsl": {
-        "h": 214,
-        "s": 0.83,
-        "l": 0.14
-       }
       }
      ],
      "textColors": [
       {
-       "color": "#52647b",
-       "share": 0.31
-      },
-      {
        "color": "#ffffff",
-       "share": 0.27
-      },
-      {
-       "color": "#092a53",
-       "share": 0.19
-      },
-      {
-       "color": "#123b68",
-       "share": 0.12
+       "share": 0.68
       },
       {
        "color": "#65748a",
-       "share": 0.05
+       "share": 0.17
+      },
+      {
+       "color": "#092a53",
+       "share": 0.15
       }
      ],
      "button": {
@@ -1695,71 +215,40 @@
      "lowContrast": []
     },
     "buttons": {
-     "count": 45,
-     "inHero": 3,
+     "count": 1,
+     "inHero": 1,
      "radius": 8,
-     "height": 44,
+     "height": 48,
      "withShadow": 0,
      "withGradient": 0,
      "mono": 0,
      "upper": 0,
      "heroLabels": [
-      "Order ice cream",
-      "Explore flavors"
+      "Login"
      ]
     },
     "surfaces": {
-     "shadowStatic": 29,
-     "shadowOverlay": 3,
-     "shadowSamples": [
-      "div.relative.aspect-[16/10] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
-      "button.relative.size-12 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(9, 42, 8",
-      "div.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
-      "span.grid.size-9 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
-     ],
-     "gradients": 6,
-     "scrims": 9,
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 1,
+     "scrims": 0,
      "gradientSamples": [
-      "div.hero-blob-a.pointer-events-none → radial-gradient(closest-side, rgba(255, 220, 50, 0.08), rgba(255, 220, 50, 0.08) 35%, rgba(0, 0, 0, 0))",
-      "div.hero-blob-b.pointer-events-none → radial-gradient(closest-side, rgba(28, 79, 138, 0.45), rgba(28, 79, 138, 0.45) 35%, rgba(0, 0, 0, 0))",
-      "div.pointer-events-none.absolute → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.3) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)",
-      "div.pointer-events-none.absolute → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.3) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)"
+      "div.absolute.inset-0 → linear-gradient(to top, rgb(6, 29, 58) 0%, oklab(0.231324 -0.0156847 -0.0611215 / 0.82) 50%, oklab(0.231324 -0"
      ],
      "gradientText": 0,
-     "hairlines": 2,
-     "hairlineSamples": [
-      "footer.mt-6.flex 614px",
-      "div.pointer-events-none.absolute 768px rule"
-     ],
-     "outlinedBoxes": 1,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
      "dashed": 0,
-     "blurred": 5,
-     "roundedBoxes": 16,
-     "boxRadius": 12,
-     "squareMedia": 21,
-     "roundedMedia": 3,
-     "mediaRadius": 16,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 1,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
      "textShadow": 0,
-     "cardRows": [
-      {
-       "count": 4,
-       "iconTopped": true,
-       "rounded": true,
-       "top": 1240
-      },
-      {
-       "count": 4,
-       "iconTopped": false,
-       "rounded": true,
-       "top": 1967
-      },
-      {
-       "count": 4,
-       "iconTopped": false,
-       "rounded": true,
-       "top": 4155
-      }
-     ]
+     "cardRows": []
     },
     "heroMedia": [
      {
@@ -1767,13 +256,371 @@
       "ratio": 0.5
      }
     ],
-    "nav": {
-     "links": 2,
-     "fixed": true,
-     "height": 79,
-     "floatingPill": false,
-     "blur": false
+    "nav": null,
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
     },
+    "pageH": 900,
+    "margins": {
+     "left": 0,
+     "right": 192
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Welcome back",
+      "size": 36,
+      "top": 259,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 48,
+      "n": 2
+     },
+     {
+      "x": 800,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 3,
+    "bodySize": 14,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0.11,
+    "voidBox": {
+     "x": 1260,
+     "y": 120,
+     "w": 180,
+     "h": 780
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": null,
+    "topbar": null,
+    "canvas": {
+     "left": 0,
+     "right": 192
+    },
+    "hero": {
+     "text": "Welcome back",
+     "words": 2,
+     "chars": 12,
+     "lines": 1,
+     "size": 36,
+     "vw": 2.5,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.03,
+     "leading": 1.11,
+     "top": 259,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 0,
+     "firstScreen": 0,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 0,
+     "radii": [],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      14,
+      16,
+      18,
+      36,
+      38
+     ]
+    },
+    "title": {
+     "text": "Welcome back",
+     "size": 36,
+     "top": 259
+    },
+    "colourShare": 0.071
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 1,
+   "filled": [
+    0.1
+   ],
+   "motion": {
+    "elements": 4,
+    "css": 3,
+    "transitions": 1,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 1024,
+     "screens": 1,
+     "words": 28,
+     "img": 2,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 1,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "hero-ice-cream.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Welcome back",
+     "words": 2,
+     "chars": 12,
+     "lines": 1,
+     "size": 36,
+     "vw": 4.7,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.03,
+     "leading": 1.11,
+     "top": 447,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Welcome back",
+     "words": 2,
+     "lines": 1,
+     "size": 36,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "Welcome back",
+      "words": 2,
+      "chars": 12,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.11,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.58,
+      "top": 447,
+      "tag": "h1",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 1,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.8,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.2,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      14,
+      18,
+      36
+     ],
+     "sizeCount": 3,
+     "notLoaded": [],
+     "body": null,
+     "measureChars": null,
+     "max": {
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "text": "Welcome back"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.16,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#ffffff",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#65748a",
+       "share": 0.4
+      },
+      {
+       "color": "#092a53",
+       "share": 0.37
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.23
+      }
+     ],
+     "button": {
+      "bg": "#092a53",
+      "hsl": {
+       "h": 213,
+       "s": 0.8,
+       "l": 0.18
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 1,
+     "inHero": 1,
+     "radius": 8,
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Login"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 1,
+     "scrims": 0,
+     "gradientSamples": [
+      "div.absolute.inset-0 → linear-gradient(to top, rgb(6, 29, 58) 0%, oklab(0.231324 -0.0156847 -0.0611215 / 0.82) 50%, oklab(0.231324 -0"
+     ],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 1,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.22
+     }
+    ],
+    "nav": null,
     "fontsLoaded": [
      "dm sans",
      "fredoka"
@@ -1784,239 +631,51 @@
      "w": 768,
      "h": 1024
     },
-    "pageH": 11501,
+    "pageH": 1024,
     "margins": {
      "left": 32,
-     "right": 32
+     "right": 160
     },
     "sections": [
      {
-      "sel": "section#home.relative.isolate",
-      "tag": "section",
-      "top": 80,
-      "height": 1424,
-      "words": 77,
+      "sel": "aside.relative.h-56",
+      "tag": "aside",
+      "top": 6,
+      "height": 224,
+      "words": 5,
       "media": 1,
       "middle": 0,
-      "heading": {
-       "text": "A little joy",
-       "size": 35,
-       "tag": "h1"
-      },
+      "heading": null,
       "left": 32,
-      "right": 32,
+      "right": 588,
       "textLeft": 32,
-      "textRight": 32,
-      "fullBleed": false,
+      "textRight": 588,
+      "fullBleed": true,
       "footer": false,
       "hero": true,
-      "continues": true,
+      "continues": false,
       "pinned": false
      },
      {
-      "sel": "section#flavors.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 1504,
-      "height": 1640,
-      "words": 90,
-      "media": 8,
+      "sel": "main#main.flex.min-h-[calc(100vh-14rem-0.375rem)]",
+      "tag": "main",
+      "top": 230,
+      "height": 794,
+      "words": 23,
+      "media": 0,
       "middle": 0,
       "heading": {
-       "text": "Find your flavor",
-       "size": 48,
-       "tag": "h2"
-      },
-      "left": 0,
-      "right": 32,
-      "textLeft": 32,
-      "textRight": 164,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#how-it-works.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 3144,
-      "height": 478,
-      "words": 56,
-      "media": 0,
-      "middle": 49,
-      "heading": {
-       "text": "How it works",
+       "text": "Welcome back",
        "size": 36,
-       "tag": "h2"
+       "tag": "h1"
       },
-      "left": 32,
-      "right": 42,
-      "textLeft": 32,
-      "textRight": 42,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#cakes.relative.scroll-mt-20",
-      "tag": "section",
-      "top": 3622,
-      "height": 1918,
-      "words": 152,
-      "media": 10,
-      "middle": 0,
-      "heading": {
-       "text": "Cakes for every occasion",
-       "size": 48,
-       "tag": "h2"
-      },
-      "left": 0,
-      "right": 0,
-      "textLeft": 32,
-      "textRight": 54,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#favorites.scroll-mt-20.bg-[#e8edf2]",
-      "tag": "section",
-      "top": 5540,
-      "height": 1432,
-      "words": 85,
-      "media": 1,
-      "middle": 0,
-      "heading": {
-       "text": "Fan favorites",
-       "size": 48,
-       "tag": "h2"
-      },
-      "left": 32,
-      "right": 32,
-      "textLeft": 32,
-      "textRight": 56,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#reviews.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 6973,
-      "height": 822,
-      "words": 71,
-      "media": 0,
-      "middle": 0,
-      "heading": {
-       "text": "Real Reviews",
-       "size": 48,
-       "tag": "h2"
-      },
-      "left": 32,
-      "right": 96,
-      "textLeft": 32,
-      "textRight": 96,
+      "left": 160,
+      "right": 160,
+      "textLeft": 160,
+      "textRight": 160,
       "fullBleed": false,
       "footer": true,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section.bg-[#f4f6f8].px-5",
-      "tag": "section",
-      "top": 7795,
-      "height": 1026,
-      "words": 28,
-      "media": 1,
-      "middle": 0,
-      "heading": {
-       "text": "Tropical mango sunshine.",
-       "size": 48,
-       "tag": "h2"
-      },
-      "left": 32,
-      "right": 32,
-      "textLeft": 32,
-      "textRight": 232,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section.bg-white.px-5",
-      "tag": "section",
-      "top": 8821,
-      "height": 1100,
-      "words": 55,
-      "media": 1,
-      "middle": 0,
-      "heading": {
-       "text": "Sweet moments at Cold Stone.",
-       "size": 48,
-       "tag": "h2"
-      },
-      "left": 16,
-      "right": 16,
-      "textLeft": 32,
-      "textRight": 184,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#menu.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 9921,
-      "height": 773,
-      "words": 52,
-      "media": 2,
-      "middle": 0,
-      "heading": {
-       "text": "Menu highlights",
-       "size": 48,
-       "tag": "h2"
-      },
-      "left": 32,
-      "right": 32,
-      "textLeft": 32,
-      "textRight": 90,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "footer.bg-[#061f40].text-white",
-      "tag": "footer",
-      "top": 10694,
-      "height": 807,
-      "words": 81,
-      "media": 0,
-      "middle": 0,
-      "heading": {
-       "text": "Cold Stone Creamery",
-       "size": 36,
-       "tag": "span"
-      },
-      "left": 32,
-      "right": 32,
-      "textLeft": 32,
-      "textRight": 46,
-      "fullBleed": false,
-      "footer": true,
-      "hero": false,
+      "hero": true,
       "continues": false,
       "pinned": false
      }
@@ -2024,66 +683,124 @@
     "gaps": [],
     "h1s": [
      {
-      "text": "A little joy in each scoop.",
-      "size": 35,
-      "top": 120,
+      "text": "Welcome back",
+      "size": 36,
+      "top": 447,
       "firstScreen": true
      }
     ],
     "edgeText": [],
     "edges": [
      {
-      "x": 32,
-      "n": 22
-     },
-     {
       "x": 160,
-      "n": 6
-     },
-     {
-      "x": 422,
-      "n": 3
-     },
-     {
-      "x": 60,
-      "n": 2
+      "n": 1
      }
     ],
-    "leftBlocks": 33,
+    "leftBlocks": 1,
     "bodySize": 14,
     "stage": false,
-    "explains": true,
+    "explains": false,
     "slivers": [],
     "voidShare": 0,
     "voidBox": null
    },
-   "app": null,
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": null,
+    "topbar": null,
+    "canvas": {
+     "left": 0,
+     "right": 0
+    },
+    "hero": {
+     "text": "Welcome back",
+     "words": 2,
+     "chars": 12,
+     "lines": 1,
+     "size": 36,
+     "vw": 4.7,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.03,
+     "leading": 1.11,
+     "top": 447,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 0,
+     "firstScreen": 0,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 0,
+     "radii": [],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      14,
+      16,
+      18,
+      36,
+      38
+     ]
+    },
+    "title": {
+     "text": "Welcome back",
+     "size": 36,
+     "top": 447
+    },
+    "colourShare": 0.063
+   },
    "consoleErrors": []
   },
   {
    "width": 390,
    "height": 844,
    "load": "load",
-   "screens": 12,
+   "screens": 1,
    "filled": [
-    0.96,
-    0.93,
-    0.69,
-    0.99,
-    0.79,
-    0.91,
-    1,
-    0.72,
-    0.99,
-    0.63,
-    0.84,
-    0.92
+    0.23
    ],
    "motion": {
-    "elements": 52,
-    "css": 15,
-    "transitions": 29,
-    "scripted": 8,
+    "elements": 4,
+    "css": 3,
+    "transitions": 1,
+    "scripted": 0,
     "videos": 0,
     "playingVideos": 0
    },
@@ -2093,477 +810,114 @@
      "h": 844
     },
     "page": {
-     "height": 10826,
-     "screens": 12.8,
-     "words": 771,
-     "img": 44,
+     "height": 844,
+     "screens": 1,
+     "words": 28,
+     "img": 2,
      "video": 0,
      "canvas": 0,
-     "svg": 125,
-     "sections": 9,
+     "svg": 0,
+     "sections": 0,
      "horizontalOverflow": 0,
      "overflowCulprits": [],
      "uiFragments": 0,
      "uiAbuse": false,
-     "realPictures": 24,
+     "realPictures": 1,
      "videoCount": 0,
      "uiPictures": 0,
      "pictureSamples": [
-      "ice-9.webp",
-      "our-strawberry-blonde.webp",
-      "our-strawberry-blonde-2.webp",
-      "mango-sunshine.webp",
-      "mango-pineapple.webp",
-      "chocolate-devotion.webp",
-      "chocolate-devotion-2.webp",
-      "cookie-doughnt-you-want-some.webp"
+      "hero-ice-cream.jpg"
      ],
      "blendText": 0,
-     "sideScrollers": 2,
+     "sideScrollers": 0,
      "brokenImages": [],
      "emoji": [],
      "videosNoPoster": 0
     },
     "hero": {
-     "text": "A little joy in each scoop.",
-     "words": 6,
-     "chars": 27,
-     "lines": 2,
-     "size": 35.2,
-     "vw": 9,
+     "text": "Welcome back",
+     "words": 2,
+     "chars": 12,
+     "lines": 1,
+     "size": 36,
+     "vw": 9.2,
      "font": "Fredoka",
      "weight": 800,
-     "tracking": -0.04,
-     "leading": 1.04,
-     "upper": false,
-     "italic": false,
-     "mono": false,
-     "align": "left",
-     "position": "center",
-     "widthRatio": 0.9,
-     "top": 95,
+     "tracking": -0.03,
+     "leading": 1.11,
+     "top": 357,
      "tag": "h1",
-     "kind": "heading"
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
     },
     "h1": {
-     "text": "A little joy in each scoop.",
-     "words": 6,
-     "lines": 2,
-     "size": 35.2,
+     "text": "Welcome back",
+     "words": 2,
+     "lines": 1,
+     "size": 36,
      "font": "Fredoka"
     },
     "headings": [
      {
-      "text": "A little joy in each scoop.",
-      "words": 6,
-      "chars": 27,
-      "lines": 2,
-      "size": 35.2,
-      "vw": 9,
+      "text": "Welcome back",
+      "words": 2,
+      "chars": 12,
+      "lines": 1,
+      "size": 36,
+      "vw": 9.2,
       "font": "Fredoka",
       "weight": 800,
-      "tracking": -0.04,
-      "leading": 1.04,
+      "tracking": -0.03,
+      "leading": 1.11,
       "upper": false,
       "italic": false,
       "mono": false,
       "align": "left",
       "position": "center",
-      "widthRatio": 0.9,
-      "top": 95,
+      "widthRatio": 0.88,
+      "top": 357,
       "tag": "h1",
-      "kind": "heading"
-     },
-     {
-      "text": "Find your flavor",
-      "words": 3,
-      "chars": 16,
-      "lines": 1,
-      "size": 36,
-      "vw": 9.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.02,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.9,
-      "top": 1107,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "How it works",
-      "words": 3,
-      "chars": 12,
-      "lines": 1,
-      "size": 30,
-      "vw": 7.7,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.9,
-      "top": 2500,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "1",
-      "words": 1,
-      "chars": 1,
-      "lines": 1,
-      "size": 24,
-      "vw": 6.2,
-      "font": "Fredoka",
-      "weight": 700,
-      "tracking": 0,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.12,
-      "top": 2650,
-      "tag": "span",
-      "kind": "statement"
-     },
-     {
-      "text": "2",
-      "words": 1,
-      "chars": 1,
-      "lines": 1,
-      "size": 24,
-      "vw": 6.2,
-      "font": "Fredoka",
-      "weight": 700,
-      "tracking": 0,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.12,
-      "top": 2760,
-      "tag": "span",
-      "kind": "statement"
-     },
-     {
-      "text": "3",
-      "words": 1,
-      "chars": 1,
-      "lines": 1,
-      "size": 24,
-      "vw": 6.2,
-      "font": "Fredoka",
-      "weight": 700,
-      "tracking": 0,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.12,
-      "top": 2871,
-      "tag": "span",
-      "kind": "statement"
-     },
-     {
-      "text": "Cakes for every occasion",
-      "words": 4,
-      "chars": 24,
-      "lines": 2,
-      "size": 36,
-      "vw": 9.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.02,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.9,
-      "top": 3069,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Fan favorites",
-      "words": 2,
-      "chars": 13,
-      "lines": 1,
-      "size": 36,
-      "vw": 9.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.05,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.9,
-      "top": 4757,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Chocolate Devotion",
-      "words": 2,
-      "chars": 18,
-      "lines": 1,
-      "size": 24,
-      "vw": 6.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": 0,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.55,
-      "top": 5269,
-      "tag": "h3",
-      "kind": "heading"
-     },
-     {
-      "text": "Real Reviews",
-      "words": 2,
-      "chars": 12,
-      "lines": 1,
-      "size": 36,
-      "vw": 9.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.05,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.9,
-      "top": 6140,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "5.0",
-      "words": 1,
-      "chars": 3,
-      "lines": 1,
-      "size": 30,
-      "vw": 7.7,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.09,
-      "top": 6302,
-      "tag": "span",
-      "kind": "heading"
-     },
-     {
-      "text": "Tropical mango sunshine.",
-      "words": 3,
-      "chars": 24,
-      "lines": 2,
-      "size": 36,
-      "vw": 9.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.02,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.73,
-      "top": 6996,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Sweet moments at Cold Stone.",
-      "words": 5,
-      "chars": 28,
-      "lines": 2,
-      "size": 36,
-      "vw": 9.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.04,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.73,
-      "top": 7732,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "Menu highlights",
-      "words": 2,
-      "chars": 15,
-      "lines": 1,
-      "size": 36,
-      "vw": 9.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.03,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.9,
-      "top": 8573,
-      "tag": "h2",
-      "kind": "heading"
-     },
-     {
-      "text": "The full menu",
-      "words": 3,
-      "chars": 13,
-      "lines": 1,
-      "size": 24,
-      "vw": 6.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.65,
-      "top": 8957,
-      "tag": "h3",
-      "kind": "heading"
-     },
-     {
-      "text": "All flavors",
-      "words": 2,
-      "chars": 11,
-      "lines": 1,
-      "size": 24,
-      "vw": 6.2,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1.25,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.65,
-      "top": 9321,
-      "tag": "h3",
-      "kind": "heading"
-     },
-     {
-      "text": "Cold Stone Creamery",
-      "words": 3,
-      "chars": 19,
-      "lines": 1,
-      "size": 30,
-      "vw": 7.7,
-      "font": "Fredoka",
-      "weight": 800,
-      "tracking": -0.025,
-      "leading": 1,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.89,
-      "top": 9663,
-      "tag": "a",
       "kind": "heading"
      }
     ],
     "headingSummary": {
-     "count": 17,
-     "maxLines": 2,
+     "count": 1,
+     "maxLines": 1,
      "over2Lines": 0,
-     "statements": 3,
+     "statements": 0,
      "centered": 0,
-     "medianWords": 2,
+     "medianWords": null,
      "mixedFontHeadings": 0
     },
     "type": {
      "families": [
       {
        "family": "DM Sans",
-       "share": 0.82,
+       "share": 0.8,
        "mono": false
       },
       {
        "family": "Fredoka",
-       "share": 0.18,
+       "share": 0.2,
        "mono": false
       }
      ],
      "familyCount": 2,
      "sizes": [
-      11,
-      12,
-      13,
       14,
-      15,
-      16,
       18,
-      20,
-      24,
-      30,
-      35,
       36
      ],
-     "sizeCount": 12,
+     "sizeCount": 3,
      "notLoaded": [],
-     "body": {
-      "font": "DM Sans",
-      "size": 14,
-      "leading": 1.43,
-      "weight": 400,
-      "tracking": 0,
-      "contrast": 5.6
-     },
-     "measureChars": 40,
+     "body": null,
+     "measureChars": null,
      "max": {
       "size": 36,
       "vw": 9.2,
       "font": "Fredoka",
-      "text": "Find your flavor"
+      "text": "Welcome back"
      },
      "monoShare": 0,
      "monoProseShare": 0,
@@ -2572,23 +926,12 @@
      "microLabels": 0,
      "microLabelShare": 0,
      "microSamples": [],
-     "upperShare": 0.03,
-     "centerShare": 0.08,
-     "smallText": 12
+     "upperShare": 0,
+     "centerShare": 0.16,
+     "smallText": 0
     },
     "eyebrows": [],
-    "numbered": [
-     {
-      "text": "01",
-      "size": 12,
-      "top": 333
-     },
-     {
-      "text": "/ 03",
-      "size": 12,
-      "top": 339
-     }
-    ],
+    "numbered": [],
     "color": {
      "bodyBg": "#ffffff",
      "bodyBgHsl": {
@@ -2599,80 +942,27 @@
      "dark": false,
      "sectionBgs": [
       {
-       "color": "#fbfaf5",
-       "top": 0,
-       "hsl": {
-        "h": 50,
-        "s": 0.43,
-        "l": 0.97
-       }
-      },
-      {
-       "color": "#092a53",
-       "top": 79,
-       "hsl": {
-        "h": 213,
-        "s": 0.8,
-        "l": 0.18
-       }
-      },
-      {
-       "color": "#f4f6f8",
-       "top": 1043,
-       "hsl": {
-        "h": 210,
-        "s": 0.22,
-        "l": 0.96
-       }
-      },
-      {
-       "color": "#e8edf2",
-       "top": 4709,
-       "hsl": {
-        "h": 210,
-        "s": 0.28,
-        "l": 0.93
-       }
-      },
-      {
        "color": "#ffffff",
-       "top": 6392,
+       "top": 0,
        "hsl": {
         "h": 0,
         "s": 0,
         "l": 1
        }
-      },
-      {
-       "color": "#061f40",
-       "top": 9615,
-       "hsl": {
-        "h": 214,
-        "s": 0.83,
-        "l": 0.14
-       }
       }
      ],
      "textColors": [
       {
-       "color": "#52647b",
-       "share": 0.31
-      },
-      {
-       "color": "#ffffff",
-       "share": 0.26
+       "color": "#65748a",
+       "share": 0.4
       },
       {
        "color": "#092a53",
-       "share": 0.19
+       "share": 0.37
       },
       {
-       "color": "#123b68",
-       "share": 0.12
-      },
-      {
-       "color": "#65748a",
-       "share": 0.05
+       "color": "#ffffff",
+       "share": 0.23
       }
      ],
      "button": {
@@ -2687,8 +977,8 @@
      "lowContrast": []
     },
     "buttons": {
-     "count": 47,
-     "inHero": 2,
+     "count": 1,
+     "inHero": 1,
      "radius": 8,
      "height": 44,
      "withShadow": 0,
@@ -2696,82 +986,39 @@
      "mono": 0,
      "upper": 0,
      "heroLabels": [
-      "Order ice cream",
-      "Explore flavors"
+      "Login"
      ]
     },
     "surfaces": {
-     "shadowStatic": 24,
-     "shadowOverlay": 3,
-     "shadowSamples": [
-      "div.relative.aspect-[16/10] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
-      "div.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
-      "div.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
-      "div.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
-     ],
-     "gradients": 10,
-     "scrims": 9,
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 1,
+     "scrims": 0,
      "gradientSamples": [
-      "div.hero-blob-a.pointer-events-none → radial-gradient(closest-side, rgba(255, 220, 50, 0.08), rgba(255, 220, 50, 0.08) 35%, rgba(0, 0, 0, 0))",
-      "div.hero-blob-b.pointer-events-none → radial-gradient(closest-side, rgba(28, 79, 138, 0.45), rgba(28, 79, 138, 0.45) 35%, rgba(0, 0, 0, 0))",
-      "div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.14), rgba(0, 0, 0, 0))",
-      "div.pointer-events-none.absolute → radial-gradient(closest-side, rgba(255, 220, 50, 0.14), rgba(0, 0, 0, 0))"
+      "div.absolute.inset-0 → linear-gradient(to top, rgb(6, 29, 58) 0%, oklab(0.231324 -0.0156847 -0.0611215 / 0.82) 50%, oklab(0.231324 -0"
      ],
      "gradientText": 0,
-     "hairlines": 2,
-     "hairlineSamples": [
-      "footer.mt-6.flex 300px",
-      "div.pointer-events-none.absolute 390px rule"
-     ],
-     "outlinedBoxes": 1,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
      "dashed": 0,
-     "blurred": 5,
-     "roundedBoxes": 16,
-     "boxRadius": 12,
-     "squareMedia": 3,
-     "roundedMedia": 3,
-     "mediaRadius": 16,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 1,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
      "textShadow": 0,
-     "cardRows": [
-      {
-       "count": 4,
-       "iconTopped": true,
-       "rounded": true,
-       "top": 787
-      },
-      {
-       "count": 4,
-       "iconTopped": false,
-       "rounded": true,
-       "top": 1538
-      },
-      {
-       "count": 4,
-       "iconTopped": false,
-       "rounded": true,
-       "top": 3607
-      },
-      {
-       "count": 3,
-       "iconTopped": false,
-       "rounded": false,
-       "top": 5487
-      }
-     ]
+     "cardRows": []
     },
     "heroMedia": [
      {
       "type": "img",
-      "ratio": 0.23
+      "ratio": 0.27
      }
     ],
-    "nav": {
-     "links": 2,
-     "fixed": true,
-     "height": 79,
-     "floatingPill": false,
-     "blur": false
-    },
+    "nav": null,
     "fontsLoaded": [
      "dm sans",
      "fredoka"
@@ -2782,239 +1029,51 @@
      "w": 390,
      "h": 844
     },
-    "pageH": 10827,
+    "pageH": 844,
     "margins": {
-     "left": 20,
-     "right": 20
+     "left": 24,
+     "right": 24
     },
     "sections": [
      {
-      "sel": "section#home.relative.isolate",
-      "tag": "section",
-      "top": 80,
-      "height": 964,
-      "words": 68,
+      "sel": "aside.relative.h-56",
+      "tag": "aside",
+      "top": 6,
+      "height": 224,
+      "words": 5,
       "media": 1,
       "middle": 0,
-      "heading": {
-       "text": "A little joy",
-       "size": 35,
-       "tag": "h1"
-      },
-      "left": 20,
-      "right": 20,
-      "textLeft": 20,
-      "textRight": 33,
-      "fullBleed": false,
+      "heading": null,
+      "left": 24,
+      "right": 218,
+      "textLeft": 24,
+      "textRight": 218,
+      "fullBleed": true,
       "footer": false,
       "hero": true,
-      "continues": true,
+      "continues": false,
       "pinned": false
      },
      {
-      "sel": "section#flavors.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 1044,
-      "height": 1401,
-      "words": 90,
-      "media": 8,
-      "middle": 0,
-      "heading": {
-       "text": "Find your flavor",
-       "size": 36,
-       "tag": "h2"
-      },
-      "left": 0,
-      "right": 20,
-      "textLeft": 20,
-      "textRight": 36,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#how-it-works.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 2445,
-      "height": 561,
-      "words": 56,
+      "sel": "main#main.flex.min-h-[calc(100vh-14rem-0.375rem)]",
+      "tag": "main",
+      "top": 230,
+      "height": 614,
+      "words": 23,
       "media": 0,
       "middle": 0,
       "heading": {
-       "text": "How it works",
-       "size": 30,
-       "tag": "h2"
-      },
-      "left": 20,
-      "right": 23,
-      "textLeft": 20,
-      "textRight": 23,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#cakes.relative.scroll-mt-20",
-      "tag": "section",
-      "top": 3006,
-      "height": 1703,
-      "words": 152,
-      "media": 10,
-      "middle": 40,
-      "heading": {
-       "text": "Cakes for every occasion",
+       "text": "Welcome back",
        "size": 36,
-       "tag": "h2"
+       "tag": "h1"
       },
-      "left": 0,
-      "right": 0,
-      "textLeft": 20,
-      "textRight": 34,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#favorites.scroll-mt-20.bg-[#e8edf2]",
-      "tag": "section",
-      "top": 4709,
-      "height": 1366,
-      "words": 85,
-      "media": 1,
-      "middle": 0,
-      "heading": {
-       "text": "Fan favorites",
-       "size": 36,
-       "tag": "h2"
-      },
-      "left": 20,
-      "right": 20,
-      "textLeft": 20,
-      "textRight": 32,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#reviews.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 6076,
-      "height": 856,
-      "words": 71,
-      "media": 0,
-      "middle": 0,
-      "heading": {
-       "text": "Real Reviews",
-       "size": 36,
-       "tag": "h2"
-      },
-      "left": 20,
-      "right": 46,
-      "textLeft": 20,
-      "textRight": 46,
-      "fullBleed": false,
-      "footer": true,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section.bg-[#f4f6f8].px-5",
-      "tag": "section",
-      "top": 6932,
-      "height": 736,
-      "words": 28,
-      "media": 1,
-      "middle": 0,
-      "heading": {
-       "text": "Tropical mango sunshine.",
-       "size": 36,
-       "tag": "h2"
-      },
-      "left": 20,
-      "right": 20,
-      "textLeft": 20,
-      "textRight": 47,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section.bg-white.px-5",
-      "tag": "section",
-      "top": 7668,
-      "height": 841,
-      "words": 55,
-      "media": 1,
-      "middle": 0,
-      "heading": {
-       "text": "Sweet moments at Cold Stone.",
-       "size": 36,
-       "tag": "h2"
-      },
-      "left": 12,
-      "right": 12,
-      "textLeft": 20,
-      "textRight": 22,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "section#menu.scroll-mt-20.bg-[#f4f6f8]",
-      "tag": "section",
-      "top": 8510,
-      "height": 1107,
-      "words": 52,
-      "media": 2,
-      "middle": 0,
-      "heading": {
-       "text": "Menu highlights",
-       "size": 36,
-       "tag": "h2"
-      },
-      "left": 20,
-      "right": 20,
-      "textLeft": 20,
-      "textRight": 24,
-      "fullBleed": false,
-      "footer": false,
-      "hero": false,
-      "continues": true,
-      "pinned": false
-     },
-     {
-      "sel": "footer.bg-[#061f40].text-white",
-      "tag": "footer",
-      "top": 9616,
-      "height": 1211,
-      "words": 81,
-      "media": 0,
-      "middle": 0,
-      "heading": {
-       "text": "Cold Stone Creamery",
-       "size": 30,
-       "tag": "span"
-      },
-      "left": 20,
+      "left": 24,
       "right": 24,
-      "textLeft": 20,
+      "textLeft": 24,
       "textRight": 24,
       "fullBleed": false,
       "footer": true,
-      "hero": false,
+      "hero": true,
       "continues": false,
       "pinned": false
      }
@@ -3022,28 +1081,20 @@
     "gaps": [],
     "h1s": [
      {
-      "text": "A little joy in each scoop.",
-      "size": 35,
-      "top": 96,
+      "text": "Welcome back",
+      "size": 36,
+      "top": 357,
       "firstScreen": true
      }
     ],
     "edgeText": [],
     "edges": [
      {
-      "x": 20,
-      "n": 23
-     },
-     {
-      "x": 40,
-      "n": 4
-     },
-     {
-      "x": 124,
-      "n": 3
+      "x": 24,
+      "n": 1
      }
     ],
-    "leftBlocks": 30,
+    "leftBlocks": 1,
     "bodySize": 14,
     "stage": false,
     "explains": false,
@@ -3051,27 +1102,97 @@
     "voidShare": 0,
     "voidBox": null
    },
-   "app": null,
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": null,
+    "topbar": null,
+    "canvas": {
+     "left": 0,
+     "right": 0
+    },
+    "hero": {
+     "text": "Welcome back",
+     "words": 2,
+     "chars": 12,
+     "lines": 1,
+     "size": 36,
+     "vw": 9.2,
+     "font": "Fredoka",
+     "weight": 800,
+     "tracking": -0.03,
+     "leading": 1.11,
+     "top": 357,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 0,
+     "firstScreen": 0,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 0,
+     "radii": [],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      14,
+      16,
+      18,
+      36,
+      38
+     ]
+    },
+    "title": {
+     "text": "Welcome back",
+     "size": 36,
+     "top": 357
+    },
+    "colourShare": 0.092
+   },
    "consoleErrors": []
   }
  ],
  "findings": [
   {
    "level": "FAIL",
-   "id": "numbering",
-   "width": 1440,
-   "message": "Decorative index numbers: \"01\", \"/ 03\"",
-   "fix": "Remove them. If order truly matters, write it into the words (\"First, …\") or use a real <ol>.",
-   "alsoAt": [
-    768,
-    390
-   ]
-  },
-  {
-   "level": "FAIL",
    "id": "gradient",
    "width": 1440,
-   "message": "6 gradient fill(s): div.hero-blob-a.pointer-events-none → radial-gradient(closest-side, rgba(255, 220, 50, 0.08), rgba(255, 220, 50, 0.08) 35%, rgba(0, 0, 0, 0)) | div.hero-blob-b.pointer-events-none → radial-gradient(closest-side, rgba(28, 79, 138, 0.45), rgba(28, 79, 138, 0.45) 35%, rgba(0, 0, 0, 0)) | div.pointer-events-none.absolute → linear-gradient(to top, oklab(0.231324 -0.0156847 -0.0611215 / 0.3) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0)",
+   "message": "1 gradient fill(s): div.absolute.inset-0 → linear-gradient(to top, rgb(6, 29, 58) 0%, oklab(0.231324 -0.0156847 -0.0611215 / 0.82) 50%, oklab(0.231324 -0",
    "fix": "Use a flat colour or a real image. The only gradient allowed by default is a neutral scrim over a photo for legibility.",
    "alsoAt": [
     768,
@@ -3079,152 +1200,22 @@
    ]
   },
   {
-   "level": "FAIL",
-   "id": "shadow",
+   "level": "WARN",
+   "id": "unused-canvas",
    "width": 1440,
-   "message": "29 box-shadow(s) on elements at rest: div.relative.aspect-[16/10] → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0 | button.relative.size-12 → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(9, 42, 8 | div.group.relative → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0",
-   "fix": "Remove. Separate surfaces with a tone step or space. Shadows are for things that really float (menus, dialogs, sticky bars).",
-   "alsoAt": [
-    768,
-    390
-   ]
-  },
-  {
-   "level": "FAIL",
-   "id": "hairline",
-   "width": 1440,
-   "message": "2 thin rule(s)/divider line(s): footer.mt-6.flex 614px | div.pointer-events-none.absolute 1440px rule",
-   "fix": "Delete. Separate with space, a tone change, or scale. Lines are only for real tables and form fields.",
-   "alsoAt": [
-    768,
-    390
-   ]
+   "message": "The content stops 192px short of the right edge while it starts 0px from the sidebar.",
+   "fix": "Let the grid fill the canvas (columns in fr units), or centre a capped canvas with equal margins. A dead strip on one side reads as unfinished."
   },
   {
    "level": "WARN",
-   "id": "outlined-box",
+   "id": "app-title-size",
    "width": 1440,
-   "message": "1 box(es) drawn with a 1px outline.",
-   "fix": "Prefer a filled surface or no box.",
+   "message": "The h1 is 36px (\"Welcome back\").",
+   "fix": "An app screen is not a landing page: the title is 18-32px (20-24px on a phone).",
    "alsoAt": [
     768,
     390
    ]
-  },
-  {
-   "level": "WARN",
-   "id": "glass",
-   "width": 1440,
-   "message": "6 backdrop-blur surfaces.",
-   "fix": "One blurred sticky bar at most; glass cards are a tell.",
-   "alsoAt": [
-    768,
-    390
-   ]
-  },
-  {
-   "level": "FAIL",
-   "id": "icon-cards",
-   "width": 1440,
-   "message": "1 row(s) of identical cards each topped with a small icon (4 cards).",
-   "fix": "Replace with one composed section from the direction: a narrative split, a list set in large type, or real imagery per item.",
-   "alsoAt": [
-    768,
-    390
-   ]
-  },
-  {
-   "level": "WARN",
-   "id": "palette-cream",
-   "width": 1440,
-   "message": "Yellow-cream background (section #fbfaf5).",
-   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
-   "alsoAt": [
-    768,
-    390
-   ]
-  },
-  {
-   "level": "WARN",
-   "id": "contrast",
-   "width": 1440,
-   "message": "Low-contrast text: \"Cheesecake Ice Cream with graham crust, \" 4:1 needs 4.5:1; \"Sweet Cream Ice Cream with pecans, brown\" 4:1 needs 4.5:1; \"Cake Batter Ice Cream with rainbow sprin\" 4:1 needs 4.5:1",
-   "fix": "Darken or lighten the text colour."
-  },
-  {
-   "level": "WARN",
-   "id": "size-count",
-   "width": 1440,
-   "message": "16 different font sizes (9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 24, 30, 36, 48, 49, 60).",
-   "fix": "A page needs about five: display, heading, lead, body, small.",
-   "alsoAt": [
-    768,
-    390
-   ]
-  },
-  {
-   "level": "FAIL",
-   "id": "body-size",
-   "width": 1440,
-   "message": "Body text is 14px (the size most of the running text is set in).",
-   "fix": "Body copy 16–20px. Map small sizes from blueprints onto your body step.",
-   "alsoAt": [
-    768,
-    390
-   ]
-  },
-  {
-   "level": "WARN",
-   "id": "grey-body",
-   "width": 1440,
-   "message": "The running text is a soft grey on its ground (6.1:1).",
-   "fix": "Set body copy in the full ink (7:1 or more). Keep the muted ink for secondary notes; pages read thin and unfinished when everything is grey.",
-   "alsoAt": [
-    768,
-    390
-   ]
-  },
-  {
-   "level": "WARN",
-   "id": "no-footage",
-   "width": 1440,
-   "message": "No video anywhere on the page.",
-   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
-  },
-  {
-   "level": "WARN",
-   "id": "side-scroll",
-   "width": 1440,
-   "message": "1 row(s) scroll sideways with content past their edge.",
-   "fix": "Jurors and most visitors read a row cut at the edge as clipped, not as scrollable. Wrap it onto more lines, or end it inside the grid.",
-   "alsoAt": [
-    390
-   ]
-  },
-  {
-   "level": "FAIL",
-   "id": "small-text",
-   "width": 1440,
-   "message": "7 text blocks under 13px.",
-   "fix": "Nothing meant to be read goes below 13px.",
-   "alsoAt": [
-    768,
-    390
-   ]
-  },
-  {
-   "level": "FAIL",
-   "id": "focal-point",
-   "width": 1440,
-   "message": "The first screen has no dominant element: the largest type is 49px (3.4vw) and no single picture holds a third of the viewport.",
-   "fix": "Make one thing lead: the headline at display size, or one large picture. A grid of many small pictures is not one thing; in blind tests jurors marked a first screen without a headline down every time. On the strongest studied sites the largest type has a median of 8.4vw."
-  },
-  {
-   "level": "FAIL",
-   "id": "covered-text",
-   "width": 1440,
-   "message": "Large text lies under another element at some scroll position: \"Sweet moments at Cold Stone.\" (screen 7, 25% hidden)",
-   "fix": "Nothing may sit on top of a headline or statement. Move the picture, shorten the pinned run, or raise the text above it (z-index) and give it a ground."
   }
  ],
  "images": [
@@ -3233,9 +1224,7 @@
    "width": 1440,
    "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\desktop-fold.jpg",
    "pages": [
-    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\desktop-page-01.jpg",
-    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\desktop-page-02.jpg",
-    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\desktop-page-03.jpg"
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\desktop-page-01.jpg"
    ],
    "film": []
   },
@@ -3244,8 +1233,7 @@
    "width": 768,
    "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\tablet-fold.jpg",
    "pages": [
-    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\tablet-page-01.jpg",
-    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\tablet-page-02.jpg"
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\tablet-page-01.jpg"
    ],
    "film": []
   },
@@ -3254,8 +1242,7 @@
    "width": 390,
    "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\mobile-fold.jpg",
    "pages": [
-    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\mobile-page-01.jpg",
-    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\mobile-page-02.jpg"
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\inspect\\mobile-page-01.jpg"
    ],
    "film": []
   }

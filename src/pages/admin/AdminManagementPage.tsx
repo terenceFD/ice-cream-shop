@@ -7,8 +7,8 @@ import { apiRequest } from "../../api/api";
 import { AdminPageHeader } from "./AdminPageHeader";
 
 const inputClassName =
-  "mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
-const labelClassName = "block text-xs font-bold text-[#65748a]";
+  "mt-1.5 w-full rounded-lg border border-[#d1d5db] bg-white px-3 py-2 text-sm text-[#111827] transition placeholder:text-[#6b7280] hover:border-[#c2c8d0] focus:border-[#111827] focus:outline-2 focus:outline-offset-1 focus:outline-[#111827]/40";
+const labelClassName = "block text-xs font-medium text-[#6b6b6b]";
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024;
 const PROFILE_IMAGE_DIMENSION = 256;
 const STORE_ADMIN_PAGES = ["Orders", "Delivered", "Payments", "Reports", "Notifications", "Customer accounts", "Customer reviews", "Cake requests"];
@@ -149,9 +149,8 @@ function AssignmentPicker({
         aria-haspopup="listbox"
         aria-labelledby="admin-assignment-label"
         aria-required="true"
-        className={`group flex min-h-[4.25rem] w-full items-center gap-3 rounded-2xl border bg-white px-4 py-3 text-left shadow-sm transition duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffdc32]/25 ${
-          isOpen ? "border-[#bd9c00] shadow-[0_0_0_1px_#bd9c00]" : "border-[#dbe3ec] hover:border-[#aebdcd] hover:shadow-md"
-        }`}
+        className={`group flex min-h-[4.25rem] w-full items-center gap-3 rounded-2xl border bg-white px-4 py-3 text-left shadow-sm transition duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffdc32]/25 ${isOpen ? "border-[#bd9c00] shadow-[0_0_0_1px_#bd9c00]" : "border-[#dbe3ec] hover:border-[#aebdcd] hover:shadow-md"
+          }`}
         onClick={() => setIsOpen((open) => !open)}
         onKeyDown={(event) => {
           if (event.key === "ArrowDown" || event.key === "ArrowUp") {
@@ -167,9 +166,8 @@ function AssignmentPicker({
         ref={triggerRef}
         type="button"
       >
-        <span className={`grid size-10 shrink-0 place-items-center rounded-xl transition ${
-          selectedChoice?.kind === "branch" ? "bg-[#fff5c4] text-[#bd9c00]" : "bg-[#eaf1f9] text-[#245281]"
-        }`}>
+        <span className={`grid size-10 shrink-0 place-items-center rounded-xl transition ${selectedChoice?.kind === "branch" ? "bg-[#fff5c4] text-[#bd9c00]" : "bg-[#eaf1f9] text-[#245281]"
+          }`}>
           <Icon className="size-[1.15rem]" path={selectedChoice?.kind === "branch" ? icons.shield : icons.store} />
         </span>
         <span className="min-w-0 flex-1">
@@ -214,9 +212,8 @@ function AssignmentPicker({
                       return (
                         <div
                           aria-selected={isSelected}
-                          className={`flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2.5 outline-none transition focus-visible:ring-2 focus-visible:ring-[#bd9c00] ${
-                            isSelected ? "bg-[#f1f6fb]" : "hover:bg-[#f4f6f8]"
-                          }`}
+                          className={`flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2.5 outline-none transition focus-visible:ring-2 focus-visible:ring-[#bd9c00] ${isSelected ? "bg-[#f1f6fb]" : "hover:bg-[#f4f6f8]"
+                            }`}
                           data-index={index}
                           id={`admin-assignment-option-${index}`}
                           key={choice.value}
@@ -228,9 +225,8 @@ function AssignmentPicker({
                           role="option"
                           tabIndex={-1}
                         >
-                          <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${
-                            choice.kind === "branch" ? "bg-[#fff5c4] text-[#bd9c00]" : "bg-[#eaf1f9] text-[#245281]"
-                          }`}>
+                          <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${choice.kind === "branch" ? "bg-[#fff5c4] text-[#bd9c00]" : "bg-[#eaf1f9] text-[#245281]"
+                            }`}>
                             <Icon className="size-4" path={choice.kind === "branch" ? icons.shield : icons.store} />
                           </span>
                           <span className="min-w-0 flex-1">
@@ -453,100 +449,74 @@ export function AdminManagementPage() {
   const coveragePercent = stores.length ? Math.round((coveredStores / stores.length) * 100) : 0;
 
   return (
-    <div className="min-w-0 space-y-6">
-      <AdminPageHeader
-        actions={(
-          <button
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)] transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:opacity-50"
-            disabled={!stores.length}
-            onClick={() => openForm()}
-            type="button"
-          >
-            <Icon path={icons.plus} />
-            {t("Add an admin")}
-          </button>
-        )}
-        description={t("Create separate branch or store admin logins and assign their access.")}
-        icon={icons.shield}
-        section={t("Workspace")}
-        t={t}
-        title={t("Admin accounts")}
-      />
+    <div className="min-w-0 space-y-4">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <nav aria-label={t("Breadcrumb")} className="text-xs text-[#6b6b6b]">
+            {t("Workspace")} <span aria-hidden="true" className="mx-1">/</span>
+            {t("Admin accounts")}
+          </nav>
+          <h1 className="mt-1 text-2xl font-bold tracking-[-0.01em] text-[#111827]">{t("Admin accounts")}</h1>
+          <p className="mt-1 text-sm text-[#6b6b6b]">{t("Create separate branch or store admin logins and assign their access.")}</p>
+        </div>
+        <button
+          className="inline-flex h-9 flex-none items-center gap-1.5 rounded-lg bg-[#1d1f20] px-3 text-sm font-medium text-white transition hover:bg-[#3a3d3f] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#1d1f20] disabled:opacity-50"
+          disabled={!stores.length}
+          onClick={() => openForm()}
+          type="button"
+        >
+          <Icon path={icons.plus} />
+          {t("Add an admin")}
+        </button>
+      </header>
 
       {message && (
-        <div className="flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
-          <span className="flex items-center gap-2"><Icon path={icons.check} />{message}</span>
-          <button aria-label={t("Dismiss")} className="grid size-7 shrink-0 place-items-center rounded-lg transition hover:bg-[#d7eedf]" onClick={() => setMessage("")} type="button">
+        <div className="flex items-center justify-between gap-3 rounded-lg bg-[#f4f6f8] px-4 py-3 text-sm font-medium text-[#111827]" role="status">
+          <span className="flex items-center gap-2"><Icon className="text-[#247b50]" path={icons.check} />{message}</span>
+          <button aria-label={t("Dismiss")} className="grid size-7 shrink-0 place-items-center rounded-lg transition hover:bg-[#e8e8e8]" onClick={() => setMessage("")} type="button">
             <Icon className="size-3.5" path={icons.close} />
           </button>
         </div>
       )}
       {error && !isOverlayOpen && (
-        <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+        <p className="flex items-start gap-2 rounded-lg bg-[#ffedea] px-4 py-3 text-sm font-medium text-[#831c1e]" role="alert">
           <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
           {error}
         </p>
       )}
 
-      <section aria-labelledby="admin-overview-title" className="overflow-hidden rounded-[24px] border border-[#dce3eb] bg-white">
-        <div className="border-b border-[#f4f6f8] bg-[#092a53] px-5 py-5 text-white sm:px-7 sm:py-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <h2 className="text-sm font-semibold text-white/65" id="admin-overview-title">{t("Team overview")}</h2>
-              <p className="mt-2 font-display text-[2.1rem] font-extrabold leading-none tabular-nums tracking-tight sm:text-[2.5rem]">
-                {admins.length}
-              </p>
-              <p className="mt-2 text-sm text-white/70">
-                {admins.length === 1 ? t("1 admin account") : t("{count} admin accounts", { count: admins.length })}
-                <span aria-hidden="true" className="mx-2 text-white/25">·</span>
-                {t("{percent}% of stores covered", { percent: coveragePercent })}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/75">
-              <p>
-                <span className="text-white/50">{t("Owners")}</span>{" "}
-                <span className="font-semibold text-[#ffdc32]">{ownerCount}</span>
-              </p>
-              <p>
-                <span className="text-white/50">{t("Branch admins")}</span>{" "}
-                <span className="font-semibold text-[#ffdc32]">{branchAdminCount}</span>
-              </p>
-              <p>
-                <span className="text-white/50">{t("Store admins")}</span>{" "}
-                <span className="font-semibold text-[#ffdc32]">{storeAdminCount}</span>
-              </p>
-            </div>
-          </div>
+      <section aria-label={t("Team overview")} className="grid grid-cols-2 overflow-hidden rounded-lg border border-[#e8e8e8] bg-white xl:grid-cols-4 xl:divide-x xl:divide-[#e8e8e8]">
+        <div className={`px-4 py-4 sm:px-5 ${uncoveredCount ? "" : ""}`}>
+          <p className="text-xs text-[#6b6b6b]">{t("Admin accounts")}</p>
+          <p className="num mt-1.5 text-2xl font-semibold leading-none tracking-[-0.01em] text-[#111827]">{admins.length}</p>
+          <p className="mt-1.5 truncate text-xs text-[#6b6b6b]">{t("{percent}% of stores covered", { percent: coveragePercent })}</p>
         </div>
-        <dl className="grid grid-cols-2 divide-x divide-y divide-[#f4f6f8] sm:grid-cols-4 sm:divide-y-0">
-          <div className="px-4 py-4 sm:px-5">
-            <dt className="text-xs font-semibold text-[#65748a]">{t("Owners")}</dt>
-            <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{ownerCount}</dd>
-          </div>
-          <div className="px-4 py-4 sm:px-5">
-            <dt className="text-xs font-semibold text-[#65748a]">{t("Branch and store admins")}</dt>
-            <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{storeAdminCount + branchAdminCount}</dd>
-          </div>
-          <div className="px-4 py-4 sm:px-5">
-            <dt className="text-xs font-semibold text-[#65748a]">{t("Stores covered")}</dt>
-            <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">
-              {coveredStores}
-              <span className="ml-1 text-base font-bold text-[#65748a]">/ {stores.length}</span>
-            </dd>
-          </div>
-          <div className={`px-4 py-4 sm:px-5 ${uncoveredCount ? "bg-[#fff8e8]" : ""}`}>
-            <dt className={`text-xs font-semibold ${uncoveredCount ? "text-[#bd9c00]" : "text-[#65748a]"}`}>{t("Stores without an admin")}</dt>
-            <dd className={`mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight ${uncoveredCount ? "text-[#bd9c00]" : "text-[#092a53]"}`}>{uncoveredCount}</dd>
-          </div>
-        </dl>
+        <div className="border-b border-[#e8e8e8] px-4 py-4 sm:px-5 xl:border-b-0">
+          <p className="text-xs text-[#6b6b6b]">{t("Owners")}</p>
+          <p className="num mt-1.5 text-2xl font-semibold leading-none tracking-[-0.01em] text-[#111827]">{ownerCount}</p>
+          <p className="mt-1.5 truncate text-xs text-[#6b6b6b]">{t("Branch and store admins")} {storeAdminCount + branchAdminCount}</p>
+        </div>
+        <div className="border-r border-[#e8e8e8] px-4 py-4 sm:px-5 xl:border-r-0">
+          <p className="text-xs text-[#6b6b6b]">{t("Stores covered")}</p>
+          <p className="num mt-1.5 text-2xl font-semibold leading-none tracking-[-0.01em] text-[#111827]">
+            {coveredStores}
+            <span className="ml-1 text-sm font-medium text-[#6b6b6b]">/ {stores.length}</span>
+          </p>
+          <p className="mt-1.5 truncate text-xs text-[#6b6b6b]">{t("Branch and store admins")}</p>
+        </div>
+        <div className="px-4 py-4 sm:px-5">
+          <p className="text-xs text-[#6b6b6b]">{t("Stores without an admin")}</p>
+          <p className={`num mt-1.5 text-2xl font-semibold leading-none tracking-[-0.01em] ${uncoveredCount ? "text-[#c4242a]" : "text-[#111827]"}`}>{uncoveredCount}</p>
+          <p className="mt-1.5 truncate text-xs text-[#6b6b6b]">{uncoveredCount ? t("Needs an admin assigned") : t("Every store has an admin")}</p>
+        </div>
       </section>
 
-      <div className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <section aria-labelledby="admin-list-title" className="@container min-w-0 overflow-hidden rounded-[20px] border border-[#dce3eb] bg-white">
-          <div className="flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
+      <div className="grid min-w-0 grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <section aria-labelledby="admin-list-title" className="@container min-w-0 overflow-hidden rounded-lg border border-[#e8e8e8] bg-white">
+          <div className="flex flex-col gap-3 px-4 pb-3 pt-4 sm:px-5">
             <div>
-              <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="admin-list-title">{t("Access roster")}</h2>
-              <p className="mt-0.5 text-sm text-[#65748a]">
+              <h2 className="text-base font-semibold text-[#111827]" id="admin-list-title">{t("Access roster")}</h2>
+              <p className="num mt-0.5 text-xs text-[#6b6b6b]">
                 {visibleAdmins.length === 1
                   ? t("1 person in this view")
                   : t("{count} people in this view", { count: visibleAdmins.length })}
@@ -555,10 +525,10 @@ export function AdminManagementPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <label className="relative block flex-1">
                 <span className="sr-only">{t("Search")}</span>
-                <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
-                <input className={`${inputClassName} mt-0 pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t("Name, email, or store")} type="search" value={search} />
+                <Icon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6b6b6b]" path={icons.search} />
+                <input className={`${inputClassName} mt-0 pl-9`} onChange={(event) => setSearch(event.target.value)} placeholder={t("Name, email, or store")} type="search" value={search} />
               </label>
-              <div aria-label={t("Role")} className="inline-flex max-w-full overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
+              <div aria-label={t("Role")} className="inline-flex max-w-full flex-none overflow-x-auto rounded-lg border border-[#d1d5db] p-0.5" role="group">
                 {([
                   { key: "all", label: t("All"), count: admins.length },
                   { key: "owner", label: t("Owners"), count: ownerCount },
@@ -567,13 +537,13 @@ export function AdminManagementPage() {
                 ] as const).map((option) => (
                   <button
                     aria-pressed={roleFilter === option.key}
-                    className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${roleFilter === option.key ? "bg-white text-[#092a53] shadow-sm" : "text-[#65748a] hover:text-[#092a53]"}`}
+                    className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#111827]/40 ${roleFilter === option.key ? "bg-[#eef1f5] text-[#111827]" : "text-[#6b6b6b] hover:text-[#111827]"}`}
                     key={option.key}
                     onClick={() => setRoleFilter(option.key)}
                     type="button"
                   >
                     {option.label}
-                    <span className={`rounded-full px-1.5 text-xs ${roleFilter === option.key ? "bg-[#f4f6f8] text-[#65748a]" : "bg-[#dce3eb] text-[#65748a]"}`}>{option.count}</span>
+                    <span className="num text-[#6b6b6b]">{option.count}</span>
                   </button>
                 ))}
               </div>
@@ -581,23 +551,22 @@ export function AdminManagementPage() {
           </div>
 
           {isLoadingAdmins ? (
-            <div className="space-y-3 p-4 sm:p-5" role="status">
+            <div className="space-y-3 px-4 py-5 sm:px-5" role="status">
               <span className="sr-only">{t("Loading administrators…")}</span>
               {[0, 1, 2].map((row) => (
                 <div aria-hidden="true" className="flex animate-pulse items-center gap-4" key={row}>
-                  <span className="size-11 rounded-xl bg-[#f4f6f8]" />
-                  <span className="h-3 flex-1 rounded bg-[#f4f6f8]" />
-                  <span className="h-3 w-24 rounded bg-[#f4f6f8]" />
+                  <span className="size-10 rounded-md bg-[#f3f4f6]" />
+                  <span className="h-3.5 flex-1 rounded bg-[#f3f4f6]" />
+                  <span className="h-3.5 w-24 rounded bg-[#f3f4f6]" />
                 </div>
               ))}
             </div>
           ) : visibleAdmins.length === 0 ? (
-            <div className="px-6 py-14 text-center">
-              <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f4f6f8] text-[#65748a]"><Icon className="size-5" path={icons.users} /></span>
-              <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t(admins.length ? "No admins match your search." : "No shop admins assigned yet.")}</p>
+            <div className="border-t border-[#e8e8e8] px-6 py-12 text-center">
+              <p className="text-sm font-medium text-[#111827]">{t(admins.length ? "No admins match your search." : "No shop admins assigned yet.")}</p>
               {admins.length > 0 && (
                 <button
-                  className="mt-4 text-sm font-bold text-[#123b68] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+                  className="mt-2 text-sm font-medium text-[#092a53] hover:underline"
                   onClick={() => { setSearch(""); setRoleFilter("all"); }}
                   type="button"
                 >
@@ -606,8 +575,8 @@ export function AdminManagementPage() {
               )}
             </div>
           ) : (
-            <ul className="divide-y divide-[#f4f6f8]">
-              <li className="hidden px-5 py-2.5 text-xs font-bold text-[#8e9bab] @[42rem]:grid @[42rem]:grid-cols-[minmax(14rem,1.4fr)_minmax(8rem,0.75fr)_minmax(9rem,1fr)_auto]">
+            <ul className="divide-y divide-[#f2f3f5]">
+              <li className="hidden px-5 py-2.5 text-xs font-medium text-[#6b6b6b] @[42rem]:grid @[42rem]:grid-cols-[minmax(14rem,1.4fr)_minmax(8rem,0.75fr)_minmax(9rem,1fr)_auto]">
                 <span>{t("Admin")}</span>
                 <span>{t("Role")}</span>
                 <span>{t("Access")}</span>
@@ -625,18 +594,17 @@ export function AdminManagementPage() {
                 const missingAccess = !isOwnerAccount && ((isBranchAccount && !admin.branchTown) || (!isBranchAccount && !admin.storeName));
                 return (
                   <li
-                    className={`grid gap-3 px-4 py-4 sm:px-5 @[42rem]:grid-cols-[minmax(14rem,1.4fr)_minmax(8rem,0.75fr)_minmax(9rem,1fr)_auto] @[42rem]:items-center ${
-                      isCurrentAdmin ? "bg-[#fffdf3]" : "hover:bg-[#f4f6f8]"
-                    } ${removingAdminId === admin.id ? "opacity-50" : ""}`}
+                    className={`grid gap-3 px-4 py-4 sm:px-5 @[42rem]:grid-cols-[minmax(14rem,1.4fr)_minmax(8rem,0.75fr)_minmax(9rem,1fr)_auto] @[42rem]:items-center ${isCurrentAdmin ? "bg-[#fffdf3]" : "hover:bg-[#f4f6f8]"
+                      } ${removingAdminId === admin.id ? "opacity-50" : ""}`}
                     key={admin.id}
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <Avatar highlight={isCurrentAdmin} name={admin.name} picture={admin.profilePicture} />
                       <div className="min-w-0">
-                        <p className="flex flex-wrap items-center gap-2 font-extrabold text-[#092a53]">
+                        <p className="flex flex-wrap items-center gap-2 font-medium text-[#111827]">
                           <span className="truncate">{admin.name}</span>
                           {isCurrentAdmin && (
-                            <span className="rounded-full bg-[#ffdc32] px-2 py-0.5 text-xs font-extrabold text-[#092a53]">{t("You")}</span>
+                            <span className="rounded-full bg-[#111827] px-2 py-0.5 text-xs font-medium text-white">{t("You")}</span>
                           )}
                         </p>
                         <a className="mt-0.5 flex max-w-full items-center gap-1 truncate text-xs text-[#65748a] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]" href={`mailto:${admin.email}`}>
@@ -648,28 +616,27 @@ export function AdminManagementPage() {
 
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-[#8e9bab] @[42rem]:sr-only">{t("Role")}</p>
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${
-                        isOwnerAccount
-                          ? "bg-[#fff6cc] text-[#bd9c00]"
-                          : isBranchAccount
-                            ? "bg-[#fff4c2] text-[#bd9c00]"
-                            : "bg-[#e9f1fa] text-[#245281]"
-                      }`}>
+                      <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${isOwnerAccount
+                        ? "bg-[#fffbeb] text-[#92400e]"
+                        : isBranchAccount
+                          ? "bg-[#eef1f5] text-[#111827]"
+                          : "bg-[#e8f0fb] text-[#1d4f91]"
+                        }`}>
                         <Icon className="size-3.5" path={isOwnerAccount ? icons.crown : isBranchAccount ? icons.shield : icons.store} />
                         {t(isOwnerAccount ? "Owner" : isBranchAccount ? "Branch admin" : "Store admin")}
                       </span>
                     </div>
 
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-[#8e9bab] @[42rem]:sr-only">{t("Access")}</p>
-                      <p className={`truncate text-sm font-semibold ${missingAccess ? "text-[#b2433a]" : "text-[#123b68]"}`}>{accessLabel}</p>
+                      <p className="text-xs font-medium text-[#6b6b6b] @[42rem]:sr-only">{t("Access")}</p>
+                      <p className={`truncate text-sm font-medium ${missingAccess ? "text-[#831c1e]" : "text-[#111827]"}`}>{accessLabel}</p>
                     </div>
 
                     <div className="flex justify-end">
                       {!isOwnerAccount && !isCurrentAdmin ? (
                         <button
                           aria-label={`${t("Remove")} ${admin.name}`}
-                          className="grid size-9 place-items-center rounded-xl text-[#65748a] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait"
+                          className="grid size-9 place-items-center rounded-lg text-[#6b6b6b] transition hover:bg-[#ffedea] hover:text-[#831c1e] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#111827]/40 disabled:cursor-wait"
                           disabled={removingAdminId === admin.id}
                           onClick={() => { setError(""); setAdminToRemove(admin); }}
                           title={t("Remove")}
@@ -678,7 +645,7 @@ export function AdminManagementPage() {
                           <Icon path={icons.trash} />
                         </button>
                       ) : (
-                        <span className="grid size-9 place-items-center rounded-xl text-[#c3ccd7]" title={t(isOwnerAccount ? "Owner accounts cannot be removed here." : "You cannot remove your own account.")}>
+                        <span className="grid size-9 place-items-center rounded-lg text-[#c3ccd7]" title={t(isOwnerAccount ? "Owner accounts cannot be removed here." : "You cannot remove your own account.")}>
                           <Icon path={icons.lock} />
                         </span>
                       )}
@@ -690,35 +657,35 @@ export function AdminManagementPage() {
           )}
         </section>
 
-        <aside aria-labelledby="coverage-title" className="overflow-hidden rounded-[20px] border border-[#dce3eb] bg-white xl:sticky xl:top-24">
-          <div className="border-b border-[#f4f6f8] bg-[#092a53] px-4 py-4 text-white sm:px-5">
-            <h2 className="font-display text-lg font-extrabold" id="coverage-title">{t("Store coverage")}</h2>
-            <p className="mt-1 text-xs text-white/65">{t("Every branch should have at least one admin.")}</p>
+        <aside aria-labelledby="coverage-title" className="overflow-hidden rounded-lg border border-[#e8e8e8] bg-white xl:sticky xl:top-24">
+          <div className="border-b border-[#e8e8e8] px-4 py-4 sm:px-5">
+            <h2 className="text-base font-semibold text-[#111827]" id="coverage-title">{t("Store coverage")}</h2>
+            <p className="mt-0.5 text-xs text-[#6b6b6b]">{t("Every branch should have at least one admin.")}</p>
             {stores.length > 0 && (
               <>
-                <div aria-hidden="true" className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/15">
-                  <span className="block h-full rounded-full bg-[#ffdc32]" style={{ width: `${coveragePercent}%` }} />
+                <div aria-hidden="true" className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#f3f4f6]">
+                  <span className="block h-full rounded-full bg-[#111827]" style={{ width: `${coveragePercent}%` }} />
                 </div>
-                <p className="mt-2 text-xs font-semibold text-white/70">
+                <p className="num mt-2 text-xs text-[#6b6b6b]">
                   {t("{covered} of {total} stores covered", { covered: coveredStores, total: stores.length })}
                 </p>
               </>
             )}
           </div>
-          <ul className="max-h-[32rem] space-y-0 overflow-y-auto divide-y divide-[#f4f6f8] p-0">
+          <ul className="max-h-[32rem] space-y-0 overflow-y-auto divide-y divide-[#f2f3f5] p-0">
             {coverage.map(({ store, storeAdmins, branchAdmins }) => {
               const hasAdminCoverage = storeAdmins.length > 0 || branchAdmins.length > 0;
               const branchAdminNames = branchAdmins.map((admin) => admin.name).join(", ");
               return (
-                <li className={`flex items-center gap-3 px-4 py-3.5 sm:px-5 ${hasAdminCoverage ? "" : "bg-[#fffafa]"}`} key={store.id}>
-                  <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${hasAdminCoverage ? "bg-[#e5f4ea] text-[#2c7a4f]" : "bg-[#fdecea] text-[#b2433a]"}`}>
+                <li className={`flex items-center gap-3 px-4 py-3.5 sm:px-5 ${hasAdminCoverage ? "" : "bg-[#fdf7f6]"}`} key={store.id}>
+                  <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${hasAdminCoverage ? "bg-[#dcfae5] text-[#04250e]" : "bg-[#ffedea] text-[#831c1e]"}`}>
                     <Icon path={hasAdminCoverage ? icons.check : icons.alert} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-extrabold text-[#092a53]">{t(store.name)}</p>
-                    <p className="truncate text-xs text-[#65748a]">{t(store.town)}</p>
+                    <p className="truncate text-sm font-medium text-[#111827]">{t(store.name)}</p>
+                    <p className="truncate text-xs text-[#6b6b6b]">{t(store.town)}</p>
                     {branchAdmins.length > 0 && (
-                      <p className="mt-1 truncate text-xs font-semibold text-[#bd9c00]" title={`${t("Branch admin")}: ${branchAdminNames}`}>
+                      <p className="mt-1 truncate text-xs font-medium text-[#92400e]" title={`${t("Branch admin")}: ${branchAdminNames}`}>
                         {t("Branch admin")}: {branchAdminNames}
                       </p>
                     )}
@@ -726,15 +693,15 @@ export function AdminManagementPage() {
                   {storeAdmins.length ? (
                     <div className="flex -space-x-2">
                       {storeAdmins.slice(0, 3).map((admin) => (
-                        <span className="rounded-xl ring-2 ring-white" key={admin.id} title={admin.name}>
+                        <span className="rounded-lg ring-2 ring-white" key={admin.id} title={admin.name}>
                           <Avatar className="size-7" name={admin.name} picture={admin.profilePicture} />
                         </span>
                       ))}
-                      {storeAdmins.length > 3 && <span className="grid size-7 place-items-center rounded-xl bg-[#f4f6f8] text-xs font-extrabold text-[#65748a] ring-2 ring-white">+{storeAdmins.length - 3}</span>}
+                      {storeAdmins.length > 3 && <span className="num grid size-7 place-items-center rounded-lg bg-[#f3f4f6] text-xs font-medium text-[#6b6b6b] ring-2 ring-white">+{storeAdmins.length - 3}</span>}
                     </div>
                   ) : (
                     <button
-                      className="inline-flex min-h-8 shrink-0 items-center gap-1 rounded-lg bg-[#092a53] px-2.5 text-xs font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+                      className="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border border-[#d1d5db] bg-white px-2.5 text-xs font-medium text-[#111827] transition hover:border-[#9aa2ad] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#111827]/40"
                       onClick={() => openForm(store.id)}
                       type="button"
                     >
@@ -745,7 +712,7 @@ export function AdminManagementPage() {
                 </li>
               );
             })}
-            {!stores.length && !isLoadingAdmins && <li className="p-6 text-center text-sm text-[#65748a]">{t("No stores found.")}</li>}
+            {!stores.length && !isLoadingAdmins && <li className="p-6 text-center text-sm text-[#6b6b6b]">{t("No stores found.")}</li>}
           </ul>
         </aside>
       </div>
@@ -753,44 +720,44 @@ export function AdminManagementPage() {
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
           <button aria-label={t("Close")} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setIsFormOpen(false)} tabIndex={-1} type="button" />
-          <section aria-labelledby="add-admin-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[32rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
-            <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
+          <section aria-labelledby="add-admin-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[32rem] flex-col border-l border-[#e8e8e8] bg-white" role="dialog">
+            <header className="flex items-start justify-between gap-4 border-b border-[#e8e8e8] px-6 py-5">
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t("Admin access")}</p>
-                <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="add-admin-title">{t("Add an admin")}</h2>
-                <p className="mt-1 text-sm text-[#65748a]">{t("Assign a login to a whole branch or to one store. Branch admins can access only stores in their assigned town.")}</p>
+                <p className="text-xs text-[#6b6b6b]">{t("Admin access")}</p>
+                <h2 className="mt-1 text-xl font-semibold text-[#111827]" id="add-admin-title">{t("Add an admin")}</h2>
+                <p className="mt-1 text-sm text-[#6b6b6b]">{t("Assign a login to a whole branch or to one store. Branch admins can access only stores in their assigned town.")}</p>
               </div>
-              <button aria-label={t("Close")} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsFormOpen(false)} type="button">
+              <button aria-label={t("Close")} className="grid size-9 shrink-0 place-items-center rounded-lg text-[#6b6b6b] transition hover:bg-[#f6f7f9] hover:text-[#111827]" onClick={() => setIsFormOpen(false)} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
 
             <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
               <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-6">
-                <div className="flex items-center gap-4 rounded-2xl bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb]">
+                <div className="flex items-center gap-4 rounded-lg bg-[#f9fafb] p-4 border border-[#e8e8e8]">
                   <div className="relative">
                     <Avatar className="size-16" name={name || "?"} picture={profilePicture} />
-                    <label className="absolute -bottom-1.5 -right-1.5 grid size-7 cursor-pointer place-items-center rounded-full bg-[#092a53] text-white ring-[3px] ring-[#f4f6f8] transition hover:bg-[#163e6b] focus-within:outline-2 focus-within:outline-[#bd9c00]" title={t("Profile picture")}>
+                    <label className="absolute -bottom-1.5 -right-1.5 grid size-7 cursor-pointer place-items-center rounded-full bg-[#111827] text-white ring-[3px] ring-[#f9fafb] transition hover:bg-[#3a3d3f] focus-within:outline-2 focus-within:outline-[#111827]/40" title={t("Profile picture")}>
                       <span className="sr-only">{t("Profile picture")}</span>
                       <Icon className="size-3.5" path={icons.camera} />
                       <input accept="image/*" className="sr-only" onChange={handleProfilePictureChange} type="file" />
                     </label>
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate font-display text-lg font-extrabold text-[#092a53]">{name || t("New admin profile preview")}</p>
-                    <p className="truncate text-xs text-[#65748a]">{email || t("Email address")}</p>
-                    <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#e9f1fa] px-2 py-0.5 text-xs font-bold text-[#245281]">
+                    <p className="truncate text-lg font-semibold text-[#111827]">{name || t("New admin profile preview")}</p>
+                    <p className="truncate text-xs text-[#6b6b6b]">{email || t("Email address")}</p>
+                    <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#e8f0fb] px-2 py-0.5 text-xs font-medium text-[#1d4f91]">
                       <Icon className="size-3" path={icons.store} />
                       {selectedStore ? t(selectedStore.name) : selectedBranch ? t(selectedBranch) : t("Store admin")}
                     </span>
                   </div>
                 </div>
-                <p className="-mt-2 text-xs text-[#65748a]">{t("Optional. Image will be resized before saving (5 MB max).")}</p>
+                <p className="-mt-2 text-xs text-[#6b6b6b]">{t("Optional. Image will be resized before saving (5 MB max).")}</p>
 
                 <div>
                   <span className={labelClassName} id="admin-assignment-label">{t("Assigned store or branch")}</span>
                   <AssignmentPicker groups={assignmentGroups} onChange={setAssignment} t={t} value={assignment} />
-                  <p className="mt-2 text-xs leading-4 text-[#65748a]">{t("Branch admins can access every store in the selected town.")}</p>
+                  <p className="mt-2 text-xs leading-4 text-[#6b6b6b]">{t("Branch admins can access every store in the selected town.")}</p>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className={labelClassName}>
@@ -811,50 +778,50 @@ export function AdminManagementPage() {
                           <span className={`h-1.5 rounded-full ${step <= strength ? strengthMeta.color : "bg-[#dce3eb]"}`} key={step} />
                         ))}
                       </div>
-                      <span className="text-xs font-bold text-[#65748a]">{strengthMeta.label}</span>
+                      <span className="text-xs font-medium text-[#6b6b6b]">{strengthMeta.label}</span>
                     </div>
                   )}
                 </div>
                 <div>
                   <PasswordField autoComplete="new-password" label={t("Confirm password")} minLength={8} name="confirmPassword" onChange={(event) => setConfirmPassword(event.target.value)} required value={confirmPassword} />
                   {confirmPassword && (
-                    <p className={`mt-1.5 flex items-center gap-1.5 text-xs font-bold ${passwordsMatch ? "text-[#2c7a4f]" : "text-[#b2433a]"}`}>
+                    <p className={`mt-1.5 flex items-center gap-1.5 text-xs font-medium ${passwordsMatch ? "text-[#247b50]" : "text-[#831c1e]"}`}>
                       <Icon className="size-3.5" path={passwordsMatch ? icons.check : icons.close} />
                       {t(passwordsMatch ? "Passwords match" : "The passwords do not match.")}
                     </p>
                   )}
                 </div>
 
-                <div className="rounded-2xl bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb]">
-                  <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("This admin can access")}</p>
+                <div className="rounded-lg bg-[#f9fafb] p-4 border border-[#e8e8e8]">
+                  <p className="text-xs font-medium text-[#6b6b6b]">{t("This admin can access")}</p>
                   <ul className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1.5">
                     {STORE_ADMIN_PAGES.map((page) => (
-                      <li className="flex items-center gap-1.5 text-xs font-semibold text-[#123b68]" key={page}>
-                        <Icon className="size-3.5 text-[#35a36b]" path={icons.check} />
+                      <li className="flex items-center gap-1.5 text-xs font-medium text-[#111827]" key={page}>
+                        <Icon className="size-3.5 text-[#247b50]" path={icons.check} />
                         {t(page)}
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-3 text-xs leading-5 text-[#65748a]">{t("Catalog, promotions and admin accounts stay owner-only.")}</p>
+                  <p className="mt-3 text-xs leading-5 text-[#6b6b6b]">{t("Catalog, promotions and admin accounts stay owner-only.")}</p>
                 </div>
 
-                <p className="flex items-start gap-2 rounded-xl bg-[#fff6e5] px-3.5 py-3 text-xs leading-5 text-[#8a5a00]">
+                <p className="flex items-start gap-2 rounded-lg bg-[#fffbeb] px-3.5 py-3 text-xs leading-5 text-[#92400e]">
                   <Icon className="mt-0.5 size-4 shrink-0" path={icons.shield} />
                   {t("Only create administrator accounts for people you trust with store access.")}
                 </p>
 
                 {error && (
-                  <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+                  <p className="flex items-start gap-2 rounded-lg bg-[#ffedea] px-4 py-3 text-sm font-medium text-[#831c1e]" role="alert">
                     <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
                     {error}
                   </p>
                 )}
               </div>
 
-              <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
-                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsFormOpen(false)} type="button">{t("Cancel")}</button>
+              <footer className="flex items-center justify-end gap-3 border-t border-[#e8e8e8] bg-[#f9fafb] px-6 py-4">
+                <button className="min-h-10 rounded-lg px-4 text-sm font-medium text-[#6b6b6b] transition hover:bg-[#eef1f5] hover:text-[#111827]" onClick={() => setIsFormOpen(false)} type="button">{t("Cancel")}</button>
                 <button
-                  className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#1d1f20] px-5 text-sm font-medium text-white transition hover:bg-[#3a3d3f] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#111827]/40 disabled:cursor-wait disabled:opacity-60"
                   disabled={isSaving}
                   type="submit"
                 >
@@ -870,24 +837,24 @@ export function AdminManagementPage() {
       {adminToRemove && (
         <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
           <button aria-label={t("Cancel")} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setAdminToRemove(null)} tabIndex={-1} type="button" />
-          <section aria-labelledby="remove-admin-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
-            <span className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600"><Icon className="size-6" path={icons.trash} /></span>
-            <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="remove-admin-title">{t("Remove admin access")}</h2>
-            <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
+          <section aria-labelledby="remove-admin-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-xl bg-white p-6" role="dialog">
+            <span className="grid size-12 place-items-center rounded-lg bg-[#ffedea] text-[#831c1e]"><Icon className="size-6" path={icons.trash} /></span>
+            <h2 className="mt-4 text-xl font-semibold text-[#111827]" id="remove-admin-title">{t("Remove admin access")}</h2>
+            <div className="mt-4 flex items-center gap-3 rounded-lg bg-[#f9fafb] p-3 border border-[#e8e8e8]">
               <Avatar name={adminToRemove.name} picture={adminToRemove.profilePicture} />
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-[#092a53]">{adminToRemove.name}</p>
-                <p className="truncate text-xs text-[#65748a]">{adminToRemove.email} · {adminToRemove.storeName ? t(adminToRemove.storeName) : t("No store assigned")}</p>
+                <p className="truncate text-sm font-medium text-[#111827]">{adminToRemove.name}</p>
+                <p className="truncate text-xs text-[#6b6b6b]">{adminToRemove.email} · {adminToRemove.storeName ? t(adminToRemove.storeName) : t("No store assigned")}</p>
               </div>
             </div>
-            <p className="mt-3 text-sm leading-6 text-[#65748a]">
+            <p className="mt-3 text-sm leading-6 text-[#6b6b6b]">
               {t("Remove admin {name} ({email})? They will immediately lose access, and this cannot be undone.", { name: adminToRemove.name, email: adminToRemove.email })}
             </p>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
+            {error && <p className="mt-3 rounded-lg bg-[#ffedea] px-3 py-2.5 text-sm font-medium text-[#831c1e]" role="alert">{error}</p>}
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setAdminToRemove(null)} type="button">{t("Cancel")}</button>
+              <button className="min-h-10 rounded-lg px-4 text-sm font-medium text-[#6b6b6b] transition hover:bg-[#eef1f5]" onClick={() => setAdminToRemove(null)} type="button">{t("Cancel")}</button>
               <button
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#c4242a] px-4 text-sm font-medium text-white transition hover:bg-[#a51d22] disabled:cursor-wait disabled:opacity-60"
                 disabled={removingAdminId === adminToRemove.id}
                 onClick={handleRemoveAdmin}
                 type="button"

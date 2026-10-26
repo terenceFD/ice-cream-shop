@@ -1,20 +1,73 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowIcon, Footer, Header } from '../../components/Layout'
-import { PageHero } from '../../components/PageHero'
 import { cameroonLocations } from '../../../shared/data'
 import { useLanguage } from '../../language/useLanguage'
+import './LocationsPage.css'
 
 type CameroonLocation = (typeof cameroonLocations)[number]
 
 const PIN_PATH = 'M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Zm0-9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z'
 const PHONE_PATH = 'M5 4h3.5l1.7 4.2-2.2 1.4a11 11 0 0 0 6.4 6.4l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5C10.6 20 4 13.4 3.5 5.6A1.5 1.5 0 0 1 5 4Z'
 
-// Rough positions on the illustrated map, in percent of its width and height.
-const MAP_PINS: Record<string, { left: string; top: string }> = {
-  Douala: { left: '30%', top: '60%' },
-  Yaoundé: { left: '68%', top: '46%' },
-}
+const neighborhoodPhotos = [
+  {
+    src: '/images/locations/rond-point-bonanjo-douala.jpg',
+    alt: 'Roundabout in Bonanjo, Douala',
+    label: 'Bonanjo, Douala',
+    className: 'col-span-2 row-span-1',
+    width: 1280,
+    height: 853,
+    title: 'Rond Point Bonanjo Douala',
+    creator: 'Minette Lontsie',
+    via: 'Wikimedia Commons',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    sourceUrl: 'https://commons.wikimedia.org/w/index.php?curid=89170322',
+  },
+  {
+    src: '/images/locations/rue-de-narvik-yaounde-cameroon.jpg',
+    alt: 'Street scene in Yaoundé, Cameroon',
+    label: 'Yaoundé',
+    className: 'col-start-3 row-span-2',
+    width: 1280,
+    height: 720,
+    title: 'Rue De Narvik, Yaounde, Cameroon',
+    creator: 'Ambo64',
+    via: 'Wikimedia Commons',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Rue_De_Narvik,_Yaounde,_Cameroon.jpg',
+  },
+  {
+    src: '/images/locations/rue-de-bonamoussadi-quifeurou.jpg',
+    alt: 'Street in Bonamoussadi, Douala',
+    label: 'Bonamoussadi, Douala',
+    className: 'col-start-1 row-start-2',
+    width: 1280,
+    height: 720,
+    title: 'Rue de Bonamoussadi - Quifeurou',
+    creator: 'Serieminou',
+    via: 'Wikimedia Commons',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Rue_de_Bonamoussadi_-_Quifeurou.jpg',
+  },
+  {
+    src: '/images/locations/carrefour-bastos.jpg',
+    alt: 'Carrefour in Bastos, Yaoundé',
+    label: 'Bastos, Yaoundé',
+    className: 'col-start-2 row-start-2',
+    width: 1024,
+    height: 768,
+    title: 'Carrefour Bastos',
+    creator: 'EOS Cameroun',
+    via: 'Flickr',
+    license: 'CC BY-SA 2.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/2.0/',
+    sourceUrl: 'https://www.flickr.com/photos/89095162@N00/7576504658',
+  },
+]
 
 function Icon({ path, className = 'size-5' }: { path: string; className?: string }) {
   return (
@@ -46,98 +99,94 @@ export function LocationsPage() {
   const listingsLabel = (count: number) => (count === 1 ? t('{count} listing', { count }) : t('{count} listings', { count }))
   const visibleLocations = cameroonLocations.filter((location: CameroonLocation) => !city || location.town === city)
 
-  const mapVisual = (
-    <div className="absolute inset-0 overflow-hidden rounded-[36px] border border-white/10 bg-[#0c3463] shadow-[0_40px_80px_rgba(2,12,28,0.45)]">
-      <svg aria-hidden="true" className="absolute inset-0 size-full" preserveAspectRatio="none" viewBox="0 0 600 500">
-        <defs>
-          <pattern height="40" id="map-grid" patternUnits="userSpaceOnUse" width="40">
-            <path d="M40 0H0v40" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-          </pattern>
-        </defs>
-        <rect fill="url(#map-grid)" height="500" width="600" />
-        <path d="M0 0h150c-20 70 30 120 10 190s-70 110-40 190 10 120 0 120H0Z" fill="#071f3d" />
-        <path d="M150 0c-20 70 30 120 10 190s-70 110-40 190 10 120 0 120" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="2" />
-        <path d="M60 470c40-30 90-40 120-20" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
-        <path d="M180 300c60-40 120-20 170-60s90-30 58-10" fill="none" stroke="rgba(255,255,255,0.08)" strokeDasharray="3 7" strokeWidth="2" />
-        <path d="M180 300c70-10 120-60 230-70" fill="none" stroke="#ffdc32" strokeDasharray="8 10" strokeLinecap="round" strokeOpacity="0.7" strokeWidth="3" />
-      </svg>
-
-      <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.16em] text-white/80 backdrop-blur-sm">
-        <Icon className="size-3.5 text-[#ffdc32]" path={PIN_PATH} />
-        {t('Cameroon')}
-      </span>
-      <span aria-hidden="true" className="absolute right-5 top-5 grid size-10 place-items-center rounded-full border border-white/15 bg-white/5 font-display text-xs font-extrabold text-white/70">N</span>
-
-      {towns.map((town) => {
-        const position = MAP_PINS[town] || { left: '50%', top: '50%' }
-        return (
-          <div className="absolute -translate-x-1/2 -translate-y-full" key={town} style={position}>
-            <div className="flex flex-col items-center">
-              <div className="mb-2 whitespace-nowrap rounded-2xl bg-white px-3.5 py-2 text-center text-[#092a53] shadow-[0_16px_36px_rgba(2,12,28,0.35)]">
-                <p className="font-display text-sm font-extrabold leading-tight sm:text-base">{t(town)}</p>
-                <p className="text-xs font-bold text-[#65748a]">{listingsLabel(countIn(town))}</p>
-              </div>
-              <span className="relative grid size-11 place-items-center">
-                <span aria-hidden="true" className="absolute inset-0 rounded-full bg-[#ffdc32]/40 motion-safe:animate-ping" />
-                <span className="relative grid size-11 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] shadow-[0_10px_24px_rgba(255,220,50,0.35)] ring-4 ring-[#0c3463]">
-                  <Icon path={PIN_PATH} />
-                </span>
-              </span>
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-
   return (
-    <div className="min-h-screen bg-[#fbfaf5] text-[#092a53]">
+    <div className="min-h-[100svh] bg-[#f5f8fb] text-[#092a53]">
       <Header />
       <main id="main" tabIndex={-1}>
-        <PageHero
-          actions={
-            <>
-              <a className={PageHero.primary} href="#listed-locations">
-                {t('Explore listed locations')} <span aria-hidden="true">↓</span>
-              </a>
-              <Link className={PageHero.secondary} to="/menu">
-                {t('Explore the menu')}
-              </Link>
-            </>
-          }
-          badge={{ mark: '✦', eyebrow: t('Come say hello'), text: t('Branches in Douala and Yaoundé') }}
-          description={t('Find Cold Stone Creamery in Douala and Yaoundé. Open the map for directions and call ahead for opening hours.')}
-          eyebrow={t('Cameroon branch listings')}
-          stats={[
-            { label: t('Listings'), value: cameroonLocations.length },
-            { label: t('Cities'), value: towns.length, accent: true },
-          ]}
-          title={t('Find Cold Stone Creamery')}
-          visual={mapVisual}
-        />
+        <section className="relative overflow-hidden bg-[#edf3f8]">
+          <svg aria-hidden="true" className="pointer-events-none absolute -right-56 top-[30rem] h-[26rem] w-[22rem] text-[#ffdc32]/25 sm:-right-32 sm:top-[22rem] sm:h-[38rem] sm:w-[32rem] lg:-top-64 lg:h-[44rem] lg:w-[38rem]" fill="currentColor" viewBox="0 0 400 500">
+            <path d="M200 486C162 430 31 300 31 199a169 169 0 1 1 338 0c0 101-131 231-169 287Z" />
+          </svg>
+          <div className="relative mx-auto grid max-w-[1320px] items-center gap-12 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-12 lg:gap-14 lg:px-12 lg:py-24">
+            <div className="lg:col-span-5">
+              <h1 className="location-reveal max-w-[12ch] font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-[#092a53] text-balance sm:text-6xl lg:text-7xl">
+                {t('Find us in Cameroon')}
+              </h1>
+              <p className="location-reveal mt-6 max-w-[60ch] text-base leading-7 text-[#334c63] sm:text-lg sm:leading-8" style={{ animationDelay: '70ms' }}>
+                {t('Browse five public listings across Douala and Yaoundé. Open a listing for directions, and call ahead where a number is shown.')}
+              </p>
+              <div className="location-reveal mt-8 flex flex-wrap gap-3" style={{ animationDelay: '140ms' }}>
+                <a
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#092a53] px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#174477] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                  href="#listed-locations"
+                >
+                  {t('Browse locations')}
+                  <span aria-hidden="true">↓</span>
+                </a>
+                <Link
+                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#fff4c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                  to="/menu"
+                >
+                  {t('Explore the menu')}
+                </Link>
+              </div>
+            </div>
 
-        <section aria-labelledby="listed-locations-heading" className="mx-auto max-w-[1320px] scroll-mt-4 px-5 py-14 sm:px-8 sm:py-16 lg:px-12" id="listed-locations">
-          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div className="lg:col-span-7">
+              <h2 className="location-reveal mb-4 text-sm font-bold text-[#334c63]" id="neighborhood-heading" style={{ animationDelay: '80ms' }}>
+                {t('Street scenes around our listed locations')}
+              </h2>
+              <ul aria-labelledby="neighborhood-heading" className="grid aspect-[1.3] grid-cols-3 grid-rows-2 gap-2.5 sm:aspect-[1.1] sm:gap-4">
+                {neighborhoodPhotos.map((photo, index) => (
+                  <li className={`location-reveal group relative isolate min-h-0 overflow-hidden rounded-[22px] bg-[#dce6ee] ${photo.className}`} key={photo.src} style={{ animationDelay: `${140 + index * 70}ms` }}>
+                    <img
+                      alt={photo.alt}
+                      className="size-full object-cover transition-transform duration-500 motion-reduce:transition-none motion-reduce:group-hover:scale-100 sm:group-hover:scale-[1.03]"
+                      decoding="async"
+                      data-location-shutter={index === 0 ? '' : undefined}
+                      fetchPriority={index === 0 ? 'high' : 'auto'}
+                      height={photo.height}
+                      loading="eager"
+                      src={photo.src}
+                      width={photo.width}
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-black/55 px-3 py-2.5 text-[13px] font-bold text-white sm:px-4 sm:py-3 sm:text-sm">
+                      {t(photo.label)}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-[13px] leading-5 text-[#334c63]">
+                {t('These photos show neighborhood context, not Cold Stone shop interiors.')}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="listed-locations-heading" className="mx-auto max-w-[1320px] scroll-mt-4 px-5 py-14 sm:px-8 sm:py-20 lg:px-12" id="listed-locations">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h2 className="font-display text-4xl font-extrabold tracking-tight text-[#092a53] sm:text-5xl" id="listed-locations-heading">
+              <h2 className="location-reveal font-display text-4xl font-extrabold tracking-tight text-[#092a53] text-balance sm:text-5xl" id="listed-locations-heading">
                 {t('Listed locations')}
               </h2>
             </div>
-            <div aria-label={t('Filter by city')} className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-white p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2 shadow-[0_1px_0_rgba(9,42,83,0.04),0_8px_24px_rgba(9,42,83,0.06)] ring-1 ring-[#fbfaf5]" role="group">
+            <div aria-label={t('Filter by city')} className="location-reveal flex max-w-full flex-wrap gap-2" role="group" style={{ animationDelay: '80ms' }}>
               {['', ...towns].map((town) => {
                 const active = city === town
                 return (
                   <button
                     aria-pressed={active}
-                    className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-extrabold transition sm:px-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] ${
-                      active ? 'bg-[#092a53] text-white shadow-[0_6px_16px_rgba(9,42,83,0.2)]' : 'text-[#65748a] hover:bg-[#fbfaf5] hover:text-[#092a53]'
+                    className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 ${
+                      active
+                        ? 'bg-[#092a53] text-white'
+                        : 'bg-[#e6edf3] text-[#334c63] hover:bg-[#dce6ee] hover:text-[#092a53]'
                     }`}
                     key={town || 'all'}
                     onClick={() => setCity(town)}
                     type="button"
                   >
                     {town ? t(town) : t('All cities')}
-                    <span className={`grid min-w-5 place-items-center rounded-full px-1.5 py-0.5 text-xs tabular-nums ${active ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-[#fbfaf5] text-[#65748a]'}`}>
+                    <span className={`grid min-w-6 place-items-center rounded-full px-1.5 py-0.5 text-[13px] tabular-nums ${active ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-[#edf3f8] text-[#334c63]'}`}>
                       {town ? countIn(town) : cameroonLocations.length}
                     </span>
                   </button>
@@ -148,90 +197,65 @@ export function LocationsPage() {
 
           <p aria-live="polite" className="sr-only">{listingsLabel(visibleLocations.length)}</p>
 
-          <ul className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-            {visibleLocations.map((location: CameroonLocation) => {
-              const number = cameroonLocations.indexOf(location) + 1
+          <ul className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {visibleLocations.map((location: CameroonLocation, index) => {
               const more = extraLink(location)
               return (
-                <li key={`${location.town}-${location.area}`}>
-                  <article className="group flex h-full flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_30px_rgba(9,42,83,0.06)] ring-1 ring-[#fbfaf5] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(9,42,83,0.12)] hover:ring-[#e2d39a]">
-                    <div className="relative h-28 shrink-0 bg-[#092a53]">
-                      <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
-                        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.09)_1px,transparent_1px)] [background-size:18px_18px]" />
-                        <svg className="absolute inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 400 112">
-                          <path d="M-10 80C60 40 120 96 200 60s140-10 220-40" stroke="rgba(255,220,50,0.35)" strokeDasharray="6 8" strokeWidth="2" />
-                          <path d="M-10 30C70 50 150 10 230 34s120 40 190 20" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
-                        </svg>
-                        <div className="absolute -right-10 -top-16 size-44 rounded-full bg-[#3f86d6]/30 blur-2xl" />
-                      </div>
-                      <span className="absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full bg-[#ffdc32] px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.14em] text-[#092a53]">
-                        <Icon className="size-3.5" path={PIN_PATH} />
-                        {t(location.town)}
+                <li className="location-reveal" key={`${location.town}-${location.area}`} style={{ animationDelay: `${index * 60}ms` }}>
+                  <article className="flex h-full flex-col rounded-[24px] bg-white p-5 sm:p-6">
+                    <div className="flex items-center gap-2 text-sm font-bold text-[#334c63]">
+                      <span className="grid size-8 place-items-center rounded-full bg-[#fff4c4] text-[#092a53]">
+                        <Icon className="size-4" path={PIN_PATH} />
                       </span>
-                      <span aria-hidden="true" className="absolute right-5 top-3 font-display text-5xl font-extrabold tabular-nums text-white/10">
-                        {String(number).padStart(2, '0')}
-                      </span>
-                      <span aria-hidden="true" className="absolute -bottom-6 left-5 grid size-12 place-items-center rounded-2xl bg-white text-[#092a53] shadow-[0_12px_26px_rgba(9,42,83,0.18)] ring-1 ring-[#fbfaf5] transition duration-300 group-hover:-rotate-6 group-hover:bg-[#ffdc32]">
-                        <Icon path={PIN_PATH} />
+                      {t(location.town)}
+                      <span aria-hidden="true" className="ml-auto rounded-full bg-[#edf3f8] px-3 py-1 text-[13px] font-semibold">
+                        {t('Public listing')}
                       </span>
                     </div>
 
-                    <div className="flex flex-1 flex-col px-5 pb-5 pt-10 sm:px-6 sm:pb-6">
-                      <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Cold Stone Creamery')}</p>
-                      <h3 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]">{t(location.area)}</h3>
+                    <h3 className="mt-5 font-display text-2xl font-extrabold text-[#092a53]">{t(location.area)}</h3>
+                    <p className="mt-1 text-base font-semibold leading-6 text-[#334c63]">{t(location.address)}</p>
 
-                      <dl className="mt-5 space-y-3">
-                        <div className="flex items-start gap-3">
-                          <dt className="sr-only">{t('Address or landmark')}</dt>
-                          <span aria-hidden="true" className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-[#fff6d1] text-[#bd9c00]">
-                            <Icon className="size-4" path={PIN_PATH} />
-                          </span>
-                          <dd className="text-sm font-semibold leading-6 text-[#65748a]">{t(location.address)}</dd>
-                        </div>
-                        {location.phone && (
-                          <div className="flex items-center gap-3">
-                            <dt className="sr-only">{t('Phone')}</dt>
-                            <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#f1f5f8] text-[#092a53]">
-                              <Icon className="size-4" path={PHONE_PATH} />
-                            </span>
-                            <dd>
-                              <a className="text-sm font-semibold tabular-nums text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4" href={`tel:${location.phone.replaceAll(' ', '')}`}>
-                                {location.phone}
-                              </a>
-                            </dd>
-                          </div>
-                        )}
-                      </dl>
+                    {location.phone ? (
+                      <a
+                        className="mt-4 inline-flex w-fit items-center gap-2 text-sm font-bold tabular-nums text-[#092a53] underline decoration-[#e2bb00] decoration-2 underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                        href={`tel:${location.phone.replaceAll(' ', '')}`}
+                      >
+                        <Icon className="size-4" path={PHONE_PATH} />
+                        {location.phone}
+                      </a>
+                    ) : (
+                      <p className="mt-4 text-base text-[#334c63]">{t('Phone not listed')}</p>
+                    )}
 
-                      <div className="mt-auto flex items-center gap-2 border-t border-[#efebe1] pt-5">
+                    <div className="mt-auto flex flex-wrap items-center gap-2 rounded-full bg-[#f5f8fb] p-1">
+                      <a
+                        className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#092a53] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#174477] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                        href={mapsUrl(location)}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        {t('Directions')} <ArrowIcon diagonal />
+                      </a>
+                      {location.phone && (
                         <a
-                          className="inline-flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[#092a53] px-4 py-3 text-xs font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
-                          href={mapsUrl(location)}
+                          aria-label={`${t('Call')} ${t(location.area)}`}
+                          className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                          href={`tel:${location.phone.replaceAll(' ', '')}`}
+                        >
+                          <Icon className="size-[18px]" path={PHONE_PATH} />
+                        </a>
+                      )}
+                      {more && (
+                        <a
+                          className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-bold text-[#092a53] underline decoration-[#e2bb00] decoration-2 underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                          href={more.href}
                           rel="noreferrer"
                           target="_blank"
                         >
-                          {t('Directions')} <ArrowIcon diagonal />
+                          {t(more.label)}
                         </a>
-                        {location.phone && (
-                          <a
-                            aria-label={`${t('Call')} ${t(location.area)}`}
-                            className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
-                            href={`tel:${location.phone.replaceAll(' ', '')}`}
-                          >
-                            <Icon className="size-[18px]" path={PHONE_PATH} />
-                          </a>
-                        )}
-                        {more && (
-                          <a
-                            className="inline-flex shrink-0 items-center rounded-full px-3 py-3 text-xs font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4"
-                            href={more.href}
-                            rel="noreferrer"
-                            target="_blank"
-                          >
-                            {t(more.label)}
-                          </a>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </article>
                 </li>
@@ -239,19 +263,41 @@ export function LocationsPage() {
             })}
           </ul>
 
-          <aside className="mt-10 flex flex-col gap-5 rounded-[28px] bg-white p-6 shadow-[0_1px_0_rgba(9,42,83,0.04),0_10px_30px_rgba(9,42,83,0.06)] ring-1 ring-[#fbfaf5] sm:flex-row sm:items-center sm:p-8">
-            <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#092a53] font-display text-lg font-extrabold text-[#ffdc32]">i</span>
+          <aside className="location-reveal mt-8 flex flex-col gap-4 rounded-[24px] bg-[#edf3f8] p-5 sm:flex-row sm:items-center sm:p-6">
+            <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-[#092a53]">
+              <Icon className="size-5" path={PIN_PATH} />
+            </span>
             <div className="flex-1">
               <h2 className="font-display text-lg font-extrabold text-[#092a53]">{t('Before you go')}</h2>
-              <p className="mt-1 text-sm leading-6 text-[#65748a]">{t('Directions opens each branch in Google Maps. Where a phone number is shown, call ahead to confirm today’s hours.')}</p>
+              <p className="mt-1 max-w-[60ch] text-base leading-6 text-[#334c63]">{t('Hours are not listed. Directions open each public listing in Google Maps. Where a phone number is shown, call ahead to confirm today’s hours.')}</p>
             </div>
-            <Link className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#d9d4c7] px-5 py-3 text-xs font-extrabold text-[#092a53] transition hover:-translate-y-0.5 hover:border-[#092a53]" to="/contact">
+            <Link className="inline-flex min-h-11 w-fit shrink-0 items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#092a53] transition-colors hover:bg-[#fff4c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2" to="/contact">
               {t('Contact us')} <ArrowIcon />
             </Link>
           </aside>
+
         </section>
       </main>
       <Footer />
+      <div className="bg-[#092a53] px-5 pb-6 text-white/75 sm:px-8 lg:px-12">
+        <details className="mx-auto max-w-[1320px] text-[13px]">
+          <summary className="w-fit cursor-pointer font-bold underline decoration-[#ffdc32] underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]">
+            {t('Photo credits and licences')}
+          </summary>
+          <ul className="mt-3 space-y-2 leading-5">
+            {neighborhoodPhotos.map((photo) => (
+              <li key={photo.src}>
+                <a className="font-semibold underline underline-offset-2" href={photo.sourceUrl} rel="noreferrer" target="_blank">
+                  {photo.title}
+                </a>
+                {' '}{t('by')} {photo.creator}.{' '}
+                <a className="underline underline-offset-2" href={photo.licenseUrl} rel="noreferrer" target="_blank">{photo.license}</a>
+                {' '}{t('via')} {t(photo.via)}.
+              </li>
+            ))}
+          </ul>
+        </details>
+      </div>
     </div>
   )
 }

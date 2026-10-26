@@ -1,0 +1,487 @@
+/* Admin-only chrome and dropdown system. Native selects retain their semantics. */
+.admin-workspace {
+  --admin-ink: #142f4c;
+  --admin-muted: #718096;
+  --admin-line: #e4eaf1;
+  --admin-surface: #f3f6fa;
+  --admin-gold: #e7c44b;
+}
+
+.admin-topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--admin-line);
+  box-shadow: 0 3px 16px rgb(20 47 76 / 3%);
+}
+
+.admin-topbar-inner {
+  height: 76px;
+}
+.admin-topbar-brand {
+  gap: 11px;
+}
+.admin-topbar-brand > img {
+  width: 42px;
+  height: 42px;
+  box-shadow: none;
+}
+.admin-topbar-brand > span > span:first-child {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+.admin-topbar-brand > span > span:first-child > span {
+  color: #94762b;
+}
+.admin-topbar-brand > span > span:nth-child(2) {
+  margin-top: 5px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  color: var(--admin-muted);
+}
+.admin-topbar-inner > span {
+  background: var(--admin-line);
+  margin-inline: 5px;
+}
+.admin-topbar-breadcrumb {
+  flex: 1;
+  gap: 9px;
+}
+.admin-topbar-breadcrumb > span:first-child {
+  background: var(--admin-surface);
+  border-radius: 9px;
+}
+.admin-topbar-breadcrumb > span[aria-current] {
+  font-size: 13px;
+  font-weight: 650;
+}
+.admin-topbar-breadcrumb > span:not([aria-current]):not(:first-child) {
+  font-size: 11px;
+}
+.admin-topbar-actions {
+  gap: 10px;
+}
+.admin-topbar-actions > div > button {
+  min-height: 44px;
+  border: 1px solid var(--admin-line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(20 47 76 / 3%);
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+.admin-topbar-actions > div > button:hover,
+.admin-topbar-actions > div > button[aria-expanded="true"] {
+  border-color: #b8c8d9;
+  background: #f7f9fc;
+  box-shadow: 0 0 0 3px rgb(20 47 76 / 4%);
+}
+.admin-topbar-actions
+  > div
+  > button
+  > span:first-child:not(:has(img)):not(:has(span)) {
+  display: grid;
+  min-width: 31px;
+  min-height: 29px;
+  place-items: center;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: var(--admin-surface);
+  color: #47617c;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+.admin-topbar-actions > div > button > span:nth-child(2) > span:first-child {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--admin-muted);
+}
+.admin-topbar-actions > div > button > span:nth-child(2) > span:nth-child(2) {
+  font-size: 12px;
+  font-weight: 650;
+}
+.admin-topbar-actions > a {
+  border: 1px solid var(--admin-line);
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+}
+.admin-topbar-actions > a:hover {
+  background: var(--admin-surface);
+}
+.admin-topbar-actions > a > span {
+  top: -5px;
+  right: -5px;
+  font-size: 9px;
+}
+.admin-topbar-actions > div > button[aria-controls="admin-account-menu"] {
+  padding: 5px 9px 5px 5px;
+  gap: 9px;
+}
+.admin-topbar-actions
+  [aria-controls="admin-account-menu"]
+  > span:first-child
+  > :first-child {
+  width: 33px;
+  height: 33px;
+  border-radius: 8px;
+  background-color: #f5e6ae;
+  color: #6e571e;
+  box-shadow: none;
+}
+.admin-topbar-actions
+  [aria-controls="admin-account-menu"]
+  > span:nth-child(2)
+  > span:first-child {
+  color: var(--admin-ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+.admin-topbar-actions
+  [aria-controls="admin-account-menu"]
+  > span:nth-child(2)
+  > span:nth-child(2) {
+  color: var(--admin-muted);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* Anchoring to the header keeps panels outside the blurred containing block. */
+.admin-topbar [role="menu"] {
+  border: 1px solid var(--admin-line);
+  border-radius: 15px;
+  background: #fff;
+  box-shadow:
+    0 20px 55px -12px rgb(20 47 76 / 24%),
+    0 4px 10px rgb(20 47 76 / 4%);
+  animation: admin-menu-enter 0.16s ease-out;
+  max-height: calc(100dvh - 96px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  transform-origin: top right;
+}
+.admin-topbar #admin-branch-menu {
+  position: fixed;
+  top: 68px;
+}
+.admin-topbar #admin-language-menu {
+  width: 304px;
+}
+.admin-topbar #admin-account-menu {
+  width: 312px;
+}
+.admin-topbar [role="menu"] > div:first-child {
+  background: linear-gradient(120deg, #f3f6fa, #fafbfd);
+  border-bottom: 1px solid var(--admin-line);
+  padding: 18px 18px 15px;
+}
+.admin-topbar [role="menu"] > div:first-child > p:first-child {
+  color: var(--admin-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.admin-topbar [role="menu"] > div:first-child > div > p {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+.admin-topbar [role="menu"] > div:first-child > p:last-child {
+  font-size: 11px;
+  line-height: 1.7;
+}
+.admin-topbar [role="menu"] > div:first-child > div > span {
+  background: #e9eef5;
+  color: #47617c;
+  font-size: 9px;
+}
+.admin-topbar [role="menu"] > div:nth-child(2) {
+  padding: 8px;
+}
+.admin-topbar [role^="menuitem"] {
+  border-radius: 9px;
+  min-height: 46px;
+  font-size: 12px;
+  font-weight: 550;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.admin-topbar [role^="menuitem"]:hover:not(:disabled),
+.admin-topbar [role^="menuitem"]:focus-visible {
+  background: #f0f4f9;
+  color: #142f4c;
+}
+.admin-topbar [role^="menuitem"]:focus-visible {
+  outline: 2px solid #527697;
+  outline-offset: -2px;
+}
+.admin-topbar [role="menuitemradio"] {
+  border-color: transparent;
+  padding: 12px;
+}
+.admin-topbar [role="menuitemradio"][aria-checked="true"] {
+  background: #f8f4e6;
+  border-color: #eee3bd;
+}
+.admin-topbar [role="menuitemradio"] > span:first-child {
+  border-radius: 8px;
+  padding: 8px;
+  background: #edf2f7;
+  color: #526b85;
+  font-family: inherit;
+  font-size: 10px;
+}
+.admin-topbar [role="menuitemradio"][aria-checked="true"] > span:first-child {
+  background: #f0e1ad;
+  color: #6e571e;
+}
+.admin-topbar [role="menuitemradio"] > span:nth-child(2) > span:first-child {
+  font-size: 13px;
+  font-weight: 650;
+}
+.admin-topbar [role="menuitemradio"] > span:nth-child(2) > span:last-child {
+  font-size: 11px;
+  line-height: 1.5;
+}
+.admin-topbar [role="menuitemradio"] > span:last-child {
+  border: 0;
+  background: transparent;
+  color: transparent;
+}
+.admin-topbar [role="menuitemradio"][aria-checked="true"] > span:last-child {
+  background: #142f4c;
+  color: #fff;
+}
+.admin-topbar #admin-account-menu > div:first-child {
+  color: var(--admin-ink);
+  gap: 12px;
+  padding: 20px 18px;
+}
+.admin-topbar #admin-account-menu > div:first-child > span {
+  background: #f0e1ad;
+  color: #6e571e;
+  border-radius: 12px;
+}
+.admin-topbar #admin-account-menu > div:first-child > div > p:first-child {
+  font-size: 14px;
+  font-weight: 700;
+}
+.admin-topbar
+  #admin-account-menu
+  > div:first-child
+  > div
+  > p:not(:first-child) {
+  color: var(--admin-muted);
+  font-size: 11px;
+}
+.admin-topbar #admin-account-menu > div:first-child > div > span {
+  background: #e7edf4;
+  color: #47617c;
+  font-size: 9px;
+  padding: 3px 7px;
+  letter-spacing: 0.06em;
+}
+.admin-topbar #admin-account-menu [role="menuitem"] > svg {
+  width: 28px;
+  height: 28px;
+  padding: 5px;
+  border-radius: 7px;
+  background: #f0f4f8;
+  color: #627b95;
+}
+.admin-topbar #admin-account-menu > div:last-child {
+  border-top: 1px solid var(--admin-line);
+  padding: 8px;
+}
+.admin-topbar #admin-account-menu > div:last-child button {
+  color: #b34848;
+}
+.admin-topbar #admin-account-menu > div:last-child button:hover {
+  background: #fff1f1;
+  color: #a32e2e;
+}
+
+/* Every dashboard filter and form select shares the same control treatment. */
+.admin-workspace select {
+  appearance: none;
+  min-height: 42px;
+  border: 1px solid #dce4ed;
+  border-radius: 10px;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath d='m7 10 5 5 5-5' stroke='%23637990' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  padding: 10px 38px 10px 13px;
+  color: var(--admin-ink);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 550;
+  box-shadow: 0 1px 2px rgb(20 47 76 / 3%);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.admin-workspace select:hover {
+  border-color: #a9bdcf;
+}
+.admin-workspace select:focus-visible {
+  outline: 2px solid #527697;
+  outline-offset: 2px;
+  border-color: #527697;
+  box-shadow: 0 0 0 4px rgb(82 118 151 / 9%);
+}
+.admin-workspace select:disabled {
+  cursor: not-allowed;
+  background-color: #f3f6fa;
+  color: #8b99aa;
+  opacity: 0.7;
+}
+.admin-workspace select option {
+  background: #fff;
+  color: #142f4c;
+  font-weight: 500;
+}
+.admin-workspace [role="listbox"] {
+  scrollbar-width: thin;
+  scrollbar-color: #c1cddb transparent;
+}
+.admin-workspace [role="option"][aria-selected="true"] {
+  background: #f8f4e6;
+}
+
+/* Progressive enhancement: fully styled option panels where supported. */
+@supports (appearance: base-select) {
+  .admin-workspace select,
+  .admin-workspace select::picker(select) {
+    appearance: base-select;
+  }
+  .admin-workspace select {
+    background-image: none;
+    padding-right: 13px;
+    gap: 16px;
+  }
+  .admin-workspace select::picker-icon {
+    color: #637990;
+    transition: rotate 0.15s;
+  }
+  .admin-workspace select:open::picker-icon {
+    rotate: 180deg;
+  }
+  .admin-workspace select::picker(select) {
+    margin-top: 6px;
+    padding: 6px;
+    border: 1px solid #e4eaf1;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 14px 38px rgb(20 47 76 / 16%);
+    max-height: min(340px, 60dvh);
+    scrollbar-width: thin;
+  }
+  .admin-workspace select option {
+    padding: 10px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    gap: 12px;
+    min-height: 38px;
+  }
+  .admin-workspace select option:hover,
+  .admin-workspace select option:focus {
+    background: #f0f4f9;
+    outline: none;
+  }
+  .admin-workspace select option:checked {
+    background: #f8f4e6;
+    color: #6e571e;
+    font-weight: 650;
+  }
+  .admin-workspace select option::checkmark {
+    color: #94762b;
+  }
+}
+
+@keyframes admin-menu-enter {
+  from {
+    opacity: 0;
+    translate: 0 -5px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@media (min-width: 768px) and (max-width: 1279px) {
+  .admin-topbar-breadcrumb {
+    display: none;
+  }
+  .admin-topbar-breadcrumb + * {
+    margin-left: auto;
+  }
+  .admin-topbar-inner > span {
+    display: none;
+  }
+}
+@media (max-width: 639px) {
+  .admin-topbar-inner {
+    height: 64px;
+    padding-inline: 12px;
+    gap: 8px;
+  }
+  .admin-topbar-brand > img {
+    width: 35px;
+    height: 35px;
+  }
+  .admin-topbar-actions {
+    gap: 6px;
+  }
+  .admin-topbar-actions > div > button {
+    min-height: 38px;
+    gap: 5px;
+    padding: 5px 7px;
+    border-radius: 9px;
+  }
+  .admin-topbar-actions
+    > div
+    > button
+    > span:first-child:not(:has(img)):not(:has(span)) {
+    min-height: 25px;
+    min-width: 27px;
+    font-size: 9px;
+    padding: 3px;
+  }
+  .admin-topbar-actions > a {
+    width: 36px;
+    height: 36px;
+  }
+  .admin-topbar-actions > div > button[aria-controls="admin-account-menu"] {
+    padding: 3px;
+  }
+  .admin-topbar [role="menu"],
+  .admin-topbar #admin-branch-menu,
+  .admin-topbar #admin-language-menu,
+  .admin-topbar #admin-account-menu {
+    position: fixed;
+    top: 70px;
+    right: 12px;
+    left: auto !important;
+    width: min(340px, calc(100vw - 24px)) !important;
+    max-height: calc(100dvh - 84px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-topbar [role="menu"] {
+    animation: none;
+  }
+  .admin-workspace select,
+  .admin-topbar-actions > div > button,
+  .admin-topbar [role^="menuitem"] {
+    transition: none;
+  }
+}

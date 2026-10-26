@@ -244,32 +244,37 @@ export function AdminInventoryPage() {
   const hasActiveFilters = Boolean(normalizedSearch || categoryFilter || inventoryFilter !== 'all')
 
   const metrics = [
-    { label: 'Total items', value: items.length, icon: icons.list, accent: 'bg-[#e9f1fa] text-[#315982]', filter: 'all' as const },
-    { label: 'Available', value: availableCount, icon: icons.check, accent: 'bg-[#e5f4ea] text-[#2c7a4f]', filter: 'available' as const },
-    { label: 'Low stock', value: lowStockCount, icon: icons.alert, accent: 'bg-[#fff1dc] text-[#a86a00]', filter: 'low' as const },
-    { label: 'Unavailable', value: unavailableCount, icon: icons.eyeOff, accent: 'bg-[#fdecea] text-[#b2433a]', filter: 'unavailable' as const },
+    { label: 'Total items', value: items.length, filter: 'all' as const },
+    { label: 'Available', value: availableCount, filter: 'available' as const },
+    { label: 'Low stock', value: lowStockCount, filter: 'low' as const },
+    { label: 'Unavailable', value: unavailableCount, filter: 'unavailable' as const },
   ]
+  const stockPosition = items.reduce(
+    (counts, item) => {
+      const status = itemStatus(item)
+      if (status === 'ok') counts.inStock += 1
+      else if (status === 'low') counts.low += 1
+      else counts.unavailable += 1
+      return counts
+    },
+    { inStock: 0, low: 0, unavailable: 0 },
+  )
 
   const draftAvailable = draft ? Math.max(0, Number(draft.stock || 0) - (draft.reservedStock || 0)) : 0
 
   return (
-    <div className="min-w-0 space-y-6">
-      <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
-            <Icon className="size-7" path={icons.box} />
-          </span>
-          <div className="min-w-0">
-            <nav aria-label={t('Breadcrumb')} className="text-xs font-bold text-[#65748a]">
-              {t('Catalog')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#bd9c00]">{t('Menu inventory')}</span>
-            </nav>
-            <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Menu inventory')}</h1>
-            <p className="mt-0.5 text-sm text-[#65748a]">{t('Set stock, availability, and dietary tags for every menu item.')}</p>
-          </div>
+    <div className="min-w-0 space-y-5">
+      <header className="flex flex-col gap-4 border-b border-[#dce3eb] pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <nav aria-label={t('Breadcrumb')} className="text-xs font-semibold text-[#65748a]">
+            {t('Catalog')} <span aria-hidden="true" className="mx-1">/</span>
+            <span className="text-[#092a53]">{t('Menu inventory')}</span>
+          </nav>
+          <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-[#092a53]">{t('Menu inventory')}</h1>
+          <p className="mt-1 text-sm text-[#53647a]">{t('Set stock, availability, and dietary tags for every menu item.')}</p>
         </div>
         <button
-          className="inline-flex min-h-10 items-center gap-2 self-start rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:opacity-50 xl:self-auto"
+          className="inline-flex min-h-10 items-center gap-2 self-start rounded-lg border border-[#cbd5df] bg-white px-4 text-sm font-semibold text-[#123b68] transition-colors hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50 sm:self-auto"
           disabled={!filteredItems.length}
           onClick={exportCsv}
           type="button"
@@ -294,59 +299,67 @@ export function AdminInventoryPage() {
         </p>
       )}
 
-      <section aria-label={t('Inventory overview')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t('Inventory overview')} className="admin-stats grid grid-cols-2 overflow-hidden rounded-xl border border-[#dce3eb] bg-white [&>button:nth-child(odd)]:border-r [&>button:nth-child(-n+2)]:border-b [&>button]:border-[#e5e9ee] sm:grid-cols-4 sm:divide-x sm:divide-[#e5e9ee] sm:[&>button:nth-child(odd)]:border-r-0 sm:[&>button:nth-child(-n+2)]:border-b-0">
         {metrics.map((metric) => {
-          const isActive = inventoryFilter === metric.filter && metric.filter !== 'all'
+          const isActive = inventoryFilter === metric.filter
           return (
             <button
               aria-pressed={isActive}
-              className={`group rounded-2xl border bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:p-5 ${
-                isActive ? 'border-[#092a53] shadow-[0_0_0_1px_#092a53]' : 'border-[#dce3eb]'
+              className={`relative min-h-[5.5rem] px-4 py-3 text-left transition-colors hover:bg-[#f8fafc] focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00] sm:px-5 ${
+                isActive ? 'bg-[#f4f6f8]' : 'bg-white'
               }`}
               key={metric.label}
               onClick={() => setInventoryFilter(isActive ? 'all' : metric.filter)}
               type="button"
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className={`grid size-9 place-items-center rounded-xl ${metric.accent}`}><Icon path={metric.icon} /></span>
-                {metric.filter !== 'all' && (
-                  <span className="text-xs font-bold text-[#a3b0bf] opacity-0 transition group-hover:opacity-100">
-                    {t(isActive ? 'Clear filter' : 'Filter')}
-                  </span>
-                )}
-              </div>
-              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#092a53]">{metric.value.toLocaleString()}</p>
-              <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{t(metric.label)}</p>
+              <p className="text-xs font-semibold text-[#53647a]">{t(metric.label)}</p>
+              <p className="mt-1 font-display text-2xl font-bold leading-none tabular-nums text-[#092a53]">{metric.value.toLocaleString()}</p>
+              {isActive && <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 bg-[#092a53]" />}
             </button>
           )
         })}
       </section>
 
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl bg-[#f4f6f8] px-4 py-3 text-xs ring-1 ring-[#dce3eb]">
-        <span className="flex items-center gap-2 font-bold text-[#65748a]">
-          <Icon className="size-4 text-[#65748a]" path={icons.box} />
-          {unitsOnHand.toLocaleString()} {t('Units on hand')}
-        </span>
-        <span className="font-semibold text-[#65748a]">{reservedUnits.toLocaleString()} {t('reserved for pending checkouts.')}</span>
-        {items.length > 0 && (
-          <div aria-hidden="true" className="flex h-2 min-w-40 flex-1 overflow-hidden rounded-full bg-[#dce3eb]">
-            <span className="bg-[#35a36b]" style={{ width: `${((availableCount - items.filter((item) => itemStatus(item) === 'low').length) / items.length) * 100}%` }} />
-            <span className="bg-[#bd9c00]" style={{ width: `${(items.filter((item) => itemStatus(item) === 'low').length / items.length) * 100}%` }} />
-            <span className="bg-[#d2544b]" style={{ width: `${(unavailableCount / items.length) * 100}%` }} />
+      <section aria-label={t('Stock position')} className="grid gap-4 rounded-xl border border-[#dce3eb] bg-white px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 className="text-sm font-semibold text-[#092a53]">{t('Stock position')}</h2>
+            <p className="text-xs font-medium text-[#53647a]"><span className="font-bold tabular-nums text-[#092a53]">{unitsOnHand.toLocaleString()}</span> {t('Units on hand')}</p>
           </div>
-        )}
-      </div>
+          {items.length > 0 && (
+            <>
+              <div
+                aria-hidden="true"
+                className="mt-3 flex h-2 overflow-hidden rounded-sm bg-[#e5e9ee]"
+              >
+                <span className="bg-[#247b50]" style={{ width: `${(stockPosition.inStock / items.length) * 100}%` }} />
+                <span className="bg-[#a86a00]" style={{ width: `${(stockPosition.low / items.length) * 100}%` }} />
+                <span className="bg-[#a53f37]" style={{ width: `${(stockPosition.unavailable / items.length) * 100}%` }} />
+              </div>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#53647a]">
+                <span className="inline-flex items-center gap-1.5"><i aria-hidden="true" className="size-2 rounded-full bg-[#247b50]" />{t('In stock')}</span>
+                <span className="inline-flex items-center gap-1.5"><i aria-hidden="true" className="size-2 rounded-full bg-[#a86a00]" />{t('Low stock')}</span>
+                <span className="inline-flex items-center gap-1.5"><i aria-hidden="true" className="size-2 rounded-full bg-[#a53f37]" />{t('Unavailable')}</span>
+              </div>
+            </>
+          )}
+        </div>
+        <div className="border-t border-[#e5e9ee] pt-3 sm:border-l sm:border-t-0 sm:py-1 sm:pl-5 sm:pt-1">
+          <p className="text-xs font-semibold text-[#53647a]">{t('Reserved')}</p>
+          <p className="mt-1 text-sm font-bold tabular-nums text-[#092a53]">{reservedUnits.toLocaleString()} <span className="text-xs font-medium text-[#53647a]">{t('reserved for pending checkouts.')}</span></p>
+        </div>
+      </section>
 
-      <section aria-labelledby="inventory-table-title" className="min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
-        <div className="flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
+      <section aria-labelledby="inventory-table-title" className="min-w-0 rounded-xl border border-[#dce3eb] bg-white">
+        <div className="flex flex-col gap-4 border-b border-[#e5e9ee] p-4 sm:p-5">
           <div>
-            <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="inventory-table-title">{t('Stock levels')}</h2>
-            <p aria-live="polite" className="mt-0.5 text-xs text-[#65748a]">
+            <h2 className="font-display text-lg font-semibold text-[#092a53]" id="inventory-table-title">{t('Stock levels')}</h2>
+            <p aria-live="polite" className="mt-1 text-xs text-[#53647a]">
               {t('Showing {shown} of {total} items', { shown: filteredItems.length, total: items.length })}
             </p>
           </div>
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
-            <label className="relative block">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-[minmax(220px,1fr)_minmax(150px,auto)_minmax(165px,auto)_auto]">
+            <label className="relative col-span-2 block xl:col-span-1">
               <span className="sr-only">{t('Search')}</span>
               <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
               <input className={`${inputClassName} mt-0 pl-10`} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search items')} type="search" value={search} />
@@ -366,7 +379,7 @@ export function AdminInventoryPage() {
                 <option value="stock">{t('Sort: Lowest stock first')}</option>
               </select>
             </label>
-            <div aria-label={t('Status')} className="flex overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
+            <div aria-label={t('Status')} className="col-span-2 flex min-w-0 overflow-x-auto rounded-lg border border-[#dce3eb] bg-[#f4f6f8] p-1 xl:col-span-1" role="group">
               {([
                 { key: 'all', label: t('All') },
                 { key: 'available', label: t('Available') },
@@ -375,7 +388,7 @@ export function AdminInventoryPage() {
               ] as const).map((option) => (
                 <button
                   aria-pressed={inventoryFilter === option.key}
-                  className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition ${inventoryFilter === option.key ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
+                  className={`min-h-10 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[#bd9c00] ${inventoryFilter === option.key ? 'bg-white text-[#092a53] ring-1 ring-[#dce3eb]' : 'text-[#53647a] hover:text-[#092a53]'}`}
                   key={option.key}
                   onClick={() => setInventoryFilter(option.key)}
                   type="button"
@@ -391,9 +404,9 @@ export function AdminInventoryPage() {
           <div aria-label={t('Loading menu items…')} className="space-y-3 p-4 sm:p-5" role="status">
             {[0, 1, 2, 3, 4].map((row) => (
               <div className="flex animate-pulse items-center gap-4" key={row}>
-                <span className="size-10 rounded-xl bg-[#f4f6f8]" />
-                <span className="h-3 flex-1 rounded bg-[#f4f6f8]" />
-                <span className="h-3 w-28 rounded bg-[#f4f6f8]" />
+                <span className="size-10 rounded-lg bg-[#e5e9ee]" />
+                <span className="h-3 flex-1 rounded bg-[#e5e9ee]" />
+                <span className="h-3 w-28 rounded bg-[#e5e9ee]" />
               </div>
             ))}
           </div>
@@ -417,14 +430,14 @@ export function AdminInventoryPage() {
           <div className="relative overflow-x-auto">
             <table className="w-full min-w-[880px] text-left text-sm">
               <thead>
-                <tr className="border-b border-[#f4f6f8] text-xs uppercase tracking-[0.08em] text-[#65748a]">
-                  <th className="px-5 py-3 font-extrabold" scope="col">{t('Item Name')}</th>
-                  {!isGrouped && <th className="px-3 py-3 font-extrabold" scope="col">{t('Category')}</th>}
-                  <th className="px-3 py-3 font-extrabold" scope="col">{t('Available')}</th>
-                  <th className="px-3 py-3 text-center font-extrabold" scope="col">{t('Reserved')}</th>
-                  <th className="px-3 py-3 font-extrabold" scope="col">{t('Dietary needs')}</th>
-                  <th className="px-3 py-3 font-extrabold" scope="col">{t('Status')}</th>
-                  <th className="px-3 py-3 text-center font-extrabold" scope="col">{t('On sale')}</th>
+                <tr className="border-b border-[#dce3eb] text-xs font-semibold text-[#53647a]">
+                  <th className="sticky left-0 z-20 bg-white px-5 py-3 font-semibold" scope="col">{t('Item Name')}</th>
+                  {!isGrouped && <th className="px-3 py-3 font-semibold" scope="col">{t('Category')}</th>}
+                  <th className="px-3 py-3 font-semibold" scope="col">{t('Available')}</th>
+                  <th className="px-3 py-3 text-center font-semibold" scope="col">{t('Reserved')}</th>
+                  <th className="px-3 py-3 font-semibold" scope="col">{t('Dietary needs')}</th>
+                  <th className="px-3 py-3 font-semibold" scope="col">{t('Status')}</th>
+                  <th className="px-3 py-3 text-center font-semibold" scope="col">{t('On sale')}</th>
                   <th className={`px-5 py-3 ${PINNED_ACTION_HEAD}`} scope="col"><span className="sr-only">{t('Action')}</span></th>
                 </tr>
               </thead>
@@ -438,18 +451,18 @@ export function AdminInventoryPage() {
                   return (
                     <Fragment key={item.id}>
                       {showGroupHeader && (
-                        <tr className="bg-[#f4f6f8]">
-                          <th className="border-y border-[#f4f6f8] px-5 py-2 text-xs font-extrabold text-[#123b68]" colSpan={7} scope="colgroup">
+                        <tr className="border-b border-[#e5e9ee]">
+                          <th className="px-5 py-2 text-xs font-semibold text-[#123b68]" colSpan={7} scope="colgroup">
                             {t(item.categoryTitle)}
-                            <span className="ml-2 rounded-full bg-white px-2 py-0.5 text-xs text-[#65748a] ring-1 ring-[#dce3eb]">{groupCount}</span>
+                            <span className="ml-2 text-xs font-medium tabular-nums text-[#53647a]">({groupCount})</span>
                           </th>
                         </tr>
                       )}
-                      <tr className={`group border-b border-[#f4f6f8] transition hover:bg-[#f4f6f8] ${savingId === item.id ? 'opacity-60' : ''}`}>
-                        <td className="px-5 py-3">
+                      <tr className={`group border-b border-[#edf0f3] ${savingId === item.id ? 'opacity-60' : ''}`}>
+                        <td className="sticky left-0 z-10 bg-white px-5 py-3 shadow-[8px_0_10px_-10px_rgba(9,42,83,0.4)] transition-colors group-hover:bg-[#fafbfd]">
                           <div className="flex min-w-0 items-center gap-3">
                             <Thumb src={item.image} />
-                            <span className="max-w-[13rem] truncate font-bold text-[#092a53]">{item.name}</span>
+                            <span className="max-w-[13rem] truncate font-semibold text-[#092a53]">{item.name}</span>
                           </div>
                         </td>
                         {!isGrouped && (
@@ -469,7 +482,7 @@ export function AdminInventoryPage() {
                             <p className="mt-1 text-xs font-semibold text-[#a3b0bf]">{t('Alert at {count}', { count: threshold(item) })}</p>
                           </div>
                         </td>
-                        <td className="px-3 py-3 text-center text-xs font-bold tabular-nums text-[#65748a]">{item.reservedStock || 0}</td>
+                        <td className="px-3 py-3 text-center text-xs font-medium tabular-nums text-[#53647a]">{item.reservedStock || 0}</td>
                         <td className="px-3 py-3">
                           {item.dietaryTags?.length ? (
                             <div className="flex max-w-[13rem] flex-wrap gap-1">
@@ -501,7 +514,7 @@ export function AdminInventoryPage() {
                         <td className={`px-5 py-3 text-right ${PINNED_ACTION_CELL}`}>
                           <button
                             aria-label={`${t('Edit')} ${item.name}`}
-                            className="inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-[#bd9c00]"
+                            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-[#123b68] transition-colors hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-[#bd9c00]"
                             onClick={() => { setError(''); setDraft({ ...item, dietaryTags: [...(item.dietaryTags || [])] }) }}
                             type="button"
                           >
@@ -528,12 +541,12 @@ export function AdminInventoryPage() {
             className="admin-drawer-panel relative flex h-full w-full max-w-[30rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]"
             role="dialog"
           >
-            <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
+            <header className="flex items-start justify-between gap-4 border-b border-[#e5e9ee] px-6 py-5">
               <div className="flex min-w-0 items-center gap-3">
                 <Thumb src={draft.image} />
                 <div className="min-w-0">
-                  <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t(draft.categoryTitle)}</p>
-                  <h2 className="truncate font-display text-xl font-extrabold text-[#092a53]" id="inventory-drawer-title">{draft.name}</h2>
+                  <p className="text-xs font-semibold text-[#53647a]">{t(draft.categoryTitle)}</p>
+                  <h2 className="truncate font-display text-xl font-bold text-[#092a53]" id="inventory-drawer-title">{draft.name}</h2>
                 </div>
               </div>
               <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setDraft(null)} type="button">
@@ -542,21 +555,21 @@ export function AdminInventoryPage() {
             </header>
 
             <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
-              <dl className="grid grid-cols-3 gap-2 text-center">
+              <dl className="grid grid-cols-3 divide-x divide-[#e5e9ee] rounded-lg border border-[#dce3eb] text-center">
                 {[
                   { label: t('Stock'), value: Number(draft.stock || 0) },
                   { label: t('Reserved'), value: draft.reservedStock || 0 },
                   { label: t('Available'), value: draftAvailable },
                 ].map((stat) => (
-                  <div className="rounded-xl bg-[#f4f6f8] px-2 py-3 ring-1 ring-[#dce3eb]" key={stat.label}>
-                    <dt className="text-xs font-extrabold uppercase tracking-[0.1em] text-[#65748a]">{stat.label}</dt>
-                    <dd className="mt-1 font-display text-xl font-extrabold tabular-nums text-[#092a53]">{stat.value}</dd>
+                  <div className="px-2 py-2.5" key={stat.label}>
+                    <dt className="text-xs font-semibold text-[#53647a]">{stat.label}</dt>
+                    <dd className="mt-1 font-display text-lg font-semibold tabular-nums text-[#092a53]">{stat.value}</dd>
                   </div>
                 ))}
               </dl>
 
               <fieldset>
-                <legend className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Stock quantity')}</legend>
+                <legend className="mb-3 text-sm font-semibold text-[#092a53]">{t('Stock quantity')}</legend>
                 <div className="flex items-center gap-2">
                   <button
                     aria-label={t('Decrease quantity')}
@@ -601,7 +614,7 @@ export function AdminInventoryPage() {
                 )}
               </fieldset>
 
-              <label className="block text-xs font-bold text-[#65748a]">
+              <label className="block text-sm font-semibold text-[#53647a]">
                 {t('Low-stock threshold')}
                 <input
                   className={inputClassName}
@@ -613,7 +626,7 @@ export function AdminInventoryPage() {
                 <span className="mt-1 block text-xs font-medium text-[#65748a]">{t('The item is flagged as low stock at or below this number.')}</span>
               </label>
 
-              <div className="flex items-center gap-4 rounded-xl bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb]">
+              <div className="flex items-center gap-4 rounded-lg border border-[#dce3eb] p-4">
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-bold text-[#092a53]">{t('Available to order')}</span>
                   <span className="block text-xs text-[#65748a]">{t('Turn off to hide this item from the public menu.')}</span>
@@ -622,7 +635,7 @@ export function AdminInventoryPage() {
               </div>
 
               <fieldset>
-                <legend className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Dietary needs')}</legend>
+                <legend className="mb-3 text-sm font-semibold text-[#092a53]">{t('Dietary needs')}</legend>
                 <div className="flex flex-wrap gap-2">
                   {dietaryOptions.map((tag) => {
                     const selected = draft.dietaryTags?.includes(tag) || false
@@ -660,7 +673,7 @@ export function AdminInventoryPage() {
               )}
             </div>
 
-            <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
+            <footer className="flex items-center justify-end gap-3 border-t border-[#e5e9ee] px-6 py-4">
               <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setDraft(null)} type="button">
                 {t('Cancel')}
               </button>

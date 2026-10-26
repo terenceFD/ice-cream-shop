@@ -1,4 +1,4 @@
-import { useState, type InputHTMLAttributes, type ReactNode } from 'react'
+import { useId, useState, type InputHTMLAttributes, type ReactNode } from 'react'
 import { useLanguage } from '../language/useLanguage'
 
 type PasswordFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
@@ -10,6 +10,7 @@ type PasswordFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & 
 
 export function PasswordField({ label, labelClassName, variant = 'default', children, ...inputProps }: PasswordFieldProps) {
   const [isVisible, setIsVisible] = useState(false)
+  const labelId = useId()
   const { t } = useLanguage()
 
   if (variant === 'plain') {
@@ -43,34 +44,27 @@ export function PasswordField({ label, labelClassName, variant = 'default', chil
 
   if (variant === 'modern') {
     return (
-      <label className="block">
-        <span className={labelClassName ?? 'text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]'}>{label}</span>
-        <span className="group relative mt-2 flex items-center rounded-2xl bg-white ring-1 ring-[#e5e1d7] transition hover:ring-[#d6cfbd] focus-within:ring-[#bd9c00]">
-          <svg aria-hidden="true" className="pointer-events-none absolute left-4 size-[18px] text-[#65748a] transition group-focus-within:text-[#092a53]" fill="none" viewBox="0 0 24 24">
-            <rect height="10" rx="2.5" stroke="currentColor" strokeWidth="1.8" width="16" x="4" y="10" />
-            <path d="M8 10V7.5a4 4 0 0 1 8 0V10" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-          </svg>
+      <div>
+        <span className={labelClassName ?? 'text-sm font-bold text-[#092a53]'} id={labelId}>{label}</span>
+        <span className="relative mt-2 flex items-center">
           <input
             {...inputProps}
-            className="w-full rounded-2xl bg-transparent py-3.5 pl-12 pr-14 text-sm font-semibold text-[#092a53] outline-none! placeholder:font-normal placeholder:text-[#a5aebb]"
+            aria-labelledby={labelId}
+            className="min-h-12 w-full rounded-lg border border-[#dce3eb] bg-white px-4 pr-16 text-sm font-semibold text-[#092a53] outline-none! placeholder:font-normal placeholder:text-[#65748a] focus:border-[#092a53]"
             type={isVisible ? 'text' : 'password'}
           />
           <button
             aria-label={`${t(isVisible ? 'Hide' : 'Show')} ${label.toLowerCase()}`}
             aria-pressed={isVisible}
-            className="absolute right-2 grid size-10 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#fbf6e3] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+            className="absolute right-2 text-sm font-bold text-[#65748a] outline-none! hover:text-[#092a53] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#092a53]"
             onClick={() => setIsVisible((visible) => !visible)}
             type="button"
           >
-            <svg aria-hidden="true" className="size-[18px]" fill="none" viewBox="0 0 24 24">
-              <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
-              <circle cx="12" cy="12" r="2.8" stroke="currentColor" strokeWidth="1.8" />
-              {isVisible && <path d="M4 20 20 4" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />}
-            </svg>
+            {isVisible ? t('Hide') : t('Show')}
           </button>
         </span>
         {children}
-      </label>
+      </div>
     )
   }
 

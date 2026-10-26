@@ -6,35 +6,8 @@ import { useLanguage } from "../../language/useLanguage";
 import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
 
 const REFRESH_MS = 60_000;
-const STAR_PATH = "M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z";
 
-const icons = {
-  store: "M4 10h16l-1.5-5h-13L4 10Zm0 0v10h16V10M9 20v-5h6v5",
-  refresh: "M4 12a8 8 0 0 1 13.7-5.7L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.7L4 15.5M4 20v-4.5h4.5",
-  receipt: "M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6m-6 4h6m-6 4h3",
-  money: "M3 7h18v10H3V7Zm9 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM6 10v4m12-4v4",
-  flame: "M12 3c1 3 4 4.5 4 8.5a4 4 0 0 1-8 0c0-1.5.6-2.6 1.5-3.5.2 1.5 1 2.5 2 2.5 0-3-1.5-5 .5-7.5Z",
-  clock: "M12 7v5l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
-  inbox: "M4 13h4l1.5 3h5L16 13h4M4 13l2.5-8h11L20 13M4 13v6h16v-6",
-  chat: "M4 5h16v11H9l-5 4V5Zm4 5h8m-8 3h5",
-  cake: "M4 20h16M5 20v-7h14v7M8 13V9h8v4M12 9V5",
-  check: "m5 12.5 4.5 4.5L19 7.5",
-  arrow: "M5 12h14m-5-5 5 5-5 5",
-  chart: "M4 19V5m0 14h16M8 15v-3m4 3V8m4 7v-5",
-  truck: "M3 7h11v9H3V7Zm11 3h4l3 3v3h-7v-6ZM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z",
-  users: "M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20m17 0v-1.5a4 4 0 0 0-3-3.87M14 3.2a4 4 0 0 1 0 7.6M9.5 10.8a3.8 3.8 0 1 0 0-7.6 3.8 3.8 0 0 0 0 7.6Z",
-  card: "M3 6h18v12H3V6Zm0 4h18M7 15h4",
-  alert: "M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z",
-  sun: "M12 4V2m0 20v-2m8-8h2M2 12h2m13.7-5.7 1.4-1.4M4.9 19.1l1.4-1.4m0-11.4L4.9 4.9m14.2 14.2-1.4-1.4M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z",
-};
-
-function Icon({ path, className = "size-4" }) {
-  return (
-    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
-      <path d={path} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-    </svg>
-  );
-}
+const linkClassName = "text-sm font-semibold text-[#123b68] outline-none! transition-colors hover:text-[#092a53] focus-visible:outline-2! focus-visible:outline-offset-4 focus-visible:outline-[#092a53]";
 
 function toXaf(cents, currency) {
   return String(currency || "xaf").toLowerCase() === "usd" ? Math.round((Number(cents || 0) / 100) * USD_TO_XAF) : Number(cents || 0);
@@ -86,37 +59,49 @@ export function AdminStoreOverviewPage() {
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
     const request = (path) => apiRequest(path, { token: sessionToken });
-    const [orders, delivered, notifications, reviews, cakes, report] = await Promise.all([
-      safe(request("/admin/orders")),
-      safe(request("/admin/orders?status=delivered")),
-      safe(request("/admin/notifications")),
-      safe(request("/admin/reviews?status=pending")),
-      safe(request("/admin/cake-requests")),
-      safe(request("/admin/reports")),
-    ]);
-    if (!orders && !notifications && !report) {
-      setError(t("Unable to load the store overview. Check your connection and try again."));
-    } else {
+    try {
+      const [orders, delivered, notifications, reviews, cakes, report] = await Promise.all([
+        request("/admin/orders"),
+        safe(request("/admin/orders?status=delivered")),
+        safe(request("/admin/notifications")),
+        request("/admin/reviews?status=pending"),
+        safe(request("/admin/cake-requests")),
+        safe(request("/admin/reports")),
+      ]);
       setError("");
       setData({
-        orders: orders?.orders || [],
+        orders: orders.orders,
         delivered: delivered?.orders || [],
         messages: notifications?.messages || [],
         unreadCount: notifications?.unreadCount || 0,
-        reviews: reviews?.reviews || [],
+        reviews: reviews.reviews,
         cakes: cakes?.requests || [],
         report,
       });
       setLastUpdated(new Date());
+    } catch (loadError) {
+      setError(loadError instanceof Error
+        ? loadError.message
+        : t("Unable to load the store overview. Check your connection and try again."));
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
-    setIsLoading(false);
-    setIsRefreshing(false);
   }, [sessionToken, t]);
 
   useEffect(() => {
     refresh();
-    const timer = window.setInterval(refresh, REFRESH_MS);
-    return () => window.clearInterval(timer);
+    const timer = window.setInterval(() => {
+      if (!document.hidden) refresh();
+    }, REFRESH_MS);
+    function handleVisibilityChange() {
+      if (!document.hidden) refresh();
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [refresh]);
 
   const view = useMemo(() => {
@@ -157,7 +142,7 @@ export function AdminStoreOverviewPage() {
     const newCakes = data.cakes.filter((cake) => cake.status === "new").length;
     const openRevenue = processing.reduce((sum, order) => sum + toXaf(order.totalCents, order.currency), 0);
     const liveOrders = [...processing]
-      .sort((a, b) => (parseDate(a.createdAt)?.getTime() || 0) - (parseDate(b.createdAt)?.getTime() || 0))
+      .sort((a, b) => (parseDate(b.createdAt)?.getTime() || 0) - (parseDate(a.createdAt)?.getTime() || 0))
       .slice(0, 5);
     return {
       processing,
@@ -177,10 +162,6 @@ export function AdminStoreOverviewPage() {
     };
   }, [data]);
 
-  const hour = new Date().getHours();
-  const greeting = t(hour < 12 ? "Good morning, {name}" : hour < 18 ? "Good afternoon, {name}" : "Good evening, {name}", {
-    name: (currentAdmin?.name || "").split(/\s+/)[0] || "Admin",
-  });
   const storeDisplayName = currentAdmin?.role === "store_admin"
     ? currentAdmin.storeName?.replace(/\s+branch$/i, "").trim()
     : currentAdmin?.storeName;
@@ -189,178 +170,139 @@ export function AdminStoreOverviewPage() {
 
   if (isLoading) {
     return (
-      <div aria-label={t("Loading…")} className="space-y-6" role="status">
-        <div className="h-40 animate-pulse rounded-[24px] bg-[#f4f6f8]" />
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-          {[0, 1, 2, 3].map((item) => <div className="h-28 animate-pulse rounded-2xl bg-[#f4f6f8]" key={item} />)}
+      <div aria-label={t("Loading…")} className="space-y-8" role="status">
+        <div className="h-24 animate-pulse bg-[#f4f6f8] motion-reduce:animate-none" />
+        <div className="grid grid-cols-2 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((item) => <div className="h-24 animate-pulse bg-[#f4f6f8] motion-reduce:animate-none" key={item} />)}
         </div>
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <div className="h-80 animate-pulse rounded-[20px] bg-[#f4f6f8]" />
-          <div className="h-80 animate-pulse rounded-[20px] bg-[#f4f6f8]" />
+        <div className="grid gap-10 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+          <div className="h-80 animate-pulse bg-[#f4f6f8] motion-reduce:animate-none" />
+          <div className="h-80 animate-pulse bg-[#f4f6f8] motion-reduce:animate-none" />
         </div>
       </div>
     );
   }
 
   const tasks = view ? [
-    { key: "orders", count: view.processing.length, label: t("orders in the kitchen"), to: "/admin/orders", icon: icons.flame, tone: "bg-[#fff1dc] text-[#a86a00]" },
-    { key: "payment", count: view.awaitingPayment.length, label: t("awaiting payment"), to: "/admin/orders", icon: icons.clock, tone: "bg-[#e9f1fa] text-[#315982]" },
-    { key: "messages", count: data.unreadCount, label: t("unread messages"), to: "/admin/notifications", icon: icons.inbox, tone: "bg-[#efe9fb] text-[#5b3fa0]" },
-    { key: "reviews", count: data.reviews.length, label: t("reviews to approve"), to: "/admin/reviews", icon: icons.chat, tone: "bg-[#e5f4ea] text-[#2c7a4f]" },
-    { key: "cakes", count: view.newCakes, label: t("new cake requests"), to: "/admin/cake-requests", icon: icons.cake, tone: "bg-[#fff4c2] text-[#bd9c00]" },
+    { key: "orders", count: view.processing.length, label: t("orders in the kitchen"), to: "/admin/orders" },
+    { key: "payment", count: view.awaitingPayment.length, label: t("awaiting payment"), to: "/admin/orders" },
+    { key: "messages", count: data.unreadCount, label: t("unread messages"), to: "/admin/notifications" },
+    { key: "reviews", count: data.reviews.length, label: t("reviews to approve"), to: "/admin/reviews" },
+    { key: "cakes", count: view.newCakes, label: t("new cake requests"), to: "/admin/cake-requests" },
   ] : [];
   const openTasks = tasks.filter((task) => task.count > 0);
+  const todayLabel = new Date().toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" });
 
   return (
     <div className="min-w-0 space-y-6">
-      {/* Welcome banner */}
-      <section className="relative isolate overflow-hidden rounded-[24px] bg-[#092a53] px-6 py-7 text-white shadow-[0_18px_40px_rgba(9,42,83,0.2)] sm:px-8">
-        <div aria-hidden="true" className="absolute -right-20 -top-24 -z-10 size-72 rounded-full border-[48px] border-white/[0.05]" />
-        <div aria-hidden="true" className="absolute -bottom-24 left-1/3 -z-10 size-64 rounded-full bg-[#ffdc32]/10 blur-3xl" />
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="min-w-0">
-            <p className="flex flex-wrap items-center gap-2 text-xs font-semibold text-white/65">
-              <Icon className="size-4 text-[#ffdc32]" path={icons.sun} />
-              {new Date().toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" })}
-              <span aria-hidden="true">·</span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="relative flex size-2">
-                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#35d07f] opacity-60 motion-reduce:hidden" />
-                  <span className="relative inline-flex size-2 rounded-full bg-[#35d07f]" />
-                </span>
-                {lastUpdated ? t("Live · updated {time}", { time: relativeTime(lastUpdated, language) }) : t("Live")}
-              </span>
-            </p>
-            <h1 className="mt-3 font-display text-3xl font-extrabold leading-tight sm:text-[2.4rem]">{greeting}</h1>
-            <p className="mt-2 flex items-center gap-2 text-sm text-white/70">
-              <Icon className="size-4" path={icons.store} />
-              <span className="flex flex-col leading-tight">
-                <span className="font-bold text-white">{storeName}</span>
-                {storeTown && <span className="mt-0.5 text-xs uppercase text-white/55">{t("Branch: {branch}", { branch: storeTown })}</span>}
-              </span>
-              <span aria-hidden="true">·</span>
-              {openTasks.length
-                ? t("{count} things need your attention today.", { count: openTasks.reduce((sum, task) => sum + task.count, 0) })
-                : t("Everything is under control.")}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2.5">
-            <button
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white/10 px-4 text-sm font-bold text-white ring-1 ring-white/15 transition hover:bg-white/15 disabled:cursor-wait disabled:opacity-60"
-              disabled={isRefreshing}
-              onClick={refresh}
-              type="button"
-            >
-              <Icon className={`size-4 ${isRefreshing ? "animate-spin" : ""}`} path={icons.refresh} />
-              {t("Refresh")}
-            </button>
-            <Link className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#ffdc32] px-4 text-sm font-extrabold text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c]" to="/admin/orders">
-              {t("Open order queue")}
-              <Icon path={icons.arrow} />
-            </Link>
-          </div>
+      <header className="flex flex-col gap-5 border-b border-[#dce3eb] pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="font-sans text-2xl font-bold tracking-tight text-[#092a53]">{t("Store overview")}</h1>
+          <p className="mt-1 text-sm font-semibold text-[#092a53]">{storeName}{storeTown ? ` · ${t("Branch: {branch}", { branch: storeTown })}` : ""}</p>
+          <p className="mt-1 text-sm text-[#65748a]">{todayLabel}</p>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-[#52647b]">
+            {openTasks.length
+              ? t("{count} things need your attention today.", { count: openTasks.reduce((sum, task) => sum + task.count, 0) })
+              : t("Everything is under control.")}
+          </p>
         </div>
-      </section>
+        <div className="flex flex-wrap items-center gap-2.5">
+          {lastUpdated && (
+            <span className="mr-1 text-xs text-[#65748a]">
+              {t("Live · updated {time}", { time: relativeTime(lastUpdated, language) })}
+            </span>
+          )}
+          <button
+            aria-busy={isRefreshing}
+            className="inline-flex min-h-10 items-center rounded-md border border-[#cbd5df] bg-white px-3.5 text-sm font-semibold text-[#123b68] outline-none! transition-colors hover:border-[#092a53] hover:bg-[#f8fafc] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#092a53] disabled:cursor-wait disabled:opacity-60"
+            disabled={isRefreshing}
+            onClick={refresh}
+            type="button"
+          >
+            {t("Refresh")}
+          </button>
+          <Link className="inline-flex min-h-10 items-center rounded-md bg-[#092a53] px-4 text-sm font-semibold text-white outline-none! transition-colors hover:bg-[#163e6b] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#092a53]" to="/admin/orders">
+            {t("Open order queue")}
+          </Link>
+        </div>
+      </header>
 
       {error && (
-        <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
-          <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
-          {error}
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#e8c7c4] bg-[#fff8f7] px-4 py-3" role="alert">
+          <p className="text-sm font-medium leading-6 text-[#8f302b]">{error}</p>
+          <button className="min-h-9 rounded-md px-3 text-sm font-semibold text-[#092a53] underline underline-offset-4 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#092a53]" onClick={refresh} type="button">
+            {t("Refresh")}
+          </button>
+        </div>
       )}
 
       {view && (
         <>
-          {/* Needs attention */}
-          <section aria-labelledby="attention-title">
-            <h2 className="mb-3 text-xs font-extrabold uppercase tracking-[0.16em] text-[#65748a]" id="attention-title">{t("Needs your attention")}</h2>
-            {openTasks.length ? (
-              <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                {tasks.map((task) => (
-                  <li key={task.key}>
-                    <Link
-                      className={`group flex h-full items-center gap-3 rounded-2xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${task.count ? "border-[#dce3eb]" : "border-dashed border-[#dce3eb] opacity-60"}`}
-                      to={task.to}
-                    >
-                      <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${task.tone}`}><Icon path={task.icon} /></span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block font-display text-2xl font-extrabold leading-none text-[#092a53]">{task.count}</span>
-                        <span className="mt-1 block truncate text-xs font-semibold text-[#65748a]">{task.label}</span>
-                      </span>
-                      <Icon className="size-4 text-[#dce3eb] transition group-hover:translate-x-0.5 group-hover:text-[#092a53]" path={icons.arrow} />
+          {openTasks.length > 0 && (
+            <section aria-labelledby="attention-title" className="rounded-lg border border-[#dce3eb] bg-white p-4 sm:p-5">
+              <h2 className="font-sans text-base font-bold text-[#092a53]" id="attention-title">{t("Needs your attention")}</h2>
+              <ul className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-md bg-[#e7ebf0] sm:grid-cols-3 lg:grid-cols-5">
+                {openTasks.map((task) => (
+                  <li className="bg-white" key={task.key}>
+                    <Link className="block min-h-20 px-3 py-3 outline-none! transition-colors hover:bg-[#f8fafc] focus-visible:outline-2! focus-visible:outline-offset-[-2px] focus-visible:outline-[#092a53] sm:px-4" to={task.to}>
+                      <span className="block font-sans text-2xl font-semibold leading-none tabular-nums text-[#092a53]">{task.count.toLocaleString(locale)}</span>
+                      <span className="mt-2 block text-xs font-semibold leading-5 text-[#52647b]">{task.label}</span>
                     </Link>
                   </li>
                 ))}
               </ul>
-            ) : (
-              <div className="flex items-center gap-3 rounded-2xl bg-[#eaf6ee] p-4 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]">
-                <span className="grid size-10 place-items-center rounded-xl bg-white text-[#2c7a4f]"><Icon path={icons.check} /></span>
-                {t("You’re all caught up. New orders and messages will show up here.")}
-              </div>
-            )}
-          </section>
+            </section>
+          )}
 
-          {/* KPIs */}
-          <section aria-label={t("Today")} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <section aria-label={t("Today")} className="grid grid-cols-2 overflow-hidden rounded-lg border border-[#dce3eb] bg-white lg:grid-cols-4">
             {[
-              { label: t("Orders today"), value: view.todaysOrders.length.toLocaleString(locale), hint: t("{count} delivered", { count: view.deliveredToday.length }), icon: icons.receipt, accent: "bg-[#e9f1fa] text-[#315982]" },
-              { label: t("Sales today"), value: money(view.todaySales), hint: t("Paid orders"), icon: icons.money, accent: "bg-[#e5f4ea] text-[#2c7a4f]" },
-              { label: t("Paid orders in progress"), value: money(view.openRevenue), hint: t("{count} orders", { count: view.processing.length }), icon: icons.flame, accent: "bg-[#fff1dc] text-[#a86a00]" },
-              { label: t("Last 7 days"), value: money(view.weekTotal), hint: t("Average {amount} per day", { amount: money(Math.round(view.weekTotal / 7)) }), icon: icons.chart, accent: "bg-[#efe9fb] text-[#5b3fa0]" },
-            ].map((kpi) => (
-              <article className="rounded-2xl border border-[#dce3eb] bg-white p-4 sm:p-5" key={kpi.label}>
-                <span className={`grid size-9 place-items-center rounded-xl ${kpi.accent}`}><Icon path={kpi.icon} /></span>
-                <p className="mt-4 truncate font-display text-[1.6rem] font-extrabold leading-none tracking-tight text-[#092a53]">{kpi.value}</p>
-                <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{kpi.label}</p>
-                <p className="mt-0.5 truncate text-xs text-[#a3b0bf]">{kpi.hint}</p>
+              { label: t("Orders today"), value: view.todaysOrders.length.toLocaleString(locale), hint: t("{count} delivered", { count: view.deliveredToday.length }) },
+              { label: t("Sales today"), value: money(view.todaySales), hint: t("Paid orders") },
+              { label: t("Paid orders in progress"), value: money(view.openRevenue), hint: t("{count} orders", { count: view.processing.length }) },
+              { label: t("Last 7 days"), value: money(view.weekTotal), hint: t("Average {amount} per day", { amount: money(Math.round(view.weekTotal / 7)) }) },
+            ].map((kpi, index) => (
+              <article className={`px-4 py-4 sm:px-5 sm:py-5 ${index % 2 === 1 ? "border-l border-[#dce3eb]" : ""} ${index > 1 ? "border-t border-[#dce3eb] lg:border-t-0" : ""} ${index > 0 ? "lg:border-l lg:border-[#dce3eb]" : ""}`} key={kpi.label}>
+                <p className="text-xs font-semibold leading-5 text-[#65748a] sm:text-sm">{kpi.label}</p>
+                <p className="mt-2 break-words font-sans text-2xl font-semibold leading-tight tabular-nums tracking-tight text-[#092a53]">{kpi.value}</p>
+                <p className="mt-1.5 text-xs leading-5 text-[#65748a]">{kpi.hint}</p>
               </article>
             ))}
           </section>
 
-          <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+          <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
             <div className="min-w-0 space-y-6">
-              {/* Kitchen */}
-              <section aria-labelledby="kitchen-title" className="rounded-[20px] border border-[#dce3eb] bg-white">
-                <header className="flex items-center justify-between gap-3 border-b border-[#f4f6f8] p-4 sm:px-5">
+              <section aria-labelledby="kitchen-title" className="rounded-lg border border-[#dce3eb] bg-white p-4 sm:p-5">
+                <header className="flex items-end justify-between gap-3">
                   <div>
-                    <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="kitchen-title">{t("Kitchen pipeline")}</h2>
-                    <p className="text-xs text-[#65748a]">{t("Oldest orders first — keep them moving.")}</p>
+                    <h2 className="font-sans text-base font-bold text-[#092a53]" id="kitchen-title">{t("Kitchen pipeline")}</h2>
+                    <p className="mt-1 text-sm text-[#65748a]">{t("Oldest orders first — keep them moving.")}</p>
                   </div>
-                  <Link className="text-xs font-bold text-[#123b68] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/orders">{t("View all")}</Link>
+                  <Link className={linkClassName} to="/admin/orders">{t("View all")}</Link>
                 </header>
-                <ol className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-4 sm:px-5">
+                <ol className="mt-4 grid grid-cols-2 rounded-md bg-[#f4f6f8] sm:grid-cols-4">
                   {Object.keys(stageLabels).map((stage, index) => (
-                    <li className="rounded-xl bg-[#f4f6f8] px-3 py-2.5 ring-1 ring-[#f4f6f8]" key={stage}>
-                      <p className="flex items-start gap-1.5 text-xs font-bold leading-tight text-[#65748a]">
-                        <span className="grid size-5 shrink-0 place-items-center rounded-md bg-white text-xs font-extrabold text-[#123b68] ring-1 ring-[#dce3eb]">{index + 1}</span>
-                        <span className="pt-0.5">{t(stageLabels[stage])}</span>
-                      </p>
-                      <p className="mt-1.5 font-display text-2xl font-extrabold text-[#092a53]">{view.stageCounts[stage] || 0}</p>
+                    <li className={`${index % 2 === 1 ? "border-l border-white" : ""} ${index > 1 ? "border-t border-white sm:border-t-0" : ""} ${index > 0 ? "sm:border-l sm:border-white" : ""} px-3 py-3 sm:px-3.5`} key={stage}>
+                      <p className="text-xs font-semibold leading-5 text-[#52647b]">{t(stageLabels[stage])}</p>
+                      <p className="mt-1 font-sans text-2xl font-semibold leading-none tabular-nums text-[#092a53]">{view.stageCounts[stage] || 0}</p>
                     </li>
                   ))}
                 </ol>
                 {view.liveOrders.length ? (
-                  <ul className="divide-y divide-[#f4f6f8] border-t border-[#f4f6f8]">
+                  <ul className="mt-2 divide-y divide-[#edf0f4]">
                     {view.liveOrders.map((order) => {
                       const created = parseDate(order.createdAt);
                       const ageMinutes = created ? Math.round((Date.now() - created.getTime()) / 60000) : 0;
                       const stage = order.deliveryStage || order.fulfillmentStatus || "preparing";
                       return (
                         <li key={order.id}>
-                          <Link className="flex items-center gap-3 px-4 py-3 transition hover:bg-[#f4f6f8] sm:px-5" to="/admin/orders">
-                            <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${ageMinutes > 45 ? "bg-[#fdecea] text-[#b2433a]" : "bg-[#f4f6f8] text-[#123b68]"}`}>
-                              <Icon path={order.fulfillmentType === "pickup" ? icons.store : icons.truck} />
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="flex items-center gap-2 text-sm font-bold text-[#092a53]">
-                                #{order.id}
-                                <span className="truncate font-semibold text-[#65748a]">{order.customerName}</span>
-                              </span>
-                              <span className="block truncate text-xs text-[#65748a]">{order.items.map((item) => `${item.quantity}× ${item.flavorName}`).join(", ")}</span>
+                          <Link className="flex items-start justify-between gap-4 px-2 py-3.5 outline-none! transition-colors hover:bg-[#f8fafc] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#092a53]" to="/admin/orders">
+                            <span className="min-w-0">
+                              <span className="block text-sm font-semibold text-[#092a53]">#{order.id} {order.customerName}</span>
+                              <span className="mt-1 block truncate text-xs leading-5 text-[#65748a] sm:text-sm">{order.items.map((item) => `${item.quantity}× ${item.flavorName}`).join(", ")}</span>
                             </span>
                             <span className="shrink-0 text-right">
-                              <span className="block rounded-full bg-[#e9f1fa] px-2 py-0.5 text-xs font-bold text-[#245281]">{t(stageLabels[stage] || stage)}</span>
-                              <span className={`mt-1 block text-xs font-semibold ${ageMinutes > 45 ? "text-[#b2433a]" : "text-[#a3b0bf]"}`}>{relativeTime(created, language)}</span>
+                              <span className="block text-sm font-semibold text-[#092a53]">{t(stageLabels[stage] || stage)}</span>
+                              <span className={`mt-1 block text-xs tabular-nums ${ageMinutes > 45 ? "font-bold text-[#a5342b]" : "text-[#65748a]"}`}>{relativeTime(created, language)}</span>
                             </span>
                           </Link>
                         </li>
@@ -368,38 +310,36 @@ export function AdminStoreOverviewPage() {
                     })}
                   </ul>
                 ) : (
-                  <p className="border-t border-[#f4f6f8] px-5 py-8 text-center text-sm text-[#65748a]">{t("No paid orders in progress right now.")}</p>
+                  <p className="mt-2 border-t border-[#edf0f4] px-2 py-6 text-sm text-[#65748a]">{t("No paid orders in progress right now.")}</p>
                 )}
               </section>
 
-              {/* Weekly sales */}
-              <section aria-labelledby="week-title" className="rounded-[20px] border border-[#dce3eb] bg-white p-4 sm:p-5">
+              <section aria-labelledby="week-title" className="rounded-lg border border-[#dce3eb] bg-white p-4 sm:p-5">
                 <div className="flex items-end justify-between gap-3">
                   <div>
-                    <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="week-title">{t("Sales this week")}</h2>
-                    <p className="text-xs text-[#65748a]">{t("{sales} from {orders} orders", { sales: money(view.weekTotal), orders: view.week.reduce((sum, day) => sum + day.orders, 0) })}</p>
+                    <h2 className="font-sans text-base font-bold text-[#092a53]" id="week-title">{t("Sales this week")}</h2>
+                    <p className="mt-1 text-sm text-[#65748a]">{t("{sales} from {orders} orders", { sales: money(view.weekTotal), orders: view.week.reduce((sum, day) => sum + day.orders, 0) })}</p>
                   </div>
-                  <Link className="text-xs font-bold text-[#123b68] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/reports">{t("Reports")}</Link>
+                  <Link className={linkClassName} to="/admin/reports">{t("Reports")}</Link>
                 </div>
-                <ol className="mt-5 flex h-36 items-end gap-2">
+                <ol className="mt-5 flex h-36 items-end gap-2.5 sm:gap-3">
                   {view.week.map((day, index) => {
                     const isToday = index === view.week.length - 1;
+                    const dayName = day.date.toLocaleDateString(locale, { weekday: "short", timeZone: "UTC" });
                     return (
-                      <li className="group relative flex h-full flex-1 flex-col items-center justify-end gap-1.5" key={day.key}>
-                        <span className="pointer-events-none absolute bottom-full z-10 mb-1 hidden whitespace-nowrap rounded-lg bg-[#092a53] px-2.5 py-1.5 text-xs font-bold text-white shadow-lg group-hover:block">
-                          {money(day.sales)} · {t("{count} orders", { count: day.orders })}
+                      <li className="group relative flex h-full flex-1 flex-col items-center justify-end gap-2" key={day.key}>
+                        <span className="pointer-events-none absolute bottom-full z-10 mb-2 hidden whitespace-nowrap bg-[#092a53] px-2 py-1 text-xs font-bold text-white group-hover:block">
+                          {money(day.sales)} {t("{count} orders", { count: day.orders })}
                         </span>
-                        <span className="relative flex w-full flex-1 items-end rounded-lg bg-[#f4f6f8]">
+                        <span className="flex w-full flex-1 items-end bg-[#f4f6f8]">
                           <span
                             aria-label={`${day.date.toLocaleDateString(locale, { weekday: "long", timeZone: "UTC" })}: ${money(day.sales)}`}
-                            className={`w-full rounded-lg transition-[height] duration-500 ${isToday ? "bg-[#ffdc32]" : "bg-[#092a53] group-hover:bg-[#1d4f80]"}`}
+                            className={`w-full ${isToday ? "bg-[#ffdc32]" : "bg-[#092a53]"}`}
                             role="img"
-                            style={{ height: `${day.sales ? Math.max(6, (day.sales / view.weekMax) * 100) : 0}%` }}
+                            style={{ height: `${day.sales ? Math.max(8, (day.sales / view.weekMax) * 100) : 0}%` }}
                           />
                         </span>
-                        <span className={`text-xs font-bold ${isToday ? "text-[#bd9c00]" : "text-[#a3b0bf]"}`}>
-                          {day.date.toLocaleDateString(locale, { weekday: "short", timeZone: "UTC" })}
-                        </span>
+                        <span className={`text-sm font-bold ${isToday ? "text-[#092a53]" : "text-[#65748a]"}`}>{dayName}</span>
                       </li>
                     );
                   })}
@@ -407,57 +347,55 @@ export function AdminStoreOverviewPage() {
               </section>
             </div>
 
-            <div className="min-w-0 space-y-6">
+            <div className="min-w-0 space-y-4">
               {/* Cake pickups */}
-              <section aria-labelledby="pickups-title" className="rounded-[20px] border border-[#dce3eb] bg-white">
-                <header className="flex items-center justify-between gap-3 border-b border-[#f4f6f8] p-4 sm:px-5">
-                  <h2 className="flex items-center gap-2 font-display text-lg font-extrabold text-[#092a53]" id="pickups-title">
-                    <Icon className="size-5 text-[#bd9c00]" path={icons.cake} />
+              <section aria-labelledby="pickups-title" className="rounded-lg border border-[#dce3eb] bg-white">
+                <header className="flex items-center justify-between gap-3 p-4 pb-2 sm:px-5">
+                  <h2 className="font-sans text-base font-bold text-[#092a53]" id="pickups-title">
                     {t("Cake pickups this week")}
                   </h2>
                   <Link className="text-xs font-bold text-[#123b68] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/cake-requests">{t("View all")}</Link>
                 </header>
                 {view.upcomingCakes.length ? (
-                  <ul className="divide-y divide-[#f4f6f8]">
+                  <ul className="divide-y divide-[#edf0f4]">
                     {view.upcomingCakes.slice(0, 5).map((cake) => (
                       <li className="flex items-center gap-3 px-4 py-3 sm:px-5" key={cake.id}>
-                        <span className={`grid w-12 shrink-0 place-items-center rounded-xl py-1.5 text-center ${cake.days <= 1 ? "bg-[#fff1dc] text-[#a86a00]" : "bg-[#f4f6f8] text-[#123b68]"}`}>
-                          <span className="text-xs font-extrabold uppercase">{cake.date.toLocaleDateString(locale, { month: "short" })}</span>
-                          <span className="font-display text-lg font-extrabold leading-none">{cake.date.getDate()}</span>
+                        <span className={`grid w-12 shrink-0 place-items-center py-1 text-center ${cake.days <= 1 ? "text-[#9a6200]" : "text-[#52647b]"}`}>
+                          <span className="text-xs font-semibold">{cake.date.toLocaleDateString(locale, { month: "short" })}</span>
+                          <span className="font-sans text-lg font-semibold leading-none tabular-nums text-[#092a53]">{cake.date.getDate()}</span>
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-bold text-[#092a53]">{cake.size} · {cake.flavor}</span>
                           <span className="block truncate text-xs text-[#65748a]">{cake.customerName}</span>
                         </span>
-                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold capitalize ${cake.status === "confirmed" ? "bg-[#eaf6ee] text-[#246a46]" : cake.status === "contacted" ? "bg-[#e9f1fa] text-[#245281]" : "bg-[#fff6e5] text-[#9a6200]"}`}>
+                        <span className={`shrink-0 rounded-sm px-2 py-1 text-xs font-semibold capitalize ${cake.status === "confirmed" ? "bg-[#eaf6ee] text-[#185d3a]" : cake.status === "contacted" ? "bg-[#e9f1fa] text-[#245281]" : "bg-[#fff6e5] text-[#805100]"}`}>
                           {t(cake.status)}
                         </span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="px-5 py-8 text-center text-sm text-[#65748a]">{t("No cake pickups in the next 7 days.")}</p>
+                  <p className="px-5 py-6 text-sm text-[#65748a]">{t("No cake pickups in the next 7 days.")}</p>
                 )}
               </section>
 
               {/* Messages */}
-              <section aria-labelledby="messages-title" className="rounded-[20px] border border-[#dce3eb] bg-white">
-                <header className="flex items-center justify-between gap-3 border-b border-[#f4f6f8] p-4 sm:px-5">
-                  <h2 className="flex items-center gap-2 font-display text-lg font-extrabold text-[#092a53]" id="messages-title">
-                    <Icon className="size-5 text-[#5b3fa0]" path={icons.inbox} />
+              <section aria-labelledby="messages-title" className="rounded-lg border border-[#dce3eb] bg-white">
+                <header className="flex items-center justify-between gap-3 p-4 pb-2 sm:px-5">
+                  <h2 className="flex items-center gap-2 font-sans text-base font-bold text-[#092a53]" id="messages-title">
                     {t("Unread messages")}
-                    {data.unreadCount > 0 && <span className="rounded-full bg-[#e5484d] px-1.5 text-xs font-extrabold text-white">{data.unreadCount}</span>}
+                    {data.unreadCount > 0 && <span className="rounded-sm bg-[#ffedea] px-1.5 py-0.5 text-xs font-semibold tabular-nums text-[#831c1e]">{data.unreadCount}</span>}
                   </h2>
                   <Link className="text-xs font-bold text-[#123b68] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]" to="/admin/notifications">{t("Open inbox")}</Link>
                 </header>
                 {view.unreadMessages.length ? (
-                  <ul className="divide-y divide-[#f4f6f8]">
+                  <ul className="divide-y divide-[#edf0f4]">
                     {view.unreadMessages.map((message) => (
                       <li key={message.id}>
-                        <Link className="block px-4 py-3 transition hover:bg-[#f4f6f8] sm:px-5" to="/admin/notifications">
+                        <Link className="block px-4 py-3 transition-colors hover:bg-[#f8fafc] sm:px-5" to="/admin/notifications">
                           <span className="flex items-baseline justify-between gap-2">
-                            <span className="truncate text-sm font-extrabold text-[#092a53]">{message.name}</span>
-                            <span className="shrink-0 text-xs text-[#a3b0bf]">{relativeTime(parseDate(message.createdAt), language)}</span>
+                            <span className="truncate text-sm font-semibold text-[#092a53]">{message.name}</span>
+                            <span className="shrink-0 text-xs tabular-nums text-[#65748a]">{relativeTime(parseDate(message.createdAt), language)}</span>
                           </span>
                           <span className="block truncate text-xs font-semibold text-[#123b68]">{message.subject}</span>
                           <span className="block truncate text-xs text-[#65748a]">{message.message}</span>
@@ -466,37 +404,35 @@ export function AdminStoreOverviewPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="px-5 py-8 text-center text-sm text-[#65748a]">{t("You’re all caught up.")}</p>
+                  <p className="px-5 py-6 text-sm text-[#65748a]">{t("You’re all caught up.")}</p>
                 )}
               </section>
 
               {/* Reviews waiting */}
               {data.reviews.length > 0 && (
-                <Link className="group flex items-center gap-4 rounded-[20px] border border-[#dce3eb] bg-white p-4 transition hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] sm:px-5" to="/admin/reviews">
-                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#fff4c2] text-[#bd9c00]">
-                    <svg aria-hidden="true" className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
-                  </span>
+                <Link className="group flex items-center gap-3 rounded-lg border border-[#dce3eb] bg-white p-4 transition-colors hover:bg-[#f8fafc] sm:px-5" to="/admin/reviews">
+                  <svg aria-hidden="true" className="size-4 shrink-0 text-[#092a53]" fill="currentColor" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" /></svg>
                   <span className="min-w-0 flex-1">
                     <span className="block font-bold text-[#092a53]">{t("{count} reviews waiting for approval", { count: data.reviews.length })}</span>
                     <span className="block truncate text-xs text-[#65748a]">“{data.reviews[0].review || data.reviews[0].itemName}” — {data.reviews[0].customerName}</span>
                   </span>
-                  <Icon className="size-4 text-[#dce3eb] transition group-hover:translate-x-0.5 group-hover:text-[#092a53]" path={icons.arrow} />
+                  <svg aria-hidden="true" className="size-4 text-[#65748a] transition group-hover:translate-x-0.5 group-hover:text-[#092a53]" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
                 </Link>
               )}
 
               {/* Quick links */}
               <section aria-labelledby="shortcuts-title">
-                <h2 className="mb-3 text-xs font-extrabold uppercase tracking-[0.16em] text-[#65748a]" id="shortcuts-title">{t("Shortcuts")}</h2>
-                <div className="grid grid-cols-2 gap-2.5">
+                <h2 className="mb-2 text-sm font-semibold text-[#52647b]" id="shortcuts-title">{t("Shortcuts")}</h2>
+                <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: t("Delivered"), to: "/admin/delivered", icon: icons.check },
-                    { label: t("Payments"), to: "/admin/payments", icon: icons.card },
-                    { label: t("Customer accounts"), to: "/admin/customers", icon: icons.users },
-                    { label: t("Reports"), to: "/admin/reports", icon: icons.chart },
+                    { label: t("Delivered"), to: "/admin/delivered" },
+                    { label: t("Payments"), to: "/admin/payments" },
+                    { label: t("Customer accounts"), to: "/admin/customers" },
+                    { label: t("Reports"), to: "/admin/reports" },
                   ].map((shortcut) => (
-                    <Link className="group flex items-center gap-2.5 rounded-xl bg-white p-3 text-sm font-bold text-[#092a53] ring-1 ring-[#dce3eb] transition hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(18,44,80,0.07)]" key={shortcut.to} to={shortcut.to}>
-                      <span className="grid size-8 place-items-center rounded-lg bg-[#f4f6f8] text-[#123b68] transition group-hover:bg-[#ffdc32] group-hover:text-[#092a53]"><Icon path={shortcut.icon} /></span>
+                    <Link className="group flex min-h-11 items-center justify-between gap-2 rounded-md border border-[#dce3eb] bg-white px-3 py-2.5 text-sm font-semibold text-[#123b68] transition-colors hover:border-[#aebdcc] hover:bg-[#f8fafc] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#092a53]" key={shortcut.to} to={shortcut.to}>
                       <span className="truncate">{shortcut.label}</span>
+                      <svg aria-hidden="true" className="size-4 shrink-0 text-[#65748a] transition group-hover:translate-x-0.5 group-hover:text-[#092a53]" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
                     </Link>
                   ))}
                 </div>

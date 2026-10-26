@@ -130,7 +130,8 @@ When the Vite development server is running, the admin portal automatically sign
 ### Databases: keep development separate from the live site
 
 - **Production (Render)** uses the Supabase PostgreSQL database set by `DATABASE_URL`.
-- **Local development** should use its own SQLite file (`server/database.sqlite`, created automatically). Set `DATABASE_BACKEND=sqlite` in your local `.env` and keep the Supabase `DATABASE_URL` commented out, so testing never changes live orders or customer accounts.
+- **Local development** should normally use its own SQLite file (`server/database.sqlite`, created automatically). Set `DATABASE_BACKEND=sqlite` in your local `.env` and keep the Supabase `DATABASE_URL` commented out, so testing never changes live orders or customer accounts.
+- `npm run dev` honors an explicit `DATABASE_BACKEND` from your shell or `.env` and prints the selected backend. It defaults to SQLite when no backend is specified. To deliberately inspect live data locally, configure `DATABASE_BACKEND=postgres`, `DATABASE_URL`, and the TLS CA as needed, then restart the API. Keep only one `DATABASE_BACKEND` entry. Local SQLite does not contain orders or reviews placed on the live site; live admin and storefront must use the same database. Render settings are independent of your local `.env`.
 
 On start-up the server creates any missing tables and columns it needs (for example notification devices, review reminders and event orders) on both SQLite and PostgreSQL, so new features need no manual database step.
 
@@ -192,6 +193,11 @@ Both the migration and the application verify the PostgreSQL server certificate.
 ### Image uploads
 
 Admin image uploads (menu items and flavors, including "Upload from device" in the flavor form) are stored in **Supabase Storage** when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set; a public bucket named `menu-images` (or `SUPABASE_STORAGE_BUCKET`) is created on the first upload. Hosts such as Render wipe the server disk on every deploy, so the live site refuses uploads with a clear message when storage is not configured. Locally, without these settings, uploads are saved to `server/uploads/`. Large photos are resized in the browser before upload, and the server then shrinks every upload to at most 1200 px WebP. The server log shows `Image uploads are stored in: supabase | local-disk | invalid-supabase-url` at start-up.
+
+### Admin authenticator encryption
+Admin authenticator secrets and recovery-code hashes use `ADMIN_MFA_ENCRYPTION_KEY`, falling back to `JWT_SECRET` for existing installations. All servers sharing the admins database must use the same MFA encryption key. Before rotating `JWT_SECRET`, set `ADMIN_MFA_ENCRYPTION_KEY` to the **original `JWT_SECRET` used when MFA was enrolled**, both in Render's Environment settings and on any local server accessing that database. Restart the API after changing environment settings. A new random MFA key cannot decrypt existing authenticator secrets.
+
+If sign-in reports that the saved MFA configuration cannot be read, restore the original key from the enrollment server or a secure backup. Do not disable MFA or overwrite the encrypted secret as a workaround. If the key is lost, independently verified account recovery and authenticator re-enrollment are required.
 
 ### Store admin access
 

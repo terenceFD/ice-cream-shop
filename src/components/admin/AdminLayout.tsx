@@ -5,6 +5,8 @@ import { apiRequest, ADMIN_STORE_TOWN_KEY, ADMIN_WELCOME_KEY } from '../../api/a
 import { useLanguage } from '../../language/useLanguage'
 import { AdminAccountSecurityDialog, type AccountSecurityTab } from './AdminAccountSecurityDialog'
 import { AdminIdleGuard } from './AdminIdleGuard'
+import './AdminSidebar.css'
+import './AdminTopbar.css'
 
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024
 const PROFILE_IMAGE_DIMENSION = 256
@@ -140,7 +142,14 @@ export function AdminLayout() {
   const sidebarNavRef = useRef<HTMLElement>(null)
   // Keep the current page's link visible when the sidebar list is taller than the screen.
   useEffect(() => {
-    sidebarNavRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: 'center' })
+    const nav = sidebarNavRef.current
+    const activeLink = nav?.querySelector<HTMLElement>('[aria-current="page"]')
+    if (!nav || !activeLink) return
+    const bounds = nav.getBoundingClientRect()
+    const linkBounds = activeLink.getBoundingClientRect()
+    if (linkBounds.top < bounds.top || linkBounds.bottom > bounds.bottom) {
+      nav.scrollTop += linkBounds.top - bounds.top - nav.clientHeight / 2 + activeLink.clientHeight / 2
+    }
   }, [location.pathname])
   const storeNavItems = navItems.filter((item) => [
     '/admin/overview',
@@ -238,15 +247,8 @@ export function AdminLayout() {
     function handlePointerDown(event: PointerEvent) {
       if (!accountMenuRef.current?.contains(event.target as Node)) setIsAccountMenuOpen(false)
     }
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setIsAccountMenuOpen(false)
-    }
     document.addEventListener('pointerdown', handlePointerDown)
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
   }, [isAccountMenuOpen])
 
   function placeBranchMenu() {
@@ -274,15 +276,8 @@ export function AdminLayout() {
     function handlePointerDown(event: PointerEvent) {
       if (!branchMenuRef.current?.contains(event.target as Node)) setIsBranchMenuOpen(false)
     }
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setIsBranchMenuOpen(false)
-    }
     document.addEventListener('pointerdown', handlePointerDown)
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
   }, [isBranchMenuOpen])
 
   useEffect(() => {
@@ -290,15 +285,8 @@ export function AdminLayout() {
     function handlePointerDown(event: PointerEvent) {
       if (!languageMenuRef.current?.contains(event.target as Node)) setIsLanguageMenuOpen(false)
     }
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setIsLanguageMenuOpen(false)
-    }
     document.addEventListener('pointerdown', handlePointerDown)
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
   }, [isLanguageMenuOpen])
 
   useEffect(() => {
@@ -420,6 +408,35 @@ export function AdminLayout() {
     }
   }
 
+  useEffect(() => {
+    const menuId = isAccountMenuOpen ? 'admin-account-menu' : isBranchMenuOpen ? 'admin-branch-menu' : isLanguageMenuOpen ? 'admin-language-menu' : null
+    if (!menuId) return undefined
+    const trigger = document.querySelector<HTMLButtonElement>(`[aria-controls="${menuId}"]`)
+    const menu = document.getElementById(menuId)
+    if (!menu) return undefined
+    function handleMenuKey(event: KeyboardEvent) {
+      if (!['ArrowDown', 'ArrowUp', 'Home', 'End', 'Escape', 'Tab'].includes(event.key)) return
+      if (event.key === 'Escape' || event.key === 'Tab') {
+        setIsAccountMenuOpen(false)
+        setIsBranchMenuOpen(false)
+        setIsLanguageMenuOpen(false)
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          window.requestAnimationFrame(() => trigger?.focus())
+        }
+        return
+      }
+      if (!menu?.contains(document.activeElement) && document.activeElement !== trigger) return
+      event.preventDefault()
+      const items = Array.from(menu.querySelectorAll<HTMLElement>('[role^="menuitem"]:not(:disabled)'))
+      const current = items.indexOf(document.activeElement as HTMLElement)
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : current < 0 ? (event.key === 'ArrowUp' ? items.length - 1 : 0) : (current + (event.key === 'ArrowUp' ? -1 : 1) + items.length) % items.length
+      items[next]?.focus()
+    }
+    document.addEventListener('keydown', handleMenuKey)
+    return () => document.removeEventListener('keydown', handleMenuKey)
+  }, [isAccountMenuOpen, isBranchMenuOpen, isLanguageMenuOpen])
+
   if (!isOwner && !storeNavItems.some((item) => item.to === location.pathname)) {
     return <Navigate replace to="/admin/overview" />
   }
@@ -437,11 +454,10 @@ export function AdminLayout() {
   const currentLanguage = languageChoices.find((choice) => choice.id === language) || languageChoices[0]
 
   return (
-    <div className="min-h-screen bg-[#f4f6f8] text-[#092a53]">
-      <header className="sticky top-0 z-40 border-b border-[#dce3eb] bg-white/90 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80">
-        <div aria-hidden="true" className="h-[3px] bg-gradient-to-r from-[#092a53] via-[#1d4f80] to-[#ffdc32]" />
-        <div className="mx-auto flex h-[68px] max-w-[1600px] items-center gap-3 px-4 sm:gap-4 sm:px-6 lg:px-8">
-          <Link aria-label={t('Admin portal')} className="group flex min-w-0 shrink-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#bd9c00]" to={isOwner ? '/admin' : '/admin/overview'}>
+    <div className="admin-workspace min-h-screen bg-[#f4f6f8] text-[#092a53]">
+      <header className="admin-topbar sticky top-0 z-40">
+        <div className="admin-topbar-inner mx-auto flex max-w-[1600px] items-center gap-3 px-4 sm:gap-4 sm:px-6 lg:px-8">
+          <Link aria-label={t('Admin portal')} className="admin-topbar-brand group flex min-w-0 shrink-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#bd9c00]" to={isOwner ? '/admin' : '/admin/overview'}>
             <img decoding="async" loading="eager" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-full shadow-[0_6px_14px_rgba(9,42,83,0.22)] transition group-hover:rotate-[-6deg]" height={40} src="/logo.png" width={40} />
             <span className="hidden min-w-0 sm:block">
               <span className="block truncate font-display text-[15px] font-extrabold leading-tight text-[#092a53]">
@@ -463,7 +479,7 @@ export function AdminLayout() {
           {currentNavItem && (
             <>
               <span aria-hidden="true" className="hidden h-7 w-px bg-[#dce3eb] md:block" />
-              <nav aria-label={t('Breadcrumb')} className="hidden min-w-0 items-center gap-2 text-sm md:flex">
+              <nav aria-label={t('Breadcrumb')} className="admin-topbar-breadcrumb hidden min-w-0 items-center gap-2 text-sm md:flex">
                 <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#f1f5f9] text-[#123b68]">
                   <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
                     <path d={navIconPaths[currentNavItem.icon]} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
@@ -478,7 +494,7 @@ export function AdminLayout() {
             </>
           )}
 
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2.5">
+          <div className="admin-topbar-actions ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2.5">
             {hasTownScope && currentBranch && (
               <div className="relative" ref={branchMenuRef}>
                 <button
@@ -493,6 +509,7 @@ export function AdminLayout() {
                   }`}
                   onClick={() => {
                     setIsLanguageMenuOpen(false)
+                    setIsAccountMenuOpen(false)
                     if (!isBranchMenuOpen) placeBranchMenu()
                     setIsBranchMenuOpen((open) => !open)
                   }}
@@ -512,7 +529,7 @@ export function AdminLayout() {
                 {isBranchMenuOpen && (
                   <div
                     className="admin-modal-panel fixed z-50 overflow-hidden rounded-xl border border-[#dce3eb] bg-white shadow-[0_12px_32px_rgba(9,42,83,0.12)]"
-                    style={branchMenuBox ?? undefined}
+                    style={branchMenuBox ? { left: branchMenuBox.left, width: branchMenuBox.width } : undefined}
                     id="admin-branch-menu"
                     role="menu"
                   >
@@ -584,6 +601,7 @@ export function AdminLayout() {
                 }`}
                 onClick={() => {
                   setIsBranchMenuOpen(false)
+                  setIsAccountMenuOpen(false)
                   setIsLanguageMenuOpen((open) => !open)
                 }}
                 type="button"
@@ -686,6 +704,7 @@ export function AdminLayout() {
 
             <div className="relative" ref={accountMenuRef}>
               <button
+                aria-label={t('Account')}
                 aria-controls="admin-account-menu"
                 aria-expanded={isAccountMenuOpen}
                 aria-haspopup="menu"
@@ -963,11 +982,10 @@ export function AdminLayout() {
       )}
       <div className={`mx-auto grid max-w-[1600px] gap-5 px-3 py-5 sm:px-6 sm:py-7 lg:gap-7 lg:px-8 ${isSidebarCollapsed ? 'lg:grid-cols-[84px_minmax(0,1fr)]' : 'lg:grid-cols-[272px_minmax(0,1fr)]'}`}>
         <aside
+          data-admin-sidebar
           aria-label={t('Admin dashboard')}
-          className="relative h-fit overflow-hidden rounded-[22px] bg-[#0b2e57] text-white shadow-[0_18px_40px_rgba(9,42,83,0.22)] ring-1 ring-[#1b4572] lg:sticky lg:top-[92px] lg:flex lg:max-h-[calc(100vh-112px)] lg:flex-col"
+          className="relative h-fit overflow-hidden rounded-[26px] border border-white/10 text-white shadow-[0_22px_52px_rgba(9,42,83,0.26)] lg:sticky lg:top-[92px] lg:flex lg:max-h-[calc(100vh-112px)] lg:flex-col"
         >
-          <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 size-48 rounded-full bg-[#ffdc32]/[0.07] blur-2xl" />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
 
           <input
             accept="image/*"
@@ -980,7 +998,7 @@ export function AdminLayout() {
           />
 
           {/* Workspace card */}
-          <div className={`relative flex items-center gap-3 border-b border-white/[0.08] ${isSidebarCollapsed ? 'lg:flex-col lg:px-2 lg:py-4' : ''} px-4 py-4`}>
+          <div className={`admin-sidebar-profile relative flex shrink-0 items-center gap-3 border-b border-white/10 ${isSidebarCollapsed ? 'lg:flex-col lg:px-2 lg:py-4' : ''} px-4 py-5`}>
             <button
               aria-label={t(currentAdmin?.profilePicture ? 'Change profile picture' : 'Add profile picture')}
               className="group/avatar relative shrink-0 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32]"
@@ -990,9 +1008,9 @@ export function AdminLayout() {
               type="button"
             >
               {currentAdmin?.profilePicture ? (
-                <img decoding="async" loading="lazy" alt="" className="size-11 rounded-xl object-cover ring-2 ring-white/15" src={currentAdmin.profilePicture} />
+                <img decoding="async" loading="lazy" alt="" className="size-11 rounded-xl object-cover ring-2 ring-white/20 shadow-[0_8px_18px_rgba(4,14,26,0.28)]" src={currentAdmin.profilePicture} />
               ) : (
-                <span className="grid size-11 place-items-center rounded-xl bg-[#ffdc32] font-display text-lg font-extrabold text-[#092a53]">{currentAdmin?.name?.charAt(0).toUpperCase()}</span>
+                <span className="grid size-11 place-items-center rounded-xl bg-[#ffdc32] font-display text-lg font-extrabold text-[#092a53] shadow-[0_8px_18px_rgba(255,220,50,0.32)]">{currentAdmin?.name?.charAt(0).toUpperCase()}</span>
               )}
               <span className="absolute inset-0 grid place-items-center rounded-xl bg-[#092a53]/70 opacity-0 transition group-hover/avatar:opacity-100">
                 {isSavingProfilePicture ? (
@@ -1003,24 +1021,24 @@ export function AdminLayout() {
                   </svg>
                 )}
               </span>
-              <span aria-hidden="true" className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-[#35d07f] ring-2 ring-[#0b2e57]" />
+              <span aria-hidden="true" className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-[#35d07f] ring-2 ring-[#102d4c]" />
             </button>
             <div className={`min-w-0 flex-1 ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>
-              <p className="truncate text-sm font-bold">{currentAdmin?.name}</p>
-              <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-white/60">
-                <span className={`inline-flex rounded px-1 py-px text-[9px] font-extrabold uppercase tracking-wide ${isOwner ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/15 text-white'}`}>
+              <p className="truncate text-sm font-bold text-white">{currentAdmin?.name}</p>
+              <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-white/65">
+                <span className={`inline-flex rounded px-1 py-px text-[9px] font-extrabold uppercase tracking-[0.12em] ${isOwner ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/12 text-white'}`}>
                   {isOwner ? t('Owner') : t(isBranchAdmin ? 'Branch admin' : 'Store admin')}
                 </span>
                 {!isOwner && <span className="truncate">{t(storeDisplayName || currentAdmin?.branchTown || 'Store admin')}</span>}
               </p>
               {currentAdmin?.role === 'store_admin' && currentAdmin.storeTown && (
-                <p className="truncate pl-1 text-xs uppercase text-white/45">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</p>
+                <p className="truncate pl-1 text-[10px] uppercase tracking-[0.12em] text-white/45">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</p>
               )}
             </div>
             <button
               aria-expanded={!isSidebarCollapsed}
               aria-label={t(isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar')}
-              className="hidden size-8 shrink-0 place-items-center rounded-lg text-white/55 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-[#ffdc32] lg:grid"
+              className="hidden size-8 shrink-0 place-items-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-[#ffdc32] lg:grid"
               onClick={toggleSidebar}
               title={t(isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar')}
               type="button"
@@ -1048,7 +1066,7 @@ export function AdminLayout() {
             </button>
           </div>
           {(profilePictureError || profilePictureSaved) && (
-            <p className={`mx-3 mt-3 rounded-lg px-3 py-2 text-xs font-semibold ${profilePictureError ? 'bg-red-500/15 text-red-100' : 'bg-[#35d07f]/15 text-[#b9f3c8]'} ${isSidebarCollapsed ? 'lg:hidden' : ''}`} role={profilePictureError ? 'alert' : 'status'}>
+            <p className={`mx-3 mt-3 rounded-xl border border-white/10 bg-black/10 px-3 py-2 text-xs font-semibold ${profilePictureError ? 'text-red-100' : 'text-[#ccf7d9]'} ${isSidebarCollapsed ? 'lg:hidden' : ''}`} role={profilePictureError ? 'alert' : 'status'}>
               {profilePictureError || t('Profile picture saved.')}
             </p>
           )}
@@ -1056,13 +1074,13 @@ export function AdminLayout() {
           <div className={`${isMobileNavOpen ? 'flex' : 'hidden'} min-h-0 flex-1 flex-col lg:flex`} id="admin-sidebar-nav">
             {/* Quick jump */}
             {!isSidebarCollapsed && visibleNavItems.length > 5 && (
-              <label className="relative mx-3 mt-3 block">
+              <label className="admin-sidebar-search relative mx-4 mb-1 mt-4 block shrink-0">
                 <span className="sr-only">{t('Jump to a page')}</span>
                 <svg aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/40" fill="none" viewBox="0 0 24 24">
                   <path d="m20 20-4.2-4.2M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
                 </svg>
                 <input
-                  className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.06] pl-9 pr-3 text-xs font-medium text-white transition placeholder:text-white/40 hover:bg-white/[0.09] focus:border-[#ffdc32]/60 focus:bg-white/10 outline-none!"
+                  className="h-9 w-full rounded-xl border border-white/10 bg-white/[0.04] pl-9 pr-3 text-xs font-medium text-white transition placeholder:text-white/40 hover:bg-white/[0.07] focus:border-[#ffdc32]/70 focus:bg-white/[0.08] outline-none!"
                   onChange={(event) => setNavQuery(event.target.value)}
                   onKeyDown={(event) => {
                     if (event.key !== 'Enter') return
@@ -1077,16 +1095,16 @@ export function AdminLayout() {
               </label>
             )}
 
-            <nav aria-label={t('Admin dashboard')} ref={sidebarNavRef} className={`min-w-0 overflow-y-auto px-3 pb-3 pt-1 lg:min-h-0 lg:flex-1 lg:pb-8 lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)] [scrollbar-color:rgba(255,255,255,0.15)_transparent] [scrollbar-width:thin] ${isSidebarCollapsed ? 'lg:px-2' : ''}`}>
+            <nav aria-label={t('Admin dashboard')} ref={sidebarNavRef} className={`admin-sidebar-navigation min-w-0 overflow-y-auto px-3 pb-5 pt-1 lg:min-h-0 lg:flex-1 ${isSidebarCollapsed ? 'lg:px-2' : ''}`}>
               {navGroups.filter((group) => visibleNavItems.some((item) => item.group === group)).map((group) => {
                 const query = navQuery.trim().toLowerCase()
                 const groupItems = visibleNavItems.filter((item) => item.group === group && (!query || t(item.label).toLowerCase().includes(query)))
                 if (!groupItems.length) return null
                 return (
-                  <section key={group}>
-                    <h2 className={`flex items-center gap-2 px-3 pb-1.5 pt-4 text-xs lg:pb-1 lg:pt-3 font-extrabold uppercase tracking-[0.16em] text-white/40 ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}>
+                  <section className="admin-sidebar-group" key={group}>
+                    <h2 className={`flex items-center gap-2 px-3 pb-2 pt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fa4be] ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}>
                       <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>{t(group)}</span>
-                      <span aria-hidden="true" className={`h-px flex-1 bg-white/[0.08] ${isSidebarCollapsed ? 'lg:max-w-6' : ''}`} />
+                      <span aria-hidden="true" className={`h-px flex-1 ${isSidebarCollapsed ? 'bg-white/10 lg:max-w-6' : 'bg-transparent'}`} />
                     </h2>
                     <ul className="space-y-0.5">
                       {groupItems.map((item) => {
@@ -1115,18 +1133,17 @@ export function AdminLayout() {
                           <li key={item.to}>
                             <NavLink
                               aria-label={isSidebarCollapsed ? `${t(item.label)}${count ? ` (${count})` : ''}` : undefined}
-                              className={`group relative flex min-h-10 min-w-0 items-center gap-3 rounded-xl px-2.5 py-1.5 text-[13px] lg:min-h-9 lg:py-1 font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#ffdc32] ${
+                              className={`admin-sidebar-link group relative flex min-h-11 min-w-0 items-center gap-3 rounded-[10px] px-3 py-2 text-[13px] font-medium transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#ffdc32] ${
                                 isActive
-                                  ? 'bg-white text-[#092a53] shadow-[0_6px_16px_rgba(0,0,0,0.18)]'
-                                  : 'text-white/70 hover:bg-white/[0.08] hover:text-white'
+                                  ? 'bg-[#ffdc32] text-[#102944] shadow-[0_3px_12px_rgba(0,0,0,0.12)]'
+                                  : 'text-[#b9c9dc] hover:bg-white/[0.06] hover:text-white'
                               } ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
                               end={item.end}
                               title={isSidebarCollapsed ? t(item.label) : undefined}
                               to={item.to}
                             >
-                              {isActive && <span aria-hidden="true" className="absolute -left-3 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[#ffdc32]" />}
-                              <span className={`relative grid size-8 shrink-0 place-items-center rounded-lg transition lg:size-7 ${
-                                isActive ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/[0.06] text-white/60 group-hover:bg-white/[0.12] group-hover:text-white'
+                              <span className={`relative grid size-6 shrink-0 place-items-center rounded-md transition ${
+                                isActive ? 'text-[#102944]' : 'text-[#8fa8c4] group-hover:text-white'
                               }`}>
                                 <svg aria-hidden="true" className="size-[17px]" fill="none" viewBox="0 0 24 24">
                                   <path d={navIconPaths[item.icon]} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
@@ -1152,8 +1169,8 @@ export function AdminLayout() {
                                   aria-label={countLabel}
                                   className={`inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-xs font-extrabold tabular-nums ${
                                     count > 0
-                                      ? isActive ? 'bg-[#092a53] text-white' : 'bg-[#ffdc32] text-[#092a53]'
-                                      : isActive ? 'bg-[#f4f6f8] text-[#65748a]' : 'bg-white/10 text-white/50'
+                                      ? isActive ? 'bg-[#102944]/10 text-[#102944]' : 'bg-[#ffdc32]/15 text-[#ffe579]'
+                                      : isActive ? 'bg-[#102944]/[0.07] text-[#102944]/65' : 'bg-white/[0.05] text-[#8fa4be]'
                                   } ${isSidebarCollapsed ? 'lg:hidden' : ''}`}
                                 >
                                   {count > 99 ? '99+' : count}
@@ -1178,7 +1195,7 @@ export function AdminLayout() {
               </p>
             )}
 
-            <div className={`grid shrink-0 grid-cols-2 gap-1 border-t border-white/[0.08] bg-black/10 p-2 ${isSidebarCollapsed ? 'lg:grid-cols-1 lg:px-2' : ''}`}>
+            <div className={`admin-sidebar-footer grid shrink-0 grid-cols-2 gap-1 border-t border-white/[0.08] p-3 ${isSidebarCollapsed ? 'lg:grid-cols-1 lg:px-2' : ''}`}>
               <Link
                 className={`flex min-h-10 min-w-0 items-center gap-2 rounded-xl px-2 text-[12px] font-semibold text-white/65 transition hover:bg-white/[0.08] hover:text-white ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
                 title={isSidebarCollapsed ? t('View storefront') : undefined}

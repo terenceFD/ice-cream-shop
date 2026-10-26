@@ -6,6 +6,7 @@ import { useAdminAuth } from './useAdminAuth'
 import { useLanguage } from '../../language/useLanguage'
 import { stockBarPercent } from './stockMeter'
 import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from './adminTable'
+import './AdminMenuPage.css'
 
 const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
 const labelClassName = 'block text-xs font-bold text-[#65748a]'
@@ -312,10 +313,10 @@ export function AdminMenuPage() {
   }
 
   const metrics = [
-    { label: 'Custom menu items', value: items.length, icon: icons.menu, accent: 'bg-[#e9f1fa] text-[#315982]', filter: 'all' as const },
-    { label: 'Available now', value: availableCount, icon: icons.check, accent: 'bg-[#e5f4ea] text-[#2c7a4f]', filter: 'available' as const },
-    { label: 'Low stock', value: lowStockCount, icon: icons.alert, accent: 'bg-[#fff1dc] text-[#a86a00]', filter: 'low' as const },
-    { label: 'Unavailable', value: unavailableCount, icon: icons.eyeOff, accent: 'bg-[#fdecea] text-[#b2433a]', filter: 'unavailable' as const },
+    { label: 'Custom menu items', value: items.length, filter: 'all' as const },
+    { label: 'Available now', value: availableCount, filter: 'available' as const },
+    { label: 'Low stock', value: lowStockCount, filter: 'low' as const },
+    { label: 'Unavailable', value: unavailableCount, filter: 'unavailable' as const },
   ]
 
   const StatusBadge = ({ item }: { item: MenuItem }) => {
@@ -370,35 +371,26 @@ export function AdminMenuPage() {
   const previewPrice = Number(form.priceXaf)
 
   return (
-    <div className="min-w-0 space-y-6">
-      <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
-            <Icon className="size-7" path={icons.menu} />
-          </span>
-          <div className="min-w-0">
-            <nav aria-label={t('Breadcrumb')} className="text-xs font-bold text-[#65748a]">
-              {t('Store management')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#bd9c00]">{t('Menu')}</span>
-            </nav>
-            <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">
+    <div className="admin-menu-page min-w-0 space-y-6">
+      <header className="admin-menu-header flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <div className="min-w-0">
+            <h1 className="admin-menu-title font-display text-2xl font-extrabold tracking-tight text-[#092a53]">
               {t('Menu management')}
             </h1>
-            <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">
+            <p className="mt-1 max-w-2xl text-sm text-[#65748a]">
               {t('Add menu items to an existing category. New items are saved and shown in the public menu.')}
             </p>
-          </div>
         </div>
-        <div className="flex flex-wrap gap-2.5">
+        <div className="admin-menu-actions flex flex-wrap gap-2.5">
           <Link
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+            className="admin-menu-secondary inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
             to="/menu"
           >
             <Icon path={icons.external} />
             {t('View public menu')}
           </Link>
           <button
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50"
+            className="admin-menu-primary inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!categories.length}
             onClick={openAdd}
             type="button"
@@ -410,7 +402,7 @@ export function AdminMenuPage() {
       </header>
 
       {message && (
-        <div className="flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
+        <div className="admin-menu-message flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
           <span className="flex items-center gap-2">
             <Icon path={icons.check} />
             {message}
@@ -421,55 +413,43 @@ export function AdminMenuPage() {
         </div>
       )}
 
-      <section aria-label={t('Menu inventory overview')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t('Menu inventory overview')} className="admin-menu-stats admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => {
-          const isActive = statusFilter === metric.filter && metric.filter !== 'all'
+          const isActive = statusFilter === metric.filter
           return (
             <button
               aria-pressed={isActive}
-              className={`group rounded-2xl border bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:p-5 ${
-                isActive ? 'border-[#092a53] shadow-[0_0_0_1px_#092a53]' : 'border-[#dce3eb]'
-              }`}
+              className={`admin-menu-stat group text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${isActive ? 'is-active' : ''}`}
               key={metric.label}
               onClick={() => setStatusFilter(isActive ? 'all' : metric.filter)}
               type="button"
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className={`grid size-9 place-items-center rounded-xl ${metric.accent}`}>
-                  <Icon path={metric.icon} />
-                </span>
-                {metric.filter !== 'all' && (
-                  <span className="text-xs font-bold text-[#a3b0bf] opacity-0 transition group-hover:opacity-100">
-                    {t(isActive ? 'Clear filter' : 'Filter')}
-                  </span>
-                )}
-              </div>
-              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#092a53]">{metric.value.toLocaleString()}</p>
-              <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{t(metric.label)}</p>
+              <span className="admin-menu-stat-label">{t(metric.label)}</span>
+              <span className="admin-menu-stat-value">{metric.value.toLocaleString()}</span>
             </button>
           )
         })}
       </section>
 
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl bg-[#f4f6f8] px-4 py-3 text-xs ring-1 ring-[#dce3eb]">
-        <span className="flex items-center gap-2 font-bold text-[#65748a]">
-          <Icon className="size-4 text-[#65748a]" path={icons.box} />
-          {remainingUnits.toLocaleString()} {t('Remaining units')}
+      <div className="admin-menu-summary flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
+        <span className="admin-menu-summary-total">
+          <span className="admin-menu-summary-value">{remainingUnits.toLocaleString()}</span>
+          <span>{t('Remaining units')}</span>
         </span>
-        <span className="font-semibold text-[#65748a]">
+        <span>
           {t('{count} categories in use', { count: usedCategories.length })}
         </span>
-        <span className="font-semibold text-[#65748a]">
+        <span className="admin-menu-summary-threshold">
           {t('Low stock = {count} or fewer available', { count: LOW_STOCK_THRESHOLD })}
         </span>
       </div>
 
-      <section aria-labelledby="menu-catalog-title" className="min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
-        <div className="flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
+      <section aria-labelledby="menu-catalog-title" className="admin-menu-catalog min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
+        <div className="admin-menu-catalog-toolbar flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="menu-catalog-title">{t('Added menu items')}</h2>
-              <p aria-live="polite" className="mt-0.5 text-xs text-[#65748a]">
+              <h2 className="admin-menu-catalog-title font-display text-xl font-extrabold text-[#092a53]" id="menu-catalog-title">{t('Added menu items')}</h2>
+              <p aria-live="polite" className="admin-menu-result-count mt-0.5 text-xs text-[#65748a]">
                 {t('Showing {shown} of {total} items', { shown: filteredItems.length, total: items.length })}
               </p>
             </div>
@@ -481,7 +461,7 @@ export function AdminMenuPage() {
                 <button
                   aria-label={option.label}
                   aria-pressed={view === option.key}
-                  className={`grid size-8 place-items-center rounded-lg transition ${view === option.key ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
+                  className={`admin-menu-view-button grid size-8 place-items-center rounded-lg border transition ${view === option.key ? 'is-active bg-white text-[#092a53]' : 'border-transparent text-[#65748a] hover:text-[#092a53]'}`}
                   key={option.key}
                   onClick={() => setView(option.key)}
                   title={option.label}
@@ -493,12 +473,12 @@ export function AdminMenuPage() {
             </div>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+          <div className="admin-menu-filters grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
             <label className="relative block">
               <span className="sr-only">{t('Search menu items')}</span>
               <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
               <input
-                className={`${inputClassName} mt-0 pl-10`}
+                className={`admin-menu-control ${inputClassName} mt-0 pl-10`}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder={t('Search menu items')}
                 type="search"
@@ -507,7 +487,7 @@ export function AdminMenuPage() {
             </label>
             <label className="block">
               <span className="sr-only">{t('Menu category')}</span>
-              <select className={`${inputClassName} mt-0 lg:w-48`} onChange={(event) => setCategoryFilter(event.target.value)} value={categoryFilter}>
+              <select className={`admin-menu-control ${inputClassName} mt-0 lg:w-48`} onChange={(event) => setCategoryFilter(event.target.value)} value={categoryFilter}>
                 <option value="">{t('All categories')}</option>
                 {usedCategories.map((category) => (
                   <option key={category} value={category}>{t(category)}</option>
@@ -516,7 +496,7 @@ export function AdminMenuPage() {
             </label>
             <label className="block">
               <span className="sr-only">{t('Sort by')}</span>
-              <select className={`${inputClassName} mt-0 lg:w-44`} onChange={(event) => setSortBy(event.target.value)} value={sortBy}>
+              <select className={`admin-menu-control ${inputClassName} mt-0 lg:w-44`} onChange={(event) => setSortBy(event.target.value)} value={sortBy}>
                 <option value="name">{t('Sort: Name (A–Z)')}</option>
                 <option value="category">{t('Sort: Category')}</option>
                 <option value="price-asc">{t('Sort: Price, low to high')}</option>
@@ -524,7 +504,7 @@ export function AdminMenuPage() {
                 <option value="stock">{t('Sort: Lowest stock first')}</option>
               </select>
             </label>
-            <div aria-label={t('Availability')} className="flex overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
+            <div aria-label={t('Availability')} className="admin-menu-status-filters flex overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
               {([
                 { key: 'all', label: t('All') },
                 { key: 'available', label: t('Available') },
@@ -533,7 +513,7 @@ export function AdminMenuPage() {
               ] as const).map((option) => (
                 <button
                   aria-pressed={statusFilter === option.key}
-                  className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition ${statusFilter === option.key ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
+                  className={`admin-menu-status-filter whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition ${statusFilter === option.key ? 'bg-white text-[#092a53]' : 'text-[#65748a] hover:text-[#092a53]'}`}
                   key={option.key}
                   onClick={() => setStatusFilter(option.key)}
                   type="button"
@@ -546,14 +526,14 @@ export function AdminMenuPage() {
         </div>
 
         {error && !isOverlayOpen && (
-          <p className="mx-4 mt-4 flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100 sm:mx-5" role="alert">
+          <p className="admin-menu-error mx-4 mt-4 flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100 sm:mx-5" role="alert">
             <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
             {error}
           </p>
         )}
 
         {isLoading ? (
-          <div aria-label={t('Loading menu items…')} className="space-y-3 p-4 sm:p-5" role="status">
+          <div aria-label={t('Loading menu items…')} className="admin-menu-loading space-y-3 p-4 sm:p-5" role="status">
             {[0, 1, 2, 3].map((row) => (
               <div className="flex animate-pulse items-center gap-4" key={row}>
                 <span className="size-12 rounded-xl bg-[#f4f6f8]" />
@@ -598,21 +578,21 @@ export function AdminMenuPage() {
             </div>
           </div>
         ) : view === 'table' ? (
-          <div className="relative overflow-x-auto">
-            <table className="w-full min-w-[800px] text-left text-sm">
+          <div className="admin-menu-table-scroll relative overflow-x-auto">
+            <table className="admin-menu-table w-full min-w-[800px] text-left text-sm">
               <thead>
-                <tr className="border-b border-[#f4f6f8] text-xs uppercase tracking-[0.08em] text-[#65748a]">
+                <tr className="admin-menu-table-head border-b border-[#f4f6f8] text-xs uppercase tracking-[0.08em] text-[#65748a]">
                   <th className="px-5 py-3 font-extrabold" scope="col">{t('Menu item')}</th>
                   <th className="px-3 py-3 font-extrabold" scope="col">{t('Category')}</th>
                   <th className="px-3 py-3 text-right font-extrabold" scope="col">{t('Price')}</th>
                   <th className="px-3 py-3 font-extrabold" scope="col">{t('Stock')}</th>
                   <th className="px-3 py-3 font-extrabold" scope="col">{t('Status')}</th>
-                  <th className={`px-5 py-3 ${PINNED_ACTION_HEAD}`} scope="col"><span className="sr-only">{t('Actions')}</span></th>
+                  <th className={`admin-menu-action-head px-5 py-3 ${PINNED_ACTION_HEAD}`} scope="col"><span className="sr-only">{t('Actions')}</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f4f6f8]">
                 {filteredItems.map((item) => (
-                  <tr className={`group transition hover:bg-[#f4f6f8] ${deletingItemId === item.id ? 'opacity-50' : ''}`} key={item.id}>
+                  <tr className={`admin-menu-table-row group transition hover:bg-[#f4f6f8] ${deletingItemId === item.id ? 'opacity-50' : ''}`} key={item.id}>
                     <td className="px-5 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <Thumb src={item.image} />
@@ -623,14 +603,14 @@ export function AdminMenuPage() {
                       </div>
                     </td>
                     <td className="px-3 py-3">
-                      <span className="inline-block max-w-[11rem] truncate rounded-full bg-[#eef3f9] px-2.5 py-1 text-xs font-bold text-[#123b68]">
+                      <span className="admin-menu-category-chip inline-block max-w-[11rem] truncate rounded-sm bg-[#eef3f9] px-2.5 py-1 text-xs font-bold text-[#123b68]">
                         {t(item.categoryTitle)}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-3 text-right font-bold tabular-nums text-[#092a53]">{formatPrice(item.priceXaf)}</td>
                     <td className="px-3 py-3"><StockMeter item={item} /></td>
                     <td className="px-3 py-3"><StatusBadge item={item} /></td>
-                    <td className={`px-5 py-3 ${PINNED_ACTION_CELL}`}>{rowActions(item)}</td>
+                    <td className={`admin-menu-action-cell px-5 py-3 ${PINNED_ACTION_CELL}`}>{rowActions(item)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -640,7 +620,7 @@ export function AdminMenuPage() {
           <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5 2xl:grid-cols-3">
             {filteredItems.map((item) => (
               <article
-                className="group flex flex-col overflow-hidden rounded-2xl border border-[#e7edf4] bg-white transition hover:-translate-y-0.5 hover:border-[#cbd8e6] hover:shadow-[0_14px_30px_rgba(16,44,80,0.09)]"
+                className="admin-menu-grid-card group flex flex-col overflow-hidden rounded-2xl border border-[#e7edf4] bg-white transition"
                 key={item.id}
               >
                 <div className="relative aspect-[1.75] overflow-hidden bg-[#f4f6f8]">
@@ -652,7 +632,7 @@ export function AdminMenuPage() {
                     src={item.image}
                   />
                   <span className="absolute left-3 top-3"><StatusBadge item={item} /></span>
-                  <span className="absolute right-3 top-3 max-w-[50%] truncate rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-[#123b68] shadow-sm">
+                  <span className="admin-menu-category-chip absolute right-3 top-3 max-w-[50%] truncate rounded-sm bg-white/95 px-2.5 py-1 text-xs font-bold text-[#123b68]">
                     {t(item.categoryTitle)}
                   </span>
                 </div>
@@ -676,12 +656,12 @@ export function AdminMenuPage() {
       </section>
 
       {isEditorOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
+        <div className="admin-menu-editor fixed inset-0 z-50 flex justify-end" role="presentation">
           <button aria-label={t('Close')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={cancelEdit} tabIndex={-1} type="button" />
           <section
             aria-labelledby="menu-drawer-title"
             aria-modal="true"
-            className="admin-drawer-panel relative flex h-full w-full max-w-[34rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]"
+            className="admin-drawer-panel admin-menu-drawer relative flex h-full w-full max-w-[34rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]"
             role="dialog"
           >
             <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
@@ -701,7 +681,7 @@ export function AdminMenuPage() {
 
             <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
               <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
-                <div className="flex items-center gap-4 rounded-2xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
+                <div className="admin-menu-live-preview flex items-center gap-4 rounded-2xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
                   <Thumb className="size-20" key={form.image} src={form.image.trim()} />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Live preview')}</p>
@@ -774,7 +754,7 @@ export function AdminMenuPage() {
                       isUploading ? 'cursor-wait border-[#e0c95a] bg-[#fffbea]' : 'border-[#d8e0ea] bg-[#f4f6f8] hover:border-[#9fb3c8] hover:bg-[#f5f8fb]'
                     }`}
                   >
-                    <span className={`grid size-10 place-items-center rounded-xl ${isUploading ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white text-[#123b68] shadow-sm'}`}>
+                    <span className={`admin-menu-upload-mark grid size-10 place-items-center rounded-xl ${isUploading ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white text-[#123b68] shadow-sm'}`}>
                       {isUploading
                         ? <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
                         : <Icon className="size-5" path={icons.upload} />}
@@ -817,7 +797,7 @@ export function AdminMenuPage() {
       )}
 
       {itemToDelete && (
-        <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
+        <div className="admin-menu-delete fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
           <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setItemToDelete(null)} tabIndex={-1} type="button" />
           <section
             aria-labelledby="delete-menu-item-title"

@@ -2,13 +2,17 @@ import { spawn } from 'node:child_process'
 import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
 import { makeThumbnails } from './make-thumbnails.mjs'
+import { developmentEnvironment } from './dev-environment.js'
+
+const backendEnvironment = developmentEnvironment()
+console.log(`Development API database: ${backendEnvironment.DATABASE_BACKEND}`)
 
 // Small photo copies (public/thumbs) are refreshed whenever a photo changed.
 await makeThumbnails().catch((error) => console.error('Unable to make photo thumbnails:', error.message))
 
 const backend = spawn(process.execPath, [fileURLToPath(new URL('../server/index.js', import.meta.url))], {
   stdio: 'inherit',
-  env: { ...process.env, DATABASE_BACKEND: process.env.DATABASE_BACKEND || 'sqlite' },
+  env: backendEnvironment,
 })
 const children = [backend]
 let shuttingDown = false

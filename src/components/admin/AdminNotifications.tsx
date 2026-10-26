@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { apiRequest } from '../../api/api'
 import { useAdminAuth } from '../../pages/admin/useAdminAuth'
 import { useLanguage } from '../../language/useLanguage'
+import './AdminNotifications.css'
 
 interface ContactMessage {
   id: number
@@ -289,28 +290,22 @@ export function AdminNotifications() {
   ]
 
   return (
-    <div className="min-w-0 space-y-6">
-      <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <span className="relative grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
-            <Icon className="size-7" path={icons.inbox} />
-            {unreadCount > 0 && (
-              <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#e5484d] px-1 text-xs font-extrabold text-white ring-2 ring-white">{unreadCount}</span>
-            )}
-          </span>
+    <div className="admin-notifications">
+      <header className="notification-header">
+        <div className="notification-heading">
           <div className="min-w-0">
-            <nav aria-label={t('Breadcrumb')} className="text-xs font-bold text-[#65748a]">
+            <nav aria-label={t('Breadcrumb')} className="notification-breadcrumb">
               {t('Sales')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#bd9c00]">{t('Notifications')}</span>
+              <span>{t('Notifications')}</span>
             </nav>
-            <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Notifications')}</h1>
-            <p className="mt-0.5 text-sm text-[#65748a]">{t('Stay on top of customer inquiries and follow up promptly.')}</p>
+            <h1 className="notification-title">{t('Notifications')}</h1>
+            <p className="notification-description">{t('Stay on top of customer inquiries and follow up promptly.')}</p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="notification-actions">
           {messages.length > 3 && (
             <button
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-bold text-[#b2433a] transition hover:bg-red-50 disabled:cursor-wait disabled:opacity-60"
+              className="notification-clear"
               disabled={isLoading || isClearingAll || deletingId !== null}
               onClick={() => setConfirm({ type: 'clear' })}
               type="button"
@@ -320,7 +315,7 @@ export function AdminNotifications() {
             </button>
           )}
           <button
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+            className="notification-refresh"
             disabled={isRefreshing || isClearingAll}
             onClick={refresh}
             type="button"
@@ -332,32 +327,32 @@ export function AdminNotifications() {
       </header>
 
       {error && (
-        <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+        <p className="notification-error" role="alert">
           <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
           {error}
         </p>
       )}
 
-      <section aria-label={t('Contact notifications')} className="grid min-h-[34rem] overflow-hidden rounded-[20px] border border-[#dce3eb] bg-white xl:grid-cols-[minmax(20rem,26rem)_minmax(0,1fr)]">
+      <section aria-label={t('Contact notifications')} className="notification-workspace">
         {/* Message list */}
-        <div className={`flex min-w-0 flex-col border-[#f4f6f8] xl:border-r ${selectedMessage ? 'hidden xl:flex' : 'flex'}`}>
-          <div className="space-y-3 border-b border-[#f4f6f8] p-4">
+        <div className={`notification-list ${selectedMessage ? 'notification-list--hidden' : ''}`}>
+          <div className="notification-list-tools">
             <label className="relative block">
               <span className="sr-only">{t('Search')}</span>
               <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
               <input
-                className="w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] py-2.5 pl-10 pr-3.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!"
+                className="notification-search"
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder={t('Search messages')}
                 type="search"
                 value={search}
               />
             </label>
-            <div aria-label={t('Filter messages')} className="flex gap-1 overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
+            <div aria-label={t('Filter messages')} className="notification-filters" role="group">
               {filters.map((option) => (
                 <button
                   aria-pressed={filter === option.key}
-                  className={`inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${filter === option.key ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
+                  className="notification-filter"
                   key={option.key}
                   onClick={() => setFilter(option.key)}
                   type="button"
@@ -370,9 +365,9 @@ export function AdminNotifications() {
           </div>
 
           {isLoading ? (
-            <div aria-label={t('Loading…')} className="space-y-1 p-2" role="status">
+            <div aria-label={t('Loading…')} className="notification-loading" role="status">
               {[0, 1, 2, 3, 4].map((row) => (
-                <div className="flex animate-pulse gap-3 rounded-xl p-3" key={row}>
+                <div className="flex gap-3 rounded-xl p-3" key={row}>
                   <span className="size-10 shrink-0 rounded-full bg-[#f4f6f8]" />
                   <div className="flex-1 space-y-2">
                     <span className="block h-3 w-1/2 rounded bg-[#f4f6f8]" />
@@ -382,17 +377,17 @@ export function AdminNotifications() {
               ))}
             </div>
           ) : visibleMessages.length === 0 ? (
-            <div className="grid flex-1 place-items-center px-6 py-14 text-center">
+            <div className="notification-list-empty">
               <div>
-                <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f4f6f8] text-[#65748a]"><Icon className="size-5" path={icons.inbox} /></span>
-                <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">
+                <span className="notification-empty-mark"><Icon className="size-5" path={icons.inbox} /></span>
+                <p className="notification-empty-title">
                   {messages.length ? t('No messages match this view.') : t('No contact messages yet.')}
                 </p>
-                <p className="mt-1 text-sm text-[#65748a]">{t('Messages submitted through the website contact form.')}</p>
+                <p className="notification-empty-copy">{t('Messages submitted through the website contact form.')}</p>
               </div>
             </div>
           ) : (
-            <ul className="max-h-[40rem] flex-1 overflow-y-auto p-2">
+            <ul className="notification-list-items">
               {visibleMessages.map((message) => {
                 const isSelected = message.id === selectedId
                 const isReplied = Boolean(message.repliedAt || replySent[message.id])
@@ -400,33 +395,33 @@ export function AdminNotifications() {
                   <li key={message.id}>
                     <button
                       aria-current={isSelected ? 'true' : undefined}
-                      className={`relative flex w-full gap-3 rounded-xl p-3 text-left transition focus-visible:outline-2 focus-visible:outline-[#bd9c00] ${
-                        isSelected ? 'bg-[#092a53] text-white' : 'hover:bg-[#f4f6f8]'
-                      } ${deletingId === message.id ? 'opacity-50' : ''}`}
+                      className={`notification-row${isSelected ? ' is-selected' : ''}${!message.isRead ? ' is-unread' : ''}${deletingId === message.id ? ' is-deleting' : ''}`}
                       onClick={() => openMessage(message)}
                       type="button"
                     >
-                      {!message.isRead && !isSelected && <span aria-hidden="true" className="absolute left-1 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#3b7dd8]" />}
-                      <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-full text-xs font-extrabold ${isSelected ? 'bg-[#ffdc32] text-[#092a53]' : avatarTone(message.name)}`}>
+                      {!message.isRead && <span aria-hidden="true" className="notification-unread-mark" />}
+                      <span aria-hidden="true" className={`notification-avatar ${avatarTone(message.name)}`}>
                         {initials(message.name)}
                       </span>
-                      <span className="min-w-0 flex-1">
+                      <span className="notification-row-content">
                         <span className="flex items-baseline justify-between gap-2">
-                          <span className={`truncate text-sm ${message.isRead ? 'font-semibold' : 'font-extrabold'} ${isSelected ? 'text-white' : 'text-[#092a53]'}`}>{message.name}</span>
-                          <span className={`shrink-0 text-xs font-semibold ${isSelected ? 'text-white/65' : 'text-[#65748a]'}`}>{shortDate(message.createdAt, language)}</span>
+                          <span className="notification-name">{message.name}</span>
+                          <span className="notification-time">{shortDate(message.createdAt, language)}</span>
                         </span>
-                        <span className={`block truncate text-xs ${message.isRead ? 'font-medium' : 'font-bold'} ${isSelected ? 'text-white/90' : 'text-[#123b68]'}`}>{message.subject}</span>
-                        <span className={`mt-0.5 block truncate text-xs ${isSelected ? 'text-white/60' : 'text-[#65748a]'}`}>{message.message}</span>
+                        <span className="notification-row-preview">
+                          <span className="notification-subject">{message.subject}</span>
+                          <span className="notification-snippet">{message.message}</span>
+                        </span>
                         {(isReplied || message.storeName) && (
-                          <span className="mt-1.5 flex flex-wrap gap-1">
+                          <span className="notification-row-meta">
                             {isReplied && (
-                              <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-bold ${isSelected ? 'bg-white/15 text-white' : 'bg-[#eaf6ee] text-[#246a46]'}`}>
+                              <span className="notification-replied">
                                 <Icon className="size-3" path={icons.reply} />
                                 {t('Replied')}
                               </span>
                             )}
                             {message.storeName && (
-                              <span className={`max-w-[10rem] truncate rounded-full px-1.5 py-0.5 text-xs font-bold ${isSelected ? 'bg-white/15 text-white' : 'bg-[#f4f6f8] text-[#65748a]'}`}>{t(message.storeName)}</span>
+                              <span className="notification-store">{t(message.storeName)}</span>
                             )}
                           </span>
                         )}
@@ -440,28 +435,28 @@ export function AdminNotifications() {
         </div>
 
         {/* Reading pane */}
-        <div className={`min-w-0 flex-col ${selectedMessage ? 'flex' : 'hidden xl:flex'}`}>
+        <div className={`notification-reading-pane${selectedMessage ? '' : ' notification-reading-pane--empty'}`}>
           {selectedMessage ? (
             <>
-              <div className="flex items-center justify-between gap-3 border-b border-[#f4f6f8] px-4 py-3 sm:px-6">
+              <div className="notification-reading-toolbar">
                 <button
-                  className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8] xl:hidden"
+                  className="notification-back"
                   onClick={() => setSelectedId(null)}
                   type="button"
                 >
                   <Icon path={icons.back} />
                   {t('Back to inbox')}
                 </button>
-                <span className="hidden text-xs font-semibold text-[#65748a] xl:block">{formatDate(selectedMessage.createdAt, t, language)}</span>
+                <span className="notification-full-date">{formatDate(selectedMessage.createdAt, t, language)}</span>
                 <div className="flex items-center gap-1">
                   {!selectedMessage.isRead && (
-                    <button aria-label={t('Mark as read')} className="grid size-9 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => markRead(selectedMessage.id)} title={t('Mark as read')} type="button">
+                    <button aria-label={t('Mark as read')} className="notification-icon-action" onClick={() => markRead(selectedMessage.id)} title={t('Mark as read')} type="button">
                       <Icon path={icons.mailOpen} />
                     </button>
                   )}
                   <button
                     aria-label={t('Delete')}
-                    className="grid size-9 place-items-center rounded-lg text-[#65748a] transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                    className="notification-icon-action notification-delete-action"
                     disabled={deletingId === selectedMessage.id || isClearingAll}
                     onClick={() => setConfirm({ type: 'delete', message: selectedMessage })}
                     title={t('Delete')}
@@ -469,30 +464,30 @@ export function AdminNotifications() {
                   >
                     <Icon path={icons.trash} />
                   </button>
-                  <button aria-label={t('Close')} className="hidden size-9 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] xl:grid" onClick={() => setSelectedId(null)} title={t('Close')} type="button">
+                  <button aria-label={t('Close')} className="notification-icon-action notification-close-action" onClick={() => setSelectedId(null)} title={t('Close')} type="button">
                     <Icon path={icons.close} />
                   </button>
                 </div>
               </div>
 
-              <article className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-                <h2 className="font-display text-2xl font-extrabold leading-tight text-[#092a53]">{selectedMessage.subject}</h2>
-                <div className="mt-5 flex flex-wrap items-start justify-between gap-4 border-b border-[#f4f6f8] pb-5">
+              <article className="notification-article">
+                <h2 className="notification-subject-title">{selectedMessage.subject}</h2>
+                <div className="notification-contact">
                   <div className="flex min-w-0 items-center gap-3">
-                    <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full text-sm font-extrabold ${avatarTone(selectedMessage.name)}`}>{initials(selectedMessage.name)}</span>
+                    <span aria-hidden="true" className={`notification-avatar notification-contact-avatar ${avatarTone(selectedMessage.name)}`}>{initials(selectedMessage.name)}</span>
                     <div className="min-w-0">
-                      <p className="truncate font-bold text-[#092a53]">{selectedMessage.name}</p>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                        <a className="inline-flex items-center gap-1 font-semibold text-[#123b68] hover:underline" href={`mailto:${selectedMessage.email}`}>
+                      <p className="notification-contact-name">{selectedMessage.name}</p>
+                      <div className="notification-contact-methods">
+                        <a className="notification-contact-link" href={`mailto:${selectedMessage.email}`}>
                           <Icon className="size-3.5" path={icons.mail} />
                           {selectedMessage.email}
                         </a>
-                        <button className="inline-flex items-center gap-1 font-semibold text-[#65748a] hover:text-[#092a53]" onClick={() => copyEmail(selectedMessage.email)} type="button">
+                        <button className="notification-copy" onClick={() => copyEmail(selectedMessage.email)} type="button">
                           <Icon className="size-3.5" path={copied ? icons.check : icons.copy} />
                           {t(copied ? 'Copied' : 'Copy')}
                         </button>
                         {selectedMessage.phone && (
-                          <a className="inline-flex items-center gap-1 font-semibold text-[#123b68] hover:underline" href={`tel:${selectedMessage.phone}`}>
+                          <a className="notification-contact-link" href={`tel:${selectedMessage.phone}`}>
                             <Icon className="size-3.5" path={icons.phone} />
                             {selectedMessage.phone}
                           </a>
@@ -500,21 +495,21 @@ export function AdminNotifications() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="notification-contact-meta">
                     {selectedMessage.storeName && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[#f4f6f8] px-2.5 py-1 text-xs font-bold text-[#65748a]">
+                      <span className="notification-store">
                         <Icon className="size-3.5" path={icons.pin} />
                         {t(selectedMessage.storeName)}
                       </span>
                     )}
-                    <span className="rounded-full bg-[#f4f6f8] px-2.5 py-1 text-xs font-bold text-[#65748a] xl:hidden">{formatDate(selectedMessage.createdAt, t, language)}</span>
+                    <span className="notification-mobile-date">{formatDate(selectedMessage.createdAt, t, language)}</span>
                   </div>
                 </div>
 
-                <p className="mt-6 whitespace-pre-wrap text-[15px] leading-7 text-[#3f526a]">{selectedMessage.message}</p>
+                <p className="notification-message">{selectedMessage.message}</p>
 
                 {(selectedMessage.repliedAt || replySent[selectedMessage.id]) && (
-                  <p className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#eaf6ee] px-3.5 py-2.5 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
+                  <p className="notification-reply-status" role="status">
                     <Icon path={icons.check} />
                     {replySent[selectedMessage.id]
                       ? t('Reply email sent to {email}.', { email: selectedMessage.email })
@@ -523,16 +518,16 @@ export function AdminNotifications() {
                 )}
               </article>
 
-              <div className="border-t border-[#f4f6f8] bg-[#f4f6f8] p-4 sm:px-6">
+              <div className="notification-compose-footer">
                 {isComposing ? (
-                  <form className="space-y-3" onSubmit={(event) => sendReply(event, selectedMessage)}>
-                    <label className="flex items-center justify-between gap-2 text-xs font-bold text-[#65748a]" htmlFor={`reply-${selectedMessage.id}`}>
+                  <form className="notification-reply-form" onSubmit={(event) => sendReply(event, selectedMessage)}>
+                    <label className="notification-reply-label" htmlFor={`reply-${selectedMessage.id}`}>
                       <span>{t('Reply to {name}', { name: selectedMessage.name })}</span>
                       <span className="font-semibold text-[#a3b0bf]">{replyDraft.length}/5000</span>
                     </label>
                     <textarea
                       autoFocus
-                      className="min-h-32 w-full resize-y rounded-xl border border-[#dce3eb] bg-white px-4 py-3 text-sm leading-6 text-[#092a53] transition placeholder:text-[#9aa5b3] focus:border-[#bd9c00] focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!"
+                      className="notification-reply-input"
                       id={`reply-${selectedMessage.id}`}
                       maxLength={5000}
                       onChange={(event) => setReplyDraft(event.target.value)}
@@ -546,9 +541,9 @@ export function AdminNotifications() {
                         {replyErrors[selectedMessage.id]}
                       </p>
                     )}
-                    <div className="flex flex-wrap items-center justify-end gap-2">
+                    <div className="notification-reply-actions">
                       <button
-                        className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] disabled:opacity-60"
+                        className="notification-cancel"
                         disabled={sendingId === selectedMessage.id}
                         onClick={() => { setIsComposing(false); setReplyDraft('') }}
                         type="button"
@@ -556,7 +551,7 @@ export function AdminNotifications() {
                         {t('Cancel')}
                       </button>
                       <button
-                        className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="notification-send"
                         disabled={sendingId === selectedMessage.id || !replyDraft.trim()}
                         type="submit"
                       >
@@ -567,7 +562,7 @@ export function AdminNotifications() {
                   </form>
                 ) : (
                   <button
-                    className="flex w-full items-center gap-3 rounded-xl border border-[#dce3eb] bg-white px-4 py-3 text-left text-sm font-semibold text-[#65748a] transition hover:border-[#dce3eb] hover:text-[#092a53]"
+                    className="notification-reply-prompt"
                     onClick={() => {
                       setIsComposing(true)
                       setReplyDraft('')
@@ -582,13 +577,13 @@ export function AdminNotifications() {
               </div>
             </>
           ) : (
-            <div className="grid flex-1 place-items-center px-6 py-14 text-center">
+            <div className="notification-reading-empty">
               <div>
-                <span className="mx-auto grid size-16 place-items-center rounded-3xl bg-[#f4f6f8] text-[#a3b0bf] ring-1 ring-[#dce3eb]">
+                <span className="notification-empty-mark">
                   <Icon className="size-7" path={icons.mail} />
                 </span>
-                <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t('Select a message')}</p>
-                <p className="mx-auto mt-1 max-w-xs text-sm text-[#65748a]">
+                <p className="notification-empty-title">{t('Select a message')}</p>
+                <p className="notification-empty-copy">
                   {counts.unread
                     ? t('You have {count} unread messages.', { count: counts.unread })
                     : t('You’re all caught up.')}
@@ -601,8 +596,8 @@ export function AdminNotifications() {
 
       {confirm && (
         <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
-          <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setConfirm(null)} tabIndex={-1} type="button" />
-          <section aria-labelledby="notification-confirm-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
+          <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45" onClick={() => setConfirm(null)} tabIndex={-1} type="button" />
+          <section aria-labelledby="notification-confirm-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-[22px] border border-[#e7ebef] bg-white p-6" role="dialog">
             <span className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600"><Icon className="size-6" path={icons.trash} /></span>
             <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="notification-confirm-title">
               {confirm.type === 'clear' ? t('Clear all') : t('Delete')}

@@ -304,7 +304,7 @@ export function ContactPage() {
         </section>
 
         <section className="bg-[#f4f6f8]">
-          <div className="mx-auto grid max-w-[1320px] items-start gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(240px,0.72fr)_minmax(0,1.28fr)] lg:gap-16 lg:px-12 lg:py-20">
+          <div className="grid grid-cols-1 mx-auto max-w-[1320px] items-start gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(240px,0.72fr)_minmax(0,1.28fr)] lg:gap-16 lg:px-12 lg:py-20">
             <aside>
               <h2 className="max-w-[16ch] font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
                 {t('Your message goes to the right store')}
@@ -336,7 +336,7 @@ export function ContactPage() {
             <section
               aria-labelledby="contact-form-title"
               id="contact-form"
-              className="scroll-mt-28 rounded-[20px] border border-[#dce3eb] bg-white p-6 sm:p-8"
+              className="min-w-0 scroll-mt-28 rounded-[20px] border border-[#dce3eb] bg-white p-6 sm:p-8"
             >
               <h2 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl" id="contact-form-title">
                 {t('Send us a message')}

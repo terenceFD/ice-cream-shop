@@ -2316,7 +2316,7 @@ export async function setCakeRequestStatus(id, status, storeId = null, storeTown
 export async function setReviewApproval(id, isApproved, storeId = null, storeTown = null) {
   const storeFilter = `${storeTown === null ? '' : ' AND EXISTS (SELECT 1 FROM orders JOIN stores ON stores.id = orders.store_id WHERE orders.id = menu_reviews.order_id AND stores.town = ?)'}${storeId === null ? '' : ' AND EXISTS (SELECT 1 FROM orders WHERE orders.id = menu_reviews.order_id AND orders.store_id = ?)'}`
   const parameters = [
-    databaseKind === "postgres" ? isApproved : isApproved ? 1 : 0,
+    isApproved ? 1 : 0,
     id,
     ...(storeTown === null ? [] : [storeTown]),
     ...(storeId === null ? [] : [storeId]),

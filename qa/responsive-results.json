@@ -1,0 +1,930 @@
+{
+  "results": [
+    {
+      "path": "/",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-a absolute -right-40 -top-40 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220",
+          "right": 480
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-b absolute -bottom-56 -left-40 size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(18_59_104/0.5),rgb(18_59_1",
+          "right": 384
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-b pointer-events-none absolute -bottom-32 -right-24 -z-10 size-[20rem] rounded-full bg-[radial-gradient(closest-side,rgb",
+          "right": 416
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "animate-pulse bg-[#e4e8ee] aspect-[4/3] min-h-[400px] sm:min-h-[480px] lg:col-span-5 lg:row-span-4 lg:aspect-auto lg:min-h-[520px]",
+          "right": 553
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "animate-pulse bg-[#e4e8ee] min-h-28 lg:col-span-7",
+          "right": 553
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "animate-pulse bg-[#e4e8ee] min-h-28 lg:col-span-7",
+          "right": 553
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "animate-pulse bg-[#e4e8ee] min-h-28 lg:col-span-7",
+          "right": 553
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "animate-pulse bg-[#e4e8ee] min-h-28 lg:col-span-7",
+          "right": 553
+        }
+      ],
+      "brokenImages": [],
+      "heading": "A little joyin each scoop.",
+      "headerHeight": 68,
+      "bodyChars": 3048
+    },
+    {
+      "path": "/",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-a absolute -right-40 -top-40 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220",
+          "right": 550
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-b pointer-events-none absolute -bottom-32 -right-24 -z-10 size-[20rem] rounded-full bg-[radial-gradient(closest-side,rgb",
+          "right": 487
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "animate-pulse bg-[#e4e8ee] aspect-[4/3] min-h-[400px] sm:min-h-[480px] lg:col-span-5 lg:row-span-4 lg:aspect-auto lg:min-h-[520px]",
+          "right": 553
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "animate-pulse bg-[#e4e8ee] min-h-28 lg:col-span-7",
+          "right": 553
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "animate-pulse bg-[#e4e8ee] min-h-28 lg:col-span-7",
+          "right": 553
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "animate-pulse bg-[#e4e8ee] min-h-28 lg:col-span-7",
+          "right": 553
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "animate-pulse bg-[#e4e8ee] min-h-28 lg:col-span-7",
+          "right": 553
+        }
+      ],
+      "brokenImages": [],
+      "heading": "A little joyin each scoop.",
+      "headerHeight": 79,
+      "bodyChars": 3048
+    },
+    {
+      "path": "/",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-a absolute -right-40 -top-40 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220",
+          "right": 928
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-b pointer-events-none absolute -bottom-32 -right-24 -z-10 size-[20rem] rounded-full bg-[radial-gradient(closest-side,rgb",
+          "right": 865
+        }
+      ],
+      "brokenImages": [],
+      "heading": "A little joyin each scoop.",
+      "headerHeight": 80,
+      "bodyChars": 3048
+    },
+    {
+      "path": "/",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-a absolute -right-40 -top-40 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220",
+          "right": 1184
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-b pointer-events-none absolute -bottom-32 -right-24 -z-10 size-[20rem] rounded-full bg-[radial-gradient(closest-side,rgb",
+          "right": 1121
+        }
+      ],
+      "brokenImages": [],
+      "heading": "A little joyin each scoop.",
+      "headerHeight": 80,
+      "bodyChars": 3048
+    },
+    {
+      "path": "/",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-a absolute -right-40 -top-40 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220",
+          "right": 1526
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-b pointer-events-none absolute -bottom-32 -right-24 -z-10 size-[20rem] rounded-full bg-[radial-gradient(closest-side,rgb",
+          "right": 1463
+        }
+      ],
+      "brokenImages": [],
+      "heading": "A little joyin each scoop.",
+      "headerHeight": 80,
+      "bodyChars": 3048
+    },
+    {
+      "path": "/",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-a absolute -right-40 -top-40 size-[38rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),rgb(255_220",
+          "right": 2080
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "class": "hero-blob-b pointer-events-none absolute -bottom-32 -right-24 -z-10 size-[20rem] rounded-full bg-[radial-gradient(closest-side,rgb",
+          "right": 2018
+        }
+      ],
+      "brokenImages": [],
+      "heading": "A little joyin each scoop.",
+      "headerHeight": 80,
+      "bodyChars": 3048
+    },
+    {
+      "path": "/flavors",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Ice cream flavors",
+      "headerHeight": 68,
+      "bodyChars": 1946
+    },
+    {
+      "path": "/flavors",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Ice cream flavors",
+      "headerHeight": 69,
+      "bodyChars": 1946
+    },
+    {
+      "path": "/flavors",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Ice cream flavors",
+      "headerHeight": 80,
+      "bodyChars": 1946
+    },
+    {
+      "path": "/flavors",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Ice cream flavors",
+      "headerHeight": 80,
+      "bodyChars": 2029
+    },
+    {
+      "path": "/flavors",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Ice cream flavors",
+      "headerHeight": 80,
+      "bodyChars": 2029
+    },
+    {
+      "path": "/flavors",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Ice cream flavors",
+      "headerHeight": 80,
+      "bodyChars": 2029
+    },
+    {
+      "path": "/menu",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Menu & treats",
+      "headerHeight": 68,
+      "bodyChars": 1213
+    },
+    {
+      "path": "/menu",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Menu & treats",
+      "headerHeight": 75,
+      "bodyChars": 1213
+    },
+    {
+      "path": "/menu",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Menu & treats",
+      "headerHeight": 80,
+      "bodyChars": 1213
+    },
+    {
+      "path": "/menu",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Menu & treats",
+      "headerHeight": 80,
+      "bodyChars": 1254
+    },
+    {
+      "path": "/menu",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Menu & treats",
+      "headerHeight": 80,
+      "bodyChars": 1254
+    },
+    {
+      "path": "/menu",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Menu & treats",
+      "headerHeight": 80,
+      "bodyChars": 1254
+    },
+    {
+      "path": "/menu/all",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "All menu",
+      "headerHeight": 68,
+      "bodyChars": 11253
+    },
+    {
+      "path": "/menu/all",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "All menu",
+      "headerHeight": 68,
+      "bodyChars": 11253
+    },
+    {
+      "path": "/menu/all",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "All menu",
+      "headerHeight": 80,
+      "bodyChars": 11253
+    },
+    {
+      "path": "/menu/all",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "All menu",
+      "headerHeight": 80,
+      "bodyChars": 11287
+    },
+    {
+      "path": "/menu/all",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "All menu",
+      "headerHeight": 80,
+      "bodyChars": 11287
+    },
+    {
+      "path": "/menu/all",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "All menu",
+      "headerHeight": 80,
+      "bodyChars": 11287
+    },
+    {
+      "path": "/events",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "A birthday worth celebrating",
+      "headerHeight": 68,
+      "bodyChars": 674
+    },
+    {
+      "path": "/events",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "A birthday worth celebrating",
+      "headerHeight": 77,
+      "bodyChars": 674
+    },
+    {
+      "path": "/events",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "A birthday worth celebrating",
+      "headerHeight": 80,
+      "bodyChars": 674
+    },
+    {
+      "path": "/events",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "A birthday worth celebrating",
+      "headerHeight": 80,
+      "bodyChars": 674
+    },
+    {
+      "path": "/events",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "A birthday worth celebrating",
+      "headerHeight": 80,
+      "bodyChars": 674
+    },
+    {
+      "path": "/events",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "A birthday worth celebrating",
+      "headerHeight": 80,
+      "bodyChars": 674
+    },
+    {
+      "path": "/custom-cake",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Custom ice cream cakes",
+      "headerHeight": 68,
+      "bodyChars": 1560
+    },
+    {
+      "path": "/custom-cake",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Custom ice cream cakes",
+      "headerHeight": 79,
+      "bodyChars": 1560
+    },
+    {
+      "path": "/custom-cake",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Custom ice cream cakes",
+      "headerHeight": 80,
+      "bodyChars": 1560
+    },
+    {
+      "path": "/custom-cake",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Custom ice cream cakes",
+      "headerHeight": 80,
+      "bodyChars": 1560
+    },
+    {
+      "path": "/custom-cake",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Custom ice cream cakes",
+      "headerHeight": 80,
+      "bodyChars": 1560
+    },
+    {
+      "path": "/custom-cake",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Custom ice cream cakes",
+      "headerHeight": 80,
+      "bodyChars": 1560
+    },
+    {
+      "path": "/locations",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Find us in Cameroon",
+      "headerHeight": 69,
+      "bodyChars": 1009
+    },
+    {
+      "path": "/locations",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Find us in Cameroon",
+      "headerHeight": 80,
+      "bodyChars": 1009
+    },
+    {
+      "path": "/locations",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Find us in Cameroon",
+      "headerHeight": 80,
+      "bodyChars": 1009
+    },
+    {
+      "path": "/locations",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Find us in Cameroon",
+      "headerHeight": 80,
+      "bodyChars": 1009
+    },
+    {
+      "path": "/locations",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Find us in Cameroon",
+      "headerHeight": 80,
+      "bodyChars": 1009
+    },
+    {
+      "path": "/locations",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Find us in Cameroon",
+      "headerHeight": 80,
+      "bodyChars": 1009
+    },
+    {
+      "path": "/about",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Cold Stone Creamery",
+      "headerHeight": 68,
+      "bodyChars": 1055
+    },
+    {
+      "path": "/about",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Cold Stone Creamery",
+      "headerHeight": 77,
+      "bodyChars": 1055
+    },
+    {
+      "path": "/about",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Cold Stone Creamery",
+      "headerHeight": 80,
+      "bodyChars": 1055
+    },
+    {
+      "path": "/about",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Cold Stone Creamery",
+      "headerHeight": 80,
+      "bodyChars": 1055
+    },
+    {
+      "path": "/about",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Cold Stone Creamery",
+      "headerHeight": 80,
+      "bodyChars": 1055
+    },
+    {
+      "path": "/about",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Cold Stone Creamery",
+      "headerHeight": 80,
+      "bodyChars": 1055
+    },
+    {
+      "path": "/contact",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Contact us",
+      "headerHeight": 68,
+      "bodyChars": 2011
+    },
+    {
+      "path": "/contact",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Contact us",
+      "headerHeight": 78,
+      "bodyChars": 2011
+    },
+    {
+      "path": "/contact",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Contact us",
+      "headerHeight": 80,
+      "bodyChars": 2011
+    },
+    {
+      "path": "/contact",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Contact us",
+      "headerHeight": 80,
+      "bodyChars": 2011
+    },
+    {
+      "path": "/contact",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Contact us",
+      "headerHeight": 80,
+      "bodyChars": 2011
+    },
+    {
+      "path": "/contact",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Contact us",
+      "headerHeight": 80,
+      "bodyChars": 2011
+    },
+    {
+      "path": "/cart",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Your shopping bag",
+      "headerHeight": 69,
+      "bodyChars": 596
+    },
+    {
+      "path": "/cart",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Your shopping bag",
+      "headerHeight": 80,
+      "bodyChars": 596
+    },
+    {
+      "path": "/cart",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Your shopping bag",
+      "headerHeight": 80,
+      "bodyChars": 596
+    },
+    {
+      "path": "/cart",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Your shopping bag",
+      "headerHeight": 80,
+      "bodyChars": 596
+    },
+    {
+      "path": "/cart",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Your shopping bag",
+      "headerHeight": 80,
+      "bodyChars": 596
+    },
+    {
+      "path": "/cart",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Your shopping bag",
+      "headerHeight": 80,
+      "bodyChars": 596
+    },
+    {
+      "path": "/login",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 181
+    },
+    {
+      "path": "/login",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 181
+    },
+    {
+      "path": "/login",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 181
+    },
+    {
+      "path": "/login",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 181
+    },
+    {
+      "path": "/login",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 181
+    },
+    {
+      "path": "/login",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 181
+    },
+    {
+      "path": "/signup",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Create an account",
+      "headerHeight": 0,
+      "bodyChars": 170
+    },
+    {
+      "path": "/signup",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Create an account",
+      "headerHeight": 0,
+      "bodyChars": 170
+    },
+    {
+      "path": "/signup",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Create an account",
+      "headerHeight": 0,
+      "bodyChars": 170
+    },
+    {
+      "path": "/signup",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Create an account",
+      "headerHeight": 0,
+      "bodyChars": 170
+    },
+    {
+      "path": "/signup",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Create an account",
+      "headerHeight": 0,
+      "bodyChars": 170
+    },
+    {
+      "path": "/signup",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Create an account",
+      "headerHeight": 0,
+      "bodyChars": 170
+    },
+    {
+      "path": "/admin/login",
+      "width": 320,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 122
+    },
+    {
+      "path": "/admin/login",
+      "width": 390,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 122
+    },
+    {
+      "path": "/admin/login",
+      "width": 768,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 122
+    },
+    {
+      "path": "/admin/login",
+      "width": 1024,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 122
+    },
+    {
+      "path": "/admin/login",
+      "width": 1366,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 122
+    },
+    {
+      "path": "/admin/login",
+      "width": 1920,
+      "overflow": 0,
+      "overflowing": [],
+      "brokenImages": [],
+      "heading": "Welcome back",
+      "headerHeight": 0,
+      "bodyChars": 122
+    }
+  ],
+  "errors": [],
+  "failedRequests": []
+}

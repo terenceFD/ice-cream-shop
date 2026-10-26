@@ -1,0 +1,98 @@
+[
+ {
+  "file": "public/images/locations/rond-point-bonanjo-douala.jpg",
+  "media": "image",
+  "ref": "openverse:50c79f12-24c5-499e-acf9-b301672c38b3",
+  "title": "Rond Point Bonanjo Douala",
+  "creator": "Minette Lontsie",
+  "creatorUrl": "https://commons.wikimedia.org/wiki/User:Serieminou",
+  "date": null,
+  "license": "CC BY-SA 4.0",
+  "licenseCode": "by-sa",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "creditRequired": true,
+  "page": "https://commons.wikimedia.org/w/index.php?curid=89170322",
+  "via": "Wikimedia Commons",
+  "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/Rond_Point_Bonanjo_Douala.jpg/1280px-Rond_Point_Bonanjo_Douala.jpg",
+  "width": 1280,
+  "height": 853,
+  "bytes": 184922,
+  "credit": "\"Rond Point Bonanjo Douala\" by Minette Lontsie, CC BY-SA 4.0, via Wikimedia Commons",
+  "notes": [
+   "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+  ],
+  "saved": "2026-10-25T21:48:15.287Z"
+ },
+ {
+  "file": "public/images/locations/rue-de-bonamoussadi-quifeurou.jpg",
+  "media": "image",
+  "ref": "commons:107407118",
+  "title": "Rue de Bonamoussadi - Quifeurou",
+  "creator": "Serieminou",
+  "creatorUrl": null,
+  "date": "2021-07-09",
+  "license": "CC BY-SA 4.0",
+  "licenseCode": "by-sa",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "creditRequired": true,
+  "page": "https://commons.wikimedia.org/wiki/File:Rue_de_Bonamoussadi_-_Quifeurou.jpg",
+  "via": "Wikimedia Commons",
+  "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Rue_de_Bonamoussadi_-_Quifeurou.jpg/1280px-Rue_de_Bonamoussadi_-_Quifeurou.jpg",
+  "width": 1280,
+  "height": 720,
+  "bytes": 205309,
+  "credit": "\"Rue de Bonamoussadi - Quifeurou\" by Serieminou, CC BY-SA 4.0, via Wikimedia Commons",
+  "notes": [
+   "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+  ],
+  "saved": "2026-10-25T21:48:16.356Z"
+ },
+ {
+  "file": "public/images/locations/rue-de-narvik-yaounde-cameroon.jpg",
+  "media": "image",
+  "ref": "commons:88017280",
+  "title": "Rue De Narvik, Yaounde, Cameroon",
+  "creator": "Ambo64",
+  "creatorUrl": null,
+  "date": "2019-09-23",
+  "license": "CC BY-SA 4.0",
+  "licenseCode": "by-sa",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "creditRequired": true,
+  "page": "https://commons.wikimedia.org/wiki/File:Rue_De_Narvik,_Yaounde,_Cameroon.jpg",
+  "via": "Wikimedia Commons",
+  "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Rue_De_Narvik%2C_Yaounde%2C_Cameroon.jpg/1280px-Rue_De_Narvik%2C_Yaounde%2C_Cameroon.jpg",
+  "width": 1280,
+  "height": 720,
+  "bytes": 184286,
+  "credit": "\"Rue De Narvik, Yaounde, Cameroon\" by Ambo64, CC BY-SA 4.0, via Wikimedia Commons",
+  "notes": [
+   "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+  ],
+  "saved": "2026-10-25T21:48:17.689Z"
+ },
+ {
+  "file": "public/images/locations/carrefour-bastos.jpg",
+  "media": "image",
+  "ref": "openverse:36532d24-d119-49f5-b8b5-ffc96a52d85a",
+  "title": "Carrefour Bastos",
+  "creator": "EOS Cameroun",
+  "creatorUrl": "https://www.flickr.com/photos/89095162@N00",
+  "date": null,
+  "license": "CC BY-SA 2.0",
+  "licenseCode": "by-sa",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+  "creditRequired": true,
+  "page": "https://www.flickr.com/photos/89095162@N00/7576504658",
+  "via": "Flickr",
+  "image": "https://live.staticflickr.com/7267/7576504658_e0842a6357_b.jpg",
+  "width": 1024,
+  "height": 768,
+  "bytes": 309112,
+  "credit": "\"Carrefour Bastos\" by EOS Cameroun, CC BY-SA 2.0, via Flickr",
+  "notes": [
+   "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+  ],
+  "saved": "2026-10-25T21:48:23.284Z"
+ }
+]

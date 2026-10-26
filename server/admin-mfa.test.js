@@ -51,3 +51,38 @@ test('builds an authenticator-app provisioning URI', () => {
   assert.match(uri, /digits=6/)
   assert.match(uri, /period=30/)
 })
+
+test('dedicated MFA key preserves existing secrets and recovery codes after JWT rotation', () => {
+  const original = process.env.ADMIN_MFA_ENCRYPTION_KEY
+  try {
+    delete process.env.ADMIN_MFA_ENCRYPTION_KEY
+    const oldKey = 'original-session-key-used-at-enrollment'
+    const encrypted = encryptTotpSecret(RFC_SECRET, oldKey)
+    const code = createRecoveryCodes(1)[0]
+    const hash = hashRecoveryCode(code, oldKey)
+    process.env.ADMIN_MFA_ENCRYPTION_KEY = oldKey
+    assert.equal(decryptTotpSecret(encrypted, 'rotated-session-key'), RFC_SECRET)
+    assert.equal(hashRecoveryCode(code, 'rotated-session-key'), hash)
+  } finally {
+    if (original === undefined) delete process.env.ADMIN_MFA_ENCRYPTION_KEY
+    else process.env.ADMIN_MFA_ENCRYPTION_KEY = original
+  }
+})
+
+test('an incorrect MFA encryption key produces an actionable configuration error', async () => {
+  const { AdminMfaConfigurationError } = await import('./admin-mfa.js')
+  const original = process.env.ADMIN_MFA_ENCRYPTION_KEY
+  try {
+    delete process.env.ADMIN_MFA_ENCRYPTION_KEY
+    const encrypted = encryptTotpSecret(RFC_SECRET, 'enrollment-key')
+    assert.throws(() => decryptTotpSecret(encrypted, 'different-server-key'), (error) => {
+      assert.ok(error instanceof AdminMfaConfigurationError)
+      assert.match(error.message, /restore the original MFA encryption key/)
+      assert.ok(!error.message.includes('enrollment-key'))
+      return true
+    })
+  } finally {
+    if (original === undefined) delete process.env.ADMIN_MFA_ENCRYPTION_KEY
+    else process.env.ADMIN_MFA_ENCRYPTION_KEY = original
+  }
+})

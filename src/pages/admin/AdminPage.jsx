@@ -9,6 +9,7 @@ import { apiRequest } from "../../api/api";
 import { prepareImageForUpload, UPLOAD_IMAGE_TYPES, UPLOAD_MAX_BYTES } from "../../lib/prepareUploadImage";
 import { stockBarPercent } from "./stockMeter";
 import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from "./adminTable";
+import "./AdminPage.css";
 
 const inputClassName =
   "mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
@@ -159,7 +160,7 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
       <section
         aria-labelledby="flavor-drawer-title"
         aria-modal="true"
-        className="admin-drawer-panel relative flex h-full w-full max-w-[34rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]"
+        className="admin-drawer-panel admin-flavor-drawer relative flex h-full w-full max-w-[34rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]"
         role="dialog"
       >
         <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
@@ -555,10 +556,10 @@ export function AdminPage() {
   }
 
   const metrics = [
-    { label: "Total flavors", value: flavors.length, icon: icons.scoop, accent: "bg-[#fff4c2] text-[#bd9c00]", filter: "all" },
-    { label: "In stock", value: inStockCount, icon: icons.check, accent: "bg-[#e5f4ea] text-[#2c7a4f]", filter: "available" },
-    { label: "Low stock", value: lowStockCount, icon: icons.alert, accent: "bg-[#fff1dc] text-[#a86a00]", filter: "low" },
-    { label: "Sold out", value: soldOutCount, icon: icons.close, accent: "bg-[#fdecea] text-[#b2433a]", filter: "sold-out" },
+    { label: "Total flavors", value: flavors.length, filter: "all" },
+    { label: "In stock", value: inStockCount, filter: "available" },
+    { label: "Low stock", value: lowStockCount, filter: "low" },
+    { label: "Sold out", value: soldOutCount, filter: "sold-out" },
   ];
 
   const rowActions = (flavor) => (
@@ -593,36 +594,26 @@ export function AdminPage() {
   );
 
   return (
-    <div className="min-w-0 space-y-6">
-      {/* Page header */}
-      <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
-            <Icon className="size-7" path={icons.scoop} />
-          </span>
-          <div className="min-w-0">
-            <nav aria-label={t("Breadcrumb")} className="text-xs font-bold text-[#65748a]">
-              {t("Catalog")} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#bd9c00]">{t("Flavors")}</span>
-            </nav>
-            <h1 className="mt-1 truncate font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">
-              {t("Flavors")}
-            </h1>
-            <p className="mt-0.5 text-sm text-[#65748a]">
+    <div className="admin-flavors-page min-w-0 space-y-6">
+      <header className="admin-flavors-header flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <div className="min-w-0">
+          <h1 className="admin-flavors-title font-display text-2xl font-extrabold tracking-tight text-[#092a53]">
+            {t("Flavors")}
+          </h1>
+          <p className="mt-1 text-sm text-[#65748a]">
               {t("Add a flavor and manage the list of flavors available in your shop.")}
-            </p>
-          </div>
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2.5">
+        <div className="admin-flavor-header-actions flex flex-wrap gap-2.5">
           <Link
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+            className="admin-flavor-secondary inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
             to="/flavors"
           >
             <Icon path={icons.external} />
             {t("View customer shop")}
           </Link>
           <button
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)] transition hover:-translate-y-0.5 hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+            className="admin-flavor-primary inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
             onClick={openAddForm}
             type="button"
           >
@@ -634,7 +625,7 @@ export function AdminPage() {
 
       {message && (
         <div
-          className="flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]"
+          className="admin-flavor-message flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]"
           role="status"
         >
           <span className="flex items-center gap-2">
@@ -653,64 +644,50 @@ export function AdminPage() {
       )}
 
       {/* Metrics */}
-      <section aria-label={t("Flavor inventory overview")} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label={t("Flavor inventory overview")} className="admin-flavor-stats admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => {
-          const isActive = stockFilter === metric.filter && metric.filter !== "all";
+          const isActive = stockFilter === metric.filter;
           return (
             <button
               aria-pressed={isActive}
-              className={`group rounded-2xl border bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:p-5 ${
-                isActive ? "border-[#092a53] shadow-[0_0_0_1px_#092a53]" : "border-[#dce3eb]"
-              }`}
+              className={`admin-flavor-stat group text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${isActive ? "is-active" : ""}`}
               key={metric.label}
               onClick={() => setStockFilter(isActive ? "all" : metric.filter)}
               type="button"
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className={`grid size-9 place-items-center rounded-xl ${metric.accent}`}>
-                  <Icon path={metric.icon} />
-                </span>
-                {metric.filter !== "all" && (
-                  <span className="text-xs font-bold text-[#a3b0bf] opacity-0 transition group-hover:opacity-100">
-                    {t(isActive ? "Clear filter" : "Filter")}
-                  </span>
-                )}
-              </div>
-              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#092a53]">
-                {metric.value.toLocaleString()}
-              </p>
-              <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{t(metric.label)}</p>
+              <span className="admin-flavor-stat-label">{t(metric.label)}</span>
+              <span className="admin-flavor-stat-value">{metric.value.toLocaleString()}</span>
             </button>
           );
         })}
       </section>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-[#f4f6f8] px-4 py-3 text-xs ring-1 ring-[#dce3eb]">
-        <span className="flex items-center gap-2 font-bold text-[#65748a]">
-          <Icon className="size-4 text-[#65748a]" path={icons.box} />
-          {totalStock.toLocaleString()} {t("Units in stock")}
+      <div className="admin-inventory-summary flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+        <span className="admin-inventory-total">
+          <span className="admin-inventory-total-value">{totalStock.toLocaleString()}</span>
+          <span>{t("Units in stock")}</span>
         </span>
         {flavors.length > 0 && (
-          <div aria-hidden="true" className="flex h-2 min-w-40 flex-1 overflow-hidden rounded-full bg-[#dce3eb]">
-            <span className="bg-[#35a36b]" style={{ width: `${((inStockCount - lowStockCount) / flavors.length) * 100}%` }} />
-            <span className="bg-[#bd9c00]" style={{ width: `${(lowStockCount / flavors.length) * 100}%` }} />
-            <span className="bg-[#d2544b]" style={{ width: `${(soldOutCount / flavors.length) * 100}%` }} />
+          <div aria-hidden="true" className="admin-stock-breakdown flex h-2 min-w-40 flex-1 overflow-hidden rounded-full bg-[#dce3eb]">
+            <span className="admin-stock-breakdown-available bg-[#35a36b]" style={{ width: `${((inStockCount - lowStockCount) / flavors.length) * 100}%` }} />
+            <span className="admin-stock-breakdown-low bg-[#bd9c00]" style={{ width: `${(lowStockCount / flavors.length) * 100}%` }} />
+            <span className="admin-stock-breakdown-sold bg-[#d2544b]" style={{ width: `${(soldOutCount / flavors.length) * 100}%` }} />
           </div>
         )}
-        <span className="font-semibold text-[#65748a]">
+        <span className="admin-inventory-threshold">
           {t("Low stock = {count} or fewer available", { count: LOW_STOCK_THRESHOLD })}
         </span>
       </div>
 
       {/* Catalog */}
-      <section aria-labelledby="flavor-catalog-title" className="min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
-        <div className="flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
+      <section aria-labelledby="flavor-catalog-title" className="admin-flavor-catalog min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
+        <div className="admin-flavor-catalog-toolbar flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="flavor-catalog-title">
+              <h2 className="admin-flavor-catalog-title font-display text-xl font-extrabold text-[#092a53]" id="flavor-catalog-title">
                 {t("Available flavors")}
               </h2>
-              <p aria-live="polite" className="mt-0.5 text-xs text-[#65748a]">
+              <p aria-live="polite" className="admin-flavor-result-count mt-0.5 text-xs text-[#65748a]">
                 {t("Showing {shown} of {total} flavors", { shown: filteredFlavors.length, total: flavors.length })}
               </p>
             </div>
@@ -723,7 +700,7 @@ export function AdminPage() {
                   aria-label={option.label}
                   aria-pressed={view === option.key}
                   className={`grid size-8 place-items-center rounded-lg transition ${
-                    view === option.key ? "bg-white text-[#092a53] shadow-sm" : "text-[#65748a] hover:text-[#092a53]"
+                    view === option.key ? "bg-white text-[#092a53] border border-[#dce3eb]" : "text-[#65748a] hover:text-[#092a53] border border-transparent"
                   }`}
                   key={option.key}
                   onClick={() => setView(option.key)}
@@ -736,12 +713,12 @@ export function AdminPage() {
             </div>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+          <div className="admin-flavor-filters grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
             <label className="relative block">
               <span className="sr-only">{t("Search flavors")}</span>
               <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
               <input
-                className={`${inputClassName} mt-0 pl-10`}
+                className={`admin-flavor-control ${inputClassName} mt-0 pl-10`}
                 onChange={(event) => setFlavorSearch(event.target.value)}
                 placeholder={t("Search flavors")}
                 type="search"
@@ -751,7 +728,7 @@ export function AdminPage() {
             <label className="block">
               <span className="sr-only">{t("Flavor tag")}</span>
               <select
-                className={`${inputClassName} mt-0 lg:w-44`}
+                className={`admin-flavor-control ${inputClassName} mt-0 lg:w-44`}
                 onChange={(event) => setSelectedFlavorTag(event.target.value)}
                 value={selectedFlavorTag}
               >
@@ -763,14 +740,14 @@ export function AdminPage() {
             </label>
             <label className="block">
               <span className="sr-only">{t("Sort by")}</span>
-              <select className={`${inputClassName} mt-0 lg:w-44`} onChange={(event) => setSortBy(event.target.value)} value={sortBy}>
+              <select className={`admin-flavor-control ${inputClassName} mt-0 lg:w-44`} onChange={(event) => setSortBy(event.target.value)} value={sortBy}>
                 <option value="name">{t("Sort: Name (A–Z)")}</option>
                 <option value="price-asc">{t("Sort: Price, low to high")}</option>
                 <option value="price-desc">{t("Sort: Price, high to low")}</option>
                 <option value="stock">{t("Sort: Lowest stock first")}</option>
               </select>
             </label>
-            <div aria-label={t("Stock status")} className="flex overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
+            <div aria-label={t("Stock status")} className="admin-flavor-stock-filters flex overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
               {[
                 { key: "all", label: t("All") },
                 { key: "available", label: t("In stock") },
@@ -779,8 +756,8 @@ export function AdminPage() {
               ].map((option) => (
                 <button
                   aria-pressed={stockFilter === option.key}
-                  className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                    stockFilter === option.key ? "bg-white text-[#092a53] shadow-sm" : "text-[#65748a] hover:text-[#092a53]"
+                  className={`admin-flavor-stock-filter whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                    stockFilter === option.key ? "bg-white text-[#092a53]" : "text-[#65748a] hover:text-[#092a53]"
                   }`}
                   key={option.key}
                   onClick={() => setStockFilter(option.key)}
@@ -794,14 +771,14 @@ export function AdminPage() {
         </div>
 
         {(flavorsError || (error && !isOverlayOpen)) && (
-          <p className="mx-4 mt-4 flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100 sm:mx-5" role="alert">
+          <p className="admin-flavor-error mx-4 mt-4 flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100 sm:mx-5" role="alert">
             <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
             {flavorsError || error}
           </p>
         )}
 
         {loading ? (
-          <div aria-label={t("Loading flavors from the database…")} className="space-y-3 p-4 sm:p-5" role="status">
+          <div aria-label={t("Loading flavors from the database…")} className="admin-flavor-loading space-y-3 p-4 sm:p-5" role="status">
             {[0, 1, 2, 3].map((row) => (
               <div className="flex animate-pulse items-center gap-4" key={row}>
                 <span className="size-12 rounded-xl bg-[#f4f6f8]" />
@@ -841,9 +818,9 @@ export function AdminPage() {
           </div>
         ) : view === "table" ? (
           <div className="relative overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
+            <table className="admin-flavor-table w-full min-w-[760px] text-left text-sm">
               <thead>
-                <tr className="border-b border-[#f4f6f8] text-xs font-extrabold uppercase tracking-[0.08em] text-[#65748a]">
+                <tr className="admin-flavor-table-head border-b border-[#f4f6f8] text-xs font-extrabold uppercase tracking-[0.08em] text-[#65748a]">
                   <th className="px-5 py-3 font-extrabold" scope="col">{t("Flavor")}</th>
                   <th className="px-3 py-3 font-extrabold" scope="col">{t("Badge")}</th>
                   <th className="px-3 py-3 text-right font-extrabold" scope="col">{t("Price")}</th>
@@ -854,7 +831,7 @@ export function AdminPage() {
               </thead>
               <tbody className="divide-y divide-[#f4f6f8]">
                 {filteredFlavors.map((flavor) => (
-                  <tr className="group transition hover:bg-[#f4f6f8]" key={flavor.id}>
+                  <tr className="admin-flavor-table-row group transition hover:bg-[#f4f6f8]" key={flavor.id}>
                     <td className="px-5 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <FlavorThumb alt="" src={flavor.image} />
@@ -888,13 +865,13 @@ export function AdminPage() {
           <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5 2xl:grid-cols-3">
             {filteredFlavors.map((flavor) => (
               <article
-                className="group flex flex-col overflow-hidden rounded-2xl border border-[#e7edf4] bg-white transition hover:-translate-y-0.5 hover:border-[#cbd8e6] hover:shadow-[0_14px_30px_rgba(16,44,80,0.09)]"
+                className="admin-flavor-grid-card group flex flex-col overflow-hidden rounded-2xl border border-[#e7edf4] bg-white transition"
                 key={flavor.id}
               >
                 <div className="relative h-40 overflow-hidden bg-[#f4f6f8]">
                   <img decoding="async"
                     alt={flavor.name}
-                    className="size-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                    className="size-full object-cover"
                     loading="lazy"
                     src={flavor.image}
                   />

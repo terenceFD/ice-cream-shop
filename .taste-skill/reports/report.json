@@ -1,0 +1,1531 @@
+{
+ "url": "http://localhost:5173/reports",
+ "at": "2026-10-25T23:25:08.686Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    1,
+    1
+   ],
+   "motion": {
+    "elements": 9,
+    "css": 4,
+    "transitions": 5,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 1063,
+     "screens": 1.2,
+     "words": 169,
+     "img": 3,
+     "video": 0,
+     "canvas": 0,
+     "svg": 43,
+     "sections": 1,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "This scoop is nowhere to be found.",
+     "words": 7,
+     "chars": 34,
+     "lines": 1,
+     "size": 30,
+     "vw": 2.1,
+     "font": "Fredoka",
+     "weight": 700,
+     "tracking": 0,
+     "leading": 1.2,
+     "top": 228,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "This scoop is nowhere to be found.",
+     "words": 7,
+     "lines": 1,
+     "size": 30,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "404",
+      "words": 1,
+      "chars": 3,
+      "lines": 1,
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.34,
+      "top": 144,
+      "tag": "p",
+      "kind": "heading"
+     },
+     {
+      "text": "This scoop is nowhere to be found.",
+      "words": 7,
+      "chars": 34,
+      "lines": 1,
+      "size": 30,
+      "vw": 2.1,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.34,
+      "top": 228,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.28,
+      "top": 500,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 3,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 2,
+     "medianWords": 7,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.89,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.11,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      30,
+      36,
+      72
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 16,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 4.5
+     },
+     "measureChars": 43,
+     "max": {
+      "size": 72,
+      "vw": 5,
+      "font": "Fredoka",
+      "text": "404"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.16,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 436,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.56
+      },
+      {
+       "color": "#092a53",
+       "share": 0.17
+      },
+      {
+       "color": "#65748a",
+       "share": 0.14
+      },
+      {
+       "color": "#344b66",
+       "share": 0.11
+      },
+      {
+       "color": "#ffdc32",
+       "share": 0.02
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 6,
+     "inHero": 6,
+     "radius": 6,
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Order now",
+      "Back to home",
+      "Explore the menu",
+      "Install app"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 5,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 1,
+     "boxRadius": 20,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 15,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 1063,
+    "margins": {
+     "left": 108,
+     "right": 124
+    },
+    "sections": [
+     {
+      "sel": "main#main.flex.flex-1",
+      "tag": "main",
+      "top": 80,
+      "height": 356,
+      "words": 23,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "404",
+       "size": 72,
+       "tag": "p"
+      },
+      "left": 478,
+      "right": 478,
+      "textLeft": 478,
+      "textRight": 478,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 436,
+      "height": 627,
+      "words": 81,
+      "media": 0,
+      "middle": 190,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 108,
+      "right": 108,
+      "textLeft": 108,
+      "textRight": 124,
+      "fullBleed": false,
+      "footer": true,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "This scoop is nowhere to be found.",
+      "size": 30,
+      "top": 228,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [],
+    "leftBlocks": 0,
+    "bodySize": 16,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0.14,
+    "voidBox": {
+     "x": 1020,
+     "y": 120,
+     "w": 420,
+     "h": 420
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": null,
+    "topbar": {
+     "h": 80
+    },
+    "canvas": {
+     "left": 36,
+     "right": 48
+    },
+    "hero": {
+     "text": "This scoop is nowhere to be found.",
+     "words": 7,
+     "chars": 34,
+     "lines": 1,
+     "size": 30,
+     "vw": 2.1,
+     "font": "Fredoka",
+     "weight": 700,
+     "tracking": 0,
+     "leading": 1.2,
+     "top": 228,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 1,
+     "firstScreen": 1,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 1,
+     "radii": [
+      [
+       20,
+       1
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 2,
+     "softShadows": 0,
+     "shadowSamples": [
+      "oklab(0.287522 -0.0200717 -0.0811995 / 0.1) 0px 0px 0px 1px",
+      "rgba(9, 42, 83, 0.24) 0px 20px 56px 0px"
+     ],
+     "glass": 0
+    },
+    "chips": {
+     "count": 2,
+     "hues": 2,
+     "samples": [
+      {
+       "hue": 210,
+       "size": 48,
+       "radius": "6px"
+      },
+      {
+       "hue": 142,
+       "size": 56,
+       "radius": "3.35544e+07px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 1,
+     "tabularShare": 0,
+     "kpiMax": 72
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.01,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      9,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      30,
+      36,
+      72
+     ]
+    },
+    "title": {
+     "text": "This scoop is nowhere to be found.",
+     "size": 30,
+     "top": 228
+    },
+    "colourShare": 0.091
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    1,
+    1
+   ],
+   "motion": {
+    "elements": 8,
+    "css": 3,
+    "transitions": 5,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 1247,
+     "screens": 1.2,
+     "words": 119,
+     "img": 2,
+     "video": 0,
+     "canvas": 0,
+     "svg": 38,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "This scoop is nowhere to be found.",
+     "words": 7,
+     "chars": 34,
+     "lines": 1,
+     "size": 30,
+     "vw": 3.9,
+     "font": "Fredoka",
+     "weight": 700,
+     "tracking": 0,
+     "leading": 1.2,
+     "top": 228,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "This scoop is nowhere to be found.",
+     "words": 7,
+     "lines": 1,
+     "size": 30,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "404",
+      "words": 1,
+      "chars": 3,
+      "lines": 1,
+      "size": 72,
+      "vw": 9.4,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.63,
+      "top": 144,
+      "tag": "p",
+      "kind": "heading"
+     },
+     {
+      "text": "This scoop is nowhere to be found.",
+      "words": 7,
+      "chars": 34,
+      "lines": 1,
+      "size": 30,
+      "vw": 3.9,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.63,
+      "top": 228,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.53,
+      "top": 492,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 3,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 2,
+     "medianWords": 7,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.88,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.12,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      14,
+      16,
+      18,
+      19,
+      30,
+      36,
+      72
+     ],
+     "sizeCount": 8,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 16,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 4.5
+     },
+     "measureChars": 42,
+     "max": {
+      "size": 72,
+      "vw": 9.4,
+      "font": "Fredoka",
+      "text": "404"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.19,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 436,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.7
+      },
+      {
+       "color": "#092a53",
+       "share": 0.17
+      },
+      {
+       "color": "#65748a",
+       "share": 0.1
+      },
+      {
+       "color": "#ffdc32",
+       "share": 0.03
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 3,
+     "radius": 6,
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Back to home",
+      "Explore the menu"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 4,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 1247,
+    "margins": {
+     "left": 32,
+     "right": 32
+    },
+    "sections": [
+     {
+      "sel": "main#main.flex.flex-1",
+      "tag": "main",
+      "top": 80,
+      "height": 356,
+      "words": 23,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "404",
+       "size": 72,
+       "tag": "p"
+      },
+      "left": 142,
+      "right": 142,
+      "textLeft": 142,
+      "textRight": 142,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 436,
+      "height": 811,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 36,
+       "tag": "span"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 46,
+      "fullBleed": false,
+      "footer": true,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "This scoop is nowhere to be found.",
+      "size": 30,
+      "top": 228,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [],
+    "leftBlocks": 0,
+    "bodySize": 16,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": null,
+    "topbar": {
+     "h": 80
+    },
+    "canvas": {
+     "left": -1,
+     "right": 24
+    },
+    "hero": {
+     "text": "This scoop is nowhere to be found.",
+     "words": 7,
+     "chars": 34,
+     "lines": 1,
+     "size": 30,
+     "vw": 3.9,
+     "font": "Fredoka",
+     "weight": 700,
+     "tracking": 0,
+     "leading": 1.2,
+     "top": 228,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 0,
+     "firstScreen": 0,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 0,
+     "radii": [],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 142,
+       "size": 56,
+       "radius": "3.35544e+07px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 1,
+     "tabularShare": 0,
+     "kpiMax": 72
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      9,
+      13,
+      14,
+      16,
+      18,
+      19,
+      30,
+      36,
+      72
+     ]
+    },
+    "title": {
+     "text": "This scoop is nowhere to be found.",
+     "size": 30,
+     "top": 228
+    },
+    "colourShare": 0.107
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 3,
+   "filled": [
+    1,
+    1,
+    0.99
+   ],
+   "motion": {
+    "elements": 8,
+    "css": 3,
+    "transitions": 5,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 1707,
+     "screens": 2,
+     "words": 118,
+     "img": 2,
+     "video": 0,
+     "canvas": 0,
+     "svg": 38,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "This scoop is nowhere to be found.",
+     "words": 7,
+     "chars": 34,
+     "lines": 2,
+     "size": 30,
+     "vw": 7.7,
+     "font": "Fredoka",
+     "weight": 700,
+     "tracking": 0,
+     "leading": 1.2,
+     "top": 228,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "This scoop is nowhere to be found.",
+     "words": 7,
+     "lines": 2,
+     "size": 30,
+     "font": "Fredoka"
+    },
+    "headings": [
+     {
+      "text": "404",
+      "words": 1,
+      "chars": 3,
+      "lines": 1,
+      "size": 72,
+      "vw": 18.5,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 144,
+      "tag": "p",
+      "kind": "heading"
+     },
+     {
+      "text": "This scoop is nowhere to be found.",
+      "words": 7,
+      "chars": 34,
+      "lines": 2,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 700,
+      "tracking": 0,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 228,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Cold Stone Creamery",
+      "words": 3,
+      "chars": 19,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Fredoka",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.89,
+      "top": 544,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 3,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 2,
+     "medianWords": 7,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.88,
+       "mono": false
+      },
+      {
+       "family": "Fredoka",
+       "share": 0.12,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      14,
+      16,
+      18,
+      30,
+      72
+     ],
+     "sizeCount": 5,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 14,
+      "leading": 1.71,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 16.4
+     },
+     "measureChars": 50,
+     "max": {
+      "size": 72,
+      "vw": 18.5,
+      "font": "Fredoka",
+      "text": "404"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.19,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fbfaf5",
+       "top": 0,
+       "hsl": {
+        "h": 50,
+        "s": 0.43,
+        "l": 0.97
+       }
+      },
+      {
+       "color": "#061f40",
+       "top": 496,
+       "hsl": {
+        "h": 214,
+        "s": 0.83,
+        "l": 0.14
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.7
+      },
+      {
+       "color": "#092a53",
+       "share": 0.17
+      },
+      {
+       "color": "#65748a",
+       "share": 0.1
+      },
+      {
+       "color": "#ffdc32",
+       "share": 0.03
+      }
+     ],
+     "button": {
+      "bg": "#ffdc32",
+      "hsl": {
+       "h": 50,
+       "s": 1,
+       "l": 0.6
+      },
+      "fg": "#092a53"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 2,
+     "inHero": 2,
+     "radius": "pill",
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Back to home",
+      "Explore the menu"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 4,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 80,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "fredoka"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 1707,
+    "margins": {
+     "left": 20,
+     "right": 24
+    },
+    "sections": [
+     {
+      "sel": "main#main.flex.flex-1",
+      "tag": "main",
+      "top": 80,
+      "height": 416,
+      "words": 23,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "404",
+       "size": 72,
+       "tag": "p"
+      },
+      "left": 29,
+      "right": 29,
+      "textLeft": 29,
+      "textRight": 29,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-[#061f40].text-white",
+      "tag": "footer",
+      "top": 496,
+      "height": 1211,
+      "words": 81,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Cold Stone Creamery",
+       "size": 30,
+       "tag": "span"
+      },
+      "left": 20,
+      "right": 24,
+      "textLeft": 20,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "This scoop is nowhere to be found.",
+      "size": 30,
+      "top": 228,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [],
+    "leftBlocks": 0,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": null,
+    "topbar": {
+     "h": 80
+    },
+    "canvas": {
+     "left": -1,
+     "right": 16
+    },
+    "hero": {
+     "text": "This scoop is nowhere to be found.",
+     "words": 7,
+     "chars": 34,
+     "lines": 2,
+     "size": 30,
+     "vw": 7.7,
+     "font": "Fredoka",
+     "weight": 700,
+     "tracking": 0,
+     "leading": 1.2,
+     "top": 228,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 0,
+     "firstScreen": 0,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 0,
+     "radii": [],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 142,
+       "size": 56,
+       "radius": "3.35544e+07px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 1,
+     "tabularShare": 0,
+     "kpiMax": 72
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      9,
+      13,
+      14,
+      16,
+      18,
+      30,
+      72
+     ]
+    },
+    "title": {
+     "text": "This scoop is nowhere to be found.",
+     "size": 30,
+     "top": 228
+    },
+    "colourShare": 0.148
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (section #fbfaf5).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "heavy-shadow",
+   "width": 1440,
+   "message": "2 panel shadow(s) heavy enough to read as floating: oklab(0.287522 -0.0200717 -0.0811995 / 0.1) 0px 0px 0px 1px | rgba(9, 42, 83, 0.24) 0px 20px 56px 0px",
+   "fix": "Panels sit on the ground: separate them with a fill one step from the ground or a quiet 1px border. A shadow, if any, is under 8% black with a small blur. Real overlays (menus, dialogs, popovers) may float."
+  },
+  {
+   "level": "WARN",
+   "id": "kpi-size",
+   "width": 1440,
+   "message": "A figure is set at 72px.",
+   "fix": "Figures run 16-40px on app screens; none of the studied screens reaches 48px. Size and isolation make a number loud, not display type.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "colour-sprawl",
+   "width": 390,
+   "message": "15% of the first screen is strongly coloured.",
+   "fix": "Keep the screen neutral and spend colour on data and status: the studied screens sit near 3%, and only tinted styles reach 10–15%, as pale tints rather than saturated fills."
+  },
+  {
+   "level": "WARN",
+   "id": "app-title-size",
+   "width": 390,
+   "message": "The h1 is 30px (\"This scoop is nowhere to be found.\").",
+   "fix": "An app screen is not a landing page: the title is 18-32px (20-24px on a phone)."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\reports\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\reports\\desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\reports\\tablet-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\reports\\tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\reports\\mobile-fold.jpg",
+   "pages": [
+    "C:\\Users\\forbi\\Desktop\\ice cream site\\ice-cream-site\\.taste-skill\\reports\\mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

@@ -186,3 +186,14 @@ test('translates supported SQLite datetime expressions', () => {
     { sql: "SELECT CURRENT_TIMESTAMP - INTERVAL '41 minutes', expires_at FROM orders", values: [] },
   )
 })
+
+test('review dashboard queries and approval writes use the migrated integer flag', () => {
+  const server = readFileSync(new URL('./index.js', import.meta.url), 'utf8')
+  const database = readFileSync(new URL('./database.js', import.meta.url), 'utf8')
+  assert.doesNotMatch(server, /\bis_approved\s*=\s*(?:TRUE|FALSE)\b/i)
+  const listRoute = server.slice(server.indexOf("app.get('/api/admin/reviews',"), server.indexOf("app.patch('/api/admin/reviews/:id/approval',"))
+  assert.match(listRoute, /status\s*\?\s*1\s*:\s*0/)
+  assert.doesNotMatch(listRoute, /databaseKind\s*===\s*['"]postgres['"]/)
+  const approval = database.slice(database.indexOf('export async function setReviewApproval('), database.indexOf('export async function deleteMenuReview('))
+  assert.match(approval, /const parameters = \[\s*isApproved \? 1 : 0,/)
+})

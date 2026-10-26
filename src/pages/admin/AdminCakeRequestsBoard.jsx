@@ -5,14 +5,14 @@ import { useAdminAuth } from './useAdminAuth'
 
 const STATUSES = ['new', 'contacted', 'confirmed', 'declined']
 const inputClassName =
-  'w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
+  'h-9 w-full rounded-lg border border-[#d1d5db] bg-white px-3 text-sm text-[#111827] transition placeholder:text-[#6b7280] hover:border-[#c2c8d0] focus:border-[#111827] focus:outline-2 focus:outline-offset-1 focus:outline-[#111827]/40'
 const WHATSAPP_PATH = 'M12.04 2a9.9 9.9 0 0 0-8.49 15l-1.3 4.75 4.86-1.27A9.96 9.96 0 1 0 12.04 2Zm0 18.1a8.1 8.1 0 0 1-4.13-1.13l-.3-.18-2.88.75.77-2.8-.2-.3A8.12 8.12 0 1 1 12.04 20.1Zm4.45-6.08c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.1-.49.1-.1.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.47-.4-.4-.54-.4h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.5.58.18 1.1.15 1.51.09.46-.07 1.43-.59 1.63-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28Z'
 
 const statusMeta = {
-  new: { label: 'New request', badge: 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]', dot: 'bg-[#bd9c00]', column: 'bg-[#fffaf0]', icon: 'M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5m7 7L18 18m0-12-2.5 2.5m-7 7L6 18' },
-  contacted: { label: 'Quote sent', badge: 'bg-[#e9f1fa] text-[#245281] ring-[#cfe0f2]', dot: 'bg-[#3b7dd8]', column: 'bg-[#f5f9fd]', icon: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z' },
-  confirmed: { label: 'Deposit paid', badge: 'bg-[#eaf6ee] text-[#246a46] ring-[#cfe8d8]', dot: 'bg-[#35a36b]', column: 'bg-[#f4fbf6]', icon: 'm5 12.5 4.5 4.5L19 7.5' },
-  declined: { label: 'declined', badge: 'bg-[#fdeeee] text-[#a53f37] ring-[#f3d1ce]', dot: 'bg-[#d2544b]', column: 'bg-[#fcf6f6]', icon: 'M6 6l12 12M18 6 6 18' },
+  new: { label: 'New request', badge: 'bg-[#fffbeb] text-[#92400e]', dot: 'bg-[#d97706]', column: 'bg-[#fffbeb]', edge: 'border-t-[#d97706]' },
+  contacted: { label: 'Quote sent', badge: 'bg-[#e8f0fb] text-[#1d4f91]', dot: 'bg-[#315982]', column: 'bg-[#f2f6fc]', edge: 'border-t-[#315982]' },
+  confirmed: { label: 'Deposit paid', badge: 'bg-[#dcfae5] text-[#04250e]', dot: 'bg-[#247b50]', column: 'bg-[#f2fbf6]', edge: 'border-t-[#247b50]' },
+  declined: { label: 'declined', badge: 'bg-[#ffedea] text-[#831c1e]', dot: 'bg-[#c4242a]', column: 'bg-[#fdf3f2]', edge: 'border-t-[#c4242a]' },
 }
 
 const icons = {
@@ -69,10 +69,9 @@ function whatsappNumber(phone) {
 }
 
 function StatusBadge({ status, t }) {
-  const meta = statusMeta[status] || { label: status, badge: 'bg-[#f4f6f8] text-[#65748a] ring-[#dce3eb]', dot: 'bg-[#94a3b4]' }
+  const meta = statusMeta[status] || { label: status, badge: 'bg-[#f3f4f6] text-[#5f6368]' }
   return (
-    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold capitalize ring-1 ${meta.badge}`}>
-      <span aria-hidden="true" className={`size-1.5 rounded-full ${meta.dot}`} />
+    <span className={`inline-flex flex-none items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${meta.badge}`}>
       {t(meta.label)}
     </span>
   )
@@ -202,13 +201,13 @@ export function AdminCakeRequestsBoard() {
 
   function pickupLabel(item) {
     const { date, days } = pickupInfo(item.pickupDate)
-    if (!date) return { text: item.pickupDate, tone: 'text-[#65748a]', badge: null }
+    if (!date) return { text: item.pickupDate, tone: 'text-[#6b6b6b]', badge: null }
     const text = date.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' })
     const formatter = new Intl.RelativeTimeFormat(language === 'fr' ? 'fr' : 'en', { numeric: 'auto' })
     const active = item.status !== 'declined' && item.status !== 'confirmed'
-    if (days < 0 && active) return { text, tone: 'text-[#a53f37]', badge: { label: t('Overdue'), className: 'bg-[#fdeeee] text-[#a53f37]' } }
-    if (days <= 2 && days >= 0 && item.status !== 'declined') return { text, tone: 'text-[#9a6200]', badge: { label: formatter.format(days, 'day'), className: 'bg-[#fff6e5] text-[#9a6200]' } }
-    return { text, tone: 'text-[#65748a]', badge: days >= 0 && item.status !== 'declined' ? { label: formatter.format(days, 'day'), className: 'bg-[#f4f6f8] text-[#65748a]' } : null }
+    if (days < 0 && active) return { text, tone: 'text-[#831c1e]', badge: { label: t('Overdue'), className: 'bg-[#ffedea] text-[#831c1e]' } }
+    if (days <= 2 && days >= 0 && item.status !== 'declined') return { text, tone: 'text-[#92400e]', badge: { label: formatter.format(days, 'day'), className: 'bg-[#fffbeb] text-[#92400e]' } }
+    return { text, tone: 'text-[#6b6b6b]', badge: days >= 0 && item.status !== 'declined' ? { label: formatter.format(days, 'day'), className: 'bg-[#f3f4f6] text-[#5f6368]' } : null }
   }
 
   const metrics = [
@@ -218,36 +217,13 @@ export function AdminCakeRequestsBoard() {
     { key: 'due', label: 'Due within 7 days', value: counts.due },
   ]
 
-  async function sendQuote() {
-    if (!selected) return
-    setUpdatingId(selected.id)
-    setQuoteError('')
-    try {
-      const result = await request(`/admin/cake-requests/${selected.id}`, {
-        method: 'PATCH',
-        body: {
-          action: 'quote',
-          quotedTotal: Number(quotedTotal),
-          depositAmount: Number(depositAmount),
-          adminNote,
-          pickupDate,
-        },
-      })
-      setRequests((current) => current.map((item) => (item.id === selected.id ? { ...item, ...result.request } : item)))
-    } catch (error) {
-      setQuoteError(error.message)
-    } finally {
-      setUpdatingId(null)
-    }
-  }
-
   const requestCard = (item) => {
     const pickup = pickupLabel(item)
     const toppings = Array.isArray(item.toppings) ? item.toppings : []
     return (
       <li key={item.id}>
         <article
-          className={`group cursor-pointer rounded-2xl bg-white p-4 ring-1 ring-[#dce3eb] transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(16,44,80,0.08)] hover:ring-[#dce3eb] ${updatingId === item.id ? 'opacity-60' : ''}`}
+          className={`group cursor-pointer rounded-lg border-t-2 bg-white p-3 ring-1 ring-[#e8e8e8] transition hover:ring-[#c2c8d0] ${statusMeta[item.status]?.edge || 'border-t-[#9aa2ad]'} ${updatingId === item.id ? 'opacity-60' : ''}`}
           onClick={() => setSelectedId(item.id)}
           onKeyDown={(event) => { if (event.key === 'Enter') setSelectedId(item.id) }}
           role="button"
@@ -255,26 +231,25 @@ export function AdminCakeRequestsBoard() {
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#a3b0bf]">#{item.id}</p>
-              <h3 className="mt-0.5 truncate font-display text-base font-extrabold text-[#092a53]">{item.size} {t('Cake')}</h3>
-              <p className="truncate text-xs font-semibold text-[#65748a]">{item.flavor}</p>
+              <p className="text-xs text-[#6b6b6b]">#{item.id}</p>
+              <h3 className="mt-0.5 truncate text-sm font-semibold text-[#111827]">{item.size} {t('Cake')}</h3>
+              <p className="truncate text-xs text-[#6b6b6b]">{item.flavor}</p>
             </div>
-            <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#fff6cc] text-[#bd9c00]"><Icon path={icons.cake} /></span>
           </div>
-          <div className={`mt-3 flex flex-wrap items-center gap-1.5 text-xs font-bold ${pickup.tone}`}>
+          <div className={`mt-2 flex flex-wrap items-center gap-1.5 text-xs ${pickup.tone}`}>
             <Icon className="size-3.5" path={icons.calendar} />
-            {pickup.text}
-            {pickup.badge && <span className={`rounded-full px-1.5 py-0.5 text-xs font-extrabold ${pickup.badge.className}`}>{pickup.badge.label}</span>}
+            <span className="num">{pickup.text}</span>
+            {pickup.badge && <span className={`rounded-full px-1.5 py-0.5 text-xs ${pickup.badge.className}`}>{pickup.badge.label}</span>}
           </div>
           {toppings.length > 0 && (
-            <p className="mt-1.5 truncate text-xs text-[#65748a]">{toppings.map((topping) => t(topping)).join(' · ')}</p>
+            <p className="mt-1 truncate text-xs text-[#6b6b6b]">{toppings.map((topping) => t(topping)).join(' · ')}</p>
           )}
-          <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#f4f6f8] pt-3">
-            <p className="min-w-0 truncate text-xs font-bold text-[#123b68]">{item.customerName}</p>
+          <div className="mt-2 flex items-center justify-between gap-2 border-t border-[#f2f3f5] pt-2">
+            <p className="min-w-0 truncate text-xs font-medium text-[#111827]">{item.customerName}</p>
             {item.quotedTotal ? (
-              <span className="text-xs font-extrabold text-[#092a53]">{Number(item.quotedTotal).toLocaleString(locale)} FCFA</span>
+              <span className="num text-xs font-semibold text-[#111827]">{Number(item.quotedTotal).toLocaleString(locale)} FCFA</span>
             ) : ['new', 'contacted'].includes(item.status) ? (
-              <span className="text-xs font-bold text-[#bd9c00]">{t('Send quote')}</span>
+              <span className="text-xs font-medium text-[#92400e]">{t('Send quote')}</span>
             ) : null}
           </div>
         </article>
@@ -286,24 +261,18 @@ export function AdminCakeRequestsBoard() {
   const selectedWhatsapp = selected ? whatsappNumber(selected.customerPhone) : ''
 
   return (
-    <div className="min-w-0 space-y-6">
-      <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <span className="relative grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
-            <Icon className="size-7" path={icons.cake} />
-            {counts.new > 0 && <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#bd9c00] px-1 text-xs font-extrabold text-white ring-2 ring-white">{counts.new}</span>}
-          </span>
-          <div className="min-w-0">
-            <nav aria-label={t('Breadcrumb')} className="text-xs font-bold text-[#65748a]">
-              {t('Customers')} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#bd9c00]">{t('Cake requests')}</span>
-            </nav>
-            <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t('Custom cake requests')}</h1>
-            <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">{t('Review each celebration, get in touch with the customer, and keep every request moving.')}</p>
-          </div>
+    <div className="min-w-0 space-y-4">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <nav aria-label={t('Breadcrumb')} className="text-xs text-[#6b6b6b]">
+            {t('Customers')} <span aria-hidden="true" className="mx-1">/</span>
+            {t('Cake requests')}
+          </nav>
+          <h1 className="mt-1 text-2xl font-bold tracking-[-0.01em] text-[#111827]">{t('Custom cake requests')}</h1>
+          <p className="mt-1 text-sm text-[#6b6b6b]">{t('Review each celebration, get in touch with the customer, and keep every request moving.')}</p>
         </div>
         <button
-          className="inline-flex min-h-10 items-center gap-2 self-start rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:cursor-wait disabled:opacity-60 xl:self-auto"
+          className="inline-flex h-9 flex-none items-center gap-1.5 rounded-lg border border-[#d1d5db] bg-white px-3 text-sm font-medium text-[#111827] transition hover:border-[#9aa2ad] disabled:cursor-wait disabled:opacity-60"
           disabled={isRefreshing}
           onClick={refresh}
           type="button"
@@ -314,45 +283,38 @@ export function AdminCakeRequestsBoard() {
       </header>
 
       {error && !selected && (
-        <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+        <p className="flex items-start gap-2 rounded-lg bg-[#ffedea] px-4 py-3 text-sm font-medium text-[#831c1e]" role="alert">
           <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
           {error}
         </p>
       )}
 
-      <section aria-label={t('Request overview')} className="admin-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
-        {metrics.map((metric) => {
+      <section aria-label={t('Request overview')} className="admin-stats grid grid-cols-2 overflow-hidden rounded-lg border border-[#e8e8e8] bg-white xl:grid-cols-4 xl:divide-x xl:divide-[#e8e8e8]">
+        {metrics.map((metric, index) => {
           const isActive = statusFilter === metric.key
-          const meta = statusMeta[metric.key]
           return (
             <button
               aria-pressed={isActive}
-              className={`group rounded-2xl border bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] sm:p-5 ${isActive ? 'border-[#092a53] shadow-[0_0_0_1px_#092a53]' : 'border-[#dce3eb]'}`}
+              className={`px-4 py-4 text-left transition sm:px-5 hover:bg-[#f6f7f9] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#111827] ${isActive ? 'bg-[#eef1f5]' : 'bg-white'} ${index % 2 === 0 ? 'border-r border-[#e8e8e8] xl:border-r-0' : ''} ${index < 2 ? 'border-b border-[#e8e8e8] xl:border-b-0' : ''}`}
               key={metric.key}
               onClick={() => { setStatusFilter(isActive ? 'all' : metric.key); if (!isActive && metric.key !== 'due') setView('list') }}
               type="button"
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className={`grid size-9 place-items-center rounded-xl ${metric.key === 'due' ? 'bg-[#fdecea] text-[#b2433a]' : `${meta.badge.split(' ').slice(0, 2).join(' ')}`}`}>
-                  <Icon path={metric.key === 'due' ? icons.clock : meta.icon} />
-                </span>
-                <span className="text-xs font-bold text-[#a3b0bf] opacity-0 transition group-hover:opacity-100">{t(isActive ? 'Clear filter' : 'Filter')}</span>
-              </div>
-              <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#092a53]">{metric.value}</p>
-              <p className="mt-1.5 text-xs font-semibold capitalize text-[#65748a]">{t(metric.label)}</p>
+              <p className="text-xs text-[#6b6b6b]">{t(metric.label)}</p>
+              <p className="num mt-1.5 truncate text-2xl font-semibold leading-none tracking-[-0.01em] text-[#111827]">{metric.value}</p>
             </button>
           )
         })}
       </section>
 
-      <section aria-labelledby="cake-requests-title" className="min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
-        <div className="flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
+      <section aria-labelledby="cake-requests-title" className="min-w-0 overflow-hidden rounded-lg border border-[#e8e8e8] bg-white">
+        <div className="flex flex-col gap-3 px-4 pb-3 pt-4 sm:px-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="cake-requests-title">{t(view === 'board' ? 'Request pipeline' : 'All requests')}</h2>
-              <p aria-live="polite" className="mt-0.5 text-xs text-[#65748a]">{t('Showing {shown} of {total} requests', { shown: filteredRequests.length, total: counts.all })}</p>
+              <h2 className="text-base font-semibold text-[#111827]" id="cake-requests-title">{t(view === 'board' ? 'Request pipeline' : 'All requests')}</h2>
+              <p aria-live="polite" className="num mt-0.5 text-xs text-[#6b6b6b]">{t('Showing {shown} of {total} requests', { shown: filteredRequests.length, total: counts.all })}</p>
             </div>
-            <div aria-label={t('View')} className="inline-flex rounded-xl bg-[#f4f6f8] p-1" role="group">
+            <div aria-label={t('View')} className="inline-flex flex-none rounded-lg border border-[#d1d5db] p-0.5" role="group">
               {[
                 { key: 'board', icon: icons.board, label: t('Board view') },
                 { key: 'list', icon: icons.list, label: t('Table view') },
@@ -360,7 +322,7 @@ export function AdminCakeRequestsBoard() {
                 <button
                   aria-label={option.label}
                   aria-pressed={view === option.key}
-                  className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition ${view === option.key ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
+                  className={`inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition ${view === option.key ? 'bg-[#eef1f5] text-[#111827]' : 'text-[#6b6b6b] hover:text-[#111827]'}`}
                   key={option.key}
                   onClick={() => setView(option.key)}
                   title={option.label}
@@ -386,17 +348,17 @@ export function AdminCakeRequestsBoard() {
               </select>
             </label>
             {view === 'list' && (
-              <div aria-label={t('Filter by request status')} className="flex overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
+              <div aria-label={t('Filter by request status')} className="flex overflow-x-auto rounded-lg border border-[#d1d5db] p-0.5" role="group">
                 {['all', ...STATUSES].map((status) => (
                   <button
                     aria-pressed={statusFilter === status}
-                    className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold capitalize transition ${statusFilter === status ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
+                    className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition ${statusFilter === status ? 'bg-[#eef1f5] text-[#111827]' : 'text-[#6b6b6b] hover:text-[#111827]'}`}
                     key={status}
                     onClick={() => setStatusFilter(status)}
                     type="button"
                   >
                     {t(status === 'all' ? 'All' : status)}
-                    <span className="rounded-full bg-[#dce3eb] px-1.5 text-xs text-[#65748a]">{counts[status]}</span>
+                    <span className="num text-[#6b6b6b]">{counts[status]}</span>
                   </button>
                 ))}
               </div>
@@ -406,87 +368,79 @@ export function AdminCakeRequestsBoard() {
 
         {loading ? (
           <div aria-live="polite" className="grid gap-4 p-4 sm:p-5 lg:grid-cols-4">
-            {[0, 1, 2, 3].map((item) => <div aria-hidden="true" className="h-64 animate-pulse rounded-2xl bg-[#f4f6f8]" key={item} />)}
+            {[0, 1, 2, 3].map((item) => <div aria-hidden="true" className="h-40 animate-pulse rounded-lg bg-[#f3f4f6]" key={item} />)}
             <span className="sr-only">{t('Loading…')}</span>
           </div>
         ) : !requests.length ? (
-          <div className="px-6 py-14 text-center">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#fff6cc] text-[#bd9c00]"><Icon className="size-5" path={icons.cake} /></span>
-            <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t('No custom cake requests yet.')}</p>
-            <p className="mx-auto mt-1 max-w-sm text-sm text-[#65748a]">{t('New cake requests from the storefront will appear here.')}</p>
+          <div className="border-t border-[#e8e8e8] px-6 py-12 text-center">
+            <p className="text-sm font-medium text-[#111827]">{t('No custom cake requests yet.')}</p>
+            <p className="mx-auto mt-1 max-w-sm text-sm text-[#6b6b6b]">{t('New cake requests from the storefront will appear here.')}</p>
           </div>
         ) : view === 'board' ? (
           <div className="grid gap-3 overflow-x-auto p-4 sm:p-5 md:grid-cols-2 xl:grid-cols-4">
             {STATUSES.map((status) => {
               const columnItems = filteredRequests.filter((item) => item.status === status && (statusFilter !== 'due' || isDueSoon(item)))
-              const meta = statusMeta[status]
               return (
-                <section aria-label={t(status)} className={`flex min-w-0 flex-col rounded-2xl p-3 ring-1 ring-[#f4f6f8] ${meta.column}`} key={status}>
-                  <header className="mb-3 flex items-center justify-between gap-2 px-1">
-                    <span className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
-                      <span aria-hidden="true" className={`size-2 rounded-full ${meta.dot}`} />
+                <section aria-label={t(status)} className="flex min-w-0 flex-col" key={status}>
+                  <header className={`mb-2 flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 ${statusMeta[status]?.column || 'bg-[#f3f4f6]'}`}>
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-[#111827]">
+                      <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${statusMeta[status]?.dot || 'bg-[#9aa2ad]'}`} />
                       {t(status)}
                     </span>
-                    <span className="rounded-full bg-white px-2 py-0.5 text-xs font-extrabold text-[#65748a] ring-1 ring-[#dce3eb]">{columnItems.length}</span>
+                    <span className={`num text-xs font-medium ${statusMeta[status]?.badge || 'text-[#6b6b6b]'}`}>{columnItems.length}</span>
                   </header>
                   {columnItems.length ? (
-                    <ul className="space-y-2.5">{columnItems.map(requestCard)}</ul>
+                    <ul className="space-y-2">{columnItems.map(requestCard)}</ul>
                   ) : (
-                    <p className="rounded-xl border border-dashed border-[#d8e0ea] px-3 py-6 text-center text-xs font-semibold text-[#a3b0bf]">{t('Nothing here')}</p>
+                    <p className="rounded-lg border border-dashed border-[#e8e8e8] px-3 py-6 text-center text-xs text-[#6b6b6b]">{t('Nothing here')}</p>
                   )}
                 </section>
               )
             })}
           </div>
         ) : filteredRequests.length === 0 ? (
-          <div className="px-6 py-14 text-center">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f4f6f8] text-[#65748a]"><Icon className="size-5" path={icons.search} /></span>
-            <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t('No requests match your search')}</p>
-            <p className="mt-1 text-sm text-[#65748a]">{t('Try a different search or status filter.')}</p>
+          <div className="border-t border-[#e8e8e8] px-6 py-12 text-center">
+            <p className="text-sm font-medium text-[#111827]">{t('No requests match your search')}</p>
+            <p className="mt-1 text-sm text-[#6b6b6b]">{t('Try a different search or status filter.')}</p>
           </div>
         ) : (
-          <div className="relative overflow-x-auto">
+          <div className="relative overflow-x-auto border-t border-[#e8e8e8]">
             <table className="w-full min-w-[860px] text-left text-sm">
               <thead>
-                <tr className="border-b border-[#f4f6f8] text-xs uppercase tracking-[0.08em] text-[#65748a]">
-                  <th className="px-5 py-3 font-extrabold" scope="col">{t('Cake')}</th>
-                  <th className="px-3 py-3 font-extrabold" scope="col">{t('Customer')}</th>
-                  <th className="px-3 py-3 font-extrabold" scope="col">{t('Pickup date')}</th>
-                  <th className="px-3 py-3 font-extrabold" scope="col">{t('Selected store')}</th>
-                  <th className="px-3 py-3 font-extrabold" scope="col">{t('Status')}</th>
-                  <th className="px-5 py-3" scope="col"><span className="sr-only">{t('Action')}</span></th>
+                <tr className="text-xs font-medium text-[#6b6b6b]">
+                  <th className="px-5 py-2.5 font-medium" scope="col">{t('Cake')}</th>
+                  <th className="px-3 py-2.5 font-medium" scope="col">{t('Customer')}</th>
+                  <th className="px-3 py-2.5 font-medium" scope="col">{t('Pickup date')}</th>
+                  <th className="px-3 py-2.5 font-medium" scope="col">{t('Selected store')}</th>
+                  <th className="px-3 py-2.5 font-medium" scope="col">{t('Status')}</th>
+                  <th className="px-5 py-2.5" scope="col"><span className="sr-only">{t('Action')}</span></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f4f6f8]">
+              <tbody className="divide-y divide-[#f2f3f5]">
                 {filteredRequests.map((item) => {
                   const pickup = pickupLabel(item)
                   return (
-                    <tr className={`cursor-pointer transition hover:bg-[#f4f6f8] ${updatingId === item.id ? 'opacity-60' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)}>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#fff6cc] text-[#bd9c00]"><Icon path={icons.cake} /></span>
-                          <div className="min-w-0">
-                            <p className="font-bold text-[#092a53]">{item.size} {t('Cake')} <span className="text-xs font-semibold text-[#a3b0bf]">#{item.id}</span></p>
-                            <p className="max-w-[12rem] truncate text-xs text-[#65748a]">{item.flavor}</p>
-                          </div>
+                    <tr className={`cursor-pointer transition hover:bg-[#f6f7f9] ${updatingId === item.id ? 'opacity-60' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)}>
+                      <td className="px-5 py-3">
+                        <div className="min-w-0">
+                          <p className="font-medium text-[#111827]">{item.size} {t('Cake')} <span className="num text-xs text-[#6b6b6b]">#{item.id}</span></p>
+                          <p className="max-w-[12rem] truncate text-xs text-[#6b6b6b]">{item.flavor}</p>
                         </div>
                       </td>
-                      <td className="px-3 py-3.5">
-                        <p className="max-w-[11rem] truncate font-bold text-[#092a53]">{item.customerName}</p>
-                        <p className="max-w-[11rem] truncate text-xs text-[#65748a]">{item.customerPhone}</p>
+                      <td className="px-3 py-3">
+                        <p className="max-w-[11rem] truncate font-medium text-[#111827]">{item.customerName}</p>
+                        <p className="num max-w-[11rem] truncate text-xs text-[#6b6b6b]">{item.customerPhone}</p>
                       </td>
-                      <td className="px-3 py-3.5">
-                        <p className={`flex items-center gap-1.5 text-xs font-bold ${pickup.tone}`}>{pickup.text}</p>
-                        {pickup.badge && <span className={`mt-1 inline-block rounded-full px-1.5 py-0.5 text-xs font-extrabold ${pickup.badge.className}`}>{pickup.badge.label}</span>}
+                      <td className="num px-3 py-3 text-xs">
+                        <p className={pickup.tone}>{pickup.text}</p>
+                        {pickup.badge && <span className={`mt-1 inline-block rounded-full px-1.5 py-0.5 text-xs ${pickup.badge.className}`}>{pickup.badge.label}</span>}
                       </td>
-                      <td className="max-w-[11rem] truncate px-3 py-3.5 text-xs font-semibold text-[#65748a]">{item.storeName ? t(item.storeName) : '—'}</td>
-                      <td className="px-3 py-3.5"><StatusBadge status={item.status} t={t} /></td>
-                      <td className="px-5 py-3.5 text-right" onClick={(event) => event.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button aria-label={t('View details')} className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setSelectedId(item.id)} type="button">
-                            <Icon path={icons.chevron} />
-                          </button>
-                        </div>
+                      <td className="max-w-[11rem] truncate px-3 py-3 text-xs text-[#6b6b6b]">{item.storeName ? t(item.storeName) : '—'}</td>
+                      <td className="px-3 py-3"><StatusBadge status={item.status} t={t} /></td>
+                      <td className="px-5 py-3 text-right" onClick={(event) => event.stopPropagation()}>
+                        <button aria-label={t('View details')} className="grid size-8 place-items-center rounded-md text-[#6b6b6b] transition hover:bg-[#eef1f5] hover:text-[#111827]" onClick={() => setSelectedId(item.id)} type="button">
+                          <Icon path={icons.chevron} />
+                        </button>
                       </td>
                     </tr>
                   )

@@ -87,8 +87,18 @@ export function authenticatorUri(secret, accountName, issuer = 'Cold Stone Cream
   return `otpauth://totp/${encodeURIComponent(label)}?${query}`
 }
 
+export class AdminMfaConfigurationError extends Error {
+  constructor(cause) {
+    super('Authenticator verification is unavailable because this server cannot read the saved MFA configuration. Contact the store owner to restore the original MFA encryption key.', { cause })
+    this.name = 'AdminMfaConfigurationError'
+  }
+}
+
 function encryptionKey(secret) {
-  return createHash('sha256').update(`cold-stone-admin-totp:${secret}`).digest()
+  // Existing installations fall back to JWT_SECRET. Set the dedicated key to
+  // the ORIGINAL JWT_SECRET before rotating session-signing credentials.
+  const key = process.env.ADMIN_MFA_ENCRYPTION_KEY?.trim() || secret
+  return createHash('sha256').update(`cold-stone-admin-totp:${key}`).digest()
 }
 
 export function encryptTotpSecret(secret, jwtSecret) {
@@ -99,13 +109,17 @@ export function encryptTotpSecret(secret, jwtSecret) {
 }
 
 export function decryptTotpSecret(encrypted, jwtSecret) {
-  const [iv, tag, ciphertext] = encrypted.split('.').map((value) => Buffer.from(value, 'base64url'))
-  if (!iv || iv.length !== 12 || !tag || tag.length !== 16 || !ciphertext?.length) {
-    throw new Error('Stored authenticator secret is invalid.')
+  try {
+    const [iv, tag, ciphertext] = encrypted.split('.').map((value) => Buffer.from(value, 'base64url'))
+    if (!iv || iv.length !== 12 || !tag || tag.length !== 16 || !ciphertext?.length) {
+      throw new Error('Stored authenticator secret is invalid.')
+    }
+    const decipher = createDecipheriv('aes-256-gcm', encryptionKey(jwtSecret), iv)
+    decipher.setAuthTag(tag)
+    return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8')
+  } catch (error) {
+    throw new AdminMfaConfigurationError(error)
   }
-  const decipher = createDecipheriv('aes-256-gcm', encryptionKey(jwtSecret), iv)
-  decipher.setAuthTag(tag)
-  return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8')
 }
 
 export function createRecoveryCodes(count = 10) {

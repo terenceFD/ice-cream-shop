@@ -326,7 +326,7 @@ export function CustomCakeRequestPage() {
 
         <section aria-labelledby="cake-gallery-title" className="bg-[#f4f6f8] px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
           <div className="mx-auto grid max-w-[1320px] items-center gap-10 lg:grid-cols-12 lg:gap-16">
-            <figure className="lg:col-span-8">
+            <figure className="min-w-0 lg:col-span-8">
               <div className="aspect-[4/3] overflow-hidden bg-[#dce2e8] sm:aspect-[16/10]">
                 <img
                   alt={t(previewCake.name)}
@@ -339,7 +339,7 @@ export function CustomCakeRequestPage() {
                 />
               </div>
               <figcaption className="mt-4 text-sm font-bold text-[#33455c]">{t(previewCake.name)}</figcaption>
-              <div aria-label={t('Custom cake request')} className="mt-4 flex gap-3" role="group">
+              <div aria-label={t('Custom cake request')} className="grid grid-cols-[repeat(auto-fill,4.5rem)] gap-3 mt-4" role="group">
                 {cakeGallery.map((cake, index) => (
                   <button
                     aria-label={`${t('Custom celebration cake')} ${index + 1}`}

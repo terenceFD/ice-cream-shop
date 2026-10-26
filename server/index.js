@@ -110,6 +110,7 @@ import { registerEventOrderRoutes } from './event-orders.js'
 import { registerCakeQuoteRoutes } from './cake-quotes.js'
 import { isWhatsAppMessagingConfigured, sendWhatsAppText } from './whatsapp.js'
 import {
+  AdminMfaConfigurationError,
   authenticatorUri,
   consumeRecoveryCode,
   createRecoveryCodes,
@@ -3044,7 +3045,7 @@ app.get('/api/admin/stores', requireAdmin, async (request, response) => {
     ) c ON c.store_id = s.id
     LEFT JOIN (
       SELECT o.store_id, COUNT(*) AS "reviewCount",
-        SUM(CASE WHEN mr.is_approved = FALSE THEN 1 ELSE 0 END) AS "pendingReviewCount",
+        SUM(CASE WHEN mr.is_approved = 0 THEN 1 ELSE 0 END) AS "pendingReviewCount",
         AVG(mr.rating) AS "averageRating"
       FROM menu_reviews mr JOIN orders o ON o.id = mr.order_id
       GROUP BY o.store_id
@@ -3622,7 +3623,7 @@ app.get('/api/admin/reviews', requireAdmin, async (request, response) => {
   if (request.query.countOnly === 'true') {
     const { count } = await database.prepare(`
       SELECT COUNT(*) AS count FROM menu_reviews r ${storeJoin}
-      WHERE r.is_approved = FALSE ${storeFilter}
+      WHERE r.is_approved = 0 ${storeFilter}
     `).get(...storeParameters)
     response.json({ pendingCount: count })
     return
@@ -3635,7 +3636,7 @@ app.get('/api/admin/reviews', requireAdmin, async (request, response) => {
     FROM menu_reviews r JOIN customers c ON c.id = r.customer_id ${storeJoin}
     WHERE r.is_approved = ? ${storeFilter} ORDER BY r.id DESC LIMIT 200
   `).all(
-    databaseKind === 'postgres' ? status : status ? 1 : 0,
+    status ? 1 : 0,
     ...storeParameters,
   )
   const resolvedReviews = await Promise.all(reviews.map(async (review) => ({
@@ -4265,6 +4266,11 @@ app.use((error, _request, response, _next) => {
   if (error instanceof CorsOriginError) {
     console.warn(error.message)
     response.status(403).json({ error: 'This website address is not allowed to use the store API. Add it to FRONTEND_ORIGINS.' })
+    return
+  }
+  if (error instanceof AdminMfaConfigurationError) {
+    console.error(`Admin MFA configuration failure on ${_request.method} ${_request.path}: ${error.cause?.message || 'Invalid encryption configuration'}`)
+    response.status(503).json({ error: error.message })
     return
   }
   if (error instanceof PasswordVerificationError) {
