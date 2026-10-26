@@ -1264,16 +1264,16 @@ function PromotionCountdown() {
   return (
     <aside
       aria-label={t("Limited-time promotion")}
-      className="relative z-[51] border-b border-brand-yellow-deep bg-brand-yellow text-brand-navy"
+      className="relative z-[51] border-b border-brand-yellow-deep border-t-[3px] border-t-brand-navy bg-brand-yellow text-brand-navy"
     >
-      <div className="relative mx-auto flex max-w-[1320px] items-center gap-x-2 gap-y-1.5 px-3 py-2 pr-14 sm:gap-5 sm:px-8 sm:pr-8 lg:px-12">
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-3">
-          <div className="min-w-0 flex-1 basis-full sm:basis-auto">
-            <p className="font-display text-lg font-extrabold leading-none tracking-[-0.03em] sm:text-2xl">
+      <div className="relative mx-auto flex max-w-[1320px] items-center px-3 py-2.5 sm:gap-5 sm:px-8 lg:px-12">
+        <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 pr-10 sm:flex sm:gap-4 sm:pr-0">
+          <div className="col-span-2 min-w-0 sm:col-span-auto">
+            <p className="font-display text-xl font-extrabold leading-none tracking-[-0.03em] text-brand-navy sm:text-2xl">
               {discount}
             </p>
             {minimum && (
-              <p className="mt-1 text-[13px] font-medium leading-4 text-brand-blue sm:hidden">{minimum}</p>
+              <p className="mt-1 text-xs font-medium leading-4 text-brand-blue sm:hidden">{minimum}</p>
             )}
           </div>
           {minimum && (
@@ -1281,19 +1281,19 @@ function PromotionCountdown() {
           )}
           <button
             aria-label={t("Copy code {code}", { code: promotion.code })}
-            className="order-2 mr-auto inline-flex min-h-9 max-w-full items-center truncate rounded-md bg-brand-navy px-2.5 text-sm font-bold text-brand-yellow outline-none! hover:bg-brand-blue focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:order-none sm:mr-0"
+            className="inline-flex min-h-9 max-w-full min-w-0 items-center truncate rounded-md bg-brand-navy px-3 text-sm font-extrabold text-brand-yellow transition hover:bg-brand-blue outline-none! focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
             onClick={copyCode}
             type="button"
           >
             {copied ? t("Copied") : promotion.code}
           </button>
           <span className="sr-only" aria-live="polite">{copied ? t("Copied") : ""}</span>
-          <p className="order-4 w-full text-xs font-semibold tabular-nums sm:order-none sm:ml-auto sm:w-auto sm:text-sm" role="timer">
+          <p className="col-span-2 text-xs font-semibold tabular-nums text-brand-navy sm:col-span-auto sm:text-sm" role="timer">
             <span className="sr-only">{t("Offer countdown")}. </span>
             {t("Ends in")} {countdown}
           </p>
           <Link
-            className="order-3 inline-flex min-h-9 items-center justify-self-end py-1 text-sm font-bold underline decoration-2 decoration-[#472a3b] underline-offset-4 outline-none! focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:order-none sm:min-h-11 sm:ml-auto sm:py-0"
+            className="col-span-2 inline-flex min-h-9 justify-self-end items-center text-sm font-bold text-brand-navy underline decoration-brand-navy decoration-2 underline-offset-4 outline-none! focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:col-span-auto sm:ml-auto sm:min-h-11 sm:justify-self-auto"
             to="/flavors"
           >
             {t("Shop offer")}
@@ -1301,7 +1301,7 @@ function PromotionCountdown() {
         </div>
         <button
           aria-label={t("Dismiss")}
-          className="absolute right-1.5 top-1/2 grid size-11 -translate-y-1/2 shrink-0 place-items-center rounded-md text-brand-navy outline-none! hover:bg-brand-navy/10 focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:relative sm:right-auto sm:top-auto sm:translate-y-0 sm:self-center"
+          className="absolute right-1.5 top-1 grid size-10 shrink-0 place-items-center rounded-md text-brand-navy transition hover:bg-brand-navy/10 outline-none! focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:relative sm:right-auto sm:top-auto sm:ml-1 sm:size-11"
           onClick={dismiss}
           type="button"
         >

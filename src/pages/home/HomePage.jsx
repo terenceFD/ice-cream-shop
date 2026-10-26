@@ -26,15 +26,18 @@ const popularFlavorNames = [
   "Founder’s Favorite",
   "Birthday Cake Remix",
 ];
-const popularFlavorColors = [
-  "#e9f6dd",
-  "#fff0df",
-  "#fff5d2",
-  "#fff5c8",
-];
+const popularFlavorColors = ["#e9f6dd", "#fff0df", "#fff5d2", "#fff5c8"];
 const cakeSliderFallbacks = {
-  birthday: ["/cake-images/cake-1.webp", "/cake-images/cake-2.webp", "/cake-images/cake-6.webp"],
-  kids: ["/cake-images/cake-3.webp", "/cake-images/cake-1.webp", "/cake-images/cake-7.webp"],
+  birthday: [
+    "/cake-images/cake-1.webp",
+    "/cake-images/cake-2.webp",
+    "/cake-images/cake-6.webp",
+  ],
+  kids: [
+    "/cake-images/cake-3.webp",
+    "/cake-images/cake-1.webp",
+    "/cake-images/cake-7.webp",
+  ],
   pies: [
     "/menu-official/cakes/ice-cream-pies/local-pies/cookie-dough-pie.webp",
     "/menu-official/cakes/ice-cream-pies/local-pies/smore-some-more-pie.webp",
@@ -58,7 +61,8 @@ const flavorInspiration = [
     mood: "fruit",
     category: "Ice Cream",
     item: "Our Strawberry Blonde",
-    image: "/menu-official/ice-cream/signature-creations/berry-berry-berry-good.webp",
+    image:
+      "/menu-official/ice-cream/signature-creations/berry-berry-berry-good.webp",
     color: "#f7c8d9",
   },
   {
@@ -82,7 +86,8 @@ const flavorInspiration = [
     mood: "chocolate",
     category: "Ice Cream",
     item: "Chocolate Devotion",
-    image: "/menu-official/ice-cream/signature-creations/chocolate-devotion.webp",
+    image:
+      "/menu-official/ice-cream/signature-creations/chocolate-devotion.webp",
     color: "#d9b2a0",
   },
   {
@@ -92,7 +97,8 @@ const flavorInspiration = [
     mood: "classics",
     category: "Ice Cream",
     item: "Cookie Doughn’t You Want Some",
-    image: "/menu-official/milkshakes-fruit-smoothies/milkshakes/very-vanilla.webp",
+    image:
+      "/menu-official/milkshakes-fruit-smoothies/milkshakes/very-vanilla.webp",
     color: "#ded0ef",
   },
   {
@@ -102,7 +108,8 @@ const flavorInspiration = [
     mood: "chocolate",
     category: "Ice Cream",
     item: "Peanut Butter Cup Perfection",
-    image: "/menu-official/ice-cream/signature-creations/peanut-butter-cup-perfection.webp",
+    image:
+      "/menu-official/ice-cream/signature-creations/peanut-butter-cup-perfection.webp",
     color: "#f3d3b3",
   },
   {
@@ -112,7 +119,8 @@ const flavorInspiration = [
     mood: "chocolate",
     category: "Ice Cream",
     item: "Our Dubai Chocolate Creation",
-    image: "/menu-official/ice-cream/signature-creations/our-dubai-chocolate-creation.webp",
+    image:
+      "/menu-official/ice-cream/signature-creations/our-dubai-chocolate-creation.webp",
     color: "#e8c98e",
   },
   {
@@ -122,7 +130,8 @@ const flavorInspiration = [
     mood: "fruit",
     category: "Ice Cream",
     item: "Berry Berry Berry Good",
-    image: "/menu-official/ice-cream/signature-creations/berry-berry-berry-good.webp",
+    image:
+      "/menu-official/ice-cream/signature-creations/berry-berry-berry-good.webp",
     color: "#f9c2d0",
   },
   {
@@ -132,7 +141,8 @@ const flavorInspiration = [
     mood: "classics",
     category: "Ice Cream",
     item: "Founder’s Favorite",
-    image: "/menu-official/ice-cream/signature-creations/founders-favorite.webp",
+    image:
+      "/menu-official/ice-cream/signature-creations/founders-favorite.webp",
     color: "#f6e3b8",
   },
   {
@@ -152,7 +162,8 @@ const flavorInspiration = [
     mood: "fruit",
     category: "Ice Cream",
     item: "Banana Caramel Crunch",
-    image: "/menu-official/ice-cream/signature-creations/banana-caramel-crunch.webp",
+    image:
+      "/menu-official/ice-cream/signature-creations/banana-caramel-crunch.webp",
     color: "#ffe9a8",
   },
 ];
@@ -177,7 +188,8 @@ const homeSlides = [
   {
     title: "A little joy",
     accent: "in each scoop.",
-    description: "Signature creations, the full menu, and stores across Cameroon.",
+    description:
+      "Signature creations, the full menu, and stores across Cameroon.",
     image: "/ice-images/ice-9.jpg",
     alt: "Colorful ice cream creations ready to enjoy",
     caption: "The signature experience",
@@ -185,7 +197,8 @@ const homeSlides = [
   {
     title: "Ice cream cakes",
     accent: "for celebrations.",
-    description: "Creamy ice cream cakes for birthdays, parties, and every celebration.",
+    description:
+      "Creamy ice cream cakes for birthdays, parties, and every celebration.",
     image: "/cake-images/cake-11.webp",
     alt: "A chocolate ice cream cake held up for a celebration",
     caption: "Made for celebrations",
@@ -193,7 +206,8 @@ const homeSlides = [
   {
     title: "Cool, creamy mint",
     accent: "with cookie crunch.",
-    description: "Mint ice cream with cookies and fudge, mixed fresh on a frozen stone.",
+    description:
+      "Mint ice cream with cookies and fudge, mixed fresh on a frozen stone.",
     image: "/menu-official/ice-cream/signature-creations/cookie-mintster.webp",
     alt: "Mint ice cream with chocolate cookies and fudge in a waffle cone",
     caption: "Mixed on a frozen stone",
@@ -211,40 +225,50 @@ function getPopularFlavors(categories) {
 
 // Menu price (in XAF) for a flavor card's featured item, or null when unavailable.
 function findMenuItem(categories, categoryTitle, itemName) {
-  const category = categories.find(
-    (entry) => entry.title === categoryTitle,
-  );
-  return category?.items.find(
-    (entry) => entry.name === itemName,
-  );
+  const category = categories.find((entry) => entry.title === categoryTitle);
+  return category?.items.find((entry) => entry.name === itemName);
 }
 
 function getFlavorMood(flavor) {
-  const flavorText = [flavor.name, flavor.detail, flavor.description, flavor.tag]
+  const flavorText = [
+    flavor.name,
+    flavor.detail,
+    flavor.description,
+    flavor.tag,
+  ]
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
-  if (/fruit|berry|strawberry|mango|banana|raspberry|blueberry|peach|pineapple|lemon/.test(flavorText)) {
+  if (
+    /fruit|berry|strawberry|mango|banana|raspberry|blueberry|peach|pineapple|lemon/.test(
+      flavorText,
+    )
+  ) {
     return "fruit";
   }
-  if (/chocolate|cocoa|cacao|fudge|brownie|nut|peanut|coffee/.test(flavorText)) {
+  if (
+    /chocolate|cocoa|cacao|fudge|brownie|nut|peanut|coffee/.test(flavorText)
+  ) {
     return "chocolate";
   }
   return "classics";
 }
 
 function getFlavorCardImages(flavor, item) {
-  const images = [...new Set(
-    (flavor.images
-      ? normalizePhotoGallery(flavor.images)
-      : item?.image
-        ? [item.image, ...normalizePhotoGallery(item.gallery)]
-        : [flavor.image])
-      .filter(Boolean),
-  )];
+  const images = [
+    ...new Set(
+      (flavor.images
+        ? normalizePhotoGallery(flavor.images)
+        : item?.image
+          ? [item.image, ...normalizePhotoGallery(item.gallery)]
+          : [flavor.image]
+      ).filter(Boolean),
+    ),
+  ];
   if (images.length > 1) return images;
 
-  const alternates = flavorImageAlternates[flavor.mood] || flavorImageAlternates.classics;
+  const alternates =
+    flavorImageAlternates[flavor.mood] || flavorImageAlternates.classics;
   return [
     ...images,
     ...alternates.filter((image) => !images.includes(image)).slice(0, 2),
@@ -520,7 +544,9 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
                 />
                 <span className="text-sm font-semibold text-[#65748a]">
                   {t(
-                    count === 1 ? "Based on 1 review" : "Based on {count} reviews",
+                    count === 1
+                      ? "Based on 1 review"
+                      : "Based on {count} reviews",
                     { count },
                   )}
                 </span>
@@ -530,7 +556,10 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
         </div>
 
         {error ? (
-          <p className="mt-8 max-w-xl text-base leading-7 text-[#65748a]" role="status">
+          <p
+            className="mt-8 max-w-xl text-base leading-7 text-[#65748a]"
+            role="status"
+          >
             {t("Customer reviews could not be loaded")}: {error}
           </p>
         ) : !hasReviews ? (
@@ -539,7 +568,9 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
               {t("No reviews yet — be the first!")}
             </p>
             <p className="mt-2 text-base leading-7 text-[#65748a]">
-              {t("Ordered from us before? Share how it tasted and help the next customer choose.")}
+              {t(
+                "Ordered from us before? Share how it tasted and help the next customer choose.",
+              )}
             </p>
           </div>
         ) : (
@@ -621,7 +652,9 @@ function HowItWorksSection({ t }) {
               {t("How it works")}
             </h2>
             <p className="mt-3 max-w-xl text-base leading-7 text-[#65748a]">
-              {t("Choose your flavor, pay online, then collect your order or have it delivered.")}
+              {t(
+                "Choose your flavor, pay online, then collect your order or have it delivered.",
+              )}
             </p>
           </div>
           <Link
@@ -629,8 +662,19 @@ function HowItWorksSection({ t }) {
             to="/menu"
           >
             {t("Start an order")}
-            <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-              <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+            <svg
+              aria-hidden="true"
+              className="size-4"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M5 12h14m-6-6 6 6-6 6"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
             </svg>
           </Link>
         </div>
@@ -798,7 +842,9 @@ export function HomePage() {
   // The photo on screen, plus the next one, so the crossfade has a picture ready.
   useEffect(() => {
     setLoadedSlides((current) => {
-      const next = current.includes(activeSlide) ? current : [...current, activeSlide];
+      const next = current.includes(activeSlide)
+        ? current
+        : [...current, activeSlide];
       const upcoming = (activeSlide + 1) % homeSlides.length;
       return next.includes(upcoming) ? next : [...next, upcoming];
     });
@@ -807,7 +853,8 @@ export function HomePage() {
   // The hero photo moves on its own. Hover, focus, or the arrow keys hold it still.
   useEffect(() => {
     if (heroPaused) return undefined;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      return undefined;
     const timer = window.setTimeout(
       () => setActiveSlide((current) => (current + 1) % homeSlides.length),
       6500,
@@ -929,9 +976,9 @@ export function HomePage() {
     window.clearTimeout(cartNoticeTimer.current);
     cartNoticeTimer.current = window.setTimeout(() => setCartNotice(""), 4500);
     if (added) {
-        setAddedItemKey(itemKey);
-        window.clearTimeout(addedTimer.current);
-        addedTimer.current = window.setTimeout(() => setAddedItemKey(null), 1800);
+      setAddedItemKey(itemKey);
+      window.clearTimeout(addedTimer.current);
+      addedTimer.current = window.setTimeout(() => setAddedItemKey(null), 1800);
     }
   }
 
@@ -986,34 +1033,61 @@ export function HomePage() {
       category: "catalog",
       item: flavor.name,
       image: flavor.image,
-      color: flavor.color || ["#f7c8d9", "#ffd45d", "#d9b2a0", "#ded0ef"][index % 4],
+      color:
+        flavor.color || ["#f7c8d9", "#ffd45d", "#d9b2a0", "#ded0ef"][index % 4],
       catalogFlavor: flavor,
     }));
-  const catalogFlavorNames = new Set(catalogFlavorCards.map((flavor) => flavor.item.toLowerCase()));
+  const catalogFlavorNames = new Set(
+    catalogFlavorCards.map((flavor) => flavor.item.toLowerCase()),
+  );
   const allFlavorCards = [
-    ...flavorInspiration.filter((flavor) => !catalogFlavorNames.has(flavor.item.toLowerCase())),
+    ...flavorInspiration.filter(
+      (flavor) => !catalogFlavorNames.has(flavor.item.toLowerCase()),
+    ),
     ...catalogFlavorCards,
   ];
-  const flavorFiltersActive = showAllFlavorResults || selectedFlavorMood !== "all" || Boolean(flavorSearch.trim());
+  const flavorFiltersActive =
+    showAllFlavorResults ||
+    selectedFlavorMood !== "all" ||
+    Boolean(flavorSearch.trim());
   const matchingFlavors = allFlavorCards.filter((flavor) => {
-    const matchesMood = selectedFlavorMood === "all" || flavor.mood === selectedFlavorMood;
+    const matchesMood =
+      selectedFlavorMood === "all" || flavor.mood === selectedFlavorMood;
     const query = flavorSearch.trim().toLocaleLowerCase();
-    const searchableText = [flavor.title, flavor.item, flavor.detail, flavor.catalogFlavor?.description, flavor.catalogFlavor?.tag]
+    const searchableText = [
+      flavor.title,
+      flavor.item,
+      flavor.detail,
+      flavor.catalogFlavor?.description,
+      flavor.catalogFlavor?.tag,
+    ]
       .filter(Boolean)
       .join(" ");
-    const matchesSearch = !query || searchableText.toLocaleLowerCase().includes(query)
-      || t(flavor.title).toLocaleLowerCase().includes(query)
-      || t(flavor.detail || "").toLocaleLowerCase().includes(query)
-      || t(flavor.catalogFlavor?.tag || "").toLocaleLowerCase().includes(query);
+    const matchesSearch =
+      !query ||
+      searchableText.toLocaleLowerCase().includes(query) ||
+      t(flavor.title).toLocaleLowerCase().includes(query) ||
+      t(flavor.detail || "")
+        .toLocaleLowerCase()
+        .includes(query) ||
+      t(flavor.catalogFlavor?.tag || "")
+        .toLocaleLowerCase()
+        .includes(query);
     return matchesMood && matchesSearch;
   });
-  const visibleFlavors = flavorFiltersActive ? matchingFlavors : flavorInspiration.slice(0, 4);
+  const visibleFlavors = flavorFiltersActive
+    ? matchingFlavors
+    : flavorInspiration.slice(0, 4);
 
   // Real menu prices for the flavor cards, so the teasers set expectations before clicking.
   const flavorMenuItems = new Map(
     flavorInspiration.map((flavor) => [
       flavor.id,
-      findMenuItem(menuCategories || coldStoneMenuCategories, flavor.category, flavor.item),
+      findMenuItem(
+        menuCategories || coldStoneMenuCategories,
+        flavor.category,
+        flavor.item,
+      ),
     ]),
   );
   const flavorPrices = new Map(
@@ -1046,32 +1120,47 @@ export function HomePage() {
     // that ordering made every cake badge read as "Pie" and collapsed the filter
     // to a single group.
     const text = String(idName || "").toLowerCase();
-    if (text.includes("pie design") || text.includes("ice cream pie")) return "pies";
+    if (text.includes("pie design") || text.includes("ice cream pie"))
+      return "pies";
     if (text.includes("birthday cake design")) return "birthday";
-    if (text.includes("kids\u2019 themed") || text.includes("kids' themed") || text.includes("kid")) return "kids";
+    if (
+      text.includes("kids\u2019 themed") ||
+      text.includes("kids' themed") ||
+      text.includes("kid")
+    )
+      return "kids";
     if (text.includes("design")) return "signature";
     // A few cakes carry no design ID, so their display name decides instead.
     const displayName = String(name || idName || "").toLowerCase();
     if (displayName.includes("pie")) return "pies";
     if (displayName.includes("birthday")) return "birthday";
-    if (displayName.includes("kids\u2019") || displayName.includes("kids'") || displayName.includes("kid")) return "kids";
+    if (
+      displayName.includes("kids\u2019") ||
+      displayName.includes("kids'") ||
+      displayName.includes("kid")
+    )
+      return "kids";
     return "signature";
   };
   const cakeQuery = cakeSearch.trim().toLowerCase();
   const cakeCards = useMemo(() => {
-    const items = ((cakeMenuCategory.items || []).map((item) => ({
-      ...item,
-      idName: item.id || item.name,
-    }))).filter((cake) => {
-      const typeOk =
-        selectedCakeType === "all" ||
-        cakeTypeOf(cake.idName, cake.name) === selectedCakeType;
-      const queryOk =
-        !cakeQuery ||
-        cake.name.toLowerCase().includes(cakeQuery) ||
-        String(cake.detail || "").toLowerCase().includes(cakeQuery);
-      return typeOk && queryOk;
-    });
+    const items = (cakeMenuCategory.items || [])
+      .map((item) => ({
+        ...item,
+        idName: item.id || item.name,
+      }))
+      .filter((cake) => {
+        const typeOk =
+          selectedCakeType === "all" ||
+          cakeTypeOf(cake.idName, cake.name) === selectedCakeType;
+        const queryOk =
+          !cakeQuery ||
+          cake.name.toLowerCase().includes(cakeQuery) ||
+          String(cake.detail || "")
+            .toLowerCase()
+            .includes(cakeQuery);
+        return typeOk && queryOk;
+      });
     const hasActiveFilter = selectedCakeType !== "all" || cakeQuery.length > 0;
     return hasActiveFilter || showAllCakeResults ? items : items.slice(0, 4);
   }, [cakeMenuCategory, selectedCakeType, cakeQuery, showAllCakeResults]);
@@ -1083,7 +1172,10 @@ export function HomePage() {
     const byDesign = new Map();
     for (const item of cakeMenuCategory.items || []) {
       const type = cakeTypeOf(item.id || item.name, item.name);
-      const photos = [item.image, ...normalizePhotoGallery(item.gallery)].filter(Boolean);
+      const photos = [
+        item.image,
+        ...normalizePhotoGallery(item.gallery),
+      ].filter(Boolean);
       for (const photo of photos) {
         if (!byDesign.has(type)) byDesign.set(type, []);
         const bucket = byDesign.get(type);
@@ -1093,13 +1185,19 @@ export function HomePage() {
     return byDesign;
   }, [cakeMenuCategory]);
   const cakeImagesOf = (cake) => {
-    const own = [...new Set([cake.image, ...normalizePhotoGallery(cake.gallery)].filter(Boolean))];
+    const own = [
+      ...new Set(
+        [cake.image, ...normalizePhotoGallery(cake.gallery)].filter(Boolean),
+      ),
+    ];
     if (own.length > 1) return own;
     const type = cakeTypeOf(cake.idName, cake.name);
     const related = (relatedCakePhotos.get(type) || []).filter(
       (photo) => !own.includes(photo),
     );
-    const fallbacks = (cakeSliderFallbacks[type] || []).filter((photo) => !own.includes(photo));
+    const fallbacks = (cakeSliderFallbacks[type] || []).filter(
+      (photo) => !own.includes(photo),
+    );
     return [...new Set([...own, ...related, ...fallbacks])].slice(0, 4);
   };
   return (
@@ -1111,7 +1209,6 @@ export function HomePage() {
           className="relative isolate w-full overflow-clip bg-[var(--brand-navy)] text-white"
         >
           <HeroBackground quietOnMobile variant="navy" theme="ice-cream" />
-
           <div className="mx-auto w-full max-w-[1400px] px-5 pb-2 pt-3 sm:px-8 sm:pb-6 sm:pt-6 lg:px-12 lg:pb-8 lg:pt-8">
             <div className="grid items-center gap-4 lg:grid-cols-12 lg:gap-10">
               {/* Copy */}
@@ -1139,8 +1236,7 @@ export function HomePage() {
                     className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/30 px-4 py-3 text-xs font-bold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy sm:min-h-12 sm:px-5 sm:text-sm"
                     to="/flavors"
                   >
-                    {t("Explore flavors")}{" "}
-                    <ArrowIcon diagonal />
+                    {t("Explore flavors")} <ArrowIcon diagonal />
                   </Link>
                 </div>
 
@@ -1315,14 +1411,6 @@ export function HomePage() {
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
             />
-            <div
-              aria-hidden="true"
-              className="hero-blob-a pointer-events-none absolute -left-32 -top-24 -z-10 size-[22rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_184_77/0.08),rgb(255_184_77/0.08)_35%,transparent)]"
-            />
-            <div
-              aria-hidden="true"
-              className="hero-blob-b pointer-events-none absolute -bottom-32 -right-24 -z-10 size-[20rem] rounded-full bg-[radial-gradient(closest-side,rgb(18_59_104/0.45),rgb(18_59_104/0.45)_35%,transparent)]"
-            />
             <div className="mx-auto max-w-[1320px] px-5 pb-5 pt-4 sm:px-8 sm:pb-8 lg:px-12">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="font-display text-xl font-extrabold text-white sm:text-2xl">
@@ -1363,7 +1451,9 @@ export function HomePage() {
                   {
                     value: "1 pt / 100 FCFA",
                     label: t("Earn loyalty points on every order"),
-                    title: t("Earn 1 point per 100 FCFA. Redeem 100 points for 1,000 FCFA off."),
+                    title: t(
+                      "Earn 1 point per 100 FCFA. Redeem 100 points for 1,000 FCFA off.",
+                    ),
                     icon: "M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8-6.1-3.4-6.1 3.4 1.4-6.8L2.2 9.1l6.9-.8L12 2Z",
                   },
                 ].map((stat) => (
@@ -1374,7 +1464,9 @@ export function HomePage() {
                   >
                     {/* Not a native tooltip: also on the label, so the redemption rule is
                         readable on touch screens and by keyboard users. */}
-                    {stat.title && <span className="sr-only">{stat.title}</span>}
+                    {stat.title && (
+                      <span className="sr-only">{stat.title}</span>
+                    )}
                     <span className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-yellow/15 text-brand-yellow ring-1 ring-brand-yellow/25 sm:size-10">
                       <svg
                         className="size-5"
@@ -1450,7 +1542,11 @@ export function HomePage() {
             </div>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div aria-label={t("Filter flavor inspiration")} className="flex flex-wrap gap-2.5" role="group">
+              <div
+                aria-label={t("Filter flavor inspiration")}
+                className="flex flex-wrap gap-2.5"
+                role="group"
+              >
                 {[
                   ["all", "All cravings"],
                   ["fruit", "Fruit lovers"],
@@ -1480,9 +1576,25 @@ export function HomePage() {
               </div>
               <label className="relative block w-full sm:max-w-xs">
                 <span className="sr-only">{t("Search flavors")}</span>
-                <svg aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#65748a]" fill="none" viewBox="0 0 24 24">
-                  <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-                  <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                <svg
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#65748a]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    cx="11"
+                    cy="11"
+                    r="7"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                  <path
+                    d="m20 20-3.5-3.5"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeWidth="2"
+                  />
                 </svg>
                 <input
                   className="min-h-11 w-full rounded-lg border border-[#dce3eb] bg-white py-2.5 pl-12 pr-10 text-sm font-semibold text-brand-navy outline-none transition placeholder:text-[#65748a] focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/15"
@@ -1490,7 +1602,8 @@ export function HomePage() {
                     const query = event.target.value;
                     setFlavorSearch(query);
                     if (query.trim()) setShowAllFlavorResults(true);
-                    else if (selectedFlavorMood === "all") setShowAllFlavorResults(false);
+                    else if (selectedFlavorMood === "all")
+                      setShowAllFlavorResults(false);
                   }}
                   placeholder={t("Search flavors")}
                   type="search"
@@ -1502,12 +1615,23 @@ export function HomePage() {
                     className="absolute right-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-[#65748a] transition before:absolute before:-inset-2 before:content-[''] hover:bg-[#f4f6f8] hover:text-brand-navy"
                     onClick={() => {
                       setFlavorSearch("");
-                      if (selectedFlavorMood === "all") setShowAllFlavorResults(false);
+                      if (selectedFlavorMood === "all")
+                        setShowAllFlavorResults(false);
                     }}
                     type="button"
                   >
-                    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                    <svg
+                      aria-hidden="true"
+                      className="size-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M6 6l12 12M18 6 6 18"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeWidth="2"
+                      />
                     </svg>
                   </button>
                 )}
@@ -1515,7 +1639,10 @@ export function HomePage() {
             </div>
 
             {flavorFiltersActive && (
-              <p aria-live="polite" className="mt-5 text-sm font-semibold text-[#65748a]">
+              <p
+                aria-live="polite"
+                className="mt-5 text-sm font-semibold text-[#65748a]"
+              >
                 {t("Showing {shown} of {total} flavors", {
                   shown: matchingFlavors.length,
                   total: allFlavorCards.length,
@@ -1532,7 +1659,11 @@ export function HomePage() {
             ) : null}
             <ul
               id="home-flavor-results"
-              className={visibleFlavors.length === 0 ? "hidden" : "mt-8 grid auto-rows-fr grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6"}
+              className={
+                visibleFlavors.length === 0
+                  ? "hidden"
+                  : "mt-8 grid auto-rows-fr grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6"
+              }
             >
               {visibleFlavors.map((flavor) => {
                 const catalogFlavor = flavor.catalogFlavor;
@@ -1565,9 +1696,7 @@ export function HomePage() {
                         showScrim={false}
                         showThumbnails={false}
                       />
-                      <span
-                        className="absolute left-3 top-3 rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-brand-navy transition-transform duration-500 ease-out group-hover:-rotate-3 group-hover:scale-105 motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-sm"
-                      >
+                      <span className="absolute left-3 top-3 rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-brand-navy transition-transform duration-500 ease-out group-hover:-rotate-3 group-hover:scale-105 motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-sm">
                         {t(
                           flavor.mood === "fruit"
                             ? "Fruity"
@@ -1588,15 +1717,15 @@ export function HomePage() {
                         </span>
                       )}
                     </div>
-                    <div
-                      className="flex flex-1 flex-col justify-between gap-3 p-3.5 sm:gap-4 sm:p-5"
-                    >
+                    <div className="flex flex-1 flex-col justify-between gap-3 p-3.5 sm:gap-4 sm:p-5">
                       <div>
                         <Link
                           className="line-clamp-2 min-h-[2.5em] font-display text-base font-extrabold leading-tight text-brand-navy transition-colors duration-300 hover:text-brand-blue focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy sm:text-xl"
-                          to={catalogFlavor
-                            ? `/flavor/${catalogFlavor.id}`
-                            : `/menu?${new URLSearchParams({ category: flavor.category, item: flavor.item })}`}
+                          to={
+                            catalogFlavor
+                              ? `/flavor/${catalogFlavor.id}`
+                              : `/menu?${new URLSearchParams({ category: flavor.category, item: flavor.item })}`
+                          }
                         >
                           {t(flavor.title)}
                         </Link>
@@ -1607,7 +1736,9 @@ export function HomePage() {
                       <div className="flex flex-col items-stretch gap-2.5 sm:gap-3">
                         <span
                           className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 sm:text-base ${
-                            added ? "animate-pulse text-green-700" : "text-brand-navy"
+                            added
+                              ? "animate-pulse text-green-700"
+                              : "text-brand-navy"
                           }`}
                         >
                           {catalogFlavor
@@ -1617,21 +1748,31 @@ export function HomePage() {
                               : ""}
                         </span>
                         <button
-                          aria-label={soldOut
-                            ? t("Sold out")
-                            : t("Add {name} to cart", { name: t(flavor.item) })}
+                          aria-label={
+                            soldOut
+                              ? t("Sold out")
+                              : t("Add {name} to cart", {
+                                  name: t(flavor.item),
+                                })
+                          }
                           className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] sm:min-h-11 sm:px-4 sm:text-sm ${
                             added
                               ? "bg-[#4caf50] text-white"
                               : "bg-brand-navy text-white hover:bg-brand-blue"
                           }`}
                           disabled={soldOut || !item}
-                          onClick={() => catalogFlavor
-                            ? handleCatalogFlavorAdd(catalogFlavor)
-                            : item && handleAddToCart(item, flavor.category)}
+                          onClick={() =>
+                            catalogFlavor
+                              ? handleCatalogFlavorAdd(catalogFlavor)
+                              : item && handleAddToCart(item, flavor.category)
+                          }
                           type="button"
                         >
-                          {soldOut ? t("Sold out") : added ? t("Added") : t("Add to cart")}
+                          {soldOut
+                            ? t("Sold out")
+                            : added
+                              ? t("Added")
+                              : t("Add to cart")}
                         </button>
                       </div>
                     </div>
@@ -1639,25 +1780,33 @@ export function HomePage() {
                 );
               })}
             </ul>
-            {selectedFlavorMood === "all" && !flavorSearch.trim() && allFlavorCards.length > 4 && (
-              <div className="mt-6 flex flex-col items-center gap-3">
-                <p className="text-center text-sm leading-5 text-[#65748a]">
-                  {t("Search or choose a craving to see more flavors.")}
-                </p>
-                <button
-                  aria-controls="home-flavor-results"
-                  aria-expanded={showAllFlavorResults}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-brand-navy bg-white px-5 py-2.5 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
-                  onClick={() => setShowAllFlavorResults((current) => !current)}
-                  type="button"
-                >
-                  {t(showAllFlavorResults ? "Show fewer flavors" : "Show all {count} flavors", {
-                    count: allFlavorCards.length,
-                  })}
-                </button>
-              </div>
-            )}
-
+            {selectedFlavorMood === "all" &&
+              !flavorSearch.trim() &&
+              allFlavorCards.length > 4 && (
+                <div className="mt-6 flex flex-col items-center gap-3">
+                  <p className="text-center text-sm leading-5 text-[#65748a]">
+                    {t("Search or choose a craving to see more flavors.")}
+                  </p>
+                  <button
+                    aria-controls="home-flavor-results"
+                    aria-expanded={showAllFlavorResults}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-brand-navy bg-white px-5 py-2.5 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
+                    onClick={() =>
+                      setShowAllFlavorResults((current) => !current)
+                    }
+                    type="button"
+                  >
+                    {t(
+                      showAllFlavorResults
+                        ? "Show fewer flavors"
+                        : "Show all {count} flavors",
+                      {
+                        count: allFlavorCards.length,
+                      },
+                    )}
+                  </button>
+                </div>
+              )}
           </div>
         </section>
 
@@ -1680,7 +1829,9 @@ export function HomePage() {
                   {t("Cakes for every occasion")}
                 </h2>
                 <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-[#65748a] sm:text-base">
-                  {t("Creamy ice cream cakes for birthdays, parties, and every celebration.")}
+                  {t(
+                    "Creamy ice cream cakes for birthdays, parties, and every celebration.",
+                  )}
                 </p>
               </div>
               <div className="max-w-[360px] lg:mb-2">
@@ -1754,119 +1905,135 @@ export function HomePage() {
               </label>
             </div>
 
-              {cakeCards.length === 0 ? (
-                <p
-                  className="mt-8 rounded-xl bg-white px-5 py-8 text-center text-base leading-7 text-[#65748a]"
-                  role="status"
-                >
-                  {t("No cakes match your search \u2014 try another name or filter.")}
-                </p>
-              ) : (
-                <ul
-                  className="mt-8 grid auto-rows-fr grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6"
-                  id="home-cake-results"
-                >
-                  {cakeCards.map((cake) => {
-                    const cakeKey = cake.id || getMenuItemId("Cakes & Pies", cake.name);
-                    const added = addedItemKey === cakeKey;
-                    const soldOut = cake.isAvailable === false || cake.availableQuantity < 1;
-                    const images = cakeImagesOf(cake);
-                    const accent = { pies: "#7a4bd8", kids: "#f56586", birthday: "#f5a623" }[
+            {cakeCards.length === 0 ? (
+              <p
+                className="mt-8 rounded-xl bg-white px-5 py-8 text-center text-base leading-7 text-[#65748a]"
+                role="status"
+              >
+                {t(
+                  "No cakes match your search \u2014 try another name or filter.",
+                )}
+              </p>
+            ) : (
+              <ul
+                className="mt-8 grid auto-rows-fr grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6"
+                id="home-cake-results"
+              >
+                {cakeCards.map((cake) => {
+                  const cakeKey =
+                    cake.id || getMenuItemId("Cakes & Pies", cake.name);
+                  const added = addedItemKey === cakeKey;
+                  const soldOut =
+                    cake.isAvailable === false || cake.availableQuantity < 1;
+                  const images = cakeImagesOf(cake);
+                  const accent =
+                    { pies: "#7a4bd8", kids: "#f56586", birthday: "#f5a623" }[
                       cakeTypeOf(cake.idName, cake.name)
                     ] || "#38b2ac";
 
-                    return (
-                      <li
-                        className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[color:var(--card-accent)]/40 motion-reduce:transform-none motion-reduce:transition-none"
-                        key={cake.name}
-                        style={{ "--card-accent": accent }}
-                      >
-                        {/* Shine sweep on hover */}
-                        <span
-                          aria-hidden="true"
-                          className="pointer-events-none absolute inset-0 z-20 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_30%,rgba(255,255,255,0.55)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
+                  return (
+                    <li
+                      className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[color:var(--card-accent)]/40 motion-reduce:transform-none motion-reduce:transition-none"
+                      key={cake.name}
+                      style={{ "--card-accent": accent }}
+                    >
+                      {/* Shine sweep on hover */}
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 z-20 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_30%,rgba(255,255,255,0.55)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
+                      />
+                      <div className="relative bg-[#f4f6f8]">
+                        <ProductImageSlider
+                          frameClassName="rounded-none bg-[#f4f6f8] shadow-none"
+                          imageClassName="aspect-square transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none sm:aspect-[4/3]"
+                          images={images}
+                          name={t(cake.name)}
+                          resetKey={cake.name}
+                          sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 100vw"
                         />
-                        <div className="relative bg-[#f4f6f8]">
-                          <ProductImageSlider
-                            frameClassName="rounded-none bg-[#f4f6f8] shadow-none"
-                            imageClassName="aspect-square transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none sm:aspect-[4/3]"
-                            images={images}
-                            name={t(cake.name)}
-                            resetKey={cake.name}
-                            sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 100vw"
-                          />
-                          <span
-                            className="absolute left-3 top-3 rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-brand-navy transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-sm"
-                          >
-                            {t(
-                              cakeTypeOf(cake.idName, cake.name) === "pies"
-                                ? "Pie"
-                                : cakeTypeOf(cake.idName, cake.name) === "birthday"
-                                  ? "Birthday"
-                                  : cakeTypeOf(cake.idName, cake.name) === "kids"
-                                    ? "Kids"
-                                    : "Signature",
-                            )}
-                          </span>
-                          <span className="absolute bottom-4 right-4">
-                            <RatingBadge
-                                    averageRating={cake.averageRating}
-                                    reviewCount={cake.reviewCount}
-                            />
-                          </span>
-                          {soldOut && (
-                            <span className="absolute right-4 top-4 rounded-md bg-brand-navy px-3 py-1.5 text-xs font-bold text-white">
-                              {t("Sold out today")}
-                            </span>
+                        <span className="absolute left-3 top-3 rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-brand-navy transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-sm">
+                          {t(
+                            cakeTypeOf(cake.idName, cake.name) === "pies"
+                              ? "Pie"
+                              : cakeTypeOf(cake.idName, cake.name) ===
+                                  "birthday"
+                                ? "Birthday"
+                                : cakeTypeOf(cake.idName, cake.name) === "kids"
+                                  ? "Kids"
+                                  : "Signature",
                           )}
+                        </span>
+                        <span className="absolute bottom-4 right-4">
+                          <RatingBadge
+                            averageRating={cake.averageRating}
+                            reviewCount={cake.reviewCount}
+                          />
+                        </span>
+                        {soldOut && (
+                          <span className="absolute right-4 top-4 rounded-md bg-brand-navy px-3 py-1.5 text-xs font-bold text-white">
+                            {t("Sold out today")}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-1 flex-col justify-between gap-3 p-3.5 sm:gap-4 sm:p-5">
+                        <div>
+                          <Link
+                            className="line-clamp-2 min-h-[2.5em] font-display text-base font-extrabold leading-tight text-brand-navy transition-colors duration-300 hover:text-brand-blue focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy sm:text-xl"
+                            to={`/menu?${new URLSearchParams({ category: "Cakes & Pies", item: cake.name })}`}
+                          >
+                            {t(cake.name)}
+                          </Link>
+                          <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#65748a] sm:text-sm">
+                            {t(cake.detail)}
+                          </p>
                         </div>
-                        <div
-                          className="flex flex-1 flex-col justify-between gap-3 p-3.5 sm:gap-4 sm:p-5"
-                        >
-                          <div>
-                            <Link
-                              className="line-clamp-2 min-h-[2.5em] font-display text-base font-extrabold leading-tight text-brand-navy transition-colors duration-300 hover:text-brand-blue focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy sm:text-xl"
-                              to={`/menu?${new URLSearchParams({ category: "Cakes & Pies", item: cake.name })}`}
-                            >
-                              {t(cake.name)}
-                            </Link>
-                            <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#65748a] sm:text-sm">
-                              {t(cake.detail)}
-                            </p>
-                          </div>
-                          <div className="mt-auto flex flex-col items-stretch gap-2.5 sm:gap-3">
-                            <span
-                              className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 sm:text-base ${
-                                added ? "animate-pulse text-green-700" : "text-brand-navy"
-                              }`}
-                            >
-                              {typeof cake.priceXaf === "number" ? formatPrice(cake.priceXaf) : ""}
-                            </span>
-                            <button
-                              aria-label={
-                                added
-                                  ? t("Added to your bag")
-                                    : t("Add {name} to cart", { name: t(cake.name) })
-                              }
-                              className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] sm:min-h-11 sm:px-4 sm:text-sm ${
-                                added
-                                  ? "bg-[#4caf50] text-white"
-                                  : "bg-brand-navy text-white hover:bg-brand-blue"
-                              }`}
-                              disabled={soldOut}
-                              onClick={() => handleAddToCart(cake, "Cakes & Pies")}
-                              type="button"
-                            >
-                              {soldOut ? t("Sold out") : added ? t("Added") : t("Add to cart")}
-                            </button>
-                          </div>
+                        <div className="mt-auto flex flex-col items-stretch gap-2.5 sm:gap-3">
+                          <span
+                            className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 sm:text-base ${
+                              added
+                                ? "animate-pulse text-green-700"
+                                : "text-brand-navy"
+                            }`}
+                          >
+                            {typeof cake.priceXaf === "number"
+                              ? formatPrice(cake.priceXaf)
+                              : ""}
+                          </span>
+                          <button
+                            aria-label={
+                              added
+                                ? t("Added to your bag")
+                                : t("Add {name} to cart", {
+                                    name: t(cake.name),
+                                  })
+                            }
+                            className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] sm:min-h-11 sm:px-4 sm:text-sm ${
+                              added
+                                ? "bg-[#4caf50] text-white"
+                                : "bg-brand-navy text-white hover:bg-brand-blue"
+                            }`}
+                            disabled={soldOut}
+                            onClick={() =>
+                              handleAddToCart(cake, "Cakes & Pies")
+                            }
+                            type="button"
+                          >
+                            {soldOut
+                              ? t("Sold out")
+                              : added
+                                ? t("Added")
+                                : t("Add to cart")}
+                          </button>
                         </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-              {selectedCakeType === "all" && !cakeQuery && cakeMenuCategory.items.length > 4 && (
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {selectedCakeType === "all" &&
+              !cakeQuery &&
+              cakeMenuCategory.items.length > 4 && (
                 <div className="mt-6 flex justify-center">
                   <button
                     aria-controls="home-cake-results"
@@ -1875,31 +2042,36 @@ export function HomePage() {
                     onClick={() => setShowAllCakeResults((current) => !current)}
                     type="button"
                   >
-                    {t(showAllCakeResults ? "Show fewer cakes" : "Show all {count} cakes", {
-                      count: cakeMenuCategory.items.length,
-                    })}
+                    {t(
+                      showAllCakeResults
+                        ? "Show fewer cakes"
+                        : "Show all {count} cakes",
+                      {
+                        count: cakeMenuCategory.items.length,
+                      },
+                    )}
                   </button>
                 </div>
               )}
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="max-w-xl text-sm leading-6 text-[#65748a]">
-                  {t(
-                    "A taste of the cake menu. See all designs on the cakes page \u2014 or build your own.",
-                  )}
-                </p>
-                <Link
-                  className="group inline-flex min-h-12 shrink-0 items-center justify-center gap-3 self-start rounded-md bg-brand-navy px-6 py-3 text-sm font-extrabold text-white transition duration-300 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 sm:self-auto"
-                  to={`/menu?${new URLSearchParams({ category: "Cakes & Pies" })}`}
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="max-w-xl text-sm leading-6 text-[#65748a]">
+                {t(
+                  "A taste of the cake menu. See all designs on the cakes page \u2014 or build your own.",
+                )}
+              </p>
+              <Link
+                className="group inline-flex min-h-12 shrink-0 items-center justify-center gap-3 self-start rounded-md bg-brand-navy px-6 py-3 text-sm font-extrabold text-white transition duration-300 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 sm:self-auto"
+                to={`/menu?${new URLSearchParams({ category: "Cakes & Pies" })}`}
+              >
+                {t("Explore all cakes")}
+                <span
+                  aria-hidden="true"
+                  className="grid size-7 place-items-center rounded-full bg-brand-yellow text-brand-navy transition-transform duration-300 group-hover:translate-x-0.5"
                 >
-                  {t("Explore all cakes")}
-                  <span
-                    aria-hidden="true"
-                    className="grid size-7 place-items-center rounded-full bg-brand-yellow text-brand-navy transition-transform duration-300 group-hover:translate-x-0.5"
-                  >
-                    <ArrowIcon />
-                  </span>
-                </Link>
-              </div>
+                  <ArrowIcon />
+                </span>
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -1938,92 +2110,165 @@ export function HomePage() {
               className="mt-12 grid gap-5 lg:grid-cols-12 lg:gap-6"
               role={!popularLoaded ? "status" : undefined}
             >
-              {popularLoaded ? popularFlavors.map((item, index) => {
-                const soldOut =
-                  item.isAvailable === false || item.availableQuantity < 1;
-                const featured = index === 0;
-                const itemKey = item.id || item.name;
-                const added = addedItemKey === itemKey;
-                const itemLink = `/menu?category=${encodeURIComponent("Ice Cream")}`;
-                const bagIcon = added ? (
-                  <svg
-                    aria-hidden="true"
-                    className="size-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="m5 12.5 4.5 4.5L19 7.5"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.5"
-                    />
-                  </svg>
-                ) : !soldOut ? (
-                  <svg
-                    aria-hidden="true"
-                    className="size-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z"
-                      stroke="currentColor"
-                      strokeLinejoin="round"
-                      strokeWidth="1.8"
-                    />
-                    <path
-                      d="M9 8V6.5a3 3 0 0 1 6 0V8"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeWidth="1.8"
-                    />
-                  </svg>
-                ) : null;
-                const image = (
-                  <img
-                    decoding="async"
-                    alt=""
-                    className={`size-full object-cover transition-transform duration-500 group-hover:scale-[1.025] motion-reduce:transition-none ${soldOut ? "grayscale-[60%]" : ""}`}
-                    loading="lazy"
-                    onError={photoErrorHandler(
-                      item.image,
-                      "/images/hero-ice-cream.jpg",
-                    )}
-                    sizes={
-                      featured
-                        ? "(min-width: 1024px) 40vw, 100vw"
-                        : "(min-width: 1024px) 25vw, 50vw"
-                    }
-                    src={item.image}
-                    srcSet={photoSrcSet(item.image)}
-                  />
-                );
-
-                if (featured) {
-                  return (
-                    <article
-                      className="group flex min-w-0 flex-col lg:col-span-5 lg:row-span-4"
-                      key={itemKey}
-                    >
-                      <Link
-                        aria-label={t(item.name)}
-                        className="relative block aspect-[4/3] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-4"
-                        style={{ backgroundColor: popularFlavorColors[index] }}
-                        to={itemLink}
+              {popularLoaded
+                ? popularFlavors.map((item, index) => {
+                    const soldOut =
+                      item.isAvailable === false || item.availableQuantity < 1;
+                    const featured = index === 0;
+                    const itemKey = item.id || item.name;
+                    const added = addedItemKey === itemKey;
+                    const itemLink = `/menu?category=${encodeURIComponent("Ice Cream")}`;
+                    const bagIcon = added ? (
+                      <svg
+                        aria-hidden="true"
+                        className="size-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
                       >
-                        {image}
-                        {soldOut && (
-                          <span className="absolute left-4 top-4 rounded-sm bg-white px-3 py-1.5 text-xs font-bold text-red-700">
-                            {t("Sold out")}
-                          </span>
+                        <path
+                          d="m5 12.5 4.5 4.5L19 7.5"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2.5"
+                        />
+                      </svg>
+                    ) : !soldOut ? (
+                      <svg
+                        aria-hidden="true"
+                        className="size-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z"
+                          stroke="currentColor"
+                          strokeLinejoin="round"
+                          strokeWidth="1.8"
+                        />
+                        <path
+                          d="M9 8V6.5a3 3 0 0 1 6 0V8"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeWidth="1.8"
+                        />
+                      </svg>
+                    ) : null;
+                    const image = (
+                      <img
+                        decoding="async"
+                        alt=""
+                        className={`size-full object-cover transition-transform duration-500 group-hover:scale-[1.025] motion-reduce:transition-none ${soldOut ? "grayscale-[60%]" : ""}`}
+                        loading="lazy"
+                        onError={photoErrorHandler(
+                          item.image,
+                          "/images/hero-ice-cream.jpg",
                         )}
-                      </Link>
+                        sizes={
+                          featured
+                            ? "(min-width: 1024px) 40vw, 100vw"
+                            : "(min-width: 1024px) 25vw, 50vw"
+                        }
+                        src={item.image}
+                        srcSet={photoSrcSet(item.image)}
+                      />
+                    );
 
-                      <div className="flex flex-1 flex-col pt-5 sm:pt-6">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <h3 className="font-display text-2xl font-extrabold leading-tight text-brand-navy sm:text-3xl">
+                    if (featured) {
+                      return (
+                        <article
+                          className="group flex min-w-0 flex-col lg:col-span-5 lg:row-span-4"
+                          key={itemKey}
+                        >
+                          <Link
+                            aria-label={t(item.name)}
+                            className="relative block aspect-[4/3] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-4"
+                            style={{
+                              backgroundColor: popularFlavorColors[index],
+                            }}
+                            to={itemLink}
+                          >
+                            {image}
+                            {soldOut && (
+                              <span className="absolute left-4 top-4 rounded-sm bg-white px-3 py-1.5 text-xs font-bold text-red-700">
+                                {t("Sold out")}
+                              </span>
+                            )}
+                          </Link>
+
+                          <div className="flex flex-1 flex-col pt-5 sm:pt-6">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <h3 className="font-display text-2xl font-extrabold leading-tight text-brand-navy sm:text-3xl">
+                                <Link
+                                  className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2"
+                                  to={itemLink}
+                                >
+                                  {t(item.name)}
+                                </Link>
+                              </h3>
+                              <RatingBadge
+                                averageRating={item.averageRating}
+                                reviewCount={item.reviewCount}
+                              />
+                            </div>
+                            <p className="mt-2 max-w-lg text-sm leading-6 text-[#65748a] sm:text-base sm:leading-7">
+                              {t(item.detail)}
+                            </p>
+                            <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-5">
+                              <p
+                                className={`whitespace-nowrap font-display text-xl font-extrabold tabular-nums transition-colors duration-300 sm:text-2xl ${added ? "text-green-700" : "text-brand-navy"}`}
+                              >
+                                {soldOut
+                                  ? t("Sold out")
+                                  : formatPrice(item.priceXaf)}
+                              </p>
+                              <button
+                                aria-label={
+                                  soldOut
+                                    ? t("Sold out")
+                                    : t("Add {name} to cart", {
+                                        name: t(item.name),
+                                      })
+                                }
+                                className={`relative z-10 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto ${
+                                  added
+                                    ? "bg-[#37632c] text-white"
+                                    : "bg-brand-navy text-white hover:bg-brand-blue"
+                                }`}
+                                disabled={soldOut}
+                                onClick={() => handleAddToCart(item)}
+                                type="button"
+                              >
+                                {bagIcon}
+                                {soldOut
+                                  ? t("Sold out")
+                                  : added
+                                    ? t("Added")
+                                    : t("Add to cart")}
+                              </button>
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    }
+
+                    return (
+                      <article
+                        className="group flex min-w-0 flex-wrap gap-3 bg-white/80 p-3 sm:flex-nowrap sm:items-center sm:gap-4 sm:p-4 lg:col-span-7"
+                        key={itemKey}
+                      >
+                        <Link
+                          aria-label={t(item.name)}
+                          className="relative size-20 shrink-0 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2 sm:size-24"
+                          style={{
+                            backgroundColor: popularFlavorColors[index],
+                          }}
+                          to={itemLink}
+                        >
+                          {image}
+                        </Link>
+                        <div className="min-w-0 flex-1 self-center">
+                          <h3 className="font-display text-base font-extrabold leading-snug text-brand-navy sm:text-lg">
                             <Link
                               className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2"
                               to={itemLink}
@@ -2031,134 +2276,79 @@ export function HomePage() {
                               {t(item.name)}
                             </Link>
                           </h3>
-                          <RatingBadge
-                            averageRating={item.averageRating}
-                            reviewCount={item.reviewCount}
-                          />
-                        </div>
-                        <p className="mt-2 max-w-lg text-sm leading-6 text-[#65748a] sm:text-base sm:leading-7">
-                          {t(item.detail)}
-                        </p>
-                        <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-5">
-                          <p className={`whitespace-nowrap font-display text-xl font-extrabold tabular-nums transition-colors duration-300 sm:text-2xl ${added ? "text-green-700" : "text-brand-navy"}`}>
-                            {soldOut ? t("Sold out") : formatPrice(item.priceXaf)}
+                          <div className="mt-1">
+                            <RatingBadge
+                              averageRating={item.averageRating}
+                              reviewCount={item.reviewCount}
+                            />
+                          </div>
+                          <p className="mt-1 line-clamp-1 text-xs leading-5 text-[#65748a] sm:text-sm sm:leading-6">
+                            {t(item.detail)}
                           </p>
-                          <button
-                            aria-label={
-                              soldOut
-                                ? t("Sold out")
-                                : t("Add {name} to cart", {
-                                    name: t(item.name),
-                                  })
-                            }
-                            className={`relative z-10 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto ${
-                              added
-                                ? "bg-[#37632c] text-white"
-                                : "bg-brand-navy text-white hover:bg-brand-blue"
-                            }`}
-                            disabled={soldOut}
-                            onClick={() => handleAddToCart(item)}
-                            type="button"
+                          <p
+                            className={`mt-1 whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${added ? "text-green-700" : "text-brand-navy"}`}
                           >
-                            {bagIcon}
                             {soldOut
+                              ? t("Sold out")
+                              : formatPrice(item.priceXaf)}
+                          </p>
+                        </div>
+                        <button
+                          aria-label={
+                            soldOut
                               ? t("Sold out")
                               : added
                                 ? t("Added")
-                                : t("Add to cart")}
-                          </button>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                }
-
-                return (
-                  <article
-                    className="group flex min-w-0 flex-wrap gap-3 bg-white/80 p-3 sm:flex-nowrap sm:items-center sm:gap-4 sm:p-4 lg:col-span-7"
-                    key={itemKey}
-                  >
-                    <Link
-                      aria-label={t(item.name)}
-                      className="relative size-20 shrink-0 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2 sm:size-24"
-                      style={{ backgroundColor: popularFlavorColors[index] }}
-                      to={itemLink}
-                    >
-                      {image}
-                    </Link>
-                    <div className="min-w-0 flex-1 self-center">
-                      <h3 className="font-display text-base font-extrabold leading-snug text-brand-navy sm:text-lg">
-                        <Link
-                          className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2"
-                          to={itemLink}
+                                : t("Add {name} to cart", {
+                                    name: t(item.name),
+                                  })
+                          }
+                          className={`relative z-10 mt-0 inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-md px-4 text-xs font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto sm:px-4 ${
+                            added
+                              ? "bg-[#37632c] text-white"
+                              : "bg-brand-navy text-white hover:bg-brand-blue"
+                          }`}
+                          disabled={soldOut}
+                          onClick={() => handleAddToCart(item)}
+                          title={soldOut ? t("Sold out") : t("Add to cart")}
+                          type="button"
                         >
-                          {t(item.name)}
-                        </Link>
-                      </h3>
-                      <div className="mt-1">
-                        <RatingBadge
-                          averageRating={item.averageRating}
-                          reviewCount={item.reviewCount}
-                        />
-                      </div>
-                      <p className="mt-1 line-clamp-1 text-xs leading-5 text-[#65748a] sm:text-sm sm:leading-6">
-                        {t(item.detail)}
-                      </p>
-                      <p className={`mt-1 whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${added ? "text-green-700" : "text-brand-navy"}`}>
-                        {soldOut ? t("Sold out") : formatPrice(item.priceXaf)}
-                      </p>
-                    </div>
-                    <button
-                      aria-label={
-                        soldOut
-                          ? t("Sold out")
-                          : added
-                            ? t("Added")
-                            : t("Add {name} to cart", {
-                                name: t(item.name),
-                              })
-                      }
-                      className={`relative z-10 mt-0 inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-md px-4 text-xs font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto sm:px-4 ${
-                        added
-                          ? "bg-[#37632c] text-white"
-                          : "bg-brand-navy text-white hover:bg-brand-blue"
+                          {bagIcon && (
+                            <svg
+                              aria-hidden="true"
+                              className="size-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="m5 12.5 4.5 4.5L19 7.5"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                              />
+                            </svg>
+                          )}
+                          {soldOut
+                            ? t("Sold out")
+                            : added
+                              ? t("Added")
+                              : t("Add to cart")}
+                        </button>
+                      </article>
+                    );
+                  })
+                : Array.from({ length: 5 }, (_, index) => (
+                    <div
+                      aria-hidden="true"
+                      className={`animate-pulse bg-[#e4e8ee] ${
+                        index === 0
+                          ? "aspect-[4/3] min-h-[400px] sm:min-h-[480px] lg:col-span-5 lg:row-span-4 lg:aspect-auto lg:min-h-[520px]"
+                          : "min-h-28 lg:col-span-7"
                       }`}
-                      disabled={soldOut}
-                      onClick={() => handleAddToCart(item)}
-                      title={soldOut ? t("Sold out") : t("Add to cart")}
-                      type="button"
-                    >
-                      {bagIcon && (
-                        <svg
-                          aria-hidden="true"
-                          className="size-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="m5 12.5 4.5 4.5L19 7.5"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                          />
-                        </svg>
-                      )}
-                      {soldOut ? t("Sold out") : added ? t("Added") : t("Add to cart")}
-                    </button>
-                  </article>
-                );
-              }) : Array.from({ length: 5 }, (_, index) => (
-                <div
-                  aria-hidden="true"
-                  className={`animate-pulse bg-[#e4e8ee] ${
-                    index === 0
-                      ? "aspect-[4/3] min-h-[400px] sm:min-h-[480px] lg:col-span-5 lg:row-span-4 lg:aspect-auto lg:min-h-[520px]"
-                      : "min-h-28 lg:col-span-7"
-                  }`}
-                  key={`favorite-skeleton-${index}`}
-                />
-              ))}
+                      key={`favorite-skeleton-${index}`}
+                    />
+                  ))}
             </div>
 
             {menuError && (
@@ -2169,7 +2359,7 @@ export function HomePage() {
           </div>
         </section>
 
-{/* Always shown: the reviews, or an invitation to write the first one. */}
+        {/* Always shown: the reviews, or an invitation to write the first one. */}
         <div aria-hidden="true" className="h-px" ref={reviewsSentinel} />
         <ReviewsSection
           error={reviewsError}
@@ -2228,17 +2418,21 @@ export function HomePage() {
               {[
                 {
                   title: "The full menu",
-                  description: "All categories, from signature creations to sundaes and cakes.",
+                  description:
+                    "All categories, from signature creations to sundaes and cakes.",
                   cta: "Browse the full menu",
                   to: "/menu",
-                  image: "/menu-official/ice-cream/signature-creations/our-dubai-chocolate-creation.webp",
+                  image:
+                    "/menu-official/ice-cream/signature-creations/our-dubai-chocolate-creation.webp",
                 },
                 {
                   title: "All flavors",
-                  description: "Every flavor — fruity, chocolatey or classic — in one collection.",
+                  description:
+                    "Every flavor — fruity, chocolatey or classic — in one collection.",
                   cta: "View flavors",
                   to: "/flavors",
-                  image: "/menu-official/ice-cream/signature-creations/our-strawberry-blonde-2.webp",
+                  image:
+                    "/menu-official/ice-cream/signature-creations/our-strawberry-blonde-2.webp",
                 },
               ].map((item, itemIndex) => (
                 <li key={item.to}>
@@ -2273,7 +2467,8 @@ export function HomePage() {
             </ul>
 
             <p className="mx-auto mt-10 max-w-2xl text-center text-sm leading-6 text-[#65748a]">
-              {t("Cards & Mobile Money accepted")}. {t("Pay in FCFA with")} Visa, Mastercard, MTN MoMo, {t("Orange Money")}.
+              {t("Cards & Mobile Money accepted")}. {t("Pay in FCFA with")}{" "}
+              Visa, Mastercard, MTN MoMo, {t("Orange Money")}.
             </p>
           </div>
         </section>
@@ -2299,7 +2494,6 @@ export function HomePage() {
             />
           </svg>
         </button>
-
       </main>
       <Footer />
     </div>
