@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { toInt, toNumber } from '../shared/numbers.ts'
 
 // Party and event orders: a signed-in customer requests a bulk order for an event, the store sends
 // a quote with a deposit, the customer pays the deposit online, and the store confirms the event.
@@ -70,12 +71,12 @@ export async function validateEventRequest(body, { resolveItem, findStore }) {
   const eventType = body?.eventType
   const eventDate = text(body?.eventDate, 10)
   const eventTime = text(body?.eventTime, 5)
-  const guestCount = Number(body?.guestCount)
+  const guestCount = toInt(body?.guestCount, NaN)
   const fulfillmentType = body?.fulfillmentType
   const deliveryAddress = text(body?.deliveryAddress, 200)
   const notes = text(body?.notes, 500)
   const customerPhone = text(body?.phone, 40)
-  const storeId = Number(body?.storeId)
+  const storeId = toInt(body?.storeId, NaN)
   const rawItems = Array.isArray(body?.items) ? body.items : []
 
   if (!EVENT_TYPES.includes(eventType)) return { error: 'Choose the type of event.' }
@@ -99,7 +100,7 @@ export async function validateEventRequest(body, { resolveItem, findStore }) {
 
   const merged = new Map()
   for (const entry of rawItems) {
-    const quantity = Number(entry?.quantity)
+    const quantity = toInt(entry?.quantity, NaN)
     if (typeof entry?.itemId !== 'string' || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 1000) {
       return { error: 'Each item needs a quantity between 1 and 1,000.' }
     }
@@ -108,7 +109,7 @@ export async function validateEventRequest(body, { resolveItem, findStore }) {
   const items = []
   for (const [itemId, quantity] of merged) {
     const item = await resolveItem(itemId)
-    const unitPrice = Number(item?.priceXaf ?? item?.price)
+    const unitPrice = toNumber(item?.priceXaf ?? item?.price, NaN)
     if (!item || !Number.isSafeInteger(unitPrice) || unitPrice < 1) return { error: 'One of the items is no longer on the menu.' }
     items.push({ itemId, name: item.name, quantity, unitPrice, lineTotal: unitPrice * quantity })
   }
@@ -488,8 +489,8 @@ export function registerEventOrderRoutes(app, deps) {
     }
     const now = new Date().toISOString()
     if (action === 'quote') {
-      const quotedTotal = Number(request.body?.quotedTotal)
-      const depositAmount = Number(request.body?.depositAmount)
+      const quotedTotal = toInt(request.body?.quotedTotal, NaN)
+      const depositAmount = toInt(request.body?.depositAmount, NaN)
       if (!Number.isSafeInteger(quotedTotal) || quotedTotal < 100 || quotedTotal > 100_000_000
         || !Number.isSafeInteger(depositAmount) || depositAmount < 100 || depositAmount > quotedTotal) {
         response.status(400).json({ error: 'Enter a total of at least 100 FCFA and a deposit between 100 FCFA and the total.' })

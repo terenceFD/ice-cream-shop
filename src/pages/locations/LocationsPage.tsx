@@ -100,16 +100,16 @@ export function LocationsPage() {
   const visibleLocations = cameroonLocations.filter((location: CameroonLocation) => !city || location.town === city)
 
   return (
-    <div className="min-h-[100svh] bg-[#f5f8fb] text-[#092a53]">
+    <div className="min-h-[100svh] bg-[#f5f8fb] text-[#472a3b]">
       <Header />
       <main id="main" tabIndex={-1}>
         <section className="relative overflow-hidden bg-[#edf3f8]">
-          <svg aria-hidden="true" className="pointer-events-none absolute -right-56 top-[30rem] h-[26rem] w-[22rem] text-[#ffdc32]/25 sm:-right-32 sm:top-[22rem] sm:h-[38rem] sm:w-[32rem] lg:-top-64 lg:h-[44rem] lg:w-[38rem]" fill="currentColor" viewBox="0 0 400 500">
+          <svg aria-hidden="true" className="pointer-events-none absolute -right-56 top-[30rem] h-[26rem] w-[22rem] text-[#ffb84d]/25 sm:-right-32 sm:top-[22rem] sm:h-[38rem] sm:w-[32rem] lg:-top-64 lg:h-[44rem] lg:w-[38rem]" fill="currentColor" viewBox="0 0 400 500">
             <path d="M200 486C162 430 31 300 31 199a169 169 0 1 1 338 0c0 101-131 231-169 287Z" />
           </svg>
           <div className="relative mx-auto grid max-w-[1320px] items-center gap-12 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-12 lg:gap-14 lg:px-12 lg:py-24">
             <div className="lg:col-span-5">
-              <h1 className="location-reveal max-w-[12ch] font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-[#092a53] text-balance sm:text-6xl lg:text-7xl">
+              <h1 className="location-reveal max-w-[12ch] font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-[#472a3b] text-balance sm:text-6xl lg:text-7xl">
                 {t('Find us in Cameroon')}
               </h1>
               <p className="location-reveal mt-6 max-w-[60ch] text-base leading-7 text-[#334c63] sm:text-lg sm:leading-8" style={{ animationDelay: '70ms' }}>
@@ -117,14 +117,14 @@ export function LocationsPage() {
               </p>
               <div className="location-reveal mt-8 flex flex-wrap gap-3" style={{ animationDelay: '140ms' }}>
                 <a
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#092a53] px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#174477] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#472a3b] px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2"
                   href="#listed-locations"
                 >
                   {t('Browse locations')}
                   <span aria-hidden="true">↓</span>
                 </a>
                 <Link
-                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#fff4c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-extrabold text-[#472a3b] transition-colors hover:bg-[#fff4c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2"
                   to="/menu"
                 >
                   {t('Explore the menu')}
@@ -166,7 +166,7 @@ export function LocationsPage() {
         <section aria-labelledby="listed-locations-heading" className="mx-auto max-w-[1320px] scroll-mt-4 px-5 py-14 sm:px-8 sm:py-20 lg:px-12" id="listed-locations">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h2 className="location-reveal font-display text-4xl font-extrabold tracking-tight text-[#092a53] text-balance sm:text-5xl" id="listed-locations-heading">
+              <h2 className="location-reveal font-display text-4xl font-extrabold tracking-tight text-[#472a3b] text-balance sm:text-5xl" id="listed-locations-heading">
                 {t('Listed locations')}
               </h2>
             </div>
@@ -176,17 +176,17 @@ export function LocationsPage() {
                 return (
                   <button
                     aria-pressed={active}
-                    className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 ${
+                    className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2 ${
                       active
-                        ? 'bg-[#092a53] text-white'
-                        : 'bg-[#e6edf3] text-[#334c63] hover:bg-[#dce6ee] hover:text-[#092a53]'
+                        ? 'bg-[#472a3b] text-white'
+                        : 'bg-[#e6edf3] text-[#334c63] hover:bg-[#dce6ee] hover:text-[#472a3b]'
                     }`}
                     key={town || 'all'}
                     onClick={() => setCity(town)}
                     type="button"
                   >
                     {town ? t(town) : t('All cities')}
-                    <span className={`grid min-w-6 place-items-center rounded-full px-1.5 py-0.5 text-[13px] tabular-nums ${active ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-[#edf3f8] text-[#334c63]'}`}>
+                    <span className={`grid min-w-6 place-items-center rounded-full px-1.5 py-0.5 text-[13px] tabular-nums ${active ? 'bg-[#ffb84d] text-[#472a3b]' : 'bg-[#edf3f8] text-[#334c63]'}`}>
                       {town ? countIn(town) : cameroonLocations.length}
                     </span>
                   </button>
@@ -204,7 +204,7 @@ export function LocationsPage() {
                 <li className="location-reveal" key={`${location.town}-${location.area}`} style={{ animationDelay: `${index * 60}ms` }}>
                   <article className="flex h-full flex-col rounded-[24px] bg-white p-5 sm:p-6">
                     <div className="flex items-center gap-2 text-sm font-bold text-[#334c63]">
-                      <span className="grid size-8 place-items-center rounded-full bg-[#fff4c4] text-[#092a53]">
+                      <span className="grid size-8 place-items-center rounded-full bg-[#fff4c4] text-[#472a3b]">
                         <Icon className="size-4" path={PIN_PATH} />
                       </span>
                       {t(location.town)}
@@ -213,12 +213,12 @@ export function LocationsPage() {
                       </span>
                     </div>
 
-                    <h3 className="mt-5 font-display text-2xl font-extrabold text-[#092a53]">{t(location.area)}</h3>
+                    <h3 className="mt-5 font-display text-2xl font-extrabold text-[#472a3b]">{t(location.area)}</h3>
                     <p className="mt-1 text-base font-semibold leading-6 text-[#334c63]">{t(location.address)}</p>
 
                     {location.phone ? (
                       <a
-                        className="mt-4 inline-flex w-fit items-center gap-2 text-sm font-bold tabular-nums text-[#092a53] underline decoration-[#e2bb00] decoration-2 underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                        className="mt-4 inline-flex w-fit items-center gap-2 text-sm font-bold tabular-nums text-[#472a3b] underline decoration-[#e2bb00] decoration-2 underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e]"
                         href={`tel:${location.phone.replaceAll(' ', '')}`}
                       >
                         <Icon className="size-4" path={PHONE_PATH} />
@@ -230,7 +230,7 @@ export function LocationsPage() {
 
                     <div className="mt-auto flex flex-wrap items-center gap-2 rounded-full bg-[#f5f8fb] p-1">
                       <a
-                        className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#092a53] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#174477] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                        className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#472a3b] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2"
                         href={mapsUrl(location)}
                         rel="noreferrer"
                         target="_blank"
@@ -240,7 +240,7 @@ export function LocationsPage() {
                       {location.phone && (
                         <a
                           aria-label={`${t('Call')} ${t(location.area)}`}
-                          className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2"
+                          className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffb84d] text-[#472a3b] transition-colors hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2"
                           href={`tel:${location.phone.replaceAll(' ', '')}`}
                         >
                           <Icon className="size-[18px]" path={PHONE_PATH} />
@@ -248,7 +248,7 @@ export function LocationsPage() {
                       )}
                       {more && (
                         <a
-                          className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-bold text-[#092a53] underline decoration-[#e2bb00] decoration-2 underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                          className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-bold text-[#472a3b] underline decoration-[#e2bb00] decoration-2 underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e]"
                           href={more.href}
                           rel="noreferrer"
                           target="_blank"
@@ -264,14 +264,14 @@ export function LocationsPage() {
           </ul>
 
           <aside className="location-reveal mt-8 flex flex-col gap-4 rounded-[24px] bg-[#edf3f8] p-5 sm:flex-row sm:items-center sm:p-6">
-            <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-[#092a53]">
+            <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffb84d] text-[#472a3b]">
               <Icon className="size-5" path={PIN_PATH} />
             </span>
             <div className="flex-1">
-              <h2 className="font-display text-lg font-extrabold text-[#092a53]">{t('Before you go')}</h2>
+              <h2 className="font-display text-lg font-extrabold text-[#472a3b]">{t('Before you go')}</h2>
               <p className="mt-1 max-w-[60ch] text-base leading-6 text-[#334c63]">{t('Hours are not listed. Directions open each public listing in Google Maps. Where a phone number is shown, call ahead to confirm today’s hours.')}</p>
             </div>
-            <Link className="inline-flex min-h-11 w-fit shrink-0 items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#092a53] transition-colors hover:bg-[#fff4c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2" to="/contact">
+            <Link className="inline-flex min-h-11 w-fit shrink-0 items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#472a3b] transition-colors hover:bg-[#fff4c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2" to="/contact">
               {t('Contact us')} <ArrowIcon />
             </Link>
           </aside>
@@ -279,9 +279,9 @@ export function LocationsPage() {
         </section>
       </main>
       <Footer />
-      <div className="bg-[#092a53] px-5 pb-6 text-white/75 sm:px-8 lg:px-12">
+      <div className="bg-[#472a3b] px-5 pb-6 text-white/75 sm:px-8 lg:px-12">
         <details className="mx-auto max-w-[1320px] text-[13px]">
-          <summary className="w-fit cursor-pointer font-bold underline decoration-[#ffdc32] underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]">
+          <summary className="w-fit cursor-pointer font-bold underline decoration-[#ffb84d] underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]">
             {t('Photo credits and licences')}
           </summary>
           <ul className="mt-3 space-y-2 leading-5">

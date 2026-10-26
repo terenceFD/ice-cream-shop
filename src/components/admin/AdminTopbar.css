@@ -1,16 +1,16 @@
 /* Admin-only chrome and dropdown system. Native selects retain their semantics. */
 .admin-workspace {
-  --admin-ink: #142f4c;
+  --admin-ink: #472a3b;
   --admin-muted: #718096;
   --admin-line: #e4eaf1;
-  --admin-surface: #f3f6fa;
-  --admin-gold: #e7c44b;
+  --admin-surface: #f6f2f4;
+  --admin-gold: #ffb84d;
 }
 
 .admin-topbar {
   background: #fff;
   border-bottom: 1px solid var(--admin-line);
-  box-shadow: 0 3px 16px rgb(20 47 76 / 3%);
+  box-shadow: 0 3px 16px rgb(71 42 59 / 3%);
 }
 
 .admin-topbar-inner {
@@ -31,7 +31,7 @@
   letter-spacing: -0.025em;
 }
 .admin-topbar-brand > span > span:first-child > span {
-  color: #94762b;
+  color: #b8721e;
 }
 .admin-topbar-brand > span > span:nth-child(2) {
   margin-top: 5px;
@@ -67,7 +67,7 @@
   border: 1px solid var(--admin-line);
   border-radius: 10px;
   background: #fff;
-  box-shadow: 0 1px 2px rgb(20 47 76 / 3%);
+  box-shadow: 0 1px 2px rgb(71 42 59 / 3%);
   transition:
     background 0.18s,
     border-color 0.18s,
@@ -75,9 +75,9 @@
 }
 .admin-topbar-actions > div > button:hover,
 .admin-topbar-actions > div > button[aria-expanded="true"] {
-  border-color: #b8c8d9;
-  background: #f7f9fc;
-  box-shadow: 0 0 0 3px rgb(20 47 76 / 4%);
+  border-color: #c8b0ba;
+  background: #f9f5f7;
+  box-shadow: 0 0 0 3px rgb(71 42 59 / 4%);
 }
 .admin-topbar-actions
   > div
@@ -90,7 +90,7 @@
   padding: 4px 6px;
   border-radius: 6px;
   background: var(--admin-surface);
-  color: #47617c;
+  color: #7a5664;
   font-family: inherit;
   font-size: 10px;
   letter-spacing: 0.04em;
@@ -129,8 +129,8 @@
   width: 33px;
   height: 33px;
   border-radius: 8px;
-  background-color: #f5e6ae;
-  color: #6e571e;
+  background-color: #f9dcae;
+  color: #7a4a12;
   box-shadow: none;
 }
 .admin-topbar-actions
@@ -156,8 +156,8 @@
   border-radius: 15px;
   background: #fff;
   box-shadow:
-    0 20px 55px -12px rgb(20 47 76 / 24%),
-    0 4px 10px rgb(20 47 76 / 4%);
+    0 20px 55px -12px rgb(71 42 59 / 24%),
+    0 4px 10px rgb(71 42 59 / 4%);
   animation: admin-menu-enter 0.16s ease-out;
   max-height: calc(100dvh - 96px);
   overflow-y: auto;
@@ -176,7 +176,7 @@
   width: 312px;
 }
 .admin-topbar [role="menu"] > div:first-child {
-  background: linear-gradient(120deg, #f3f6fa, #fafbfd);
+  background: linear-gradient(120deg, #f6f2f4, #fbf8f9);
   border-bottom: 1px solid var(--admin-line);
   padding: 18px 18px 15px;
 }
@@ -197,8 +197,8 @@
   line-height: 1.7;
 }
 .admin-topbar [role="menu"] > div:first-child > div > span {
-  background: #e9eef5;
-  color: #47617c;
+  background: #efe6ec;
+  color: #7a5664;
   font-size: 9px;
 }
 .admin-topbar [role="menu"] > div:nth-child(2) {
@@ -215,11 +215,11 @@
 }
 .admin-topbar [role^="menuitem"]:hover:not(:disabled),
 .admin-topbar [role^="menuitem"]:focus-visible {
-  background: #f0f4f9;
-  color: #142f4c;
+  background: #f2edef;
+  color: #472a3b;
 }
 .admin-topbar [role^="menuitem"]:focus-visible {
-  outline: 2px solid #527697;
+  outline: 2px solid #8b6a7a;
   outline-offset: -2px;
 }
 .admin-topbar [role="menuitemradio"] {
@@ -227,20 +227,20 @@
   padding: 12px;
 }
 .admin-topbar [role="menuitemradio"][aria-checked="true"] {
-  background: #f8f4e6;
-  border-color: #eee3bd;
+  background: #f8efe7;
+  border-color: #f0d9c4;
 }
 .admin-topbar [role="menuitemradio"] > span:first-child {
   border-radius: 8px;
   padding: 8px;
-  background: #edf2f7;
-  color: #526b85;
+  background: #f4eef1;
+  color: #7a5664;
   font-family: inherit;
   font-size: 10px;
 }
 .admin-topbar [role="menuitemradio"][aria-checked="true"] > span:first-child {
-  background: #f0e1ad;
-  color: #6e571e;
+  background: #f9dcae;
+  color: #7a4a12;
 }
 .admin-topbar [role="menuitemradio"] > span:nth-child(2) > span:first-child {
   font-size: 13px;
@@ -256,7 +256,7 @@
   color: transparent;
 }
 .admin-topbar [role="menuitemradio"][aria-checked="true"] > span:last-child {
-  background: #142f4c;
+  background: #472a3b;
   color: #fff;
 }
 .admin-topbar #admin-account-menu > div:first-child {
@@ -265,8 +265,8 @@
   padding: 20px 18px;
 }
 .admin-topbar #admin-account-menu > div:first-child > span {
-  background: #f0e1ad;
-  color: #6e571e;
+  background: #f9dcae;
+  color: #7a4a12;
   border-radius: 12px;
 }
 .admin-topbar #admin-account-menu > div:first-child > div > p:first-child {
@@ -282,8 +282,8 @@
   font-size: 11px;
 }
 .admin-topbar #admin-account-menu > div:first-child > div > span {
-  background: #e7edf4;
-  color: #47617c;
+  background: #efe6ec;
+  color: #7a5664;
   font-size: 9px;
   padding: 3px 7px;
   letter-spacing: 0.06em;
@@ -293,7 +293,7 @@
   height: 28px;
   padding: 5px;
   border-radius: 7px;
-  background: #f0f4f8;
+  background: #f2edef;
   color: #627b95;
 }
 .admin-topbar #admin-account-menu > div:last-child {
@@ -312,7 +312,7 @@
 .admin-workspace select {
   appearance: none;
   min-height: 42px;
-  border: 1px solid #dce4ed;
+  border: 1px solid #e8dee4;
   border-radius: 10px;
   background-color: #fff;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath d='m7 10 5 5 5-5' stroke='%23637990' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -323,38 +323,38 @@
   font-family: inherit;
   font-size: 12px;
   font-weight: 550;
-  box-shadow: 0 1px 2px rgb(20 47 76 / 3%);
+  box-shadow: 0 1px 2px rgb(71 42 59 / 3%);
   cursor: pointer;
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
 }
 .admin-workspace select:hover {
-  border-color: #a9bdcf;
+  border-color: #c8b0ba;
 }
 .admin-workspace select:focus-visible {
-  outline: 2px solid #527697;
+  outline: 2px solid #8b6a7a;
   outline-offset: 2px;
-  border-color: #527697;
-  box-shadow: 0 0 0 4px rgb(82 118 151 / 9%);
+  border-color: #8b6a7a;
+  box-shadow: 0 0 0 4px rgb(139 106 122 / 9%);
 }
 .admin-workspace select:disabled {
   cursor: not-allowed;
-  background-color: #f3f6fa;
-  color: #8b99aa;
+  background-color: #f6f2f4;
+  color: #a89aa4;
   opacity: 0.7;
 }
 .admin-workspace select option {
   background: #fff;
-  color: #142f4c;
+  color: #472a3b;
   font-weight: 500;
 }
 .admin-workspace [role="listbox"] {
   scrollbar-width: thin;
-  scrollbar-color: #c1cddb transparent;
+  scrollbar-color: #d9c8d2 transparent;
 }
 .admin-workspace [role="option"][aria-selected="true"] {
-  background: #f8f4e6;
+  background: #f8efe7;
 }
 
 /* Progressive enhancement: fully styled option panels where supported. */
@@ -369,7 +369,7 @@
     gap: 16px;
   }
   .admin-workspace select::picker-icon {
-    color: #637990;
+    color: #8b6a7a;
     transition: rotate 0.15s;
   }
   .admin-workspace select:open::picker-icon {
@@ -381,7 +381,7 @@
     border: 1px solid #e4eaf1;
     border-radius: 12px;
     background: #fff;
-    box-shadow: 0 14px 38px rgb(20 47 76 / 16%);
+    box-shadow: 0 14px 38px rgb(71 42 59 / 16%);
     max-height: min(340px, 60dvh);
     scrollbar-width: thin;
   }
@@ -394,16 +394,16 @@
   }
   .admin-workspace select option:hover,
   .admin-workspace select option:focus {
-    background: #f0f4f9;
+    background: #f2edef;
     outline: none;
   }
   .admin-workspace select option:checked {
-    background: #f8f4e6;
-    color: #6e571e;
+    background: #f8efe7;
+    color: #7a4a12;
     font-weight: 650;
   }
   .admin-workspace select option::checkmark {
-    color: #94762b;
+    color: #b8721e;
   }
 }
 

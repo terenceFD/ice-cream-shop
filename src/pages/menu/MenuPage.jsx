@@ -22,7 +22,7 @@ const CAKE_SPECIMEN_FIELDS = [
   "bg-[#e6dced]",
 ];
 const CATEGORY_HERO_THEMES = {
-  "Ice Cream": { surface: "#092a53", accent: "#ffdc32", imageSide: "right" },
+  "Ice Cream": { surface: "#472a3b", accent: "#ffb84d", imageSide: "right" },
   "Cakes & Pies": { surface: "#472a3b", accent: "#ffd0bd", imageSide: "left" },
   "Silk & Sorbet": { surface: "#493447", accent: "#f0c5db", imageSide: "right" },
   "Milkshakes & Smoothies": { surface: "#174b43", accent: "#d9ed9a", imageSide: "left" },
@@ -30,8 +30,8 @@ const CATEGORY_HERO_THEMES = {
   "Limited-Time Favorites": { surface: "#5a3048", accent: "#ffd37d", imageSide: "left" },
 };
 const DEFAULT_CATEGORY_HERO_THEME = {
-  surface: "#092a53",
-  accent: "#ffdc32",
+  surface: "#472a3b",
+  accent: "#ffb84d",
   imageSide: "right",
 };
 
@@ -151,7 +151,7 @@ function FilterSelect({ label, onChange, options, value }) {
         aria-labelledby={`${id}-label ${id}-value`}
         className={`flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left outline-none! transition ${
           open
-            ? "bg-white ring-2 ring-[#092a53]"
+            ? "bg-white ring-2 ring-[#472a3b]"
             : value
               ? "bg-[#fff3b8] ring-1 ring-[#e7d98b]"
               : "bg-white ring-1 ring-[#e4e7e3] hover:ring-[#9ca9b6]"
@@ -169,7 +169,7 @@ function FilterSelect({ label, onChange, options, value }) {
             {label}
           </span>
           <span
-            className="mt-1 block truncate text-sm font-bold capitalize text-[#092a53]"
+            className="mt-1 block truncate text-sm font-bold capitalize text-[#472a3b]"
             id={`${id}-value`}
           >
             {selected?.label}
@@ -177,7 +177,7 @@ function FilterSelect({ label, onChange, options, value }) {
         </span>
         <svg
           aria-hidden="true"
-          className={`size-4 shrink-0 text-[#65748a] transition duration-200 ${open ? "rotate-180 text-[#092a53]" : ""}`}
+          className={`size-4 shrink-0 text-[#65748a] transition duration-200 ${open ? "rotate-180 text-[#472a3b]" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
         >
@@ -207,7 +207,7 @@ function FilterSelect({ label, onChange, options, value }) {
               aria-selected={isSelected}
               className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm capitalize transition-colors ${
                 isActive                 ? "bg-[#f1f2ee]" : ""
-              } ${isSelected ? "font-extrabold text-[#092a53]" : "font-semibold text-[#65748a]"}`}
+              } ${isSelected ? "font-extrabold text-[#472a3b]" : "font-semibold text-[#65748a]"}`}
               data-index={index}
               id={`${id}-option-${index}`}
               key={option.value}
@@ -219,7 +219,7 @@ function FilterSelect({ label, onChange, options, value }) {
               <span
                 aria-hidden="true"
                 className={`grid size-5 shrink-0 place-items-center rounded-full transition ${
-                  isSelected ? "bg-[#092a53] text-white" : "text-transparent"
+                  isSelected ? "bg-[#472a3b] text-white" : "text-transparent"
                 }`}
               >
                 <svg className="size-3" fill="none" viewBox="0 0 24 24">
@@ -268,14 +268,14 @@ function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, adde
           className="menu-card-shine"
         />
         {soldOut && (
-          <span className="absolute inset-x-0 bottom-0 z-10 bg-[#092a53] px-3 py-2 text-center text-xs font-bold text-white">
+          <span className="absolute inset-x-0 bottom-0 z-10 bg-[#472a3b] px-3 py-2 text-center text-xs font-bold text-white">
             {t("Sold out")}
           </span>
         )}
       </div>
 
       <div className={`flex flex-1 flex-col ${isCakeCategory ? "pt-4 sm:pt-5" : "pt-4"}`}>
-        <h3 className="line-clamp-2 font-display text-base font-extrabold leading-snug text-[#092a53] sm:text-lg">
+        <h3 className="line-clamp-2 font-display text-base font-extrabold leading-snug text-[#472a3b] sm:text-lg">
           {t(item.name)}
         </h3>
         {item.reviewCount > 0 && item.averageRating != null && (
@@ -291,7 +291,7 @@ function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, adde
         }`}>
           {t(item.detail)}
         </p>
-        <span className="mt-auto pt-3 font-display text-base font-extrabold tabular-nums text-[#092a53] sm:text-lg">
+        <span className="mt-auto pt-3 font-display text-base font-extrabold tabular-nums text-[#472a3b] sm:text-lg">
           {formatPrice(item.priceXaf)}
         </span>
       </div>
@@ -304,10 +304,10 @@ function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, adde
         }
         className={`mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg px-3 text-center text-sm font-bold leading-tight disabled:cursor-not-allowed ${
           added
-            ? "bg-[#ffdc32] text-[#092a53]"
+            ? "bg-[#ffb84d] text-[#472a3b]"
             : soldOut
               ? "bg-[#f4f6f8] text-[#65748a]"
-              : "bg-[#092a53] text-white hover:bg-[#163e6b]"
+              : "bg-[#472a3b] text-white hover:bg-[#6b3f58]"
         }`}
         disabled={soldOut}
         onClick={() => onQuickAdd?.(category, item)}
@@ -329,7 +329,7 @@ function SimilarProductCard({ category, item, onSelect, showCategory, t, formatP
   const soldOut = item.isAvailable === false || item.availableQuantity < 1;
   return (
     <button
-      className="similar-card group flex h-full flex-col bg-white text-left text-[#092a53] transition-opacity duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-4"
+      className="similar-card group flex h-full flex-col bg-white text-left text-[#472a3b] transition-opacity duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-4"
       onClick={() => onSelect(category, item)}
       type="button"
     >
@@ -343,10 +343,10 @@ function SimilarProductCard({ category, item, onSelect, showCategory, t, formatP
         <span aria-hidden="true" className="menu-card-shine" />
         <span
           aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 z-10 h-1 origin-left scale-x-0 bg-[#ffdc32] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
+          className="absolute inset-x-0 bottom-0 z-10 h-1 origin-left scale-x-0 bg-[#ffb84d] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
         />
         {soldOut && (
-          <span className="absolute left-0 top-0 z-10 bg-[#092a53] px-3 py-2 text-xs font-extrabold text-white">
+          <span className="absolute left-0 top-0 z-10 bg-[#472a3b] px-3 py-2 text-xs font-extrabold text-white">
             {t("Sold out")}
           </span>
         )}
@@ -357,19 +357,19 @@ function SimilarProductCard({ category, item, onSelect, showCategory, t, formatP
             {t(category.title)}
           </span>
         )}
-        <span className="line-clamp-2 font-display text-base font-extrabold leading-tight tracking-tight text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-[6px] decoration-transparent transition-[text-decoration-color] duration-300 group-hover:decoration-[#ffdc32] group-focus-visible:decoration-[#ffdc32] sm:text-lg">
+        <span className="line-clamp-2 font-display text-base font-extrabold leading-tight tracking-tight text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-[6px] decoration-transparent transition-[text-decoration-color] duration-300 group-hover:decoration-[#ffb84d] group-focus-visible:decoration-[#ffb84d] sm:text-lg">
           {t(item.name)}
         </span>
         <span className="mt-2 line-clamp-2 text-sm font-medium leading-6 text-[#40556f]">
           {t(item.detail)}
         </span>
         <span className="mt-auto flex items-center justify-between gap-3 pt-4">
-          <span className="font-display text-base font-extrabold tabular-nums text-[#092a53]">
+          <span className="font-display text-base font-extrabold tabular-nums text-[#472a3b]">
             {formatPrice(item.priceXaf)}
           </span>
           <span
             aria-hidden="true"
-            className="grid size-9 shrink-0 place-items-center bg-[#092a53] text-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1 group-hover:-rotate-45 group-hover:bg-[#ffdc32] group-hover:text-[#092a53] group-focus-visible:translate-x-1 group-focus-visible:-rotate-45 group-focus-visible:bg-[#ffdc32] group-focus-visible:text-[#092a53] motion-reduce:transform-none"
+            className="grid size-9 shrink-0 place-items-center bg-[#472a3b] text-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1 group-hover:-rotate-45 group-hover:bg-[#ffb84d] group-hover:text-[#472a3b] group-focus-visible:translate-x-1 group-focus-visible:-rotate-45 group-focus-visible:bg-[#ffb84d] group-focus-visible:text-[#472a3b] motion-reduce:transform-none"
           >
             <ArrowIcon />
           </span>
@@ -619,10 +619,10 @@ export function MenuPage() {
             className="flex items-center justify-between px-6 py-5"
             style={{ backgroundColor: "var(--hero-accent)" }}
           >
-            <span className="font-display text-xl font-extrabold text-[#092a53]">
+            <span className="font-display text-xl font-extrabold text-[#472a3b]">
               {t("This month only")}
             </span>
-            <span className="text-sm font-bold text-[#092a53]/80">
+            <span className="text-sm font-bold text-[#472a3b]/80">
               {t("{count} items", { count: heroCategory.items.length })}
             </span>
           </div>
@@ -902,7 +902,7 @@ export function MenuPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#fbfaf5] text-[#092a53]">
+    <div className="min-h-screen bg-[#fbfaf5] text-[#472a3b]">
       <Header />
       <main id="main" tabIndex={-1}>
         {activeCategory ? (
@@ -988,11 +988,11 @@ export function MenuPage() {
           >
             <div className="flex flex-col gap-3 xl:flex-row xl:items-stretch">
               <div className="flex flex-1 gap-2">
-              <label className="group relative flex min-w-0 flex-1 items-center rounded-2xl bg-white ring-1 ring-transparent transition focus-within:ring-[#092a53]">
+              <label className="group relative flex min-w-0 flex-1 items-center rounded-2xl bg-white ring-1 ring-transparent transition focus-within:ring-[#472a3b]">
                 <span className="sr-only">{t("Search menu")}</span>
                 <svg
                   aria-hidden="true"
-                  className="pointer-events-none absolute left-5 size-5 text-[#65748a] transition group-focus-within:text-[#092a53]"
+                  className="pointer-events-none absolute left-5 size-5 text-[#65748a] transition group-focus-within:text-[#472a3b]"
                   fill="none"
                   viewBox="0 0 24 24"
                 >
@@ -1000,7 +1000,7 @@ export function MenuPage() {
                   <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
                 </svg>
                 <input
-                  className="w-full bg-transparent py-4 pl-14 pr-12 text-base font-semibold text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#65748a]"
+                  className="w-full bg-transparent py-4 pl-14 pr-12 text-base font-semibold text-[#472a3b] outline-none! placeholder:font-medium placeholder:text-[#65748a]"
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder={t("Search menu")}
                   type="search"
@@ -1009,7 +1009,7 @@ export function MenuPage() {
                 {search && (
                   <button
                     aria-label={t("Clear search")}
-                    className="absolute right-3 grid size-8 place-items-center rounded-full text-[#65748a] transition hover:bg-[#fbfaf5] hover:text-[#092a53]"
+                    className="absolute right-3 grid size-8 place-items-center rounded-full text-[#65748a] transition hover:bg-[#fbfaf5] hover:text-[#472a3b]"
                     onClick={() => setSearch("")}
                     type="button"
                   >
@@ -1023,8 +1023,8 @@ export function MenuPage() {
               <button
                 aria-controls="menu-filter-options"
                 aria-expanded={filtersOpen}
-                className={`relative inline-flex shrink-0 items-center gap-2 rounded-2xl px-4 py-3 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] sm:hidden ${
-                  filtersOpen ? "bg-[#092a53] text-white" : "bg-white text-[#092a53] ring-1 ring-[#e4e7e3]"
+                className={`relative inline-flex shrink-0 items-center gap-2 rounded-2xl px-4 py-3 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] sm:hidden ${
+                  filtersOpen ? "bg-[#472a3b] text-white" : "bg-white text-[#472a3b] ring-1 ring-[#e4e7e3]"
                 }`}
                 onClick={() => setFiltersOpen((open) => !open)}
                 type="button"
@@ -1034,7 +1034,7 @@ export function MenuPage() {
                 </svg>
                 {t("Filters")}
                 {optionFilterCount > 0 && (
-                  <span className="grid size-5 place-items-center rounded-md bg-[#ffdc32] text-xs tabular-nums text-[#092a53]">
+                  <span className="grid size-5 place-items-center rounded-md bg-[#ffb84d] text-xs tabular-nums text-[#472a3b]">
                     {optionFilterCount}
                   </span>
                 )}
@@ -1108,7 +1108,7 @@ export function MenuPage() {
                   </span>
                   <span className="mt-0.5 flex items-baseline gap-1.5">
                     <input
-                      className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-[#092a53] outline-none! placeholder:font-medium placeholder:text-[#65748a]"
+                      className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-[#472a3b] outline-none! placeholder:font-medium placeholder:text-[#65748a]"
                       inputMode="numeric"
                       min="0"
                       onChange={(event) => setMaxPrice(event.target.value)}
@@ -1126,7 +1126,7 @@ export function MenuPage() {
             {hasFilters && (
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[#fbfaf5] px-2 pt-3">
                 <p aria-live="polite" className="text-xs font-bold text-[#65748a]">
-                  <span className="mr-2 inline-grid size-5 place-items-center rounded-full bg-[#092a53] text-xs font-extrabold tabular-nums text-white">
+                  <span className="mr-2 inline-grid size-5 place-items-center rounded-full bg-[#472a3b] text-xs font-extrabold tabular-nums text-white">
                     {activeFilterCount}
                   </span>
                   {t("Filters")}
@@ -1134,7 +1134,7 @@ export function MenuPage() {
                   {t("Matching menu items")}: {filteredItems.length}
                 </p>
                 <button
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 transition hover:bg-[#fbfaf5]"
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition hover:bg-[#fbfaf5]"
                   onClick={clearFilters}
                   type="button"
                 >
@@ -1177,7 +1177,7 @@ export function MenuPage() {
                 className="mb-8 flex flex-wrap items-center gap-2 text-xs font-bold text-[#65748a]"
               >
                 <button
-                  className="rounded-full transition hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                  className="rounded-full transition hover:text-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e]"
                   onClick={() => setSearchParams({})}
                   type="button"
                 >
@@ -1185,14 +1185,14 @@ export function MenuPage() {
                 </button>
                 <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
                 <button
-                  className="rounded-full transition hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                  className="rounded-full transition hover:text-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e]"
                   onClick={() => setSelectedItemState(null)}
                   type="button"
                 >
                   {t(activeCategory.title)}
                 </button>
                 <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
-                <span aria-current="page" className="max-w-[16rem] truncate text-[#092a53]">
+                <span aria-current="page" className="max-w-[16rem] truncate text-[#472a3b]">
                   {t(selectedItem.name)}
                 </span>
               </nav>
@@ -1207,7 +1207,7 @@ export function MenuPage() {
                     priority
                     overlay={
                       selectedSoldOut ? (
-                        <span className="absolute left-4 top-4 rounded-full bg-[#092a53] px-3 py-1.5 text-xs font-bold text-white">
+                        <span className="absolute left-4 top-4 rounded-full bg-[#472a3b] px-3 py-1.5 text-xs font-bold text-white">
                           {t("Sold out")}
                         </span>
                       ) : null
@@ -1218,11 +1218,11 @@ export function MenuPage() {
                 </div>
 
                 <div className="flex min-w-0 flex-col lg:py-2">
-                  <p className="w-fit text-sm font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4">
+                  <p className="w-fit text-sm font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4">
                     {t(activeCategory.title)}
                   </p>
                   <h2
-                    className="mt-3 break-words font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl"
+                    className="mt-3 break-words font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#472a3b] sm:text-5xl"
                     id="menu-product-title"
                   >
                     {t(selectedItem.name)}
@@ -1231,28 +1231,28 @@ export function MenuPage() {
                   {reviews.reviewCount > 0 && (
                     <a
                       aria-live="polite"
-                      className="mt-4 inline-flex w-fit items-center gap-2 text-sm font-bold text-[#65748a] transition hover:text-[#092a53]"
+                      className="mt-4 inline-flex w-fit items-center gap-2 text-sm font-bold text-[#65748a] transition hover:text-[#472a3b]"
                       href="#menu-product-reviews"
                     >
                       <span
                         aria-label={t("{rating} out of 5 stars", {
                           rating: reviews.averageRating,
                         })}
-                        className="text-base text-[#ffdc32]"
+                        className="text-base text-[#ffb84d]"
                       >
                         {"★".repeat(Math.round(reviews.averageRating))}
                         <span className="text-[#dce3eb]">
                           {"★".repeat(5 - Math.round(reviews.averageRating))}
                         </span>
                       </span>
-                      <span className="text-[#092a53]">{reviews.averageRating}</span>
-                      <span className="underline decoration-[#ffdc32] decoration-2 underline-offset-4">
+                      <span className="text-[#472a3b]">{reviews.averageRating}</span>
+                      <span className="underline decoration-[#ffb84d] decoration-2 underline-offset-4">
                         {reviews.reviewCount} {t("reviews")}
                       </span>
                     </a>
                   )}
 
-                  <p className="mt-5 max-w-xl text-base leading-7 text-[#123b68]">
+                  <p className="mt-5 max-w-xl text-base leading-7 text-[#6b3f58]">
                     {t(selectedItem.detail)}
                   </p>
 
@@ -1260,7 +1260,7 @@ export function MenuPage() {
                     <ul className="mt-4 flex flex-wrap gap-2">
                       {selectedItem.dietaryTags.map((tag) => (
                         <li
-                          className="rounded-full bg-[#f4f6f8] px-3 py-1.5 text-sm font-semibold text-[#092a53]"
+                          className="rounded-full bg-[#f4f6f8] px-3 py-1.5 text-sm font-semibold text-[#472a3b]"
                           key={tag}
                         >
                           {t(tag)}
@@ -1269,7 +1269,7 @@ export function MenuPage() {
                     </ul>
                   )}
 
-                  <p className="mt-8 font-display text-4xl font-extrabold tabular-nums leading-none text-[#092a53]">
+                  <p className="mt-8 font-display text-4xl font-extrabold tabular-nums leading-none text-[#472a3b]">
                     {formatPrice(selectedItem.priceXaf)}
                   </p>
 
@@ -1278,19 +1278,19 @@ export function MenuPage() {
                       <div aria-label={t("Quantity")} className="flex shrink-0 items-center rounded-lg bg-[#f4f6f8] p-1" role="group">
                         <button
                           aria-label={t("Decrease quantity")}
-                          className="grid size-11 place-items-center rounded-md text-lg font-bold text-[#092a53] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#65748a] disabled:hover:bg-transparent"
+                          className="grid size-11 place-items-center rounded-md text-lg font-bold text-[#472a3b] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#65748a] disabled:hover:bg-transparent"
                           disabled={quantity <= 1}
                           onClick={() => setQuantity((current) => Math.max(1, current - 1))}
                           type="button"
                         >
                           −
                         </button>
-                        <output aria-live="polite" className="w-8 text-center font-display text-lg font-extrabold tabular-nums text-[#092a53]">
+                        <output aria-live="polite" className="w-8 text-center font-display text-lg font-extrabold tabular-nums text-[#472a3b]">
                           {quantity}
                         </output>
                         <button
                           aria-label={t("Increase quantity")}
-                          className="grid size-11 place-items-center rounded-md text-lg font-bold text-[#092a53] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#65748a] disabled:hover:bg-transparent"
+                          className="grid size-11 place-items-center rounded-md text-lg font-bold text-[#472a3b] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#65748a] disabled:hover:bg-transparent"
                           disabled={quantity >= maxQuantity}
                           onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
                           type="button"
@@ -1300,8 +1300,8 @@ export function MenuPage() {
                       </div>
                     )}
                     <button
-                      className={`inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-extrabold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dce3eb] disabled:text-[#65748a] sm:px-6 ${
-                        justAdded ? "bg-[#3d8b40]" : "bg-[#092a53] hover:bg-[#163e6b]"
+                      className={`inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-extrabold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dce3eb] disabled:text-[#65748a] sm:px-6 ${
+                        justAdded ? "bg-[#3d8b40]" : "bg-[#472a3b] hover:bg-[#6b3f58]"
                       }`}
                       disabled={selectedSoldOut}
                       onClick={addSelectedItem}
@@ -1327,10 +1327,10 @@ export function MenuPage() {
                             : t("Save to favorites")
                         }
                         aria-pressed={selectedIsFavorite}
-                        className={`grid size-12 shrink-0 place-items-center rounded-lg border text-xl transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00] focus-visible:ring-offset-2 ${
+                        className={`grid size-12 shrink-0 place-items-center rounded-lg border text-xl transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2 ${
                           selectedIsFavorite
                             ? "border-[#f56586] bg-[#fff0f3] text-[#e0435f]"
-                            : "border-[#dce3eb] bg-white text-[#65748a] hover:border-[#092a53] hover:text-[#092a53]"
+                            : "border-[#dce3eb] bg-white text-[#65748a] hover:border-[#472a3b] hover:text-[#472a3b]"
                         }`}
                         onClick={saveFavorite}
                         title={
@@ -1355,7 +1355,7 @@ export function MenuPage() {
                     </p>
                   )}
                   <Link
-                    className="mt-4 w-fit text-sm font-extrabold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4"
+                    className="mt-4 w-fit text-sm font-extrabold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4"
                     to="/cart"
                   >
                     {t("View cart")}
@@ -1363,8 +1363,8 @@ export function MenuPage() {
 
                   <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2">
                     {["Mixed to order", "Made to your taste", "Freshly made"].map((label) => (
-                      <li className="inline-flex items-center gap-2 text-sm font-semibold text-[#092a53]" key={label}>
-                        <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-[#ffdc32]" />
+                      <li className="inline-flex items-center gap-2 text-sm font-semibold text-[#472a3b]" key={label}>
+                        <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-[#ffb84d]" />
                         {t(label)}
                       </li>
                     ))}
@@ -1381,13 +1381,13 @@ export function MenuPage() {
                   <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
                     <div className="lg:col-span-4">
                       <h3
-                        className="font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl"
+                        className="font-display text-3xl font-extrabold tracking-tight text-[#472a3b] sm:text-4xl"
                         id="menu-product-reviews-title"
                       >
                         {t("Customer reviews")}
                       </h3>
                       <div className="mt-6 flex items-end gap-4">
-                        <span className="font-display text-6xl font-extrabold leading-none tabular-nums text-[#092a53]">
+                        <span className="font-display text-6xl font-extrabold leading-none tabular-nums text-[#472a3b]">
                           {reviews.averageRating}
                         </span>
                         <div className="pb-1">
@@ -1435,12 +1435,12 @@ export function MenuPage() {
                             ) : (
                               <span
                                 aria-hidden="true"
-                                className="grid size-9 place-items-center rounded-full bg-[#ffeb9c] text-xs font-extrabold text-[#092a53]"
+                                className="grid size-9 place-items-center rounded-full bg-[#ffeb9c] text-xs font-extrabold text-[#472a3b]"
                               >
                                 {review.customerName?.charAt(0)?.toUpperCase() || "A"}
                               </span>
                             )}
-                            <p className="text-sm font-extrabold text-[#092a53]">
+                            <p className="text-sm font-extrabold text-[#472a3b]">
                               {review.customerName || t("Customer")}
                             </p>
                           </div>
@@ -1457,13 +1457,13 @@ export function MenuPage() {
               >
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
                   <h3
-                    className="max-w-[14ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl"
+                    className="max-w-[14ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#472a3b] sm:text-5xl"
                     id="similar-products-title"
                   >
                     {t("Similar products")}
                   </h3>
                   <button
-                    className="inline-flex min-h-12 shrink-0 items-center self-start bg-[#092a53] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 sm:self-auto"
+                    className="inline-flex min-h-12 shrink-0 items-center self-start bg-[#472a3b] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 sm:self-auto"
                     onClick={() => setSelectedItemState(null)}
                     type="button"
                   >
@@ -1492,14 +1492,14 @@ export function MenuPage() {
                 className="mb-6 flex flex-wrap items-center gap-2 text-xs font-bold text-[#65748a]"
               >
                 <button
-                  className="inline-flex items-center gap-1.5 rounded-full transition hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd9c00]"
+                  className="inline-flex items-center gap-1.5 rounded-full transition hover:text-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e]"
                   onClick={() => setSearchParams({})}
                   type="button"
                 >
                   <span aria-hidden="true">←</span> {t("Back to categories")}
                 </button>
                 <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
-                <span aria-current="page" className="text-[#092a53]">
+                <span aria-current="page" className="text-[#472a3b]">
                   {t(activeCategory.title)}
                 </span>
               </nav>
@@ -1587,7 +1587,7 @@ export function MenuPage() {
                     </dl>
 
                     <a
-                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--category-hero-accent)] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition-colors hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 sm:w-fit"
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--category-hero-accent)] px-6 py-3.5 text-sm font-extrabold text-[#472a3b] transition-colors hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 sm:w-fit"
                       href="#menu-category-items"
                     >
                       {t("Browse items")} <span aria-hidden="true">↓</span>
@@ -1607,10 +1607,10 @@ export function MenuPage() {
                       <li className="shrink-0" key={category.title}>
                         <button
                           aria-current={active ? "page" : undefined}
-                          className={`inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00] ${
+                          className={`inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#b8721e] ${
                             active
-                              ? "bg-[#092a53] text-white"
-                              : "bg-[#f1f2ee] text-[#65748a] hover:bg-[#e7e9e4] hover:text-[#092a53]"
+                              ? "bg-[#472a3b] text-white"
+                              : "bg-[#f1f2ee] text-[#65748a] hover:bg-[#e7e9e4] hover:text-[#472a3b]"
                           }`}
                           onClick={() => showCategory(category)}
                           type="button"
@@ -1635,7 +1635,7 @@ export function MenuPage() {
                 id="menu-category-items"
               >
                 <div>
-                  <h3 className="font-display text-3xl font-extrabold tracking-tight text-[#092a53] sm:text-4xl">
+                  <h3 className="font-display text-3xl font-extrabold tracking-tight text-[#472a3b] sm:text-4xl">
                     {t(activeCategory.title)}
                   </h3>
                   <p className="mt-2 text-sm font-semibold text-[#65748a]">
@@ -1672,7 +1672,7 @@ export function MenuPage() {
               <div className="mx-auto max-w-[1320px] bg-white p-5 sm:p-8 lg:p-10">
                 <div className="mb-8 flex flex-wrap items-end justify-between gap-4 sm:mb-10">
                   <h2
-                    className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-4xl"
+                    className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#472a3b] sm:text-4xl"
                     id="menu-categories-title"
                   >
                     {t("Menu categories")}
@@ -1685,7 +1685,7 @@ export function MenuPage() {
                 {featuredCategory && (
                   <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
                     <button
-                      className="group flex min-w-0 flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00]"
+                      className="group flex min-w-0 flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#b8721e]"
                       key={featuredCategory.title}
                       onClick={() => showCategory(featuredCategory)}
                       type="button"
@@ -1700,14 +1700,14 @@ export function MenuPage() {
                         <span aria-hidden="true" className="menu-card-shine" />
                       </span>
                       <span className="mt-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                        <span className="font-display text-2xl font-extrabold leading-tight tracking-tight text-[#092a53] sm:text-3xl">
+                        <span className="font-display text-2xl font-extrabold leading-tight tracking-tight text-[#472a3b] sm:text-3xl">
                           {t(featuredCategory.title)}
                         </span>
                         <span className="text-sm font-semibold text-[#65748a]">
                           {t("{count} items", { count: featuredCategory.items.length })}
                         </span>
                       </span>
-                      <span className="mt-2 max-w-lg text-base leading-7 text-[#092a53]">
+                      <span className="mt-2 max-w-lg text-base leading-7 text-[#472a3b]">
                         {t(featuredCategory.description)}
                       </span>
                       <span className="mt-5 flex flex-wrap items-end justify-between gap-4">
@@ -1715,7 +1715,7 @@ export function MenuPage() {
                           <span className="block text-sm font-semibold text-[#65748a]">
                             {t("Starting from")}
                           </span>
-                          <span className="mt-1 block font-display text-xl font-extrabold tabular-nums text-[#bd9c00]">
+                          <span className="mt-1 block font-display text-xl font-extrabold tabular-nums text-[#b8721e]">
                             {featuredCategory.items.length
                               ? formatPrice(
                                   Math.min(...featuredCategory.items.map((item) => item.priceXaf)),
@@ -1723,7 +1723,7 @@ export function MenuPage() {
                               : t("Unavailable")}
                           </span>
                         </span>
-                        <span className="font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 transition-colors group-hover:text-[#bd9c00]">
+                        <span className="font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition-colors group-hover:text-[#b8721e]">
                           {t("Browse items")}
                         </span>
                       </span>
@@ -1738,7 +1738,7 @@ export function MenuPage() {
                         return (
                           <li key={category.title}>
                             <button
-                              className="group flex min-h-28 w-full items-center gap-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00] sm:gap-5 sm:py-4"
+                              className="group flex min-h-28 w-full items-center gap-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#b8721e] sm:gap-5 sm:py-4"
                               onClick={() => showCategory(category)}
                               type="button"
                             >
@@ -1753,23 +1753,23 @@ export function MenuPage() {
                               </span>
                               <span className="min-w-0 flex-1">
                                 <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                                  <span className="font-display text-lg font-extrabold leading-tight text-[#092a53] sm:text-xl">
+                                  <span className="font-display text-lg font-extrabold leading-tight text-[#472a3b] sm:text-xl">
                                     {t(category.title)}
                                   </span>
                                   <span className="text-sm font-semibold text-[#65748a]">
                                     {t("{count} items", { count: category.items.length })}
                                   </span>
                                 </span>
-                                <span className="mt-1 block text-sm leading-5 text-[#092a53]">
+                                <span className="mt-1 block text-sm leading-5 text-[#472a3b]">
                                   {t(category.description)}
                                 </span>
                                 <span className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                                  <span className="text-sm font-bold tabular-nums text-[#bd9c00]">
+                                  <span className="text-sm font-bold tabular-nums text-[#b8721e]">
                                     {lowestPrice !== null
                                       ? formatPrice(lowestPrice)
                                       : t("Unavailable")}
                                   </span>
-                                  <span className="text-sm font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4 transition-colors group-hover:text-[#bd9c00]">
+                                  <span className="text-sm font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition-colors group-hover:text-[#b8721e]">
                                     {t("Browse items")}
                                   </span>
                                 </span>

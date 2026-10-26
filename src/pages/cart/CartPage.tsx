@@ -151,14 +151,14 @@ export function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f6f8] text-[#092a53]">
+    <div className="min-h-screen bg-[#f4f6f8] text-[#472a3b]">
       <Header />
 
       <main id="main" tabIndex={-1}>
-        <section className="bg-[#092a53] px-5 py-8 text-white sm:px-8 sm:py-10 lg:px-12">
+        <section className="bg-[#472a3b] px-5 py-8 text-white sm:px-8 sm:py-10 lg:px-12">
           <div className="mx-auto max-w-[1240px]">
             <nav aria-label={t('Breadcrumb')} className="text-xs font-semibold text-white/55">
-              <Link className="transition hover:text-[#ffdc32]" to="/">{t('Home')}</Link>
+              <Link className="transition hover:text-[#ffb84d]" to="/">{t('Home')}</Link>
               <span aria-hidden="true" className="mx-2">/</span>
               <span aria-current="page" className="text-white">{t('Shopping bag')}</span>
             </nav>
@@ -180,9 +180,9 @@ export function CartPage() {
                   <li className="flex items-center gap-2" key={step}>
                     <span
                       aria-current={index === 0 ? 'step' : undefined}
-                      className={`inline-flex min-h-9 items-center gap-2 whitespace-nowrap ${index === 0 ? 'text-[#ffdc32]' : 'text-white/60'}`}
+                      className={`inline-flex min-h-9 items-center gap-2 whitespace-nowrap ${index === 0 ? 'text-[#ffb84d]' : 'text-white/60'}`}
                     >
-                      <span className={`grid size-6 place-items-center rounded-full text-xs ${index === 0 ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white/10 text-white/75'}`}>
+                      <span className={`grid size-6 place-items-center rounded-full text-xs ${index === 0 ? 'bg-[#ffb84d] text-[#472a3b]' : 'bg-white/10 text-white/75'}`}>
                         {index + 1}
                       </span>
                       {step}
@@ -199,22 +199,22 @@ export function CartPage() {
           {cartItems.length === 0 ? (
             <section className="mx-auto grid max-w-5xl gap-8 bg-white px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-14 lg:px-14">
               <div>
-                <span className="grid size-14 place-items-center rounded-full bg-[#f4f6f8] text-[#092a53]">
+                <span className="grid size-14 place-items-center rounded-full bg-[#f4f6f8] text-[#472a3b]">
                   <Icon className="size-7" path={icons.bag} />
                 </span>
-                <h2 className="mt-5 font-display text-3xl font-extrabold text-[#092a53] sm:text-4xl">{t('Your bag is empty')}</h2>
+                <h2 className="mt-5 font-display text-3xl font-extrabold text-[#472a3b] sm:text-4xl">{t('Your bag is empty')}</h2>
                 <p className="mt-3 max-w-md text-sm leading-6 text-[#65748a] sm:text-base sm:leading-7">
                   {t('Start adding your favorite flavors and get ready for a sweet treat!')}
                 </p>
                 <div className="mt-7 flex flex-wrap gap-3">
                   <Link
-                    className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#ffdc32] px-6 py-3 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                    className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#ffb84d] px-6 py-3 text-sm font-extrabold text-[#472a3b] transition-colors hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
                     to="/flavors"
                   >
                     {t('Explore flavors')} <Icon className="size-4" path={icons.arrow} />
                   </Link>
                   <Link
-                    className="inline-flex min-h-12 items-center gap-2 rounded-lg px-5 py-3 text-sm font-bold text-[#092a53] transition-colors hover:bg-[#f4f6f8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                    className="inline-flex min-h-12 items-center gap-2 rounded-lg px-5 py-3 text-sm font-bold text-[#472a3b] transition-colors hover:bg-[#f4f6f8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
                     to="/menu"
                   >
                     {t('Browse the menu')}
@@ -231,11 +231,11 @@ export function CartPage() {
               <section aria-labelledby="cart-items-heading" className="min-w-0 space-y-5">
                 {scoopCount > 0 && (
                   <div className="flex flex-col gap-4 bg-[#f4f6f8] p-5 sm:flex-row sm:items-center sm:p-6">
-                    <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white text-[#092a53]">
+                    <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white text-[#472a3b]">
                       <Icon className="size-6" path={icons.gift} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-extrabold text-[#092a53]">
+                      <p className="text-sm font-extrabold text-[#472a3b]">
                         {scoopsTowardOffer === 0
                           ? t('{count} free scoop(s) unlocked — nice!', { count: freeScoops })
                           : t('Add {count} more scoop(s) to get one free', { count: scoopsToNextFree })}
@@ -253,7 +253,7 @@ export function CartPage() {
                             className={`h-2 rounded-full transition-colors duration-500 ${scoopsTowardOffer === 0 || segment <= scoopsTowardOffer
                               ? segment === 3 || scoopsTowardOffer === 0
                                 ? 'bg-[#6c9c45]'
-                                : 'bg-[#ffdc32]'
+                                : 'bg-[#ffb84d]'
                               : 'bg-[#cfd8e1]'
                               }`}
                             key={segment}
@@ -262,7 +262,7 @@ export function CartPage() {
                       </div>
                     </div>
                     <Link
-                      className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-[#092a53] transition hover:text-[#bd9c00]"
+                      className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-[#472a3b] transition hover:text-[#b8721e]"
                       to="/flavors"
                     >
                       {t('Add flavors')} <Icon className="size-4" path={icons.arrow} />
@@ -272,7 +272,7 @@ export function CartPage() {
 
                 <div className="overflow-hidden bg-white">
                   <div className="flex flex-wrap items-center justify-between gap-3 bg-[#f4f6f8] px-5 py-4 sm:px-7 sm:py-5">
-                    <h2 className="flex items-center gap-2.5 font-display text-xl font-extrabold text-[#092a53]" id="cart-items-heading">
+                    <h2 className="flex items-center gap-2.5 font-display text-xl font-extrabold text-[#472a3b]" id="cart-items-heading">
                       {t('Items in your bag')}
                       <span className="rounded-full bg-white px-2.5 py-0.5 font-sans text-xs font-extrabold text-[#65748a]">{cartCount}</span>
                     </h2>
@@ -329,7 +329,7 @@ export function CartPage() {
                                   {t(item.itemType === 'menu' ? 'Menu' : 'Flavors')}
                                 </p>
                                 <Link
-                                  className="mt-1 block truncate font-display text-lg font-bold text-[#092a53] transition hover:text-[#bd9c00] sm:text-xl"
+                                  className="mt-1 block truncate font-display text-lg font-bold text-[#472a3b] transition hover:text-[#b8721e] sm:text-xl"
                                   to={itemPath(item)}
                                 >
                                   {t(item.name)}
@@ -363,18 +363,18 @@ export function CartPage() {
                                 <div className="inline-flex items-center rounded-lg bg-[#f4f6f8] p-1">
                                   <button
                                     aria-label={t('Decrease quantity')}
-                                    className="grid size-8 place-items-center rounded-md text-[#65748a] transition hover:bg-white hover:text-[#092a53]"
+                                    className="grid size-8 place-items-center rounded-md text-[#65748a] transition hover:bg-white hover:text-[#472a3b]"
                                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
                                     type="button"
                                   >
                                     <Icon className="size-4" path="M6 12h12" />
                                   </button>
-                                  <span aria-live="polite" className="w-9 text-center text-sm font-extrabold tabular-nums text-[#092a53]">
+                                  <span aria-live="polite" className="w-9 text-center text-sm font-extrabold tabular-nums text-[#472a3b]">
                                     {item.quantity}
                                   </span>
                                   <button
                                     aria-label={t('Increase quantity')}
-                                    className="grid size-8 place-items-center rounded-md text-[#65748a] transition hover:bg-white hover:text-[#092a53] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent"
+                                    className="grid size-8 place-items-center rounded-md text-[#65748a] transition hover:bg-white hover:text-[#472a3b] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent"
                                     disabled={item.quantity >= item.availableQuantity}
                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                     type="button"
@@ -389,7 +389,7 @@ export function CartPage() {
                                 )}
                               </div>
                               <div className="text-right">
-                                <p className="font-display text-lg font-extrabold tabular-nums text-[#092a53] sm:text-xl">
+                                <p className="font-display text-lg font-extrabold tabular-nums text-[#472a3b] sm:text-xl">
                                   {money(item.price * item.quantity)}
                                 </p>
                                 {item.quantity > 1 && (
@@ -406,7 +406,7 @@ export function CartPage() {
                   </ul>
 
                   <div className="bg-[#f4f6f8] px-5 py-4 sm:px-7">
-                    <Link className="inline-flex items-center gap-2 text-sm font-bold text-[#092a53] transition hover:gap-3 hover:text-[#bd9c00]" to={shopPath}>
+                    <Link className="inline-flex items-center gap-2 text-sm font-bold text-[#472a3b] transition hover:gap-3 hover:text-[#b8721e]" to={shopPath}>
                       <Icon className="size-4 rotate-180" path={icons.arrow} />
                       {t('Continue shopping')}
                     </Link>
@@ -421,7 +421,7 @@ export function CartPage() {
 
               <aside aria-labelledby="order-summary-heading" className="relative z-10 space-y-4 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300">
                 <div className="overflow-hidden bg-white">
-                  <div className="bg-[#092a53] px-6 py-5 text-white sm:px-7">
+                  <div className="bg-[#472a3b] px-6 py-5 text-white sm:px-7">
                     <h2 className="font-display text-2xl font-extrabold" id="order-summary-heading">{t('Order summary')}</h2>
                   </div>
 
@@ -431,7 +431,7 @@ export function CartPage() {
                         <dt className="text-[#65748a]">
                           {t('Subtotal')} <span className="text-[#9aa3af]">({cartCount})</span>
                         </dt>
-                        <dd className="font-bold tabular-nums text-[#092a53]">{money(subtotal)}</dd>
+                        <dd className="font-bold tabular-nums text-[#472a3b]">{money(subtotal)}</dd>
                       </div>
                       {discount > 0 && (
                         <div className="flex justify-between gap-3 rounded-xl bg-[#eef6e8] px-3 py-2.5 ring-1 ring-[#d6e8c7]">
@@ -449,8 +449,8 @@ export function CartPage() {
                     </dl>
 
                     <div className="flex items-end justify-between gap-3 border-t border-[#f4f6f8] pt-5">
-                      <span className="font-display text-lg font-extrabold text-[#092a53]">{t('Total')}</span>
-                      <span className="font-display text-3xl font-extrabold tabular-nums leading-none text-[#092a53]">{money(total)}</span>
+                      <span className="font-display text-lg font-extrabold text-[#472a3b]">{t('Total')}</span>
+                      <span className="font-display text-3xl font-extrabold tabular-nums leading-none text-[#472a3b]">{money(total)}</span>
                     </div>
                     {discount > 0 && (
                       <p className="-mt-2 text-right text-xs font-bold text-[#3f6b22]">
@@ -469,7 +469,7 @@ export function CartPage() {
                       </button>
                     ) : (
                       <Link
-                        className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[#ffdc32] px-5 py-4 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                        className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[#ffb84d] px-5 py-4 text-sm font-extrabold text-[#472a3b] transition-colors hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
                         to="/checkout"
                       >
                         <Icon className="size-4" path={icons.lock} />
@@ -487,11 +487,11 @@ export function CartPage() {
                     { icon: icons.clock, title: t('Made fresh'), body: t('Prepared when your order is confirmed.') },
                   ].map((perk) => (
                     <li className="flex items-center gap-3" key={perk.title}>
-                      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#f4f6f8] text-[#092a53]">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#f4f6f8] text-[#472a3b]">
                         <Icon className="size-4" path={perk.icon} />
                       </span>
                       <span className="min-w-0">
-                        <span className="block font-extrabold text-[#092a53]">{perk.title}</span>
+                        <span className="block font-extrabold text-[#472a3b]">{perk.title}</span>
                         <span className="block text-[#65748a]">{perk.body}</span>
                       </span>
                     </li>
@@ -503,8 +503,8 @@ export function CartPage() {
 
           <section aria-labelledby="cart-suggestions-heading" className="mt-12">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-              <h2 className="font-display text-2xl font-extrabold text-[#092a53]" id="cart-suggestions-heading">{t('You might also like')}</h2>
-              <Link className="text-sm font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4" to="/menu">{t('Browse the menu')}</Link>
+              <h2 className="font-display text-2xl font-extrabold text-[#472a3b]" id="cart-suggestions-heading">{t('You might also like')}</h2>
+              <Link className="text-sm font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4" to="/menu">{t('Browse the menu')}</Link>
             </div>
             {suggestionsLoading && (
               <p className="bg-white px-4 py-3 text-sm text-[#65748a]" role="status">{t('Loading menu suggestions…')}</p>
@@ -524,11 +524,11 @@ export function CartPage() {
                         <span aria-hidden="true" className="menu-card-shine" />
                       </Link>
                       <div className="flex flex-1 flex-col px-1 pb-1 pt-3 sm:px-1.5">
-                        <h3 className="line-clamp-2 min-h-[2.5em] font-display text-sm font-extrabold leading-snug text-[#092a53] sm:text-base">{t(item.name)}</h3>
-                        <p className="mt-1 font-display text-sm font-extrabold tabular-nums text-[#092a53]">{formatCartMoney(item.priceXaf, 'xaf', language)}</p>
+                        <h3 className="line-clamp-2 min-h-[2.5em] font-display text-sm font-extrabold leading-snug text-[#472a3b] sm:text-base">{t(item.name)}</h3>
+                        <p className="mt-1 font-display text-sm font-extrabold tabular-nums text-[#472a3b]">{formatCartMoney(item.priceXaf, 'xaf', language)}</p>
                         <button
                           aria-label={added ? t('Added to your bag') : t('Add {name} to cart', { name: t(item.name) })}
-                          className={`mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-md px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 ${added ? 'bg-[#37632c] text-white' : 'bg-[#092a53] text-white hover:bg-[#163e6b]'}`}
+                          className={`mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-md px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 ${added ? 'bg-[#37632c] text-white' : 'bg-[#472a3b] text-white hover:bg-[#6b3f58]'}`}
                           onClick={() => addSuggestion(category, item)}
                           type="button"
                         >

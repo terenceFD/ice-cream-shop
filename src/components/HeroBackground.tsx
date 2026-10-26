@@ -7,44 +7,44 @@
 // navy heroes, `variant="light"` suits light backgrounds.
 
 const SPRINKLES = [
-  { left: "6%", top: "22%", size: 10, delay: "0s", duration: "11s", color: "#ffdc32", shape: "rounded-full" },
+  { left: "6%", top: "22%", size: 10, delay: "0s", duration: "11s", color: "#ffb84d", shape: "rounded-full" },
   { left: "14%", top: "72%", size: 8, delay: "-3s", duration: "14s", color: "#ff8ab5", shape: "rounded-[3px]" },
   { left: "26%", top: "38%", size: 12, delay: "-6s", duration: "12s", color: "#8fd6ff", shape: "rounded-full" },
-  { left: "40%", top: "86%", size: 9, delay: "-1.5s", duration: "15s", color: "#ffdc32", shape: "rounded-[3px]" },
+  { left: "40%", top: "86%", size: 9, delay: "-1.5s", duration: "15s", color: "#ffb84d", shape: "rounded-[3px]" },
   { left: "55%", top: "14%", size: 7, delay: "-8s", duration: "13s", color: "#ff8ab5", shape: "rounded-full" },
   { left: "66%", top: "58%", size: 11, delay: "-4.5s", duration: "16s", color: "#8fd6ff", shape: "rounded-[3px]" },
-  { left: "78%", top: "30%", size: 8, delay: "-2s", duration: "12s", color: "#ffdc32", shape: "rounded-full" },
+  { left: "78%", top: "30%", size: 8, delay: "-2s", duration: "12s", color: "#ffb84d", shape: "rounded-full" },
   { left: "90%", top: "78%", size: 10, delay: "-9s", duration: "14s", color: "#ff8ab5", shape: "rounded-full" },
 ];
 
 const STARS = [
-  { left: "4%", top: "10%", size: 16, delay: "0s", duration: "3.2s", color: "#ffdc32" },
+  { left: "4%", top: "10%", size: 16, delay: "0s", duration: "3.2s", color: "#ffb84d" },
   { left: "11%", top: "48%", size: 11, delay: "-1.1s", duration: "4.1s", color: "#ffffff" },
   { left: "20%", top: "24%", size: 14, delay: "-2.3s", duration: "3.6s", color: "#ff8ab5" },
   { left: "30%", top: "70%", size: 10, delay: "-0.6s", duration: "4.6s", color: "#8fd6ff" },
-  { left: "36%", top: "5%", size: 12, delay: "-3.4s", duration: "3.8s", color: "#ffdc32" },
+  { left: "36%", top: "5%", size: 12, delay: "-3.4s", duration: "3.8s", color: "#ffb84d" },
   { left: "47%", top: "40%", size: 9, delay: "-1.8s", duration: "4.4s", color: "#ffffff" },
-  { left: "57%", top: "12%", size: 15, delay: "-2.9s", duration: "3.4s", color: "#ffdc32" },
+  { left: "57%", top: "12%", size: 15, delay: "-2.9s", duration: "3.4s", color: "#ffb84d" },
   { left: "63%", top: "62%", size: 10, delay: "-0.4s", duration: "4.8s", color: "#ff8ab5" },
   { left: "72%", top: "28%", size: 13, delay: "-3.9s", duration: "3.9s", color: "#8fd6ff" },
-  { left: "80%", top: "6%", size: 11, delay: "-1.5s", duration: "4.2s", color: "#ffdc32" },
+  { left: "80%", top: "6%", size: 11, delay: "-1.5s", duration: "4.2s", color: "#ffb84d" },
   { left: "86%", top: "52%", size: 16, delay: "-2.1s", duration: "3.5s", color: "#ffffff" },
   { left: "93%", top: "18%", size: 10, delay: "-4.2s", duration: "4.7s", color: "#ff8ab5" },
   { left: "26%", top: "90%", size: 12, delay: "-3.1s", duration: "3.7s", color: "#8fd6ff" },
-  { left: "59%", top: "88%", size: 9, delay: "-0.9s", duration: "4.3s", color: "#ffdc32" },
-  { left: "8%", top: "62%", size: 13, delay: "-5.2s", duration: "4.5s", color: "#ffdc32" },
+  { left: "59%", top: "88%", size: 9, delay: "-0.9s", duration: "4.3s", color: "#ffb84d" },
+  { left: "8%", top: "62%", size: 13, delay: "-5.2s", duration: "4.5s", color: "#ffb84d" },
   { left: "16%", top: "84%", size: 10, delay: "-2.6s", duration: "3.4s", color: "#ffffff" },
   { left: "24%", top: "6%", size: 9, delay: "-4.7s", duration: "4.9s", color: "#ff8ab5" },
   { left: "33%", top: "52%", size: 15, delay: "-1.3s", duration: "3.3s", color: "#8fd6ff" },
-  { left: "43%", top: "24%", size: 11, delay: "-3.8s", duration: "4.0s", color: "#ffdc32" },
+  { left: "43%", top: "24%", size: 11, delay: "-3.8s", duration: "4.0s", color: "#ffb84d" },
   { left: "51%", top: "76%", size: 14, delay: "-0.2s", duration: "3.6s", color: "#ffffff" },
   { left: "60%", top: "34%", size: 10, delay: "-5.5s", duration: "4.4s", color: "#ff8ab5" },
-  { left: "69%", top: "78%", size: 12, delay: "-2.4s", duration: "3.8s", color: "#ffdc32" },
+  { left: "69%", top: "78%", size: 12, delay: "-2.4s", duration: "3.8s", color: "#ffb84d" },
   { left: "76%", top: "14%", size: 9, delay: "-4.1s", duration: "4.6s", color: "#8fd6ff" },
-  { left: "83%", top: "38%", size: 15, delay: "-1.7s", duration: "3.5s", color: "#ffdc32" },
+  { left: "83%", top: "38%", size: 15, delay: "-1.7s", duration: "3.5s", color: "#ffb84d" },
   { left: "91%", top: "66%", size: 11, delay: "-3.3s", duration: "4.2s", color: "#ffffff" },
   { left: "97%", top: "34%", size: 10, delay: "-0.7s", duration: "4.0s", color: "#ff8ab5" },
-  { left: "44%", top: "92%", size: 13, delay: "-2.8s", duration: "3.9s", color: "#ffdc32" },
+  { left: "44%", top: "92%", size: 13, delay: "-2.8s", duration: "3.9s", color: "#ffb84d" },
   { left: "68%", top: "46%", size: 9, delay: "-5.8s", duration: "4.7s", color: "#ff8ab5" },
 ];
 
@@ -61,11 +61,11 @@ export function HeroBackground({
     variant === "navy"
       ? [
         { className: "hero-blob-a absolute -right-40 -top-40 size-[38rem]", background: "rgb(255_220_50/0.12)" },
-        { className: "hero-blob-b absolute -bottom-56 -left-40 size-[34rem]", background: "rgb(18_59_104/0.5)" },
+        { className: "hero-blob-b absolute -bottom-56 -left-40 size-[34rem]", background: "rgb(107_63_88/0.5)" },
       ]
       : [
         { className: "hero-blob-a absolute -right-48 -top-48 size-[36rem]", background: "rgb(255_220_50/0.14)" },
-        { className: "hero-blob-b absolute -left-40 bottom-0 size-[28rem]", background: "rgb(9_42_83/0.07)" },
+        { className: "hero-blob-b absolute -left-40 bottom-0 size-[28rem]", background: "rgb(71_42_59/0.07)" },
       ];
 
   return (

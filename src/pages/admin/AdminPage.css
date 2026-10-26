@@ -1,10 +1,10 @@
 .admin-flavors-page {
   --flavor-surface: #ffffff;
-  --flavor-ink: #092a53;
+  --flavor-ink: #472a3b;
   --flavor-muted: #53657b;
   --flavor-rule: #e8edf2;
   --flavor-control: #cbd5df;
-  --flavor-accent: #bd9c00;
+  --flavor-accent: #b8721e;
   color: var(--flavor-ink);
   font-family: var(--font-sans);
 }

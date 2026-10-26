@@ -1,12 +1,12 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /* Keep every interactive control recognizable, while preserving disabled affordances. */
 button,
 a[href],
-input[type='button'],
-input[type='submit'],
-input[type='reset'],
-[role='button'],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"],
 summary,
 label[for] {
   cursor: pointer;
@@ -14,53 +14,61 @@ label[for] {
 
 button:disabled,
 input:disabled,
-[aria-disabled='true'] {
+[aria-disabled="true"] {
   cursor: not-allowed;
 }
 
 /* The site's own copies of DM Sans and Fredoka (Latin, which covers English and French). Serving
    them from the site avoids waiting on Google before the first paint; index.html preloads both. */
 @font-face {
-  font-family: 'DM Sans';
+  font-family: "DM Sans";
   font-style: normal;
   font-weight: 400 800;
   font-display: swap;
-  src: url('/fonts/dm-sans-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url("/fonts/dm-sans-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: 'Fredoka';
+  font-family: "Fredoka";
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url('/fonts/fredoka-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url("/fonts/fredoka-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
 }
 
 @theme {
-  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Fredoka', ui-rounded, 'Arial Rounded MT Bold', sans-serif;
-  --color-brand-navy: #092a53;
-  --color-brand-blue: #123b68;
-  --color-brand-yellow: #ffdc32;
-  --color-brand-yellow-deep: #bd9c00;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fredoka", ui-rounded, "Arial Rounded MT Bold", sans-serif;
+  --color-brand-navy: #472a3b;
+  --color-brand-blue: #6b3f58;
+  --color-brand-yellow: #ffb84d;
+  --color-brand-yellow-deep: #b8721e;
   --color-brand-cream: #fbfaf5;
   --color-brand-surface: #f4f6f8;
   --color-brand-muted: #65748a;
   --color-brand-border: #dce3eb;
+  --color-brand-chocolate: #5c3a21;
 }
 
 :root {
   color-scheme: light;
-  --brand-navy: #092a53;
-  --brand-blue: #123b68;
-  --brand-yellow: #ffdc32;
-  --brand-yellow-deep: #bd9c00;
+  --brand-navy: #472a3b;
+  --brand-blue: #6b3f58;
+  --brand-yellow: #ffb84d;
+  --brand-yellow-deep: #b8721e;
   --brand-cream: #fbfaf5;
   --brand-surface: #f4f6f8;
   --brand-muted: #65748a;
   --brand-border: #dce3eb;
+  --brand-chocolate: #5c3a21;
 }
 
 html {
@@ -78,8 +86,8 @@ body {
 }
 
 ::selection {
-  color: #092a53;
-  background: #ffdc32;
+  color: #472a3b;
+  background: #ffb84d;
 }
 
 :focus-visible {
@@ -97,7 +105,7 @@ body {
     105deg,
     transparent 32%,
     rgba(255, 255, 255, 0.7) 48%,
-    rgba(255, 220, 50, 0.55) 54%,
+    rgba(255, 184, 77, 0.55) 54%,
     transparent 70%
   );
   transform: translateX(-130%) skewX(-18deg);
@@ -153,16 +161,16 @@ body {
 
 @media (max-width: 1023px), (any-pointer: coarse) {
   button,
-  [role='button'],
-  input[type='button'],
-  input[type='submit'],
-  input[type='reset'],
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
   summary,
-  a[class*='rounded-full'],
-  a[class*='rounded-lg'],
-  a[class*='rounded-xl'],
-  a[class*='rounded-md'],
-  a[class*='rounded-2xl'] {
+  a[class*="rounded-full"],
+  a[class*="rounded-lg"],
+  a[class*="rounded-xl"],
+  a[class*="rounded-md"],
+  a[class*="rounded-2xl"] {
     min-width: 44px !important;
     min-height: 44px !important;
   }
@@ -176,7 +184,7 @@ body {
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: #092a53;
+  background: #472a3b;
   color: #ffffff;
   transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -226,14 +234,14 @@ body {
   height: 0.5rem;
   margin-top: 2rem;
   overflow: hidden;
-  background: #163e6b;
+  background: #5e3850;
 }
 
 .website-loader__fill {
   display: block;
   width: 100%;
   height: 100%;
-  background: #ffdc32;
+  background: #ffb84d;
   transform: scaleX(0);
   transform-origin: left center;
   animation: website-loader-fill 420ms cubic-bezier(0.22, 1, 0.36, 1) 40ms both;
@@ -297,7 +305,7 @@ body {
 
 @media (prefers-contrast: more) {
   body {
-    color: #092a53;
+    color: #472a3b;
   }
 
   input,
@@ -324,7 +332,7 @@ body {
   height: 100%;
   transform: scaleX(0);
   transform-origin: left center;
-  background: #ffdc32;
+  background: #ffb84d;
 }
 
 @supports (animation-timeline: scroll()) {
@@ -437,12 +445,14 @@ body {
 }
 
 @keyframes hero-sprinkle-float {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0;
     transform: translate3d(0, 18px, 0) rotate(0deg);
   }
 
-  20%, 80% {
+  20%,
+  80% {
     opacity: 0.55;
   }
 
@@ -471,7 +481,8 @@ body {
 }
 
 @keyframes hero-star-twinkle {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.15;
     transform: scale(0.55) rotate(0deg);
   }
@@ -571,15 +582,22 @@ body {
 }
 
 @keyframes admin-fade-in {
-  from { opacity: 0; }
+  from {
+    opacity: 0;
+  }
 }
 
 @keyframes admin-slide-in {
-  from { transform: translateX(100%); }
+  from {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes admin-pop-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
 }
 
 /* "Install the app" card slides up when the site opens */
@@ -588,8 +606,14 @@ body {
 }
 
 @keyframes install-card-in {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -604,8 +628,14 @@ body {
 }
 
 @keyframes admin-pin-shake {
-  20%, 60% { transform: translateX(-6px); }
-  40%, 80% { transform: translateX(6px); }
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -628,12 +658,19 @@ body {
 }
 
 @keyframes admin-welcome-in {
-  from { opacity: 0; transform: translate3d(24px, -8px, 0) scale(0.97); }
+  from {
+    opacity: 0;
+    transform: translate3d(24px, -8px, 0) scale(0.97);
+  }
 }
 
 @keyframes admin-welcome-progress {
-  from { transform: scaleX(1); }
-  to { transform: scaleX(0); }
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -649,8 +686,14 @@ body {
 }
 
 @keyframes admin-login-shake {
-  20%, 60% { transform: translateX(-6px); }
-  40%, 80% { transform: translateX(6px); }
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -716,7 +759,7 @@ body {
     visibility 200ms;
 }
 
-.menu-popover[aria-hidden='false'],
+.menu-popover[aria-hidden="false"],
 details[open] > .menu-popover {
   visibility: visible;
   opacity: 1;
@@ -738,8 +781,20 @@ details[open] > .menu-popover {
    reduced motion keeps the full line without the travel. */
 .review-marquee {
   overflow: hidden;
-  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 6%,
+    black 94%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 6%,
+    black 94%,
+    transparent
+  );
 }
 
 .review-marquee-track {
@@ -758,8 +813,12 @@ details[open] > .menu-popover {
 }
 
 @keyframes review-marquee-move {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

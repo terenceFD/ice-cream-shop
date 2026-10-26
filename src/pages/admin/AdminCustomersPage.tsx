@@ -15,7 +15,7 @@ interface CustomerAccount {
 
 type StatusFilter = 'all' | 'active' | 'banned' | 'whatsapp' | 'new'
 
-const inputClassName = 'w-full rounded-lg border border-[#dce3eb] bg-white px-3 py-2 text-sm font-medium text-[#092a53] transition placeholder:text-[#65748a] hover:border-[#bac7d5] focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/25 outline-none!'
+const inputClassName = 'w-full rounded-lg border border-[#dce3eb] bg-white px-3 py-2 text-sm font-medium text-[#472a3b] transition placeholder:text-[#65748a] hover:border-[#bac7d5] focus:border-[#b8721e] focus:ring-2 focus:ring-[#ffb84d]/25 outline-none!'
 const NEW_CUSTOMER_DAYS = 30
 const WHATSAPP_PATH = 'M12.04 2a9.9 9.9 0 0 0-8.49 15l-1.3 4.75 4.86-1.27A9.96 9.96 0 1 0 12.04 2Zm0 18.1a8.1 8.1 0 0 1-4.13-1.13l-.3-.18-2.88.75.77-2.8-.2-.3A8.12 8.12 0 1 1 12.04 20.1Zm4.45-6.08c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.1-.49.1-.1.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.47-.4-.4-.54-.4h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.5.58.18 1.1.15 1.51.09.46-.07 1.43-.59 1.63-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28Z'
 
@@ -329,15 +329,15 @@ export function AdminCustomersPage() {
         <div className="min-w-0">
           <nav aria-label={t('Breadcrumb')} className="hidden text-xs font-medium text-[#65748a] sm:block">
             {t('Customer management')} <span aria-hidden="true" className="mx-1.5 text-[#a3b0bf]">/</span>
-            <span className="font-semibold text-[#123b68]">{t('Customer accounts')}</span>
+            <span className="font-semibold text-[#6b3f58]">{t('Customer accounts')}</span>
           </nav>
-          <h1 className="mt-0 whitespace-nowrap text-xl font-semibold tracking-tight text-[#092a53] sm:text-2xl">{t('Customer accounts')}</h1>
+          <h1 className="mt-0 whitespace-nowrap text-xl font-semibold tracking-tight text-[#472a3b] sm:text-2xl">{t('Customer accounts')}</h1>
           <p className="mt-1 hidden max-w-2xl text-sm leading-5 text-[#65748a] sm:block">{t('View registered customers, manage account access, and prepare promotion messages for WhatsApp.')}</p>
         </div>
         <div className="flex shrink-0 gap-1.5 sm:gap-2">
           <button
             aria-label={t('Refresh customer accounts')}
-            className="inline-flex size-9 items-center justify-center gap-2 rounded-lg border border-[#dce3eb] bg-white px-2.5 text-sm font-semibold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-50 sm:min-h-10 sm:w-auto sm:px-3.5"
+            className="inline-flex size-9 items-center justify-center gap-2 rounded-lg border border-[#dce3eb] bg-white px-2.5 text-sm font-semibold text-[#6b3f58] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#472a3b] disabled:opacity-50 sm:min-h-10 sm:w-auto sm:px-3.5"
             disabled={loading || refreshing}
             onClick={() => {
               setRefreshing(true)
@@ -350,7 +350,7 @@ export function AdminCustomersPage() {
           </button>
           <button
             aria-label={t('Export CSV')}
-            className="inline-flex size-9 items-center justify-center gap-2 rounded-lg border border-[#dce3eb] bg-white px-2.5 text-sm font-semibold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-50 sm:min-h-10 sm:w-auto sm:px-3.5"
+            className="inline-flex size-9 items-center justify-center gap-2 rounded-lg border border-[#dce3eb] bg-white px-2.5 text-sm font-semibold text-[#6b3f58] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#472a3b] disabled:opacity-50 sm:min-h-10 sm:w-auto sm:px-3.5"
             disabled={!filteredCustomers.length}
             onClick={exportCsv}
             type="button"
@@ -361,7 +361,7 @@ export function AdminCustomersPage() {
           {isOwner && (
             <button
               aria-label={t('WhatsApp campaign')}
-              className="inline-flex size-9 items-center justify-center gap-2 rounded-lg bg-[#16733f] px-2.5 text-sm font-semibold text-white transition hover:bg-[#125f34] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-10 sm:w-auto sm:px-3.5"
+              className="inline-flex size-9 items-center justify-center gap-2 rounded-lg bg-[#16733f] px-2.5 text-sm font-semibold text-white transition hover:bg-[#125f34] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-10 sm:w-auto sm:px-3.5"
               disabled={loading || promotionCampaign !== null}
               onClick={() => { setError(''); setIsComposerOpen(true) }}
               type="button"
@@ -438,12 +438,12 @@ export function AdminCustomersPage() {
           return (
             <button
               aria-pressed={isActive}
-              className={`min-w-0 px-2.5 py-3 text-left transition hover:bg-white focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] sm:px-4 sm:py-3.5 ${isActive ? 'bg-[#fff9df]' : ''}`}
+              className={`min-w-0 px-2.5 py-3 text-left transition hover:bg-white focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#b8721e] sm:px-4 sm:py-3.5 ${isActive ? 'bg-[#fff9df]' : ''}`}
               key={metric.key}
               onClick={() => setStatusFilter(isActive || metric.key === 'all' ? 'all' : metric.key)}
               type="button"
             >
-              <p className="text-xl font-semibold leading-none tracking-tight text-[#092a53] tabular-nums">{metric.value.toLocaleString(locale)}</p>
+              <p className="text-xl font-semibold leading-none tracking-tight text-[#472a3b] tabular-nums">{metric.value.toLocaleString(locale)}</p>
               <p className="mt-1 text-xs font-semibold leading-4 text-[#65748a] sm:mt-1.5 sm:text-[13px]">{t(metric.label)}</p>
             </button>
           )
@@ -454,14 +454,14 @@ export function AdminCustomersPage() {
         <div className="border-b border-[#dce3eb]">
           <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3 pb-3">
             <div className="flex min-w-0 flex-1 items-baseline justify-between gap-3 sm:flex-none sm:flex-col sm:gap-0">
-              <h2 className="text-sm font-semibold text-[#092a53]" id="customer-directory-title">{t('Customer directory')}</h2>
+              <h2 className="text-sm font-semibold text-[#472a3b]" id="customer-directory-title">{t('Customer directory')}</h2>
               <p aria-live="polite" className="shrink-0 text-xs font-medium text-[#65748a]">
                 {t('Showing {shown} of {total} customers', { shown: filteredCustomers.length, total: customers.length })}
               </p>
             </div>
             {hasActiveFilters && (
               <button
-                className="hidden min-h-9 items-center text-xs font-semibold text-[#123b68] underline decoration-[#d1a900] decoration-2 underline-offset-4 hover:text-[#092a53] sm:inline-flex"
+                className="hidden min-h-9 items-center text-xs font-semibold text-[#6b3f58] underline decoration-[#d1a900] decoration-2 underline-offset-4 hover:text-[#472a3b] sm:inline-flex"
                 onClick={() => { setSearch(''); setStatusFilter('all'); setCityFilter('') }}
                 type="button"
               >
@@ -491,7 +491,7 @@ export function AdminCustomersPage() {
               </select>
             </label>
             <details className="relative lg:col-span-2 lg:hidden">
-              <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-lg border border-[#dce3eb] px-3 text-sm font-semibold text-[#123b68] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] [&::-webkit-details-marker]:hidden">
+              <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-lg border border-[#dce3eb] px-3 text-sm font-semibold text-[#6b3f58] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] [&::-webkit-details-marker]:hidden">
                 {t('Filters')}
               </summary>
               <div className="absolute right-0 z-10 mt-2 grid w-[min(18rem,calc(100vw-3rem))] gap-2 rounded-lg border border-[#dce3eb] bg-white p-3">
@@ -512,7 +512,7 @@ export function AdminCustomersPage() {
                 </label>
                 {hasActiveFilters && (
                   <button
-                    className="min-h-10 text-left text-sm font-semibold text-[#123b68]"
+                    className="min-h-10 text-left text-sm font-semibold text-[#6b3f58]"
                     onClick={() => { setSearch(''); setStatusFilter('all'); setCityFilter('') }}
                     type="button"
                   >
@@ -532,7 +532,7 @@ export function AdminCustomersPage() {
             ] as const).map((option) => (
               <button
                 aria-pressed={statusFilter === option.key}
-                className={`inline-flex min-h-10 shrink-0 items-center gap-2 border-b-2 px-1 text-xs font-semibold transition ${statusFilter === option.key ? 'border-[#d1a900] text-[#092a53]' : 'border-transparent text-[#65748a] hover:text-[#092a53]'}`}
+                className={`inline-flex min-h-10 shrink-0 items-center gap-2 border-b-2 px-1 text-xs font-semibold transition ${statusFilter === option.key ? 'border-[#d1a900] text-[#472a3b]' : 'border-transparent text-[#65748a] hover:text-[#472a3b]'}`}
                 key={option.key}
                 onClick={() => setStatusFilter(option.key)}
                 type="button"
@@ -565,10 +565,10 @@ export function AdminCustomersPage() {
           </div>
         ) : filteredCustomers.length === 0 ? (
           <div className="border-y border-dashed border-[#dce3eb] py-8 text-center">
-            <p className="text-sm font-semibold text-[#092a53]">{t(customers.length ? 'No customers match your search.' : 'No customer accounts yet.')}</p>
+            <p className="text-sm font-semibold text-[#472a3b]">{t(customers.length ? 'No customers match your search.' : 'No customer accounts yet.')}</p>
             {!customers.length && <p className="mx-auto mt-1 max-w-sm text-sm text-[#65748a]">{t('Customers appear here as soon as they create an account on the website.')}</p>}
             {hasActiveFilters && (
-              <button className="mt-3 min-h-10 rounded-lg px-3 text-sm font-semibold text-[#123b68] underline decoration-[#d1a900] decoration-2 underline-offset-4" onClick={() => { setSearch(''); setStatusFilter('all'); setCityFilter('') }} type="button">
+              <button className="mt-3 min-h-10 rounded-lg px-3 text-sm font-semibold text-[#6b3f58] underline decoration-[#d1a900] decoration-2 underline-offset-4" onClick={() => { setSearch(''); setStatusFilter('all'); setCityFilter('') }} type="button">
                 {t('Clear filters')}
               </button>
             )}
@@ -591,12 +591,12 @@ export function AdminCustomersPage() {
                       <div className="col-span-2 flex min-w-0 items-center gap-3 xl:col-span-1">
                           <span aria-hidden="true" className={`relative grid size-10 shrink-0 place-items-center rounded-full text-xs font-bold ${customer.isBanned ? 'bg-[#f4f6f8] text-[#65748a]' : 'bg-[#e9f1fa] text-[#245281]'}`}>
                             {initials(customer.name)}
-                            {isNew(customer) && !customer.isBanned && <span className="absolute -right-0.5 -top-0.5 size-3 rounded-full bg-[#ffdc32] ring-2 ring-white" />}
+                            {isNew(customer) && !customer.isBanned && <span className="absolute -right-0.5 -top-0.5 size-3 rounded-full bg-[#ffb84d] ring-2 ring-white" />}
                           </span>
                           <div className="min-w-0">
-                            <p className={`truncate text-sm font-semibold ${customer.isBanned ? 'text-[#65748a] line-through decoration-[#c3ccd7]' : 'text-[#092a53]'}`}>{customer.name}</p>
+                            <p className={`truncate text-sm font-semibold ${customer.isBanned ? 'text-[#65748a] line-through decoration-[#c3ccd7]' : 'text-[#472a3b]'}`}>{customer.name}</p>
                             <button
-                              className="flex min-h-8 max-w-full items-center gap-1 text-xs text-[#65748a] hover:text-[#092a53] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#bd9c00]"
+                              className="flex min-h-8 max-w-full items-center gap-1 text-xs text-[#65748a] hover:text-[#472a3b] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#b8721e]"
                               onClick={() => copyEmail(customer)}
                               title={t('Copy')}
                               type="button"
@@ -609,7 +609,7 @@ export function AdminCustomersPage() {
                       <div className="min-w-0 self-center">
                         <span className="mb-1 block text-xs font-medium text-[#65748a] xl:hidden">{t('Phone')}</span>
                         {customer.phone ? (
-                          <a className="inline-flex min-h-8 items-center gap-1.5 text-xs font-medium text-[#123b68] hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#bd9c00]" href={`tel:${customer.phone}`}>
+                          <a className="inline-flex min-h-8 items-center gap-1.5 text-xs font-medium text-[#6b3f58] hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#b8721e]" href={`tel:${customer.phone}`}>
                             <Icon className="size-3.5 shrink-0 text-[#65748a]" path={icons.phone} />
                             <span className="truncate">{customer.phone}</span>
                           </a>
@@ -641,7 +641,7 @@ export function AdminCustomersPage() {
                           {link ? (
                             <a
                               aria-label={`${t('Message on WhatsApp')}: ${customer.name}`}
-                              className="grid size-10 place-items-center rounded-lg text-[#1f8f4e] transition hover:bg-[#e7f7eb] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#bd9c00] xl:size-9"
+                              className="grid size-10 place-items-center rounded-lg text-[#1f8f4e] transition hover:bg-[#e7f7eb] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#b8721e] xl:size-9"
                               href={link}
                               rel="noreferrer"
                               target="_blank"
@@ -660,7 +660,7 @@ export function AdminCustomersPage() {
                           )}
                           <a
                             aria-label={`${t('Email')}: ${customer.name}`}
-                            className="grid size-10 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#bd9c00] xl:size-9"
+                            className="grid size-10 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#b8721e] xl:size-9"
                             href={`mailto:${customer.email}`}
                             title={t('Email')}
                           >
@@ -669,7 +669,7 @@ export function AdminCustomersPage() {
                           {isOwner && (
                             customer.isBanned ? (
                               <button
-                                className="inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:cursor-wait"
+                                className="inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-[#6b3f58] transition hover:bg-[#f4f6f8] hover:text-[#472a3b] disabled:cursor-wait"
                                 disabled={savingId === customer.id}
                                 onClick={() => setBan(customer, false)}
                                 type="button"
@@ -680,7 +680,7 @@ export function AdminCustomersPage() {
                             ) : (
                               <button
                                 aria-label={`${t('Ban customer')}: ${customer.name}`}
-                                className="grid size-10 place-items-center rounded-lg text-[#65748a] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#bd9c00] xl:size-9"
+                                className="grid size-10 place-items-center rounded-lg text-[#65748a] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#b8721e] xl:size-9"
                                 onClick={() => { setError(''); setCustomerToBan(customer) }}
                                 title={t('Ban customer')}
                                 type="button"
@@ -708,10 +708,10 @@ export function AdminCustomersPage() {
                 <span className="grid size-11 place-items-center rounded-md bg-[#25d366] text-[#0f3d26]"><WhatsAppIcon className="size-5" /></span>
                 <div>
                   <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#1f8f4e]">{t('WhatsApp campaign')}</p>
-                  <h2 className="text-base font-semibold text-[#092a53]" id="campaign-title">{t('Promotion message')}</h2>
+                  <h2 className="text-base font-semibold text-[#472a3b]" id="campaign-title">{t('Promotion message')}</h2>
                 </div>
               </div>
-              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsComposerOpen(false)} type="button">
+              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={() => setIsComposerOpen(false)} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
@@ -740,7 +740,7 @@ export function AdminCustomersPage() {
                 <div className="mt-2 space-y-1.5">
                   {templates.map((template) => (
                     <button
-                      className="block w-full rounded-md bg-[#f4f6f8] px-3 py-2 text-left text-xs leading-5 text-[#65748a] ring-1 ring-[#dce3eb] transition hover:bg-white hover:text-[#092a53] hover:ring-[#dce3eb]"
+                      className="block w-full rounded-md bg-[#f4f6f8] px-3 py-2 text-left text-xs leading-5 text-[#65748a] ring-1 ring-[#dce3eb] transition hover:bg-white hover:text-[#472a3b] hover:ring-[#dce3eb]"
                       key={template}
                       onClick={() => setPromotionMessage(template)}
                       type="button"
@@ -780,7 +780,7 @@ export function AdminCustomersPage() {
             </div>
 
             <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
-              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsComposerOpen(false)} type="button">{t('Cancel')}</button>
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={() => setIsComposerOpen(false)} type="button">{t('Cancel')}</button>
               <button
                 className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#16733f] px-5 text-sm font-bold text-white transition hover:bg-[#125f34] disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!promotionMessage.trim() || !counts.whatsapp}
@@ -800,11 +800,11 @@ export function AdminCustomersPage() {
           <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setCustomerToBan(null)} tabIndex={-1} type="button" />
           <section aria-labelledby="ban-customer-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-md bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
             <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600"><Icon className="size-6" path={icons.ban} /></span>
-            <h2 className="mt-4 text-base font-semibold text-[#092a53]" id="ban-customer-title">{t('Ban customer')}</h2>
+            <h2 className="mt-4 text-base font-semibold text-[#472a3b]" id="ban-customer-title">{t('Ban customer')}</h2>
             <div className="mt-4 flex items-center gap-3 rounded-md bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
               <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-[#e9f1fa] text-xs font-bold text-[#245281]">{initials(customerToBan.name)}</span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-[#092a53]">{customerToBan.name}</p>
+                <p className="truncate text-sm font-bold text-[#472a3b]">{customerToBan.name}</p>
                 <p className="truncate text-xs text-[#65748a]">{customerToBan.email}</p>
               </div>
             </div>

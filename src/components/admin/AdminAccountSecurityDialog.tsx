@@ -57,10 +57,10 @@ function SuccessPanel({ title, message, onClose }: { title: string; message: Rea
       <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#e7f6ee] text-[#1f7a46]">
         <Icon className="size-6" path={iconPaths.check} />
       </span>
-      <h3 className="mt-4 text-base font-semibold text-[#092a53]">{title}</h3>
+      <h3 className="mt-4 text-base font-semibold text-[#472a3b]">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-[#65748a]">{message}</p>
       <button
-        className="mt-6 inline-flex min-h-10 w-full items-center justify-center rounded-md bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+        className="mt-6 inline-flex min-h-10 w-full items-center justify-center rounded-md bg-[#472a3b] px-5 text-sm font-bold text-white transition hover:bg-[#6b3f58] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e]"
         onClick={onClose}
         ref={doneButtonRef}
         type="button"
@@ -83,7 +83,7 @@ function FormFooter({ canSubmit, isSaving, savingLabel, submitLabel, onCancel, c
   return (
     <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
       <button
-        className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-50"
+        className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b] disabled:opacity-50"
         disabled={isSaving}
         onClick={onCancel}
         type="button"
@@ -91,7 +91,7 @@ function FormFooter({ canSubmit, isSaving, savingLabel, submitLabel, onCancel, c
         {cancelLabel || t('Cancel')}
       </button>
       <button
-        className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#472a3b] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#6b3f58] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] disabled:cursor-not-allowed disabled:opacity-50"
         disabled={!canSubmit}
         type="submit"
       >
@@ -176,12 +176,12 @@ function PinInput({ value, onChange, label, disabled = false, invalid = false, s
             <input
               aria-label={t('Digit {number} of {total}', { number: index + 1, total: PIN_LENGTH })}
               autoComplete="one-time-code"
-              className={`h-12 w-full min-w-0 rounded-md border-2 bg-[#f8f9fb] text-center text-base font-semibold text-[#092a53] outline-none transition sm:h-13 ${
+              className={`h-12 w-full min-w-0 rounded-md border-2 bg-[#f8f9fb] text-center text-base font-semibold text-[#472a3b] outline-none transition sm:h-13 ${
                 invalid
                   ? 'border-[#e5a29c] bg-red-50'
                   : filled
-                    ? 'border-[#092a53] bg-white'
-                    : 'border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/30'
+                    ? 'border-[#472a3b] bg-white'
+                    : 'border-[#dce3eb] focus:border-[#b8721e] focus:bg-white focus:ring-4 focus:ring-[#ffb84d]/30'
               } disabled:opacity-60`}
               disabled={disabled}
               inputMode="numeric"
@@ -257,13 +257,13 @@ function CreatePinStep({ onCreated, onCancel, onBusyChange }: { onCreated: () =>
     <form noValidate onSubmit={handleSubmit}>
       <div className="space-y-5 px-6 py-6">
         <div className="text-center">
-          <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#fff6d6] text-[#bd9c00]">
+          <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#fff6d6] text-[#b8721e]">
             <Icon className="size-6" path={iconPaths.key} />
           </span>
           <p className="mt-3 text-xs font-extrabold uppercase tracking-[0.16em] text-[#65748a]">
             {t('Step {step} of 2', { step: step === 'choose' ? 1 : 2 })}
           </p>
-          <h3 className="mt-1 text-sm font-semibold text-[#092a53]">
+          <h3 className="mt-1 text-sm font-semibold text-[#472a3b]">
             {t(step === 'choose' ? 'Create your security PIN' : 'Confirm your security PIN')}
           </h3>
           <p className="mx-auto mt-1.5 max-w-xs text-sm leading-6 text-[#65748a]">
@@ -282,7 +282,7 @@ function CreatePinStep({ onCreated, onCancel, onBusyChange }: { onCreated: () =>
           value={value}
         />
         <p className="flex items-start gap-2 rounded-md bg-[#f4f6f8] px-3.5 py-3 text-xs leading-5 text-[#65748a] ring-1 ring-[#dce3eb]">
-          <Icon className="mt-0.5 size-4 shrink-0 text-[#123b68]" path={iconPaths.shield} />
+          <Icon className="mt-0.5 size-4 shrink-0 text-[#6b3f58]" path={iconPaths.shield} />
           {t('Keep this PIN private and different from your password. Avoid dates or repeated digits.')}
         </p>
         {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -341,10 +341,10 @@ function EnterPinStep({ notice, onVerified, onCancel, onBusyChange }: {
     <form noValidate onSubmit={(event) => { event.preventDefault(); void verify(pin) }}>
       <div className="space-y-5 px-6 py-6">
         <div className="text-center">
-          <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#092a53] text-[#ffdc32]">
+          <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#472a3b] text-[#ffb84d]">
             <Icon className="size-6" path={iconPaths.lock} />
           </span>
-          <h3 className="mt-3 text-sm font-semibold text-[#092a53]">{t('Enter your security PIN')}</h3>
+          <h3 className="mt-3 text-sm font-semibold text-[#472a3b]">{t('Enter your security PIN')}</h3>
           <p className="mx-auto mt-1.5 max-w-xs text-sm leading-6 text-[#65748a]">
             {t('Confirm it’s you before changing your sign-in details.')}
           </p>
@@ -366,7 +366,7 @@ function EnterPinStep({ notice, onVerified, onCancel, onBusyChange }: {
         <p aria-live="polite" className="min-h-5 text-center text-xs font-semibold text-[#65748a]">
           {isVerifying && (
             <span className="inline-flex items-center gap-2">
-              <span aria-hidden="true" className="size-3.5 animate-spin rounded-full border-2 border-[#092a53] border-r-transparent" />
+              <span aria-hidden="true" className="size-3.5 animate-spin rounded-full border-2 border-[#472a3b] border-r-transparent" />
               {t('Checking PIN…')}
             </span>
           )}
@@ -403,7 +403,7 @@ function PasswordPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
   const strengthMeta = [
     { label: t('Too short'), color: 'bg-[#d2544b]' },
     { label: t('Weak'), color: 'bg-[#d2544b]' },
-    { label: t('Fair'), color: 'bg-[#bd9c00]' },
+    { label: t('Fair'), color: 'bg-[#b8721e]' },
     { label: t('Good'), color: 'bg-[#35a36b]' },
     { label: t('Strong'), color: 'bg-[#1f7a46]' },
   ][newPassword.length >= MIN_LENGTH ? strength : 0]
@@ -522,7 +522,7 @@ function PasswordPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
         </div>
 
         <p className="flex items-start gap-2 rounded-md bg-[#f4f6f8] px-3.5 py-3 text-xs leading-5 text-[#65748a] ring-1 ring-[#dce3eb]">
-          <Icon className="mt-0.5 size-4 shrink-0 text-[#123b68]" path={iconPaths.shield} />
+          <Icon className="mt-0.5 size-4 shrink-0 text-[#6b3f58]" path={iconPaths.shield} />
           {t('For your security, other devices signed in to this account will be signed out after the change.')}
         </p>
 
@@ -580,7 +580,7 @@ function EmailPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
   if (savedEmail) {
     return (
       <SuccessPanel
-        message={<>{t('From now on, sign in with')} <strong className="font-bold text-[#092a53]">{savedEmail}</strong>.</>}
+        message={<>{t('From now on, sign in with')} <strong className="font-bold text-[#472a3b]">{savedEmail}</strong>.</>}
         onClose={onClose}
         title={t('Email updated')}
       />
@@ -592,7 +592,7 @@ function EmailPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
       <div className="space-y-5 px-6 py-6">
         <div className="rounded-md bg-[#f4f6f8] px-4 py-3 ring-1 ring-[#dce3eb]">
           <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Current sign-in email')}</p>
-          <p className="mt-1 truncate text-sm font-bold text-[#092a53]">{currentAdmin?.email}</p>
+          <p className="mt-1 truncate text-sm font-bold text-[#472a3b]">{currentAdmin?.email}</p>
         </div>
 
         <div>
@@ -600,7 +600,7 @@ function EmailPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
             {t('New email address')}
             <input
               autoComplete="email"
-              className="mt-1.5 w-full rounded-md border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 font-normal outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+              className="mt-1.5 w-full rounded-md border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 font-normal outline-none transition focus:border-[#b8721e] focus:ring-2 focus:ring-[#ffb84d]/40"
               inputMode="email"
               maxLength={254}
               name="newEmail"
@@ -707,14 +707,14 @@ function AuthenticatorPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
     return (
       <div className="space-y-4 px-6 py-6">
         <div>
-          <h3 className="text-sm font-semibold text-[#092a53]">{t('Save your new recovery codes')}</h3>
+          <h3 className="text-sm font-semibold text-[#472a3b]">{t('Save your new recovery codes')}</h3>
           <p className="mt-1 text-sm leading-6 text-[#65748a]">{t('These codes replace your previous recovery codes. Each can only be used once.')}</p>
         </div>
-        <div className="grid grid-cols-2 gap-2 rounded-md bg-[#f4f6f8] p-3 font-mono text-sm font-bold tracking-wide text-[#092a53]">
+        <div className="grid grid-cols-2 gap-2 rounded-md bg-[#f4f6f8] p-3 font-mono text-sm font-bold tracking-wide text-[#472a3b]">
           {recoveryCodes.map((code) => <code key={code}>{code}</code>)}
         </div>
         <button
-          className="inline-flex min-h-10 w-full items-center justify-center rounded-md bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b]"
+          className="inline-flex min-h-10 w-full items-center justify-center rounded-md bg-[#472a3b] px-5 text-sm font-bold text-white transition hover:bg-[#6b3f58]"
           onClick={onClose}
           type="button"
         >
@@ -729,14 +729,14 @@ function AuthenticatorPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
       <form noValidate onSubmit={handleConfirm}>
         <div className="space-y-4 px-6 py-6">
           <div>
-            <h3 className="text-sm font-semibold text-[#092a53]">{t('Scan your new authenticator QR code')}</h3>
+            <h3 className="text-sm font-semibold text-[#472a3b]">{t('Scan your new authenticator QR code')}</h3>
             <p className="mt-1 text-sm leading-6 text-[#65748a]">{t('The current authenticator remains active until you confirm a code from the new one.')}</p>
           </div>
           <div className="flex justify-center rounded-md bg-[#f4f6f8] p-4">
             <QRCodeSVG
               aria-label={t('Authenticator setup QR code')}
               bgColor="#ffffff"
-              fgColor="#092a53"
+              fgColor="#472a3b"
               includeMargin
               level="M"
               size={200}
@@ -746,7 +746,7 @@ function AuthenticatorPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
           </div>
           <details className="rounded-md bg-[#f4f6f8] p-3 text-sm">
             <summary className="cursor-pointer font-bold text-[#65748a]">{t("Can't scan? Use manual setup")}</summary>
-            <code className="mt-2 block break-all rounded-lg bg-white p-3 font-mono font-bold tracking-wider text-[#092a53]">{setup.secret}</code>
+            <code className="mt-2 block break-all rounded-lg bg-white p-3 font-mono font-bold tracking-wider text-[#472a3b]">{setup.secret}</code>
             <code className="mt-2 block break-all rounded-lg bg-white p-3 text-xs text-[#65748a]">{setup.authenticatorUri}</code>
           </details>
           <label className="block text-sm font-semibold text-[#65748a]">
@@ -754,7 +754,7 @@ function AuthenticatorPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
             <input
               autoComplete="one-time-code"
               autoFocus
-              className="mt-1.5 w-full rounded-md border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#092a53] outline-none focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+              className="mt-1.5 w-full rounded-md border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#472a3b] outline-none focus:border-[#b8721e] focus:ring-2 focus:ring-[#ffb84d]/40"
               inputMode="numeric"
               maxLength={6}
               onChange={(event) => { setNewCode(event.target.value.replace(/\D/g, '').slice(0, 6)); setError('') }}
@@ -793,7 +793,7 @@ function AuthenticatorPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
           {t('Code from your current authenticator')}
           <input
             autoComplete="one-time-code"
-            className="mt-1.5 w-full rounded-md border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#092a53] outline-none focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+            className="mt-1.5 w-full rounded-md border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 text-center font-mono text-lg font-bold tracking-[0.2em] text-[#472a3b] outline-none focus:border-[#b8721e] focus:ring-2 focus:ring-[#ffb84d]/40"
             inputMode="numeric"
             maxLength={6}
             onChange={(event) => { setCurrentCode(event.target.value.replace(/\D/g, '').slice(0, 6)); setError('') }}
@@ -896,17 +896,17 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
       >
         <header className={`border-b border-[#f4f6f8] px-6 ${stage === 'forms' ? 'pt-5' : 'py-5'}`}>
           <div className="flex items-start gap-4">
-            <span className="grid size-11 shrink-0 place-items-center rounded-md bg-[#092a53] text-[#ffdc32]">
+            <span className="grid size-11 shrink-0 place-items-center rounded-md bg-[#472a3b] text-[#ffb84d]">
               <Icon className="size-5" path={iconPaths.shield} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t('Owner account')}</p>
-              <h2 className="mt-0.5 text-base font-semibold text-[#092a53]" id="account-security-title">{t('Account security')}</h2>
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#b8721e]">{t('Owner account')}</p>
+              <h2 className="mt-0.5 text-base font-semibold text-[#472a3b]" id="account-security-title">{t('Account security')}</h2>
               <p className="mt-0.5 truncate text-xs text-[#65748a]">{currentAdmin?.email}</p>
             </div>
             <button
               aria-label={t('Close')}
-              className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-50"
+              className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b] disabled:opacity-50"
               disabled={isBusy}
               onClick={onClose}
               type="button"
@@ -919,8 +919,8 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
               {tabs.map((item) => (
                 <button
                   aria-selected={tab === item.id}
-                  className={`relative inline-flex min-h-10 items-center gap-2 rounded-t-xl px-4 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#bd9c00] disabled:opacity-50 ${
-                    tab === item.id ? 'text-[#092a53]' : 'text-[#65748a] hover:bg-[#f4f6f8] hover:text-[#123b68]'
+                  className={`relative inline-flex min-h-10 items-center gap-2 rounded-t-xl px-4 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#b8721e] disabled:opacity-50 ${
+                    tab === item.id ? 'text-[#472a3b]' : 'text-[#65748a] hover:bg-[#f4f6f8] hover:text-[#6b3f58]'
                   }`}
                   disabled={isBusy}
                   key={item.id}
@@ -930,7 +930,7 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
                 >
                   <Icon className="size-4" path={item.icon} />
                   {item.label}
-                  {tab === item.id && <span aria-hidden="true" className="absolute inset-x-3 -bottom-px h-[3px] rounded-full bg-[#ffdc32]" />}
+                  {tab === item.id && <span aria-hidden="true" className="absolute inset-x-3 -bottom-px h-[3px] rounded-full bg-[#ffb84d]" />}
                 </button>
               ))}
             </div>
@@ -943,7 +943,7 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
               <div className="space-y-4">
                 <ErrorMessage>{statusError}</ErrorMessage>
                 <button
-                  className="inline-flex min-h-10 items-center rounded-md bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b]"
+                  className="inline-flex min-h-10 items-center rounded-md bg-[#472a3b] px-5 text-sm font-bold text-white transition hover:bg-[#6b3f58]"
                   onClick={() => setStatusAttempt((attempt) => attempt + 1)}
                   type="button"
                 >
@@ -952,7 +952,7 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
               </div>
             ) : (
               <p className="inline-flex items-center gap-2 text-sm font-semibold text-[#65748a]" role="status">
-                <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-[#092a53] border-r-transparent" />
+                <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-[#472a3b] border-r-transparent" />
                 {t('Checking your account security…')}
               </p>
             )}
