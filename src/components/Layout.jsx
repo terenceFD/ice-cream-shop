@@ -1266,10 +1266,10 @@ function PromotionCountdown() {
       aria-label={t("Limited-time promotion")}
       className="relative z-[51] border-b border-brand-yellow-deep bg-brand-yellow text-brand-navy"
     >
-      <div className="mx-auto flex max-w-[1320px] items-center gap-3 px-4 py-2 sm:gap-5 sm:px-8 lg:px-12">
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
-          <div className="min-w-0">
-            <p className="font-display text-xl font-extrabold leading-none tracking-[-0.03em] sm:text-2xl">
+      <div className="relative mx-auto flex max-w-[1320px] items-center gap-x-2 gap-y-1.5 px-3 py-2 pr-14 sm:gap-5 sm:px-8 sm:pr-8 lg:px-12">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-3">
+          <div className="min-w-0 flex-1 basis-full sm:basis-auto">
+            <p className="font-display text-lg font-extrabold leading-none tracking-[-0.03em] sm:text-2xl">
               {discount}
             </p>
             {minimum && (
@@ -1281,19 +1281,19 @@ function PromotionCountdown() {
           )}
           <button
             aria-label={t("Copy code {code}", { code: promotion.code })}
-            className="inline-flex min-h-9 items-center rounded-md bg-brand-navy px-2.5 text-sm font-bold text-brand-yellow outline-none! hover:bg-brand-blue focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+            className="order-2 mr-auto inline-flex min-h-9 max-w-full items-center truncate rounded-md bg-brand-navy px-2.5 text-sm font-bold text-brand-yellow outline-none! hover:bg-brand-blue focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:order-none sm:mr-0"
             onClick={copyCode}
             type="button"
           >
             {copied ? t("Copied") : promotion.code}
           </button>
           <span className="sr-only" aria-live="polite">{copied ? t("Copied") : ""}</span>
-          <p className="text-sm font-semibold tabular-nums sm:ml-auto" role="timer">
+          <p className="order-4 w-full text-xs font-semibold tabular-nums sm:order-none sm:ml-auto sm:w-auto sm:text-sm" role="timer">
             <span className="sr-only">{t("Offer countdown")}. </span>
             {t("Ends in")} {countdown}
           </p>
           <Link
-            className="inline-flex items-center py-1 text-sm font-bold underline decoration-2 decoration-[#472a3b] underline-offset-4 outline-none! focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:min-h-11 sm:py-0"
+            className="order-3 inline-flex min-h-9 items-center justify-self-end py-1 text-sm font-bold underline decoration-2 decoration-[#472a3b] underline-offset-4 outline-none! focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:order-none sm:min-h-11 sm:ml-auto sm:py-0"
             to="/flavors"
           >
             {t("Shop offer")}
@@ -1301,7 +1301,7 @@ function PromotionCountdown() {
         </div>
         <button
           aria-label={t("Dismiss")}
-          className="grid size-11 shrink-0 place-items-center self-start rounded-md text-brand-navy outline-none! hover:bg-brand-navy/10 focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:self-center"
+          className="absolute right-1.5 top-1/2 grid size-11 -translate-y-1/2 shrink-0 place-items-center rounded-md text-brand-navy outline-none! hover:bg-brand-navy/10 focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:relative sm:right-auto sm:top-auto sm:translate-y-0 sm:self-center"
           onClick={dismiss}
           type="button"
         >
