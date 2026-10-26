@@ -25,7 +25,7 @@ interface InventoryItem {
   lowStockThreshold?: number
 }
 
-const inputClassName = 'mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#472a3b] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#b8721e] focus:bg-white focus:ring-4 focus:ring-[#ffb84d]/25 outline-none!'
+const inputClassName = 'mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-brand-navy transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-brand-yellow-deep focus:bg-white focus:ring-4 focus:ring-brand-yellow/25 outline-none!'
 
 const icons = {
   search: 'm20 20-4.2-4.2M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z',
@@ -68,7 +68,7 @@ function itemStatus(item: InventoryItem): ItemStatus {
 
 const statusStyles: Record<ItemStatus, { badge: string; dot: string; bar: string; label: string }> = {
   ok: { badge: 'bg-[#eaf6ee] text-[#246a46] ring-[#cfe8d8]', dot: 'bg-[#35a36b]', bar: 'bg-[#35a36b]', label: 'In stock' },
-  low: { badge: 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]', dot: 'bg-[#b8721e]', bar: 'bg-[#b8721e]', label: 'Low stock' },
+  low: { badge: 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]', dot: 'bg-brand-yellow-deep', bar: 'bg-brand-yellow-deep', label: 'Low stock' },
   'sold-out': { badge: 'bg-[#fdeeee] text-[#a53f37] ring-[#f3d1ce]', dot: 'bg-[#d2544b]', bar: 'bg-[#d2544b]', label: 'Sold out' },
   off: { badge: 'bg-[#f4f6f8] text-[#65748a] ring-[#dce3eb]', dot: 'bg-[#94a3b4]', bar: 'bg-[#94a3b4]', label: 'Unavailable' },
 }
@@ -90,7 +90,7 @@ function Switch({ checked, disabled, label, onChange }: { checked: boolean; disa
     <button
       aria-checked={checked}
       aria-label={label}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] disabled:cursor-wait disabled:opacity-50 ${checked ? 'bg-[#35a36b]' : 'bg-[#dce3eb]'}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep disabled:cursor-wait disabled:opacity-50 ${checked ? 'bg-[#35a36b]' : 'bg-[#dce3eb]'}`}
       disabled={disabled}
       onClick={() => onChange(!checked)}
       role="switch"
@@ -269,13 +269,13 @@ export function AdminInventoryPage() {
         <div className="min-w-0">
           <nav aria-label={t('Breadcrumb')} className="text-xs font-semibold text-[#65748a]">
             {t('Catalog')} <span aria-hidden="true" className="mx-1">/</span>
-            <span className="text-[#472a3b]">{t('Menu inventory')}</span>
+            <span className="text-brand-navy">{t('Menu inventory')}</span>
           </nav>
-          <h1 className="mt-1 text-xl font-semibold tracking-tight text-[#472a3b]">{t('Menu inventory')}</h1>
+          <h1 className="mt-1 text-xl font-semibold tracking-tight text-brand-navy">{t('Menu inventory')}</h1>
           <p className="mt-1 text-sm text-[#53647a]">{t('Set stock, availability, and dietary tags for every menu item.')}</p>
         </div>
         <button
-          className="inline-flex min-h-10 items-center gap-2 self-start rounded-lg border border-[#cbd5df] bg-white px-4 text-sm font-semibold text-[#6b3f58] transition-colors hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] disabled:cursor-not-allowed disabled:opacity-50 sm:self-auto"
+          className="inline-flex min-h-10 items-center gap-2 self-start rounded-lg border border-[#cbd5df] bg-white px-4 text-sm font-semibold text-brand-blue transition-colors hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep disabled:cursor-not-allowed disabled:opacity-50 sm:self-auto"
           disabled={!filteredItems.length}
           onClick={exportCsv}
           type="button"
@@ -306,7 +306,7 @@ export function AdminInventoryPage() {
           return (
             <button
               aria-pressed={isActive}
-              className={`relative min-h-[5.5rem] px-4 py-3 text-left transition-colors hover:bg-[#f8fafc] focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#b8721e] sm:px-5 ${
+              className={`relative min-h-[5.5rem] px-4 py-3 text-left transition-colors hover:bg-[#f8fafc] focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-yellow-deep sm:px-5 ${
                 isActive ? 'bg-[#f4f6f8]' : 'bg-white'
               }`}
               key={metric.label}
@@ -314,8 +314,8 @@ export function AdminInventoryPage() {
               type="button"
             >
               <p className="text-xs font-semibold text-[#53647a]">{t(metric.label)}</p>
-              <p className="mt-1 text-xl font-semibold leading-none tabular-nums text-[#472a3b]">{metric.value.toLocaleString()}</p>
-              {isActive && <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 bg-[#472a3b]" />}
+              <p className="mt-1 text-xl font-semibold leading-none tabular-nums text-brand-navy">{metric.value.toLocaleString()}</p>
+              {isActive && <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 bg-brand-navy" />}
             </button>
           )
         })}
@@ -324,8 +324,8 @@ export function AdminInventoryPage() {
       <section aria-label={t('Stock position')} className="grid gap-4 rounded-md border border-[#dce3eb] bg-white px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5">
         <div className="min-w-0">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h2 className="text-sm font-semibold text-[#472a3b]">{t('Stock position')}</h2>
-            <p className="text-xs font-medium text-[#53647a]"><span className="font-bold tabular-nums text-[#472a3b]">{unitsOnHand.toLocaleString()}</span> {t('Units on hand')}</p>
+            <h2 className="text-sm font-semibold text-brand-navy">{t('Stock position')}</h2>
+            <p className="text-xs font-medium text-[#53647a]"><span className="font-bold tabular-nums text-brand-navy">{unitsOnHand.toLocaleString()}</span> {t('Units on hand')}</p>
           </div>
           {items.length > 0 && (
             <>
@@ -347,14 +347,14 @@ export function AdminInventoryPage() {
         </div>
         <div className="border-t border-[#e5e9ee] pt-3 sm:border-l sm:border-t-0 sm:py-1 sm:pl-5 sm:pt-1">
           <p className="text-xs font-semibold text-[#53647a]">{t('Reserved')}</p>
-          <p className="mt-1 text-sm font-bold tabular-nums text-[#472a3b]">{reservedUnits.toLocaleString()} <span className="text-xs font-medium text-[#53647a]">{t('reserved for pending checkouts.')}</span></p>
+          <p className="mt-1 text-sm font-bold tabular-nums text-brand-navy">{reservedUnits.toLocaleString()} <span className="text-xs font-medium text-[#53647a]">{t('reserved for pending checkouts.')}</span></p>
         </div>
       </section>
 
       <section aria-labelledby="inventory-table-title" className="min-w-0 rounded-md border border-[#dce3eb] bg-white">
         <div className="flex flex-col gap-4 border-b border-[#e5e9ee] p-4 sm:p-5">
           <div>
-            <h2 className="text-sm font-semibold text-[#472a3b]" id="inventory-table-title">{t('Stock levels')}</h2>
+            <h2 className="text-sm font-semibold text-brand-navy" id="inventory-table-title">{t('Stock levels')}</h2>
             <p aria-live="polite" className="mt-1 text-xs text-[#53647a]">
               {t('Showing {shown} of {total} items', { shown: filteredItems.length, total: items.length })}
             </p>
@@ -389,7 +389,7 @@ export function AdminInventoryPage() {
               ] as const).map((option) => (
                 <button
                   aria-pressed={inventoryFilter === option.key}
-                  className={`min-h-10 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[#b8721e] ${inventoryFilter === option.key ? 'bg-white text-[#472a3b] ring-1 ring-[#dce3eb]' : 'text-[#53647a] hover:text-[#472a3b]'}`}
+                  className={`min-h-10 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-brand-yellow-deep ${inventoryFilter === option.key ? 'bg-white text-brand-navy ring-1 ring-[#dce3eb]' : 'text-[#53647a] hover:text-brand-navy'}`}
                   key={option.key}
                   onClick={() => setInventoryFilter(option.key)}
                   type="button"
@@ -414,12 +414,12 @@ export function AdminInventoryPage() {
         ) : filteredItems.length === 0 ? (
           <div className="px-6 py-14 text-center">
             <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#f4f6f8] text-[#65748a]"><Icon className="size-5" path={icons.search} /></span>
-            <p className="mt-4 text-sm font-semibold text-[#472a3b]">
+            <p className="mt-4 text-sm font-semibold text-brand-navy">
               {items.length ? t('No inventory items match your filters.') : t('No menu items yet.')}
             </p>
             {hasActiveFilters && (
               <button
-                className="mt-4 min-h-9 rounded-md border border-[#dce5ef] px-4 text-xs font-bold text-[#6b3f58] transition hover:bg-[#f4f6f8]"
+                className="mt-4 min-h-9 rounded-md border border-[#dce5ef] px-4 text-xs font-bold text-brand-blue transition hover:bg-[#f4f6f8]"
                 onClick={() => { setSearch(''); setCategoryFilter(''); setInventoryFilter('all') }}
                 type="button"
               >
@@ -453,7 +453,7 @@ export function AdminInventoryPage() {
                     <Fragment key={item.id}>
                       {showGroupHeader && (
                         <tr className="border-b border-[#e5e9ee]">
-                          <th className="px-5 py-2 text-xs font-semibold text-[#6b3f58]" colSpan={7} scope="colgroup">
+                          <th className="px-5 py-2 text-xs font-semibold text-brand-blue" colSpan={7} scope="colgroup">
                             {t(item.categoryTitle)}
                             <span className="ml-2 text-xs font-medium tabular-nums text-[#53647a]">({groupCount})</span>
                           </th>
@@ -463,18 +463,18 @@ export function AdminInventoryPage() {
                         <td className="sticky left-0 z-10 bg-white px-5 py-3 shadow-[8px_0_10px_-10px_rgba(9,42,83,0.4)] transition-colors group-hover:bg-[#fafbfd]">
                           <div className="flex min-w-0 items-center gap-3">
                             <Thumb src={item.image} />
-                            <span className="max-w-[13rem] truncate font-semibold text-[#472a3b]">{item.name}</span>
+                            <span className="max-w-[13rem] truncate font-semibold text-brand-navy">{item.name}</span>
                           </div>
                         </td>
                         {!isGrouped && (
                           <td className="px-3 py-3">
-                            <span className="inline-block max-w-[10rem] truncate rounded-full bg-[#eef3f9] px-2.5 py-1 text-xs font-bold text-[#6b3f58]">{t(item.categoryTitle)}</span>
+                            <span className="inline-block max-w-[10rem] truncate rounded-full bg-[#eef3f9] px-2.5 py-1 text-xs font-bold text-brand-blue">{t(item.categoryTitle)}</span>
                           </td>
                         )}
                         <td className="px-3 py-3">
                           <div className="w-32">
                             <div className="flex items-baseline justify-between gap-2 text-xs">
-                              <span className="font-extrabold tabular-nums text-[#472a3b]">{item.availableQuantity}</span>
+                              <span className="font-extrabold tabular-nums text-brand-navy">{item.availableQuantity}</span>
                               <span className="text-xs text-[#65748a]">{t('{count} in stock', { count: item.stock })}</span>
                             </div>
                             <div className="relative mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#f4f6f8]">
@@ -515,7 +515,7 @@ export function AdminInventoryPage() {
                         <td className={`px-5 py-3 text-right ${PINNED_ACTION_CELL}`}>
                           <button
                             aria-label={`${t('Edit')} ${item.name}`}
-                            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-[#6b3f58] transition-colors hover:bg-[#f4f6f8] hover:text-[#472a3b] focus-visible:outline-2 focus-visible:outline-[#b8721e]"
+                            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-brand-blue transition-colors hover:bg-[#f4f6f8] hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-brand-yellow-deep"
                             onClick={() => { setError(''); setDraft({ ...item, dietaryTags: [...(item.dietaryTags || [])] }) }}
                             type="button"
                           >
@@ -547,10 +547,10 @@ export function AdminInventoryPage() {
                 <Thumb src={draft.image} />
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-[#53647a]">{t(draft.categoryTitle)}</p>
-                  <h2 className="truncate text-base font-semibold text-[#472a3b]" id="inventory-drawer-title">{draft.name}</h2>
+                  <h2 className="truncate text-base font-semibold text-brand-navy" id="inventory-drawer-title">{draft.name}</h2>
                 </div>
               </div>
-              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={() => setDraft(null)} type="button">
+              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-brand-navy" onClick={() => setDraft(null)} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
@@ -564,17 +564,17 @@ export function AdminInventoryPage() {
                 ].map((stat) => (
                   <div className="px-2 py-2.5" key={stat.label}>
                     <dt className="text-xs font-semibold text-[#53647a]">{stat.label}</dt>
-                    <dd className="mt-1 text-sm font-semibold tabular-nums text-[#472a3b]">{stat.value}</dd>
+                    <dd className="mt-1 text-sm font-semibold tabular-nums text-brand-navy">{stat.value}</dd>
                   </div>
                 ))}
               </dl>
 
               <fieldset>
-                <legend className="mb-3 text-sm font-semibold text-[#472a3b]">{t('Stock quantity')}</legend>
+                <legend className="mb-3 text-sm font-semibold text-brand-navy">{t('Stock quantity')}</legend>
                 <div className="flex items-center gap-2">
                   <button
                     aria-label={t('Decrease quantity')}
-                    className="grid size-11 place-items-center rounded-md border border-[#dce3eb] text-[#6b3f58] transition hover:bg-[#f4f6f8] disabled:opacity-40"
+                    className="grid size-11 place-items-center rounded-md border border-[#dce3eb] text-brand-blue transition hover:bg-[#f4f6f8] disabled:opacity-40"
                     disabled={Number(draft.stock) <= (draft.reservedStock || 0)}
                     onClick={() => setDraft({ ...draft, stock: Math.max(draft.reservedStock || 0, Number(draft.stock) - 1) })}
                     type="button"
@@ -591,7 +591,7 @@ export function AdminInventoryPage() {
                   />
                   <button
                     aria-label={t('Increase quantity')}
-                    className="grid size-11 place-items-center rounded-md border border-[#dce3eb] text-[#6b3f58] transition hover:bg-[#f4f6f8]"
+                    className="grid size-11 place-items-center rounded-md border border-[#dce3eb] text-brand-blue transition hover:bg-[#f4f6f8]"
                     onClick={() => setDraft({ ...draft, stock: Number(draft.stock) + 1 })}
                     type="button"
                   >
@@ -601,7 +601,7 @@ export function AdminInventoryPage() {
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {[10, 25, 50].map((amount) => (
                     <button
-                      className="rounded-lg bg-[#f4f6f8] px-2.5 py-1 text-xs font-bold text-[#65748a] transition hover:bg-[#dce3eb] hover:text-[#472a3b]"
+                      className="rounded-lg bg-[#f4f6f8] px-2.5 py-1 text-xs font-bold text-[#65748a] transition hover:bg-[#dce3eb] hover:text-brand-navy"
                       key={amount}
                       onClick={() => setDraft({ ...draft, stock: Number(draft.stock) + amount })}
                       type="button"
@@ -629,20 +629,20 @@ export function AdminInventoryPage() {
 
               <div className="flex items-center gap-4 rounded-lg border border-[#dce3eb] p-4">
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-bold text-[#472a3b]">{t('Available to order')}</span>
+                  <span className="block text-sm font-bold text-brand-navy">{t('Available to order')}</span>
                   <span className="block text-xs text-[#65748a]">{t('Turn off to hide this item from the public menu.')}</span>
                 </span>
                 <Switch checked={draft.isAvailable !== false} label={t('Available to order')} onChange={(checked) => setDraft({ ...draft, isAvailable: checked })} />
               </div>
 
               <fieldset>
-                <legend className="mb-3 text-sm font-semibold text-[#472a3b]">{t('Dietary needs')}</legend>
+                <legend className="mb-3 text-sm font-semibold text-brand-navy">{t('Dietary needs')}</legend>
                 <div className="flex flex-wrap gap-2">
                   {dietaryOptions.map((tag) => {
                     const selected = draft.dietaryTags?.includes(tag) || false
                     return (
                       <label
-                        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#b8721e] ${
+                        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-yellow-deep ${
                           selected ? 'bg-[#eef7ee] text-[#2f6b3c] ring-[#bfe0c6]' : 'bg-white text-[#65748a] ring-[#dce3eb] hover:ring-[#dce3eb]'
                         }`}
                         key={tag}
@@ -675,11 +675,11 @@ export function AdminInventoryPage() {
             </div>
 
             <footer className="flex items-center justify-end gap-3 border-t border-[#e5e9ee] px-6 py-4">
-              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={() => setDraft(null)} type="button">
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-brand-navy" onClick={() => setDraft(null)} type="button">
                 {t('Cancel')}
               </button>
               <button
-                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#472a3b] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#6b3f58] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-brand-navy px-5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep disabled:cursor-wait disabled:opacity-60"
                 disabled={savingId === draft.id}
                 onClick={saveDraft}
                 type="button"

@@ -85,7 +85,7 @@ function initials(name: string) {
   return String(name || '?').trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join('')
 }
 
-const avatarTones = ['bg-[#e9f1fa] text-[#245281]', 'bg-[#fff4c2] text-[#b8721e]', 'bg-[#e5f4ea] text-[#2c7a4f]', 'bg-[#fdecea] text-[#a53f37]', 'bg-[#efe9fb] text-[#5b3fa0]']
+const avatarTones = ['bg-[#e9f1fa] text-[#245281]', 'bg-[#fff4c2] text-brand-yellow-deep', 'bg-[#e5f4ea] text-[#2c7a4f]', 'bg-[#fdecea] text-[#a53f37]', 'bg-[#efe9fb] text-[#5b3fa0]']
 
 function avatarTone(name: string) {
   const sum = [...String(name)].reduce((total, character) => total + character.charCodeAt(0), 0)
@@ -358,7 +358,7 @@ export function AdminNotifications() {
                   type="button"
                 >
                   {option.label}
-                  <span className={`rounded-full px-1.5 text-xs ${filter === option.key ? 'bg-[#472a3b] text-white' : 'bg-white/70 text-[#65748a]'}`}>{counts[option.key]}</span>
+                  <span className={`rounded-full px-1.5 text-xs ${filter === option.key ? 'bg-brand-navy text-white' : 'bg-white/70 text-[#65748a]'}`}>{counts[option.key]}</span>
                 </button>
               ))}
             </div>
@@ -570,7 +570,7 @@ export function AdminNotifications() {
                     }}
                     type="button"
                   >
-                    <Icon className="size-[18px] text-[#6b3f58]" path={icons.reply} />
+                    <Icon className="size-[18px] text-brand-blue" path={icons.reply} />
                     {t('Reply to {name}', { name: selectedMessage.name })}…
                   </button>
                 )}
@@ -599,7 +599,7 @@ export function AdminNotifications() {
           <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45" onClick={() => setConfirm(null)} tabIndex={-1} type="button" />
           <section aria-labelledby="notification-confirm-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-md border border-[#e7ebef] bg-white p-6" role="dialog">
             <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600"><Icon className="size-6" path={icons.trash} /></span>
-            <h2 className="mt-4 text-base font-semibold text-[#472a3b]" id="notification-confirm-title">
+            <h2 className="mt-4 text-base font-semibold text-brand-navy" id="notification-confirm-title">
               {confirm.type === 'clear' ? t('Clear all') : t('Delete')}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#65748a]">

@@ -17,6 +17,7 @@ const {
   database,
   deleteContactMessage,
   deleteContactMessages,
+  listOrderNotificationRecipients,
   listCakeRequests,
   markContactMessageRead,
   setCakeRequestStatus,
@@ -119,6 +120,50 @@ test('branch administrator accounts are assigned to a town rather than a single 
   assert.equal(admin.branchTown, 'Douala')
   assert.equal(admin.storeId, null)
   assert.equal(admin.storeName, null)
+})
+
+test('order notification recipients include the assigned branch and store admins only', async () => {
+  const stores = database.prepare(`
+    SELECT MIN(id) AS id, town FROM stores GROUP BY town ORDER BY town
+  `).all()
+  const douala = stores.find(({ town }) => town === 'Douala')
+  const yaounde = stores.find(({ town }) => town === 'Yaoundé')
+  assert.ok(douala)
+  assert.ok(yaounde)
+
+  database.prepare(`
+    INSERT INTO admins (name, email, password_hash, role)
+    VALUES (?, ?, ?, 'owner')
+  `).run('Branch Owner', 'order-owner@example.com', 'test-password-hash')
+  await createAdminAccount({
+    name: 'Douala Branch Manager',
+    email: 'order-douala@example.com',
+    passwordHash: 'test-password-hash',
+    branchTown: 'Douala',
+  })
+  await createAdminAccount({
+    name: 'Yaounde Branch Manager',
+    email: 'order-yaounde@example.com',
+    passwordHash: 'test-password-hash',
+    branchTown: 'Yaoundé',
+  })
+  await createAdminAccount({
+    name: 'Douala Store Manager',
+    email: 'order-store@example.com',
+    passwordHash: 'test-password-hash',
+    storeId: douala.id,
+  })
+
+  assert.deepEqual(await listOrderNotificationRecipients(douala.id), [
+    'douala-manager@example.com',
+    'order-owner@example.com',
+    'order-douala@example.com',
+    'order-store@example.com',
+  ])
+  assert.deepEqual(await listOrderNotificationRecipients(yaounde.id), [
+    'order-owner@example.com',
+    'order-yaounde@example.com',
+  ])
 })
 
 test('store-scoped contact-message actions cannot affect another store, while owner actions are unscoped', async () => {

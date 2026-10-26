@@ -1,9 +1,9 @@
 .admin-delivered-board {
-  --delivered-ink: #472a3b;
+  --delivered-ink: var(--brand-navy);
   --delivered-muted: #5b6d82;
   --delivered-rule: #e6ebf0;
   --delivered-control: #cbd5df;
-  --delivered-accent: #b8721e;
+  --delivered-accent: var(--brand-yellow-deep);
   --delivered-surface: #f6f8fa;
   display: flex;
   min-width: 0;

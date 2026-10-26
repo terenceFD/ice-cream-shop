@@ -1,9 +1,9 @@
 .admin-menu-page {
-  --menu-ink: #472a3b;
+  --menu-ink: var(--brand-navy);
   --menu-muted: #53657b;
   --menu-rule: #e8edf2;
   --menu-control: #cbd5df;
-  --menu-accent: #b8721e;
+  --menu-accent: var(--brand-yellow-deep);
   --menu-surface: #ffffff;
   color: var(--menu-ink);
   font-family: var(--font-sans);

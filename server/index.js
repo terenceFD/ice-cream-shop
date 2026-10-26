@@ -68,6 +68,7 @@ import {
   updateCustomMenuItem,
   updateOrderFulfillmentStatus,
   deleteCustomMenuItem,
+  listOrderNotificationRecipients,
 } from './database.js'
 import {
   describeEmailError,
@@ -1199,18 +1200,9 @@ app.post('/api/checkout/session', requireCustomer, checkoutLimiter, async (reque
     // Emails the owner and the assigned store's admins a direct link to this order.
     const notifyAdmins = async (paymentStatus) => {
       try {
-        const admins = await database.prepare(`
-          SELECT email FROM admins
-          WHERE role = 'owner' OR store_id = ?
-            OR (role = 'branch_admin' AND branch_town = (SELECT town FROM stores WHERE id = ?))
-          ORDER BY id
-        `).all(store.id, store.id)
+        const recipients = await listOrderNotificationRecipients(store.id)
         const orderUrl = new URL('/admin/orders', frontendUrl)
         orderUrl.searchParams.set('order', String(orderId))
-        // The dashboard link is for staff only, so never send it to the address that placed the order.
-        const recipients = admins
-          .map((admin) => admin.email)
-          .filter((adminEmail) => adminEmail.trim().toLowerCase() !== email)
         if (!recipients.length) return
         await sendNewOrderNotification({
           recipients,
@@ -1226,7 +1218,7 @@ app.post('/api/checkout/session', requireCustomer, checkoutLimiter, async (reque
           paymentStatus,
         })
       } catch (emailError) {
-        console.error(`Unable to send order notification for order #${orderId}:`, emailError.message)
+        console.error(`Unable to email branch admins about order #${orderId}:`, describeEmailError(emailError))
       }
     }
     if (totalCents === 0) {

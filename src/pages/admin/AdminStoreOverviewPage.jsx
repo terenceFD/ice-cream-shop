@@ -7,7 +7,7 @@ import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
 
 const REFRESH_MS = 60_000;
 
-const linkClassName = "text-sm font-semibold text-[#6b3f58] outline-none! transition-colors hover:text-[#472a3b] focus-visible:outline-2! focus-visible:outline-offset-4 focus-visible:outline-[#472a3b]";
+const linkClassName = "text-sm font-semibold text-brand-blue outline-none! transition-colors hover:text-brand-navy focus-visible:outline-2! focus-visible:outline-offset-4 focus-visible:outline-brand-navy";
 
 function toXaf(cents, currency) {
   return String(currency || "xaf").toLowerCase() === "usd" ? Math.round((Number(cents || 0) / 100) * USD_TO_XAF) : Number(cents || 0);
@@ -198,7 +198,7 @@ export function AdminStoreOverviewPage() {
       {/* Header: noun title, freshness stamp, real actions */}
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="font-sans text-2xl font-bold tracking-tight text-[#472a3b]">{t("Store overview")}</h1>
+          <h1 className="font-sans text-2xl font-bold tracking-tight text-brand-navy">{t("Store overview")}</h1>
           <p className="mt-1 text-sm text-[#65748a]">
             {storeName}{storeTown ? ` · ${t("Branch: {branch}", { branch: storeTown })}` : ""} · {todayLabel}
           </p>
@@ -216,14 +216,14 @@ export function AdminStoreOverviewPage() {
           )}
           <button
             aria-busy={isRefreshing}
-            className="inline-flex min-h-9 items-center gap-2 rounded-md border border-[#dce3eb] bg-white px-3 text-sm font-semibold text-[#6b3f58] outline-none! transition-colors hover:border-[#bac7d5] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#472a3b] disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex min-h-9 items-center gap-2 rounded-md border border-[#dce3eb] bg-white px-3 text-sm font-semibold text-brand-blue outline-none! transition-colors hover:border-[#bac7d5] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy disabled:cursor-wait disabled:opacity-60"
             disabled={isRefreshing}
             onClick={refresh}
             type="button"
           >
             {t("Refresh")}
           </button>
-          <Link className="inline-flex min-h-9 items-center rounded-md bg-[#472a3b] px-3.5 text-sm font-semibold text-white outline-none! transition-colors hover:bg-[#6b3f58] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#472a3b]" to="/admin/orders">
+          <Link className="inline-flex min-h-9 items-center rounded-md bg-brand-navy px-3.5 text-sm font-semibold text-white outline-none! transition-colors hover:bg-brand-blue focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy" to="/admin/orders">
             {t("Open order queue")}
           </Link>
         </div>
@@ -232,7 +232,7 @@ export function AdminStoreOverviewPage() {
       {error && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#e8c7c4] bg-[#fff8f7] px-4 py-3" role="alert">
           <p className="text-sm font-medium leading-6 text-[#8f302b]">{error}</p>
-          <button className="min-h-9 rounded-md px-3 text-sm font-semibold text-[#472a3b] underline underline-offset-4 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#472a3b]" onClick={refresh} type="button">
+          <button className="min-h-9 rounded-md px-3 text-sm font-semibold text-brand-navy underline underline-offset-4 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy" onClick={refresh} type="button">
             {t("Refresh")}
           </button>
         </div>
@@ -246,8 +246,8 @@ export function AdminStoreOverviewPage() {
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 {openTasks.map((task) => (
                   <li key={task.key}>
-                    <Link className="block rounded-md border border-[#dce3eb] bg-white px-3.5 py-3 outline-none! transition-colors hover:bg-[#f8fafc] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#472a3b]" to={task.to}>
-                      <span className="block font-sans text-2xl font-semibold leading-none tabular-nums text-[#472a3b]">{task.count.toLocaleString(locale)}</span>
+                    <Link className="block rounded-md border border-[#dce3eb] bg-white px-3.5 py-3 outline-none! transition-colors hover:bg-[#f8fafc] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy" to={task.to}>
+                      <span className="block font-sans text-2xl font-semibold leading-none tabular-nums text-brand-navy">{task.count.toLocaleString(locale)}</span>
                       <span className="mt-2 block text-xs font-medium leading-5 text-[#52647b]">{task.label}</span>
                     </Link>
                   </li>
@@ -265,7 +265,7 @@ export function AdminStoreOverviewPage() {
             ].map((kpi) => (
               <article className="bg-white px-4 py-4 sm:px-5" key={kpi.label}>
                 <p className="text-xs font-medium text-[#65748a] sm:text-sm">{kpi.label}</p>
-                <p className="mt-2 break-words font-sans text-2xl font-semibold leading-tight tabular-nums tracking-tight text-[#472a3b]">{kpi.value}</p>
+                <p className="mt-2 break-words font-sans text-2xl font-semibold leading-tight tabular-nums tracking-tight text-brand-navy">{kpi.value}</p>
                 <p className="mt-1 text-xs text-[#65748a]">{kpi.hint}</p>
               </article>
             ))}
@@ -276,7 +276,7 @@ export function AdminStoreOverviewPage() {
               <section aria-labelledby="kitchen-title" className="rounded-md border border-[#dce3eb] bg-white">
                 <header className="flex items-end justify-between gap-3 px-4 py-4 sm:px-5">
                   <div>
-                    <h2 className="font-sans text-base font-bold text-[#472a3b]" id="kitchen-title">{t("Kitchen pipeline")}</h2>
+                    <h2 className="font-sans text-base font-bold text-brand-navy" id="kitchen-title">{t("Kitchen pipeline")}</h2>
                     <p className="mt-1 text-sm text-[#65748a]">{t("Oldest orders first — keep them moving.")}</p>
                   </div>
                   <Link className={linkClassName} to="/admin/orders">{t("View all")}</Link>
@@ -287,7 +287,7 @@ export function AdminStoreOverviewPage() {
                     return (
                       <li className="px-3.5 py-3" key={stage}>
                         <p className="text-xs font-medium text-[#52647b]">{t(stageLabels[stage])}</p>
-                        <p className={`mt-1 font-sans text-xl font-semibold leading-none tabular-nums ${count > 0 ? "text-[#472a3b]" : "text-[#9aa8b8]"}`}>{count}</p>
+                        <p className={`mt-1 font-sans text-xl font-semibold leading-none tabular-nums ${count > 0 ? "text-brand-navy" : "text-[#9aa8b8]"}`}>{count}</p>
                       </li>
                     );
                   })}
@@ -300,16 +300,16 @@ export function AdminStoreOverviewPage() {
                       const stage = order.deliveryStage || order.fulfillmentStatus || "preparing";
                       return (
                         <li key={order.id}>
-                          <Link className="flex items-center justify-between gap-4 px-4 py-3 outline-none! transition-colors hover:bg-[#f8fafc] focus-visible:outline-2! focus-visible:outline-offset-[-2px] focus-visible:outline-[#472a3b] sm:px-5" to="/admin/orders">
+                          <Link className="flex items-center justify-between gap-4 px-4 py-3 outline-none! transition-colors hover:bg-[#f8fafc] focus-visible:outline-2! focus-visible:outline-offset-[-2px] focus-visible:outline-brand-navy sm:px-5" to="/admin/orders">
                             <span className="min-w-0">
-                              <span className="block text-sm font-semibold text-[#472a3b]">
+                              <span className="block text-sm font-semibold text-brand-navy">
                                 <span className="mr-1.5 text-xs text-[#65748a]">#{order.id}</span>
                                 {order.customerName}
                               </span>
                               <span className="mt-0.5 block truncate text-xs leading-5 text-[#65748a]">{order.items.map((item) => `${item.quantity}× ${item.flavorName}`).join(", ")}</span>
                             </span>
                             <span className="shrink-0 text-right">
-                              <span className="block text-sm font-semibold text-[#472a3b]">{t(stageLabels[stage] || stage)}</span>
+                              <span className="block text-sm font-semibold text-brand-navy">{t(stageLabels[stage] || stage)}</span>
                               <span className={`mt-1 block text-xs tabular-nums ${ageMinutes > 45 ? "font-bold text-[#a5342b]" : "text-[#65748a]"}`}>{relativeTime(created, language)}</span>
                             </span>
                           </Link>
@@ -325,7 +325,7 @@ export function AdminStoreOverviewPage() {
               <section aria-labelledby="week-title" className="rounded-md border border-[#dce3eb] bg-white p-4 sm:p-5">
                 <div className="flex items-end justify-between gap-3">
                   <div>
-                    <h2 className="font-sans text-base font-bold text-[#472a3b]" id="week-title">{t("Sales this week")}</h2>
+                    <h2 className="font-sans text-base font-bold text-brand-navy" id="week-title">{t("Sales this week")}</h2>
                     <p className="mt-1 text-sm text-[#65748a]">{t("{sales} from {orders} orders", { sales: money(view.weekTotal), orders: view.week.reduce((sum, day) => sum + day.orders, 0) })}</p>
                   </div>
                   <Link className={linkClassName} to="/admin/reports">{t("Reports")}</Link>
@@ -336,18 +336,18 @@ export function AdminStoreOverviewPage() {
                     const dayName = day.date.toLocaleDateString(locale, { weekday: "short", timeZone: "UTC" });
                     return (
                       <li className="group relative flex h-full flex-1 flex-col items-center justify-end gap-2" key={day.key}>
-                        <span className="pointer-events-none absolute bottom-full z-10 mb-2 hidden whitespace-nowrap rounded-md bg-[#472a3b] px-2 py-1 text-xs font-bold text-white group-hover:block">
+                        <span className="pointer-events-none absolute bottom-full z-10 mb-2 hidden whitespace-nowrap rounded-md bg-brand-navy px-2 py-1 text-xs font-bold text-white group-hover:block">
                           {money(day.sales)} {t("{count} orders", { count: day.orders })}
                         </span>
                         <span className="flex w-full flex-1 items-end overflow-hidden rounded-lg bg-[#f4f6f8]">
                           <span
                             aria-label={`${day.date.toLocaleDateString(locale, { weekday: "long", timeZone: "UTC" })}: ${money(day.sales)}`}
-                            className={`w-full transition-all ${isToday ? "bg-[#ffb84d]" : "bg-[#472a3b]"}`}
+                            className={`w-full transition-all ${isToday ? "bg-brand-yellow" : "bg-brand-navy"}`}
                             role="img"
                             style={{ height: `${day.sales ? Math.max(8, (day.sales / view.weekMax) * 100) : 0}%` }}
                           />
                         </span>
-                        <span className={`text-sm font-bold ${isToday ? "text-[#472a3b]" : "text-[#65748a]"}`}>{dayName}</span>
+                        <span className={`text-sm font-bold ${isToday ? "text-brand-navy" : "text-[#65748a]"}`}>{dayName}</span>
                       </li>
                     );
                   })}
@@ -359,10 +359,10 @@ export function AdminStoreOverviewPage() {
               {/* Cake pickups */}
               <section aria-labelledby="pickups-title" className="rounded-md border border-[#dce3eb] bg-white">
                 <header className="flex items-center justify-between gap-3 px-4 pb-2 pt-4 sm:px-5">
-                  <h2 className="font-sans text-base font-bold text-[#472a3b]" id="pickups-title">
+                  <h2 className="font-sans text-base font-bold text-brand-navy" id="pickups-title">
                     {t("Cake pickups this week")}
                   </h2>
-                  <Link className="text-xs font-bold text-[#6b3f58] underline decoration-[#ffb84d] decoration-2 underline-offset-4 hover:text-[#472a3b]" to="/admin/cake-requests">{t("View all")}</Link>
+                  <Link className="text-xs font-bold text-brand-blue underline decoration-[#ffb84d] decoration-2 underline-offset-4 hover:text-brand-navy" to="/admin/cake-requests">{t("View all")}</Link>
                 </header>
                 {view.upcomingCakes.length ? (
                   <ul className="divide-y divide-[#edf0f4]">
@@ -370,10 +370,10 @@ export function AdminStoreOverviewPage() {
                       <li className="flex items-center gap-3 px-4 py-3 sm:px-5" key={cake.id}>
                         <span className={`w-10 shrink-0 text-center ${cake.days <= 1 ? "font-bold text-[#9a6200]" : "text-[#52647b]"}`}>
                           <span className="block text-[11px] uppercase">{cake.date.toLocaleDateString(locale, { month: "short" })}</span>
-                          <span className="block font-sans text-base font-semibold leading-none tabular-nums text-[#472a3b]">{cake.date.getDate()}</span>
+                          <span className="block font-sans text-base font-semibold leading-none tabular-nums text-brand-navy">{cake.date.getDate()}</span>
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold text-[#472a3b]">{cake.size} · {cake.flavor}</span>
+                          <span className="block truncate text-sm font-semibold text-brand-navy">{cake.size} · {cake.flavor}</span>
                           <span className="block truncate text-xs text-[#65748a]">{cake.customerName}</span>
                         </span>
                         <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${cake.status === "confirmed" ? "bg-[#eaf6ee] text-[#185d3a]" : cake.status === "contacted" ? "bg-[#e9f1fa] text-[#245281]" : "bg-[#fff6e5] text-[#805100]"}`}>
@@ -390,11 +390,11 @@ export function AdminStoreOverviewPage() {
               {/* Messages */}
               <section aria-labelledby="messages-title" className="rounded-md border border-[#dce3eb] bg-white">
                 <header className="flex items-center justify-between gap-3 px-4 pb-2 pt-4 sm:px-5">
-                  <h2 className="font-sans text-base font-bold text-[#472a3b]" id="messages-title">
+                  <h2 className="font-sans text-base font-bold text-brand-navy" id="messages-title">
                     {t("Unread messages")}
                     {data.unreadCount > 0 && <span className="text-sm font-semibold tabular-nums text-[#a5342b]">{data.unreadCount}</span>}
                   </h2>
-                  <Link className="text-xs font-bold text-[#6b3f58] underline decoration-[#ffb84d] decoration-2 underline-offset-4 hover:text-[#472a3b]" to="/admin/notifications">{t("Open inbox")}</Link>
+                  <Link className="text-xs font-bold text-brand-blue underline decoration-[#ffb84d] decoration-2 underline-offset-4 hover:text-brand-navy" to="/admin/notifications">{t("Open inbox")}</Link>
                 </header>
                 {view.unreadMessages.length ? (
                   <ul className="divide-y divide-[#edf0f4]">
@@ -402,10 +402,10 @@ export function AdminStoreOverviewPage() {
                       <li key={message.id}>
                         <Link className="block px-4 py-3 transition-colors hover:bg-[#f8fafc] sm:px-5" to="/admin/notifications">
                           <span className="flex items-baseline justify-between gap-2">
-                            <span className="truncate text-sm font-semibold text-[#472a3b]">{message.name}</span>
+                            <span className="truncate text-sm font-semibold text-brand-navy">{message.name}</span>
                             <span className="shrink-0 text-xs tabular-nums text-[#65748a]">{relativeTime(parseDate(message.createdAt), language)}</span>
                           </span>
-                          <span className="block truncate text-xs font-semibold text-[#6b3f58]">{message.subject}</span>
+                          <span className="block truncate text-xs font-semibold text-brand-blue">{message.subject}</span>
                           <span className="block truncate text-xs text-[#65748a]">{message.message}</span>
                         </Link>
                       </li>
@@ -419,12 +419,12 @@ export function AdminStoreOverviewPage() {
               {/* Reviews waiting */}
               {data.reviews.length > 0 && (
                 <Link className="group flex items-center gap-3 rounded-md border border-[#dce3eb] bg-white p-4 transition-colors hover:bg-[#f8fafc] sm:px-5" to="/admin/reviews">
-                  <svg aria-hidden="true" className="size-4 shrink-0 text-[#472a3b]" fill="currentColor" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" /></svg>
+                  <svg aria-hidden="true" className="size-4 shrink-0 text-brand-navy" fill="currentColor" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" /></svg>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-semibold text-[#472a3b]">{t("{count} reviews waiting for approval", { count: data.reviews.length })}</span>
+                    <span className="block font-semibold text-brand-navy">{t("{count} reviews waiting for approval", { count: data.reviews.length })}</span>
                     <span className="block truncate text-xs text-[#65748a]">“{data.reviews[0].review || data.reviews[0].itemName}” — {data.reviews[0].customerName}</span>
                   </span>
-                  <svg aria-hidden="true" className="size-4 shrink-0 text-[#65748a] transition group-hover:translate-x-0.5 group-hover:text-[#472a3b]" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
+                  <svg aria-hidden="true" className="size-4 shrink-0 text-[#65748a] transition group-hover:translate-x-0.5 group-hover:text-brand-navy" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
                 </Link>
               )}
 
@@ -438,9 +438,9 @@ export function AdminStoreOverviewPage() {
                     { label: t("Customer accounts"), to: "/admin/customers" },
                     { label: t("Reports"), to: "/admin/reports" },
                   ].map((shortcut) => (
-                    <Link className="group flex min-h-11 items-center justify-between gap-2 rounded-md border border-[#dce3eb] bg-white px-3 py-2.5 text-sm font-semibold text-[#6b3f58] transition-colors hover:border-[#bac7d5] hover:bg-[#f8fafc] hover:text-[#472a3b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#472a3b]" key={shortcut.to} to={shortcut.to}>
+                    <Link className="group flex min-h-11 items-center justify-between gap-2 rounded-md border border-[#dce3eb] bg-white px-3 py-2.5 text-sm font-semibold text-brand-blue transition-colors hover:border-[#bac7d5] hover:bg-[#f8fafc] hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy" key={shortcut.to} to={shortcut.to}>
                       <span className="truncate">{shortcut.label}</span>
-                      <svg aria-hidden="true" className="size-4 shrink-0 text-[#65748a] transition group-hover:translate-x-0.5 group-hover:text-[#472a3b]" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
+                      <svg aria-hidden="true" className="size-4 shrink-0 text-[#65748a] transition group-hover:translate-x-0.5 group-hover:text-brand-navy" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
                     </Link>
                   ))}
                 </div>

@@ -372,7 +372,7 @@ function ReviewerAvatar({ name, picture, className, eager = false }) {
   ) : (
     <span
       aria-hidden="true"
-      className={`grid shrink-0 place-items-center rounded-full bg-[#f4f6f8] font-display font-extrabold text-[#472a3b] ${className}`}
+      className={`grid shrink-0 place-items-center rounded-full bg-[#f4f6f8] font-display font-extrabold text-brand-navy ${className}`}
     >
       {name.charAt(0).toUpperCase()}
     </span>
@@ -391,12 +391,12 @@ function ReviewCard({ review, language, t, eager = false }) {
         <StarRating
           className="size-4"
           emptyClassName="text-[#dce3eb]"
-          filledClassName="text-[#b8721e]"
+          filledClassName="text-brand-yellow-deep"
           label={t("{rating} out of 5 stars", { rating: review.rating })}
           value={Number(review.rating) || 0}
         />
         {text ? (
-          <blockquote className="mt-3 max-w-[48ch] flex-1 text-base leading-7 text-[#472a3b]">
+          <blockquote className="mt-3 max-w-[48ch] flex-1 text-base leading-7 text-brand-navy">
             {text}
           </blockquote>
         ) : (
@@ -412,7 +412,7 @@ function ReviewCard({ review, language, t, eager = false }) {
             picture={review.profilePicture}
           />
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-[#472a3b]">
+            <p className="truncate text-sm font-bold text-brand-navy">
               {customerName}
             </p>
             <p className="mt-0.5 truncate text-xs font-medium text-[#65748a]">
@@ -494,7 +494,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <h2
-              className="font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#472a3b] sm:text-5xl"
+              className="font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-brand-navy sm:text-5xl"
               id="real-reviews-heading"
             >
               {t("Real Reviews")}
@@ -506,13 +506,13 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
             </p>
             {hasReviews && (
               <p className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span className="font-display text-2xl font-extrabold leading-none text-[#472a3b]">
+                <span className="font-display text-2xl font-extrabold leading-none text-brand-navy">
                   {roundedAverage.toFixed(1)}
                 </span>
                 <StarRating
                   className="size-4"
                   emptyClassName="text-[#dce3eb]"
-                  filledClassName="text-[#b8721e]"
+                  filledClassName="text-brand-yellow-deep"
                   label={t("{rating} out of 5 stars", {
                     rating: roundedAverage.toFixed(1),
                   })}
@@ -535,7 +535,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
           </p>
         ) : !hasReviews ? (
           <div className="mt-8 max-w-xl">
-            <p className="font-display text-2xl font-extrabold leading-tight text-[#472a3b]">
+            <p className="font-display text-2xl font-extrabold leading-tight text-brand-navy">
               {t("No reviews yet — be the first!")}
             </p>
             <p className="mt-2 text-base leading-7 text-[#65748a]">
@@ -569,13 +569,13 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
 
         <div className="mt-10 flex flex-wrap items-center gap-3">
           <Link
-            className="inline-flex min-h-12 items-center rounded-lg bg-[#472a3b] px-6 text-sm font-bold text-white transition hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2"
+            className="inline-flex min-h-12 items-center rounded-lg bg-brand-navy px-6 text-sm font-bold text-white transition hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
             to="/account/orders"
           >
             {t("Write a review")}
           </Link>
           <Link
-            className="inline-flex min-h-12 items-center rounded-lg px-4 text-sm font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4"
+            className="inline-flex min-h-12 items-center rounded-lg px-4 text-sm font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4"
             to="/menu"
           >
             {t("Explore the menu")}
@@ -608,14 +608,14 @@ function HowItWorksSection({ t }) {
   return (
     <section
       aria-labelledby="how-it-works-heading"
-      className="scroll-mt-20 px-5 py-12 text-[#472a3b] sm:px-8 sm:py-16 lg:px-10"
+      className="scroll-mt-20 px-5 py-12 text-brand-navy sm:px-8 sm:py-16 lg:px-10"
       id="how-it-works"
     >
       <div className="mx-auto max-w-[1320px]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <h2
-              className="max-w-[16ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#472a3b] sm:text-5xl"
+              className="max-w-[16ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-brand-navy sm:text-5xl"
               id="how-it-works-heading"
             >
               {t("How it works")}
@@ -625,7 +625,7 @@ function HowItWorksSection({ t }) {
             </p>
           </div>
           <Link
-            className="inline-flex min-h-11 w-fit items-center gap-2 rounded-lg bg-[#472a3b] px-5 text-sm font-bold text-white transition hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2"
+            className="inline-flex min-h-11 w-fit items-center gap-2 rounded-lg bg-brand-navy px-5 text-sm font-bold text-white transition hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
             to="/menu"
           >
             {t("Start an order")}
@@ -643,16 +643,16 @@ function HowItWorksSection({ t }) {
               <div className="flex min-w-0 items-start gap-4">
                 <span
                   aria-hidden="true"
-                  className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffb84d] text-lg font-extrabold leading-none text-[#472a3b]"
+                  className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-yellow text-lg font-extrabold leading-none text-brand-navy"
                 >
                   {step}
                 </span>
-                <span className="block font-display text-lg font-bold leading-tight text-[#472a3b] sm:hidden">
+                <span className="block font-display text-lg font-bold leading-tight text-brand-navy sm:hidden">
                   {t(title)}
                 </span>
               </div>
               <div className="min-w-0 sm:mt-0">
-                <span className="hidden font-display text-lg font-bold leading-tight text-[#472a3b] sm:block">
+                <span className="hidden font-display text-lg font-bold leading-tight text-brand-navy sm:block">
                   {t(title)}
                 </span>
                 <span className="mt-1.5 block max-w-sm text-sm leading-6 text-[#65748a]">
@@ -709,7 +709,7 @@ function MomentGallery({ t }) {
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-5">
           {frames.map((frame) => (
             <Link
-              className="moment-card group relative block overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#472a3b] lg:overflow-hidden"
+              className="moment-card group relative block overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-navy lg:overflow-hidden"
               key={frame.id}
               to={frame.to}
             >
@@ -725,22 +725,22 @@ function MomentGallery({ t }) {
                   srcSet={photoSrcSet(frame.src)}
                 />
               </div>
-              <div className="moment-copy mt-5 lg:absolute lg:inset-0 lg:z-10 lg:mt-0 lg:flex lg:flex-col lg:justify-end lg:bg-[#472a3b]/88 lg:p-8 xl:p-10">
+              <div className="moment-copy mt-5 lg:absolute lg:inset-0 lg:z-10 lg:mt-0 lg:flex lg:flex-col lg:justify-end lg:bg-brand-navy/88 lg:p-8 xl:p-10">
                 <h3
-                  className="max-w-[18ch] font-display text-3xl font-extrabold leading-[0.95] tracking-[-0.03em] text-[#472a3b] lg:max-w-[14ch] lg:text-4xl lg:text-white"
+                  className="max-w-[18ch] font-display text-3xl font-extrabold leading-[0.95] tracking-[-0.03em] text-brand-navy lg:max-w-[14ch] lg:text-4xl lg:text-white"
                   id={frame.id}
                 >
                   {t(frame.title)}
                 </h3>
                 {frame.copy.map((paragraph) => (
                   <p
-                    className="mt-3 max-w-[42ch] text-sm font-medium leading-6 text-[#472a3b] lg:text-base lg:leading-7 lg:text-white"
+                    className="mt-3 max-w-[42ch] text-sm font-medium leading-6 text-brand-navy lg:text-base lg:leading-7 lg:text-white"
                     key={paragraph}
                   >
                     {t(paragraph)}
                   </p>
                 ))}
-                <span className="mt-6 inline-flex min-h-12 w-fit items-center gap-3 bg-[#ffb84d] px-5 text-sm font-extrabold text-[#472a3b]">
+                <span className="mt-6 inline-flex min-h-12 w-fit items-center gap-3 bg-brand-yellow px-5 text-sm font-extrabold text-brand-navy">
                   {t(frame.cta)}
                   <span
                     aria-hidden="true"
@@ -1103,14 +1103,14 @@ export function HomePage() {
     return [...new Set([...own, ...related, ...fallbacks])].slice(0, 4);
   };
   return (
-    <div className="min-h-screen overflow-clip bg-[#fbfaf5] text-[#472a3b]">
+    <div className="min-h-screen overflow-clip bg-[#fbfaf5] text-brand-navy">
       <Header />
       <main id="main" tabIndex={-1}>
         <section
           id="home"
           className="relative isolate w-full overflow-clip bg-[var(--brand-navy)] text-white"
         >
-          <HeroBackground quietOnMobile variant="navy" />
+          <HeroBackground quietOnMobile variant="navy" theme="ice-cream" />
 
           <div className="mx-auto w-full max-w-[1400px] px-5 pb-2 pt-3 sm:px-8 sm:pb-6 sm:pt-6 lg:px-12 lg:pb-8 lg:pt-8">
             <div className="grid items-center gap-4 lg:grid-cols-12 lg:gap-10">
@@ -1130,13 +1130,13 @@ export function HomePage() {
 
                 <div className="mt-4 flex flex-wrap items-center gap-3 sm:mt-5">
                   <Link
-                    className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#ffb84d] px-4 py-3 text-xs font-extrabold text-[#472a3b] transition-colors hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b] sm:min-h-12 sm:px-6 sm:text-sm"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand-yellow px-4 py-3 text-xs font-extrabold text-brand-navy transition-colors hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy sm:min-h-12 sm:px-6 sm:text-sm"
                     to="/menu?category=Ice%20Cream"
                   >
                     {t("Order ice cream")} <ArrowIcon />
                   </Link>
                   <Link
-                    className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/30 px-4 py-3 text-xs font-bold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b] sm:min-h-12 sm:px-5 sm:text-sm"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/30 px-4 py-3 text-xs font-bold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy sm:min-h-12 sm:px-5 sm:text-sm"
                     to="/flavors"
                   >
                     {t("Explore flavors")}{" "}
@@ -1156,7 +1156,7 @@ export function HomePage() {
                     >
                       <span
                         aria-hidden="true"
-                        className="grid size-5 place-items-center bg-white/10 text-[#ffb84d]"
+                        className="grid size-5 place-items-center bg-white/10 text-brand-yellow"
                       >
                         <svg className="size-3" fill="none" viewBox="0 0 24 24">
                           <path
@@ -1207,7 +1207,7 @@ export function HomePage() {
                   className="relative"
                   role="group"
                 >
-                  <div className="relative aspect-[2/1] overflow-hidden rounded-[20px] bg-[#6b3f58] ring-1 ring-white/15 sm:rounded-[24px] lg:aspect-[16/9]">
+                  <div className="relative aspect-[2/1] overflow-hidden rounded-[20px] bg-brand-blue ring-1 ring-white/15 sm:rounded-[24px] lg:aspect-[16/9]">
                     {homeSlides.map((slide, index) => {
                       if (!loadedSlides.includes(index)) return null;
                       const isActive = activeSlide === index;
@@ -1239,7 +1239,7 @@ export function HomePage() {
                     <div className="flex shrink-0 items-center gap-2">
                       <button
                         aria-label={t("Previous slide")}
-                        className="grid size-11 place-items-center rounded-full border border-white/30 text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]"
+                        className="grid size-11 place-items-center rounded-full border border-white/30 text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
                         onClick={() => {
                           setActiveSlide(
                             (current) =>
@@ -1266,7 +1266,7 @@ export function HomePage() {
                       </button>
                       <button
                         aria-label={t("Next slide")}
-                        className="grid size-11 place-items-center rounded-full bg-[#ffb84d] text-[#472a3b] transition-colors hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        className="grid size-11 place-items-center rounded-full bg-brand-yellow text-brand-navy transition-colors hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                         onClick={() => {
                           setActiveSlide(
                             (current) => (current + 1) % homeSlides.length,
@@ -1291,7 +1291,7 @@ export function HomePage() {
                       aria-label={t("Show slide {number}", {
                         number: index + 1,
                       })}
-                      className="grid h-11 min-w-11 place-items-center rounded-full px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]"
+                      className="grid h-11 min-w-11 place-items-center rounded-full px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
                       key={slide.image}
                       onClick={() => {
                         setActiveSlide(index);
@@ -1300,7 +1300,7 @@ export function HomePage() {
                     >
                       <span
                         aria-hidden="true"
-                        className={`h-2 rounded-full transition-all ${activeSlide === index ? "w-8 bg-[#ffb84d]" : "w-2 bg-white/35"}`}
+                        className={`h-2 rounded-full transition-all ${activeSlide === index ? "w-8 bg-brand-yellow" : "w-2 bg-white/35"}`}
                       />
                     </button>
                   ))}
@@ -1317,7 +1317,7 @@ export function HomePage() {
             />
             <div
               aria-hidden="true"
-              className="hero-blob-a pointer-events-none absolute -left-32 -top-24 -z-10 size-[22rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.08),rgb(255_220_50/0.08)_35%,transparent)]"
+              className="hero-blob-a pointer-events-none absolute -left-32 -top-24 -z-10 size-[22rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_184_77/0.08),rgb(255_184_77/0.08)_35%,transparent)]"
             />
             <div
               aria-hidden="true"
@@ -1329,12 +1329,12 @@ export function HomePage() {
                   {t("Why people love us")}
                 </h2>
                 <Link
-                  className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-white/70 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] lg:min-h-0"
+                  className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-white/70 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow lg:min-h-0"
                   to="/locations"
                 >
                   <span
                     aria-hidden="true"
-                    className="h-1.5 w-1.5 rounded-full bg-[#ffb84d]"
+                    className="h-1.5 w-1.5 rounded-full bg-brand-yellow"
                   />
                   {t("Pickup or delivery in Douala and Yaoundé.")}
                 </Link>
@@ -1375,7 +1375,7 @@ export function HomePage() {
                     {/* Not a native tooltip: also on the label, so the redemption rule is
                         readable on touch screens and by keyboard users. */}
                     {stat.title && <span className="sr-only">{stat.title}</span>}
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffb84d]/15 text-[#ffb84d] ring-1 ring-[#ffb84d]/25 sm:size-10">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-yellow/15 text-brand-yellow ring-1 ring-brand-yellow/25 sm:size-10">
                       <svg
                         className="size-5"
                         fill={stat.outlineIcon ? "none" : "currentColor"}
@@ -1407,19 +1407,19 @@ export function HomePage() {
 
         <section
           aria-labelledby="flavor-inspiration-heading"
-          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-[#472a3b] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="flavors"
         >
           <div className="mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
                 <h2
-                  className="max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#472a3b] sm:text-5xl lg:text-6xl"
+                  className="max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-brand-navy sm:text-5xl lg:text-6xl"
                   id="flavor-inspiration-heading"
                 >
                   {t("Find your flavor")}
                 </h2>
-                <p className="mt-3 max-w-[520px] text-base leading-7 font-medium text-[#6b3f58]">
+                <p className="mt-3 max-w-[520px] text-base leading-7 font-medium text-brand-blue">
                   {t(
                     "Fruity, chocolatey or beautifully classic. Let your cravings lead the way.",
                   )}
@@ -1427,7 +1427,7 @@ export function HomePage() {
               </div>
               <div className="max-w-[360px] lg:mb-2">
                 <Link
-                  className="group mt-6 inline-flex min-h-12 items-center gap-3 rounded-lg bg-[#472a3b] px-6 py-3 text-sm font-bold text-white transition-colors duration-300 hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2"
+                  className="group mt-6 inline-flex min-h-12 items-center gap-3 rounded-lg bg-brand-navy px-6 py-3 text-sm font-bold text-white transition-colors duration-300 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2"
                   to="/flavors"
                 >
                   {t("Explore all flavors")}
@@ -1461,10 +1461,10 @@ export function HomePage() {
                   return (
                     <button
                       aria-pressed={selected}
-                      className={`min-h-11 rounded-lg border px-4 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 ${
+                      className={`min-h-11 rounded-lg border px-4 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 ${
                         selected
-                          ? "border-[#472a3b] bg-[#472a3b] text-white"
-                          : "border-[#dce3eb] bg-white text-[#6b3f58] hover:border-[#472a3b] hover:bg-[#f4f6f8]"
+                          ? "border-brand-navy bg-brand-navy text-white"
+                          : "border-[#dce3eb] bg-white text-brand-blue hover:border-brand-navy hover:bg-[#f4f6f8]"
                       }`}
                       key={mood}
                       onClick={() => {
@@ -1485,7 +1485,7 @@ export function HomePage() {
                   <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
                 </svg>
                 <input
-                  className="min-h-11 w-full rounded-lg border border-[#dce3eb] bg-white py-2.5 pl-12 pr-10 text-sm font-semibold text-[#472a3b] outline-none transition placeholder:text-[#65748a] focus:border-[#472a3b] focus:ring-2 focus:ring-[#472a3b]/15"
+                  className="min-h-11 w-full rounded-lg border border-[#dce3eb] bg-white py-2.5 pl-12 pr-10 text-sm font-semibold text-brand-navy outline-none transition placeholder:text-[#65748a] focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/15"
                   onChange={(event) => {
                     const query = event.target.value;
                     setFlavorSearch(query);
@@ -1499,7 +1499,7 @@ export function HomePage() {
                 {flavorSearch && (
                   <button
                     aria-label={t("Clear search")}
-                    className="absolute right-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-[#65748a] transition before:absolute before:-inset-2 before:content-[''] hover:bg-[#f4f6f8] hover:text-[#472a3b]"
+                    className="absolute right-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-[#65748a] transition before:absolute before:-inset-2 before:content-[''] hover:bg-[#f4f6f8] hover:text-brand-navy"
                     onClick={() => {
                       setFlavorSearch("");
                       if (selectedFlavorMood === "all") setShowAllFlavorResults(false);
@@ -1546,7 +1546,7 @@ export function HomePage() {
 
                 return (
                   <li
-                    className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[#ffb84d]/70 motion-reduce:transform-none motion-reduce:transition-none"
+                    className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-brand-yellow/70 motion-reduce:transform-none motion-reduce:transition-none"
                     key={flavor.id}
                   >
                     {/* Shine sweep on hover */}
@@ -1566,7 +1566,7 @@ export function HomePage() {
                         showThumbnails={false}
                       />
                       <span
-                        className="absolute left-3 top-3 rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-[#472a3b] transition-transform duration-500 ease-out group-hover:-rotate-3 group-hover:scale-105 motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-sm"
+                        className="absolute left-3 top-3 rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-brand-navy transition-transform duration-500 ease-out group-hover:-rotate-3 group-hover:scale-105 motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-sm"
                       >
                         {t(
                           flavor.mood === "fruit"
@@ -1583,7 +1583,7 @@ export function HomePage() {
                         />
                       </span>
                       {soldOut && (
-                        <span className="absolute right-4 top-4 rounded-md bg-[#472a3b] px-3 py-1.5 text-xs font-bold text-white">
+                        <span className="absolute right-4 top-4 rounded-md bg-brand-navy px-3 py-1.5 text-xs font-bold text-white">
                           {t("Sold out today")}
                         </span>
                       )}
@@ -1593,7 +1593,7 @@ export function HomePage() {
                     >
                       <div>
                         <Link
-                          className="line-clamp-2 min-h-[2.5em] font-display text-base font-extrabold leading-tight text-[#472a3b] transition-colors duration-300 hover:text-[#6b3f58] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] sm:text-xl"
+                          className="line-clamp-2 min-h-[2.5em] font-display text-base font-extrabold leading-tight text-brand-navy transition-colors duration-300 hover:text-brand-blue focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy sm:text-xl"
                           to={catalogFlavor
                             ? `/flavor/${catalogFlavor.id}`
                             : `/menu?${new URLSearchParams({ category: flavor.category, item: flavor.item })}`}
@@ -1607,7 +1607,7 @@ export function HomePage() {
                       <div className="flex flex-col items-stretch gap-2.5 sm:gap-3">
                         <span
                           className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 sm:text-base ${
-                            added ? "animate-pulse text-green-700" : "text-[#472a3b]"
+                            added ? "animate-pulse text-green-700" : "text-brand-navy"
                           }`}
                         >
                           {catalogFlavor
@@ -1620,10 +1620,10 @@ export function HomePage() {
                           aria-label={soldOut
                             ? t("Sold out")
                             : t("Add {name} to cart", { name: t(flavor.item) })}
-                          className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] sm:min-h-11 sm:px-4 sm:text-sm ${
+                          className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] sm:min-h-11 sm:px-4 sm:text-sm ${
                             added
                               ? "bg-[#4caf50] text-white"
-                              : "bg-[#472a3b] text-white hover:bg-[#6b3f58]"
+                              : "bg-brand-navy text-white hover:bg-brand-blue"
                           }`}
                           disabled={soldOut || !item}
                           onClick={() => catalogFlavor
@@ -1647,7 +1647,7 @@ export function HomePage() {
                 <button
                   aria-controls="home-flavor-results"
                   aria-expanded={showAllFlavorResults}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#472a3b] bg-white px-5 py-2.5 text-sm font-bold text-[#472a3b] transition-colors hover:bg-[#472a3b] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-brand-navy bg-white px-5 py-2.5 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
                   onClick={() => setShowAllFlavorResults((current) => !current)}
                   type="button"
                 >
@@ -1667,14 +1667,14 @@ export function HomePage() {
             "Request a custom cake" button that leads to the cake builder page. */}
         <section
           aria-labelledby="cakes-heading"
-          className="relative scroll-mt-20 overflow-hidden bg-[#f4f6f8] px-5 py-16 text-[#472a3b] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          className="relative scroll-mt-20 overflow-hidden bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="cakes"
         >
           <div className="relative mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
                 <h2
-                  className="max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#472a3b] sm:text-5xl lg:text-6xl"
+                  className="max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-brand-navy sm:text-5xl lg:text-6xl"
                   id="cakes-heading"
                 >
                   {t("Cakes for every occasion")}
@@ -1685,13 +1685,13 @@ export function HomePage() {
               </div>
               <div className="max-w-[360px] lg:mb-2">
                 <Link
-                  className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-lg bg-[#472a3b] px-6 py-3 text-sm font-bold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
+                  className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-lg bg-brand-navy px-6 py-3 text-sm font-bold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
                   to="/custom-cake"
                 >
                   {t("Request a custom cake")}
                   <span
                     aria-hidden="true"
-                    className="grid size-7 place-items-center rounded-full bg-[#ffb84d] text-[#472a3b] transition-transform duration-300 group-hover:translate-x-0.5"
+                    className="grid size-7 place-items-center rounded-full bg-brand-yellow text-brand-navy transition-transform duration-300 group-hover:translate-x-0.5"
                   >
                     <ArrowIcon />
                   </span>
@@ -1710,10 +1710,10 @@ export function HomePage() {
                   return (
                     <button
                       aria-pressed={selected}
-                      className={`min-h-11 rounded-lg border px-4 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 ${
+                      className={`min-h-11 rounded-lg border px-4 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 ${
                         selected
-                          ? "border-[#472a3b] bg-[#472a3b] text-white"
-                          : "border-[#dce3eb] bg-white text-[#6b3f58] hover:border-[#472a3b] hover:bg-[#f4f6f8]"
+                          ? "border-brand-navy bg-brand-navy text-white"
+                          : "border-[#dce3eb] bg-white text-brand-blue hover:border-brand-navy hover:bg-[#f4f6f8]"
                       }`}
                       key={id}
                       onClick={() => {
@@ -1732,7 +1732,7 @@ export function HomePage() {
                 <div className="group relative">
                   <svg
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#65748a] transition-colors group-focus-within:text-[#472a3b]"
+                    className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#65748a] transition-colors group-focus-within:text-brand-navy"
                     fill="none"
                     viewBox="0 0 24 24"
                   >
@@ -1744,7 +1744,7 @@ export function HomePage() {
                     />
                   </svg>
                   <input
-                    className="min-h-11 w-full rounded-lg border border-[#dce3eb] bg-white py-2.5 pl-12 pr-4 text-sm font-semibold text-[#472a3b] outline-none transition placeholder:font-medium placeholder:text-[#65748a] hover:border-[#9eafc2] hover:shadow-[0_10px_28px_rgba(9,42,83,0.12)] focus:border-[#472a3b] focus:ring-2 focus:ring-[#472a3b]/15"
+                    className="min-h-11 w-full rounded-lg border border-[#dce3eb] bg-white py-2.5 pl-12 pr-4 text-sm font-semibold text-brand-navy outline-none transition placeholder:font-medium placeholder:text-[#65748a] hover:border-[#9eafc2] hover:shadow-[0_10px_28px_rgba(9,42,83,0.12)] focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/15"
                     onChange={(event) => setCakeSearch(event.target.value)}
                     placeholder={t("Search cakes\u2026")}
                     type="search"
@@ -1796,7 +1796,7 @@ export function HomePage() {
                             sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 100vw"
                           />
                           <span
-                            className="absolute left-3 top-3 rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-[#472a3b] transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-sm"
+                            className="absolute left-3 top-3 rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-brand-navy transition duration-500 ease-out group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-sm"
                           >
                             {t(
                               cakeTypeOf(cake.idName, cake.name) === "pies"
@@ -1815,7 +1815,7 @@ export function HomePage() {
                             />
                           </span>
                           {soldOut && (
-                            <span className="absolute right-4 top-4 rounded-md bg-[#472a3b] px-3 py-1.5 text-xs font-bold text-white">
+                            <span className="absolute right-4 top-4 rounded-md bg-brand-navy px-3 py-1.5 text-xs font-bold text-white">
                               {t("Sold out today")}
                             </span>
                           )}
@@ -1825,7 +1825,7 @@ export function HomePage() {
                         >
                           <div>
                             <Link
-                              className="line-clamp-2 min-h-[2.5em] font-display text-base font-extrabold leading-tight text-[#472a3b] transition-colors duration-300 hover:text-[#6b3f58] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] sm:text-xl"
+                              className="line-clamp-2 min-h-[2.5em] font-display text-base font-extrabold leading-tight text-brand-navy transition-colors duration-300 hover:text-brand-blue focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy sm:text-xl"
                               to={`/menu?${new URLSearchParams({ category: "Cakes & Pies", item: cake.name })}`}
                             >
                               {t(cake.name)}
@@ -1837,7 +1837,7 @@ export function HomePage() {
                           <div className="mt-auto flex flex-col items-stretch gap-2.5 sm:gap-3">
                             <span
                               className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 sm:text-base ${
-                                added ? "animate-pulse text-green-700" : "text-[#472a3b]"
+                                added ? "animate-pulse text-green-700" : "text-brand-navy"
                               }`}
                             >
                               {typeof cake.priceXaf === "number" ? formatPrice(cake.priceXaf) : ""}
@@ -1848,10 +1848,10 @@ export function HomePage() {
                                   ? t("Added to your bag")
                                     : t("Add {name} to cart", { name: t(cake.name) })
                               }
-                              className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] sm:min-h-11 sm:px-4 sm:text-sm ${
+                              className={`min-h-10 w-full whitespace-nowrap rounded-lg px-2 text-[13px] font-bold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 motion-reduce:transform-none disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] sm:min-h-11 sm:px-4 sm:text-sm ${
                                 added
                                   ? "bg-[#4caf50] text-white"
-                                  : "bg-[#472a3b] text-white hover:bg-[#6b3f58]"
+                                  : "bg-brand-navy text-white hover:bg-brand-blue"
                               }`}
                               disabled={soldOut}
                               onClick={() => handleAddToCart(cake, "Cakes & Pies")}
@@ -1871,7 +1871,7 @@ export function HomePage() {
                   <button
                     aria-controls="home-cake-results"
                     aria-expanded={showAllCakeResults}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#472a3b] bg-white px-5 py-2.5 text-sm font-bold text-[#472a3b] transition-colors hover:bg-[#472a3b] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-brand-navy bg-white px-5 py-2.5 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
                     onClick={() => setShowAllCakeResults((current) => !current)}
                     type="button"
                   >
@@ -1888,13 +1888,13 @@ export function HomePage() {
                   )}
                 </p>
                 <Link
-                  className="group inline-flex min-h-12 shrink-0 items-center justify-center gap-3 self-start rounded-md bg-[#472a3b] px-6 py-3 text-sm font-extrabold text-white transition duration-300 hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 sm:self-auto"
+                  className="group inline-flex min-h-12 shrink-0 items-center justify-center gap-3 self-start rounded-md bg-brand-navy px-6 py-3 text-sm font-extrabold text-white transition duration-300 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 sm:self-auto"
                   to={`/menu?${new URLSearchParams({ category: "Cakes & Pies" })}`}
                 >
                   {t("Explore all cakes")}
                   <span
                     aria-hidden="true"
-                    className="grid size-7 place-items-center rounded-full bg-[#ffb84d] text-[#472a3b] transition-transform duration-300 group-hover:translate-x-0.5"
+                    className="grid size-7 place-items-center rounded-full bg-brand-yellow text-brand-navy transition-transform duration-300 group-hover:translate-x-0.5"
                   >
                     <ArrowIcon />
                   </span>
@@ -1913,7 +1913,7 @@ export function HomePage() {
             <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
               <div className="max-w-2xl">
                 <h2
-                  className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#472a3b] sm:text-5xl"
+                  className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-brand-navy sm:text-5xl"
                   id="popular-flavors-heading"
                 >
                   {t("Fan favorites")}
@@ -1925,7 +1925,7 @@ export function HomePage() {
                 </p>
               </div>
               <Link
-                className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 self-start rounded-md bg-[#472a3b] px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 sm:self-auto"
+                className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 self-start rounded-md bg-brand-navy px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 sm:self-auto"
                 to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
               >
                 {t("View all")} <ArrowIcon />
@@ -2009,7 +2009,7 @@ export function HomePage() {
                     >
                       <Link
                         aria-label={t(item.name)}
-                        className="relative block aspect-[4/3] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-4"
+                        className="relative block aspect-[4/3] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-4"
                         style={{ backgroundColor: popularFlavorColors[index] }}
                         to={itemLink}
                       >
@@ -2023,9 +2023,9 @@ export function HomePage() {
 
                       <div className="flex flex-1 flex-col pt-5 sm:pt-6">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <h3 className="font-display text-2xl font-extrabold leading-tight text-[#472a3b] sm:text-3xl">
+                          <h3 className="font-display text-2xl font-extrabold leading-tight text-brand-navy sm:text-3xl">
                             <Link
-                              className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2"
+                              className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2"
                               to={itemLink}
                             >
                               {t(item.name)}
@@ -2040,7 +2040,7 @@ export function HomePage() {
                           {t(item.detail)}
                         </p>
                         <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-5">
-                          <p className={`whitespace-nowrap font-display text-xl font-extrabold tabular-nums transition-colors duration-300 sm:text-2xl ${added ? "text-green-700" : "text-[#472a3b]"}`}>
+                          <p className={`whitespace-nowrap font-display text-xl font-extrabold tabular-nums transition-colors duration-300 sm:text-2xl ${added ? "text-green-700" : "text-brand-navy"}`}>
                             {soldOut ? t("Sold out") : formatPrice(item.priceXaf)}
                           </p>
                           <button
@@ -2051,10 +2051,10 @@ export function HomePage() {
                                     name: t(item.name),
                                   })
                             }
-                            className={`relative z-10 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto ${
+                            className={`relative z-10 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto ${
                               added
                                 ? "bg-[#37632c] text-white"
-                                : "bg-[#472a3b] text-white hover:bg-[#6b3f58]"
+                                : "bg-brand-navy text-white hover:bg-brand-blue"
                             }`}
                             disabled={soldOut}
                             onClick={() => handleAddToCart(item)}
@@ -2080,16 +2080,16 @@ export function HomePage() {
                   >
                     <Link
                       aria-label={t(item.name)}
-                      className="relative size-20 shrink-0 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2 sm:size-24"
+                      className="relative size-20 shrink-0 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2 sm:size-24"
                       style={{ backgroundColor: popularFlavorColors[index] }}
                       to={itemLink}
                     >
                       {image}
                     </Link>
                     <div className="min-w-0 flex-1 self-center">
-                      <h3 className="font-display text-base font-extrabold leading-snug text-[#472a3b] sm:text-lg">
+                      <h3 className="font-display text-base font-extrabold leading-snug text-brand-navy sm:text-lg">
                         <Link
-                          className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2"
+                          className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2"
                           to={itemLink}
                         >
                           {t(item.name)}
@@ -2104,7 +2104,7 @@ export function HomePage() {
                       <p className="mt-1 line-clamp-1 text-xs leading-5 text-[#65748a] sm:text-sm sm:leading-6">
                         {t(item.detail)}
                       </p>
-                      <p className={`mt-1 whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${added ? "text-green-700" : "text-[#472a3b]"}`}>
+                      <p className={`mt-1 whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${added ? "text-green-700" : "text-brand-navy"}`}>
                         {soldOut ? t("Sold out") : formatPrice(item.priceXaf)}
                       </p>
                     </div>
@@ -2118,10 +2118,10 @@ export function HomePage() {
                                 name: t(item.name),
                               })
                       }
-                      className={`relative z-10 mt-0 inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-md px-4 text-xs font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto sm:px-4 ${
+                      className={`relative z-10 mt-0 inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-md px-4 text-xs font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto sm:px-4 ${
                         added
                           ? "bg-[#37632c] text-white"
-                          : "bg-[#472a3b] text-white hover:bg-[#6b3f58]"
+                          : "bg-brand-navy text-white hover:bg-brand-blue"
                       }`}
                       disabled={soldOut}
                       onClick={() => handleAddToCart(item)}
@@ -2188,14 +2188,14 @@ export function HomePage() {
             } w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 items-center justify-between gap-4 rounded-2xl px-4 py-3 text-sm font-semibold shadow-[0_16px_40px_rgba(9,42,83,0.28)] ring-1 ${
               cartNoticeIsError
                 ? "bg-red-50 text-red-800 ring-red-200"
-                : "bg-[#472a3b] text-white ring-white/15"
+                : "bg-brand-navy text-white ring-white/15"
             }`}
             role={cartNoticeIsError ? "alert" : "status"}
           >
             <span className="min-w-0">{cartNotice}</span>
             {!cartNoticeIsError && (
               <Link
-                className="shrink-0 rounded-full bg-[#ffb84d] px-3 py-2 text-xs font-extrabold text-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="shrink-0 rounded-full bg-brand-yellow px-3 py-2 text-xs font-extrabold text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 to="/cart"
               >
                 {t("View bag")}
@@ -2208,7 +2208,7 @@ export function HomePage() {
 
         <section
           aria-labelledby="home-menu-heading"
-          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-[#472a3b] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="menu"
         >
           <div className="mx-auto max-w-5xl">
@@ -2257,13 +2257,13 @@ export function HomePage() {
                       />
                     </span>
                     <span className="mt-5 block">
-                      <h3 className="font-display text-2xl font-extrabold leading-tight tracking-tight text-[#472a3b] sm:text-3xl">
+                      <h3 className="font-display text-2xl font-extrabold leading-tight tracking-tight text-brand-navy sm:text-3xl">
                         {t(item.title)}
                       </h3>
                       <p className="mt-2 text-base leading-7 text-[#65748a]">
                         {t(item.description)}
                       </p>
-                      <span className="mt-3 inline-flex min-h-12 items-center font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4">
+                      <span className="mt-3 inline-flex min-h-12 items-center font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4">
                         {t(item.cta)}
                       </span>
                     </span>
@@ -2281,7 +2281,7 @@ export function HomePage() {
         {/* Back to top — appears after scrolling past the hero */}
         <button
           aria-label={t("Back to top")}
-          className={`fixed bottom-6 right-6 z-40 grid size-12 place-items-center rounded-full bg-[#472a3b] text-white shadow-[0_10px_24px_rgba(9,42,83,0.35)] transition duration-300 hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 ${
+          className={`fixed bottom-6 right-6 z-40 grid size-12 place-items-center rounded-full bg-brand-navy text-white shadow-[0_10px_24px_rgba(9,42,83,0.35)] transition duration-300 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 ${
             showScrollTop
               ? "pointer-events-auto opacity-100"
               : "pointer-events-none hidden"

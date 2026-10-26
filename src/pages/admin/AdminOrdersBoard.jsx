@@ -10,7 +10,7 @@ import { WhatsAppIcon } from "../../components/WhatsAppIcon";
 const AUTO_REFRESH_MS = 30_000;
 const STALE_PAYMENT_MS = 3 * 60 * 1000;
 const inputClassName =
-  "h-9 w-full border border-[#d1d5db] bg-white px-3 text-sm font-medium text-[#472a3b] outline-none placeholder:text-[#6b6b6b] focus:border-[#472a3b] focus:ring-2 focus:ring-[#472a3b]";
+  "h-9 w-full border border-[#d1d5db] bg-white px-3 text-sm font-medium text-brand-navy outline-none placeholder:text-[#6b6b6b] focus:border-brand-navy focus:ring-2 focus:ring-brand-navy";
 
 const icons = {
   refresh: "M4 12a8 8 0 0 1 13.7-5.7L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.7L4 15.5M4 20v-4.5h4.5",
@@ -84,7 +84,7 @@ function nextStage(order) {
 
 const statusMeta = {
   pending_payment: { label: "Awaiting payment", badge: "bg-[#fff6e5] text-[#7a4e00]" },
-  processing: { label: "Paid · preparing", badge: "bg-[#e9f1fa] text-[#6b3f58]" },
+  processing: { label: "Paid · preparing", badge: "bg-[#e9f1fa] text-brand-blue" },
   payment_failed: { label: "Payment failed", badge: "bg-[#ffedea] text-[#831c1e]" },
   delivered: { label: "Delivered", badge: "bg-[#dcfae5] text-[#04250e]" },
 };
@@ -330,7 +330,7 @@ export function AdminOrdersBoard() {
         <div className="min-w-0">
           <nav aria-label={t("Breadcrumb")} className="text-xs font-medium text-[#5f6368]">
             {t("Sales")} <span aria-hidden="true" className="mx-1">/</span>
-            <span className="text-[#472a3b]">{t("Orders")}</span>
+            <span className="text-brand-navy">{t("Orders")}</span>
           </nav>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[#111]">{t("Orders")}</h1>
           <p className="mt-1 text-sm text-[#5f6368]">
@@ -349,7 +349,7 @@ export function AdminOrdersBoard() {
               : t("Live")}
           </span>
           <button
-            className="inline-flex h-8 items-center gap-2 border border-[#d1d5db] bg-white px-3 text-sm font-medium text-[#111] transition hover:border-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex h-8 items-center gap-2 border border-[#d1d5db] bg-white px-3 text-sm font-medium text-[#111] transition hover:border-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy disabled:cursor-wait disabled:opacity-60"
             disabled={isRefreshing}
             onClick={refresh}
             type="button"
@@ -374,7 +374,7 @@ export function AdminOrdersBoard() {
             <button
               aria-label={`${t(metric.label)} ${metric.value}`}
               aria-pressed={isActive}
-              className={`border-[#e8e8e8] px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#472a3b] ${
+              className={`border-[#e8e8e8] px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-navy ${
                 index % 2 === 1 ? "border-l" : ""
               } ${index > 1 ? "border-t lg:border-t-0" : ""} ${index > 0 ? "lg:border-l" : ""} ${
                 isActive ? "bg-[#f4f6f8]" : "bg-white hover:bg-[#fafafa]"
@@ -386,7 +386,7 @@ export function AdminOrdersBoard() {
               <p className="text-xs font-medium text-[#5f6368]">{t(metric.label)}</p>
               <p className="mt-1 text-2xl font-medium tabular-nums tracking-tight text-[#111]">{metric.value}</p>
               {isActive && metric.key !== "all" && (
-                <p className="mt-1 text-xs font-medium text-[#472a3b]">{t("Clear filter")}</p>
+                <p className="mt-1 text-xs font-medium text-brand-navy">{t("Clear filter")}</p>
               )}
             </button>
           );
@@ -418,15 +418,15 @@ export function AdminOrdersBoard() {
               <li className={`${index % 2 === 1 ? "border-l border-[#e8e8e8]" : ""} ${index > 1 ? "border-t border-[#e8e8e8] lg:border-t-0" : ""} ${index > 0 ? "lg:border-l lg:border-[#e8e8e8]" : ""}`} key={stage}>
                 <button
                   aria-pressed={isActive}
-                  className={`flex w-full items-end justify-between gap-3 px-4 py-3.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#472a3b] ${
-                    isActive ? "bg-[#472a3b] text-white" : "bg-white text-[#111] hover:bg-[#fafafa]"
+                  className={`flex w-full items-end justify-between gap-3 px-4 py-3.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-navy ${
+                    isActive ? "bg-brand-navy text-white" : "bg-white text-[#111] hover:bg-[#fafafa]"
                   }`}
                   onClick={() => setStatusFilter((current) => (current === key ? "all" : key))}
                   type="button"
                 >
                   <span>
                     <span className={`block text-xs font-medium ${isActive ? "text-white/70" : "text-[#5f6368]"}`}>{t(stageLabels[stage])}</span>
-                    {isHot && !isActive && <span className="mt-1 block h-0.5 w-8 bg-[#ffb84d]" />}
+                    {isHot && !isActive && <span className="mt-1 block h-0.5 w-8 bg-brand-yellow" />}
                   </span>
                   <span className="text-2xl font-medium tabular-nums tracking-tight">{count}</span>
                 </button>
@@ -447,7 +447,7 @@ export function AdminOrdersBoard() {
             </div>
             {hasActiveFilters && (
               <button
-                className="text-xs font-semibold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4"
+                className="text-xs font-semibold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4"
                 onClick={() => { setSearch(""); setStatusFilter("all"); setTypeFilter("all"); }}
                 type="button"
               >
@@ -550,7 +550,7 @@ export function AdminOrdersBoard() {
                     {next && (
                       <div className="flex justify-end px-4 pb-3">
                         <button
-                          className="h-8 px-2 text-xs font-semibold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4 disabled:cursor-wait disabled:opacity-60"
+                          className="h-8 px-2 text-xs font-semibold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 disabled:cursor-wait disabled:opacity-60"
                           disabled={isBusy}
                           onClick={() => (next.key === "delivered" ? markDelivered(order.id) : updateFulfillment(order.id, next.key))}
                           type="button"
@@ -589,7 +589,7 @@ export function AdminOrdersBoard() {
                       >
                         <td className="px-4 py-3">
                           <button
-                            className="text-left font-semibold text-[#111] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b]"
+                            className="text-left font-semibold text-[#111] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy"
                             onClick={(event) => { event.stopPropagation(); setError(""); setSelectedOrderId(order.id); }}
                             type="button"
                           >
@@ -630,7 +630,7 @@ export function AdminOrdersBoard() {
                           <div className="flex items-center justify-end gap-1">
                             {next && (
                               <button
-                                className="inline-flex h-8 items-center whitespace-nowrap px-2 text-xs font-semibold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4 disabled:cursor-wait disabled:opacity-60"
+                                className="inline-flex h-8 items-center whitespace-nowrap px-2 text-xs font-semibold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 disabled:cursor-wait disabled:opacity-60"
                                 disabled={isBusy}
                                 onClick={() => (next.key === "delivered" ? markDelivered(order.id) : updateFulfillment(order.id, next.key))}
                                 type="button"
@@ -731,7 +731,7 @@ export function AdminOrdersBoard() {
                             type="button"
                           >
                             <span className={`grid size-6 shrink-0 place-items-center text-xs font-semibold ${
-                              isDone ? "bg-[#247b50] text-white" : isCurrent ? "bg-[#ffb84d] text-[#111]" : "bg-[#f4f6f8] text-[#5f6368]"
+                              isDone ? "bg-[#247b50] text-white" : isCurrent ? "bg-brand-yellow text-[#111]" : "bg-[#f4f6f8] text-[#5f6368]"
                             }`}>
                               {isDone ? <Icon className="size-3.5" path={icons.check} /> : index + 1}
                             </span>
@@ -750,19 +750,19 @@ export function AdminOrdersBoard() {
                 <div className="bg-white p-4">
                   <h3 className="text-xs font-medium text-[#5f6368]">{t("Customer")}</h3>
                   <p className="mt-2 font-semibold text-[#111]">{selectedOrder.customerName}</p>
-                  <a className="mt-1 flex items-center gap-1.5 truncate text-xs font-medium text-[#472a3b] hover:underline" href={`mailto:${selectedOrder.customerEmail}`}>
+                  <a className="mt-1 flex items-center gap-1.5 truncate text-xs font-medium text-brand-navy hover:underline" href={`mailto:${selectedOrder.customerEmail}`}>
                     <Icon className="size-3.5 shrink-0" path={icons.mail} />
                     <span className="truncate">{selectedOrder.customerEmail}</span>
                   </a>
                   {selectedOrder.customerPhone && (
-                    <a className="mt-1 flex items-center gap-1.5 text-xs font-medium text-[#472a3b] hover:underline" href={`tel:${selectedOrder.customerPhone}`}>
+                    <a className="mt-1 flex items-center gap-1.5 text-xs font-medium text-brand-navy hover:underline" href={`tel:${selectedOrder.customerPhone}`}>
                       <Icon className="size-3.5 shrink-0" path={icons.phone} />
                       {selectedOrder.customerPhone}
                     </a>
                   )}
                   {whatsappLink(selectedOrder.customerPhone, "") && (
                     <a
-                      className="mt-3 inline-flex h-8 items-center gap-1.5 bg-[#111] px-2.5 text-xs font-semibold text-white transition hover:bg-[#472a3b]"
+                      className="mt-3 inline-flex h-8 items-center gap-1.5 bg-[#111] px-2.5 text-xs font-semibold text-white transition hover:bg-brand-navy"
                       href={whatsappLink(selectedOrder.customerPhone, orderUpdateMessage(selectedOrder, currentStage(selectedOrder)))}
                       rel="noopener noreferrer"
                       target="_blank"
@@ -846,7 +846,7 @@ export function AdminOrdersBoard() {
               </button>
               {selectedOrder.status === "processing" && (
                 <button
-                  className="inline-flex h-9 items-center gap-2 bg-[#111] px-4 text-sm font-semibold text-white transition hover:bg-[#472a3b] disabled:cursor-wait disabled:opacity-60"
+                  className="inline-flex h-9 items-center gap-2 bg-[#111] px-4 text-sm font-semibold text-white transition hover:bg-brand-navy disabled:cursor-wait disabled:opacity-60"
                   disabled={updatingOrderId === selectedOrder.id}
                   onClick={() => markDelivered(selectedOrder.id)}
                   type="button"

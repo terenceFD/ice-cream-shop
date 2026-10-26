@@ -111,14 +111,14 @@ export function AdminFulfillmentPage() {
 
       <form className="rounded-md border border-[#dce3eb] bg-white" onSubmit={saveZones}>
         <div className="border-b border-[#f4f6f8] p-4 sm:p-5">
-          <h2 className="text-base font-semibold text-[#472a3b]">{t('Store branches and service areas')}</h2>
+          <h2 className="text-base font-semibold text-brand-navy">{t('Store branches and service areas')}</h2>
           <p className="mt-0.5 text-xs text-[#65748a]">{t('Switch a branch off to hide it from checkout. The delivery fee is only used when delivery is on.')}</p>
         </div>
         <ul className="divide-y divide-[#f4f6f8]">
           {zones.map((zone) => (
             <li className={`grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center ${zone.isActive ? '' : 'bg-[#f4f6f8]'}`} key={zone.id}>
               <div className="min-w-0">
-                <p className="flex flex-wrap items-center gap-2 text-sm font-extrabold text-[#472a3b]">
+                <p className="flex flex-wrap items-center gap-2 text-sm font-extrabold text-brand-navy">
                   {t(zone.storeName)}
                   {!zone.isActive && <span className="rounded-full bg-[#eef1f5] px-2 py-0.5 text-xs font-bold text-[#65748a]">{t('Hidden at checkout')}</span>}
                 </p>
@@ -132,8 +132,8 @@ export function AdminFulfillmentPage() {
                 {zone.deliveryEnabled && (
                   <label className="flex items-center gap-2 text-xs font-bold text-[#65748a]">
                     {t('Delivery fee')}
-                    <span className="flex items-center rounded-md border border-[#dce3eb] bg-[#f4f6f8] pr-3 focus-within:border-[#b8721e] focus-within:bg-white">
-                      <input className="w-24 bg-transparent px-3 py-2 text-sm font-bold tabular-nums text-[#472a3b] outline-none!" min="0" onChange={(event) => updateZone(zone.id, { deliveryFee: event.target.value })} type="number" value={zone.deliveryFee} />
+                    <span className="flex items-center rounded-md border border-[#dce3eb] bg-[#f4f6f8] pr-3 focus-within:border-brand-yellow-deep focus-within:bg-white">
+                      <input className="w-24 bg-transparent px-3 py-2 text-sm font-bold tabular-nums text-brand-navy outline-none!" min="0" onChange={(event) => updateZone(zone.id, { deliveryFee: event.target.value })} type="number" value={zone.deliveryFee} />
                       <span className="text-xs font-extrabold text-[#65748a]">FCFA</span>
                     </span>
                   </label>
@@ -146,7 +146,7 @@ export function AdminFulfillmentPage() {
           {message && (
             <p className="text-sm font-semibold text-[#1f5d3c]" role="status">{message}</p>
           )}
-          <button className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#472a3b] px-5 text-sm font-bold text-white transition hover:bg-[#6b3f58] disabled:opacity-70" disabled={isSavingBranches} type="submit">
+          <button className="inline-flex min-h-10 items-center gap-2 rounded-md bg-brand-navy px-5 text-sm font-bold text-white transition hover:bg-brand-blue disabled:opacity-70" disabled={isSavingBranches} type="submit">
             {isSavingBranches && <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-white border-r-transparent motion-reduce:animate-none [animation-duration:2s]" />}
             {isSavingBranches ? t('Saving…') : t('Save branch availability')}
           </button>
@@ -156,10 +156,10 @@ export function AdminFulfillmentPage() {
       <form className="rounded-md border border-[#dce3eb] bg-white" onSubmit={saveSlots}>
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#f4f6f8] p-4 sm:p-5">
           <div>
-            <h2 className="text-base font-semibold text-[#472a3b]">{t('Available time slots')}</h2>
+            <h2 className="text-base font-semibold text-brand-navy">{t('Available time slots')}</h2>
             <p className="mt-0.5 text-xs text-[#65748a]">{t('Customers choose one of the active slots at checkout.')}</p>
           </div>
-          <button className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce3eb] px-4 text-sm font-bold text-[#472a3b] transition hover:border-[#472a3b] disabled:opacity-50" disabled={slots.length >= 20} onClick={() => setSlots((current) => [...current, { label: '', startTime: '10:00', endTime: '12:00', isActive: true }])} type="button">
+          <button className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce3eb] px-4 text-sm font-bold text-brand-navy transition hover:border-brand-navy disabled:opacity-50" disabled={slots.length >= 20} onClick={() => setSlots((current) => [...current, { label: '', startTime: '10:00', endTime: '12:00', isActive: true }])} type="button">
             <AdminIcon path={adminIcons.plus} /> {t('Add time slot')}
           </button>
         </div>
@@ -177,14 +177,14 @@ export function AdminFulfillmentPage() {
           ))}
         </ul>
         <div className="flex justify-end border-t border-[#f4f6f8] p-4 sm:p-5">
-          <button className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#472a3b] px-5 text-sm font-bold text-white transition hover:bg-[#6b3f58] disabled:opacity-50" disabled={!slots.length} type="submit">{t('Save time slots')}</button>
+          <button className="inline-flex min-h-10 items-center gap-2 rounded-md bg-brand-navy px-5 text-sm font-bold text-white transition hover:bg-brand-blue disabled:opacity-50" disabled={!slots.length} type="submit">{t('Save time slots')}</button>
         </div>
       </form>
     </div>
   )
 }
 
-const slotInputClassName = 'mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#472a3b] transition focus:border-[#b8721e] focus:bg-white outline-none!'
+const slotInputClassName = 'mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-brand-navy transition focus:border-brand-yellow-deep focus:bg-white outline-none!'
 
 export function AdminCakeRequestsPage() {
   return <AdminCakeRequestsBoard />
@@ -333,7 +333,7 @@ export function AdminStockAlertsPage() {
 const AREA_LABELS = { catalog: 'Catalog', orders: 'Orders', customers: 'Customers', promotions: 'Promotions', settings: 'Settings', account: 'Accounts and sign-in' }
 const AREA_ICONS = { catalog: adminIcons.box, orders: adminIcons.truck, customers: adminIcons.user, promotions: adminIcons.check, settings: adminIcons.store, account: adminIcons.user }
 const AREA_STYLES = {
-  catalog: 'bg-[#fff4c2] text-[#b8721e]',
+  catalog: 'bg-[#fff4c2] text-brand-yellow-deep',
   orders: 'bg-[#e9f1fa] text-[#315982]',
   customers: 'bg-[#f3ecfb] text-[#6b4aa0]',
   promotions: 'bg-[#e5f4ea] text-[#2c7a4f]',
@@ -341,7 +341,7 @@ const AREA_STYLES = {
   account: 'bg-[#fdeaea] text-[#a3352f]',
 }
 const AREA_DOTS = {
-  catalog: 'bg-[#b8721e]',
+  catalog: 'bg-brand-yellow-deep',
   orders: 'bg-[#3d6f9e]',
   customers: 'bg-[#7a56b3]',
   promotions: 'bg-[#2e9d5b]',
@@ -434,7 +434,7 @@ export function AdminActivityPage() {
       <AdminPageHeader
         actions={(
           <button
-            className="inline-flex min-h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-bold text-[#6b3f58] ring-1 ring-[#dce4ed] transition hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex min-h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-bold text-brand-blue ring-1 ring-[#dce4ed] transition hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep disabled:cursor-wait disabled:opacity-60"
             disabled={isRefreshing}
             onClick={refresh}
             type="button"
@@ -491,19 +491,19 @@ export function AdminActivityPage() {
             <dl className="grid grid-cols-2 divide-x divide-y divide-[#f4f6f8] sm:grid-cols-4 sm:divide-y-0">
               <div className="px-4 py-4 sm:px-5">
                 <dt className="text-xs font-semibold text-[#65748a]">{t('Today')}</dt>
-                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-[#472a3b]">{summary.today}</dd>
+                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-brand-navy">{summary.today}</dd>
               </div>
               <div className="px-4 py-4 sm:px-5">
                 <dt className="text-xs font-semibold text-[#65748a]">{t('People')}</dt>
-                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-[#472a3b]">{summary.people}</dd>
+                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-brand-navy">{summary.people}</dd>
               </div>
               <div className="px-4 py-4 sm:px-5">
                 <dt className="text-xs font-semibold text-[#65748a]">{t('Areas touched')}</dt>
-                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-[#472a3b]">{summary.areaCounts.length}</dd>
+                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-brand-navy">{summary.areaCounts.length}</dd>
               </div>
               <div className="px-4 py-4 sm:px-5">
                 <dt className="text-xs font-semibold text-[#65748a]">{t('In this view')}</dt>
-                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-[#472a3b]">{shown.length}</dd>
+                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-brand-navy">{shown.length}</dd>
               </div>
             </dl>
 
@@ -515,13 +515,13 @@ export function AdminActivityPage() {
                     <li key={row.value}>
                       <button
                         aria-pressed={area === row.value}
-                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] ${
-                          area === row.value ? 'bg-[#472a3b] text-white' : 'bg-[#f4f6f8] text-[#6b3f58] hover:bg-[#e8edf4]'
+                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep ${
+                          area === row.value ? 'bg-brand-navy text-white' : 'bg-[#f4f6f8] text-brand-blue hover:bg-[#e8edf4]'
                         }`}
                         onClick={() => setArea((current) => (current === row.value ? '' : row.value))}
                         type="button"
                       >
-                        <span aria-hidden="true" className={`size-2 rounded-full ${area === row.value ? 'bg-[#ffb84d]' : AREA_DOTS[row.value]}`} />
+                        <span aria-hidden="true" className={`size-2 rounded-full ${area === row.value ? 'bg-brand-yellow' : AREA_DOTS[row.value]}`} />
                         {t(AREA_LABELS[row.value])}
                         <span className={`tabular-nums ${area === row.value ? 'text-white/70' : 'text-[#65748a]'}`}>{row.count}</span>
                       </button>
@@ -535,7 +535,7 @@ export function AdminActivityPage() {
           <section aria-labelledby="activity-timeline-title" className="overflow-hidden rounded-md border border-[#dce3eb] bg-white">
             <div className="flex flex-col gap-3 border-b border-[#f4f6f8] px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-[#472a3b]" id="activity-timeline-title">{t('Change timeline')}</h2>
+                <h2 className="text-sm font-semibold text-brand-navy" id="activity-timeline-title">{t('Change timeline')}</h2>
                 <p className="mt-0.5 text-sm text-[#65748a]">
                   {t('Showing {shown} of {total} changes', { shown: shown.length, total: entries.length })}
                 </p>
@@ -546,7 +546,7 @@ export function AdminActivityPage() {
                   <div aria-labelledby="activity-area-label" className="inline-flex flex-wrap rounded-md bg-[#f4f6f8] p-1" role="group">
                     <button
                       aria-pressed={!area}
-                      className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] ${!area ? 'bg-white text-[#472a3b] shadow-sm' : 'text-[#65748a] hover:text-[#472a3b]'}`}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep ${!area ? 'bg-white text-brand-navy shadow-sm' : 'text-[#65748a] hover:text-brand-navy'}`}
                       onClick={() => setArea('')}
                       type="button"
                     >
@@ -557,7 +557,7 @@ export function AdminActivityPage() {
                       return (
                         <button
                           aria-pressed={selected}
-                          className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] ${selected ? 'bg-white text-[#472a3b] shadow-sm' : 'text-[#65748a] hover:text-[#472a3b]'}`}
+                          className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep ${selected ? 'bg-white text-brand-navy shadow-sm' : 'text-[#65748a] hover:text-brand-navy'}`}
                           key={value}
                           onClick={() => setArea(value)}
                           type="button"
@@ -572,7 +572,7 @@ export function AdminActivityPage() {
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-semibold text-[#65748a]" htmlFor="activity-person">{t('Person')}</label>
                     <select
-                      className="min-h-9 rounded-md border border-[#dce3eb] bg-white px-3 text-xs font-bold text-[#472a3b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e]"
+                      className="min-h-9 rounded-md border border-[#dce3eb] bg-white px-3 text-xs font-bold text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep"
                       id="activity-person"
                       onChange={(event) => setPerson(event.target.value)}
                       value={person}
@@ -587,18 +587,18 @@ export function AdminActivityPage() {
 
             {!entries.length ? (
               <div className="px-6 py-14 text-center">
-                <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#f1f5f9] text-[#6b3f58]">
+                <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#f1f5f9] text-brand-blue">
                   <AdminIcon className="size-6" path={adminIcons.history} />
                 </span>
-                <p className="mt-4 text-sm font-semibold text-[#472a3b]">{t('No admin changes have been recorded yet.')}</p>
+                <p className="mt-4 text-sm font-semibold text-brand-navy">{t('No admin changes have been recorded yet.')}</p>
                 <p className="mt-1 text-sm text-[#65748a]">{t('Successful edits, orders and account changes will appear here.')}</p>
               </div>
             ) : !shown.length ? (
               <div className="px-6 py-14 text-center">
-                <p className="text-sm font-semibold text-[#472a3b]">{t('No matching changes')}</p>
+                <p className="text-sm font-semibold text-brand-navy">{t('No matching changes')}</p>
                 <p className="mt-1 text-sm text-[#65748a]">{t('Try another person or area filter.')}</p>
                 <button
-                  className="mt-4 text-sm font-bold text-[#6b3f58] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e]"
+                  className="mt-4 text-sm font-bold text-brand-blue underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep"
                   onClick={() => { setPerson(''); setArea('') }}
                   type="button"
                 >
@@ -626,14 +626,14 @@ export function AdminActivityPage() {
                             </span>
                             <div className="min-w-0 pt-0.5">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-extrabold text-[#472a3b]">{t(entry.label, { id: entry.id ?? '' })}</p>
+                                <p className="text-sm font-extrabold text-brand-navy">{t(entry.label, { id: entry.id ?? '' })}</p>
                                 <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold ${AREA_STYLES[entry.area]}`}>
                                   {t(AREA_LABELS[entry.area])}
                                 </span>
                               </div>
                               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#65748a]">
-                                <span className="inline-flex items-center gap-1.5 font-semibold text-[#6b3f58]">
-                                  <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#f4f6f8] text-[9px] font-extrabold text-[#6b3f58]">
+                                <span className="inline-flex items-center gap-1.5 font-semibold text-brand-blue">
+                                  <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#f4f6f8] text-[9px] font-extrabold text-brand-blue">
                                     {adminInitials(entry.adminName)}
                                   </span>
                                   {entry.adminName}

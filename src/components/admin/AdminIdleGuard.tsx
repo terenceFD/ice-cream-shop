@@ -88,20 +88,20 @@ export function AdminIdleGuard() {
         <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#fff6d6] text-lg font-semibold tabular-nums text-[#8a6d00]">
           {secondsLeft}
         </span>
-        <h2 className="mt-4 text-base font-semibold text-[#472a3b]" id="idle-warning-title">{t('Are you still there?')}</h2>
+        <h2 className="mt-4 text-base font-semibold text-brand-navy" id="idle-warning-title">{t('Are you still there?')}</h2>
         <p className="mt-2 text-sm leading-6 text-[#65748a]" id="idle-warning-text">
           {t('For your security, you will be signed out in {seconds} seconds because the dashboard has been inactive.', { seconds: secondsLeft })}
         </p>
         <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
           <button
-            className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] ring-1 ring-[#dce3eb] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]"
+            className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] ring-1 ring-[#dce3eb] transition hover:bg-[#f4f6f8] hover:text-brand-navy"
             onClick={() => { lastActivityRef.current = 1 }}
             type="button"
           >
             {t('Sign out now')}
           </button>
           <button
-            className="min-h-10 rounded-md bg-[#472a3b] px-4 text-sm font-bold text-white transition hover:bg-[#6b3f58] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e]"
+            className="min-h-10 rounded-md bg-brand-navy px-4 text-sm font-bold text-white transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep"
             onClick={staySignedIn}
             ref={stayButtonRef}
             type="button"

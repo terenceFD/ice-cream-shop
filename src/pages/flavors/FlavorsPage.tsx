@@ -9,6 +9,7 @@ import { RatingBadge } from "../../components/RatingBadge";
 import { useLanguage } from "../../language/useLanguage";
 import { formatCartMoney } from "../../lib/cartPricing";
 import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
+import { useScrollReveal } from "../../lib/useScrollReveal";
 
 const SORT_OPTIONS = [
   { value: "recommended", label: "Recommended" },
@@ -59,7 +60,7 @@ function SortMenu({
       >
         <span className="truncate text-xs font-bold leading-4 text-[#65748a]">{t("Sort by")}</span>
         <span className="mt-0.5 flex items-center justify-between gap-2">
-          <span className="truncate text-sm font-bold text-[#472a3b]">{t(current.label)}</span>
+          <span className="truncate text-sm font-bold text-brand-navy">{t(current.label)}</span>
           <svg
             aria-hidden="true"
             className={`size-4 shrink-0 text-[#65748a] transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
@@ -73,7 +74,7 @@ function SortMenu({
       {open && (
         <ul
           aria-label={t("Sort by")}
-          className="absolute inset-x-0 top-[calc(100%+6px)] z-40 overflow-hidden rounded-lg bg-[#472a3b] py-1.5 shadow-[0_18px_40px_rgba(9,42,83,0.22)]"
+          className="absolute inset-x-0 top-[calc(100%+6px)] z-40 overflow-hidden rounded-lg bg-brand-navy py-1.5 shadow-[0_18px_40px_rgba(9,42,83,0.22)]"
           role="listbox"
         >
           {SORT_OPTIONS.map((option) => {
@@ -83,7 +84,7 @@ function SortMenu({
                 <button
                   aria-selected={selected}
                   className={`flex min-h-11 w-full items-center justify-between gap-3 px-3.5 text-left text-sm font-bold outline-none! ${
-                    selected ? "text-[#ffb84d]" : "text-white hover:bg-white/10"
+                    selected ? "text-brand-yellow" : "text-white hover:bg-white/10"
                   }`}
                   onClick={() => {
                     onChange(option.value);
@@ -93,7 +94,7 @@ function SortMenu({
                   type="button"
                 >
                   <span className="truncate">{t(option.label)}</span>
-                  {selected && <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-[#ffb84d]" />}
+                  {selected && <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-brand-yellow" />}
                 </button>
               </li>
             );
@@ -127,6 +128,7 @@ export function FlavorsPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState("recommended");
   const selectedTag = searchParams.get("tag") || "";
+  const gridRef = useScrollReveal<HTMLDivElement>([search, maxPrice, sortBy, selectedTag]);
   // A tag only becomes a filter when it groups two or more flavors; a button that finds a
   // single flavor is noise. A tag opened from a link (?tag=) is always shown so it can be cleared.
   const tagCounts = new Map<string, number>();
@@ -182,13 +184,14 @@ export function FlavorsPage() {
   useEffect(() => () => window.clearTimeout(addedTimer.current), []);
 
   return (
-    <div className="min-h-screen bg-[#fbfaf5] text-[#472a3b]">
+    <div className="min-h-screen bg-[#fbfaf5] text-brand-navy">
       <Header />
 
       <main id="main" tabIndex={-1}>
         {/* Hero */}
         <PageHero
           compactOnMobile
+          theme="popsicle"
           actions={
             <>
               <a className={PageHero.primary} href="#shop-products">
@@ -228,7 +231,7 @@ export function FlavorsPage() {
           <section aria-labelledby="shop-products-heading" className="scroll-mt-4" id="shop-products">
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h2 className="font-display text-4xl font-extrabold tracking-tight text-[#472a3b] sm:text-5xl" id="shop-products-heading">
+                <h2 className="font-display text-4xl font-extrabold tracking-tight text-brand-navy sm:text-5xl" id="shop-products-heading">
                   {t("A scoop for every mood")}
                 </h2>
               </div>
@@ -250,12 +253,12 @@ export function FlavorsPage() {
               <div className="grid gap-3 lg:grid-cols-[minmax(240px,1fr)_190px_220px]">
                 <label className="group relative flex min-h-12 items-center rounded-lg bg-white">
                   <span className="sr-only">{t("Search flavors")}</span>
-                  <svg aria-hidden="true" className="pointer-events-none absolute left-4 size-5 text-[#65748a] transition-colors group-focus-within:text-[#472a3b]" fill="none" viewBox="0 0 24 24">
+                  <svg aria-hidden="true" className="pointer-events-none absolute left-4 size-5 text-[#65748a] transition-colors group-focus-within:text-brand-navy" fill="none" viewBox="0 0 24 24">
                     <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
                     <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
                   </svg>
                   <input
-                    className="w-full bg-transparent py-3 pl-12 pr-11 text-sm font-semibold text-[#472a3b] outline-none! placeholder:font-medium placeholder:text-[#65748a] [&::-webkit-search-cancel-button]:hidden"
+                    className="w-full bg-transparent py-3 pl-12 pr-11 text-sm font-semibold text-brand-navy outline-none! placeholder:font-medium placeholder:text-[#65748a] [&::-webkit-search-cancel-button]:hidden"
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder={t("Search flavors")}
                     type="search"
@@ -264,7 +267,7 @@ export function FlavorsPage() {
                   {search && (
                     <button
                       aria-label={t("Clear search")}
-                      className="absolute right-2 grid size-8 place-items-center rounded-md text-[#65748a] transition-colors hover:bg-[#f4f6f8] hover:text-[#472a3b] outline-none!"
+                      className="absolute right-2 grid size-8 place-items-center rounded-md text-[#65748a] transition-colors hover:bg-[#f4f6f8] hover:text-brand-navy outline-none!"
                       onClick={() => setSearch("")}
                       type="button"
                     >
@@ -279,7 +282,7 @@ export function FlavorsPage() {
                     <span className="truncate text-xs font-bold leading-4 text-[#65748a]">{t("Maximum price")}</span>
                     <span className="mt-0.5 flex items-baseline gap-1.5">
                       <input
-                        className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-[#472a3b] outline-none! placeholder:font-medium placeholder:text-[#a5aebb]"
+                        className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-brand-navy outline-none! placeholder:font-medium placeholder:text-[#a5aebb]"
                         inputMode="numeric"
                         min="0"
                         onChange={(event) => setMaxPrice(event.target.value)}
@@ -297,7 +300,7 @@ export function FlavorsPage() {
 
               {!flavorTags.length && hasFilters && (
                 <div className="mt-3 flex justify-end">
-                  <button className="min-h-9 rounded-md px-2 text-xs font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition-colors hover:bg-[#f4f6f8] outline-none!" onClick={clearFilters} type="button">
+                  <button className="min-h-9 rounded-md px-2 text-xs font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition-colors hover:bg-[#f4f6f8] outline-none!" onClick={clearFilters} type="button">
                     {t("Clear filters")}
                   </button>
                 </div>
@@ -316,15 +319,15 @@ export function FlavorsPage() {
                             aria-pressed={active}
                             className={`inline-flex min-h-9 items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold outline-none! transition-colors ${
                               active
-                                ? "bg-[#472a3b] text-white"
-                                : "bg-white text-[#65748a] hover:bg-[#f4f6f8] hover:text-[#472a3b]"
+                                ? "bg-brand-navy text-white"
+                                : "bg-white text-[#65748a] hover:bg-[#f4f6f8] hover:text-brand-navy"
                             }`}
                             key={tag || "all"}
                             onClick={() => selectTag(tag)}
                             type="button"
                           >
                             <span>{tag ? t(tag) : t("All tags")}</span>
-                            <span className={`tabular-nums ${active ? "text-[#ffb84d]" : "text-[#8290a0]"}`}>{count}</span>
+                            <span className={`tabular-nums ${active ? "text-brand-yellow" : "text-[#8290a0]"}`}>{count}</span>
                           </button>
                         );
                       })}
@@ -332,7 +335,7 @@ export function FlavorsPage() {
                   </div>
                   {hasFilters && (
                     <button
-                      className="min-h-9 shrink-0 self-start rounded-md px-2 text-xs font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition-colors hover:bg-[#f4f6f8] outline-none! sm:mt-5"
+                      className="min-h-9 shrink-0 self-start rounded-md px-2 text-xs font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition-colors hover:bg-[#f4f6f8] outline-none! sm:mt-5"
                       onClick={clearFilters}
                       type="button"
                     >
@@ -344,13 +347,13 @@ export function FlavorsPage() {
             </div>
 
             {/* Products */}
-            <div className="grid auto-rows-fr grid-cols-2 gap-3.5 sm:gap-5 lg:grid-cols-4 lg:gap-6">
+            <div className="grid auto-rows-fr grid-cols-2 gap-3.5 sm:gap-5 lg:grid-cols-4 lg:gap-6" ref={gridRef}>
               {sortedFlavors.map((flavor) => {
                 const added = addedId === flavor.id;
                 const soldOut = flavor.availableQuantity < 1;
                 return (
                   <article
-                    className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[22px] border border-[#f4f6f8] bg-white shadow-[0_12px_24px_rgba(9,42,83,0.08)] transition duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(9,42,83,0.12)] motion-reduce:transform-none motion-reduce:transition-none"
+                    className="scroll-reveal group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[22px] border border-[#f4f6f8] bg-white shadow-[0_12px_24px_rgba(9,42,83,0.08)] transition duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(9,42,83,0.12)] motion-reduce:transform-none motion-reduce:transition-none"
                     key={flavor.id}
                   >
                     <span
@@ -360,7 +363,7 @@ export function FlavorsPage() {
                     <div className="relative aspect-[4/3] overflow-hidden bg-[#f4f6f8]">
                       <Link
                         aria-hidden="true"
-                        className="absolute inset-0 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                        className="absolute inset-0 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                         tabIndex={-1}
                         to={`/flavor/${flavor.id}`}
                       />
@@ -376,7 +379,7 @@ export function FlavorsPage() {
                       />
 
                       {flavor.tag && (
-                        <span className="absolute left-3 top-3 z-20 inline-flex max-w-[calc(100%-2rem)] items-center truncate rounded-full border border-white/80 bg-[#fffaf0]/95 px-2.5 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#472a3b] shadow-sm backdrop-blur-[2px] transition-transform duration-500 ease-out group-hover:-rotate-3 motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-xs">
+                        <span className="absolute left-3 top-3 z-20 inline-flex max-w-[calc(100%-2rem)] items-center truncate rounded-full border border-white/80 bg-[#fffaf0]/95 px-2.5 py-1 text-xs font-black uppercase tracking-[0.12em] text-brand-navy shadow-sm backdrop-blur-[2px] transition-transform duration-500 ease-out group-hover:-rotate-3 motion-reduce:transform-none sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-xs">
                           {t(flavor.tag)}
                         </span>
                       )}
@@ -393,7 +396,7 @@ export function FlavorsPage() {
                       </span>
                       {soldOut && (
                         <span className="absolute inset-0 z-20 grid place-items-center bg-white/45 backdrop-blur-[1px]">
-                          <span className="rounded-full bg-[#472a3b] px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] text-white">
+                          <span className="rounded-full bg-brand-navy px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] text-white">
                             {t("Sold out")}
                           </span>
                         </span>
@@ -402,8 +405,8 @@ export function FlavorsPage() {
 
                     <div className="flex flex-1 flex-col justify-between gap-2.5 p-3.5 sm:gap-3 sm:p-4">
                       <div>
-                        <h3 className="line-clamp-2 font-display text-base font-extrabold leading-[1.15] text-[#472a3b] transition-colors duration-300 group-hover:text-[#6b3f58] sm:text-[1.08rem]">
-                          <Link className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2" to={`/flavor/${flavor.id}`}>
+                        <h3 className="line-clamp-2 font-display text-base font-extrabold leading-[1.15] text-brand-navy transition-colors duration-300 group-hover:text-brand-blue sm:text-[1.08rem]">
+                          <Link className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2" to={`/flavor/${flavor.id}`}>
                             {t(flavor.name)}
                           </Link>
                         </h3>
@@ -425,15 +428,15 @@ export function FlavorsPage() {
                         )}
                       </div>
                       <div className="flex flex-col gap-2.5 pt-0.5">
-                        <span className={`whitespace-nowrap font-display text-lg font-extrabold tabular-nums transition-colors duration-300 ${added ? "text-green-700" : "text-[#472a3b]"}`}>
+                        <span className={`whitespace-nowrap font-display text-lg font-extrabold tabular-nums transition-colors duration-300 ${added ? "text-green-700" : "text-brand-navy"}`}>
                           {formatCartMoney(flavor.price, "xaf", language)}
                         </span>
                         <button
                           aria-label={t("Add {name} to cart", { name: t(flavor.name) })}
-                          className={`relative z-10 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] motion-reduce:transform-none ${
+                          className={`relative z-10 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#e3e8ed] disabled:text-[#65748a] motion-reduce:transform-none ${
                             added
                               ? "bg-[#37632c] text-white"
-                              : "bg-[#472a3b] text-white hover:bg-[#6b3f58]"
+                              : "bg-brand-navy text-white hover:bg-brand-blue"
                           }`}
                           disabled={soldOut}
                           onClick={() => addFlavor(flavor)}
@@ -457,7 +460,7 @@ export function FlavorsPage() {
 
             {!loading && !error && availableFlavors.length === 0 && (
               <div className="rounded-[28px] bg-white px-6 py-16 text-center ring-1 ring-[#fbfaf5]">
-                <p className="font-display text-xl font-extrabold text-[#472a3b]">{t("All flavors are currently sold out. Please check back soon.")}</p>
+                <p className="font-display text-xl font-extrabold text-brand-navy">{t("All flavors are currently sold out. Please check back soon.")}</p>
               </div>
             )}
             {!loading && !error && availableFlavors.length > 0 && filteredFlavors.length === 0 && (
@@ -468,9 +471,9 @@ export function FlavorsPage() {
                     <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
                   </svg>
                 </span>
-                <p className="mt-5 font-display text-xl font-extrabold text-[#472a3b]">{t("No flavors match your filters.")}</p>
+                <p className="mt-5 font-display text-xl font-extrabold text-brand-navy">{t("No flavors match your filters.")}</p>
                 <button
-                  className="mt-5 rounded-full bg-[#472a3b] px-6 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#6b3f58]"
+                  className="mt-5 rounded-full bg-brand-navy px-6 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-brand-blue"
                   onClick={clearFilters}
                   type="button"
                 >
@@ -504,20 +507,20 @@ export function FlavorsPage() {
           </section>
 
           {/* Promo */}
-          <section className="relative isolate mt-16 overflow-hidden rounded-[32px] bg-[#472a3b] px-7 py-10 text-white sm:px-12 sm:py-14">
+          <section className="relative isolate mt-16 overflow-hidden rounded-[32px] bg-brand-navy px-7 py-10 text-white sm:px-12 sm:py-14">
             <div aria-hidden="true" className="absolute -right-16 -top-24 -z-10 size-72 rounded-full border-[44px] border-white/[0.05]" />
             <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1.5 bg-gradient-to-r from-[#ffb84d] via-[#ffb84d]/50 to-transparent" />
             <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
               <div className="flex items-start gap-5">
-                <span aria-hidden="true" className="hidden size-16 shrink-0 place-items-center rounded-2xl bg-[#ffb84d] font-display text-xl font-extrabold text-[#472a3b] sm:grid">3×</span>
+                <span aria-hidden="true" className="hidden size-16 shrink-0 place-items-center rounded-2xl bg-brand-yellow font-display text-xl font-extrabold text-brand-navy sm:grid">3×</span>
                 <div>
-                  <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ffb84d]">{t("Scoop deal")}</p>
+                  <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-yellow">{t("Scoop deal")}</p>
                   <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">{t("More scoops, more smiles")}</h2>
                   <p className="mt-2 max-w-lg text-sm leading-6 text-white/70">{t("Pick any three scoops and the lowest-priced one is on us.")}</p>
                 </div>
               </div>
               <Link
-                className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#ffb84d] px-7 py-4 text-sm font-extrabold text-[#472a3b] transition hover:-translate-y-0.5 hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b]"
+                className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-brand-yellow px-7 py-4 text-sm font-extrabold text-brand-navy transition hover:-translate-y-0.5 hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy"
                 to="/cart"
               >
                 {t("Go to your bag")} <ArrowIcon />

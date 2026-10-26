@@ -205,15 +205,15 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const strengthLabels = ['', 'Weak', 'Fair', 'Good', 'Strong']
   const passwordsMatch = Boolean(confirmPassword) && password === confirmPassword
   const brandImage = '/ice-images/ice-5.webp'
-  const labelClass = 'text-sm font-bold text-[#472a3b]'
-  const inputShellClass = 'mt-2 flex bg-[#f4f6f8] focus-within:ring-2 focus-within:ring-[#472a3b]'
-  const inputClass = 'w-full bg-transparent px-4 py-3.5 text-sm font-semibold text-[#472a3b] outline-none placeholder:font-normal placeholder:text-[#8b97a8]'
-  const codeInputClass = 'size-12 bg-[#f4f6f8] text-center text-xl font-extrabold text-[#472a3b] outline-none focus:ring-2 focus:ring-[#472a3b] sm:size-14'
+  const labelClass = 'text-sm font-bold text-brand-navy'
+  const inputShellClass = 'mt-2 flex bg-[#f4f6f8] focus-within:ring-2 focus-within:ring-brand-navy'
+  const inputClass = 'w-full bg-transparent px-4 py-3.5 text-sm font-semibold text-brand-navy outline-none placeholder:font-normal placeholder:text-[#8b97a8]'
+  const codeInputClass = 'size-12 bg-[#f4f6f8] text-center text-xl font-extrabold text-brand-navy outline-none focus:ring-2 focus:ring-brand-navy sm:size-14'
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-[#472a3b]">
+    <div className="flex min-h-screen flex-col bg-white text-brand-navy">
       <button
-        className="fixed left-5 top-5 z-20 inline-flex items-center gap-2 bg-[#472a3b] px-4 py-3 text-sm font-extrabold text-white transition duration-300 hover:bg-[#ffb84d] hover:text-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 sm:left-8 sm:top-8"
+        className="fixed left-5 top-5 z-20 inline-flex items-center gap-2 bg-brand-navy px-4 py-3 text-sm font-extrabold text-white transition duration-300 hover:bg-brand-yellow hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 sm:left-8 sm:top-8"
         onClick={goBack}
         type="button"
       >
@@ -259,8 +259,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                     aria-current={tab.active ? 'page' : undefined}
                     className={`pb-2 text-sm font-extrabold transition ${
                       tab.active
-                        ? 'text-[#472a3b] underline decoration-[#ffb84d] decoration-[3px] underline-offset-8'
-                        : 'text-[#65748a] hover:text-[#472a3b]'
+                        ? 'text-brand-navy underline decoration-[#ffb84d] decoration-[3px] underline-offset-8'
+                        : 'text-[#65748a] hover:text-brand-navy'
                     }`}
                     key={tab.to}
                     replace
@@ -272,7 +272,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 ))}
               </div>
 
-              <h1 className="mt-6 font-display text-4xl font-extrabold leading-[0.95] tracking-[-0.03em] text-[#472a3b] sm:text-5xl">
+              <h1 className="mt-6 font-display text-4xl font-extrabold leading-[0.95] tracking-[-0.03em] text-brand-navy sm:text-5xl">
                 {passwordResetStep === 'request'
                   ? t('Reset your password')
                   : passwordResetStep === 'confirm'
@@ -280,7 +280,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                     : isSignup ? verificationId ? t('Verify your email') : t('Create an account') : t('Welcome back')}
               </h1>
               {!(isSignup && !verificationId && passwordResetStep === 'idle') && (
-                <p className="mt-4 max-w-[42ch] text-base font-medium leading-7 text-[#472a3b]">
+                <p className="mt-4 max-w-[42ch] text-base font-medium leading-7 text-brand-navy">
                   {passwordResetStep === 'request'
                     ? t('Enter the email address on your account and we’ll send you a reset code.')
                     : passwordResetStep === 'confirm'
@@ -291,7 +291,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 </p>
               )}
               {checkoutNotice && (
-                <p className="mt-5 bg-[#fff6cc] px-4 py-3 text-sm font-semibold leading-6 text-[#472a3b]" role="status">
+                <p className="mt-5 bg-[#fff6cc] px-4 py-3 text-sm font-semibold leading-6 text-brand-navy" role="status">
                   {checkoutNotice}
                 </p>
               )}
@@ -308,10 +308,10 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
 
                 {isSignup && verificationId ? (
                   <div>
-                    <p className="text-sm font-semibold text-[#472a3b]">
+                    <p className="text-sm font-semibold text-brand-navy">
                       {t('We sent a verification code to')}
                     </p>
-                    <p className="mt-1 break-all text-sm font-extrabold text-[#472a3b]">{email}</p>
+                    <p className="mt-1 break-all text-sm font-extrabold text-brand-navy">{email}</p>
                     <div
                       aria-label={t('6-digit verification code')}
                       className="mt-5 flex gap-2"
@@ -336,8 +336,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                         />
                       ))}
                     </div>
-                    <p className="mt-3 text-sm font-medium leading-6 text-[#472a3b]">{t('The code expires in 10 minutes.')}</p>
-                    <button className="mt-3 text-sm font-extrabold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4 disabled:cursor-wait disabled:opacity-60" disabled={isSubmitting || resendCountdown > 0} onClick={resendVerificationCode} type="button">
+                    <p className="mt-3 text-sm font-medium leading-6 text-brand-navy">{t('The code expires in 10 minutes.')}</p>
+                    <button className="mt-3 text-sm font-extrabold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 disabled:cursor-wait disabled:opacity-60" disabled={isSubmitting || resendCountdown > 0} onClick={resendVerificationCode} type="button">
                       {resendCountdown > 0 ? t('Resend code in {seconds}s', { seconds: resendCountdown }) : t('Resend code')}
                     </button>
                   </div>
@@ -375,7 +375,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                             />
                           ))}
                         </div>
-                        <p className="text-sm font-medium leading-6 text-[#472a3b]">{t('The code expires in 10 minutes.')}</p>
+                        <p className="text-sm font-medium leading-6 text-brand-navy">{t('The code expires in 10 minutes.')}</p>
                         <PasswordField
                           autoComplete="new-password"
                           label={t('New password')}
@@ -428,10 +428,10 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                         <span aria-live="polite" className="mt-2.5 block">
                           <span aria-hidden="true" className="grid grid-cols-4 gap-1.5">
                             {[1, 2, 3, 4].map((step) => (
-                              <span className={`h-1.5 ${passwordScore >= step ? 'bg-[#472a3b]' : 'bg-[#e4e8ee]'}`} key={step} />
+                              <span className={`h-1.5 ${passwordScore >= step ? 'bg-brand-navy' : 'bg-[#e4e8ee]'}`} key={step} />
                             ))}
                           </span>
-                          <span className="mt-1.5 flex justify-between text-sm font-semibold text-[#472a3b]">
+                          <span className="mt-1.5 flex justify-between text-sm font-semibold text-brand-navy">
                             <span>{t('At least 8 characters')}</span>
                             {passwordScore > 0 && <span>{t('Password strength')}: {t(strengthLabels[passwordScore])}</span>}
                           </span>
@@ -442,7 +442,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                     {!isSignup && passwordResetStep === 'idle' && (
                       <div className="text-right">
                         <button
-                          className="text-sm font-extrabold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4"
+                          className="text-sm font-extrabold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4"
                           onClick={() => {
                             setError('')
                             setVerificationNotice('')
@@ -490,7 +490,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 )}
 
                 <button
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#ffb84d] px-6 text-sm font-extrabold text-[#472a3b] transition duration-300 hover:bg-[#472a3b] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 active:scale-[0.99] disabled:cursor-wait disabled:opacity-70 motion-reduce:transform-none"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 bg-brand-yellow px-6 text-sm font-extrabold text-brand-navy transition duration-300 hover:bg-brand-navy hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 active:scale-[0.99] disabled:cursor-wait disabled:opacity-70 motion-reduce:transform-none"
                   disabled={isSubmitting || Boolean(isSignup && verificationId && verificationCode.some((digit) => !digit))}
                   type="submit"
                 >
@@ -509,7 +509,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
 
               {passwordResetStep !== 'idle' && (
                 <button
-                  className="mt-5 text-sm font-extrabold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4"
+                  className="mt-5 text-sm font-extrabold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4"
                   onClick={() => {
                     setPasswordResetStep('idle')
                     setResetVerificationId('')
@@ -525,7 +525,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 </button>
               )}
 
-              <p className="mt-6 text-sm font-medium text-[#472a3b]">
+              <p className="mt-6 text-sm font-medium text-brand-navy">
                 {isSignup ? t('Already have an account?') : t("New to this website's shop?")}{' '}
                 <Link
                   className="font-extrabold underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition hover:decoration-[#472a3b]"

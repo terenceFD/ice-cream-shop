@@ -5,7 +5,7 @@ import { useLanguage } from "../../language/useLanguage";
 import { useAdminAuth } from "./useAdminAuth";
 
 const controlClassName =
-  "h-9 w-full rounded-lg border border-[#d1d5db] bg-white px-3 text-sm text-[#111827] transition placeholder:text-[#6b7280] hover:border-[#c2c8d0] focus:border-[#472a3b] focus:outline-2 focus:outline-offset-1 focus:outline-[#472a3b]/40";
+  "h-9 w-full rounded-lg border border-[#d1d5db] bg-white px-3 text-sm text-[#111827] transition placeholder:text-[#6b7280] hover:border-[#c2c8d0] focus:border-brand-navy focus:outline-2 focus:outline-offset-1 focus:outline-brand-navy/40";
 
 const icons = {
   card: "M3 6h18v12H3V6Zm0 4h18M7 15h4",
@@ -75,7 +75,7 @@ const statusMeta = {
 
 const providerMeta = {
   stripe: { label: "Stripe", bar: "bg-[#635bff]", icon: icons.card },
-  campay: { label: "CamPay", bar: "bg-[#472a3b]", icon: icons.phone },
+  campay: { label: "CamPay", bar: "bg-brand-navy", icon: icons.phone },
 };
 
 function providerInfo(provider) {
@@ -417,7 +417,7 @@ export function AdminPaymentsDashboard() {
           return metric.filter ? (
             <button
               aria-pressed={isActive}
-              className={`group ${shared} ${index % 2 === 0 ? "border-r border-[#e8e8e8] xl:border-r-0" : ""} ${index < 2 ? "border-b border-[#e8e8e8] xl:border-b-0" : ""} hover:bg-[#f6f7f9] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#472a3b]`}
+              className={`group ${shared} ${index % 2 === 0 ? "border-r border-[#e8e8e8] xl:border-r-0" : ""} ${index < 2 ? "border-b border-[#e8e8e8] xl:border-b-0" : ""} hover:bg-[#f6f7f9] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-navy`}
               key={metric.label}
               onClick={() => setActiveFilter(isActive ? "all" : metric.filter)}
               type="button"
@@ -506,7 +506,7 @@ export function AdminPaymentsDashboard() {
             </div>
             {hasActiveFilters && (
               <button
-                className="text-sm font-medium text-[#472a3b] hover:underline"
+                className="text-sm font-medium text-brand-navy hover:underline"
                 onClick={() => {
                   setSearchQuery("");
                   setActiveFilter("all");
@@ -848,7 +848,7 @@ export function AdminPaymentsDashboard() {
                     <dd className="min-w-0 truncate text-right font-medium text-[#111827]">
                       {row.href ? (
                         <a
-                          className="text-[#472a3b] hover:underline"
+                          className="text-brand-navy hover:underline"
                           href={row.href}
                         >
                           {row.value}

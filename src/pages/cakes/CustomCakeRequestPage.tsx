@@ -251,10 +251,10 @@ export function CustomCakeRequestPage() {
   const selectedStore = stores.find((store) => String(store.storeId) === selectedStoreId)
   const previewCake = cakeGallery[selectedCakePhoto]
   const labelClass = 'block text-[13px] font-bold text-[#33455c]'
-  const fieldClass = 'mt-2 w-full rounded-md bg-[#f4f6f8] px-4 py-3.5 text-sm font-semibold text-[#472a3b] outline-none! ring-1 ring-[#dce2e8] transition placeholder:font-normal placeholder:text-[#78879a] hover:bg-white hover:ring-[#9aa9ba] focus:bg-white focus:ring-2 focus:ring-[#b8721e]'
+  const fieldClass = 'mt-2 w-full rounded-md bg-[#f4f6f8] px-4 py-3.5 text-sm font-semibold text-brand-navy outline-none! ring-1 ring-[#dce2e8] transition placeholder:font-normal placeholder:text-[#78879a] hover:bg-white hover:ring-[#9aa9ba] focus:bg-white focus:ring-2 focus:ring-brand-yellow-deep'
   const stepHeading = (title: string, hint: string, id: string) => (
     <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-      <h3 className="font-display text-2xl font-extrabold tracking-tight text-[#472a3b]" id={id}>
+      <h3 className="font-display text-2xl font-extrabold tracking-tight text-brand-navy" id={id}>
         {t(title)}
       </h3>
       <p className="text-[13px] font-semibold text-[#65748a]">{t(hint)}</p>
@@ -264,7 +264,7 @@ export function CustomCakeRequestPage() {
     value ? new Date(`${value}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'long' }) : ''
 
   return (
-    <div className="min-h-screen bg-[#f4f6f8] text-[#472a3b]">
+    <div className="min-h-screen bg-[#f4f6f8] text-brand-navy">
       <Header />
       {paymentDialog && (
         <PaymentStatusDialog
@@ -293,7 +293,7 @@ export function CustomCakeRequestPage() {
         />
       )}
       <main id="main" tabIndex={-1}>
-        <section className="bg-[#472a3b] text-white">
+        <section className="bg-brand-navy text-white">
           <div className="grid lg:min-h-[min(82svh,760px)] lg:grid-cols-[58%_42%]">
             <div className="h-[48svh] min-h-[18rem] max-h-[34rem] overflow-hidden lg:h-auto lg:min-h-[min(82svh,760px)] lg:max-h-none">
               <img
@@ -315,7 +315,7 @@ export function CustomCakeRequestPage() {
                   {t('Creamy ice cream cakes for birthdays, parties, and every celebration.')}
                 </p>
                 <a
-                  className="mt-8 inline-flex min-h-12 items-center justify-center bg-[#ffb84d] px-6 py-3 text-sm font-extrabold text-[#472a3b] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b]"
+                  className="mt-8 inline-flex min-h-12 items-center justify-center bg-brand-yellow px-6 py-3 text-sm font-extrabold text-brand-navy transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy"
                   href="#cake-request-form"
                 >
                   {t('Start your request')}
@@ -345,7 +345,7 @@ export function CustomCakeRequestPage() {
                   <button
                     aria-label={`${t('Custom celebration cake')} ${index + 1}`}
                     aria-pressed={selectedCakePhoto === index}
-                    className={`size-[4.5rem] shrink-0 overflow-hidden bg-[#dce2e8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 ${selectedCakePhoto === index ? 'ring-2 ring-[#472a3b] ring-offset-2' : 'opacity-70 hover:opacity-100'}`}
+                    className={`size-[4.5rem] shrink-0 overflow-hidden bg-[#dce2e8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 ${selectedCakePhoto === index ? 'ring-2 ring-brand-navy ring-offset-2' : 'opacity-70 hover:opacity-100'}`}
                     key={cake.photo}
                     onClick={() => setSelectedCakePhoto(index)}
                     type="button"
@@ -362,14 +362,14 @@ export function CustomCakeRequestPage() {
               </div>
             </figure>
             <div className="lg:col-span-4">
-              <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight text-[#472a3b] sm:text-4xl" id="cake-gallery-title">
+              <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight text-brand-navy sm:text-4xl" id="cake-gallery-title">
                 {t('Cakes made here')}
               </h2>
               <p className="mt-5 text-base leading-7 text-[#33455c]">
                 {t('Every one of these started as a request like yours — a size, a flavour and an idea. Yours is next.')}
               </p>
               <a
-                className="mt-7 inline-flex min-h-12 items-center bg-[#472a3b] px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2"
+                className="mt-7 inline-flex min-h-12 items-center bg-brand-navy px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2"
                 href="#cake-request-form"
               >
                 {t('Start your request')}
@@ -386,7 +386,7 @@ export function CustomCakeRequestPage() {
               id="cake-request-form"
               onSubmit={submitRequest}
             >
-              <h2 className="font-display text-3xl font-extrabold tracking-tight text-[#472a3b] sm:text-4xl">{t('Tell us about your cake')}</h2>
+              <h2 className="font-display text-3xl font-extrabold tracking-tight text-brand-navy sm:text-4xl">{t('Tell us about your cake')}</h2>
               <p className="mt-3 max-w-xl text-base leading-7 text-[#65748a]">
                 {t('Choose the size, flavour and finishing touches, then pick a store and date. Fields marked with an asterisk are required.')}
               </p>
@@ -403,12 +403,12 @@ export function CustomCakeRequestPage() {
                       const checked = size === option.label
                       return (
                         <label
-                          className={`relative flex cursor-pointer flex-col items-center justify-end gap-3 rounded-md px-3 pb-4 pt-5 text-center ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#472a3b] ${checked ? 'bg-[#472a3b] text-white ring-[#472a3b]' : 'bg-white text-[#472a3b] ring-[#dce2e8] hover:ring-[#9aa9ba]'
+                          className={`relative flex cursor-pointer flex-col items-center justify-end gap-3 rounded-md px-3 pb-4 pt-5 text-center ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-navy ${checked ? 'bg-brand-navy text-white ring-brand-navy' : 'bg-white text-brand-navy ring-[#dce2e8] hover:ring-[#9aa9ba]'
                             }`}
                           key={option.label}
                         >
                           <input checked={checked} className="sr-only" name="size" onChange={() => setSize(option.label)} type="radio" value={value} />
-                          <svg aria-hidden="true" className={`${option.icon} ${checked ? 'text-[#ffb84d]' : 'text-[#b8721e]'}`} fill="none" viewBox="0 0 24 24">
+                          <svg aria-hidden="true" className={`${option.icon} ${checked ? 'text-brand-yellow' : 'text-brand-yellow-deep'}`} fill="none" viewBox="0 0 24 24">
                             <path d="M4 20h16M5 20v-6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6M5 16c2 1 3-1 4.7 0s2.6 1 4.6 0 3 1 4.7 0M12 12V8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" />
                           </svg>
                           <span className="text-sm font-extrabold">{value}</span>
@@ -426,12 +426,12 @@ export function CustomCakeRequestPage() {
                       const checked = flavor === option.label
                       return (
                         <label
-                          className={`inline-flex cursor-pointer items-center gap-2.5 rounded-md py-2 pl-2 pr-4 text-sm font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#472a3b] ${checked ? 'bg-[#fff7cc] text-[#472a3b] ring-[#b8721e]' : 'bg-white text-[#65748a] ring-[#dce2e8] hover:ring-[#9aa9ba]'
+                          className={`inline-flex cursor-pointer items-center gap-2.5 rounded-md py-2 pl-2 pr-4 text-sm font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-navy ${checked ? 'bg-[#fff7cc] text-brand-navy ring-brand-yellow-deep' : 'bg-white text-[#65748a] ring-[#dce2e8] hover:ring-[#9aa9ba]'
                             }`}
                           key={option.label}
                         >
                           <input checked={checked} className="sr-only" name="flavor" onChange={() => setFlavor(option.label)} type="radio" value={value} />
-                          <span aria-hidden="true" className={`size-6 rounded-full ring-2 ring-white ${option.swatch} ${checked ? 'outline outline-2 outline-[#b8721e]' : 'outline outline-1 outline-[#dce2e8]'}`} />
+                          <span aria-hidden="true" className={`size-6 rounded-full ring-2 ring-white ${option.swatch} ${checked ? 'outline outline-2 outline-brand-yellow-deep' : 'outline outline-1 outline-[#dce2e8]'}`} />
                           {value}
                         </label>
                       )
@@ -446,7 +446,7 @@ export function CustomCakeRequestPage() {
                       const checked = toppings.includes(topping)
                       return (
                         <label
-                          className={`inline-flex cursor-pointer items-center gap-2 rounded-md px-4 py-2.5 text-sm font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#472a3b] ${checked ? 'bg-[#472a3b] text-white ring-[#472a3b]' : 'bg-white text-[#65748a] ring-[#dce2e8] hover:ring-[#9aa9ba]'
+                          className={`inline-flex cursor-pointer items-center gap-2 rounded-md px-4 py-2.5 text-sm font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-navy ${checked ? 'bg-brand-navy text-white ring-brand-navy' : 'bg-white text-[#65748a] ring-[#dce2e8] hover:ring-[#9aa9ba]'
                             }`}
                           key={topping}
                         >
@@ -456,7 +456,7 @@ export function CustomCakeRequestPage() {
                             onChange={(event) => setToppings((current) => event.target.checked ? [...current, topping] : current.filter((value) => value !== topping))}
                             type="checkbox"
                           />
-                          <span aria-hidden="true" className={`grid size-4 place-items-center rounded-full transition ${checked ? 'bg-[#ffb84d] text-[#472a3b]' : 'ring-1 ring-[#c9c3b4]'}`}>
+                          <span aria-hidden="true" className={`grid size-4 place-items-center rounded-full transition ${checked ? 'bg-brand-yellow text-brand-navy' : 'ring-1 ring-[#c9c3b4]'}`}>
                             {checked && <svg className="size-2.5" fill="none" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" /></svg>}
                           </span>
                           {t(topping)}
@@ -486,29 +486,29 @@ export function CustomCakeRequestPage() {
               <section aria-labelledby="cake-pickup-heading" className="mt-12">
                 {stepHeading('Pickup details', 'Where and when to collect it', 'cake-pickup-heading')}
                 <fieldset className="mt-6">
-                  <legend className={labelClass}>{t('Selected store')} <span className="text-[#b8721e]">*</span></legend>
+                  <legend className={labelClass}>{t('Selected store')} <span className="text-brand-yellow-deep">*</span></legend>
                   <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {stores.map((store) => {
                       const checked = String(store.storeId) === selectedStoreId
                       return (
                         <label
-                          className={`flex min-w-0 cursor-pointer items-center gap-3 rounded-md p-3 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#472a3b] ${checked ? 'bg-[#fff7cc] ring-[#b8721e]' : 'bg-white ring-[#dce2e8] hover:ring-[#9aa9ba]'
+                          className={`flex min-w-0 cursor-pointer items-center gap-3 rounded-md p-3 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-navy ${checked ? 'bg-[#fff7cc] ring-brand-yellow-deep' : 'bg-white ring-[#dce2e8] hover:ring-[#9aa9ba]'
                             }`}
                           key={store.storeId}
                         >
                           <input checked={checked} className="sr-only" name="storeId" onChange={() => setSelectedStoreId(String(store.storeId))} required type="radio" value={store.storeId} />
-                          <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md transition ${checked ? 'bg-[#472a3b] text-[#ffb84d]' : 'bg-[#e9edf1] text-[#65748a]'}`}>
+                          <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md transition ${checked ? 'bg-brand-navy text-brand-yellow' : 'bg-[#e9edf1] text-[#65748a]'}`}>
                             <svg className="size-[18px]" fill="none" viewBox="0 0 24 24">
                               <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 1 1 13 0c0 5.4-6.5 11-6.5 11Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
                               <circle cx="12" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.8" />
                             </svg>
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-extrabold text-[#472a3b]">{t(store.storeName)}</span>
+                            <span className="block truncate text-sm font-extrabold text-brand-navy">{t(store.storeName)}</span>
                             <span className="mt-0.5 block truncate text-[13px] font-semibold text-[#65748a]">{t(store.storeAddress || store.location)}</span>
                           </span>
-                          <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full ring-2 ${checked ? 'bg-[#472a3b] ring-[#472a3b]' : 'ring-[#ddd6c4]'}`}>
-                            {checked && <span className="size-2 rounded-full bg-[#ffb84d]" />}
+                          <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full ring-2 ${checked ? 'bg-brand-navy ring-brand-navy' : 'ring-[#ddd6c4]'}`}>
+                            {checked && <span className="size-2 rounded-full bg-brand-yellow" />}
                           </span>
                         </label>
                       )
@@ -516,7 +516,7 @@ export function CustomCakeRequestPage() {
                   </div>
                 </fieldset>
                 <label className="mt-6 block sm:max-w-xs">
-                  <span className={labelClass}>{t('Pickup date')} <span className="text-[#b8721e]">*</span></span>
+                  <span className={labelClass}>{t('Pickup date')} <span className="text-brand-yellow-deep">*</span></span>
                   <input className={fieldClass} max={maxPickupDate} min={minPickupDate} name="pickupDate" onChange={(event) => setPickupDate(event.target.value)} required type="date" />
                 </label>
               </section>
@@ -526,15 +526,15 @@ export function CustomCakeRequestPage() {
                 {stepHeading('Your contact details', 'So the store can reach you', 'cake-contact-heading')}
                 <div className="mt-6 grid gap-5 sm:grid-cols-2">
                   <label className="block">
-                    <span className={labelClass}>{t('Full name')} <span className="text-[#b8721e]">*</span></span>
+                    <span className={labelClass}>{t('Full name')} <span className="text-brand-yellow-deep">*</span></span>
                     <input autoComplete="name" className={fieldClass} defaultValue={customer?.name || ''} maxLength={100} name="name" required />
                   </label>
                   <label className="block">
-                    <span className={labelClass}>{t('Email address')} <span className="text-[#b8721e]">*</span></span>
+                    <span className={labelClass}>{t('Email address')} <span className="text-brand-yellow-deep">*</span></span>
                     <input autoComplete="email" className={fieldClass} defaultValue={customer?.email || ''} maxLength={254} name="email" required type="email" />
                   </label>
                   <label className="block sm:col-span-2">
-                    <span className={labelClass}>{t('Phone number')} <span className="text-[#b8721e]">*</span></span>
+                    <span className={labelClass}>{t('Phone number')} <span className="text-brand-yellow-deep">*</span></span>
                     <input autoComplete="tel" className={fieldClass} defaultValue={customer?.phone || ''} maxLength={40} name="phone" required type="tel" />
                   </label>
                 </div>
@@ -561,7 +561,7 @@ export function CustomCakeRequestPage() {
               <div className="mt-10 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm leading-6 text-[#65748a]">{t('We’ll be in touch to confirm your request.')}</p>
                 <button
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#472a3b] px-8 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-brand-navy px-8 py-3 text-sm font-extrabold text-white transition-colors hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isSubmitting || !stores.length || Boolean(storeError)}
                   type="submit"
                 >
@@ -573,8 +573,8 @@ export function CustomCakeRequestPage() {
 
             {/* Live summary */}
             <aside className="space-y-8 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300 lg:col-span-4">
-              <div className="overflow-hidden bg-[#472a3b] text-white">
-                <div className="aspect-[16/10] overflow-hidden bg-[#6b3f58]">
+              <div className="overflow-hidden bg-brand-navy text-white">
+                <div className="aspect-[16/10] overflow-hidden bg-brand-blue">
                   <img
                     alt={t(previewCake.name)}
                     className="size-full object-cover"
@@ -589,7 +589,7 @@ export function CustomCakeRequestPage() {
                   <h2 className="font-display text-2xl font-extrabold">{t('Your cake')}</h2>
                   <p className="mt-1.5 text-base font-semibold text-white/80">{t('Your celebration, your cake')}</p>
                 </div>
-                <dl aria-live="polite" className="bg-[#6b3f58] px-6">
+                <dl aria-live="polite" className="bg-brand-blue px-6">
                   {[
                     { label: 'Cake size', value: t(size) },
                     { label: 'Cake flavor', value: t(flavor) },
@@ -613,14 +613,14 @@ export function CustomCakeRequestPage() {
                 ].map((step) => (
                   <li key={step.title}>
                     <div>
-                      <h3 className="text-base font-extrabold text-[#472a3b]">{t(step.title)}</h3>
+                      <h3 className="text-base font-extrabold text-brand-navy">{t(step.title)}</h3>
                       <p className="mt-1 text-base leading-7 text-[#33455c]">{t(step.detail)}</p>
                     </div>
                   </li>
                 ))}
               </ol>
 
-              <div className="bg-[#fff1b8] p-5 text-[#472a3b]">
+              <div className="bg-[#fff1b8] p-5 text-brand-navy">
                 <p className="text-base font-extrabold">{t('Please note')}</p>
                 <p className="mt-2 text-base leading-7">{t('Sending this form is a request. The store will send a quote. The cake is booked when you pay the deposit.')}</p>
               </div>
@@ -634,7 +634,7 @@ export function CustomCakeRequestPage() {
                 ].map((fact) => (
                   <div key={fact.label}>
                     <dt className="text-base font-semibold text-[#33455c]">{t(fact.label)}</dt>
-                    <dd className="mt-1 font-display text-lg font-extrabold text-[#472a3b]">{fact.value}</dd>
+                    <dd className="mt-1 font-display text-lg font-extrabold text-brand-navy">{fact.value}</dd>
                   </div>
                 ))}
               </dl>
@@ -643,16 +643,16 @@ export function CustomCakeRequestPage() {
 
           {(payTokenRequest || quotes.length > 0) && (
             <div className="mx-auto mt-4 max-w-[1320px] px-5 pb-16 sm:px-8 lg:px-12">
-              <h2 className="font-display text-2xl font-extrabold text-[#472a3b]">{t('Your cake quotes')}</h2>
+              <h2 className="font-display text-2xl font-extrabold text-brand-navy">{t('Your cake quotes')}</h2>
               <ul className="mt-5 grid gap-4 md:grid-cols-2">
                 {(payTokenRequest ? [payTokenRequest, ...quotes.filter((quote) => quote.id !== payTokenRequest.id)] : quotes).map((quote) => (
                   <li className="bg-white p-5 ring-1 ring-[#dce2e8]" key={quote.id}>
                     <p className="text-sm font-extrabold text-[#65748a]">#{quote.id}</p>
-                    <h3 className="mt-1 font-display text-lg font-extrabold text-[#472a3b]">{t(quote.size)} {t(quote.flavor)}</h3>
+                    <h3 className="mt-1 font-display text-lg font-extrabold text-brand-navy">{t(quote.size)} {t(quote.flavor)}</h3>
                     <p className="mt-1 text-base text-[#65748a]">{t('Pickup date')}: {formatDate(quote.pickupDate)}{quote.storeName ? ` · ${t(quote.storeName)}` : ''}</p>
                     <p className="mt-3 inline-flex rounded-md bg-[#e9edf1] px-3 py-1.5 text-sm font-bold text-[#315982]">{t(CAKE_STATUS[quote.status] || quote.status)}</p>
                     {quote.quotedTotal && (
-                      <p className="mt-3 text-sm font-extrabold text-[#472a3b]">
+                      <p className="mt-3 text-sm font-extrabold text-brand-navy">
                         {t('Total')}: {formatXaf(quote.quotedTotal, language)}
                         {quote.depositAmount ? ` · ${t('Deposit')}: ${formatXaf(quote.depositAmount, language)}` : ''}
                       </p>
@@ -662,18 +662,18 @@ export function CustomCakeRequestPage() {
                       <div className="mt-4">
                         <div className="grid grid-cols-2 gap-2">
                           {methods.card && (
-                            <button className={`rounded-md px-4 py-3 text-sm font-extrabold ${payMethod === 'card' ? 'bg-[#472a3b] text-white' : 'bg-[#e9edf1] text-[#472a3b]'}`} onClick={() => setPayMethod('card')} type="button">{t('Card')}</button>
+                            <button className={`rounded-md px-4 py-3 text-sm font-extrabold ${payMethod === 'card' ? 'bg-brand-navy text-white' : 'bg-[#e9edf1] text-brand-navy'}`} onClick={() => setPayMethod('card')} type="button">{t('Card')}</button>
                           )}
                           {methods.campayMobileMoney && (
-                            <button className={`rounded-md px-4 py-3 text-sm font-extrabold ${payMethod === 'campay' ? 'bg-[#472a3b] text-white' : 'bg-[#e9edf1] text-[#472a3b]'}`} onClick={() => setPayMethod('campay')} type="button">{t('Mobile Money')}</button>
+                            <button className={`rounded-md px-4 py-3 text-sm font-extrabold ${payMethod === 'campay' ? 'bg-brand-navy text-white' : 'bg-[#e9edf1] text-brand-navy'}`} onClick={() => setPayMethod('campay')} type="button">{t('Mobile Money')}</button>
                           )}
                         </div>
                         {payMethod === 'campay' && (
-                          <input className="mt-3 w-full rounded-md bg-white px-4 py-3 text-sm ring-1 ring-[#dce2e8] focus:outline-none focus:ring-2 focus:ring-[#b8721e]" onChange={(event) => setPayPhone(event.target.value)} placeholder="6XX XX XX XX" type="tel" value={payPhone} />
+                          <input className="mt-3 w-full rounded-md bg-white px-4 py-3 text-sm ring-1 ring-[#dce2e8] focus:outline-none focus:ring-2 focus:ring-brand-yellow-deep" onChange={(event) => setPayPhone(event.target.value)} placeholder="6XX XX XX XX" type="tel" value={payPhone} />
                         )}
                         {payError && payingId === quote.id && <p className="mt-2 text-sm font-semibold text-red-700">{payError}</p>}
                         <button
-                          className="mt-3 w-full rounded-md bg-[#ffb84d] px-5 py-3 text-sm font-extrabold text-[#472a3b] transition-colors hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 disabled:opacity-60"
+                          className="mt-3 w-full rounded-md bg-brand-yellow px-5 py-3 text-sm font-extrabold text-brand-navy transition-colors hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:opacity-60"
                           disabled={payingId === quote.id}
                           onClick={() => payDeposit(quote, searchParams.get('pay') || quote.payToken || undefined)}
                           type="button"

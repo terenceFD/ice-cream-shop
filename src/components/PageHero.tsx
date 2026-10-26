@@ -41,6 +41,8 @@ interface PageHeroProps {
   surface?: string;
   /** Custom accent colour replacing the brand yellow for this hero. */
   accent?: string;
+  /** Decorative floating shape set shown in the background; defaults to ice-cream. */
+  theme?: "ice-cream" | "cake" | "popsicle" | "celebration" | "plain";
 }
 
 // Shared with the server's preload media query for compact headers.
@@ -72,7 +74,7 @@ function HeroImage({ src, alt, className, position, small = false }: { src: stri
 
 // Navy hero shared by the menu and the flavors page. It continues the navy header,
 // with the copy on the left and an arch-framed photo group on the right.
-export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, actions, stats = [], image, sideImages, visual, visualClassName = "aspect-[6/5]", badge, curveClassName = "text-[#fbfaf5]", compactOnMobile = false, surface, accent }: PageHeroProps) {
+export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, actions, stats = [], image, sideImages, visual, visualClassName = "aspect-[6/5]", badge, curveClassName = "text-[#fbfaf5]", compactOnMobile = false, surface, accent, theme = "ice-cream" }: PageHeroProps) {
   const isWideScreen = useWideScreen();
   // Not rendered at all on phones (a hidden image would still download).
   const showVisual = !compactOnMobile || isWideScreen;
@@ -84,7 +86,7 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
         "--hero-accent": accent || "#ffb84d",
       } as CSSProperties}
     >
-      <HeroBackground variant="navy" />
+      <HeroBackground variant="navy" theme={theme} />
 
       <div className={`mx-auto grid max-w-[1320px] items-center gap-12 px-5 pt-8 ${compactOnMobile ? "pb-16" : "pb-24"} sm:px-8 sm:pb-28 sm:pt-12 lg:grid-cols-12 lg:gap-8 lg:px-12 lg:pb-32 lg:pt-14`}>
         <div className="lg:col-span-6">
@@ -120,29 +122,29 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
           {visual}
           {!visual && image && sideImages && (
             <>
-              <div aria-hidden="true" className="absolute bottom-[4%] left-[6%] size-[46%] rounded-full bg-[#ffb84d]" />
+              <div aria-hidden="true" className="absolute bottom-[4%] left-[6%] size-[46%] rounded-full bg-brand-yellow" />
               <div aria-hidden="true" className="absolute right-[2%] top-[2%] size-[78%] rounded-full border border-dashed border-white/20" />
 
               <figure className="absolute bottom-0 right-[4%] h-[94%] w-[60%] overflow-hidden rounded-b-[36px] rounded-t-[999px] bg-[#fff3b8] shadow-[0_40px_80px_rgba(2,12,28,0.45)] ring-[6px] ring-white/10">
                 <HeroImage alt={image.alt} className="size-full object-cover" position={image.position} src={image.src} />
               </figure>
 
-              <figure className="absolute left-[4%] top-[6%] size-[30%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-[#472a3b]">
+              <figure className="absolute left-[4%] top-[6%] size-[30%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-brand-navy">
                 <HeroImage alt="" className="size-full object-cover" small src={sideImages[0]} />
               </figure>
-              <figure className="absolute bottom-[10%] left-[18%] size-[24%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-[#472a3b]">
+              <figure className="absolute bottom-[10%] left-[18%] size-[24%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-brand-navy">
                 <HeroImage alt="" className="size-full object-cover" small src={sideImages[1]} />
               </figure>
             </>
           )}
 
           {badge && (
-            <div className="absolute -bottom-5 right-0 flex max-w-[300px] items-center gap-3 rounded-2xl bg-white p-3 pr-4 text-[#472a3b] shadow-[0_24px_50px_rgba(2,12,28,0.35)] sm:-right-2 sm:p-4">
-              <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#ffb84d] font-display text-sm font-extrabold sm:size-11">
+            <div className="absolute -bottom-5 right-0 flex max-w-[300px] items-center gap-3 rounded-2xl bg-white p-3 pr-4 text-brand-navy shadow-[0_24px_50px_rgba(2,12,28,0.35)] sm:-right-2 sm:p-4">
+              <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-yellow font-display text-sm font-extrabold sm:size-11">
                 {badge.mark}
               </span>
               <div className="leading-tight">
-                <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#b8721e]">{badge.eyebrow}</p>
+                <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-brand-yellow-deep">{badge.eyebrow}</p>
                 <p className="mt-1 text-xs font-bold leading-4 sm:text-sm sm:leading-5">{badge.text}</p>
               </div>
             </div>
@@ -160,4 +162,4 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
 PageHero.primary =
 "inline-flex items-center gap-2 rounded-full bg-[var(--hero-accent,#ffb84d)] px-7 py-4 text-sm font-extrabold text-[var(--hero-surface,#472a3b)] shadow-[0_12px_30px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hero-accent,#ffb84d)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--hero-surface,#472a3b)]";
 PageHero.secondary =
-  "inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-7 py-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b]";
+  "inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-7 py-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy";

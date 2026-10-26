@@ -1,12 +1,13 @@
 import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Footer, Header } from '../../components/Layout'
+import { HeroBackground } from '../../components/HeroBackground'
 import { apiRequest } from '../../api/api'
 import { useLanguage } from '../../language/useLanguage'
 import { toInt } from '../../../shared/numbers.ts'
 
-const inputClassName = 'mt-2 w-full min-h-12 rounded-lg border border-[#dce3eb] bg-white px-4 text-sm text-[#472a3b] outline-none! placeholder:text-[#65748a] focus:border-[#472a3b]'
-const labelClassName = 'text-sm font-bold text-[#472a3b]'
+const inputClassName = 'mt-2 w-full min-h-12 rounded-lg border border-[#dce3eb] bg-white px-4 text-sm text-brand-navy outline-none! placeholder:text-[#65748a] focus:border-brand-navy'
+const labelClassName = 'text-sm font-bold text-brand-navy'
 
 interface ContactFormData {
   name: string
@@ -168,7 +169,7 @@ function StoreSelect({
         aria-haspopup="listbox"
         aria-labelledby={`${id}-label ${id}-value`}
         className={`mt-2 flex min-h-12 w-full items-center gap-3 rounded-lg border bg-white px-4 text-left outline-none! transition disabled:cursor-not-allowed disabled:opacity-60 ${
-          open ? 'border-[#472a3b]' : 'border-[#dce3eb]'
+          open ? 'border-brand-navy' : 'border-[#dce3eb]'
         }`}
         disabled={disabled}
         onClick={() => (open ? setOpen(false) : openList())}
@@ -179,7 +180,7 @@ function StoreSelect({
         <span className="min-w-0 flex-1" id={`${id}-value`}>
           {selected ? (
             <>
-              <span className="block truncate text-sm font-bold text-[#472a3b]">{selected.name}</span>
+              <span className="block truncate text-sm font-bold text-brand-navy">{selected.name}</span>
               <span className="block truncate text-xs text-[#65748a]">{selected.location}</span>
             </>
           ) : (
@@ -188,7 +189,7 @@ function StoreSelect({
         </span>
         <svg
           aria-hidden="true"
-          className={`size-4 shrink-0 text-[#65748a] transition duration-200 ${open ? 'rotate-180 text-[#472a3b]' : ''}`}
+          className={`size-4 shrink-0 text-[#65748a] transition duration-200 ${open ? 'rotate-180 text-brand-navy' : ''}`}
           fill="none"
           viewBox="0 0 24 24"
         >
@@ -222,7 +223,7 @@ function StoreSelect({
               onMouseEnter={() => setActiveIndex(index)}
               role="option"
             >
-              <span className="block truncate text-sm font-bold text-[#472a3b]">{store.name}</span>
+              <span className="block truncate text-sm font-bold text-brand-navy">{store.name}</span>
               <span className="block truncate text-xs text-[#65748a]">{store.location}</span>
             </li>
           )
@@ -292,16 +293,21 @@ export function ContactPage() {
   ]
 
   return (
-    <div className="min-h-svh bg-white text-[#472a3b]">
+    <div className="min-h-svh bg-white text-brand-navy">
       <Header />
       <main id="main" tabIndex={-1}>
-        <section className="mx-auto max-w-[1320px] px-5 py-12 sm:px-8 sm:py-16 lg:px-12">
-          <h1 className="max-w-[12ch] font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
-            {t('Contact us')}
-          </h1>
-          <p className="mt-4 max-w-xl text-base leading-7 text-[#65748a] sm:text-lg">
-            {t('Have a question for a store? Choose its branch and send a message directly to that store’s team.')}
-          </p>
+        <section className="relative isolate overflow-hidden bg-brand-navy text-white">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-25">
+            <HeroBackground quietOnMobile variant="navy" theme="plain" />
+          </div>
+          <div className="relative mx-auto max-w-[1320px] px-5 py-12 sm:px-8 sm:py-16 lg:px-12">
+            <h1 className="max-w-[12ch] font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
+              {t('Contact us')}
+            </h1>
+            <p className="mt-4 max-w-xl text-base leading-7 text-white/75 sm:text-lg">
+              {t('Have a question for a store? Choose its branch and send a message directly to that store’s team.')}
+            </p>
+          </div>
         </section>
 
         <section className="bg-[#f4f6f8]">
@@ -313,7 +319,7 @@ export function ContactPage() {
               <ol className="mt-8 space-y-6">
                 {steps.map((step, index) => (
                   <li className="flex gap-4" key={step.title}>
-                    <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffb84d] font-display text-sm font-bold text-[#472a3b]">
+                    <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-yellow font-display text-sm font-bold text-brand-navy">
                       {index + 1}
                     </span>
                     <div>
@@ -327,7 +333,7 @@ export function ContactPage() {
                 {t('For current store information, please contact a local branch through its public listing.')}
               </p>
               <Link
-                className="mt-4 inline-flex min-h-12 items-center text-sm font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4"
+                className="mt-4 inline-flex min-h-12 items-center text-sm font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4"
                 to="/locations"
               >
                 {t('Browse locations')}
@@ -349,7 +355,7 @@ export function ContactPage() {
                     {t('Thanks for reaching out. Your message has been sent to our team.')}
                   </p>
                   <button
-                    className="mt-6 inline-flex min-h-12 items-center rounded-lg bg-[#472a3b] px-6 text-sm font-bold text-white hover:bg-[#6b3f58]"
+                    className="mt-6 inline-flex min-h-12 items-center rounded-lg bg-brand-navy px-6 text-sm font-bold text-white hover:bg-brand-blue"
                     onClick={() => setSubmitted(false)}
                     type="button"
                   >
@@ -412,7 +418,7 @@ export function ContactPage() {
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm leading-6 text-[#65748a]">{t('Please complete all required fields before sending.')}</p>
                     <button
-                      className="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#472a3b] px-6 text-sm font-bold text-white hover:bg-[#6b3f58] disabled:cursor-wait disabled:opacity-60"
+                      className="inline-flex min-h-12 items-center justify-center rounded-lg bg-brand-navy px-6 text-sm font-bold text-white hover:bg-brand-blue disabled:cursor-wait disabled:opacity-60"
                       disabled={isSubmitting || isLoadingStores || stores.length === 0}
                       type="submit"
                     >
@@ -439,13 +445,13 @@ export function ContactPage() {
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
                 <a
-                  className="inline-flex min-h-12 items-center text-sm font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4"
+                  className="inline-flex min-h-12 items-center text-sm font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4"
                   href="#contact-form"
                 >
                   {t('Send us a message')}
                 </a>
                 <Link
-                  className="inline-flex min-h-12 items-center text-sm font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4"
+                  className="inline-flex min-h-12 items-center text-sm font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4"
                   to="/locations"
                 >
                   {t('Locations')}
@@ -458,8 +464,8 @@ export function ContactPage() {
                 <details className="group border-b border-[#dce3eb]" key={question}>
                   <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 marker:content-none [&::-webkit-details-marker]:hidden">
                     <span className="font-display text-lg font-bold leading-snug">{t(question)}</span>
-                    <span aria-hidden="true" className="text-xl leading-none text-[#b8721e] group-open:hidden">+</span>
-                    <span aria-hidden="true" className="hidden text-xl leading-none text-[#b8721e] group-open:inline">–</span>
+                    <span aria-hidden="true" className="text-xl leading-none text-brand-yellow-deep group-open:hidden">+</span>
+                    <span aria-hidden="true" className="hidden text-xl leading-none text-brand-yellow-deep group-open:inline">–</span>
                   </summary>
                   <p className="max-w-[62ch] pb-5 text-base leading-7 text-[#65748a]">{t(answer)}</p>
                 </details>

@@ -61,7 +61,7 @@ const FILTERS = [
 ];
 
 const inputClass =
-  "mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#472a3b] outline-none! transition focus:border-[#b8721e] focus:bg-white focus:ring-4 focus:ring-[#ffb84d]/25";
+  "mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-brand-navy outline-none! transition focus:border-brand-yellow-deep focus:bg-white focus:ring-4 focus:ring-brand-yellow/25";
 
 function formatXaf(amount: number | null | undefined, language: string) {
   return `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-US").format(Math.round(amount || 0))} FCFA`;
@@ -180,8 +180,8 @@ export function AdminEventOrdersPage() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#b8721e]">{t("Parties & events")}</p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight text-[#472a3b]">{t("Event orders")}</h1>
+        <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-yellow-deep">{t("Parties & events")}</p>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight text-brand-navy">{t("Event orders")}</h1>
         <p className="mt-1 text-sm text-[#65748a]">{t("Review requests, send quotes with a deposit, and confirm events once the deposit is paid.")}</p>
       </header>
 
@@ -197,7 +197,7 @@ export function AdminEventOrdersPage() {
         {FILTERS.map((entry) => (
           <button
             aria-selected={filter === entry.key}
-            className={`rounded-full px-4 py-2 text-sm font-bold transition ${filter === entry.key ? "bg-[#472a3b] text-white" : "bg-white text-[#65748a] ring-1 ring-[#e3e9f1] hover:text-[#472a3b]"}`}
+            className={`rounded-full px-4 py-2 text-sm font-bold transition ${filter === entry.key ? "bg-brand-navy text-white" : "bg-white text-[#65748a] ring-1 ring-[#e3e9f1] hover:text-brand-navy"}`}
             key={entry.key}
             onClick={() => setFilter(entry.key)}
             role="tab"
@@ -212,7 +212,7 @@ export function AdminEventOrdersPage() {
         <p className="text-sm text-[#65748a]">{t("Loading…")}</p>
       ) : !visible.length ? (
         <div className="rounded-md border border-dashed border-[#dce3eb] bg-white px-6 py-14 text-center">
-          <p className="text-sm font-semibold text-[#472a3b]">{t("No event orders here")}</p>
+          <p className="text-sm font-semibold text-brand-navy">{t("No event orders here")}</p>
           <p className="mt-1 text-sm text-[#65748a]">{t("New requests from the Parties & events page will appear here.")}</p>
         </div>
       ) : (
@@ -227,12 +227,12 @@ export function AdminEventOrdersPage() {
                   type="button"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="font-extrabold text-[#472a3b]">#{order.id} · {t(EVENT_TYPE_LABELS[order.eventType] || "Event")}</p>
+                    <p className="font-extrabold text-brand-navy">#{order.id} · {t(EVENT_TYPE_LABELS[order.eventType] || "Event")}</p>
                     <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${status.className}`}>{t(status.label)}</span>
                   </div>
                   <p className="mt-1 text-sm text-[#65748a]">{order.eventDate} · {order.eventTime} · {t("{count} guests", { count: order.guestCount })}</p>
                   <p className="mt-1 truncate text-sm text-[#65748a]">{order.customerName} · {t(order.storeName || "")}</p>
-                  <p className="mt-3 text-sm font-extrabold tabular-nums text-[#472a3b]">{formatXaf(order.quotedTotal ?? order.estimatedTotal, language)}</p>
+                  <p className="mt-3 text-sm font-extrabold tabular-nums text-brand-navy">{formatXaf(order.quotedTotal ?? order.estimatedTotal, language)}</p>
                 </button>
               </li>
             );
@@ -246,8 +246,8 @@ export function AdminEventOrdersPage() {
           <section aria-labelledby="event-drawer-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[34rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
             <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#b8721e]">{t(EVENT_TYPE_LABELS[selected.eventType] || "Event")}</p>
-                <h2 className="mt-1 text-xl font-semibold text-[#472a3b]" id="event-drawer-title">{t("Event order #{id}", { id: selected.id })}</h2>
+                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-yellow-deep">{t(EVENT_TYPE_LABELS[selected.eventType] || "Event")}</p>
+                <h2 className="mt-1 text-xl font-semibold text-brand-navy" id="event-drawer-title">{t("Event order #{id}", { id: selected.id })}</h2>
                 <span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${(STATUS[selected.status] || STATUS.new).className}`}>{t((STATUS[selected.status] || STATUS.new).label)}</span>
               </div>
               <button aria-label={t("Close")} className="grid size-9 place-items-center rounded-md text-[#65748a] hover:bg-[#f4f6f8]" onClick={() => setSelectedId(null)} type="button">✕</button>
@@ -263,7 +263,7 @@ export function AdminEventOrdersPage() {
                 <div className="col-span-2 rounded-md bg-[#f4f6f8] p-3">
                   <dt className="text-xs text-[#8592a3]">{t("Customer")}</dt>
                   <dd className="font-bold">{selected.customerName}</dd>
-                  <dd><a className="text-[#6b3f58] hover:underline" href={`mailto:${selected.customerEmail}`}>{selected.customerEmail}</a> · <a className="text-[#6b3f58] hover:underline" href={`tel:${selected.customerPhone}`}>{selected.customerPhone}</a></dd>
+                  <dd><a className="text-brand-blue hover:underline" href={`mailto:${selected.customerEmail}`}>{selected.customerEmail}</a> · <a className="text-brand-blue hover:underline" href={`tel:${selected.customerPhone}`}>{selected.customerPhone}</a></dd>
                   {whatsappLink(selected.customerPhone, "") && (
                     <dd className="mt-2">
                       <a
@@ -331,7 +331,7 @@ export function AdminEventOrdersPage() {
                 </button>
               )}
               {["new", "quoted"].includes(selected.status) && (
-                <button className="min-h-10 rounded-md bg-[#472a3b] px-5 text-sm font-bold text-white hover:bg-[#6b3f58] disabled:opacity-60" disabled={working} onClick={() => act("quote")} type="button">
+                <button className="min-h-10 rounded-md bg-brand-navy px-5 text-sm font-bold text-white hover:bg-brand-blue disabled:opacity-60" disabled={working} onClick={() => act("quote")} type="button">
                   {t(selected.status === "quoted" ? "Update quote" : "Send quote")}
                 </button>
               )}
@@ -339,7 +339,7 @@ export function AdminEventOrdersPage() {
                 <button className="min-h-10 rounded-md bg-[#1f6b3e] px-5 text-sm font-bold text-white hover:bg-[#185532] disabled:opacity-60" disabled={working} onClick={() => act("confirm")} type="button">{t("Confirm event")}</button>
               )}
               {["deposit_paid", "confirmed"].includes(selected.status) && (
-                <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#472a3b] ring-1 ring-[#d5dde8] hover:ring-[#472a3b] disabled:opacity-60" disabled={working} onClick={() => act("complete")} type="button">{t("Mark completed")}</button>
+                <button className="min-h-10 rounded-md px-4 text-sm font-bold text-brand-navy ring-1 ring-[#d5dde8] hover:ring-brand-navy disabled:opacity-60" disabled={working} onClick={() => act("complete")} type="button">{t("Mark completed")}</button>
               )}
             </footer>
           </section>
@@ -354,7 +354,7 @@ export function AdminEventOrdersPage() {
                 <path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
               </svg>
             </span>
-            <h2 className="mt-4 text-base font-semibold text-[#472a3b]" id="delete-event-order-title">
+            <h2 className="mt-4 text-base font-semibold text-brand-navy" id="delete-event-order-title">
               {t("Delete declined event order #{id}?", { id: selected.id })}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("This permanently deletes the declined event order. This cannot be undone.")}</p>

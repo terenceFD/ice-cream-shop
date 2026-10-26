@@ -1,7 +1,7 @@
 /* Scoped to the admin navigation; storefront styles remain unchanged. */
 [data-admin-sidebar] {
-  background: linear-gradient(180deg, #553247 0%, #3a2030 100%);
-  border: 1px solid #6b3f58;
+  background: linear-gradient(180deg, #553247 0%, var(--brand-blue) 100%);
+  border: 1px solid var(--brand-blue);
   border-radius: 20px;
   box-shadow:
     0 12px 32px rgb(71 42 59 / 12%),
@@ -29,7 +29,7 @@
 
 .admin-sidebar-profile > div > p:nth-child(2) > span:first-child {
   background: rgb(255 184 77 / 12%);
-  color: #ffcf85;
+  color: var(--brand-gold-light);
   padding: 3px 6px;
   border-radius: 4px;
   font-size: 9px;
@@ -46,7 +46,7 @@
 
 .admin-sidebar-navigation {
   scrollbar-width: thin;
-  scrollbar-color: #6b3f58 transparent;
+  scrollbar-color: var(--brand-blue) transparent;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
 }

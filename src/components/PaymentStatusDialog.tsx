@@ -31,7 +31,7 @@ export function PaymentStatusDialog({
   const isError = status === 'error' || status === 'failed'
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#472a3b]/65 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-brand-navy/65 p-4 backdrop-blur-sm">
       <section
         aria-busy={isChecking || isPending}
         aria-describedby="payment-status-message"
@@ -70,8 +70,8 @@ export function PaymentStatusDialog({
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#b8721e]">{eyebrow}</p>
-              <h2 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#472a3b]" id="payment-status-title">
+              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-brand-yellow-deep">{eyebrow}</p>
+              <h2 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-brand-navy" id="payment-status-title">
                 {title}
               </h2>
               <p className="mt-2 text-sm leading-6 text-[#65748a]" id="payment-status-message" role="status">
@@ -85,7 +85,7 @@ export function PaymentStatusDialog({
             <div className="mt-7 flex flex-col-reverse justify-center gap-3 sm:flex-row">
               {isPending && onRetry && (
                 <button
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#472a3b] px-5 text-sm font-extrabold text-white transition hover:bg-[#123d70] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand-navy px-5 text-sm font-extrabold text-white transition hover:bg-[#123d70] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
                   onClick={onRetry}
                   type="button"
                 >
@@ -96,7 +96,7 @@ export function PaymentStatusDialog({
                 </button>
               )}
               <button
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#ffb84d] px-6 text-sm font-extrabold text-[#472a3b] transition hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-yellow px-6 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2"
                 onClick={onClose}
                 type="button"
               >

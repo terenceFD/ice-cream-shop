@@ -72,7 +72,7 @@ export function pushStatus() {
 // Turns a push-service rejection into something an owner can act on.
 function describePushError(error) {
   const code = error?.statusCode
-  if (code === 401 || code === 403) return `The push service rejected the site's keys (HTTP ${code}). The VAPID keys on the server probably changed after customers subscribed, or are not a matching pair.`
+  if (code === 401 || code === 403) return `The push service rejected the site's VAPID credentials (HTTP ${code}). The device subscription was removed; its user must turn alerts on again. Check that the server still uses the original matching VAPID key pair.`
   if (code === 400) return 'The push service rejected the notification as malformed (HTTP 400).'
   if (code === 413) return 'The notification is too large for the push service (HTTP 413).'
   if (code === 429) return 'The push service is rate limiting the site (HTTP 429). Try again in a few minutes.'
@@ -343,15 +343,15 @@ async function sendToSubscriptions(database, subscriptions, notification, { send
         )
         result.sent += 1
       } catch (error) {
-        if (error?.statusCode === 404 || error?.statusCode === 410) {
+        if ([401, 403, 404, 410].includes(error?.statusCode)) {
           await database.prepare('DELETE FROM push_subscriptions WHERE id = ?').run(subscription.id)
           result.removed += 1
-        } else {
-          result.failed += 1
-          const reason = describePushError(error)
-          if (!result.errors.includes(reason)) result.errors.push(reason)
-          console.error(`Push notification to subscription #${subscription.id} failed:`, error?.statusCode || '', error?.message)
         }
+        if (error?.statusCode === 404 || error?.statusCode === 410) return
+        result.failed += 1
+        const reason = describePushError(error)
+        if (!result.errors.includes(reason)) result.errors.push(reason)
+        console.error(`Push notification to subscription #${subscription.id} failed:`, error?.statusCode || '', error?.message)
       }
     })
   } finally {

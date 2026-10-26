@@ -457,13 +457,13 @@ export function AdminCakeRequestsBoard() {
           <section aria-labelledby="cake-drawer-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[32rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
             <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-12 shrink-0 place-items-center rounded-md bg-[#fff6cc] text-[#b8721e]"><Icon className="size-6" path={icons.cake} /></span>
+                <span className="grid size-12 shrink-0 place-items-center rounded-md bg-[#fff6cc] text-brand-yellow-deep"><Icon className="size-6" path={icons.cake} /></span>
                 <div className="min-w-0">
-                  <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#b8721e]">{t('Cake request #{id}', { id: selected.id })}</p>
-                  <h2 className="truncate text-base font-semibold text-[#472a3b]" id="cake-drawer-title">{selected.size} {t('Cake')}</h2>
+                  <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-yellow-deep">{t('Cake request #{id}', { id: selected.id })}</p>
+                  <h2 className="truncate text-base font-semibold text-brand-navy" id="cake-drawer-title">{selected.size} {t('Cake')}</h2>
                 </div>
               </div>
-              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={() => setSelectedId(null)} type="button">
+              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-brand-navy" onClick={() => setSelectedId(null)} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
@@ -485,7 +485,7 @@ export function AdminCakeRequestsBoard() {
                     return (
                       <button
                         aria-pressed={isCurrent}
-                        className={`flex flex-col items-center gap-1.5 rounded-md px-1 py-2.5 text-xs font-bold capitalize transition disabled:cursor-wait ${isCurrent ? `${meta.badge} ring-2` : 'text-[#65748a] ring-1 ring-[#dce3eb] hover:bg-[#f4f6f8] hover:text-[#472a3b]'}`}
+                        className={`flex flex-col items-center gap-1.5 rounded-md px-1 py-2.5 text-xs font-bold capitalize transition disabled:cursor-wait ${isCurrent ? `${meta.badge} ring-2` : 'text-[#65748a] ring-1 ring-[#dce3eb] hover:bg-[#f4f6f8] hover:text-brand-navy'}`}
                         disabled={updatingId === selected.id}
                         key={status}
                         onClick={() => { if (!isCurrent) updateStatus(selected.id, status) }}
@@ -502,7 +502,7 @@ export function AdminCakeRequestsBoard() {
               <dl className="grid grid-cols-2 gap-3">
                 <div className="rounded-md bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb]">
                   <dt className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Cake flavor')}</dt>
-                  <dd className="mt-1.5 font-bold text-[#472a3b]">{selected.flavor}</dd>
+                  <dd className="mt-1.5 font-bold text-brand-navy">{selected.flavor}</dd>
                 </div>
                 <div className="rounded-md bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb]">
                   <dt className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Pickup date')}</dt>
@@ -511,10 +511,10 @@ export function AdminCakeRequestsBoard() {
                 </div>
                 {selected.storeName && (
                   <div className="col-span-2 flex items-center gap-3 rounded-md bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb]">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-md bg-white text-[#472a3b] shadow-sm"><Icon path={icons.pin} /></span>
+                    <span className="grid size-9 shrink-0 place-items-center rounded-md bg-white text-brand-navy shadow-sm"><Icon path={icons.pin} /></span>
                     <div>
                       <dt className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Selected store')}</dt>
-                      <dd className="text-sm font-bold text-[#472a3b]">{t(selected.storeName)}</dd>
+                      <dd className="text-sm font-bold text-brand-navy">{t(selected.storeName)}</dd>
                     </div>
                   </div>
                 )}
@@ -524,7 +524,7 @@ export function AdminCakeRequestsBoard() {
                 <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Toppings')}</h3>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {Array.isArray(selected.toppings) && selected.toppings.length
-                    ? selected.toppings.map((topping) => <span className="rounded-full bg-[#fff6cc] px-2.5 py-1 text-xs font-bold text-[#b8721e]" key={topping}>{t(topping)}</span>)
+                    ? selected.toppings.map((topping) => <span className="rounded-full bg-[#fff6cc] px-2.5 py-1 text-xs font-bold text-brand-yellow-deep" key={topping}>{t(topping)}</span>)
                     : <span className="text-sm text-[#a3b0bf]">{t('No toppings')}</span>}
                 </div>
               </section>
@@ -560,7 +560,7 @@ export function AdminCakeRequestsBoard() {
                 </p>
               )}
               {selected.message && (
-                <section className="rounded-md border-l-4 border-[#ffb84d] bg-[#fffbea] p-4">
+                <section className="rounded-md border-l-4 border-brand-yellow bg-[#fffbea] p-4">
                   <h3 className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[0.14em] text-[#927700]">
                     <Icon className="size-3.5" path={icons.note} />
                     {t('Special instructions')}
@@ -572,15 +572,15 @@ export function AdminCakeRequestsBoard() {
               <section className="rounded-md ring-1 ring-[#dce3eb]">
                 <div className="border-b border-[#f4f6f8] px-4 py-3">
                   <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Customer')}</h3>
-                  <p className="mt-1 font-bold text-[#472a3b]">{selected.customerName}</p>
+                  <p className="mt-1 font-bold text-brand-navy">{selected.customerName}</p>
                   <p className="text-xs text-[#65748a]">{selected.customerEmail} · {selected.customerPhone}</p>
                 </div>
                 <div className="grid grid-cols-3 divide-x divide-[#f4f6f8]">
-                  <a className="flex flex-col items-center gap-1 py-3 text-xs font-bold text-[#6b3f58] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" href={`tel:${String(selected.customerPhone || '').replace(/[^\d+]/g, '')}`}>
+                  <a className="flex flex-col items-center gap-1 py-3 text-xs font-bold text-brand-blue transition hover:bg-[#f4f6f8] hover:text-brand-navy" href={`tel:${String(selected.customerPhone || '').replace(/[^\d+]/g, '')}`}>
                     <Icon path={icons.phone} />
                     {t('Call')}
                   </a>
-                  <a className="flex flex-col items-center gap-1 py-3 text-xs font-bold text-[#6b3f58] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" href={`mailto:${selected.customerEmail || ''}?subject=${encodeURIComponent(t('Cake request #{id}', { id: selected.id }))}`}>
+                  <a className="flex flex-col items-center gap-1 py-3 text-xs font-bold text-brand-blue transition hover:bg-[#f4f6f8] hover:text-brand-navy" href={`mailto:${selected.customerEmail || ''}?subject=${encodeURIComponent(t('Cake request #{id}', { id: selected.id }))}`}>
                     <Icon path={icons.mail} />
                     {t('Email')}
                   </a>
@@ -608,10 +608,10 @@ export function AdminCakeRequestsBoard() {
                   {t('Decline')}
                 </button>
               )}
-              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={() => setSelectedId(null)} type="button">{t('Close')}</button>
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-brand-navy" onClick={() => setSelectedId(null)} type="button">{t('Close')}</button>
               {['new', 'contacted'].includes(selected.status) && (
                 <button
-                  className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#472a3b] px-4 text-sm font-bold text-white transition hover:bg-[#6b3f58] disabled:cursor-wait disabled:opacity-60"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-md bg-brand-navy px-4 text-sm font-bold text-white transition hover:bg-brand-blue disabled:cursor-wait disabled:opacity-60"
                   disabled={updatingId === selected.id}
                   onClick={sendQuote}
                   type="button"

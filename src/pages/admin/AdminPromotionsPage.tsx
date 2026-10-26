@@ -5,8 +5,8 @@ import { useLanguage } from '../../language/useLanguage'
 import { toInt } from '../../../shared/numbers.ts'
 
 const freshForm: DiscountCodeForm = { code: '', discountType: 'percent', discountValue: '', minimumTotal: 0, maxUses: '', expiresAt: '', isActive: true }
-const inputClassName = 'mt-1.5 w-full rounded-lg border border-[#dce3eb] bg-white px-3 py-2 text-sm font-medium text-[#472a3b] transition placeholder:text-[#9aa5b3] hover:border-[#bac7d5] focus:border-[#472a3b] focus:ring-2 focus:ring-[#472a3b]/10 outline-none!'
-const labelClassName = 'block text-sm font-medium text-[#472a3b]'
+const inputClassName = 'mt-1.5 w-full rounded-lg border border-[#dce3eb] bg-white px-3 py-2 text-sm font-medium text-brand-navy transition placeholder:text-[#9aa5b3] hover:border-[#bac7d5] focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none!'
+const labelClassName = 'block text-sm font-medium text-brand-navy'
 const MAX_NOTIFICATION_MESSAGE = 180
 
 interface NotificationResult {
@@ -394,11 +394,11 @@ export function AdminPromotionsPage() {
     <div className="min-w-0 space-y-6">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="min-w-0">
-          <h1 className="text-xl font-semibold tracking-tight text-[#472a3b]">{t('Promotions and discount codes')}</h1>
+          <h1 className="text-xl font-semibold tracking-tight text-brand-navy">{t('Promotions and discount codes')}</h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-[#5f6368]">{t('Create percentage or fixed FCFA discounts. Codes are validated and applied on the server when an order is created.')}</p>
         </div>
         <button
-          className="inline-flex min-h-9 shrink-0 items-center gap-2 self-start whitespace-nowrap rounded-lg bg-[#472a3b] px-4 text-sm font-semibold text-white transition hover:bg-[#6b3f58] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#472a3b] xl:self-auto"
+          className="inline-flex min-h-9 shrink-0 items-center gap-2 self-start whitespace-nowrap rounded-lg bg-brand-navy px-4 text-sm font-semibold text-white transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy xl:self-auto"
           onClick={openCreate}
           type="button"
         >
@@ -438,13 +438,13 @@ export function AdminPromotionsPage() {
           const body = (
             <>
               <p className="text-xs font-medium text-[#5f6368]">{t(metric.label)}</p>
-              <p className="mt-1 text-2xl font-semibold leading-none tabular-nums text-[#472a3b]">{metric.value.toLocaleString()}</p>
+              <p className="mt-1 text-2xl font-semibold leading-none tabular-nums text-brand-navy">{metric.value.toLocaleString()}</p>
             </>
           )
           return metric.filter ? (
             <button
               aria-pressed={isActive}
-              className={`bg-white p-4 text-left transition first:rounded-tl-lg last:rounded-br-lg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#472a3b] hover:bg-[#f9fafb] ${isActive ? 'bg-[#f6f8fa] shadow-[inset_0_0_0_1.5px_#472a3b]' : ''}`}
+              className={`bg-white p-4 text-left transition first:rounded-tl-lg last:rounded-br-lg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-navy hover:bg-[#f9fafb] ${isActive ? 'bg-[#f6f8fa] shadow-[inset_0_0_0_1.5px_#472a3b]' : ''}`}
               key={metric.label}
               onClick={() => setStatusFilter(isActive || metric.filter === 'all' ? 'all' : metric.filter!)}
               type="button"
@@ -460,14 +460,14 @@ export function AdminPromotionsPage() {
       <section aria-labelledby="promo-library-title" className="min-w-0 rounded-lg border border-[#e8e8e8] bg-white">
         <div className="flex flex-col gap-4 border-b border-[#f2f2f2] p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-[#472a3b]" id="promo-library-title">{t('Current codes')}</h2>
+            <h2 className="text-base font-semibold text-brand-navy" id="promo-library-title">{t('Current codes')}</h2>
             <p className="mt-0.5 text-xs text-[#5f6368]">{t('{count} codes', { count: visibleCodes.length })}</p>
           </div>
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
             <label className="relative block shrink-0 sm:w-60">
               <span className="sr-only">{t('Search')}</span>
               <Icon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#5f6368]" path={icons.search} />
-              <input className="w-full rounded-md border border-[#dce3eb] bg-white py-2 pl-9 pr-3 text-sm font-medium text-[#472a3b] transition placeholder:text-[#9aa5b3] hover:border-[#bac7d5] focus:border-[#472a3b] focus:ring-2 focus:ring-[#472a3b]/10 outline-none! font-mono uppercase placeholder:font-sans placeholder:normal-case" onChange={(event) => setSearch(event.target.value)} placeholder={t('Search codes')} type="search" value={search} />
+              <input className="w-full rounded-md border border-[#dce3eb] bg-white py-2 pl-9 pr-3 text-sm font-medium text-brand-navy transition placeholder:text-[#9aa5b3] hover:border-[#bac7d5] focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none! font-mono uppercase placeholder:font-sans placeholder:normal-case" onChange={(event) => setSearch(event.target.value)} placeholder={t('Search codes')} type="search" value={search} />
             </label>
             <div aria-label={t('Status')} className="flex min-w-0 overflow-x-auto rounded-md bg-[#f4f6f8] p-1" role="group">
               {([
@@ -479,7 +479,7 @@ export function AdminPromotionsPage() {
               ] as const).map((option) => (
                 <button
                   aria-pressed={statusFilter === option.key}
-                  className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded px-3 py-1.5 text-xs font-medium transition ${statusFilter === option.key ? 'bg-white text-[#472a3b] shadow-[0_1px_2px_rgba(9,42,83,0.08)]' : 'text-[#5f6368] hover:text-[#472a3b]'}`}
+                  className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded px-3 py-1.5 text-xs font-medium transition ${statusFilter === option.key ? 'bg-white text-brand-navy shadow-[0_1px_2px_rgba(9,42,83,0.08)]' : 'text-[#5f6368] hover:text-brand-navy'}`}
                   key={option.key}
                   onClick={() => setStatusFilter(option.key)}
                   type="button"
@@ -499,10 +499,10 @@ export function AdminPromotionsPage() {
           </div>
         ) : visibleCodes.length === 0 ? (
           <div className="px-6 py-14 text-center">
-            <p className="text-base font-semibold text-[#472a3b]">{codes.length ? t('No codes match your filters.') : t('No discount codes yet')}</p>
+            <p className="text-base font-semibold text-brand-navy">{codes.length ? t('No codes match your filters.') : t('No discount codes yet')}</p>
             <p className="mx-auto mt-1 max-w-xs text-sm text-[#5f6368]">{t('Your new codes will appear here after you create them.')}</p>
             {!codes.length && (
-              <button className="mt-4 inline-flex min-h-9 items-center gap-2 rounded-lg bg-[#472a3b] px-4 text-xs font-semibold text-white transition hover:bg-[#6b3f58]" onClick={openCreate} type="button">
+              <button className="mt-4 inline-flex min-h-9 items-center gap-2 rounded-lg bg-brand-navy px-4 text-xs font-semibold text-white transition hover:bg-brand-blue" onClick={openCreate} type="button">
                 <Icon path={icons.plus} />
                 {t('Create a discount')}
               </button>
@@ -521,7 +521,7 @@ export function AdminPromotionsPage() {
                   key={code.id}
                 >
                   <div className="relative flex w-24 shrink-0 flex-col items-center justify-center border-r border-[#f2f2f2] bg-[#f9fafb] px-3 py-5 text-center">
-                    <p className="text-2xl font-semibold leading-none tabular-nums text-[#472a3b]">
+                    <p className="text-2xl font-semibold leading-none tabular-nums text-brand-navy">
                       {code.discountType === 'percent' ? `${code.discountValue}%` : numberFormat.format(code.discountValue)}
                     </p>
                     <p className="mt-1 text-xs font-medium text-[#5f6368]">{code.discountType === 'percent' ? t('off') : `FCFA ${t('off')}`}</p>
@@ -529,7 +529,7 @@ export function AdminPromotionsPage() {
                   <div className="flex min-w-0 flex-1 flex-col p-4">
                     <div className="flex items-start justify-between gap-2">
                       <button
-                        className="flex min-w-0 items-center gap-1.5 rounded font-mono text-base font-semibold text-[#472a3b] hover:text-[#6b3f58]"
+                        className="flex min-w-0 items-center gap-1.5 rounded font-mono text-base font-semibold text-brand-navy hover:text-brand-blue"
                         onClick={() => copyCode(code)}
                         title={t('Copy')}
                         type="button"
@@ -544,28 +544,28 @@ export function AdminPromotionsPage() {
                     </div>
                     <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
                       <dt className="text-[#5f6368]">{t('Minimum order')}</dt>
-                      <dd className="text-right font-medium tabular-nums text-[#472a3b]">{Number(code.minimumTotal) ? `${numberFormat.format(code.minimumTotal)} ${t('items')}` : t('None')}</dd>
+                      <dd className="text-right font-medium tabular-nums text-brand-navy">{Number(code.minimumTotal) ? `${numberFormat.format(code.minimumTotal)} ${t('items')}` : t('None')}</dd>
                       <dt className="text-[#5f6368]">{t('Expires at')}</dt>
-                      <dd className="truncate text-right font-medium text-[#472a3b]" title={expiry || undefined}>{expiry || t('No expiry')}</dd>
+                      <dd className="truncate text-right font-medium text-brand-navy" title={expiry || undefined}>{expiry || t('No expiry')}</dd>
                     </dl>
                     <div className="mt-3">
                       <div className="flex justify-between text-xs">
                         <span className="text-[#5f6368]">{t('Redemptions')}</span>
-                        <span className="font-medium tabular-nums text-[#472a3b]">{code.uses}{code.maxUses != null ? ` / ${code.maxUses}` : ` · ${t('No limit')}`}</span>
+                        <span className="font-medium tabular-nums text-brand-navy">{code.uses}{code.maxUses != null ? ` / ${code.maxUses}` : ` · ${t('No limit')}`}</span>
                       </div>
                       {code.maxUses != null && (
                         <div aria-label={t('{used} of {max} redemptions', { used: code.uses, max: code.maxUses })} className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#f4f6f8]" role="img">
-                          <span className={`block h-full rounded-full ${status === 'exhausted' ? 'bg-[#92400e]' : 'bg-[#472a3b]'}`} style={{ width: `${usagePercent}%` }} />
+                          <span className={`block h-full rounded-full ${status === 'exhausted' ? 'bg-[#92400e]' : 'bg-brand-navy'}`} style={{ width: `${usagePercent}%` }} />
                         </div>
                       )}
                     </div>
                     <div className="mt-auto flex justify-end gap-1 pt-3">
                       {code.isActive && (
-                        <button aria-label={`${t('Notify customers')} ${code.code}`} className="grid size-8 place-items-center rounded-md text-[#5f6368] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={() => { setNotifyError(''); setResendMessage(''); setCodeToNotify(code) }} title={t('Notify customers')} type="button">
+                        <button aria-label={`${t('Notify customers')} ${code.code}`} className="grid size-8 place-items-center rounded-md text-[#5f6368] transition hover:bg-[#f4f6f8] hover:text-brand-navy" onClick={() => { setNotifyError(''); setResendMessage(''); setCodeToNotify(code) }} title={t('Notify customers')} type="button">
                           <Icon path={icons.bell} />
                         </button>
                       )}
-                      <button aria-label={`${t('Edit')} ${code.code}`} className="grid size-8 place-items-center rounded-md text-[#5f6368] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={() => edit(code)} title={t('Edit')} type="button">
+                      <button aria-label={`${t('Edit')} ${code.code}`} className="grid size-8 place-items-center rounded-md text-[#5f6368] transition hover:bg-[#f4f6f8] hover:text-brand-navy" onClick={() => edit(code)} title={t('Edit')} type="button">
                         <Icon path={icons.edit} />
                       </button>
                       <button aria-label={`${t('Delete')} ${code.code}`} className="grid size-8 place-items-center rounded-md text-[#5f6368] transition hover:bg-[#ffedea] hover:text-[#831c1e]" onClick={() => { setError(''); setCodeToDelete(code) }} title={t('Delete')} type="button">
@@ -586,10 +586,10 @@ export function AdminPromotionsPage() {
           <section aria-labelledby="promo-drawer-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[32rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
             <header className="flex items-start justify-between gap-4 border-b border-[#f2f2f2] px-6 py-5">
               <div>
-                <h2 className="text-xl font-semibold text-[#472a3b]" id="promo-drawer-title">{t(editingId ? 'Edit discount code' : 'Create a discount')}</h2>
+                <h2 className="text-xl font-semibold text-brand-navy" id="promo-drawer-title">{t(editingId ? 'Edit discount code' : 'Create a discount')}</h2>
                 <p className="mt-1 text-sm text-[#5f6368]">{t('Set up an offer customers can use at checkout.')}</p>
               </div>
-              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#5f6368] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={() => setIsEditorOpen(false)} type="button">
+              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#5f6368] transition hover:bg-[#f4f6f8] hover:text-brand-navy" onClick={() => setIsEditorOpen(false)} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
@@ -598,12 +598,12 @@ export function AdminPromotionsPage() {
               <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
                 <div className="flex overflow-hidden rounded-lg border border-[#e8e8e8]">
                   <div className="flex w-24 shrink-0 flex-col items-center justify-center border-r border-[#f2f2f2] bg-[#f9fafb] px-3 py-5 text-center">
-                    <p className="text-2xl font-semibold leading-none tabular-nums text-[#472a3b]">{form.discountValue ? (form.discountType === 'percent' ? `${form.discountValue}%` : numberFormat.format(Number(form.discountValue))) : '—'}</p>
+                    <p className="text-2xl font-semibold leading-none tabular-nums text-brand-navy">{form.discountValue ? (form.discountType === 'percent' ? `${form.discountValue}%` : numberFormat.format(Number(form.discountValue))) : '—'}</p>
                     <p className="mt-1 text-xs font-medium text-[#5f6368]">{form.discountType === 'percent' ? t('off') : `FCFA ${t('off')}`}</p>
                   </div>
                   <div className="min-w-0 flex-1 p-4">
                     <p className="text-xs font-medium text-[#5f6368]">{t('Offer preview')}</p>
-                    <p className="mt-1 truncate font-mono text-lg font-semibold text-[#472a3b]">{form.code || t('Your code')}</p>
+                    <p className="mt-1 truncate font-mono text-lg font-semibold text-brand-navy">{form.code || t('Your code')}</p>
                     <p className="mt-1 text-xs text-[#5f6368]">
                       {previewValue} {t('off')}
                       {Number(form.minimumTotal) ? ` · ${t('Minimum order')} ${numberFormat.format(Number(form.minimumTotal))} ${t('items')}` : ''}
@@ -619,7 +619,7 @@ export function AdminPromotionsPage() {
                       <input className={`${inputClassName} mt-0 pl-9 font-mono font-semibold uppercase`} maxLength={30} onChange={(event) => setField('code', event.target.value.toUpperCase())} pattern="[A-Za-z0-9_\-]{3,30}" placeholder="SWEET10" required value={form.code} />
                     </span>
                     <button
-                      className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[#dce3eb] bg-white px-3 text-xs font-semibold text-[#472a3b] transition hover:border-[#bac7d5]"
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[#dce3eb] bg-white px-3 text-xs font-semibold text-brand-navy transition hover:border-[#bac7d5]"
                       onClick={() => setField('code', randomCode())}
                       type="button"
                     >
@@ -638,11 +638,11 @@ export function AdminPromotionsPage() {
                       { key: 'fixed', label: t('Fixed FCFA'), hint: 'FCFA' },
                     ] as const).map((option) => (
                       <label
-                        className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3.5 py-3 transition has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[#472a3b] ${form.discountType === option.key ? 'border-[#472a3b] bg-[#f6f8fa]' : 'border-[#e8e8e8] bg-white hover:border-[#bac7d5]'}`}
+                        className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3.5 py-3 transition has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-brand-navy ${form.discountType === option.key ? 'border-brand-navy bg-[#f6f8fa]' : 'border-[#e8e8e8] bg-white hover:border-[#bac7d5]'}`}
                         key={option.key}
                       >
                         <input checked={form.discountType === option.key} className="sr-only" name="discountType" onChange={() => setField('discountType', option.key)} type="radio" />
-                        <span className="text-sm font-medium text-[#472a3b]">{option.label}</span>
+                        <span className="text-sm font-medium text-brand-navy">{option.label}</span>
                       </label>
                     ))}
                   </div>
@@ -680,7 +680,7 @@ export function AdminPromotionsPage() {
                     { label: t('No expiry'), days: null },
                   ].map((preset) => (
                     <button
-                      className="rounded-md border border-[#e8e8e8] bg-white px-2.5 py-1 text-xs font-medium text-[#5f6368] transition hover:border-[#bac7d5] hover:text-[#472a3b]"
+                      className="rounded-md border border-[#e8e8e8] bg-white px-2.5 py-1 text-xs font-medium text-[#5f6368] transition hover:border-[#bac7d5] hover:text-brand-navy"
                       key={preset.label}
                       onClick={() => setExpiryInDays(preset.days)}
                       type="button"
@@ -690,9 +690,9 @@ export function AdminPromotionsPage() {
                   ))}
                 </div>
 
-                <label className="flex cursor-pointer items-center gap-4 rounded-lg border border-[#e8e8e8] p-4 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[#472a3b]">
+                <label className="flex cursor-pointer items-center gap-4 rounded-lg border border-[#e8e8e8] p-4 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-brand-navy">
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium text-[#472a3b]">{t('Active')}</span>
+                    <span className="block text-sm font-medium text-brand-navy">{t('Active')}</span>
                     <span className="block text-xs text-[#5f6368]">{t('Available for customers to use')}</span>
                   </span>
                   <input checked={form.isActive} className="peer sr-only" onChange={(event) => setField('isActive', event.target.checked)} type="checkbox" />
@@ -701,10 +701,10 @@ export function AdminPromotionsPage() {
 
                 {!editingId && (
                   <fieldset className="space-y-4 rounded-lg border border-[#e8e8e8] p-4">
-                    <legend className="px-1 text-sm font-medium text-[#472a3b]">{t('Customer notification')}</legend>
-                    <label className="flex cursor-pointer items-center gap-4 has-[:focus-visible]:rounded-md has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[#472a3b]">
+                    <legend className="px-1 text-sm font-medium text-brand-navy">{t('Customer notification')}</legend>
+                    <label className="flex cursor-pointer items-center gap-4 has-[:focus-visible]:rounded-md has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-brand-navy">
                       <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-medium text-[#472a3b]">{t('Notify customers')}</span>
+                        <span className="block text-sm font-medium text-brand-navy">{t('Notify customers')}</span>
                         <span className="block text-xs text-[#5f6368]">
                           {form.isActive
                             ? t('Sends a notification to every customer account that turned on promotion alerts.')
@@ -770,9 +770,9 @@ export function AdminPromotionsPage() {
               </div>
 
               <footer className="flex items-center justify-end gap-3 border-t border-[#f2f2f2] bg-[#f9fafb] px-6 py-4">
-                <button className="min-h-9 rounded-lg border border-[#e8e8e8] bg-white px-4 text-sm font-semibold text-[#472a3b] transition hover:border-[#bac7d5]" onClick={() => setIsEditorOpen(false)} type="button">{t('Cancel')}</button>
+                <button className="min-h-9 rounded-lg border border-[#e8e8e8] bg-white px-4 text-sm font-semibold text-brand-navy transition hover:border-[#bac7d5]" onClick={() => setIsEditorOpen(false)} type="button">{t('Cancel')}</button>
                 <button
-                  className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-[#472a3b] px-5 text-sm font-semibold text-white transition hover:bg-[#6b3f58] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#472a3b] disabled:cursor-wait disabled:opacity-60"
+                  className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-brand-navy px-5 text-sm font-semibold text-white transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy disabled:cursor-wait disabled:opacity-60"
                   disabled={saving}
                   type="submit"
                 >
@@ -797,7 +797,7 @@ export function AdminPromotionsPage() {
           <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
             <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45" onClick={() => setCodeToNotify(null)} tabIndex={-1} type="button" />
             <section aria-labelledby="notify-code-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-lg bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
-              <h2 className="text-lg font-semibold text-[#472a3b]" id="notify-code-title">{t('Notify customers about {code}', { code: codeToNotify.code })}</h2>
+              <h2 className="text-lg font-semibold text-brand-navy" id="notify-code-title">{t('Notify customers about {code}', { code: codeToNotify.code })}</h2>
               <p className="mt-1 text-sm leading-6 text-[#5f6368]">
                 {pushStatus?.configured
                   ? t('Sends a notification to the {count} customer devices that have promotion alerts turned on.', { count: pushStatus.devices })
@@ -825,9 +825,9 @@ export function AdminPromotionsPage() {
               </div>
               {notifyError && <p className="mt-3 rounded-lg bg-[#ffedea] px-3 py-2.5 text-sm font-medium text-[#831c1e]" role="alert">{notifyError}</p>}
               <div className="mt-6 flex justify-end gap-2.5">
-                <button className="min-h-9 rounded-lg border border-[#e8e8e8] bg-white px-4 text-sm font-semibold text-[#472a3b] transition hover:border-[#bac7d5]" onClick={() => setCodeToNotify(null)} type="button">{t('Cancel')}</button>
+                <button className="min-h-9 rounded-lg border border-[#e8e8e8] bg-white px-4 text-sm font-semibold text-brand-navy transition hover:border-[#bac7d5]" onClick={() => setCodeToNotify(null)} type="button">{t('Cancel')}</button>
                 <button
-                  className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-[#472a3b] px-4 text-sm font-semibold text-white transition hover:bg-[#6b3f58] disabled:cursor-wait disabled:opacity-60"
+                  className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-brand-navy px-4 text-sm font-semibold text-white transition hover:bg-brand-blue disabled:cursor-wait disabled:opacity-60"
                   disabled={isNotifying || !pushStatus?.configured}
                   onClick={sendResend}
                   type="button"
@@ -845,7 +845,7 @@ export function AdminPromotionsPage() {
         <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
           <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45" onClick={() => setCodeToDelete(null)} tabIndex={-1} type="button" />
           <section aria-labelledby="delete-code-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-lg bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
-            <h2 className="text-lg font-semibold text-[#472a3b]" id="delete-code-title">{t('Delete discount code "{code}"?', { code: codeToDelete.code })}</h2>
+            <h2 className="text-lg font-semibold text-brand-navy" id="delete-code-title">{t('Delete discount code "{code}"?', { code: codeToDelete.code })}</h2>
             <p className="mt-2 text-sm leading-6 text-[#5f6368]">
               {codeToDelete.uses > 0
                 ? t('It has been redeemed {count} times. Customers will no longer be able to use it.', { count: codeToDelete.uses })
@@ -859,7 +859,7 @@ export function AdminPromotionsPage() {
             )}
             {error && <p className="mt-3 rounded-lg bg-[#ffedea] px-3 py-2.5 text-sm font-medium text-[#831c1e]" role="alert">{error}</p>}
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-9 rounded-lg border border-[#e8e8e8] bg-white px-4 text-sm font-semibold text-[#472a3b] transition hover:border-[#bac7d5]" onClick={() => setCodeToDelete(null)} type="button">{t('Cancel')}</button>
+              <button className="min-h-9 rounded-lg border border-[#e8e8e8] bg-white px-4 text-sm font-semibold text-brand-navy transition hover:border-[#bac7d5]" onClick={() => setCodeToDelete(null)} type="button">{t('Cancel')}</button>
               <button
                 className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-[#c4242a] px-4 text-sm font-semibold text-white transition hover:bg-[#a51e23] disabled:cursor-wait disabled:opacity-60"
                 disabled={deletingId === codeToDelete.id}

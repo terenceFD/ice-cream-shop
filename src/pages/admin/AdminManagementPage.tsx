@@ -66,7 +66,7 @@ async function resizeProfilePicture(file: File): Promise<string> {
 function Avatar({ name, picture, className = "size-10", highlight = false }: { name: string; picture?: string | null; className?: string; highlight?: boolean }) {
   if (picture) return <img decoding="async" loading="lazy" alt="" className={`${className} shrink-0 rounded-md object-cover ring-1 ring-black/5`} src={picture} />;
   return (
-    <span aria-hidden="true" className={`${className} grid shrink-0 place-items-center rounded-md text-sm font-semibold ${highlight ? "bg-[#ffb84d] text-[#472a3b]" : "bg-[#eaf0f7] text-[#24496f]"}`}>
+    <span aria-hidden="true" className={`${className} grid shrink-0 place-items-center rounded-md text-sm font-semibold ${highlight ? "bg-brand-yellow text-brand-navy" : "bg-[#eaf0f7] text-[#24496f]"}`}>
       {name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join("") || "?"}
     </span>
   );
@@ -149,7 +149,7 @@ function AssignmentPicker({
         aria-haspopup="listbox"
         aria-labelledby="admin-assignment-label"
         aria-required="true"
-        className={`group flex min-h-[4.25rem] w-full items-center gap-3 rounded-md border bg-white px-4 py-3 text-left shadow-sm transition duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffb84d]/25 ${isOpen ? "border-[#b8721e] shadow-[0_0_0_1px_#b8721e]" : "border-[#dbe3ec] hover:border-[#aebdcd] hover:shadow-md"
+        className={`group flex min-h-[4.25rem] w-full items-center gap-3 rounded-md border bg-white px-4 py-3 text-left shadow-sm transition duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-yellow/25 ${isOpen ? "border-brand-yellow-deep shadow-[0_0_0_1px_#b8721e]" : "border-[#dbe3ec] hover:border-[#aebdcd] hover:shadow-md"
           }`}
         onClick={() => setIsOpen((open) => !open)}
         onKeyDown={(event) => {
@@ -166,12 +166,12 @@ function AssignmentPicker({
         ref={triggerRef}
         type="button"
       >
-        <span className={`grid size-10 shrink-0 place-items-center rounded-md transition ${selectedChoice?.kind === "branch" ? "bg-[#fff5c4] text-[#b8721e]" : "bg-[#eaf1f9] text-[#245281]"
+        <span className={`grid size-10 shrink-0 place-items-center rounded-md transition ${selectedChoice?.kind === "branch" ? "bg-[#fff5c4] text-brand-yellow-deep" : "bg-[#eaf1f9] text-[#245281]"
           }`}>
           <Icon className="size-[1.15rem]" path={selectedChoice?.kind === "branch" ? icons.shield : icons.store} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-bold text-[#472a3b]">
+          <span className="block truncate text-sm font-bold text-brand-navy">
             {selectedChoice ? t(selectedChoice.title) : t("Choose a store or branch")}
           </span>
           <span className="mt-0.5 block truncate text-xs text-[#718198]">
@@ -212,7 +212,7 @@ function AssignmentPicker({
                       return (
                         <div
                           aria-selected={isSelected}
-                          className={`flex cursor-pointer items-center gap-3 rounded-md px-2.5 py-2.5 outline-none transition focus-visible:ring-2 focus-visible:ring-[#b8721e] ${isSelected ? "bg-[#f1f6fb]" : "hover:bg-[#f4f6f8]"
+                          className={`flex cursor-pointer items-center gap-3 rounded-md px-2.5 py-2.5 outline-none transition focus-visible:ring-2 focus-visible:ring-brand-yellow-deep ${isSelected ? "bg-[#f1f6fb]" : "hover:bg-[#f4f6f8]"
                             }`}
                           data-index={index}
                           id={`admin-assignment-option-${index}`}
@@ -225,12 +225,12 @@ function AssignmentPicker({
                           role="option"
                           tabIndex={-1}
                         >
-                          <span className={`grid size-9 shrink-0 place-items-center rounded-md ${choice.kind === "branch" ? "bg-[#fff5c4] text-[#b8721e]" : "bg-[#eaf1f9] text-[#245281]"
+                          <span className={`grid size-9 shrink-0 place-items-center rounded-md ${choice.kind === "branch" ? "bg-[#fff5c4] text-brand-yellow-deep" : "bg-[#eaf1f9] text-[#245281]"
                             }`}>
                             <Icon className="size-4" path={choice.kind === "branch" ? icons.shield : icons.store} />
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-bold text-[#472a3b]">{t(choice.title)}</span>
+                            <span className="block truncate text-sm font-bold text-brand-navy">{t(choice.title)}</span>
                             <span className="mt-0.5 block truncate text-xs text-[#718198]">{t(choice.description)}</span>
                           </span>
                           <span className="shrink-0 text-xs font-semibold text-[#718198]">{t(choice.badge)}</span>
@@ -407,7 +407,7 @@ export function AdminManagementPage() {
   const strengthMeta = [
     { label: t("Too short"), color: "bg-[#d2544b]" },
     { label: t("Weak"), color: "bg-[#d2544b]" },
-    { label: t("Fair"), color: "bg-[#b8721e]" },
+    { label: t("Fair"), color: "bg-brand-yellow-deep" },
     { label: t("Good"), color: "bg-[#35a36b]" },
     { label: t("Strong"), color: "bg-[#1f7a46]" },
   ][password ? strength : 0];
@@ -566,7 +566,7 @@ export function AdminManagementPage() {
               <p className="text-sm font-medium text-[#111827]">{t(admins.length ? "No admins match your search." : "No shop admins assigned yet.")}</p>
               {admins.length > 0 && (
                 <button
-                  className="mt-2 text-sm font-medium text-[#472a3b] hover:underline"
+                  className="mt-2 text-sm font-medium text-brand-navy hover:underline"
                   onClick={() => { setSearch(""); setRoleFilter("all"); }}
                   type="button"
                 >
@@ -607,7 +607,7 @@ export function AdminManagementPage() {
                             <span className="rounded-full bg-[#111827] px-2 py-0.5 text-xs font-medium text-white">{t("You")}</span>
                           )}
                         </p>
-                        <a className="mt-0.5 flex max-w-full items-center gap-1 truncate text-xs text-[#65748a] hover:text-[#472a3b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e]" href={`mailto:${admin.email}`}>
+                        <a className="mt-0.5 flex max-w-full items-center gap-1 truncate text-xs text-[#65748a] hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep" href={`mailto:${admin.email}`}>
                           <Icon className="size-3 shrink-0" path={icons.mail} />
                           <span className="truncate">{admin.email}</span>
                         </a>

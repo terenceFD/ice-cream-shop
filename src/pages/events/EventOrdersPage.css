@@ -1,10 +1,10 @@
 .event-orders-page {
-  --event-ink: #472a3b;
+  --event-ink: var(--brand-navy);
   --event-muted: #53677e;
   --event-ground: #f4f6f8;
   --event-line: #dfe6ee;
   --event-control: #cbd4df;
-  --event-accent: #ffb84d;
+  --event-accent: var(--brand-yellow);
   background: var(--event-ground);
   color: var(--event-ink);
   font-family: var(--font-sans);
@@ -20,14 +20,14 @@
 
 .event-page-intro {
   padding: 24px 24px 32px;
-  background: #472a3b;
+  background: var(--brand-navy);
 }
 
 .event-hero {
   grid-template-columns: 1.08fr 0.92fr;
   gap: 0;
   overflow: hidden;
-  background: #472a3b;
+  background: var(--brand-navy);
 }
 
 .event-hero-copy {
@@ -69,7 +69,7 @@
 }
 
 .event-hero-action:hover {
-  background: #f2cf20;
+  background: var(--brand-gold-light);
 }
 
 .event-hero-action:focus-visible {

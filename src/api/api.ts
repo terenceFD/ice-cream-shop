@@ -11,7 +11,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
 const ADMIN_TOKEN_KEY = 'cold-stone-admin-token'
 const CUSTOMER_TOKEN_KEY = 'cold-stone-customer-token'
 const ADMIN_WELCOME_KEY = 'cold-stone-admin-welcome'
-const ADMIN_STORE_TOWN_KEY = 'cold-stone-admin-store-town'
+const ADMIN_STORE_TOWN_KEY = 'cold-stone-admin-store-town-v2'
 
 // The customer token lives in localStorage so the sign-in survives reloads, new tabs and browser restarts.
 export function getCustomerToken(): string {

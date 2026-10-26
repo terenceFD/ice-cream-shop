@@ -6,8 +6,8 @@ import { PasswordField } from "../../components/PasswordField";
 import { useLanguage } from "../../language/useLanguage";
 import { IDLE_SIGN_OUT_KEY } from "../../components/admin/AdminIdleGuard";
 
-const fieldClassName = "mt-2 min-h-12 w-full rounded-lg border border-[#dce3eb] bg-white px-4 text-sm font-semibold text-[#472a3b] outline-none! placeholder:font-normal placeholder:text-[#65748a] focus:border-[#472a3b]";
-const labelClassName = "text-sm font-bold text-[#472a3b]";
+const fieldClassName = "mt-2 min-h-12 w-full rounded-lg border border-[#dce3eb] bg-white px-4 text-sm font-semibold text-brand-navy outline-none! placeholder:font-normal placeholder:text-[#65748a] focus:border-brand-navy";
+const labelClassName = "text-sm font-bold text-brand-navy";
 
 export function AdminLoginPage() {
   const {
@@ -125,8 +125,8 @@ export function AdminLoginPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-[#472a3b] lg:grid lg:grid-cols-2">
-      <div className="h-1.5 bg-[#ffb84d] lg:col-span-2" />
+    <div className="min-h-screen bg-white text-brand-navy lg:grid lg:grid-cols-2">
+      <div className="h-1.5 bg-brand-yellow lg:col-span-2" />
       <aside className="relative h-56 overflow-hidden lg:h-auto lg:min-h-[calc(100vh-0.375rem)]">
         <img
           alt=""
@@ -154,7 +154,7 @@ export function AdminLoginPage() {
                 {" "}
                 <span className="mt-2 block">{t("in one place.")}</span>
               </h2>
-              <ul className="mt-10 space-y-5 border-l-2 border-[#ffb84d] pl-5">
+              <ul className="mt-10 space-y-5 border-l-2 border-brand-yellow pl-5">
                 {highlights.map((item) => (
                   <li key={item.title}>
                     <p className="font-bold text-white">{item.title}</p>
@@ -174,7 +174,7 @@ export function AdminLoginPage() {
             {([["en", "English"], ["fr", "Français"]] as const).map(([option, label]) => (
               <button
                 aria-pressed={language === option}
-                className={`text-sm outline-none! focus-visible:outline-2! focus-visible:outline-offset-4 focus-visible:outline-[#472a3b] ${language === option ? "font-bold text-[#472a3b] underline decoration-2 decoration-[#b8721e] underline-offset-4" : "font-semibold text-[#65748a]"}`}
+                className={`text-sm outline-none! focus-visible:outline-2! focus-visible:outline-offset-4 focus-visible:outline-brand-navy ${language === option ? "font-bold text-brand-navy underline decoration-2 decoration-[#b8721e] underline-offset-4" : "font-semibold text-[#65748a]"}`}
                 key={option}
                 onClick={() => setLanguage(option)}
                 type="button"
@@ -190,7 +190,7 @@ export function AdminLoginPage() {
           <p className="mt-3 max-w-[36ch] text-sm leading-6 text-[#65748a]">{t("Sign in to the admin portal to manage your store.")}</p>
 
           {signedOutForInactivity && (
-            <p className="mt-6 text-sm leading-6 text-[#6b3f58]" role="status">
+            <p className="mt-6 text-sm leading-6 text-brand-blue" role="status">
               {t("You were signed out after 30 minutes of inactivity to keep the dashboard secure. Sign in again to continue.")}
             </p>
           )}
@@ -205,11 +205,11 @@ export function AdminLoginPage() {
             <section aria-labelledby="recovery-codes-title" className="mt-8">
               <h2 className="font-display text-2xl font-extrabold" id="recovery-codes-title">{t("Save your recovery codes")}</h2>
               <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("These codes are shown only once. Keep them somewhere private. Each code can be used once if you cannot access your authenticator.")}</p>
-              <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 border-y border-[#dce3eb] py-4 font-mono text-sm font-bold text-[#472a3b]">
+              <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 border-y border-[#dce3eb] py-4 font-mono text-sm font-bold text-brand-navy">
                 {recoveryCodes.map((code) => <code key={code}>{code}</code>)}
               </div>
               <button
-                className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-[#472a3b] px-6 text-sm font-bold text-white outline-none! hover:bg-[#6b3f58] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#472a3b]"
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-brand-navy px-6 text-sm font-bold text-white outline-none! hover:bg-brand-blue focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
                 onClick={continueToDashboard}
                 type="button"
               >
@@ -258,7 +258,7 @@ export function AdminLoginPage() {
                 <>
                   {mfaStage === "setup" && (
                     <div className="text-sm leading-6 text-[#65748a]">
-                      <h2 className="font-display text-2xl font-extrabold text-[#472a3b]">{t("Set up your authenticator app")}</h2>
+                      <h2 className="font-display text-2xl font-extrabold text-brand-navy">{t("Set up your authenticator app")}</h2>
                       <p className="mt-2">{t("Scan this QR code with Google Authenticator, Microsoft Authenticator, or 1Password.")}</p>
                       <div className="mt-5 flex justify-center border border-[#dce3eb] bg-white p-4">
                         <QRCodeSVG
@@ -273,11 +273,11 @@ export function AdminLoginPage() {
                         />
                       </div>
                       <details className="mt-4">
-                        <summary className="cursor-pointer font-bold text-[#472a3b]">{t("Can't scan? Use manual setup")}</summary>
+                        <summary className="cursor-pointer font-bold text-brand-navy">{t("Can't scan? Use manual setup")}</summary>
                         <p className="mt-2">{t("Enter this setup key in your authenticator app:")}</p>
-                        <code className="mt-2 block break-all border border-[#dce3eb] bg-white p-3 text-sm font-bold text-[#472a3b]">{authenticatorSecret}</code>
+                        <code className="mt-2 block break-all border border-[#dce3eb] bg-white p-3 text-sm font-bold text-brand-navy">{authenticatorSecret}</code>
                         <details className="mt-3">
-                          <summary className="cursor-pointer font-bold text-[#472a3b]">{t("Show manual setup URI")}</summary>
+                          <summary className="cursor-pointer font-bold text-brand-navy">{t("Show manual setup URI")}</summary>
                           <code className="mt-2 block break-all border border-[#dce3eb] bg-white p-3 text-xs">{authenticatorUri}</code>
                         </details>
                       </details>
@@ -304,21 +304,21 @@ export function AdminLoginPage() {
               )}
 
               <button
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-[#472a3b] px-6 text-sm font-bold text-white outline-none! hover:bg-[#6b3f58] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#472a3b] disabled:cursor-wait disabled:opacity-70"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-brand-navy px-6 text-sm font-bold text-white outline-none! hover:bg-brand-blue focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-brand-navy disabled:cursor-wait disabled:opacity-70"
                 disabled={isSubmitting}
                 type="submit"
               >
                 {isSubmitting ? t("Signing in…") : t(mfaStage === "password" ? "Login" : mfaStage === "setup" ? "Verify and finish setup" : "Verify and sign in")}
               </button>
               {mfaStage !== "password" && (
-                <button className="text-sm font-bold text-[#472a3b] underline decoration-[#b8721e] decoration-2 underline-offset-4 outline-none! focus-visible:outline-2! focus-visible:outline-offset-4 focus-visible:outline-[#472a3b]" onClick={restartSignIn} type="button">
+                <button className="text-sm font-bold text-brand-navy underline decoration-[#b8721e] decoration-2 underline-offset-4 outline-none! focus-visible:outline-2! focus-visible:outline-offset-4 focus-visible:outline-brand-navy" onClick={restartSignIn} type="button">
                   {t("Start sign-in again")}
                 </button>
               )}
             </form>
           )}
 
-          <Link className="mt-8 w-fit text-sm font-bold text-[#472a3b] underline decoration-[#b8721e] decoration-2 underline-offset-4 outline-none! focus-visible:outline-2! focus-visible:outline-offset-4 focus-visible:outline-[#472a3b]" to="/">
+          <Link className="mt-8 w-fit text-sm font-bold text-brand-navy underline decoration-[#b8721e] decoration-2 underline-offset-4 outline-none! focus-visible:outline-2! focus-visible:outline-offset-4 focus-visible:outline-brand-navy" to="/">
             {t("Return to the shop")}
           </Link>
         </div>

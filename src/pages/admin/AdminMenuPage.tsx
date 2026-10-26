@@ -9,7 +9,7 @@ import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from './adminTable'
 import './AdminMenuPage.css'
 import { toInt } from '../../../shared/numbers.ts'
 
-const inputClassName = 'mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#472a3b] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#b8721e] focus:bg-white focus:ring-4 focus:ring-[#ffb84d]/25 outline-none!'
+const inputClassName = 'mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-brand-navy transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-brand-yellow-deep focus:bg-white focus:ring-4 focus:ring-brand-yellow/25 outline-none!'
 const labelClassName = 'block text-xs font-bold text-[#65748a]'
 const LOW_STOCK_THRESHOLD = 10
 const FALLBACK_IMAGE = '/images/hero-ice-cream.jpg'
@@ -76,7 +76,7 @@ function itemStatus(item: MenuItem): ItemStatus {
 
 const statusStyles: Record<ItemStatus, { badge: string; dot: string; bar: string; label: string }> = {
   ok: { badge: 'bg-[#eaf6ee] text-[#246a46] ring-[#cfe8d8]', dot: 'bg-[#35a36b]', bar: 'bg-[#35a36b]', label: 'Available' },
-  low: { badge: 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]', dot: 'bg-[#b8721e]', bar: 'bg-[#b8721e]', label: 'Low stock' },
+  low: { badge: 'bg-[#fff6e5] text-[#9a6200] ring-[#f6dfb0]', dot: 'bg-brand-yellow-deep', bar: 'bg-brand-yellow-deep', label: 'Low stock' },
   'sold-out': { badge: 'bg-[#fdeeee] text-[#a53f37] ring-[#f3d1ce]', dot: 'bg-[#d2544b]', bar: 'bg-[#d2544b]', label: 'Sold out' },
   hidden: { badge: 'bg-[#f4f6f8] text-[#65748a] ring-[#dce3eb]', dot: 'bg-[#94a3b4]', bar: 'bg-[#94a3b4]', label: 'Hidden' },
 }
@@ -336,7 +336,7 @@ export function AdminMenuPage() {
     return (
       <div className="min-w-[7rem]">
         <div className="flex items-baseline justify-between gap-2 text-xs">
-          <span className="font-extrabold tabular-nums text-[#472a3b]">{item.availableQuantity}</span>
+          <span className="font-extrabold tabular-nums text-brand-navy">{item.availableQuantity}</span>
           <span className="text-xs text-[#65748a]">{t('Alert at {count}', { count: LOW_STOCK_THRESHOLD })}</span>
         </div>
         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#f4f6f8]">
@@ -350,7 +350,7 @@ export function AdminMenuPage() {
     <div className="flex items-center justify-end gap-1">
       <button
         aria-label={`${t('Edit')} ${item.name}`}
-        className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b] focus-visible:outline-2 focus-visible:outline-[#b8721e]"
+        className="grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-brand-yellow-deep"
         onClick={() => handleEdit(item)}
         title={t('Edit')}
         type="button"
@@ -375,7 +375,7 @@ export function AdminMenuPage() {
     <div className="admin-menu-page min-w-0 space-y-6">
       <header className="admin-menu-header flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="min-w-0">
-            <h1 className="admin-menu-title text-xl font-semibold tracking-tight text-[#472a3b]">
+            <h1 className="admin-menu-title text-xl font-semibold tracking-tight text-brand-navy">
               {t('Menu management')}
             </h1>
             <p className="mt-1 max-w-2xl text-sm text-[#65748a]">
@@ -384,14 +384,14 @@ export function AdminMenuPage() {
         </div>
         <div className="admin-menu-actions flex flex-wrap gap-2.5">
           <Link
-            className="admin-menu-secondary inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#6b3f58] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#472a3b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e]"
+            className="admin-menu-secondary inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce5ef] bg-white px-4 text-sm font-bold text-brand-blue transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep"
             to="/menu"
           >
             <Icon path={icons.external} />
             {t('View public menu')}
           </Link>
           <button
-            className="admin-menu-primary inline-flex min-h-10 items-center gap-2 rounded-md bg-[#472a3b] px-4 text-sm font-bold text-white transition hover:bg-[#6b3f58] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] disabled:cursor-not-allowed disabled:opacity-50"
+            className="admin-menu-primary inline-flex min-h-10 items-center gap-2 rounded-md bg-brand-navy px-4 text-sm font-bold text-white transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!categories.length}
             onClick={openAdd}
             type="button"
@@ -420,7 +420,7 @@ export function AdminMenuPage() {
           return (
             <button
               aria-pressed={isActive}
-              className={`admin-menu-stat group text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] ${isActive ? 'is-active' : ''}`}
+              className={`admin-menu-stat group text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep ${isActive ? 'is-active' : ''}`}
               key={metric.label}
               onClick={() => setStatusFilter(isActive ? 'all' : metric.filter)}
               type="button"
@@ -449,7 +449,7 @@ export function AdminMenuPage() {
         <div className="admin-menu-catalog-toolbar flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="admin-menu-catalog-title text-base font-semibold text-[#472a3b]" id="menu-catalog-title">{t('Added menu items')}</h2>
+              <h2 className="admin-menu-catalog-title text-base font-semibold text-brand-navy" id="menu-catalog-title">{t('Added menu items')}</h2>
               <p aria-live="polite" className="admin-menu-result-count mt-0.5 text-xs text-[#65748a]">
                 {t('Showing {shown} of {total} items', { shown: filteredItems.length, total: items.length })}
               </p>
@@ -462,7 +462,7 @@ export function AdminMenuPage() {
                 <button
                   aria-label={option.label}
                   aria-pressed={view === option.key}
-                  className={`admin-menu-view-button grid size-8 place-items-center rounded-lg border transition ${view === option.key ? 'is-active bg-white text-[#472a3b]' : 'border-transparent text-[#65748a] hover:text-[#472a3b]'}`}
+                  className={`admin-menu-view-button grid size-8 place-items-center rounded-lg border transition ${view === option.key ? 'is-active bg-white text-brand-navy' : 'border-transparent text-[#65748a] hover:text-brand-navy'}`}
                   key={option.key}
                   onClick={() => setView(option.key)}
                   title={option.label}
@@ -514,7 +514,7 @@ export function AdminMenuPage() {
               ] as const).map((option) => (
                 <button
                   aria-pressed={statusFilter === option.key}
-                  className={`admin-menu-status-filter whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition ${statusFilter === option.key ? 'bg-white text-[#472a3b]' : 'text-[#65748a] hover:text-[#472a3b]'}`}
+                  className={`admin-menu-status-filter whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition ${statusFilter === option.key ? 'bg-white text-brand-navy' : 'text-[#65748a] hover:text-brand-navy'}`}
                   key={option.key}
                   onClick={() => setStatusFilter(option.key)}
                   type="button"
@@ -548,7 +548,7 @@ export function AdminMenuPage() {
             <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#f4f6f8] text-[#65748a]">
               <Icon className="size-5" path={items.length ? icons.search : icons.menu} />
             </span>
-            <p className="mt-4 text-sm font-semibold text-[#472a3b]">
+            <p className="mt-4 text-sm font-semibold text-brand-navy">
               {t(items.length ? 'No menu items match your filters.' : 'No custom menu items yet.')}
             </p>
             {!items.length && (
@@ -559,7 +559,7 @@ export function AdminMenuPage() {
             <div className="mt-4 flex justify-center">
               {hasActiveFilters ? (
                 <button
-                  className="min-h-9 rounded-md border border-[#dce5ef] px-4 text-xs font-bold text-[#6b3f58] transition hover:bg-[#f4f6f8]"
+                  className="min-h-9 rounded-md border border-[#dce5ef] px-4 text-xs font-bold text-brand-blue transition hover:bg-[#f4f6f8]"
                   onClick={() => { setSearch(''); setCategoryFilter(''); setStatusFilter('all') }}
                   type="button"
                 >
@@ -567,7 +567,7 @@ export function AdminMenuPage() {
                 </button>
               ) : (
                 <button
-                  className="inline-flex min-h-9 items-center gap-2 rounded-md bg-[#472a3b] px-4 text-xs font-bold text-white transition hover:bg-[#6b3f58] disabled:opacity-50"
+                  className="inline-flex min-h-9 items-center gap-2 rounded-md bg-brand-navy px-4 text-xs font-bold text-white transition hover:bg-brand-blue disabled:opacity-50"
                   disabled={!categories.length}
                   onClick={openAdd}
                   type="button"
@@ -598,17 +598,17 @@ export function AdminMenuPage() {
                       <div className="flex min-w-0 items-center gap-3">
                         <Thumb src={item.image} />
                         <div className="min-w-0">
-                          <p className="truncate font-bold text-[#472a3b]">{item.name}</p>
+                          <p className="truncate font-bold text-brand-navy">{item.name}</p>
                           <p className="max-w-[14rem] truncate text-xs text-[#65748a]">{item.detail}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-3 py-3">
-                      <span className="admin-menu-category-chip inline-block max-w-[11rem] truncate rounded-sm bg-[#eef3f9] px-2.5 py-1 text-xs font-bold text-[#6b3f58]">
+                      <span className="admin-menu-category-chip inline-block max-w-[11rem] truncate rounded-sm bg-[#eef3f9] px-2.5 py-1 text-xs font-bold text-brand-blue">
                         {t(item.categoryTitle)}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3 text-right font-bold tabular-nums text-[#472a3b]">{formatPrice(item.priceXaf)}</td>
+                    <td className="whitespace-nowrap px-3 py-3 text-right font-bold tabular-nums text-brand-navy">{formatPrice(item.priceXaf)}</td>
                     <td className="px-3 py-3"><StockMeter item={item} /></td>
                     <td className="px-3 py-3"><StatusBadge item={item} /></td>
                     <td className={`admin-menu-action-cell px-5 py-3 ${PINNED_ACTION_CELL}`}>{rowActions(item)}</td>
@@ -633,17 +633,17 @@ export function AdminMenuPage() {
                     src={item.image}
                   />
                   <span className="absolute left-3 top-3"><StatusBadge item={item} /></span>
-                  <span className="admin-menu-category-chip absolute right-3 top-3 max-w-[50%] truncate rounded-sm bg-white/95 px-2.5 py-1 text-xs font-bold text-[#6b3f58]">
+                  <span className="admin-menu-category-chip absolute right-3 top-3 max-w-[50%] truncate rounded-sm bg-white/95 px-2.5 py-1 text-xs font-bold text-brand-blue">
                     {t(item.categoryTitle)}
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="truncate text-sm font-semibold text-[#472a3b]">{item.name}</h3>
+                      <h3 className="truncate text-sm font-semibold text-brand-navy">{item.name}</h3>
                       <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-[#65748a]">{item.detail}</p>
                     </div>
-                    <p className="shrink-0 text-sm font-extrabold tabular-nums text-[#472a3b]">{formatPrice(item.priceXaf)}</p>
+                    <p className="shrink-0 text-sm font-extrabold tabular-nums text-brand-navy">{formatPrice(item.priceXaf)}</p>
                   </div>
                   <div className="mt-auto flex items-end justify-between gap-3 border-t border-[#f4f6f8] pt-3">
                     <StockMeter item={item} />
@@ -667,15 +667,15 @@ export function AdminMenuPage() {
           >
             <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#b8721e]">{t(editingItemId ? 'Edit menu item' : 'Menu editor')}</p>
-                <h2 className="mt-1 text-xl font-semibold text-[#472a3b]" id="menu-drawer-title">
+                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-yellow-deep">{t(editingItemId ? 'Edit menu item' : 'Menu editor')}</p>
+                <h2 className="mt-1 text-xl font-semibold text-brand-navy" id="menu-drawer-title">
                   {t(editingItemId ? 'Edit menu item' : 'Add a menu item')}
                 </h2>
                 <p className="mt-1 text-sm text-[#65748a]">
                   {t(editingItemId ? 'Changes will appear in the shop right away.' : 'Add menu items to an existing category. New items are saved and shown in the public menu.')}
                 </p>
               </div>
-              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={cancelEdit} type="button">
+              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-brand-navy" onClick={cancelEdit} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
@@ -686,10 +686,10 @@ export function AdminMenuPage() {
                   <Thumb className="size-20" key={form.image} src={form.image.trim()} />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Live preview')}</p>
-                    <p className="mt-1 truncate text-sm font-semibold text-[#472a3b]">{form.name || t('Menu item name')}</p>
+                    <p className="mt-1 truncate text-sm font-semibold text-brand-navy">{form.name || t('Menu item name')}</p>
                     <p className="truncate text-xs text-[#65748a]">{form.categoryTitle ? t(form.categoryTitle) : t('Select a category')}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-extrabold text-[#472a3b]">
+                      <span className="text-sm font-extrabold text-brand-navy">
                         {Number.isFinite(previewPrice) && previewPrice > 0 ? formatPrice(previewPrice) : '— FCFA'}
                       </span>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-extrabold ${form.isAvailable ? 'bg-[#eaf6ee] text-[#246a46]' : 'bg-[#f4f6f8] text-[#65748a]'}`}>
@@ -738,9 +738,9 @@ export function AdminMenuPage() {
                       <input className={inputClassName} min={0} name="stock" onChange={handleChange} required step={1} type="number" value={form.stock} />
                     </label>
                   </div>
-                  <label className="flex cursor-pointer items-center gap-4 rounded-md bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb] transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#b8721e]">
+                  <label className="flex cursor-pointer items-center gap-4 rounded-md bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb] transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-yellow-deep">
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-bold text-[#472a3b]">{t('Available to order')}</span>
+                      <span className="block text-sm font-bold text-brand-navy">{t('Available to order')}</span>
                       <span className="block text-xs text-[#65748a]">{t('Turn off to hide this item from the public menu.')}</span>
                     </span>
                     <input checked={form.isAvailable} className="peer sr-only" name="isAvailable" onChange={handleChange} type="checkbox" />
@@ -751,16 +751,16 @@ export function AdminMenuPage() {
                 <fieldset className="space-y-4">
                   <legend className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Image')}</legend>
                   <label
-                    className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-6 text-center transition has-[:focus-visible]:border-[#b8721e] ${
+                    className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-6 text-center transition has-[:focus-visible]:border-brand-yellow-deep ${
                       isUploading ? 'cursor-wait border-[#e0c95a] bg-[#fffbea]' : 'border-[#d8e0ea] bg-[#f4f6f8] hover:border-[#9fb3c8] hover:bg-[#f5f8fb]'
                     }`}
                   >
-                    <span className={`admin-menu-upload-mark grid size-10 place-items-center rounded-md ${isUploading ? 'bg-[#ffb84d] text-[#472a3b]' : 'bg-white text-[#6b3f58] shadow-sm'}`}>
+                    <span className={`admin-menu-upload-mark grid size-10 place-items-center rounded-md ${isUploading ? 'bg-brand-yellow text-brand-navy' : 'bg-white text-brand-blue shadow-sm'}`}>
                       {isUploading
                         ? <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
                         : <Icon className="size-5" path={icons.upload} />}
                     </span>
-                    <span className="text-sm font-bold text-[#472a3b]">{isUploading ? t('Uploading image…') : t('Click to upload an image')}</span>
+                    <span className="text-sm font-bold text-brand-navy">{isUploading ? t('Uploading image…') : t('Click to upload an image')}</span>
                     <span className="text-xs text-[#65748a]">{t('Upload a JPEG, PNG, WebP, or GIF image (max 5 MB).')}</span>
                     <input accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" disabled={isUploading} onChange={handleImageUpload} type="file" />
                   </label>
@@ -780,11 +780,11 @@ export function AdminMenuPage() {
               </div>
 
               <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
-                <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={cancelEdit} type="button">
+                <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-brand-navy" onClick={cancelEdit} type="button">
                   {t('Cancel')}
                 </button>
                 <button
-                  className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#472a3b] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#6b3f58] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] disabled:cursor-wait disabled:opacity-60"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-md bg-brand-navy px-5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep disabled:cursor-wait disabled:opacity-60"
                   disabled={isSaving || isUploading}
                   type="submit"
                 >
@@ -809,13 +809,13 @@ export function AdminMenuPage() {
             <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600">
               <Icon className="size-6" path={icons.trash} />
             </span>
-            <h2 className="mt-4 text-base font-semibold text-[#472a3b]" id="delete-menu-item-title">
+            <h2 className="mt-4 text-base font-semibold text-brand-navy" id="delete-menu-item-title">
               {t('Delete menu item "{name}"?', { name: itemToDelete.name })}
             </h2>
             <div className="mt-4 flex items-center gap-3 rounded-md bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
               <Thumb src={itemToDelete.image} />
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-[#472a3b]">{itemToDelete.name}</p>
+                <p className="truncate text-sm font-bold text-brand-navy">{itemToDelete.name}</p>
                 <p className="text-xs text-[#65748a]">{t(itemToDelete.categoryTitle)} · {formatPrice(itemToDelete.priceXaf)}</p>
               </div>
             </div>

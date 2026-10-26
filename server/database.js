@@ -2658,6 +2658,19 @@ export async function deleteDeliveredOrderForCustomer(id, customerId) {
   return result.changes ? 'deleted' : 'not_found'
 }
 
+export async function listOrderNotificationRecipients(storeId) {
+  const admins = await database.prepare(`
+    SELECT email FROM admins
+    WHERE role = 'owner'
+      OR (role = 'store_admin' AND store_id = ?)
+      OR (role = 'branch_admin' AND branch_town = (SELECT town FROM stores WHERE id = ?))
+    ORDER BY id
+  `).all(storeId, storeId)
+  return [...new Set(admins
+    .map(({ email }) => typeof email === 'string' ? email.trim().toLowerCase() : '')
+    .filter(Boolean))]
+}
+
 export async function createCheckoutOrder({
   customer,
   name,

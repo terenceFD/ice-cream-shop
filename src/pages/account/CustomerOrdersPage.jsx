@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { apiRequest, getCustomerToken } from "../../api/api";
 import { Footer, Header } from "../../components/Layout";
+import { HeroBackground } from "../../components/HeroBackground";
 import { useCart } from "../../context/useCart";
 import { useAuth } from "../../context/useAuth";
 import { cameroonDeliveryLocations } from "../../../shared/data";
@@ -11,14 +12,14 @@ import { numberFormatter } from "../../lib/cartPricing";
 import "./CustomerAccount.css";
 
 const fieldClass =
-  "mt-2 w-full rounded-xl border border-[#dce3eb] bg-white px-4 py-3.5 text-sm font-semibold text-[#472a3b] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#b9c5d2] focus:border-[#b8721e] focus:ring-4 focus:ring-[#ffb84d]/20 outline-none!";
+  "mt-2 w-full rounded-xl border border-[#dce3eb] bg-white px-4 py-3.5 text-sm font-semibold text-brand-navy transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#b9c5d2] focus:border-brand-yellow-deep focus:ring-4 focus:ring-brand-yellow/20 outline-none!";
 const labelClass = "block text-xs font-extrabold text-[#65748a]";
 const cardClass = "rounded-2xl bg-white p-5 ring-1 ring-[#e5e9ee] sm:p-7";
-const eyebrowClass = "text-xs font-bold text-[#b8721e]";
+const eyebrowClass = "text-xs font-bold text-brand-yellow-deep";
 const primaryButton =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#472a3b] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-55";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brand-navy px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-55";
 const ghostButton =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#d5dce5] bg-white px-4 py-2.5 text-xs font-bold text-[#65748a] transition-colors hover:border-[#472a3b] hover:text-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#d5dce5] bg-white px-4 py-2.5 text-xs font-bold text-[#65748a] transition-colors hover:border-brand-navy hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep disabled:cursor-not-allowed disabled:opacity-50";
 
 const PROFILE_IMAGE_DIMENSION = 256;
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -176,7 +177,7 @@ function Avatar({ customer, size = "size-20", text = "text-3xl" }) {
   ) : (
     <span
       aria-hidden="true"
-      className={`${size} ${text} grid shrink-0 place-items-center rounded-full bg-[#ffb84d] font-display font-extrabold text-[#472a3b]`}
+      className={`${size} ${text} grid shrink-0 place-items-center rounded-full bg-brand-yellow font-display font-extrabold text-brand-navy`}
     >
       {(customer.name || "A").charAt(0).toUpperCase()}
     </span>
@@ -188,7 +189,7 @@ function SectionHeading({ eyebrow, title, description, action }) {
     <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
       <div className="min-w-0">
         <p className={eyebrowClass}>{eyebrow}</p>
-        <h2 className="mt-2 font-display text-2xl font-extrabold leading-tight text-[#472a3b] sm:text-[1.75rem]">
+        <h2 className="mt-2 font-display text-2xl font-extrabold leading-tight text-brand-navy sm:text-[1.75rem]">
           {title}
         </h2>
         {description && (
@@ -205,10 +206,10 @@ function SectionHeading({ eyebrow, title, description, action }) {
 function EmptyState({ icon, title, body, children }) {
   return (
     <div className="rounded-2xl border border-dashed border-[#cfd8e2] bg-white px-6 py-12 text-center">
-      <span className="mx-auto grid size-14 place-items-center rounded-xl bg-[#fff8d8] text-[#b8721e]">
+      <span className="mx-auto grid size-14 place-items-center rounded-xl bg-[#fff8d8] text-brand-yellow-deep">
         <Icon className="size-6" path={icon} />
       </span>
-      <h3 className="mt-4 font-display text-xl font-extrabold text-[#472a3b]">
+      <h3 className="mt-4 font-display text-xl font-extrabold text-brand-navy">
         {title}
       </h3>
       <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#65748a]">
@@ -257,7 +258,7 @@ function OrderProgress({ order, t }) {
       className="account-order-tracking rounded-xl bg-[#f3f6f8] p-4 sm:p-5"
     >
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <p className="flex items-center gap-2 text-xs font-extrabold text-[#472a3b]">
+        <p className="flex items-center gap-2 text-xs font-extrabold text-brand-navy">
           {!isDone && (
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#6c9c45] opacity-60 motion-reduce:hidden" />
@@ -301,7 +302,7 @@ function OrderProgress({ order, t }) {
                     isComplete
                       ? "bg-[#6c9c45] text-white"
                       : isCurrent
-                        ? "bg-[#ffb84d] text-[#472a3b] shadow-[0_0_0_6px_rgba(255,220,50,0.25)]"
+                        ? "bg-brand-yellow text-brand-navy shadow-[0_0_0_6px_rgba(255,220,50,0.25)]"
                         : "bg-white text-[#9aa3af] ring-[#f7f6f0] outline outline-1 outline-[#ddd8ca]"
                   }`}
                 >
@@ -314,7 +315,7 @@ function OrderProgress({ order, t }) {
                 <span
                   className={`mt-2 block px-1 text-xs leading-4 sm:text-xs ${
                     isCurrent || isComplete
-                      ? "font-bold text-[#472a3b]"
+                      ? "font-bold text-brand-navy"
                       : "font-medium text-[#8b95a2]"
                   }`}
                 >
@@ -354,7 +355,7 @@ function StarRating({ value, onChange, t }) {
             <span className="sr-only">{star} / 5</span>
             <svg
               aria-hidden="true"
-              className={`size-8 rounded-md transition peer-focus-visible:ring-2 peer-focus-visible:ring-[#b8721e] ${
+              className={`size-8 rounded-md transition peer-focus-visible:ring-2 peer-focus-visible:ring-brand-yellow-deep ${
                 star <= value
                   ? "text-[#f5b800]"
                   : "text-[#e2ded2] hover:text-[#f5d76e]"
@@ -426,9 +427,9 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
       className="group/review mt-5 scroll-mt-28 rounded-2xl ring-1 ring-[#fbfaf5] open:bg-[#fbfaf5]"
       ref={detailsRef}
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-sm font-extrabold text-[#472a3b] transition hover:bg-[#f3f6f8] [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-sm font-extrabold text-brand-navy transition hover:bg-[#f3f6f8] [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-xl bg-[#fff6cc] text-[#b8721e]">
+          <span className="grid size-8 place-items-center rounded-xl bg-[#fff6cc] text-brand-yellow-deep">
             <Icon
               className="size-4"
               path="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z"
@@ -536,11 +537,11 @@ function OrderCard({
     <article className="account-order-card overflow-hidden rounded-2xl bg-white ring-1 ring-[#e5e9ee]">
       <header className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 sm:px-7 sm:pt-6">
         <div className="flex min-w-0 items-center gap-3.5">
-          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#f4f6f8] text-[#472a3b]">
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#f4f6f8] text-brand-navy">
             <Icon path="M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1" />
           </span>
           <div className="min-w-0">
-            <h3 className="font-display text-lg font-extrabold text-[#472a3b]">
+            <h3 className="font-display text-lg font-extrabold text-brand-navy">
               {t("Order #{id}", { id: order.id })}
             </h3>
             <p className="mt-0.5 text-xs font-medium text-[#65748a]">
@@ -577,7 +578,7 @@ function OrderCard({
                     <span className="grid h-7 min-w-7 shrink-0 place-items-center rounded-md bg-[#f4f6f8] px-1.5 text-xs font-extrabold text-[#65748a]">
                       {item.quantity}×
                     </span>
-                    <span className="truncate font-semibold text-[#472a3b]">
+                    <span className="truncate font-semibold text-brand-navy">
                       {item.name}
                     </span>
                   </span>
@@ -591,7 +592,7 @@ function OrderCard({
               <span className="text-sm font-bold text-[#65748a]">
                 {t("Total")}
               </span>
-              <span className="font-display text-xl font-extrabold text-[#472a3b]">
+              <span className="font-display text-xl font-extrabold text-brand-navy">
                 {formatPrice(order.totalCents)}
               </span>
             </div>
@@ -607,7 +608,7 @@ function OrderCard({
                       : "Delivery scheduled",
                   )}
                 </dt>
-                <dd className="mt-1 font-bold text-[#472a3b]">
+                <dd className="mt-1 font-bold text-brand-navy">
                   {new Date(order.scheduledFor).toLocaleString(
                     language === "fr" ? "fr-CM" : "en-CM",
                     { dateStyle: "medium", timeStyle: "short" },
@@ -619,7 +620,7 @@ function OrderCard({
               <dt className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#65748a]">
                 {t("Assigned store")}
               </dt>
-              <dd className="mt-1 font-bold text-[#472a3b]">
+              <dd className="mt-1 font-bold text-brand-navy">
                 {t(order.storeName || "Store not recorded")}
               </dd>
               {order.storeAddress && (
@@ -756,7 +757,7 @@ function CustomerProfileDetails({ customer, onSave, t }) {
             size="size-24"
             text="text-4xl"
           />
-          <span className="absolute -bottom-1 -right-1 grid size-9 place-items-center rounded-full bg-[#472a3b] text-white ring-4 ring-[#f3f6f8]">
+          <span className="absolute -bottom-1 -right-1 grid size-9 place-items-center rounded-full bg-brand-navy text-white ring-4 ring-[#f3f6f8]">
             <Icon
               className="size-4"
               path="M4 8h3l2-3h6l2 3h3v11H4V8Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
@@ -764,7 +765,7 @@ function CustomerProfileDetails({ customer, onSave, t }) {
           </span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-extrabold text-[#472a3b]">
+          <p className="text-sm font-extrabold text-brand-navy">
             {t("Profile picture")}
           </p>
           <p className="mt-1 text-xs leading-5 text-[#65748a]">
@@ -772,7 +773,7 @@ function CustomerProfileDetails({ customer, onSave, t }) {
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <label
-              className={`${ghostButton} cursor-pointer focus-within:ring-2 focus-within:ring-[#b8721e]`}
+              className={`${ghostButton} cursor-pointer focus-within:ring-2 focus-within:ring-brand-yellow-deep`}
             >
               <Icon
                 className="size-4"
@@ -894,7 +895,7 @@ function RewardsCard({ points, t, compact = false }) {
   const remaining = POINTS_PER_REWARD - progress;
 
   return (
-    <div className="account-rewards-card overflow-hidden rounded-2xl bg-[#472a3b] p-5 text-white sm:p-7">
+    <div className="account-rewards-card overflow-hidden rounded-2xl bg-brand-navy p-5 text-white sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold text-white/70">
@@ -907,7 +908,7 @@ function RewardsCard({ points, t, compact = false }) {
             </span>
           </p>
         </div>
-        <span className="rounded-md bg-[#fff3b0] px-2.5 py-1 text-xs font-bold text-[#b8721e]">
+        <span className="rounded-md bg-[#fff3b0] px-2.5 py-1 text-xs font-bold text-brand-yellow-deep">
           {formatPoints(rewardsAvailable)} {t("Rewards available")}
         </span>
       </div>
@@ -930,7 +931,7 @@ function RewardsCard({ points, t, compact = false }) {
           role="progressbar"
         >
           <div
-            className="h-full rounded-full bg-[#ffb84d] transition-[width] duration-500 motion-reduce:transition-none"
+            className="h-full rounded-full bg-brand-yellow transition-[width] duration-500 motion-reduce:transition-none"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -939,7 +940,7 @@ function RewardsCard({ points, t, compact = false }) {
       {!compact && (
         <div className="mt-5 flex flex-wrap items-baseline gap-x-2 border-t border-white/15 pt-4">
           <p className="text-xs font-semibold text-white/70">{t("Worth")}</p>
-          <p className="font-display text-xl font-bold text-[#ffb84d]">
+          <p className="font-display text-xl font-bold text-brand-yellow">
             {new Intl.NumberFormat("fr-CM").format(
               rewardsAvailable * REWARD_VALUE_FCFA,
             )}{" "}
@@ -1249,7 +1250,7 @@ export function CustomerOrdersPage() {
           />
           <div className="min-w-0 flex-1">
             <Link
-              className="block truncate text-sm font-extrabold text-[#472a3b] transition hover:text-[#b8721e]"
+              className="block truncate text-sm font-extrabold text-brand-navy transition hover:text-brand-yellow-deep"
               to={favorite.item.itemType === "menu" ? "/menu" : "/flavors"}
             >
               {favorite.item.name}
@@ -1280,12 +1281,15 @@ export function CustomerOrdersPage() {
   );
 
   return (
-    <div className="customer-account min-h-screen bg-[#f4f6f8] text-[#472a3b]">
+    <div className="customer-account min-h-screen bg-[#f4f6f8] text-brand-navy">
       <Header />
       <main id="main" tabIndex={-1}>
         {/* Hero */}
-        <section className="account-masthead bg-[#472a3b] text-white">
-          <div className="account-masthead-inner mx-auto max-w-[1200px] px-5 pb-7 pt-7 sm:px-8 sm:pb-8 sm:pt-9 lg:px-10">
+        <section className="account-masthead relative isolate overflow-hidden bg-brand-navy text-white">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <HeroBackground quietOnMobile variant="navy" theme="ice-cream" />
+          </div>
+          <div className="account-masthead-inner relative z-10 mx-auto max-w-[1200px] px-5 pb-7 pt-7 sm:px-8 sm:pb-8 sm:pt-9 lg:px-10">
             <div className="account-identity-row flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-4 sm:gap-5">
                 <Avatar
@@ -1309,14 +1313,14 @@ export function CustomerOrdersPage() {
               </div>
               <div className="flex flex-wrap gap-2.5 sm:shrink-0">
                 <Link
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#ffb84d] px-4 py-2.5 text-sm font-bold text-[#472a3b] transition-colors hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b]"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brand-yellow px-4 py-2.5 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy"
                   to="/menu"
                 >
                   {t("Browse the menu")}
                   <Icon className="size-4" path="M5 12h14m-5-5 5 5-5 5" />
                 </Link>
                 <Link
-                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/30 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b]"
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/30 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy"
                   to="/custom-cake"
                 >
                   {t("Design a custom cake")}
@@ -1343,7 +1347,7 @@ export function CustomerOrdersPage() {
                     {stat.label}
                   </dt>
                   <dd
-                    className={`mt-1 truncate font-display text-xl font-bold tabular-nums sm:text-2xl ${stat.accent ? "text-[#ffb84d]" : "text-white"}`}
+                    className={`mt-1 truncate font-display text-xl font-bold tabular-nums sm:text-2xl ${stat.accent ? "text-brand-yellow" : "text-white"}`}
                   >
                     {stat.value}
                   </dd>
@@ -1401,16 +1405,16 @@ export function CustomerOrdersPage() {
                     <li key={tab.key}>
                       <button
                         aria-current={isCurrent ? "page" : undefined}
-                        className={`flex min-h-11 items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e] lg:w-full ${
+                        className={`flex min-h-11 items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep lg:w-full ${
                           isCurrent
-                            ? "bg-[#fff5c2] text-[#472a3b]"
-                            : "bg-white text-[#65748a] ring-1 ring-[#e5e9ee] hover:bg-[#f4f6f8] hover:text-[#472a3b] lg:bg-transparent lg:ring-0 lg:hover:bg-[#eef1f4]"
+                            ? "bg-[#fff5c2] text-brand-navy"
+                            : "bg-white text-[#65748a] ring-1 ring-[#e5e9ee] hover:bg-[#f4f6f8] hover:text-brand-navy lg:bg-transparent lg:ring-0 lg:hover:bg-[#eef1f4]"
                         }`}
                         onClick={() => selectTab(tab.key)}
                         type="button"
                       >
                         <span
-                          className={`hidden size-5 shrink-0 place-items-center lg:grid ${isCurrent ? "text-[#b8721e]" : "text-[#718095]"}`}
+                          className={`hidden size-5 shrink-0 place-items-center lg:grid ${isCurrent ? "text-brand-yellow-deep" : "text-[#718095]"}`}
                         >
                           <Icon path={tab.icon} />
                         </span>
@@ -1419,7 +1423,7 @@ export function CustomerOrdersPage() {
                           <span
                             className={`rounded-md px-1.5 py-0.5 text-xs ${
                               isCurrent
-                                ? "bg-white/70 text-[#b8721e]"
+                                ? "bg-white/70 text-brand-yellow-deep"
                                 : "bg-[#f4f6f8] text-[#65748a]"
                             }`}
                           >
@@ -1517,7 +1521,7 @@ export function CustomerOrdersPage() {
                     <RewardsCard points={points} t={t} />
                     <div className={cardClass}>
                       <p className={eyebrowClass}>{t("Shortcuts")}</p>
-                      <h2 className="mt-2 font-display text-xl font-extrabold text-[#472a3b]">
+                      <h2 className="mt-2 font-display text-xl font-extrabold text-brand-navy">
                         {t("Quick actions")}
                       </h2>
                       <div className="account-shortcuts mt-5 grid grid-cols-2 gap-3">
@@ -1544,11 +1548,11 @@ export function CustomerOrdersPage() {
                           },
                         ].map((action) => (
                           <Link
-                            className="group flex flex-col gap-3 rounded-xl bg-[#f3f6f8] p-4 text-sm font-extrabold text-[#472a3b] transition-colors hover:bg-[#e9eef3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8721e]"
+                            className="group flex flex-col gap-3 rounded-xl bg-[#f3f6f8] p-4 text-sm font-extrabold text-brand-navy transition-colors hover:bg-[#e9eef3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep"
                             key={action.to}
                             to={action.to}
                           >
-                            <span className="grid size-10 place-items-center rounded-lg bg-white text-[#b8721e] transition-colors group-hover:bg-[#ffb84d] group-hover:text-[#472a3b]">
+                            <span className="grid size-10 place-items-center rounded-lg bg-white text-brand-yellow-deep transition-colors group-hover:bg-brand-yellow group-hover:text-brand-navy">
                               <Icon path={action.icon} />
                             </span>
                             {action.label}
@@ -1590,7 +1594,7 @@ export function CustomerOrdersPage() {
                     <div>
                       <p className={eyebrowClass}>{t("My account")}</p>
                       <h2
-                        className="mt-2 font-display text-2xl font-extrabold text-[#472a3b] sm:text-[1.75rem]"
+                        className="mt-2 font-display text-2xl font-extrabold text-brand-navy sm:text-[1.75rem]"
                         id="account-orders-title"
                       >
                         {t("Order history and status")}
@@ -1611,8 +1615,8 @@ export function CustomerOrdersPage() {
                             aria-pressed={orderFilter === filter.key}
                             className={`rounded-md px-3.5 py-1.5 text-xs font-extrabold transition ${
                               orderFilter === filter.key
-                                ? "bg-[#472a3b] text-white"
-                                : "text-[#65748a] hover:text-[#472a3b]"
+                                ? "bg-brand-navy text-white"
+                                : "text-[#65748a] hover:text-brand-navy"
                             }`}
                             key={filter.key}
                             onClick={() => setOrderFilter(filter.key)}
@@ -1624,7 +1628,7 @@ export function CustomerOrdersPage() {
                       </div>
                       <button
                         aria-label={t("Refresh order status")}
-                        className="grid size-9 place-items-center rounded-lg bg-white text-[#65748a] ring-1 ring-[#e5e9ee] transition hover:text-[#472a3b] disabled:opacity-50"
+                        className="grid size-9 place-items-center rounded-lg bg-white text-[#65748a] ring-1 ring-[#e5e9ee] transition hover:text-brand-navy disabled:opacity-50"
                         disabled={loadingOrders}
                         onClick={() =>
                           refreshOrders().catch((loadError) =>
@@ -1703,11 +1707,11 @@ export function CustomerOrdersPage() {
                               key={savedCart.id}
                             >
                               <div className="flex items-start gap-3.5">
-                                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#b8721e]">
+                                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-brand-yellow-deep">
                                   <Icon path="M6 4h12v16l-6-4-6 4V4Z" />
                                 </span>
                                 <div className="min-w-0 flex-1">
-                                  <p className="truncate font-display text-lg font-extrabold text-[#472a3b]">
+                                  <p className="truncate font-display text-lg font-extrabold text-brand-navy">
                                     {t(savedCart.label)}
                                   </p>
                                   <p className="text-xs font-semibold text-[#65748a]">
@@ -1723,7 +1727,7 @@ export function CustomerOrdersPage() {
                                       className="flex gap-2"
                                       key={`${savedCart.id}-${index}`}
                                     >
-                                      <span className="font-extrabold text-[#472a3b]">
+                                      <span className="font-extrabold text-brand-navy">
                                         {item.quantity}×
                                       </span>
                                       <span className="truncate">
@@ -1819,7 +1823,7 @@ export function CustomerOrdersPage() {
                   <div className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
                     <RewardsCard points={points} t={t} />
                     <div className={cardClass}>
-                      <h3 className="font-display text-lg font-extrabold text-[#472a3b]">
+                      <h3 className="font-display text-lg font-extrabold text-brand-navy">
                         {t("Points history")}
                       </h3>
                       {loyalty?.entries?.length ? (
@@ -1847,7 +1851,7 @@ export function CustomerOrdersPage() {
                                   />
                                 </span>
                                 <div className="min-w-0">
-                                  <p className="truncate text-sm font-bold capitalize text-[#472a3b]">
+                                  <p className="truncate text-sm font-bold capitalize text-brand-navy">
                                     {t(entry.entryType)}
                                   </p>
                                   <p className="text-xs text-[#65748a]">
@@ -1906,7 +1910,7 @@ export function CustomerOrdersPage() {
         <div className="fixed inset-0 z-[60] grid place-items-center px-5" role="presentation">
           <button
             aria-label={t("Cancel")}
-            className="absolute inset-0 bg-[#472a3b]/50 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-brand-navy/50 backdrop-blur-[2px]"
             onClick={() => setOrderToDelete(null)}
             tabIndex={-1}
             type="button"
@@ -1925,7 +1929,7 @@ export function CustomerOrdersPage() {
                 />
               </span>
               <div className="min-w-0">
-                <h2 className="font-display text-lg font-extrabold text-[#472a3b]" id="delete-order-title">
+                <h2 className="font-display text-lg font-extrabold text-brand-navy" id="delete-order-title">
                   {t("Remove order #{id}?", { id: orderToDelete.id })}
                 </h2>
                 <p className="mt-1.5 text-sm leading-6 text-[#65748a]">
@@ -1935,7 +1939,7 @@ export function CustomerOrdersPage() {
             </div>
             <div className="mt-6 flex justify-end gap-2.5">
               <button
-                className="inline-flex min-h-10 items-center rounded-lg border border-[#dce3eb] bg-white px-4 text-sm font-semibold text-[#472a3b] transition hover:border-[#bac7d5] focus-visible:outline-2 focus-visible:outline-[#472a3b]"
+                className="inline-flex min-h-10 items-center rounded-lg border border-[#dce3eb] bg-white px-4 text-sm font-semibold text-brand-navy transition hover:border-[#bac7d5] focus-visible:outline-2 focus-visible:outline-brand-navy"
                 disabled={deletingOrderId === orderToDelete.id}
                 onClick={() => setOrderToDelete(null)}
                 type="button"

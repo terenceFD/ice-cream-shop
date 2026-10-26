@@ -17,7 +17,7 @@ export function AdminPageHeader({ icon, section, title, description, actions, t 
       <div className="min-w-0">
         <nav aria-label={t('Breadcrumb')} className="text-xs font-medium text-[#65748a]">
           {section} <span aria-hidden="true" className="mx-1">/</span>
-          <span className="text-[#472a3b]">{title}</span>
+          <span className="text-brand-navy">{title}</span>
         </nav>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[#111]">{title}</h1>
         {description && <p className="mt-1 max-w-2xl text-sm text-[#65748a]">{description}</p>}
@@ -52,10 +52,10 @@ export function AdminNotice({ tone = 'success', children }) {
 // On/off switch styled like the menu inventory "On sale" toggle.
 export function AdminToggle({ checked, onChange, label, disabled = false }) {
   return (
-    <label className={`inline-flex cursor-pointer items-center gap-2.5 text-sm font-bold text-[#6b3f58] ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}>
+    <label className={`inline-flex cursor-pointer items-center gap-2.5 text-sm font-bold text-brand-blue ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}>
       <button
         aria-checked={checked}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] ${checked ? 'bg-[#2e9d5b]' : 'bg-[#d6dde6]'}`}
+        className={`relative h-6 w-11 shrink-0 rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep ${checked ? 'bg-[#2e9d5b]' : 'bg-[#d6dde6]'}`}
         disabled={disabled}
         onClick={() => onChange(!checked)}
         role="switch"

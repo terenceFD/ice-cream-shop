@@ -169,14 +169,21 @@ test('removes legacy subscriptions with unapproved endpoints without sending to 
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM push_subscriptions WHERE endpoint = 'https://127.0.0.1/private'").get().n, 0)
 })
 
-test('explains a key rejection so the owner knows what to fix', async () => {
-  const db = memoryDatabase()
-  const result = await sendToAllCustomers(db, { title: 't', body: 'b' }, {
-    send: async () => { throw Object.assign(new Error('Forbidden'), { statusCode: 403 }) },
-  })
-  assert.equal(result.sent, 0)
-  assert.equal(result.errors.length, 1)
-  assert.match(result.errors[0], /rejected the site's keys/)
+test('removes rejected subscriptions and explains how to restore alerts', async () => {
+  for (const statusCode of [401, 403]) {
+    const db = memoryDatabase()
+    const result = await sendToAllCustomers(db, { title: 't', body: 'b' }, {
+      send: async () => { throw Object.assign(new Error('Forbidden'), { statusCode }) },
+    })
+    assert.equal(result.sent, 0)
+    assert.equal(result.removed, 3)
+    assert.equal(result.failed, 3)
+    assert.equal(result.errors.length, 1)
+    assert.match(result.errors[0], new RegExp(`VAPID credentials \\(HTTP ${statusCode}\\)`))
+    assert.match(result.errors[0], /turn alerts on again/)
+    assert.equal(await countCustomerSubscriptions(db), 0)
+    db.close()
+  }
 })
 
 test('reports the set-up as ready when the keys are a matching pair', () => {

@@ -256,7 +256,7 @@ function ReviewerAvatar({ name, picture, className, eager = false }) {
   ) : (
     <span
       aria-hidden="true"
-      className={`grid shrink-0 place-items-center rounded-full bg-[#472a3b] font-display font-extrabold text-[#ffb84d] ${className}`}
+      className={`grid shrink-0 place-items-center rounded-full bg-brand-navy font-display font-extrabold text-brand-yellow ${className}`}
     >
       {name.charAt(0).toUpperCase()}
     </span>
@@ -291,7 +291,7 @@ function ReviewCard({ review, language, t, eager = false }) {
           {isLong && (
             <button
               aria-expanded={expanded}
-              className="mt-3 text-[13px] font-bold tracking-wide text-[#6b3f58] underline decoration-[#c8d2dd] underline-offset-4 transition hover:decoration-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
+              className="mt-3 text-[13px] font-bold tracking-wide text-brand-blue underline decoration-[#c8d2dd] underline-offset-4 transition hover:decoration-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
               onClick={() => setExpanded((current) => !current)}
               type="button"
             >
@@ -402,7 +402,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <h2
-              className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#472a3b] sm:text-5xl lg:text-6xl"
+              className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-brand-navy sm:text-5xl lg:text-6xl"
               id="real-reviews-heading"
             >
               {t("Real Reviews")}
@@ -445,7 +445,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
         ) : !hasReviews ? (
           <div className="mt-8 flex flex-col items-start gap-4 rounded-2xl border border-[#e6ebf1] bg-[#f9fbfd] px-6 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
             <div>
-              <p className="font-display text-xl font-extrabold leading-tight text-[#472a3b]">
+              <p className="font-display text-xl font-extrabold leading-tight text-brand-navy">
                 {t("No reviews yet — be the first!")}
               </p>
               <p className="mt-1.5 max-w-md text-base leading-7 text-[#52647b]">
@@ -453,7 +453,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
               </p>
             </div>
             <Link
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#472a3b] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(9,42,83,0.16)] transition hover:-translate-y-0.5 hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
+              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-navy px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(9,42,83,0.16)] transition hover:-translate-y-0.5 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
               to="/account/orders"
             >
               {t("Write a review")} <ArrowIcon />
@@ -477,13 +477,13 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
 
         <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-[#dfe6ed] pt-6">
           <Link
-            className="inline-flex items-center gap-2 rounded-full bg-[#472a3b] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(9,42,83,0.16)] transition hover:-translate-y-0.5 hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-full bg-brand-navy px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(9,42,83,0.16)] transition hover:-translate-y-0.5 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
             to="/account/orders"
           >
             {t("Write a review")} <ArrowIcon />
           </Link>
           <Link
-            className="inline-flex items-center gap-2 rounded-full border border-[#cfd8e1] bg-white px-6 py-3.5 text-sm font-extrabold text-[#6b3f58] transition hover:-translate-y-0.5 hover:border-[#472a3b] hover:bg-[#fafdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-full border border-[#cfd8e1] bg-white px-6 py-3.5 text-sm font-extrabold text-brand-blue transition hover:-translate-y-0.5 hover:border-brand-navy hover:bg-[#fafdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
             to="/menu"
           >
             {t("Explore the menu")}
@@ -736,7 +736,7 @@ export function HomePage() {
       <main>
         <section
           id="home"
-          className="relative isolate w-full overflow-clip bg-[#472a3b] text-white"
+          className="relative isolate w-full overflow-clip bg-brand-navy text-white"
         >
           <HeroBackground variant="navy" />
 
@@ -745,16 +745,16 @@ export function HomePage() {
               {/* Copy */}
               <div className="relative z-10 lg:col-span-6">
                 <div className="home-hero-copy" key={activeSlide}>
-                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffb84d]">
+                  <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-brand-yellow">
                     <span
                       aria-hidden="true"
-                      className="h-px w-10 bg-[#ffb84d]"
+                      className="h-px w-10 bg-brand-yellow"
                     />
                     {t(homeSlides[activeSlide].eyebrow)}
                   </p>
                   <h1 className="mt-6 font-display text-[clamp(2.9rem,6.6vw,5.75rem)] font-extrabold leading-[0.95] tracking-[-0.04em] text-white">
                     {t(homeSlides[activeSlide].title)}
-                    <span className="mt-1 block text-[#ffb84d]">
+                    <span className="mt-1 block text-brand-yellow">
                       {t(homeSlides[activeSlide].accent)}
                     </span>
                   </h1>
@@ -767,7 +767,7 @@ export function HomePage() {
                     matches what the copy is selling (e.g. "Order a cake" on the cake slide). */}
                 <div className="mt-9 flex flex-wrap items-center gap-3">
                   <Link
-                    className="inline-flex items-center gap-2 rounded-full bg-[#ffb84d] px-7 py-4 text-sm font-extrabold text-[#472a3b] shadow-[0_14px_34px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b]"
+                    className="inline-flex items-center gap-2 rounded-full bg-brand-yellow px-7 py-4 text-sm font-extrabold text-brand-navy shadow-[0_14px_34px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy"
                     to={homeSlides[activeSlide].primaryTo}
                   >
                     {t(homeSlides[activeSlide].primaryCta)} <ArrowIcon />
@@ -775,7 +775,7 @@ export function HomePage() {
                   {/* Kept on every screen size: on small screens it shares the row with
                       the primary button (flex-wrap) so mobile visitors get both actions. */}
                   <Link
-                    className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b]"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy"
                     to={homeSlides[activeSlide].secondaryTo}
                   >
                     {t(homeSlides[activeSlide].secondaryCta)}{" "}
@@ -785,7 +785,7 @@ export function HomePage() {
                 <p className="mt-5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm font-semibold text-white/80">
                   {t("Pickup or delivery in")}
                   <Link
-                    className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 font-extrabold text-white ring-1 ring-white/20 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]"
+                    className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 font-extrabold text-white ring-1 ring-white/20 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
                     to="/locations"
                   >
                     <svg aria-hidden="true" className="size-3.5" fill="none" viewBox="0 0 24 24">
@@ -798,7 +798,7 @@ export function HomePage() {
                   </Link>
                   {t("and")}
                   <Link
-                    className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 font-extrabold text-white ring-1 ring-white/20 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]"
+                    className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 font-extrabold text-white ring-1 ring-white/20 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
                     to="/locations"
                   >
                     <svg aria-hidden="true" className="size-3.5" fill="none" viewBox="0 0 24 24">
@@ -848,7 +848,7 @@ export function HomePage() {
                   <div className="relative flex-1">
                     <svg
                       aria-hidden="true"
-                      className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#6b3f58]/70"
+                      className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-brand-blue/70"
                       fill="none"
                       viewBox="0 0 24 24"
                     >
@@ -860,7 +860,7 @@ export function HomePage() {
                       />
                     </svg>
                     <input
-                      className="w-full rounded-full border border-white/25 bg-white/95 py-3 pl-11 pr-4 text-sm font-semibold text-[#472a3b] placeholder:text-[#52647b]/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]"
+                      className="w-full rounded-full border border-white/25 bg-white/95 py-3 pl-11 pr-4 text-sm font-semibold text-brand-navy placeholder:text-[#52647b]/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
                       id="home-hero-search"
                       onChange={(event) => setHeroSearch(event.target.value)}
                       placeholder={t("Search “Dubai chocolate”, “mango”…")}
@@ -869,7 +869,7 @@ export function HomePage() {
                     />
                   </div>
                   <button
-                    className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffb84d] text-[#472a3b] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b]"
+                    className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-yellow text-brand-navy shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy"
                     type="submit"
                   >
                     <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
@@ -896,7 +896,7 @@ export function HomePage() {
                     >
                       <span
                         aria-hidden="true"
-                        className="grid size-5 place-items-center rounded-full bg-[#ffb84d]/15 text-[#ffb84d]"
+                        className="grid size-5 place-items-center rounded-full bg-brand-yellow/15 text-brand-yellow"
                       >
                         <svg className="size-3" fill="none" viewBox="0 0 24 24">
                           <path
@@ -1000,13 +1000,13 @@ export function HomePage() {
                         className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/20"
                       >
                         <span
-                          className="home-hero-progress absolute inset-0 rounded-full bg-[#ffb84d]"
+                          className="home-hero-progress absolute inset-0 rounded-full bg-brand-yellow"
                           key={activeSlide}
                         />
                       </div>
                       <button
                         aria-label={t("Previous slide")}
-                        className="grid size-11 place-items-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]"
+                        className="grid size-11 place-items-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
                         onClick={() => {
                           setActiveSlide(
                             (current) =>
@@ -1034,7 +1034,7 @@ export function HomePage() {
                       </button>
                       <button
                         aria-label={t("Next slide")}
-                        className="grid size-11 place-items-center rounded-full bg-[#ffb84d] text-[#472a3b] shadow-md transition hover:scale-105 hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        className="grid size-11 place-items-center rounded-full bg-brand-yellow text-brand-navy shadow-md transition hover:scale-105 hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                         onClick={() => {
                           setActiveSlide(
                             (current) => (current + 1) % homeSlides.length,
@@ -1062,9 +1062,9 @@ export function HomePage() {
                         aria-label={t("Show slide {number}", {
                           number: index + 1,
                         })}
-                        className={`relative size-16 overflow-hidden rounded-2xl transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] ${
+                        className={`relative size-16 overflow-hidden rounded-2xl transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow ${
                           isActive
-                            ? "ring-2 ring-[#ffb84d]"
+                            ? "ring-2 ring-brand-yellow"
                             : "opacity-60 hover:opacity-100"
                         }`}
                         key={slide.image}
@@ -1098,7 +1098,7 @@ export function HomePage() {
                       aria-label={t("Show slide {number}", {
                         number: index + 1,
                       })}
-                      className="grid h-8 min-w-8 place-items-center px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] rounded-full"
+                      className="grid h-8 min-w-8 place-items-center px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow rounded-full"
                       key={slide.image}
                       onClick={() => {
                         setActiveSlide(index);
@@ -1108,7 +1108,7 @@ export function HomePage() {
                     >
                       <span
                         aria-hidden="true"
-                        className={`h-2 rounded-full transition-all ${activeSlide === index ? "w-8 bg-[#ffb84d]" : "w-2 bg-white/35"}`}
+                        className={`h-2 rounded-full transition-all ${activeSlide === index ? "w-8 bg-brand-yellow" : "w-2 bg-white/35"}`}
                       />
                     </button>
                   ))}
@@ -1125,7 +1125,7 @@ export function HomePage() {
             />
             <div
               aria-hidden="true"
-              className="hero-blob-a pointer-events-none absolute -left-32 -top-24 -z-10 size-[22rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.08),rgb(255_220_50/0.08)_35%,transparent)]"
+              className="hero-blob-a pointer-events-none absolute -left-32 -top-24 -z-10 size-[22rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_184_77/0.08),rgb(255_184_77/0.08)_35%,transparent)]"
             />
             <div
               aria-hidden="true"
@@ -1133,17 +1133,17 @@ export function HomePage() {
             />
             <div className="mx-auto max-w-[1320px] px-5 pb-12 pt-10 sm:px-8 sm:pb-14 lg:px-12">
               <div className="flex flex-wrap items-center justify-between gap-6">
-                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#ffb84d]">
-                  <span aria-hidden="true" className="h-px w-10 bg-[#ffb84d]" />
+                <p className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-brand-yellow">
+                  <span aria-hidden="true" className="h-px w-10 bg-brand-yellow" />
                   {t("Why people love us")}
                 </p>
                 <Link
-                  className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-white/50 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]"
+                  className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-white/50 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
                   to="/locations"
                 >
                   <span
                     aria-hidden="true"
-                    className="h-1.5 w-1.5 rounded-full bg-[#ffb84d]"
+                    className="h-1.5 w-1.5 rounded-full bg-brand-yellow"
                   />
                   {t("Pickup or delivery in Douala and Yaoundé.")}
                 </Link>
@@ -1172,14 +1172,14 @@ export function HomePage() {
                   },
                 ].map((stat) => (
                   <div
-                    className="group relative flex h-full items-center gap-4 overflow-hidden rounded-3xl bg-white/[0.05] px-6 py-6 ring-1 ring-white/10 backdrop-blur-md transition duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09] hover:ring-[#ffb84d]/45 focus-within:ring-[#ffb84d]/45"
+                    className="group relative flex h-full items-center gap-4 overflow-hidden rounded-3xl bg-white/[0.05] px-6 py-6 ring-1 ring-white/10 backdrop-blur-md transition duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09] hover:ring-brand-yellow/45 focus-within:ring-brand-yellow/45"
                     key={stat.label}
                   >
                     <div
                       aria-hidden="true"
-                      className="pointer-events-none absolute -right-10 -top-10 size-24 rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.14),transparent)] opacity-0 transition duration-500 group-hover:opacity-100"
+                      className="pointer-events-none absolute -right-10 -top-10 size-24 rounded-full bg-[radial-gradient(closest-side,rgb(255_184_77/0.14),transparent)] opacity-0 transition duration-500 group-hover:opacity-100"
                     />
-                    <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#ffb84d]/15 text-[#ffb84d] ring-1 ring-[#ffb84d]/25 transition duration-300 group-hover:scale-105 group-hover:bg-[#ffb84d]/25">
+                    <span className="grid size-12 shrink-0 place-items-center rounded-full bg-brand-yellow/15 text-brand-yellow ring-1 ring-brand-yellow/25 transition duration-300 group-hover:scale-105 group-hover:bg-brand-yellow/25">
                       <svg
                         className="size-5"
                         fill={
@@ -1200,7 +1200,7 @@ export function HomePage() {
                       <span className="font-display text-2xl font-extrabold tabular-nums text-white">
                         {stat.value}
                         {stat.value === "4.9" && (
-                          <span className="text-[#ffb84d]">★</span>
+                          <span className="text-brand-yellow">★</span>
                         )}
                       </span>
                       <span className="text-xs font-semibold leading-4 text-white/70">
@@ -1221,7 +1221,7 @@ export function HomePage() {
         >
           <div className="mx-auto max-w-[1320px]">
             <h2
-              className="text-center font-display text-xl font-extrabold tracking-tight text-[#472a3b] sm:text-2xl"
+              className="text-center font-display text-xl font-extrabold tracking-tight text-brand-navy sm:text-2xl"
               id="how-it-works-heading"
             >
               {t("How it works")}
@@ -1255,7 +1255,7 @@ export function HomePage() {
                     {icon}
                   </span>
                   <span className="min-w-0">
-                    <span className="block font-display text-base font-extrabold leading-tight text-[#472a3b]">
+                    <span className="block font-display text-base font-extrabold leading-tight text-brand-navy">
                       <span aria-hidden="true" className="text-[#f5a623]">{step}. </span>
                       {t(title)}
                     </span>
@@ -1271,34 +1271,34 @@ export function HomePage() {
 
         <section
           aria-labelledby="flavor-inspiration-heading"
-          className="relative overflow-hidden bg-[#fbfaf5] px-5 py-16 text-[#472a3b] sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          className="relative overflow-hidden bg-[#fbfaf5] px-5 py-16 text-brand-navy sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="flavors"
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -right-40 -top-48 size-[32rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.12),transparent)]"
+            className="pointer-events-none absolute -right-40 -top-48 size-[32rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_184_77/0.12),transparent)]"
           />
           <div className="relative mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#6b3f58]">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brand-blue">
                   {t("Follow your flavor")}
                 </p>
                 <h2
-                  className="mt-4 max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#472a3b] sm:text-5xl lg:text-6xl"
+                  className="mt-4 max-w-[650px] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-brand-navy sm:text-5xl lg:text-6xl"
                   id="flavor-inspiration-heading"
                 >
                   {t("What’s your kind of happy?")}
                 </h2>
               </div>
               <div className="max-w-[360px] lg:mb-2">
-                <p className="text-lg leading-8 font-medium text-[#6b3f58]">
+                <p className="text-lg leading-8 font-medium text-brand-blue">
                   {t(
                     "Fruity, chocolatey or beautifully classic. Let your cravings lead the way.",
                   )}
                 </p>
                 <Link
-                  className="group mt-6 inline-flex min-h-14 items-center gap-3 rounded-full border-2 border-[#472a3b] bg-white/60 px-8 py-3.5 text-base font-extrabold text-[#472a3b] shadow-[0_6px_18px_rgba(9,42,83,0.08)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#472a3b] hover:text-white hover:shadow-[0_12px_28px_rgba(9,42,83,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
+                  className="group mt-6 inline-flex min-h-14 items-center gap-3 rounded-full border-2 border-brand-navy bg-white/60 px-8 py-3.5 text-base font-extrabold text-brand-navy shadow-[0_6px_18px_rgba(9,42,83,0.08)] transition duration-300 hover:-translate-y-0.5 hover:bg-brand-navy hover:text-white hover:shadow-[0_12px_28px_rgba(9,42,83,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
                   to="/flavors"
                 >
                   {t("Explore all flavors")}
@@ -1335,10 +1335,10 @@ export function HomePage() {
                 return (
                   <button
                     aria-pressed={selected}
-                    className={`min-h-11 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 ${
+                    className={`min-h-11 rounded-full border px-5 py-2.5 text-[13px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 ${
                       selected
-                        ? "border-[#472a3b] bg-[#472a3b] text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)]"
-                        : "border-[#cfd8e1] bg-transparent text-[#6b3f58] hover:border-[#472a3b] hover:bg-white/70"
+                        ? "border-brand-navy bg-brand-navy text-white shadow-[0_6px_16px_rgba(9,42,83,0.18)]"
+                        : "border-[#cfd8e1] bg-transparent text-brand-blue hover:border-brand-navy hover:bg-white/70"
                     }`}
                     key={mood}
                     onClick={() => setSelectedFlavorMood(mood)}
@@ -1366,10 +1366,10 @@ export function HomePage() {
                     {/* Glow behind the card on hover */}
                     <div
                       aria-hidden="true"
-                      className="absolute inset-x-5 bottom-0 top-8 rounded-[28px] bg-[#472a3b]/25 opacity-0 blur-2xl transition duration-500 group-hover:opacity-100"
+                      className="absolute inset-x-5 bottom-0 top-8 rounded-[28px] bg-brand-navy/25 opacity-0 blur-2xl transition duration-500 group-hover:opacity-100"
                     />
                     <Link
-                      className="relative block h-full overflow-hidden rounded-[28px] bg-white shadow-[0_10px_30px_rgba(9,42,83,0.10)] transition duration-500 ease-out group-hover:-translate-y-2 group-hover:shadow-[0_24px_48px_rgba(9,42,83,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-4"
+                      className="relative block h-full overflow-hidden rounded-[28px] bg-white shadow-[0_10px_30px_rgba(9,42,83,0.10)] transition duration-500 ease-out group-hover:-translate-y-2 group-hover:shadow-[0_24px_48px_rgba(9,42,83,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-4"
                       to={`/menu?${new URLSearchParams({ category: flavor.category, item: flavor.item })}`}
                     >
                       <div className="relative aspect-[4/3] overflow-hidden">
@@ -1383,7 +1383,7 @@ export function HomePage() {
                         />
                         {/* Mood pill over the image */}
                         <span
-                          className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#472a3b] shadow-sm backdrop-blur-sm"
+                          className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-navy shadow-sm backdrop-blur-sm"
                           style={{ backgroundColor: flavor.color }}
                         >
                           {t(
@@ -1396,7 +1396,7 @@ export function HomePage() {
                         </span>
                         {/* Sold-out chip — the item may be out of stock today. */}
                         {soldOutItemNames.has(flavor.item) && (
-                          <span className="absolute right-4 top-4 rounded-full bg-[#472a3b]/85 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-sm">
+                          <span className="absolute right-4 top-4 rounded-full bg-brand-navy/85 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-sm">
                             {t("Sold out today")}
                           </span>
                         )}
@@ -1410,16 +1410,16 @@ export function HomePage() {
                         className="flex min-h-[118px] flex-col justify-between gap-3 border-t-4 px-5 py-4 sm:px-6 sm:py-5"
                         style={{ borderColor: flavor.color }}
                       >
-                        <span className="block font-display text-xl font-extrabold leading-tight text-[#472a3b] sm:text-2xl">
+                        <span className="block font-display text-xl font-extrabold leading-tight text-brand-navy sm:text-2xl">
                           {t(flavor.title)}
                         </span>
                         <span className="flex items-end justify-between gap-3">
                           <span className="min-w-0">
-                            <span className="block text-xs font-medium leading-5 text-[#6b3f58] sm:text-[13px]">
+                            <span className="block text-xs font-medium leading-5 text-brand-blue sm:text-[13px]">
                               {t(flavor.detail)}
                             </span>
                             {flavorPrices.get(flavor.id) != null && (
-                              <span className="mt-1 block whitespace-nowrap font-display text-sm font-extrabold tabular-nums text-[#472a3b]">
+                              <span className="mt-1 block whitespace-nowrap font-display text-sm font-extrabold tabular-nums text-brand-navy">
                                 {formatPrice(flavorPrices.get(flavor.id))}
                               </span>
                             )}
@@ -1428,8 +1428,8 @@ export function HomePage() {
                             aria-hidden="true"
                             className={`grid size-9 shrink-0 place-items-center rounded-full transition duration-300 ${
                               soldOutItemNames.has(flavor.item)
-                                ? "bg-[#e9f1fa] text-[#472a3b]"
-                                : "bg-[#e9f1fa] text-[#472a3b] group-hover:bg-[#472a3b] group-hover:text-white"
+                                ? "bg-[#e9f1fa] text-brand-navy"
+                                : "bg-[#e9f1fa] text-brand-navy group-hover:bg-brand-navy group-hover:text-white"
                             }`}
                           >
                             <svg
@@ -1463,23 +1463,23 @@ export function HomePage() {
             <div className="mt-14 border-t border-[#e4e0d4] pt-12">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                 <div className="max-w-xl">
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#6b3f58]">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-brand-blue">
                     {t("Your happy, your way")}
                   </p>
                   <h2
-                    className="mt-3 font-display text-3xl font-extrabold leading-[1.05] tracking-tight text-[#472a3b] sm:text-4xl"
+                    className="mt-3 font-display text-3xl font-extrabold leading-[1.05] tracking-tight text-brand-navy sm:text-4xl"
                     id="lick-heading"
                   >
                     {t("Pick it. Lick it. Love it.")}
                   </h2>
-                  <p className="mt-3 text-base leading-7 text-[#6b3f58]">
+                  <p className="mt-3 text-base leading-7 text-brand-blue">
                     {t(
                       "A cone for the stroll. A cup for the pause. A scoop to share.",
                     )}
                   </p>
                 </div>
                 <Link
-                  className="group inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#472a3b] px-7 py-3.5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.3)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 sm:self-auto"
+                  className="group inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-brand-navy px-7 py-3.5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.3)] transition duration-300 hover:-translate-y-0.5 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 sm:self-auto"
                   to="/menu?category=Ice%20Cream"
                 >
                   {t("Find your fruity mood")}
@@ -1494,7 +1494,7 @@ export function HomePage() {
                   { image: "/ice-images/ice-9.jpg", key: "Pints to go" },
                 ].map(({ image, key }) => (
                   <li className="group relative" key={key}>
-                    <div className="relative overflow-hidden rounded-[22px] bg-white p-2.5 shadow-[0_6px_20px_rgba(9,42,83,0.08)] ring-1 ring-[#472a3b]/10 transition duration-500 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_18px_36px_rgba(9,42,83,0.18)] group-hover:ring-[#472a3b]/25">
+                    <div className="relative overflow-hidden rounded-[22px] bg-white p-2.5 shadow-[0_6px_20px_rgba(9,42,83,0.08)] ring-1 ring-brand-navy/10 transition duration-500 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_18px_36px_rgba(9,42,83,0.18)] group-hover:ring-brand-navy/25">
                       <div className="relative aspect-[4/3] overflow-hidden rounded-[15px] bg-[#eef3f8]">
                         <img
                           alt={t(key)}
@@ -1505,12 +1505,12 @@ export function HomePage() {
                         />
                       </div>
                       <div className="flex items-center justify-between gap-2 px-1.5 pb-1 pt-3">
-                        <p className="font-display text-sm font-extrabold leading-tight text-[#472a3b] sm:text-base">
+                        <p className="font-display text-sm font-extrabold leading-tight text-brand-navy sm:text-base">
                           {t(key)}
                         </p>
                         <span
                           aria-hidden="true"
-                          className="grid size-7 shrink-0 place-items-center rounded-full bg-[#e9f1fa] text-[#472a3b] transition duration-300 group-hover:bg-[#472a3b] group-hover:text-white"
+                          className="grid size-7 shrink-0 place-items-center rounded-full bg-[#e9f1fa] text-brand-navy transition duration-300 group-hover:bg-brand-navy group-hover:text-white"
                         >
                           <ArrowIcon />
                         </span>
@@ -1531,7 +1531,7 @@ export function HomePage() {
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -left-40 top-20 -z-10 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.1),rgb(255_220_50/0.1)_35%,transparent)]"
+            className="pointer-events-none absolute -left-40 top-20 -z-10 size-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_184_77/0.1),rgb(255_184_77/0.1)_35%,transparent)]"
           />
           <div className="mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
@@ -1541,7 +1541,7 @@ export function HomePage() {
                   {t("Our favorites")}
                 </p>
                 <h2
-                  className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#472a3b] sm:text-5xl"
+                  className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-brand-navy sm:text-5xl"
                   id="popular-flavors-heading"
                 >
                   {t("Fan favorites")}
@@ -1559,7 +1559,7 @@ export function HomePage() {
                 </p>
               </div>
               <Link
-                className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#472a3b] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition hover:-translate-y-0.5 hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 md:self-auto"
+                className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-brand-navy px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(9,42,83,0.2)] transition hover:-translate-y-0.5 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 md:self-auto"
                 to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
               >
                 {t("View all")} <ArrowIcon />
@@ -1644,11 +1644,11 @@ export function HomePage() {
                         className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] via-[#061d3a]/55 via-40% to-transparent"
                       />
                       <span className="absolute left-6 top-6 flex items-center gap-2 sm:left-8 sm:top-8">
-                        <span className="grid size-12 place-items-center rounded-2xl bg-[#ffb84d] font-display text-base font-extrabold tabular-nums text-[#472a3b] shadow-lg">
+                        <span className="grid size-12 place-items-center rounded-2xl bg-brand-yellow font-display text-base font-extrabold tabular-nums text-brand-navy shadow-lg">
                           {rank}
                         </span>
                         <span
-                          className={`rounded-full px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] shadow-sm backdrop-blur-sm ${soldOut ? "bg-white/95 text-red-700" : "bg-white/90 text-[#472a3b]"}`}
+                          className={`rounded-full px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] shadow-sm backdrop-blur-sm ${soldOut ? "bg-white/95 text-red-700" : "bg-white/90 text-brand-navy"}`}
                         >
                           {soldOut ? t("Sold out") : t("Popular pick")}
                         </span>
@@ -1656,7 +1656,7 @@ export function HomePage() {
 
                       <h3 className="font-display text-3xl font-extrabold leading-tight sm:text-4xl">
                         <Link
-                          className="after:absolute after:inset-0 after:rounded-[32px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#ffb84d]"
+                          className="after:absolute after:inset-0 after:rounded-[32px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-brand-yellow"
                           to={itemLink}
                         >
                           {t(item.name)}
@@ -1670,7 +1670,7 @@ export function HomePage() {
                           <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-white/55">
                             {t("Price")}
                           </p>
-                          <p className="mt-0.5 whitespace-nowrap font-display text-2xl font-extrabold tabular-nums text-[#ffb84d] sm:text-3xl">
+                          <p className="mt-0.5 whitespace-nowrap font-display text-2xl font-extrabold tabular-nums text-brand-yellow sm:text-3xl">
                             {formatPrice(item.priceXaf)}
                           </p>
                         </div>
@@ -1682,10 +1682,10 @@ export function HomePage() {
                                   name: t(item.name),
                                 })
                           }
-                          className={`relative z-10 inline-flex items-center gap-2 whitespace-nowrap rounded-full px-6 py-3.5 text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b] disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/60 ${
+                          className={`relative z-10 inline-flex items-center gap-2 whitespace-nowrap rounded-full px-6 py-3.5 text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/60 ${
                             added
                               ? "bg-[#4caf50] text-white"
-                              : "bg-[#ffb84d] text-[#472a3b] hover:-translate-y-0.5 hover:bg-white"
+                              : "bg-brand-yellow text-brand-navy hover:-translate-y-0.5 hover:bg-white"
                           }`}
                           disabled={soldOut}
                           onClick={() => handleAddToCart(item)}
@@ -1710,7 +1710,7 @@ export function HomePage() {
                   >
                     <span
                       aria-hidden="true"
-                      className="hidden w-10 shrink-0 text-center font-display text-3xl font-extrabold tabular-nums text-[#472a3b]/15 transition group-hover:text-[#b8721e] sm:block"
+                      className="hidden w-10 shrink-0 text-center font-display text-3xl font-extrabold tabular-nums text-brand-navy/15 transition group-hover:text-brand-yellow-deep sm:block"
                     >
                       {rank}
                     </span>
@@ -1721,13 +1721,13 @@ export function HomePage() {
                       {image}
                       <span
                         aria-hidden="true"
-                        className="absolute left-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-[#472a3b] font-display text-[10px] font-extrabold tabular-nums text-[#ffb84d] sm:hidden"
+                        className="absolute left-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-brand-navy font-display text-[10px] font-extrabold tabular-nums text-brand-yellow sm:hidden"
                       >
                         {index + 1}
                       </span>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-display text-base font-extrabold leading-snug text-[#472a3b] sm:text-lg">
+                      <h3 className="font-display text-base font-extrabold leading-snug text-brand-navy sm:text-lg">
                         <Link
                           className="after:absolute after:inset-0 after:rounded-[24px] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#b8721e]"
                           to={itemLink}
@@ -1746,7 +1746,7 @@ export function HomePage() {
                       <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#65748a]">
                         {soldOut ? t("Sold out") : t("Price")}
                       </p>
-                      <p className="mt-0.5 whitespace-nowrap font-display text-lg font-extrabold tabular-nums text-[#472a3b]">
+                      <p className="mt-0.5 whitespace-nowrap font-display text-lg font-extrabold tabular-nums text-brand-navy">
                         {formatPrice(item.priceXaf)}
                       </p>
                     </div>
@@ -1760,10 +1760,10 @@ export function HomePage() {
                                 name: t(item.name),
                               })
                       }
-                      className={`relative z-10 grid size-11 shrink-0 place-items-center rounded-full transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] sm:size-12 ${
+                      className={`relative z-10 grid size-11 shrink-0 place-items-center rounded-full transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#efece3] disabled:text-[#65748a] sm:size-12 ${
                         added
                           ? "bg-[#4caf50] text-white"
-                          : "bg-[#ffb84d] text-[#472a3b] hover:-translate-y-0.5 hover:bg-[#472a3b] hover:text-white"
+                          : "bg-brand-yellow text-brand-navy hover:-translate-y-0.5 hover:bg-brand-navy hover:text-white"
                       }`}
                       disabled={soldOut}
                       onClick={() => handleAddToCart(item)}
@@ -1847,7 +1847,7 @@ export function HomePage() {
               />
               {/* Rotating circular badge over the image */}
               <div className="absolute -right-2 -top-4 z-10 hidden sm:block">
-                <div className="relative grid size-24 place-items-center rounded-full bg-[#472a3b] text-center shadow-[0_12px_28px_rgba(9,42,83,0.35)]">
+                <div className="relative grid size-24 place-items-center rounded-full bg-brand-navy text-center shadow-[0_12px_28px_rgba(9,42,83,0.35)]">
                   <span className="font-display px-3 text-[11px] font-extrabold uppercase leading-tight tracking-[0.14em] text-[#ffd45d]">
                     100% real mango
                   </span>
@@ -1864,7 +1864,7 @@ export function HomePage() {
               />
             </div>
             <div className="order-1 max-w-xl lg:order-2">
-              <p className="inline-flex items-center gap-2 rounded-full bg-white/50 px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#6b3f58]">
+              <p className="inline-flex items-center gap-2 rounded-full bg-white/50 px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.22em] text-brand-blue">
                 <span
                   aria-hidden="true"
                   className="size-2 rounded-full bg-[#f6a821]"
@@ -1872,29 +1872,29 @@ export function HomePage() {
                 {t("A tropical scoop of vibe")}
               </p>
               <h2
-                className="mt-5 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-[#472a3b] sm:text-6xl lg:text-7xl"
+                className="mt-5 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-brand-navy sm:text-6xl lg:text-7xl"
                 id="sunshine-heading"
               >
                 {t("Hello, sunshine.")}
               </h2>
-              <p className="mt-6 text-lg leading-8 font-medium text-[#6b3f58]">
+              <p className="mt-6 text-lg leading-8 font-medium text-brand-blue">
                 {t(
                   "Golden mango. A cool, creamy scoop. And a little daydream of somewhere sunny. This is your cue to take a sweet escape.",
                 )}
               </p>
               <Link
-                className="group mt-9 inline-flex min-h-14 items-center gap-3 rounded-full bg-[#472a3b] px-8 py-3.5 text-base font-extrabold text-white shadow-[0_14px_32px_rgba(9,42,83,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#6b3f58] hover:shadow-[0_18px_40px_rgba(9,42,83,0.42)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7c87e]"
+                className="group mt-9 inline-flex min-h-14 items-center gap-3 rounded-full bg-brand-navy px-8 py-3.5 text-base font-extrabold text-white shadow-[0_14px_32px_rgba(9,42,83,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-brand-blue hover:shadow-[0_18px_40px_rgba(9,42,83,0.42)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7c87e]"
                 to="/menu?category=Ice%20Cream"
               >
                 {t("Find your fruity mood")}
                 <span
                   aria-hidden="true"
-                  className="grid size-8 place-items-center rounded-full bg-[#ffd45d] text-[#472a3b] transition duration-300 group-hover:scale-110"
+                  className="grid size-8 place-items-center rounded-full bg-[#ffd45d] text-brand-navy transition duration-300 group-hover:scale-110"
                 >
                   <ArrowIcon />
                 </span>
               </Link>
-              <p className="mt-6 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#6b3f58]">
+              <p className="mt-6 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.22em] text-brand-blue">
                 <span aria-hidden="true" className="h-px w-8 bg-[#6b3f58]/50" />
                 {t("Mango only, migrating constantly")}
               </p>
@@ -1923,24 +1923,24 @@ export function HomePage() {
           <div className="relative mx-auto max-w-[1320px]">
             <div className="grid items-end gap-8 lg:grid-cols-2 lg:gap-16">
               <div className="max-w-xl">
-                <p className="text-xs font-extrabold uppercase tracking-[0.25em] text-[#6b3f58]">
+                <p className="text-xs font-extrabold uppercase tracking-[0.25em] text-brand-blue">
                   {t("Your happy, your way")}
                 </p>
                 <h2
-                  className="mt-4 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-[#472a3b] sm:text-6xl"
+                  className="mt-4 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-brand-navy sm:text-6xl"
                   id="lick-heading"
                 >
                   {t("Pick it. Lick it. Love it.")}
                 </h2>
               </div>
               <div className="max-w-xl lg:justify-self-end">
-                <p className="text-base leading-7 text-[#6b3f58]">
+                <p className="text-base leading-7 text-brand-blue">
                   {t(
                     "A cone for the stroll. A cup for the pause. A scoop to share.",
                   )}
                 </p>
                 <Link
-                  className="group mt-4 inline-flex items-center gap-2 rounded-full bg-[#472a3b] px-7 py-3.5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 focus-visible:ring-offset-[#e9f4f3]"
+                  className="group mt-4 inline-flex items-center gap-2 rounded-full bg-brand-navy px-7 py-3.5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(9,42,83,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 focus-visible:ring-offset-[#e9f4f3]"
                   to="/menu?category=Ice%20Cream"
                 >
                   {t("Find your fruity mood")}
@@ -1965,9 +1965,9 @@ export function HomePage() {
                   {/* Hover lift + glow behind the card */}
                   <div
                     aria-hidden="true"
-                    className="absolute inset-x-4 bottom-0 top-6 rounded-[26px] bg-[#472a3b]/25 blur-2xl opacity-0 transition duration-500 group-hover:opacity-100"
+                    className="absolute inset-x-4 bottom-0 top-6 rounded-[26px] bg-brand-navy/25 blur-2xl opacity-0 transition duration-500 group-hover:opacity-100"
                   />
-                  <div className="relative rounded-[26px] bg-white p-3 pb-0 shadow-[0_6px_20px_rgba(9,42,83,0.10)] ring-1 ring-[#472a3b]/10 transition duration-500 ease-out group-hover:-translate-y-2 group-hover:shadow-[0_22px_44px_rgba(9,42,83,0.22)] group-hover:ring-[#472a3b]/25">
+                  <div className="relative rounded-[26px] bg-white p-3 pb-0 shadow-[0_6px_20px_rgba(9,42,83,0.10)] ring-1 ring-brand-navy/10 transition duration-500 ease-out group-hover:-translate-y-2 group-hover:shadow-[0_22px_44px_rgba(9,42,83,0.22)] group-hover:ring-brand-navy/25">
                     <div className="relative aspect-[4/5] overflow-hidden rounded-[18px] bg-[#eef3f8]">
                       <img
                         alt={t(key)}
@@ -1982,17 +1982,17 @@ export function HomePage() {
                         className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(115deg,transparent_30%,rgb(255_255_255/0.35)_50%,transparent_70%)] transition-transform duration-1000 ease-out group-hover:translate-x-full"
                       />
                       {/* Numbered badge */}
-                      <span className="absolute left-3 top-3 grid size-9 place-items-center rounded-full bg-white/90 font-display text-sm font-extrabold text-[#472a3b] shadow-[0_4px_12px_rgba(9,42,83,0.18)] backdrop-blur-sm">
+                      <span className="absolute left-3 top-3 grid size-9 place-items-center rounded-full bg-white/90 font-display text-sm font-extrabold text-brand-navy shadow-[0_4px_12px_rgba(9,42,83,0.18)] backdrop-blur-sm">
                         {String(index + 1).padStart(2, "0")}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3 px-3 py-4">
-                      <p className="font-display text-lg font-extrabold leading-tight text-[#472a3b]">
+                      <p className="font-display text-lg font-extrabold leading-tight text-brand-navy">
                         {t(key)}
                       </p>
                       <span
                         aria-hidden="true"
-                        className="grid size-8 shrink-0 place-items-center rounded-full bg-[#e9f1fa] text-[#472a3b] transition duration-300 group-hover:bg-[#472a3b] group-hover:text-white"
+                        className="grid size-8 shrink-0 place-items-center rounded-full bg-[#e9f1fa] text-brand-navy transition duration-300 group-hover:bg-brand-navy group-hover:text-white"
                       >
                         <ArrowIcon />
                       </span>
@@ -2011,7 +2011,7 @@ export function HomePage() {
           {/* Decorative sprinkles */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -left-32 -top-32 size-[28rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_220_50/0.14),transparent)]"
+            className="pointer-events-none absolute -left-32 -top-32 size-[28rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_184_77/0.14),transparent)]"
           />
           <div
             aria-hidden="true"
@@ -2021,7 +2021,7 @@ export function HomePage() {
             <div className="relative order-2 lg:order-1">
               <div
                 aria-hidden="true"
-                className="absolute -left-5 -top-5 h-full w-full rounded-[28px] border-[3px] border-[#472a3b]/15"
+                className="absolute -left-5 -top-5 h-full w-full rounded-[28px] border-[3px] border-brand-navy/15"
               />
               <img
                 alt={t(
@@ -2032,44 +2032,44 @@ export function HomePage() {
                 loading="lazy"
                 src="/images/vanilla.jpg"
               />
-              <div className="absolute -bottom-6 right-8 grid size-32 rotate-3 place-items-center rounded-[22px] bg-[#472a3b] px-4 text-center shadow-[0_14px_32px_rgba(9,42,83,0.35)] sm:size-36">
+              <div className="absolute -bottom-6 right-8 grid size-32 rotate-3 place-items-center rounded-[22px] bg-brand-navy px-4 text-center shadow-[0_14px_32px_rgba(9,42,83,0.35)] sm:size-36">
                 <span className="font-display text-base font-extrabold uppercase leading-tight text-[#ffd45d] sm:text-lg">
                   {t("Life's sweeter by the scoop")}
                 </span>
               </div>
             </div>
             <div className="order-1 max-w-xl lg:order-2">
-              <p className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#6b3f58]">
+              <p className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.22em] text-brand-blue">
                 <span
                   aria-hidden="true"
-                  className="h-px w-10 bg-[#472a3b]/60"
+                  className="h-px w-10 bg-brand-navy/60"
                 />
                 {t("The Mercely's feeling")}
               </p>
               <h2
-                className="mt-4 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-[#472a3b] sm:text-6xl"
+                className="mt-4 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-brand-navy sm:text-6xl"
                 id="moments-heading"
               >
                 {t("Small moments. Sweet memories.")}
               </h2>
-              <p className="mt-6 text-lg leading-8 font-medium text-[#6b3f58]">
+              <p className="mt-6 text-lg leading-8 font-medium text-brand-blue">
                 {t(
                   "The first lick of a cone. The spoon you don't want to share. The scoop that turns an ordinary afternoon into a little celebration.",
                 )}
               </p>
-              <p className="mt-4 text-base leading-7 text-[#6b3f58]/90">
+              <p className="mt-4 text-base leading-7 text-brand-blue/90">
                 {t(
                   "Welcome to our world of ice cream — where there's always room for a little more happy.",
                 )}
               </p>
               <Link
-                className="group mt-9 inline-flex min-h-14 items-center gap-3 rounded-full bg-[#472a3b] px-8 py-3.5 text-base font-extrabold text-white shadow-[0_14px_32px_rgba(9,42,83,0.3)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#6b3f58] hover:shadow-[0_18px_40px_rgba(9,42,83,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f6f1]"
+                className="group mt-9 inline-flex min-h-14 items-center gap-3 rounded-full bg-brand-navy px-8 py-3.5 text-base font-extrabold text-white shadow-[0_14px_32px_rgba(9,42,83,0.3)] transition duration-300 hover:-translate-y-0.5 hover:bg-brand-blue hover:shadow-[0_18px_40px_rgba(9,42,83,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f6f1]"
                 to="/about"
               >
                 {t("Step into our world")}
                 <span
                   aria-hidden="true"
-                  className="grid size-8 place-items-center rounded-full bg-[#ffd45d] text-[#472a3b] transition duration-300 group-hover:scale-110"
+                  className="grid size-8 place-items-center rounded-full bg-[#ffd45d] text-brand-navy transition duration-300 group-hover:scale-110"
                 >
                   <ArrowIcon />
                 </span>
@@ -2096,7 +2096,7 @@ export function HomePage() {
         >
           <div className="mx-auto max-w-[1320px]">
             <h2
-              className="text-center font-display text-3xl font-extrabold leading-none tracking-tight text-[#472a3b] sm:text-4xl lg:text-5xl"
+              className="text-center font-display text-3xl font-extrabold leading-none tracking-tight text-brand-navy sm:text-4xl lg:text-5xl"
               id="home-menu-heading"
             >
               {t("Menu highlights")}
@@ -2125,7 +2125,7 @@ export function HomePage() {
                 },
               ].map((card, cardIndex) => (
                 <Link
-                  className="group relative block overflow-hidden rounded-[28px] shadow-[0_20px_50px_rgba(4,21,40,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-4 focus-visible:ring-offset-[#472a3b]"
+                  className="group relative block overflow-hidden rounded-[28px] shadow-[0_20px_50px_rgba(4,21,40,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-4 focus-visible:ring-offset-brand-navy"
                   key={card.to}
                   to={card.to}
                 >
@@ -2144,7 +2144,7 @@ export function HomePage() {
                       className="absolute inset-0 bg-gradient-to-t from-[#041528] via-[#041528]/55 via-45% to-transparent"
                     />
                     {/* Badge */}
-                    <span className="absolute left-5 top-5 rounded-full bg-[#ffb84d] px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#472a3b] shadow-md">
+                    <span className="absolute left-5 top-5 rounded-full bg-brand-yellow px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-navy shadow-md">
                       {t(card.badge)}
                     </span>
                     {/* Content */}
@@ -2155,9 +2155,9 @@ export function HomePage() {
                       <p className="mt-2 max-w-md text-sm leading-6 text-white/75 sm:text-base">
                         {t(card.description)}
                       </p>
-                      <span className="group/btn mt-5 inline-flex min-h-12 items-center gap-2.5 rounded-full bg-[#ffb84d] px-6 py-3 text-sm font-extrabold text-[#472a3b] shadow-[0_10px_24px_rgba(255,220,50,0.3)] transition duration-300 group-hover:-translate-y-0.5 group-hover:bg-white group-hover:shadow-[0_14px_30px_rgba(255,220,50,0.4)]">
+                      <span className="group/btn mt-5 inline-flex min-h-12 items-center gap-2.5 rounded-full bg-brand-yellow px-6 py-3 text-sm font-extrabold text-brand-navy shadow-[0_10px_24px_rgba(255,220,50,0.3)] transition duration-300 group-hover:-translate-y-0.5 group-hover:bg-white group-hover:shadow-[0_14px_30px_rgba(255,220,50,0.4)]">
                         {t(card.cta)}
-                        <span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-[#472a3b] text-[#ffb84d] transition-transform duration-300 group-hover/btn:translate-x-0.5">
+                        <span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-brand-navy text-brand-yellow transition-transform duration-300 group-hover/btn:translate-x-0.5">
                           <ArrowIcon />
                         </span>
                       </span>
@@ -2173,10 +2173,10 @@ export function HomePage() {
               {t("Cards & Mobile Money accepted")}
               <span aria-hidden="true" className="mx-1 h-1 w-1 rounded-full bg-[#c9d2dc]" />
               {t("Pay in FCFA with")}
-              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-[#472a3b]">Visa</span>
-              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-[#472a3b]">Mastercard</span>
-              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-[#472a3b]">MTN MoMo</span>
-              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-[#472a3b]">Orange Money</span>
+              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-brand-navy">Visa</span>
+              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-brand-navy">Mastercard</span>
+              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-brand-navy">MTN MoMo</span>
+              <span className="rounded-full bg-[#f4f1e7] px-3 py-1 text-xs font-extrabold text-brand-navy">Orange Money</span>
             </p>
           </div>
         </section>
@@ -2190,13 +2190,13 @@ export function HomePage() {
               : "pointer-events-none -translate-y-3 opacity-0"
           }`}
         >
-          <div className="flex items-center gap-1 rounded-full bg-[#472a3b]/90 p-1.5 shadow-[0_12px_32px_rgba(9,42,83,0.35)] ring-1 ring-white/15 backdrop-blur-md">
+          <div className="flex items-center gap-1 rounded-full bg-brand-navy/90 p-1.5 shadow-[0_12px_32px_rgba(9,42,83,0.35)] ring-1 ring-white/15 backdrop-blur-md">
             {homeSections.map(({ id, label }) => (
               <a
                 aria-current={activeSection === id ? "true" : undefined}
                 className={`rounded-full px-3 py-1.5 text-xs font-extrabold transition sm:px-4 sm:text-[13px] ${
                   activeSection === id
-                    ? "bg-[#ffb84d] text-[#472a3b]"
+                    ? "bg-brand-yellow text-brand-navy"
                     : "text-white/85 hover:bg-white/10 hover:text-white"
                 }`}
                 href={`#${id}`}
@@ -2217,7 +2217,7 @@ export function HomePage() {
         {/* Back to top — appears after scrolling past the hero */}
         <button
           aria-label={t("Back to top")}
-          className={`fixed bottom-6 right-6 z-40 grid size-12 place-items-center rounded-full bg-[#472a3b] text-white shadow-[0_10px_24px_rgba(9,42,83,0.35)] transition duration-300 hover:bg-[#14467c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 ${
+          className={`fixed bottom-6 right-6 z-40 grid size-12 place-items-center rounded-full bg-brand-navy text-white shadow-[0_10px_24px_rgba(9,42,83,0.35)] transition duration-300 hover:bg-[#14467c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 ${
             showScrollTop
               ? "pointer-events-auto translate-y-0 opacity-100"
               : "pointer-events-none translate-y-4 opacity-0"
@@ -2245,18 +2245,18 @@ export function HomePage() {
           }`}
         >
           <Link
-            className="flex items-center justify-between gap-3 rounded-2xl bg-[#472a3b]/95 py-3 pl-4 pr-3 text-white shadow-[0_16px_40px_rgba(9,42,83,0.45)] ring-1 ring-white/15 backdrop-blur-md"
+            className="flex items-center justify-between gap-3 rounded-2xl bg-brand-navy/95 py-3 pl-4 pr-3 text-white shadow-[0_16px_40px_rgba(9,42,83,0.45)] ring-1 ring-white/15 backdrop-blur-md"
             to="/menu"
           >
             <span className="min-w-0">
               <span className="block truncate font-display text-sm font-extrabold">
                 {t("Order now")}
               </span>
-              <span className="block truncate text-[11px] font-semibold text-[#ffb84d]">
+              <span className="block truncate text-[11px] font-semibold text-brand-yellow">
                 {t("Cards & Mobile Money accepted")}
               </span>
             </span>
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#ffb84d] text-[#472a3b]">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-yellow text-brand-navy">
               <ArrowIcon />
             </span>
           </Link>

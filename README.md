@@ -250,7 +250,7 @@ Each order's updates replace each other, so a customer never collects a pile of 
 npx web-push generate-vapid-keys
 ```
 
-Set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` (the site's address or a contact `mailto:`). The server checks at start-up that the two keys are a matching pair and otherwise switches notifications off with a clear reason. If the keys are ever replaced, customers' browsers renew their subscription automatically the next time they open the site.
+Set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` (the site's address or a contact `mailto:`). The server checks at start-up that the two keys are a matching pair and otherwise switches notifications off with a clear reason. Keep the same key pair across deployments: if it is replaced, restore the original pair when possible. A push service rejection (HTTP 401/403) removes the rejected server-side subscription; that customer must open the site and turn alerts on again to subscribe with the current public key.
 
 **Promotions page:** a status line shows whether notifications are ready and how many customer devices have them on. Creating an active code offers **Notify customers** with an optional message (up to 180 characters; the code is added if the message leaves it out) and a phone preview. After sending, the page reports how many devices received it and the push service's reason for any failure. The bell button on an active code re-sends its notification.
 

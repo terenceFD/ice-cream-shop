@@ -1,10 +1,10 @@
 /* Admin-only chrome and dropdown system. Native selects retain their semantics. */
 .admin-workspace {
-  --admin-ink: #472a3b;
+  --admin-ink: var(--brand-navy);
   --admin-muted: #718096;
   --admin-line: #e4eaf1;
   --admin-surface: #f6f2f4;
-  --admin-gold: #ffb84d;
+  --admin-gold: var(--brand-yellow);
 }
 
 .admin-topbar {
@@ -31,7 +31,7 @@
   letter-spacing: -0.025em;
 }
 .admin-topbar-brand > span > span:first-child > span {
-  color: #b8721e;
+  color: var(--brand-yellow-deep);
 }
 .admin-topbar-brand > span > span:nth-child(2) {
   margin-top: 5px;
@@ -216,10 +216,10 @@
 .admin-topbar [role^="menuitem"]:hover:not(:disabled),
 .admin-topbar [role^="menuitem"]:focus-visible {
   background: #f2edef;
-  color: #472a3b;
+  color: var(--brand-navy);
 }
 .admin-topbar [role^="menuitem"]:focus-visible {
-  outline: 2px solid #8b6a7a;
+  outline: 2px solid var(--brand-gray);
   outline-offset: -2px;
 }
 .admin-topbar [role="menuitemradio"] {
@@ -256,7 +256,7 @@
   color: transparent;
 }
 .admin-topbar [role="menuitemradio"][aria-checked="true"] > span:last-child {
-  background: #472a3b;
+  background: var(--brand-navy);
   color: #fff;
 }
 .admin-topbar #admin-account-menu > div:first-child {
@@ -333,9 +333,9 @@
   border-color: #c8b0ba;
 }
 .admin-workspace select:focus-visible {
-  outline: 2px solid #8b6a7a;
+  outline: 2px solid var(--brand-gray);
   outline-offset: 2px;
-  border-color: #8b6a7a;
+  border-color: var(--brand-gray);
   box-shadow: 0 0 0 4px rgb(139 106 122 / 9%);
 }
 .admin-workspace select:disabled {
@@ -346,7 +346,7 @@
 }
 .admin-workspace select option {
   background: #fff;
-  color: #472a3b;
+  color: var(--brand-navy);
   font-weight: 500;
 }
 .admin-workspace [role="listbox"] {
@@ -369,7 +369,7 @@
     gap: 16px;
   }
   .admin-workspace select::picker-icon {
-    color: #8b6a7a;
+    color: var(--brand-gray);
     transition: rotate 0.15s;
   }
   .admin-workspace select:open::picker-icon {
@@ -403,7 +403,7 @@
     font-weight: 650;
   }
   .admin-workspace select option::checkmark {
-    color: #b8721e;
+    color: var(--brand-yellow-deep);
   }
 }
 

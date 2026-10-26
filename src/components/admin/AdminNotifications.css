@@ -1,10 +1,10 @@
 .admin-notifications {
-  --notification-ink: #472a3b;
+  --notification-ink: var(--brand-navy);
   --notification-link: #8a5a74;
   --notification-muted: #637286;
   --notification-rule: #e7ebef;
   --notification-control: #d3dbe3;
-  --notification-accent: #b8721e;
+  --notification-accent: var(--brand-yellow-deep);
   --notification-selected: #f4f7fa;
   display: flex;
   min-width: 0;
