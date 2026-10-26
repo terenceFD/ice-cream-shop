@@ -126,12 +126,12 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
         {hasSlides && showThumbnails && (
           <>
             <div className="absolute right-5 top-5 flex items-center gap-2 sm:right-6 sm:top-6">
-              <span aria-live={paused ? "polite" : "off"} className="rounded-full bg-[#092a53]/80 px-3 py-1.5 text-xs font-extrabold tabular-nums text-white backdrop-blur-sm">
+              <span aria-live={paused ? "polite" : "off"} className="rounded-full bg-[#472a3b]/80 px-3 py-1.5 text-xs font-extrabold tabular-nums text-white backdrop-blur-sm">
                 {current + 1} / {images.length}
               </span>
               <button
                 aria-label={paused ? t("Play slideshow") : t("Pause slideshow")}
-                className="relative grid size-8 place-items-center rounded-full bg-[#092a53]/80 text-white backdrop-blur-sm transition before:absolute before:-inset-1.5 before:content-[''] hover:bg-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="relative grid size-8 place-items-center rounded-full bg-[#472a3b]/80 text-white backdrop-blur-sm transition before:absolute before:-inset-1.5 before:content-[''] hover:bg-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 onClick={() => setPaused((value) => !value)}
                 type="button"
               >
@@ -142,7 +142,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
             </div>
             <button
               aria-label={t("Previous photo")}
-              className="absolute left-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#092a53] shadow-lg transition hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:left-4 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+              className="absolute left-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#472a3b] shadow-lg transition hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] sm:left-4 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
               onClick={() => go(current - 1)}
               type="button"
             >
@@ -150,7 +150,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
             </button>
             <button
               aria-label={t("Next photo")}
-              className="absolute right-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#092a53] shadow-lg transition hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] sm:right-4 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+              className="absolute right-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#472a3b] shadow-lg transition hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] sm:right-4 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
               onClick={() => go(current + 1)}
               type="button"
             >
@@ -172,8 +172,8 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
               <button
                 aria-current={index === current ? "true" : undefined}
                 aria-label={t("Show photo {number} of {total}", { number: index + 1, total: images.length })}
-                className={`relative block shrink-0 overflow-hidden rounded-2xl ring-2 transition after:absolute after:-inset-2 after:content-[''] focus-visible:outline-none focus-visible:ring-[#092a53] ${
-                  index === current ? "ring-[#ffdc32] shadow-[0_8px_20px_rgba(9,42,83,0.18)]" : "opacity-70 ring-transparent hover:opacity-100"
+                className={`relative block shrink-0 overflow-hidden rounded-2xl ring-2 transition after:absolute after:-inset-2 after:content-[''] focus-visible:outline-none focus-visible:ring-[#472a3b] ${
+                  index === current ? "ring-[#ffb84d] shadow-[0_8px_20px_rgba(9,42,83,0.18)]" : "opacity-70 ring-transparent hover:opacity-100"
                 } ${frameClassName}`}
                 onClick={() => setActive(index)}
                 type="button"

@@ -16,17 +16,17 @@ export function PasswordField({ label, labelClassName, variant = 'default', chil
   if (variant === 'plain') {
     return (
       <label className="block">
-        <span className={labelClassName ?? 'text-sm font-bold text-[#092a53]'}>{label}</span>
-        <span className="relative mt-2 flex items-center bg-[#f4f6f8] focus-within:ring-2 focus-within:ring-[#092a53]">
+        <span className={labelClassName ?? 'text-sm font-bold text-[#472a3b]'}>{label}</span>
+        <span className="relative mt-2 flex items-center bg-[#f4f6f8] focus-within:ring-2 focus-within:ring-[#472a3b]">
           <input
             {...inputProps}
-            className="w-full bg-transparent py-3.5 pl-4 pr-14 text-sm font-semibold text-[#092a53] outline-none placeholder:font-normal placeholder:text-[#8b97a8]"
+            className="w-full bg-transparent py-3.5 pl-4 pr-14 text-sm font-semibold text-[#472a3b] outline-none placeholder:font-normal placeholder:text-[#8b97a8]"
             type={isVisible ? 'text' : 'password'}
           />
           <button
             aria-label={`${t(isVisible ? 'Hide' : 'Show')} ${label.toLowerCase()}`}
             aria-pressed={isVisible}
-            className="absolute right-1 grid size-10 place-items-center text-[#65748a] transition hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53]"
+            className="absolute right-1 grid size-10 place-items-center text-[#65748a] transition hover:text-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b]"
             onClick={() => setIsVisible((visible) => !visible)}
             type="button"
           >
@@ -45,18 +45,18 @@ export function PasswordField({ label, labelClassName, variant = 'default', chil
   if (variant === 'modern') {
     return (
       <div>
-        <span className={labelClassName ?? 'text-sm font-bold text-[#092a53]'} id={labelId}>{label}</span>
+        <span className={labelClassName ?? 'text-sm font-bold text-[#472a3b]'} id={labelId}>{label}</span>
         <span className="relative mt-2 flex items-center">
           <input
             {...inputProps}
             aria-labelledby={labelId}
-            className="min-h-12 w-full rounded-lg border border-[#dce3eb] bg-white px-4 pr-16 text-sm font-semibold text-[#092a53] outline-none! placeholder:font-normal placeholder:text-[#65748a] focus:border-[#092a53]"
+            className="min-h-12 w-full rounded-lg border border-[#dce3eb] bg-white px-4 pr-16 text-sm font-semibold text-[#472a3b] outline-none! placeholder:font-normal placeholder:text-[#65748a] focus:border-[#472a3b]"
             type={isVisible ? 'text' : 'password'}
           />
           <button
             aria-label={`${t(isVisible ? 'Hide' : 'Show')} ${label.toLowerCase()}`}
             aria-pressed={isVisible}
-            className="absolute right-2 text-sm font-bold text-[#65748a] outline-none! hover:text-[#092a53] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#092a53]"
+            className="absolute right-2 text-sm font-bold text-[#65748a] outline-none! hover:text-[#472a3b] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#472a3b]"
             onClick={() => setIsVisible((visible) => !visible)}
             type="button"
           >
@@ -74,13 +74,13 @@ export function PasswordField({ label, labelClassName, variant = 'default', chil
       <span className="relative mt-1.5 block">
         <input
           {...inputProps}
-          className="w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 pr-16 font-normal outline-none transition focus:border-[#bd9c00] focus:ring-2 focus:ring-[#ffdc32]/40"
+          className="w-full rounded-xl border border-[#d9d6cc] bg-[#fbfaf5] px-4 py-3 pr-16 font-normal outline-none transition focus:border-[#b8721e] focus:ring-2 focus:ring-[#ffb84d]/40"
           type={isVisible ? 'text' : 'password'}
         />
         <button
           aria-label={`${t(isVisible ? 'Hide' : 'Show')} ${label.toLowerCase()}`}
           aria-pressed={isVisible}
-          className="absolute inset-y-0 right-3 my-auto h-fit rounded px-1 py-1 text-xs font-bold text-[#65748a] transition hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+          className="absolute inset-y-0 right-3 my-auto h-fit rounded px-1 py-1 text-xs font-bold text-[#65748a] transition hover:text-[#472a3b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e]"
           onClick={() => setIsVisible((visible) => !visible)}
           type="button"
         >

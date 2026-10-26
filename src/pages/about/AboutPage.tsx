@@ -33,7 +33,7 @@ export function AboutPage() {
   const { t } = useLanguage()
 
   return (
-    <div className="min-h-svh bg-white text-[#092a53]">
+    <div className="min-h-svh bg-white text-[#472a3b]">
       <Header />
       <main id="main" tabIndex={-1}>
         <section
@@ -52,13 +52,13 @@ export function AboutPage() {
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
               <Link
-                className="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#092a53] px-6 text-sm font-bold text-white transition-colors hover:bg-[#163e6b]"
+                className="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#472a3b] px-6 text-sm font-bold text-white transition-colors hover:bg-[#6b3f58]"
                 to="/menu"
               >
                 {t('Explore the menu')}
               </Link>
               <Link
-                className="inline-flex min-h-12 items-center text-sm font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4"
+                className="inline-flex min-h-12 items-center text-sm font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4"
                 to="/locations"
               >
                 {t('Available locations')}
@@ -90,10 +90,10 @@ export function AboutPage() {
               >
                 {t('A treat made your way')}
               </h2>
-              <p className="mt-5 max-w-xl text-base leading-7 text-[#123b68] sm:text-lg sm:leading-8">
+              <p className="mt-5 max-w-xl text-base leading-7 text-[#6b3f58] sm:text-lg sm:leading-8">
                 {t('Cold Stone is known internationally for ice cream mixed to order on a frozen granite stone. Its signature approach brings chosen mix-ins together with ice cream for a treat made to your taste.')}
               </p>
-              <p className="mt-4 max-w-xl text-base leading-7 text-[#123b68] sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-xl text-base leading-7 text-[#6b3f58] sm:text-lg sm:leading-8">
                 {t('Choose your ice cream, pick your mix-ins and watch it all come together on the frozen stone. Visit us in Douala or Yaoundé, or order online for pickup or delivery.')}
               </p>
             </div>
@@ -141,12 +141,12 @@ export function AboutPage() {
                 <div className="mt-4 flex items-start gap-3">
                   <span
                     aria-hidden="true"
-                    className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffdc32] font-display text-sm font-bold text-[#092a53]"
+                    className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffb84d] font-display text-sm font-bold text-[#472a3b]"
                   >
                     {index + 1}
                   </span>
                   <div className="min-w-0">
-                    <h3 className="font-display text-lg font-bold leading-tight text-[#092a53]">
+                    <h3 className="font-display text-lg font-bold leading-tight text-[#472a3b]">
                       {t(step.title)}
                     </h3>
                     <p className="mt-1.5 text-sm leading-6 text-[#65748a]">
@@ -176,11 +176,11 @@ export function AboutPage() {
             <div className="mt-10 grid gap-10 sm:grid-cols-2 sm:gap-16">
               {locationGroups.map(({ town, areas }) => (
                 <div key={town}>
-                  <h3 className="font-display text-2xl font-extrabold text-[#092a53]">{t(town)}</h3>
+                  <h3 className="font-display text-2xl font-extrabold text-[#472a3b]">{t(town)}</h3>
                   <ul className="mt-4 space-y-2">
                     {areas.map((area) => (
-                      <li className="flex items-center gap-3 text-base leading-7 text-[#123b68]" key={area}>
-                        <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-[#ffdc32]" />
+                      <li className="flex items-center gap-3 text-base leading-7 text-[#6b3f58]" key={area}>
+                        <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-[#ffb84d]" />
                         {t(area)}
                       </li>
                     ))}
@@ -189,7 +189,7 @@ export function AboutPage() {
               ))}
             </div>
             <Link
-              className="mt-10 inline-flex min-h-12 items-center justify-center rounded-lg bg-[#092a53] px-6 text-sm font-bold text-white transition-colors hover:bg-[#163e6b]"
+              className="mt-10 inline-flex min-h-12 items-center justify-center rounded-lg bg-[#472a3b] px-6 text-sm font-bold text-white transition-colors hover:bg-[#6b3f58]"
               to="/locations"
             >
               {t('Browse locations')}

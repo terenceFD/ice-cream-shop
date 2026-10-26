@@ -6,6 +6,7 @@ import { Footer, Header } from "../../components/Layout";
 import { PaymentStatusDialog, type PaymentStatus } from "../../components/PaymentStatusDialog";
 import { useLanguage } from "../../language/useLanguage";
 import { numberFormatter } from "../../lib/cartPricing";
+import { toInt } from "../../../shared/numbers.ts";
 import { photoErrorHandler, thumbnail } from "../../lib/thumbnails";
 import { EVENT_OCCASIONS, eventOccasion, isEventType } from "../../../shared/eventTypes.js";
 import "./EventOrdersPage.css";
@@ -106,7 +107,7 @@ const STATUS_STYLES: Record<string, { label: string; className: string }> = {
 };
 
 const fieldClass =
-  "mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-3 text-sm font-medium text-[#092a53] outline-none! transition placeholder:text-[#9aa5b3] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25";
+  "mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-3 text-sm font-medium text-[#472a3b] outline-none! transition placeholder:text-[#9aa5b3] focus:border-[#b8721e] focus:bg-white focus:ring-4 focus:ring-[#ffb84d]/25";
 const labelClass = "block text-xs font-bold text-[#65748a]";
 
 const EVENT_ICONS: Record<string, string> = {
@@ -148,13 +149,13 @@ function OccasionFilm({
         return (
           <button
             aria-checked={selected}
-            className="event-occasion-choice rounded-2xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+            className="event-occasion-choice rounded-2xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
             key={event.id}
             onClick={() => onChange(event.id)}
             role="radio"
             type="button"
           >
-            <span className="event-occasion-tile relative block overflow-hidden rounded-[18px] bg-[#092a53]">
+            <span className="event-occasion-tile relative block overflow-hidden rounded-[18px] bg-[#472a3b]">
               <img
                 alt=""
                 className={`aspect-[5/4] w-full object-cover transition-[filter] ${selected ? "" : "brightness-[0.82]"}`}
@@ -164,8 +165,8 @@ function OccasionFilm({
                 sizes="(min-width: 1024px) 180px, 45vw"
                 src={thumbnail(event.image, "small")}
               />
-              <span className="event-occasion-caption absolute inset-x-0 bottom-0 flex min-h-12 items-center gap-2 bg-[#092a53] px-2.5 py-2 text-white">
-                <span className={`grid size-6 shrink-0 place-items-center rounded-full ${selected ? "bg-[#ffdc32] text-[#092a53]" : "bg-white/10 text-[#ffdc32]"}`}>
+              <span className="event-occasion-caption absolute inset-x-0 bottom-0 flex min-h-12 items-center gap-2 bg-[#472a3b] px-2.5 py-2 text-white">
+                <span className={`grid size-6 shrink-0 place-items-center rounded-full ${selected ? "bg-[#ffb84d] text-[#472a3b]" : "bg-white/10 text-[#ffb84d]"}`}>
                   <EventIcon id={event.id} />
                 </span>
                 <span className="line-clamp-2 text-[13px] font-extrabold leading-4">{t(event.label)}</span>
@@ -297,7 +298,7 @@ export function EventOrdersPage() {
     if (!customer) return;
     let cancelled = false;
     const token = getCustomerToken();
-    const returningId = Number(searchParams.get("event"));
+    const returningId = toInt(searchParams.get("event"), 0);
     const fromPayment = Boolean(searchParams.get("session_id") || searchParams.get("provider") === "campay");
     let clearPaymentReturn = false;
     (async () => {
@@ -391,8 +392,8 @@ export function EventOrdersPage() {
         method: "POST",
         token: getCustomerToken(),
         body: {
-          eventType, eventDate, eventTime, guestCount: Number(guestCount), fulfillmentType,
-          storeId: Number(storeId), deliveryAddress, phone, notes,
+          eventType, eventDate, eventTime, guestCount: toInt(guestCount, 0), fulfillmentType,
+          storeId: toInt(storeId, 0), deliveryAddress, phone, notes,
           items: selected.map((item) => ({ itemId: item.itemId, quantity: quantities[item.itemId] })),
         },
       });
@@ -457,7 +458,7 @@ export function EventOrdersPage() {
   }
 
   return (
-    <div className="event-orders-page min-h-screen bg-[#f4f6f8] text-[#092a53]">
+    <div className="event-orders-page min-h-screen bg-[#f4f6f8] text-[#472a3b]">
       <Header />
       {paymentDialog && (
         <PaymentStatusDialog
@@ -488,7 +489,7 @@ export function EventOrdersPage() {
           <div className="mx-auto max-w-[1200px]">
             <div className="event-hero grid md:grid-cols-[1.1fr_0.9fr]">
               <div className="event-hero-copy flex flex-col justify-center px-6 py-9 sm:px-10 sm:py-12 lg:px-14 lg:py-16">
-                <h1 className="mt-0 max-w-xl font-display text-4xl font-extrabold leading-[1.06] tracking-tight text-[#092a53] sm:text-5xl">
+                <h1 className="mt-0 max-w-xl font-display text-4xl font-extrabold leading-[1.06] tracking-tight text-[#472a3b] sm:text-5xl">
                   {t(EVENT_HERO_COPY[chosen.id].title)}
                 </h1>
                 <p className="mt-4 max-w-lg text-base leading-7 text-[#65748a]">
@@ -505,8 +506,8 @@ export function EventOrdersPage() {
                   onError={photoErrorHandler(chosen.image, "/images/hero-ice-cream.jpg")}
                   src={thumbnail(chosen.image)}
                 />
-                <div className="absolute inset-x-0 bottom-0 bg-[#092a53]/90 px-5 py-4 text-white sm:px-7">
-                  <p className="text-xs font-bold text-[#ffdc32]">{t("Type of event")}</p>
+                <div className="absolute inset-x-0 bottom-0 bg-[#472a3b]/90 px-5 py-4 text-white sm:px-7">
+                  <p className="text-xs font-bold text-[#ffb84d]">{t("Type of event")}</p>
                   <p className="mt-1 font-display text-xl font-extrabold">{t(chosen.label)}</p>
                   <p className="mt-1 text-sm leading-5 text-white/80">{t(chosen.detail)}</p>
                 </div>
@@ -515,9 +516,9 @@ export function EventOrdersPage() {
             <ol className="event-process grid grid-cols-1 gap-0 sm:grid-cols-3">
               {steps.map((step, index) => (
                 <li className="flex gap-3 py-4 sm:px-5 sm:first:pl-0 sm:last:pr-0" key={step.title}>
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53]">{index + 1}</span>
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffb84d] text-sm font-extrabold text-[#472a3b]">{index + 1}</span>
                   <div>
-                    <p className="font-extrabold text-[#092a53]">{step.title}</p>
+                    <p className="font-extrabold text-[#472a3b]">{step.title}</p>
                     <p className="mt-1 text-sm leading-6 text-[#65748a]">{step.body}</p>
                   </div>
                 </li>
@@ -538,12 +539,12 @@ export function EventOrdersPage() {
               </div>
               <div className="event-signin-panel flex flex-col gap-5 rounded-[24px] bg-white p-6 ring-1 ring-[#e2e8f0] sm:flex-row sm:items-end sm:justify-between sm:p-8">
                 <div className="max-w-md">
-                  <h2 className="font-display text-2xl font-extrabold leading-tight text-[#092a53]" id="plan-event-title">{t("Sign in to plan your event")}</h2>
+                  <h2 className="font-display text-2xl font-extrabold leading-tight text-[#472a3b]" id="plan-event-title">{t("Sign in to plan your event")}</h2>
                   <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("An account lets you follow your quote, pay the deposit and get updates about your event.")}</p>
                 </div>
                 <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
-                  <Link className="inline-flex h-11 items-center justify-center rounded-full bg-[#ffdc32] px-5 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2" state={{ from: "/events", type: eventType }} to="/login">{t("Sign in")}</Link>
-                  <Link className="inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold text-[#092a53] ring-1 ring-[#d7deea] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2" state={{ from: "/events", type: eventType }} to="/signup">{t("Create an account")}</Link>
+                  <Link className="inline-flex h-11 items-center justify-center rounded-full bg-[#ffb84d] px-5 text-sm font-extrabold text-[#472a3b] transition hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2" state={{ from: "/events", type: eventType }} to="/login">{t("Sign in")}</Link>
+                  <Link className="inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold text-[#472a3b] ring-1 ring-[#d7deea] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2" state={{ from: "/events", type: eventType }} to="/signup">{t("Create an account")}</Link>
                 </div>
               </div>
             </section>
@@ -552,7 +553,7 @@ export function EventOrdersPage() {
               <form className="event-order-form grid grid-cols-1 gap-8 lg:grid-cols-12" onSubmit={submit}>
                 <div className="event-form-fields space-y-8 lg:col-span-8">
                   <section className="event-form-section rounded-[22px] bg-white p-5 ring-1 ring-[#e2e8f0] sm:p-7">
-                    <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t("Your event")}</h2>
+                    <h2 className="font-display text-xl font-extrabold text-[#472a3b]">{t("Your event")}</h2>
                     <div className="mt-4">
                       <OccasionFilm choices={occasionChoices} label={t("Type of event")} onChange={chooseEvent} t={t} value={eventType} />
                     </div>
@@ -573,7 +574,7 @@ export function EventOrdersPage() {
                   </section>
 
                   <section className="event-form-section rounded-[22px] bg-white p-5 ring-1 ring-[#e2e8f0] sm:p-7">
-                    <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t("Delivery or pickup")}</h2>
+                    <h2 className="font-display text-xl font-extrabold text-[#472a3b]">{t("Delivery or pickup")}</h2>
                     <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {([
                         ["delivery", "Deliver to my event", "M3 7h11v8H3V7Zm11 3h4l3 3v2h-7M6.5 18.5a1.5 1.5 0 1 0 .01-3 1.5 1.5 0 0 0-.01 3Zm11 0a1.5 1.5 0 1 0 .01-3 1.5 1.5 0 0 0-.01 3Z"],
@@ -583,14 +584,14 @@ export function EventOrdersPage() {
                         return (
                           <button
                             aria-pressed={selected}
-                            className={`event-fulfillment-choice flex items-center gap-3 rounded-2xl px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 ${
-                              selected ? "bg-[#092a53] text-white" : "bg-[#fbfaf5] text-[#092a53] hover:bg-[#efe8d6]"
+                            className={`event-fulfillment-choice flex items-center gap-3 rounded-2xl px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 ${
+                              selected ? "bg-[#472a3b] text-white" : "bg-[#fbfaf5] text-[#472a3b] hover:bg-[#efe8d6]"
                             }`}
                             key={type}
                             onClick={() => setFulfillmentType(type)}
                             type="button"
                           >
-                            <span className={`grid size-11 shrink-0 place-items-center rounded-full ${selected ? "bg-[#ffdc32] text-[#092a53]" : "bg-white text-[#65748a]"}`}>
+                            <span className={`grid size-11 shrink-0 place-items-center rounded-full ${selected ? "bg-[#ffb84d] text-[#472a3b]" : "bg-white text-[#65748a]"}`}>
                               <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
                                 <path d={icon} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
                               </svg>
@@ -626,12 +627,12 @@ export function EventOrdersPage() {
                   <section className="event-form-section event-treat-section rounded-[22px] bg-white p-5 ring-1 ring-[#e2e8f0] sm:p-7">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                       <div>
-                        <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t("Choose your treats")}</h2>
+                        <h2 className="font-display text-xl font-extrabold text-[#472a3b]">{t("Choose your treats")}</h2>
                         <p className="mt-1 max-w-sm text-sm leading-6 text-[#65748a]">{t("At least {count} items in total. Prices are per item.", { count: minQuantity })}</p>
                       </div>
                       <input
                         aria-label={t("Search treats")}
-                        className="h-11 w-full rounded-full bg-[#fbfaf5] px-4 text-sm font-semibold text-[#092a53] outline-none transition placeholder:font-medium placeholder:text-[#8592a3] focus:bg-white focus:ring-2 focus:ring-[#ffdc32] sm:w-56"
+                        className="h-11 w-full rounded-full bg-[#fbfaf5] px-4 text-sm font-semibold text-[#472a3b] outline-none transition placeholder:font-medium placeholder:text-[#8592a3] focus:bg-white focus:ring-2 focus:ring-[#ffb84d] sm:w-56"
                         onChange={(event) => setItemSearch(event.target.value)}
                         placeholder={t("Search treats")}
                         type="search"
@@ -642,38 +643,38 @@ export function EventOrdersPage() {
                       <div className="mt-6 space-y-6">
                         {treatGroups.map((group) => (
                           <div key={group.title}>
-                            <h3 className="text-sm font-extrabold text-[#092a53]">{t(group.title)}</h3>
+                            <h3 className="text-sm font-extrabold text-[#472a3b]">{t(group.title)}</h3>
                             <ul className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2">
                               {group.items.map((item) => {
                                 const quantity = quantities[item.itemId] || 0;
                                 const picked = quantity > 0;
                                 return (
-                                  <li className={`event-treat-row flex items-center gap-3 rounded-2xl px-3 py-2.5 ${picked ? "bg-[#092a53] text-white" : "bg-[#fbfaf5] text-[#092a53]"}`} data-selected={picked} key={item.itemId}>
+                                  <li className={`event-treat-row flex items-center gap-3 rounded-2xl px-3 py-2.5 ${picked ? "bg-[#472a3b] text-white" : "bg-[#fbfaf5] text-[#472a3b]"}`} data-selected={picked} key={item.itemId}>
                                     <div className="min-w-0 flex-1">
                                       <p className="line-clamp-2 text-sm font-extrabold leading-5">{t(item.name)}</p>
-                                      <p className={`text-xs font-semibold tabular-nums ${picked ? "text-[#ffdc32]" : "text-[#65748a]"}`}>{formatXaf(item.price, language)}</p>
+                                      <p className={`text-xs font-semibold tabular-nums ${picked ? "text-[#ffb84d]" : "text-[#65748a]"}`}>{formatXaf(item.price, language)}</p>
                                     </div>
                                     <div className="flex shrink-0 items-center gap-1">
                                       <button
                                         aria-label={t("Remove one")}
-                                        className={`grid size-8 place-items-center rounded-full text-lg font-bold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] disabled:opacity-40 ${picked ? "bg-white/10 text-white" : "bg-white text-[#092a53]"}`}
+                                        className={`grid size-8 place-items-center rounded-full text-lg font-bold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] disabled:opacity-40 ${picked ? "bg-white/10 text-white" : "bg-white text-[#472a3b]"}`}
                                         disabled={!quantity}
                                         onClick={() => setQuantity(item.itemId, quantity - 5)}
                                         type="button"
                                       >−</button>
                                       <input
                                         aria-label={t("Quantity of {name}", { name: t(item.name) })}
-                                        className={`w-12 rounded-lg px-1 py-1.5 text-center text-sm font-extrabold tabular-nums outline-none [appearance:textfield] focus:ring-2 focus:ring-[#ffdc32] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${picked ? "bg-white/10 text-white" : "bg-white text-[#092a53] ring-1 ring-[#e7e1d4]"}`}
+                                        className={`w-12 rounded-lg px-1 py-1.5 text-center text-sm font-extrabold tabular-nums outline-none [appearance:textfield] focus:ring-2 focus:ring-[#ffb84d] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${picked ? "bg-white/10 text-white" : "bg-white text-[#472a3b] ring-1 ring-[#e7e1d4]"}`}
                                         inputMode="numeric"
                                         min={0}
-                                        onChange={(event) => setQuantity(item.itemId, Number(event.target.value))}
+                                        onChange={(event) => setQuantity(item.itemId, toInt(event.target.value, 0))}
                                         placeholder="0"
                                         type="number"
                                         value={quantity || ""}
                                       />
                                       <button
                                         aria-label={t("Add five")}
-                                        className={`grid size-8 place-items-center rounded-full text-lg font-bold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${picked ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#092a53] text-white"}`}
+                                        className={`grid size-8 place-items-center rounded-full text-lg font-bold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] ${picked ? "bg-[#ffb84d] text-[#472a3b]" : "bg-[#472a3b] text-white"}`}
                                         onClick={() => setQuantity(item.itemId, quantity + 5)}
                                         type="button"
                                       >+</button>
@@ -696,7 +697,7 @@ export function EventOrdersPage() {
                 </div>
 
                 <aside className="event-estimate-column lg:col-span-4">
-                  <div className="event-estimate rounded-[22px] bg-[#092a53] p-6 text-white lg:sticky lg:top-28">
+                  <div className="event-estimate rounded-[22px] bg-[#472a3b] p-6 text-white lg:sticky lg:top-28">
                     <h2 className="font-display text-xl font-extrabold text-white">{t("Your estimate")}</h2>
                     {selected.length ? (
                       <ul className="mt-4 space-y-2 text-sm text-white">
@@ -726,7 +727,7 @@ export function EventOrdersPage() {
                     </dl>
                     <p className="mt-4 text-sm leading-6 text-white">{t("Nothing is charged now. The store confirms the final price first, then you pay the deposit to book your date.")}</p>
                     {formError && <p className="mt-4 rounded-xl bg-white/15 px-3 py-2.5 text-sm font-semibold text-white" role="alert">{formError}</p>}
-                    <button className="mt-5 w-full rounded-full bg-[#ffdc32] px-6 py-3.5 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-wait disabled:opacity-60" disabled={submitting} type="submit">
+                    <button className="mt-5 w-full rounded-full bg-[#ffb84d] px-6 py-3.5 text-sm font-extrabold text-[#472a3b] transition hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-wait disabled:opacity-60" disabled={submitting} type="submit">
                       {submitting ? t("Sending…") : t("Request a quote")}
                     </button>
                   </div>
@@ -734,7 +735,7 @@ export function EventOrdersPage() {
               </form>
 
               <section aria-labelledby="my-event-orders-title" className="event-orders-list mt-14 scroll-mt-28" id="my-event-orders">
-                <h2 className="font-display text-2xl font-extrabold text-[#092a53]" id="my-event-orders-title">{t("Your event orders")}</h2>
+                <h2 className="font-display text-2xl font-extrabold text-[#472a3b]" id="my-event-orders-title">{t("Your event orders")}</h2>
                 {!eventOrders.length ? (
                   <p className="mt-3 text-sm text-[#65748a]">{t("Your requests will appear here.")}</p>
                 ) : (
@@ -745,12 +746,12 @@ export function EventOrdersPage() {
                       return (
                         <li className="event-order-card scroll-mt-28 rounded-[22px] bg-white p-5 ring-1 ring-[#e2e8f0]" id={`event-order-${order.id}`} key={order.id}>
                           <div className="flex items-start gap-3">
-                            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#092a53] text-[#ffdc32]">
+                            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#472a3b] text-[#ffb84d]">
                               <EventIcon id={order.eventType} />
                             </span>
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-start justify-between gap-2">
-                                <p className="font-extrabold text-[#092a53]">{t(EVENT_TYPE_LABELS[order.eventType] || "Event")} · #{order.id}</p>
+                                <p className="font-extrabold text-[#472a3b]">{t(EVENT_TYPE_LABELS[order.eventType] || "Event")} · #{order.id}</p>
                                 <span className={`rounded-full px-3 py-1 text-xs font-bold ${status.className}`}>{t(status.label)}</span>
                               </div>
                               <p className="mt-1 text-sm text-[#65748a]">{order.eventDate} · {order.eventTime} · {t("{count} guests", { count: order.guestCount })}</p>
@@ -762,23 +763,23 @@ export function EventOrdersPage() {
                           <dl className="mt-4 flex gap-8 border-t border-[#efe8d6] pt-4 text-sm">
                             <div>
                               <dt className="text-xs font-semibold text-[#65748a]">{t(order.quotedTotal ? "Quoted total" : "Estimated total")}</dt>
-                              <dd className="mt-0.5 font-extrabold tabular-nums text-[#092a53]">{formatXaf(total, language)}</dd>
+                              <dd className="mt-0.5 font-extrabold tabular-nums text-[#472a3b]">{formatXaf(total, language)}</dd>
                             </div>
                             <div>
                               <dt className="text-xs font-semibold text-[#65748a]">{t("Deposit")}</dt>
-                              <dd className="mt-0.5 font-extrabold tabular-nums text-[#092a53]">{order.depositAmount ? formatXaf(order.depositAmount, language) : "—"}</dd>
+                              <dd className="mt-0.5 font-extrabold tabular-nums text-[#472a3b]">{order.depositAmount ? formatXaf(order.depositAmount, language) : "—"}</dd>
                             </div>
                           </dl>
                           {order.adminNote && <p className="mt-4 rounded-2xl bg-[#fff8d6] px-4 py-3 text-sm leading-6 text-[#5c4a00]">{t("Note from the store")}: {order.adminNote}</p>}
                           {order.status === "quoted" && order.depositAmount && (
                             <div className="mt-4 rounded-2xl bg-[#fbfaf5] p-4">
-                              <p className="text-sm font-extrabold text-[#092a53]">{t("Pay the deposit to book your date")}</p>
+                              <p className="text-sm font-extrabold text-[#472a3b]">{t("Pay the deposit to book your date")}</p>
                               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                                 {methods.card && (
-                                  <button aria-pressed={payMethod === "card"} className={`rounded-2xl px-4 py-3 text-left text-sm font-extrabold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${payMethod === "card" ? "bg-[#092a53] text-white" : "bg-white text-[#092a53]"}`} onClick={() => setPayMethod("card")} type="button">{t("Card")}</button>
+                                  <button aria-pressed={payMethod === "card"} className={`rounded-2xl px-4 py-3 text-left text-sm font-extrabold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] ${payMethod === "card" ? "bg-[#472a3b] text-white" : "bg-white text-[#472a3b]"}`} onClick={() => setPayMethod("card")} type="button">{t("Card")}</button>
                                 )}
                                 {methods.campayMobileMoney && (
-                                  <button aria-pressed={payMethod === "campay"} className={`rounded-2xl px-4 py-3 text-left text-sm font-extrabold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${payMethod === "campay" ? "bg-[#092a53] text-white" : "bg-white text-[#092a53]"}`} onClick={() => setPayMethod("campay")} type="button">{t("Mobile Money")}</button>
+                                  <button aria-pressed={payMethod === "campay"} className={`rounded-2xl px-4 py-3 text-left text-sm font-extrabold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] ${payMethod === "campay" ? "bg-[#472a3b] text-white" : "bg-white text-[#472a3b]"}`} onClick={() => setPayMethod("campay")} type="button">{t("Mobile Money")}</button>
                                 )}
                               </div>
                               {payMethod === "campay" && (
@@ -788,7 +789,7 @@ export function EventOrdersPage() {
                                 </label>
                               )}
                               {payError && payingId === null && <p className="mt-3 text-sm font-semibold text-red-700" role="alert">{payError}</p>}
-                              <button className="mt-3 w-full rounded-full bg-[#ffdc32] px-5 py-3 text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60" disabled={payingId === order.id || (!methods.card && !methods.campayMobileMoney)} onClick={() => payDeposit(order)} type="button">
+                              <button className="mt-3 w-full rounded-full bg-[#ffb84d] px-5 py-3 text-sm font-extrabold text-[#472a3b] transition hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60" disabled={payingId === order.id || (!methods.card && !methods.campayMobileMoney)} onClick={() => payDeposit(order)} type="button">
                                 {payingId === order.id ? t("Opening payment…") : t("Pay {amount} deposit", { amount: formatXaf(order.depositAmount, language) })}
                               </button>
                             </div>
@@ -796,20 +797,20 @@ export function EventOrdersPage() {
                           {["new", "quoted", "declined", "cancelled"].includes(order.status) && (
                             confirmDeleteId === order.id ? (
                               <div className="mt-4 rounded-2xl bg-[#fbfaf5] p-4">
-                                <p className="text-sm font-extrabold text-[#092a53]">{t("Delete this event?")}</p>
+                                <p className="text-sm font-extrabold text-[#472a3b]">{t("Delete this event?")}</p>
                                 <p className="mt-1 text-sm leading-6 text-[#65748a]">{t("This removes the request. It cannot be undone.")}</p>
                                 {deleteError && <p className="mt-2 text-sm font-semibold text-red-700" role="alert">{deleteError}</p>}
                                 <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                                  <button className="inline-flex h-11 items-center justify-center rounded-full bg-[#092a53] px-5 text-sm font-extrabold text-white transition hover:bg-[#0d3a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60" disabled={deletingId === order.id} onClick={() => deleteOrder(order)} type="button">
+                                  <button className="inline-flex h-11 items-center justify-center rounded-full bg-[#472a3b] px-5 text-sm font-extrabold text-white transition hover:bg-[#0d3a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60" disabled={deletingId === order.id} onClick={() => deleteOrder(order)} type="button">
                                     {deletingId === order.id ? t("Deleting…") : t("Delete event")}
                                   </button>
-                                  <button className="inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold text-[#092a53] ring-1 ring-[#d7deea] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2" onClick={() => { setConfirmDeleteId(null); setDeleteError(""); }} type="button">
+                                  <button className="inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold text-[#472a3b] ring-1 ring-[#d7deea] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2" onClick={() => { setConfirmDeleteId(null); setDeleteError(""); }} type="button">
                                     {t("Keep event")}
                                   </button>
                                 </div>
                               </div>
                             ) : (
-                              <button className="mt-4 inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold text-[#092a53] ring-1 ring-[#d7deea] transition hover:bg-[#fbfaf5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2" onClick={() => { setConfirmDeleteId(order.id); setDeleteError(""); }} type="button">
+                              <button className="mt-4 inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold text-[#472a3b] ring-1 ring-[#d7deea] transition hover:bg-[#fbfaf5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2" onClick={() => { setConfirmDeleteId(order.id); setDeleteError(""); }} type="button">
                                 {t("Delete event")}
                               </button>
                             )
@@ -824,7 +825,7 @@ export function EventOrdersPage() {
           ) : null}
 
           <p className="mt-12 text-center text-sm text-[#65748a]">
-            {t("Need a cake for the party?")} <Link className="font-bold text-[#092a53] underline decoration-[#ffdc32] decoration-2 underline-offset-4" to="/custom-cake">{t("Request a custom cake")}</Link>
+            {t("Need a cake for the party?")} <Link className="font-bold text-[#472a3b] underline decoration-[#ffb84d] decoration-2 underline-offset-4" to="/custom-cake">{t("Request a custom cake")}</Link>
           </p>
         </div>
         </main>

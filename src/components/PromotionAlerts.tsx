@@ -133,10 +133,10 @@ export function PromotionAlertsPrompt() {
       role="dialog"
     >
       <div className="relative overflow-hidden rounded-[24px] bg-[#0d3566] text-white shadow-[0_24px_60px_rgba(0,0,0,0.45)] ring-1 ring-white/25">
-        <div aria-hidden="true" className="h-1 bg-gradient-to-r from-[#ffdc32] via-[#ffe98a] to-[#ffdc32]" />
+        <div aria-hidden="true" className="h-1 bg-gradient-to-r from-[#ffb84d] via-[#ffe98a] to-[#ffb84d]" />
         <button
           aria-label={t("Close")}
-          className="absolute right-3 top-4 z-10 grid size-8 place-items-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-[#ffdc32]"
+          className="absolute right-3 top-4 z-10 grid size-8 place-items-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-[#ffb84d]"
           onClick={snooze}
           type="button"
         >
@@ -148,12 +148,12 @@ export function PromotionAlertsPrompt() {
           <div className="flex items-center gap-3.5 pr-8">
             <span className="relative shrink-0">
               <img decoding="async" loading="lazy" alt="" className="size-12 rounded-2xl ring-1 ring-white/15" height={48} src="/icons/icon-192.png" width={48} />
-              <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full bg-[#ffdc32] text-[#092a53] ring-2 ring-[#0d3566]">
+              <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full bg-[#ffb84d] text-[#472a3b] ring-2 ring-[#0d3566]">
                 <BellIcon className="size-3.5" />
               </span>
             </span>
             <div className="min-w-0">
-              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t("Stay in the loop")}</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ffb84d]">{t("Stay in the loop")}</p>
               <h2 className="mt-0.5 font-display text-lg font-extrabold leading-tight" id="promotion-alerts-title">
                 {t("Order updates and sweet deals")}
               </h2>
@@ -165,14 +165,14 @@ export function PromotionAlertsPrompt() {
           {error && <p className="mt-3 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-[#ffd4d4]" role="alert">{error}</p>}
           <div className="mt-5 grid grid-cols-[auto_1fr] gap-2.5">
             <button
-              className="min-h-11 rounded-xl px-4 text-sm font-bold text-white/80 ring-1 ring-white/20 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32]"
+              className="min-h-11 rounded-xl px-4 text-sm font-bold text-white/80 ring-1 ring-white/20 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffb84d]"
               onClick={snooze}
               type="button"
             >
               {t("Not now")}
             </button>
             <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#ffdc32] px-4 text-sm font-extrabold text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:bg-[#ffe76c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-wait disabled:opacity-70"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#ffb84d] px-4 text-sm font-extrabold text-[#472a3b] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:bg-[#ffcf85] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-wait disabled:opacity-70"
               disabled={isWorking}
               onClick={turnOn}
               type="button"
@@ -229,11 +229,11 @@ export function PromotionAlertsSetting() {
 
   return (
     <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-[22px] bg-white p-4 shadow-[0_12px_30px_-18px_rgba(9,42,83,0.35)] ring-1 ring-[#dce3eb] sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-4 sm:p-5">
-      <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-2xl ${isOn ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#f4f6f8] text-[#65748a]"}`}>
+      <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-2xl ${isOn ? "bg-[#ffb84d] text-[#472a3b]" : "bg-[#f4f6f8] text-[#65748a]"}`}>
         <BellIcon />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="font-bold text-[#092a53]" id="promotion-alerts-setting">{t("Order updates and promotions")}</p>
+        <p className="font-bold text-[#472a3b]" id="promotion-alerts-setting">{t("Order updates and promotions")}</p>
         <p className="mt-1 text-sm leading-6 text-[#65748a]" role="status">{help}</p>
         {state === "needs-install" && <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("In Safari, tap Share, then Add to Home Screen. Open the installed app and sign in, then enable notifications here. Requires iOS or iPadOS 16.4 or later.")}</p>}
         {error && <p className="mt-2 text-sm font-semibold text-red-700" role="alert">{error}</p>}
@@ -243,7 +243,7 @@ export function PromotionAlertsSetting() {
           aria-checked={isOn}
           aria-labelledby="promotion-alerts-setting"
           aria-busy={isWorking}
-          className="col-start-2 inline-flex min-h-11 items-center justify-between gap-3 justify-self-start rounded-xl bg-[#f4f6f8] px-3 py-2 text-sm font-semibold text-[#092a53] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60 sm:col-start-3 sm:row-start-1"
+          className="col-start-2 inline-flex min-h-11 items-center justify-between gap-3 justify-self-start rounded-xl bg-[#f4f6f8] px-3 py-2 text-sm font-semibold text-[#472a3b] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8721e] disabled:cursor-wait disabled:opacity-60 sm:col-start-3 sm:row-start-1"
           disabled={isWorking}
           onClick={toggle}
           role="switch"

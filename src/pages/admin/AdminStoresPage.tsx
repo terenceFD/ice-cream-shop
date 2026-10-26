@@ -122,7 +122,7 @@ function StarRating({ value, reviews, language, t }: { value: number; reviews: n
         <span className="flex gap-0.5 text-[#e8e8e8]">
           {Array.from({ length: 5 }, (_, index) => <StarGlyph key={`empty-${index}`} />)}
         </span>
-        <span className="absolute inset-y-0 left-0 flex gap-0.5 overflow-hidden text-[#bd9c00]" style={{ width: `${(clamped / 5) * 100}%` }}>
+        <span className="absolute inset-y-0 left-0 flex gap-0.5 overflow-hidden text-[#b8721e]" style={{ width: `${(clamped / 5) * 100}%` }}>
           {Array.from({ length: 5 }, (_, index) => <StarGlyph className="size-3.5 shrink-0" key={`filled-${index}`} />)}
         </span>
       </span>
@@ -242,7 +242,7 @@ export function AdminStoresPage() {
         <div className="min-w-0">
           <nav aria-label={t('Breadcrumb')} className="text-xs font-medium text-[#5f6368]">
             {t('Overview')} <span aria-hidden="true" className="mx-1">/</span>
-            <span className="text-[#092a53]">{t('Stores')}</span>
+            <span className="text-[#472a3b]">{t('Stores')}</span>
           </nav>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[#111]">{t('Stores')}</h1>
           <p className="mt-1 text-sm text-[#5f6368]">
@@ -274,7 +274,7 @@ export function AdminStoresPage() {
             </span>
           )}
           <button
-            className="inline-flex h-8 items-center gap-2 border border-[#d1d5db] bg-white px-3 text-sm font-medium text-[#111] transition hover:border-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex h-8 items-center gap-2 border border-[#d1d5db] bg-white px-3 text-sm font-medium text-[#111] transition hover:border-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] disabled:cursor-wait disabled:opacity-60"
             disabled={isRefreshing}
             onClick={refresh}
             type="button"
@@ -396,7 +396,7 @@ export function AdminStoresPage() {
                       return (
                         <button
                           aria-pressed={selected}
-                          className={`px-3 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#092a53] ${selected ? 'bg-[#111] text-white' : 'bg-white text-[#5f6368] hover:text-[#111]'}`}
+                          className={`px-3 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#472a3b] ${selected ? 'bg-[#111] text-white' : 'bg-white text-[#5f6368] hover:text-[#111]'}`}
                           key={option.value}
                           onClick={() => setTownFilter(option.value)}
                           type="button"
@@ -415,7 +415,7 @@ export function AdminStoresPage() {
                       return (
                         <button
                           aria-pressed={selected}
-                          className={`px-3 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#092a53] ${selected ? 'bg-[#111] text-white' : 'bg-white text-[#5f6368] hover:text-[#111]'}`}
+                          className={`px-3 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#472a3b] ${selected ? 'bg-[#111] text-white' : 'bg-white text-[#5f6368] hover:text-[#111]'}`}
                           key={option.key}
                           onClick={() => setSortKey(option.key)}
                           type="button"
@@ -497,7 +497,7 @@ function StoreRow({
     <li className="border-t border-[#f2f2f2]">
       <button
         aria-current={isSelected ? 'true' : undefined}
-        className={`grid w-full gap-4 px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#092a53] @[48rem]:grid-cols-[minmax(13rem,1.4fr)_minmax(8rem,0.85fr)_minmax(9.5rem,1fr)_minmax(5.5rem,0.55fr)_minmax(6rem,0.6fr)] @[48rem]:items-center ${
+        className={`grid w-full gap-4 px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#472a3b] @[48rem]:grid-cols-[minmax(13rem,1.4fr)_minmax(8rem,0.85fr)_minmax(9.5rem,1fr)_minmax(5.5rem,0.55fr)_minmax(6rem,0.6fr)] @[48rem]:items-center ${
           isSelected ? 'bg-[#f4f6f8]' : 'bg-white hover:bg-[#fafafa]'
         }`}
         onClick={onSelect}
@@ -525,7 +525,7 @@ function StoreRow({
           </p>
           <div aria-hidden="true" className="mt-2 h-0.5 overflow-hidden bg-[#e8e8e8] @[48rem]:ml-auto @[48rem]:max-w-[7.5rem]">
             <div
-              className={`h-full ${isLeader ? 'bg-[#092a53]' : 'bg-[#c7c7c7]'}`}
+              className={`h-full ${isLeader ? 'bg-[#472a3b]' : 'bg-[#c7c7c7]'}`}
               style={{ width: `${Math.max(share > 0 ? 4 : 0, share * 100)}%` }}
             />
           </div>
@@ -632,7 +632,7 @@ function StoreDetailDrawer({
             <div className="bg-white p-4">
               <h3 className="text-xs font-medium text-[#5f6368]">{t('Phone')}</h3>
               {store.phone ? (
-                <a className="mt-2 flex items-center gap-1.5 text-sm font-medium text-[#092a53] hover:underline" href={`tel:${store.phone}`}>
+                <a className="mt-2 flex items-center gap-1.5 text-sm font-medium text-[#472a3b] hover:underline" href={`tel:${store.phone}`}>
                   <AdminIcon className="size-3.5 shrink-0" path={icons.phone} />
                   {store.phone}
                 </a>
@@ -727,7 +727,7 @@ function StoreDetailDrawer({
             {t('Close')}
           </button>
           <Link
-            className="inline-flex h-9 items-center gap-2 bg-[#111] px-4 text-sm font-semibold text-white transition hover:bg-[#092a53]"
+            className="inline-flex h-9 items-center gap-2 bg-[#111] px-4 text-sm font-semibold text-white transition hover:bg-[#472a3b]"
             onClick={onClose}
             to="/admin/orders"
           >

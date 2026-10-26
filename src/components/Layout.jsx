@@ -93,9 +93,9 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
       <details className="group relative" onToggle={(event) => { if (event.currentTarget.open) setShowImages(true); }} ref={detailsRef}>
         <summary
           onClick={closeOtherDropdowns}
-          className={`relative flex h-10 cursor-pointer list-none items-center justify-between gap-1.5 whitespace-nowrap px-2 text-[13px] font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] [&::-webkit-details-marker]:hidden ${
+          className={`relative flex h-10 cursor-pointer list-none items-center justify-between gap-1.5 whitespace-nowrap px-2 text-[13px] font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] [&::-webkit-details-marker]:hidden ${
             active
-              ? "text-white after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:bg-[#ffdc32] after:content-['']"
+              ? "text-white after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:bg-[#ffb84d] after:content-['']"
               : "text-white/75 after:content-[''] hover:text-white group-open:text-white"
           }`}
         >
@@ -106,10 +106,10 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
         </summary>
 
         <div className="menu-popover absolute left-1/2 top-full z-30 w-[min(44rem,calc(100vw-2rem))] -translate-x-1/2 pt-3">
-          <div className="grid overflow-hidden rounded-xl bg-white p-2 text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb] sm:grid-cols-[15rem_1fr]">
+          <div className="grid overflow-hidden rounded-xl bg-white p-2 text-sm text-[#472a3b] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb] sm:grid-cols-[15rem_1fr]">
             {feature && (
               <Link
-                className="group/feature relative isolate hidden min-h-[17rem] flex-col justify-end overflow-hidden rounded-lg bg-[#092a53] p-5 text-white sm:flex"
+                className="group/feature relative isolate hidden min-h-[17rem] flex-col justify-end overflow-hidden rounded-lg bg-[#472a3b] p-5 text-white sm:flex"
                 onClick={closeAfterNavigate}
                 to={feature.to}
               >
@@ -119,32 +119,32 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                 <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#061d3a] via-[#061d3a]/60 to-[#061d3a]/10" />
                 <span className="mt-2 font-display text-xl font-extrabold leading-tight">{feature.title}</span>
                 {subtitle && <span className="mt-1.5 text-xs leading-5 text-white/70">{subtitle}</span>}
-                <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-md bg-[#ffdc32] px-4 py-2.5 text-xs font-extrabold text-[#092a53] transition-colors group-hover/feature:bg-white">
+                <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-md bg-[#ffb84d] px-4 py-2.5 text-xs font-extrabold text-[#472a3b] transition-colors group-hover/feature:bg-white">
                   {feature.cta} <ArrowIcon />
                 </span>
               </Link>
             )}
 
             <div className="p-2 sm:p-3">
-              <p className="px-2 pb-3 pt-1 text-sm font-bold text-[#092a53]">{feature?.listTitle || label}</p>
+              <p className="px-2 pb-3 pt-1 text-sm font-bold text-[#472a3b]">{feature?.listTitle || label}</p>
               <ul className={`grid gap-1 ${links.length > 4 ? "sm:grid-cols-2" : ""}`}>
                 {links.map((link) => (
                   <li key={link.to}>
                     <Link
-                      className="group/link flex min-w-0 items-center gap-3 rounded-md p-2.5 pr-3 transition-colors hover:bg-[#f1f5f8] focus-visible:bg-[#f1f5f8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00]"
+                      className="group/link flex min-w-0 items-center gap-3 rounded-md p-2.5 pr-3 transition-colors hover:bg-[#f1f5f8] focus-visible:bg-[#f1f5f8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#b8721e]"
                       onClick={closeAfterNavigate}
                       to={link.to}
                     >
                       {link.image && showImages ? (
                         <img decoding="async" alt="" aria-hidden="true" className="size-11 shrink-0 rounded-md object-cover transition duration-300 group-hover/link:scale-[1.04]" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image, "tiny")} />
                       ) : (
-                        <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-md bg-[#f4f6f8] font-display text-base font-bold text-[#092a53]">{link.label.slice(0, 1)}</span>
+                        <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-md bg-[#f4f6f8] font-display text-base font-bold text-[#472a3b]">{link.label.slice(0, 1)}</span>
                       )}
                       <span className="min-w-0 flex-1">
-                        <span className="line-clamp-2 block text-sm font-extrabold leading-snug text-[#092a53]">{link.label}</span>
+                        <span className="line-clamp-2 block text-sm font-extrabold leading-snug text-[#472a3b]">{link.label}</span>
                         {link.meta && <span className="mt-0.5 block truncate text-xs font-semibold text-[#65748a]">{link.meta}</span>}
                       </span>
-                      <span aria-hidden="true" className="grid size-7 shrink-0 -translate-x-1 place-items-center rounded-full text-[#bd9c00] opacity-0 transition group-hover/link:translate-x-0 group-hover/link:opacity-100 group-focus-visible/link:translate-x-0 group-focus-visible/link:opacity-100">
+                      <span aria-hidden="true" className="grid size-7 shrink-0 -translate-x-1 place-items-center rounded-full text-[#b8721e] opacity-0 transition group-hover/link:translate-x-0 group-hover/link:opacity-100 group-focus-visible/link:translate-x-0 group-focus-visible/link:opacity-100">
                         <ArrowIcon />
                       </span>
                     </Link>
@@ -162,10 +162,10 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
     <details className="group relative" onToggle={(event) => { if (event.currentTarget.open) setShowImages(true); }}>
       <summary
         onClick={closeOtherDropdowns}
-        className={`relative flex cursor-pointer list-none items-center justify-between gap-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffdc32] [&::-webkit-details-marker]:hidden ${
+        className={`relative flex cursor-pointer list-none items-center justify-between gap-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffb84d] [&::-webkit-details-marker]:hidden ${
           mobile
-            ? `min-h-12 px-4 text-[15px] font-semibold ${active ? "text-[#ffdc32] after:absolute after:bottom-3 after:left-0 after:top-3 after:w-0.5 after:rounded-full after:bg-[#ffdc32] after:content-['']" : "text-white/80 hover:text-white group-open:text-white"}`
-            : `whitespace-nowrap rounded-full border-transparent px-2.5 py-2 ${active ? "bg-white/[0.1] text-[#ffdc32]" : "text-white hover:bg-white/[0.07] hover:text-[#ffdc32]"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]`
+            ? `min-h-12 px-4 text-[15px] font-semibold ${active ? "text-[#ffb84d] after:absolute after:bottom-3 after:left-0 after:top-3 after:w-0.5 after:rounded-full after:bg-[#ffb84d] after:content-['']" : "text-white/80 hover:text-white group-open:text-white"}`
+            : `whitespace-nowrap rounded-full border-transparent px-2.5 py-2 ${active ? "bg-white/[0.1] text-[#ffb84d]" : "text-white hover:bg-white/[0.07] hover:text-[#ffb84d]"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]`
         }`}
       >
         <span className="flex items-center gap-2">
@@ -176,14 +176,14 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
         </svg>
       </summary>
       <div className={mobile
-        ? "mt-1 grid gap-1 rounded-md bg-[#061f40] p-1.5"
+        ? "mt-1 grid gap-1 rounded-md bg-[#3a2030] p-1.5"
         : `menu-popover absolute left-1/2 top-full z-30 -translate-x-1/2 pt-3 ${links.length > 5 ? "lg:w-[min(38rem,calc(100vw-2rem))]" : "w-[min(24rem,calc(100vw-2rem))]"}`
       }>
         <div className={mobile ? "grid gap-1" : "overflow-hidden rounded-xl bg-white p-3 text-sm shadow-[0_18px_44px_rgba(9,42,83,0.2)] ring-1 ring-[#dce3eb]"}>
           {!mobile && (
             <div className="mb-2 flex items-center justify-between gap-3 px-2 pb-3 pt-1">
               <div>
-                <p className="text-sm font-bold text-[#092a53]">{label}</p>
+                <p className="text-sm font-bold text-[#472a3b]">{label}</p>
                 {subtitle && <p className="mt-1 text-xs text-[#65748a]">{subtitle}</p>}
               </div>
             </div>
@@ -192,8 +192,8 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
             {links.map((link) => (
               <Link
                 className={mobile
-                  ? "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-white/85 transition-colors hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffdc32]"
-                  : "group/link flex min-w-0 items-center gap-3 rounded-md px-3 py-2.5 text-left text-[#65748a] transition-colors hover:bg-[#f1f5f8] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00]"
+                  ? "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-white/85 transition-colors hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffb84d]"
+                  : "group/link flex min-w-0 items-center gap-3 rounded-md px-3 py-2.5 text-left text-[#65748a] transition-colors hover:bg-[#f1f5f8] hover:text-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#b8721e]"
                 }
                 key={link.to}
                 onClick={(event) => {
@@ -206,7 +206,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                 {link.image && showImages ? (
                   <img decoding="async" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-md object-cover" loading="lazy" onError={photoErrorHandler(link.image, "/images/hero-ice-cream.jpg")} src={thumbnail(link.image, "tiny")} />
                 ) : (
-                  <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md text-sm font-extrabold ${mobile ? "bg-white/10 text-[#ffdc32]" : "bg-[#f4f6f8] text-[#092a53]"}`}>
+                  <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md text-sm font-extrabold ${mobile ? "bg-white/10 text-[#ffb84d]" : "bg-[#f4f6f8] text-[#472a3b]"}`}>
                     {link.label.slice(0, 1)}
                   </span>
                 )}
@@ -214,7 +214,7 @@ function NavigationDropdown({ active, label, links, mobile = false, onNavigate, 
                   <span className="block truncate font-semibold">{link.label}</span>
                   {link.meta && <span className={`mt-0.5 block truncate text-xs ${mobile ? "text-white/55" : "text-[#65748a]"}`}>{link.meta}</span>}
                 </span>
-                {!mobile && <span aria-hidden="true" className="translate-x-[-3px] text-[#092a53] opacity-0 transition group-hover/link:translate-x-0 group-hover/link:opacity-100"><ArrowIcon /></span>}
+                {!mobile && <span aria-hidden="true" className="translate-x-[-3px] text-[#472a3b] opacity-0 transition group-hover/link:translate-x-0 group-hover/link:opacity-100"><ArrowIcon /></span>}
               </Link>
             ))}
           </div>
@@ -259,19 +259,19 @@ function LanguageDropdown({ language, setLanguage, t }) {
     <details className="group relative" ref={detailsRef}>
       <summary
         aria-label={`${t("Language")}: ${activeLanguage.nativeLabel}`}
-        className="flex cursor-pointer list-none items-center gap-2 rounded-full border border-white/25 bg-white/[0.06] py-1.5 pl-1.5 pr-3 text-xs font-bold text-white transition hover:border-white/50 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53] group-open:border-[#ffdc32]/60 group-open:bg-white/10 [&::-webkit-details-marker]:hidden sm:pr-3.5"
+        className="flex cursor-pointer list-none items-center gap-2 rounded-full border border-white/25 bg-white/[0.06] py-1.5 pl-1.5 pr-3 text-xs font-bold text-white transition hover:border-white/50 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b] group-open:border-[#ffb84d]/60 group-open:bg-white/10 [&::-webkit-details-marker]:hidden sm:pr-3.5"
         onClick={closeOtherDropdowns}
       >
-        <span aria-hidden="true" className="grid size-7 place-items-center rounded-full bg-[#ffdc32] text-[9px] font-extrabold tracking-tight text-[#092a53]">{activeLanguage.mark}</span>
+        <span aria-hidden="true" className="grid size-7 place-items-center rounded-full bg-[#ffb84d] text-[9px] font-extrabold tracking-tight text-[#472a3b]">{activeLanguage.mark}</span>
         <span className="hidden xl:inline">{activeLanguage.nativeLabel}</span>
         <svg aria-hidden="true" className="size-3 text-white/70 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
           <path d="m2 4 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
         </svg>
       </summary>
       <div className="menu-popover absolute right-0 top-full z-30 w-72 pt-3">
-        <div className="overflow-hidden rounded-xl bg-white p-2 text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb]">
+        <div className="overflow-hidden rounded-xl bg-white p-2 text-sm text-[#472a3b] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb]">
           <div className="px-3 pb-3 pt-2">
-            <p className="text-sm font-bold text-[#092a53]">{t("Select language")}</p>
+            <p className="text-sm font-bold text-[#472a3b]">{t("Select language")}</p>
           </div>
           <div className="grid gap-1" role="group" aria-label={t("Select language")}>
             {languages.map(({ value, nativeLabel, code, region }) => {
@@ -279,8 +279,8 @@ function LanguageDropdown({ language, setLanguage, t }) {
               return (
                 <button
                   aria-pressed={selected}
-                  className={`group/lang flex w-full items-center gap-3 rounded-md p-2.5 pr-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00] ${
-                    selected ? "bg-[#f4f6f8] text-[#092a53]" : "hover:bg-[#f4f6f8]"
+                  className={`group/lang flex w-full items-center gap-3 rounded-md p-2.5 pr-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#b8721e] ${
+                    selected ? "bg-[#f4f6f8] text-[#472a3b]" : "hover:bg-[#f4f6f8]"
                   }`}
                   key={value}
                   lang={value}
@@ -292,13 +292,13 @@ function LanguageDropdown({ language, setLanguage, t }) {
                   type="button"
                 >
                   <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md font-display text-xs font-extrabold tracking-wide ${
-                    selected ? "bg-[#092a53] text-white" : "bg-[#f4f6f8] text-[#65748a] group-hover/lang:bg-white"
+                    selected ? "bg-[#472a3b] text-white" : "bg-[#f4f6f8] text-[#65748a] group-hover/lang:bg-white"
                   }`}>{code}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-extrabold">{nativeLabel}</span>
                     <span className="mt-0.5 block text-xs font-semibold text-[#65748a]">{region}</span>
                   </span>
-                  <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full ${selected ? "bg-[#092a53] text-white" : "text-transparent"}`}>
+                  <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full ${selected ? "bg-[#472a3b] text-white" : "text-transparent"}`}>
                     {selected && <svg className="size-3" fill="none" viewBox="0 0 16 16"><path d="m3 8 3.2 3.2L13 4.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>}
                   </span>
                 </button>
@@ -333,7 +333,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
     customer?.profilePicture ? (
       <img decoding="async" loading="lazy" alt="" className={`${size} shrink-0 rounded-full object-cover`} src={customer.profilePicture} />
     ) : (
-      <span aria-hidden="true" className={`${size} grid shrink-0 place-items-center rounded-full bg-[#ffdc32] font-display font-extrabold text-[#092a53]`}>
+      <span aria-hidden="true" className={`${size} grid shrink-0 place-items-center rounded-full bg-[#ffb84d] font-display font-extrabold text-[#472a3b]`}>
         {(customer?.name || "A").charAt(0).toUpperCase()}
       </span>
     );
@@ -362,16 +362,16 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
     return (
       <details className="group relative hidden md:block" ref={detailsRef}>
         <summary
-          className={`flex cursor-pointer list-none items-center gap-2 rounded-full py-1.5 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] md:text-sm [&::-webkit-details-marker]:hidden ${
+          className={`flex cursor-pointer list-none items-center gap-2 rounded-full py-1.5 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] md:text-sm [&::-webkit-details-marker]:hidden ${
             customer ? "pl-1.5 pr-3" : "px-3"
-          } ${accountActive ? "bg-white/[0.1] text-[#ffdc32]" : "text-white hover:bg-white/[0.07] group-open:bg-white/[0.1]"}`}
+          } ${accountActive ? "bg-white/[0.1] text-[#ffb84d]" : "text-white hover:bg-white/[0.07] group-open:bg-white/[0.1]"}`}
           aria-label={t("Account")}
           onClick={closeOtherDropdowns}
         >
           {customer ? (
             <span className="relative">
               {avatar("size-8 text-xs ring-2 ring-white/20")}
-              <span aria-hidden="true" className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-[#4caf50] ring-2 ring-[#092a53]" />
+              <span aria-hidden="true" className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-[#4caf50] ring-2 ring-[#472a3b]" />
             </span>
           ) : (
             <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
@@ -386,10 +386,10 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
         </summary>
 
         <div className="menu-popover absolute right-0 top-full z-30 w-80 pt-3">
-          <div className="overflow-hidden rounded-xl bg-white text-sm text-[#092a53] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb]">
+          <div className="overflow-hidden rounded-xl bg-white text-sm text-[#472a3b] shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb]">
             {customer ? (
               <>
-                <div className="flex items-center gap-4 bg-[#092a53] p-5 text-white">
+                <div className="flex items-center gap-4 bg-[#472a3b] p-5 text-white">
                   {avatar("size-12 text-base")}
                   <div className="min-w-0">
                     <p className="truncate font-display text-lg font-bold leading-tight">{customerName || customer.name || t("Account")}</p>
@@ -402,18 +402,18 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
                     return (
                       <Link
                         aria-current={current ? "page" : undefined}
-                        className={`group/item flex items-center gap-3 rounded-md p-2.5 pr-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#bd9c00] ${
+                        className={`group/item flex items-center gap-3 rounded-md p-2.5 pr-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#b8721e] ${
                           current ? "bg-[#f4f6f8]" : "hover:bg-[#f4f6f8]"
                         }`}
                         key={item.to}
                         onClick={closeDropdown}
                         to={item.to}
                       >
-                        <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md transition ${current ? "bg-[#092a53] text-white" : "bg-[#f4f6f8] text-[#65748a] group-hover/item:bg-white group-hover/item:text-[#092a53]"}`}>
+                        <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md transition ${current ? "bg-[#472a3b] text-white" : "bg-[#f4f6f8] text-[#65748a] group-hover/item:bg-white group-hover/item:text-[#472a3b]"}`}>
                           <svg className="size-[18px]" fill="none" viewBox="0 0 24 24">{item.icon}</svg>
                         </span>
                         <span className="flex-1 font-extrabold">{item.label}</span>
-                        <span aria-hidden="true" className="-translate-x-1 text-[#092a53] opacity-0 transition group-hover/item:translate-x-0 group-hover/item:opacity-100">
+                        <span aria-hidden="true" className="-translate-x-1 text-[#472a3b] opacity-0 transition group-hover/item:translate-x-0 group-hover/item:opacity-100">
                           <ArrowIcon />
                         </span>
                       </Link>
@@ -440,7 +440,7 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
               </>
             ) : (
               <div className="p-5">
-                <span aria-hidden="true" className="grid size-12 place-items-center rounded-md bg-[#f4f6f8] text-[#092a53]">
+                <span aria-hidden="true" className="grid size-12 place-items-center rounded-md bg-[#f4f6f8] text-[#472a3b]">
                   <svg className="size-6" fill="none" viewBox="0 0 24 24">
                     <circle cx="12" cy="8.5" r="3.5" stroke="currentColor" strokeWidth="1.8" />
                     <path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
@@ -450,14 +450,14 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
                 <p className="mt-1.5 text-xs leading-5 text-[#65748a]">{t("Sign in to see your orders and favorites.")}</p>
                 <div className="mt-5 grid gap-2">
                   <Link
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#092a53] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#472a3b] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#6b3f58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
                     onClick={closeDropdown}
                     to="/login"
                   >
                     {t("Log in")} <ArrowIcon />
                   </Link>
                   <Link
-                    className="inline-flex min-h-11 items-center justify-center rounded-md px-5 py-3 text-sm font-bold text-[#092a53] transition-colors hover:bg-[#f4f6f8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2"
+                    className="inline-flex min-h-11 items-center justify-center rounded-md px-5 py-3 text-sm font-bold text-[#472a3b] transition-colors hover:bg-[#f4f6f8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2"
                     onClick={closeDropdown}
                     to="/signup"
                   >
@@ -477,21 +477,21 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
       <summary
       className={`flex cursor-pointer list-none items-center border-b-2 transition-colors [&::-webkit-details-marker]:hidden ${
           mobile
-          ? `min-h-12 justify-between rounded-md border-transparent px-4 text-base font-semibold ${accountActive ? "bg-white/[0.12] text-[#ffdc32]" : "text-white/90 hover:bg-white/[0.08] group-open:bg-white/[0.08]"}`
-          : `gap-2 rounded-md border-transparent px-2 py-1.5 text-xs font-bold text-white hover:border-white/25 hover:bg-white/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] md:text-sm ${accountActive ? "bg-white/[0.1] text-[#ffdc32]" : ""}`
+          ? `min-h-12 justify-between rounded-md border-transparent px-4 text-base font-semibold ${accountActive ? "bg-white/[0.12] text-[#ffb84d]" : "text-white/90 hover:bg-white/[0.08] group-open:bg-white/[0.08]"}`
+          : `gap-2 rounded-md border-transparent px-2 py-1.5 text-xs font-bold text-white hover:border-white/25 hover:bg-white/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] md:text-sm ${accountActive ? "bg-white/[0.1] text-[#ffb84d]" : ""}`
         }`}
         onClick={closeOtherDropdowns}
       >
         {customer && !mobile && (
           customer.profilePicture
             ? <img decoding="async" loading="lazy" alt="" className="size-8 rounded-full border border-white/30 object-cover" src={customer.profilePicture} />
-            : <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#ffdc32] text-xs font-extrabold text-[#092a53]">{(customer.name || "A").charAt(0).toUpperCase()}</span>
+            : <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#ffb84d] text-xs font-extrabold text-[#472a3b]">{(customer.name || "A").charAt(0).toUpperCase()}</span>
         )}
         <span className={mobile ? "hidden" : "hidden md:inline"}>{t("Account")}</span>
         {mobile && <span className="flex min-w-0 items-center gap-2">
           {customer && (customer.profilePicture
             ? <img decoding="async" loading="lazy" alt="" className="size-8 rounded-full border border-white/30 object-cover" src={customer.profilePicture} />
-            : <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#ffdc32] text-xs font-extrabold text-[#092a53]">{(customer.name || "A").charAt(0).toUpperCase()}</span>)}
+            : <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#ffb84d] text-xs font-extrabold text-[#472a3b]">{(customer.name || "A").charAt(0).toUpperCase()}</span>)}
           <span className="truncate">{customer ? customerName || t("Account") : t("Account")}</span>
         </span>}
         <svg aria-hidden="true" className="size-3 shrink-0 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
@@ -510,9 +510,9 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
             }>
               {customer.profilePicture
                 ? <img decoding="async" loading="lazy" alt="" className="size-10 shrink-0 rounded-full object-cover" src={customer.profilePicture} />
-                : <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53]">{(customer.name || "A").charAt(0).toUpperCase()}</span>}
+                : <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-[#ffb84d] text-sm font-extrabold text-[#472a3b]">{(customer.name || "A").charAt(0).toUpperCase()}</span>}
               <div className="min-w-0">
-                <p className={`truncate text-sm font-extrabold ${mobile ? "text-white" : "text-[#092a53]"}`}>{customerName || t("Account")}</p>
+                <p className={`truncate text-sm font-extrabold ${mobile ? "text-white" : "text-[#472a3b]"}`}>{customerName || t("Account")}</p>
                 <p className={`truncate text-xs ${mobile ? "text-white/60" : "text-[#65748a]"}`}>{customer.email}</p>
               </div>
             </div>
@@ -521,14 +521,14 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
             <Link
               aria-current={location.pathname === option.to ? "page" : undefined}
               className={mobile
-                ? `flex items-center gap-3 rounded-md px-3 py-3 text-sm transition ${location.pathname === option.to ? "bg-white/[0.12] font-bold text-[#ffdc32]" : "text-white/85 hover:bg-white/[0.08] hover:text-white"}`
-                : `flex items-center gap-3 rounded-xl px-3 py-3 text-left transition ${location.pathname === option.to ? "bg-[#fff8dc] font-extrabold text-[#bd9c00]" : "font-semibold text-[#65748a] hover:bg-[#fbfaf5] hover:text-[#092a53]"}`
+                ? `flex items-center gap-3 rounded-md px-3 py-3 text-sm transition ${location.pathname === option.to ? "bg-white/[0.12] font-bold text-[#ffb84d]" : "text-white/85 hover:bg-white/[0.08] hover:text-white"}`
+                : `flex items-center gap-3 rounded-xl px-3 py-3 text-left transition ${location.pathname === option.to ? "bg-[#fff8dc] font-extrabold text-[#b8721e]" : "font-semibold text-[#65748a] hover:bg-[#fbfaf5] hover:text-[#472a3b]"}`
               }
               key={option.to}
               onClick={closeDropdown}
               to={option.to}
             >
-              <span aria-hidden="true" className={`grid size-9 shrink-0 place-items-center rounded-md ${mobile ? "bg-white/10" : "bg-[#edf3f9]"} ${location.pathname === option.to ? "text-[#ffdc32]" : mobile ? "text-white/80" : "text-[#092a53]"}`}>
+              <span aria-hidden="true" className={`grid size-9 shrink-0 place-items-center rounded-md ${mobile ? "bg-white/10" : "bg-[#edf3f9]"} ${location.pathname === option.to ? "text-[#ffb84d]" : mobile ? "text-white/80" : "text-[#472a3b]"}`}>
                 <svg className="size-[18px]" fill="none" viewBox="0 0 24 24">
                   {customer ? (
                     <>
@@ -663,8 +663,8 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label={t("Shopping bag, {count} items", { count: cartCount })}
-        className={`relative grid size-11 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] ${
-          isCartPage || isOpen ? "bg-[#ffdc32] text-[#092a53]" : "text-white hover:bg-white/10"
+        className={`relative grid size-11 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] ${
+          isCartPage || isOpen ? "bg-[#ffb84d] text-[#472a3b]" : "text-white hover:bg-white/10"
         }`}
         onClick={() => setIsOpen(false)}
         to="/cart"
@@ -672,10 +672,10 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
         <BagIcon />
         {cartCount > 0 && (
           <span
-            className={`absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full px-1 text-xs font-extrabold ring-2 ring-[#092a53] ${
+            className={`absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full px-1 text-xs font-extrabold ring-2 ring-[#472a3b] ${
               bagJustUpdated
                 ? "animate-bag-pulse bg-[#4caf50] text-white"
-                : "bg-[#ffdc32] text-[#092a53]"
+                : "bg-[#ffb84d] text-[#472a3b]"
             }`}
           >
             {cartCount > 99 ? "99+" : cartCount}
@@ -688,7 +688,7 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
           className="admin-modal-panel absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.25)] ring-1 ring-[#dce3eb]"
           role="dialog"
         >
-          <div className="bg-[#092a53] px-4 py-3 text-white">
+          <div className="bg-[#472a3b] px-4 py-3 text-white">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
               {t("Your bag")}
             </p>
@@ -720,14 +720,14 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
                       src={thumbnail(entry.image, "tiny")}
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-bold text-[#092a53]">
+                      <span className="block truncate text-sm font-bold text-[#472a3b]">
                         {t(entry.name)}
                       </span>
                       <span className="block text-xs text-[#65748a]">
                         {t("Qty")} {entry.quantity}
                       </span>
                     </span>
-                    <span className="shrink-0 text-sm font-extrabold tabular-nums text-[#092a53]">
+                    <span className="shrink-0 text-sm font-extrabold tabular-nums text-[#472a3b]">
                       {formatPrice((entry.price ?? 0) * entry.quantity)}
                     </span>
                   </li>
@@ -736,7 +736,7 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
               <div className="border-t border-[#dce3eb] px-4 py-3">
                 <p className="flex items-center justify-between text-sm">
                   <span className="font-semibold text-[#65748a]">{t("Subtotal")}</span>
-                  <span className="font-display text-base font-extrabold tabular-nums text-[#092a53]">
+                  <span className="font-display text-base font-extrabold tabular-nums text-[#472a3b]">
                     {formatPrice(cartTotal)}
                   </span>
                 </p>
@@ -745,14 +745,14 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
           )}
           <div className="flex gap-2 border-t border-[#dce3eb] p-3">
             <Link
-              className="flex-1 rounded-full bg-[#092a53] px-4 py-2.5 text-center text-sm font-extrabold text-white transition hover:bg-[#163e6b]"
+              className="flex-1 rounded-full bg-[#472a3b] px-4 py-2.5 text-center text-sm font-extrabold text-white transition hover:bg-[#6b3f58]"
               onClick={() => setIsOpen(false)}
               to="/cart"
             >
               {t("View cart")}
             </Link>
             <Link
-              className="flex-1 rounded-full border border-[#cfd8e1] px-4 py-2.5 text-center text-sm font-extrabold text-[#123b68] transition hover:border-[#092a53]"
+              className="flex-1 rounded-full border border-[#cfd8e1] px-4 py-2.5 text-center text-sm font-extrabold text-[#6b3f58] transition hover:border-[#472a3b]"
               onClick={() => setIsOpen(false)}
               to="/menu"
             >
@@ -947,15 +947,15 @@ export function Header() {
   }, [isMobileMenuOpen]);
 
   const desktopLinkClassName = (isActive) =>
-    `relative inline-flex h-10 items-center whitespace-nowrap px-2 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] xl:px-2.5 ${
+    `relative inline-flex h-10 items-center whitespace-nowrap px-2 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] xl:px-2.5 ${
       isActive
-        ? "text-white after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:bg-[#ffdc32] after:content-['']"
+        ? "text-white after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:bg-[#ffb84d] after:content-['']"
         : "text-white/75 hover:text-white"
     }`;
   const mobileLinkClassName = (isActive) =>
-    `relative flex min-h-12 items-center justify-between px-4 text-[15px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffdc32] ${
+    `relative flex min-h-12 items-center justify-between px-4 text-[15px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffb84d] ${
       isActive
-        ? "text-[#ffdc32] after:absolute after:bottom-3 after:left-0 after:top-3 after:w-0.5 after:rounded-full after:bg-[#ffdc32] after:content-['']"
+        ? "text-[#ffb84d] after:absolute after:bottom-3 after:left-0 after:top-3 after:w-0.5 after:rounded-full after:bg-[#ffb84d] after:content-['']"
         : "text-white/80 hover:text-white"
     }`;
 
@@ -972,7 +972,7 @@ export function Header() {
   return (
     <>
       <a
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:inline-flex focus:min-h-11 focus:items-center focus:rounded-full focus:bg-[#ffdc32] focus:px-5 focus:py-3 focus:text-sm focus:font-extrabold focus:text-[#092a53] focus:shadow-[0_14px_32px_rgba(9,42,83,0.35)] focus:outline-none focus:ring-2 focus:ring-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:inline-flex focus:min-h-11 focus:items-center focus:rounded-full focus:bg-[#ffb84d] focus:px-5 focus:py-3 focus:text-sm focus:font-extrabold focus:text-[#472a3b] focus:shadow-[0_14px_32px_rgba(9,42,83,0.35)] focus:outline-none focus:ring-2 focus:ring-white"
         href="#main"
       >
         {t("Skip to main content")}
@@ -980,17 +980,17 @@ export function Header() {
       {!isAdminPage && <PromotionCountdown />}
       <div
         className={`sticky top-0 z-50 transition-[transform,background-color,box-shadow] duration-300 ${isHidden && !isMobileMenuOpen ? "-translate-y-full" : "translate-y-0"} ${
-          isScrolled ? "bg-[#092a53] shadow-[0_10px_30px_rgba(5,22,46,0.28)]" : "bg-[#092a53]"
+          isScrolled ? "bg-[#472a3b] shadow-[0_10px_30px_rgba(71,42,59,0.35)]" : "bg-[#472a3b]"
         }`}
         ref={headerRef}
       >
         <div aria-hidden="true" className={`pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent transition-opacity ${isScrolled ? "opacity-100" : "opacity-0"}`} />
         <header className={`relative mx-auto flex max-w-[1320px] items-center gap-2 px-4 text-white transition-[height] duration-300 sm:px-6 lg:gap-2 lg:px-3 xl:gap-4 xl:px-12 ${isScrolled ? "h-[68px]" : "h-[80px]"}`}>
-          <Link aria-label="Cold Stone Creamery Cameroon home" className="group flex shrink-0 items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]" to="/">
+          <Link aria-label="Cold Stone Creamery Cameroon home" className="group flex shrink-0 items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]" to="/">
             <BrandMark compact={isScrolled} />
             <span className="font-display text-[18px] font-extrabold leading-[0.95] tracking-tight text-white sm:text-[19px]">
               Cold Stone
-              <span className="block text-[#ffdc32]">Creamery</span>
+              <span className="block text-[#ffb84d]">Creamery</span>
             </span>
           </Link>
 
@@ -1037,7 +1037,7 @@ export function Header() {
                   t={t}
                 />
                 <Link
-                  className="group hidden h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-[#ffdc32] px-3 text-[13px] font-extrabold leading-none text-[#092a53] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white lg:inline-flex xl:px-4 xl:text-sm"
+                  className="group hidden h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-[#ffb84d] px-3 text-[13px] font-extrabold leading-none text-[#472a3b] shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white lg:inline-flex xl:px-4 xl:text-sm"
                   to="/flavors"
                 >
                   {t("Order now")}
@@ -1049,7 +1049,7 @@ export function Header() {
                   aria-controls="mobile-navigation"
                   aria-expanded={isMobileMenuOpen}
                   aria-label={t(isMobileMenuOpen ? "Close menu" : "Open menu")}
-                  className="grid size-11 place-items-center rounded-full bg-white/[0.08] text-white ring-1 ring-white/10 transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] lg:hidden"
+                  className="grid size-11 place-items-center rounded-full bg-white/[0.08] text-white ring-1 ring-white/10 transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] lg:hidden"
                   onClick={(event) => {
                     closeOtherDropdowns(event);
                     setIsMobileMenuOpen((open) => !open);
@@ -1080,7 +1080,7 @@ export function Header() {
           <button aria-label={t("Close menu")} className="site-drawer-backdrop absolute inset-0 bg-[#05162e]/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} tabIndex={-1} type="button" />
           <nav
             aria-label={t("Mobile navigation")}
-            className="site-drawer-panel absolute inset-y-0 right-0 flex w-[min(24rem,88vw)] flex-col overflow-y-auto bg-[#092a53] text-white shadow-[-24px_0_60px_rgba(5,22,46,0.4)]"
+            className="site-drawer-panel absolute inset-y-0 right-0 flex w-[min(24rem,88vw)] flex-col overflow-y-auto bg-[#472a3b] text-white shadow-[-24px_0_60px_rgba(71,42,59,0.45)]"
             id="mobile-navigation"
           >
             <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-4">
@@ -1088,7 +1088,7 @@ export function Header() {
                 <BrandMark compact />
                 <span className="font-display text-lg font-extrabold leading-[0.95]">
                   Cold Stone
-                  <span className="block text-[#ffdc32]">Creamery</span>
+                  <span className="block text-[#ffb84d]">Creamery</span>
                 </span>
               </Link>
               <button
@@ -1133,11 +1133,11 @@ export function Header() {
             </div>
 
             <div className="space-y-3 border-t border-white/10 p-4">
-              <div aria-label={t("Select language")} className="flex rounded-md bg-[#061f40] p-1 ring-1 ring-white/10" role="group">
+              <div aria-label={t("Select language")} className="flex rounded-md bg-[#3a2030] p-1 ring-1 ring-white/10" role="group">
                 {[["en", "English"], ["fr", "Français"]].map(([code, label]) => (
                   <button
                     aria-pressed={language === code}
-                    className={`min-h-11 flex-1 rounded-sm text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffdc32] ${language === code ? "bg-[#ffdc32] text-[#092a53]" : "text-white/75 hover:bg-white/[0.08] hover:text-white"}`}
+                    className={`min-h-11 flex-1 rounded-sm text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffb84d] ${language === code ? "bg-[#ffb84d] text-[#472a3b]" : "text-white/75 hover:bg-white/[0.08] hover:text-white"}`}
                     key={code}
                     onClick={() => setLanguage(code)}
                     type="button"
@@ -1147,7 +1147,7 @@ export function Header() {
                 ))}
               </div>
               <Link
-                className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#ffdc32] text-sm font-extrabold text-[#092a53] transition hover:bg-[#ffe76c]"
+                className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#ffb84d] text-sm font-extrabold text-[#472a3b] transition hover:bg-[#ffcf85]"
                 onClick={() => setIsMobileMenuOpen(false)}
                 to="/flavors"
               >
@@ -1264,7 +1264,7 @@ function PromotionCountdown() {
   return (
     <aside
       aria-label={t("Limited-time promotion")}
-      className="relative z-[51] border-b border-[#bd9c00] bg-[#ffdc32] text-[#092a53]"
+      className="relative z-[51] border-b border-[#b8721e] bg-[#ffb84d] text-[#472a3b]"
     >
       <div className="mx-auto flex max-w-[1320px] items-center gap-3 px-4 py-2 sm:gap-5 sm:px-8 lg:px-12">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
@@ -1273,15 +1273,15 @@ function PromotionCountdown() {
               {discount}
             </p>
             {minimum && (
-              <p className="mt-1 text-[13px] font-medium leading-4 text-[#123b68] sm:hidden">{minimum}</p>
+              <p className="mt-1 text-[13px] font-medium leading-4 text-[#6b3f58] sm:hidden">{minimum}</p>
             )}
           </div>
           {minimum && (
-            <p className="hidden text-sm font-medium text-[#123b68] sm:block">{minimum}</p>
+            <p className="hidden text-sm font-medium text-[#6b3f58] sm:block">{minimum}</p>
           )}
           <button
             aria-label={t("Copy code {code}", { code: promotion.code })}
-            className="inline-flex min-h-9 items-center rounded-md bg-[#092a53] px-2.5 text-sm font-bold text-[#ffdc32] outline-none! hover:bg-[#123b68] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#092a53]"
+            className="inline-flex min-h-9 items-center rounded-md bg-[#472a3b] px-2.5 text-sm font-bold text-[#ffb84d] outline-none! hover:bg-[#6b3f58] focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#472a3b]"
             onClick={copyCode}
             type="button"
           >
@@ -1293,7 +1293,7 @@ function PromotionCountdown() {
             {t("Ends in")} {countdown}
           </p>
           <Link
-            className="inline-flex items-center py-1 text-sm font-bold underline decoration-2 decoration-[#092a53] underline-offset-4 outline-none! focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#092a53] sm:min-h-11 sm:py-0"
+            className="inline-flex items-center py-1 text-sm font-bold underline decoration-2 decoration-[#472a3b] underline-offset-4 outline-none! focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#472a3b] sm:min-h-11 sm:py-0"
             to="/flavors"
           >
             {t("Shop offer")}
@@ -1301,7 +1301,7 @@ function PromotionCountdown() {
         </div>
         <button
           aria-label={t("Dismiss")}
-          className="grid size-11 shrink-0 place-items-center self-start rounded-md text-[#092a53] outline-none! hover:bg-[#092a53]/10 focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#092a53] sm:self-center"
+          className="grid size-11 shrink-0 place-items-center self-start rounded-md text-[#472a3b] outline-none! hover:bg-[#472a3b]/10 focus-visible:outline-2! focus-visible:outline-offset-2 focus-visible:outline-[#472a3b] sm:self-center"
           onClick={dismiss}
           type="button"
         >
@@ -1345,17 +1345,17 @@ export function InstagramSection() {
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
           <h2
-            className="max-w-[12em] font-display text-4xl font-extrabold leading-[0.95] tracking-[-0.03em] text-[#092a53] sm:text-6xl"
+            className="max-w-[12em] font-display text-4xl font-extrabold leading-[0.95] tracking-[-0.03em] text-[#472a3b] sm:text-6xl"
             id="instagram-heading"
           >
             {t("A little more joy in your feed.")}
           </h2>
           <div className="flex max-w-sm flex-col items-start gap-6 lg:items-end lg:text-right">
-            <p className="text-base font-medium leading-7 text-[#092a53] sm:text-lg">
+            <p className="text-base font-medium leading-7 text-[#472a3b] sm:text-lg">
               {t("Get a glimpse of our latest creations and sweet moments.")}
             </p>
             <a
-              className="inline-flex min-h-12 items-center gap-3 bg-[#092a53] px-5 text-sm font-extrabold text-white transition duration-300 hover:bg-[#ffdc32] hover:text-[#092a53] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none"
+              className="inline-flex min-h-12 items-center gap-3 bg-[#472a3b] px-5 text-sm font-extrabold text-white transition duration-300 hover:bg-[#ffb84d] hover:text-[#472a3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none"
               href={instagramUrl}
               rel="noreferrer"
               target="_blank"
@@ -1369,7 +1369,7 @@ export function InstagramSection() {
         <div className="instagram-grid mt-12 grid gap-2 sm:mt-14 sm:gap-3 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:items-stretch">
           <a
             aria-label={`${t(featured.alt)} — ${t("Visit Instagram")}`}
-            className="instagram-photo group relative block aspect-[4/3] overflow-hidden bg-[#e7e8e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-4 lg:aspect-auto lg:h-full"
+            className="instagram-photo group relative block aspect-[4/3] overflow-hidden bg-[#e7e8e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-4 lg:aspect-auto lg:h-full"
             href={instagramUrl}
             rel="noreferrer"
             target="_blank"
@@ -1386,14 +1386,14 @@ export function InstagramSection() {
             />
             <span
               aria-hidden="true"
-              className="absolute inset-x-0 bottom-0 z-10 h-1 origin-left scale-x-0 bg-[#ffdc32] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
+              className="absolute inset-x-0 bottom-0 z-10 h-1 origin-left scale-x-0 bg-[#ffb84d] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
             />
           </a>
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
             {feed.map((image) => (
               <a
                 aria-label={`${t(image.alt)} — ${t("Visit Instagram")}`}
-                className="instagram-photo group relative block aspect-square overflow-hidden bg-[#e7e8e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-4"
+                className="instagram-photo group relative block aspect-square overflow-hidden bg-[#e7e8e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-4"
                 href={instagramUrl}
                 key={image.src}
                 rel="noreferrer"
@@ -1411,7 +1411,7 @@ export function InstagramSection() {
                 />
                 <span
                   aria-hidden="true"
-                  className="absolute inset-x-0 bottom-0 z-10 h-1 origin-left scale-x-0 bg-[#ffdc32] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
+                  className="absolute inset-x-0 bottom-0 z-10 h-1 origin-left scale-x-0 bg-[#ffb84d] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
                 />
               </a>
             ))}
@@ -1448,12 +1448,12 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-[#061f40] text-white">
+    <footer className="bg-[#472a3b] text-white">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
         <div className="flex flex-col gap-8 py-12 sm:flex-row sm:items-end sm:justify-between sm:py-14 lg:py-16">
           <div>
             <Link
-              className="inline-flex items-center gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-4 focus-visible:ring-offset-[#061f40]"
+              className="inline-flex items-center gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-4 focus-visible:ring-offset-[#472a3b]"
               to="/"
             >
               <img
@@ -1475,7 +1475,7 @@ export function Footer() {
             </p>
           </div>
           <Link
-            className="inline-flex min-h-12 w-fit items-center justify-center gap-3 rounded-lg bg-[#ffdc32] px-6 py-3 text-sm font-extrabold text-[#092a53] transition-colors hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061f40]"
+            className="inline-flex min-h-12 w-fit items-center justify-center gap-3 rounded-lg bg-[#ffb84d] px-6 py-3 text-sm font-extrabold text-[#472a3b] transition-colors hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b]"
             to="/menu"
           >
             {t("Explore the menu")} <ArrowIcon />
@@ -1488,7 +1488,7 @@ export function Footer() {
               {t("Ice cream mixed to order on a frozen stone. Order online for pickup or delivery in Douala and Yaoundé.")}
             </p>
             <a
-              className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-white/80 transition-colors hover:text-[#ffdc32] focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-4 focus-visible:ring-offset-[#061f40]"
+              className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-white/80 transition-colors hover:text-[#ffb84d] focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d] focus-visible:ring-offset-4 focus-visible:ring-offset-[#472a3b]"
               href={instagramUrl}
               rel="noreferrer"
               target="_blank"
@@ -1505,7 +1505,7 @@ export function Footer() {
                 {group.links.map((link) => (
                   <li key={link.to}>
                     <Link
-                      className="inline-flex min-h-6 items-center text-sm font-medium text-white/70 transition-colors hover:text-[#ffdc32] focus-visible:rounded-sm focus-visible:text-[#ffdc32] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+                      className="inline-flex min-h-6 items-center text-sm font-medium text-white/70 transition-colors hover:text-[#ffb84d] focus-visible:rounded-sm focus-visible:text-[#ffb84d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]"
                       to={link.to}
                     >
                       {link.label}
@@ -1521,7 +1521,7 @@ export function Footer() {
               {t("Freshly made treats for pickup or delivery. Questions about an order? We are happy to help.")}
             </p>
             <Link
-              className="mt-4 inline-flex min-h-10 items-center text-sm font-bold text-[#ffdc32] transition-colors hover:text-white focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+              className="mt-4 inline-flex min-h-10 items-center text-sm font-bold text-[#ffb84d] transition-colors hover:text-white focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]"
               to="/contact"
             >
               {t("Contact us")} <ArrowIcon />
@@ -1530,11 +1530,11 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="bg-[#041a35]">
+      <div className="bg-[#3a2030]">
         <div className="mx-auto flex max-w-[1320px] flex-col gap-3 px-5 py-5 text-sm text-white/60 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
           <p>© 2026 Cold Stone Creamery Cameroon. {t("All smiles reserved.")}</p>
           <button
-            className="group inline-flex min-h-10 w-fit items-center gap-2 font-bold text-white/75 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32]"
+            className="group inline-flex min-h-10 w-fit items-center gap-2 font-bold text-white/75 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb84d]"
             onClick={() => window.scrollTo({ top: 0 })}
             type="button"
           >

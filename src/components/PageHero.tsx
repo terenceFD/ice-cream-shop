@@ -78,10 +78,10 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
   const showVisual = !compactOnMobile || isWideScreen;
   return (
     <section
-      className="relative isolate overflow-hidden bg-[var(--hero-surface,#092a53)] text-white"
+      className="relative isolate overflow-hidden bg-[var(--hero-surface,#472a3b)] text-white"
       style={{
         "--hero-surface": surface,
-        "--hero-accent": accent || "#ffdc32",
+        "--hero-accent": accent || "#ffb84d",
       } as CSSProperties}
     >
       <HeroBackground variant="navy" />
@@ -90,7 +90,7 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
         <div className="lg:col-span-6">
           {breadcrumb && <div className="mb-8 text-xs font-bold text-white/55">{breadcrumb}</div>}
           <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pl-2 pr-4 text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--hero-accent)] backdrop-blur-sm">
-            <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[var(--hero-accent)] text-xs text-[var(--hero-surface,#092a53)]">✦</span>
+            <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[var(--hero-accent)] text-xs text-[var(--hero-surface,#472a3b)]">✦</span>
             {eyebrow}
           </p>
           <h1 className={`mt-6 font-display font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl ${compactOnMobile ? "text-4xl" : "text-5xl"}`}>
@@ -120,29 +120,29 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
           {visual}
           {!visual && image && sideImages && (
             <>
-              <div aria-hidden="true" className="absolute bottom-[4%] left-[6%] size-[46%] rounded-full bg-[#ffdc32]" />
+              <div aria-hidden="true" className="absolute bottom-[4%] left-[6%] size-[46%] rounded-full bg-[#ffb84d]" />
               <div aria-hidden="true" className="absolute right-[2%] top-[2%] size-[78%] rounded-full border border-dashed border-white/20" />
 
               <figure className="absolute bottom-0 right-[4%] h-[94%] w-[60%] overflow-hidden rounded-b-[36px] rounded-t-[999px] bg-[#fff3b8] shadow-[0_40px_80px_rgba(2,12,28,0.45)] ring-[6px] ring-white/10">
                 <HeroImage alt={image.alt} className="size-full object-cover" position={image.position} src={image.src} />
               </figure>
 
-              <figure className="absolute left-[4%] top-[6%] size-[30%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-[#092a53]">
+              <figure className="absolute left-[4%] top-[6%] size-[30%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-[#472a3b]">
                 <HeroImage alt="" className="size-full object-cover" small src={sideImages[0]} />
               </figure>
-              <figure className="absolute bottom-[10%] left-[18%] size-[24%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-[#092a53]">
+              <figure className="absolute bottom-[10%] left-[18%] size-[24%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-[#472a3b]">
                 <HeroImage alt="" className="size-full object-cover" small src={sideImages[1]} />
               </figure>
             </>
           )}
 
           {badge && (
-            <div className="absolute -bottom-5 right-0 flex max-w-[300px] items-center gap-3 rounded-2xl bg-white p-3 pr-4 text-[#092a53] shadow-[0_24px_50px_rgba(2,12,28,0.35)] sm:-right-2 sm:p-4">
-              <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#ffdc32] font-display text-sm font-extrabold sm:size-11">
+            <div className="absolute -bottom-5 right-0 flex max-w-[300px] items-center gap-3 rounded-2xl bg-white p-3 pr-4 text-[#472a3b] shadow-[0_24px_50px_rgba(2,12,28,0.35)] sm:-right-2 sm:p-4">
+              <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#ffb84d] font-display text-sm font-extrabold sm:size-11">
                 {badge.mark}
               </span>
               <div className="leading-tight">
-                <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#bd9c00]">{badge.eyebrow}</p>
+                <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#b8721e]">{badge.eyebrow}</p>
                 <p className="mt-1 text-xs font-bold leading-4 sm:text-sm sm:leading-5">{badge.text}</p>
               </div>
             </div>
@@ -158,6 +158,6 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
 }
 
 PageHero.primary =
-"inline-flex items-center gap-2 rounded-full bg-[var(--hero-accent,#ffdc32)] px-7 py-4 text-sm font-extrabold text-[var(--hero-surface,#092a53)] shadow-[0_12px_30px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hero-accent,#ffdc32)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--hero-surface,#092a53)]";
+"inline-flex items-center gap-2 rounded-full bg-[var(--hero-accent,#ffb84d)] px-7 py-4 text-sm font-extrabold text-[var(--hero-surface,#472a3b)] shadow-[0_12px_30px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hero-accent,#ffb84d)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--hero-surface,#472a3b)]";
 PageHero.secondary =
-  "inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-7 py-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#092a53]";
+  "inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-7 py-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#472a3b]";

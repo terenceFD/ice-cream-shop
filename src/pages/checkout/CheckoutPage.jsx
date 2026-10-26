@@ -9,7 +9,7 @@ import { useAuth } from "../../context/useAuth";
 import { getCameroonDate } from "../../../shared/cameroonDate";
 
 const inputClassName =
-  "mt-2 w-full rounded-2xl border border-[#e3dfd3] bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-[#092a53] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#cfcabb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
+  "mt-2 w-full rounded-2xl border border-[#e3dfd3] bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-[#472a3b] transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#cfcabb] focus:border-[#b8721e] focus:bg-white focus:ring-4 focus:ring-[#ffb84d]/25 outline-none!";
 const labelClassName = "block text-xs font-extrabold text-[#65748a]";
 
 const icons = {
@@ -52,14 +52,14 @@ function StepCard({ number, icon, title, description, children }) {
   return (
     <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#fbfaf5] sm:p-8">
       <header className="mb-6 flex items-start gap-4">
-        <span className="relative grid size-12 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
+        <span className="relative grid size-12 shrink-0 place-items-center rounded-2xl bg-[#472a3b] text-[#ffb84d]">
           <Icon path={icon} />
-          <span className="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-[#ffdc32] text-xs font-extrabold text-[#092a53] ring-2 ring-white">
+          <span className="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-[#ffb84d] text-xs font-extrabold text-[#472a3b] ring-2 ring-white">
             {number}
           </span>
         </span>
         <div className="min-w-0">
-          <h2 className="font-display text-xl font-extrabold text-[#092a53] sm:text-2xl">
+          <h2 className="font-display text-xl font-extrabold text-[#472a3b] sm:text-2xl">
             {title}
           </h2>
           {description && (
@@ -273,11 +273,11 @@ export function CheckoutPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fbfaf5] text-[#092a53]">
+    <div className="min-h-screen bg-[#fbfaf5] text-[#472a3b]">
       <Header />
 
       <main id="main" tabIndex={-1}>
-        <section className="relative isolate overflow-hidden bg-[#092a53] px-5 pb-12 pt-9 text-white sm:px-8 sm:pb-16 sm:pt-12 lg:px-12">
+        <section className="relative isolate overflow-hidden bg-[#472a3b] px-5 pb-12 pt-9 text-white sm:px-8 sm:pb-16 sm:pt-12 lg:px-12">
           <div
             aria-hidden="true"
             className="absolute -right-32 -top-44 -z-10 size-[30rem] rounded-full border-[64px] border-white/[0.04]"
@@ -291,13 +291,13 @@ export function CheckoutPage() {
               aria-label={t("Breadcrumb")}
               className="text-xs font-semibold text-white/55"
             >
-              <Link className="transition hover:text-[#ffdc32]" to="/">
+              <Link className="transition hover:text-[#ffb84d]" to="/">
                 {t("Home")}
               </Link>
               <span aria-hidden="true" className="mx-2">
                 /
               </span>
-              <Link className="transition hover:text-[#ffdc32]" to="/cart">
+              <Link className="transition hover:text-[#ffb84d]" to="/cart">
                 {t("Shopping bag")}
               </Link>
               <span aria-hidden="true" className="mx-2">
@@ -310,7 +310,7 @@ export function CheckoutPage() {
 
             <div className="mt-6 flex flex-wrap items-end justify-between gap-8">
               <div className="min-w-0">
-                <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.2em] text-[#ffdc32] before:h-px before:w-6 before:bg-[#ffdc32]/70">
+                <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.2em] text-[#ffb84d] before:h-px before:w-6 before:bg-[#ffb84d]/70">
                   {t("Almost there")}
                 </p>
                 <h1 className="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-[3.4rem]">
@@ -336,7 +336,7 @@ export function CheckoutPage() {
                         aria-current={isCurrent ? "step" : undefined}
                         className={`flex items-center gap-2 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-3.5 text-xs font-extrabold ${
                           isCurrent
-                            ? "bg-[#ffdc32] text-[#092a53]"
+                            ? "bg-[#ffb84d] text-[#472a3b]"
                             : isDone
                               ? "bg-white/10 text-white ring-1 ring-white/15"
                               : "bg-white/[0.07] text-white/55 ring-1 ring-white/10"
@@ -345,7 +345,7 @@ export function CheckoutPage() {
                         <span
                           className={`grid size-6 place-items-center rounded-full text-xs ${
                             isCurrent
-                              ? "bg-[#092a53] text-[#ffdc32]"
+                              ? "bg-[#472a3b] text-[#ffb84d]"
                               : isDone
                                 ? "bg-[#6c9c45] text-white"
                                 : "bg-white/10"
@@ -362,7 +362,7 @@ export function CheckoutPage() {
                       {index < steps.length - 1 && (
                         <span
                           aria-hidden="true"
-                          className={`hidden h-px w-6 sm:block ${isDone ? "bg-[#ffdc32]/60" : "bg-white/20"}`}
+                          className={`hidden h-px w-6 sm:block ${isDone ? "bg-[#ffb84d]/60" : "bg-white/20"}`}
                         />
                       )}
                     </li>
@@ -376,11 +376,11 @@ export function CheckoutPage() {
         <div className="mx-auto max-w-[1240px] px-5 py-8 sm:px-8 sm:py-12 lg:px-12">
           {!customer && !isLoading && (
             <div className="mb-6 flex flex-col gap-4 rounded-[24px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#efe0a0] sm:flex-row sm:items-center sm:p-6">
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#bd9c00]">
+              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-[#b8721e]">
                 <Icon className="size-6" path={icons.user} />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-extrabold text-[#092a53]">
+                <p className="text-sm font-extrabold text-[#472a3b]">
                   {t("Please sign in to continue placing your order.")}
                 </p>
                 <p className="mt-0.5 text-xs leading-5 text-[#65748a]">
@@ -389,14 +389,14 @@ export function CheckoutPage() {
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <Link
-                  className="rounded-full px-4 py-2.5 text-sm font-extrabold text-[#092a53] ring-1 ring-[#dcd8cc] transition hover:ring-[#092a53]"
+                  className="rounded-full px-4 py-2.5 text-sm font-extrabold text-[#472a3b] ring-1 ring-[#dcd8cc] transition hover:ring-[#472a3b]"
                   state={authState}
                   to="/login"
                 >
                   {t("Log in")}
                 </Link>
                 <Link
-                  className="rounded-full bg-[#092a53] px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#163e6b]"
+                  className="rounded-full bg-[#472a3b] px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#6b3f58]"
                   state={authState}
                   to="/signup"
                 >
@@ -484,9 +484,9 @@ export function CheckoutPage() {
                       const isSelected = fulfillmentType === option.value;
                       return (
                         <label
-                          className={`relative flex cursor-pointer items-center gap-4 rounded-[20px] p-4 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-45 ${
+                          className={`relative flex cursor-pointer items-center gap-4 rounded-[20px] p-4 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#b8721e] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-45 ${
                             isSelected
-                              ? "bg-[#fffbea] ring-2 ring-[#bd9c00] shadow-[0_8px_20px_rgba(189,156,0,0.12)]"
+                              ? "bg-[#fffbea] ring-2 ring-[#b8721e] shadow-[0_8px_20px_rgba(189,156,0,0.12)]"
                               : "bg-white ring-[#e3dfd3] hover:ring-[#cfcabb]"
                           }`}
                           key={option.value}
@@ -501,12 +501,12 @@ export function CheckoutPage() {
                             value={option.value}
                           />
                           <span
-                            className={`grid size-11 shrink-0 place-items-center rounded-2xl transition ${isSelected ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#fbfaf5] text-[#65748a]"}`}
+                            className={`grid size-11 shrink-0 place-items-center rounded-2xl transition ${isSelected ? "bg-[#ffb84d] text-[#472a3b]" : "bg-[#fbfaf5] text-[#65748a]"}`}
                           >
                             <Icon path={option.icon} />
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-extrabold text-[#092a53]">
+                            <span className="block text-sm font-extrabold text-[#472a3b]">
                               {option.label}
                             </span>
                             <span className="block text-xs text-[#65748a]">
@@ -516,7 +516,7 @@ export function CheckoutPage() {
                             </span>
                           </span>
                           <span
-                            className={`grid size-5 shrink-0 place-items-center rounded-full ring-2 transition ${isSelected ? "bg-[#092a53] ring-[#092a53]" : "ring-[#d4cfc0]"}`}
+                            className={`grid size-5 shrink-0 place-items-center rounded-full ring-2 transition ${isSelected ? "bg-[#472a3b] ring-[#472a3b]" : "ring-[#d4cfc0]"}`}
                           >
                             {isSelected && (
                               <Icon
@@ -555,11 +555,11 @@ export function CheckoutPage() {
                   {selectedZone && (
                     <div className="flex flex-col gap-4 rounded-[20px] bg-[#f4f6f8] p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-start gap-3">
-                        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-[#092a53] shadow-sm">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-[#472a3b] shadow-sm">
                           <Icon path={icons.pin} />
                         </span>
                         <div className="min-w-0">
-                          <p className="text-sm font-extrabold text-[#092a53]">
+                          <p className="text-sm font-extrabold text-[#472a3b]">
                             {t(selectedZone.storeName)}
                           </p>
                           <p className="mt-0.5 text-xs leading-5 text-[#65748a]">
@@ -575,7 +575,7 @@ export function CheckoutPage() {
                       </div>
                       <div className="flex shrink-0 items-center gap-3">
                         {fulfillmentType === "delivery" && (
-                          <span className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold text-[#092a53] shadow-sm">
+                          <span className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold text-[#472a3b] shadow-sm">
                             {deliveryFee > 0
                               ? `${t("Delivery fee")}: ${money(deliveryFee)}`
                               : t("Free delivery")}
@@ -583,7 +583,7 @@ export function CheckoutPage() {
                         )}
                         {selectedZone.storeMapQuery && (
                           <a
-                            className="inline-flex items-center gap-1 text-xs font-extrabold text-[#bd9c00] transition hover:text-[#092a53]"
+                            className="inline-flex items-center gap-1 text-xs font-extrabold text-[#b8721e] transition hover:text-[#472a3b]"
                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedZone.storeMapQuery)}`}
                             rel="noreferrer"
                             target="_blank"
@@ -645,10 +645,10 @@ export function CheckoutPage() {
                         const isSelected = String(slot.id) === selectedSlot;
                         return (
                           <label
-                            className={`flex cursor-pointer items-center justify-center rounded-2xl px-3 py-3 text-center text-sm font-extrabold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] ${
+                            className={`flex cursor-pointer items-center justify-center rounded-2xl px-3 py-3 text-center text-sm font-extrabold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#b8721e] ${
                               isSelected
-                                ? "bg-[#092a53] text-white ring-[#092a53] shadow-[0_8px_18px_rgba(9,42,83,0.2)]"
-                                : "bg-[#fbfaf5] text-[#65748a] ring-[#e3dfd3] hover:text-[#092a53] hover:ring-[#cfcabb]"
+                                ? "bg-[#472a3b] text-white ring-[#472a3b] shadow-[0_8px_18px_rgba(9,42,83,0.2)]"
+                                : "bg-[#fbfaf5] text-[#65748a] ring-[#e3dfd3] hover:text-[#472a3b] hover:ring-[#cfcabb]"
                             }`}
                             key={slot.id}
                           >
@@ -683,10 +683,10 @@ export function CheckoutPage() {
                 <label className={labelClassName} htmlFor="discount-code">
                   {t("Discount code")}
                 </label>
-                <div className="mt-2 flex gap-2 rounded-2xl bg-[#fbfaf5] p-1.5 ring-1 ring-[#e3dfd3] transition focus-within:bg-white focus-within:ring-2 focus-within:ring-[#bd9c00]">
+                <div className="mt-2 flex gap-2 rounded-2xl bg-[#fbfaf5] p-1.5 ring-1 ring-[#e3dfd3] transition focus-within:bg-white focus-within:ring-2 focus-within:ring-[#b8721e]">
                   <input
                     autoComplete="off"
-                    className="min-w-0 flex-1 bg-transparent px-3 text-sm font-extrabold uppercase tracking-[0.08em] text-[#092a53] placeholder:font-semibold placeholder:normal-case placeholder:tracking-normal placeholder:text-[#9aa3af] outline-none!"
+                    className="min-w-0 flex-1 bg-transparent px-3 text-sm font-extrabold uppercase tracking-[0.08em] text-[#472a3b] placeholder:font-semibold placeholder:normal-case placeholder:tracking-normal placeholder:text-[#9aa3af] outline-none!"
                     id="discount-code"
                     onChange={(event) => {
                       setDiscountInput(event.target.value);
@@ -698,7 +698,7 @@ export function CheckoutPage() {
                     value={discountInput}
                   />
                   <button
-                    className="shrink-0 rounded-xl bg-[#092a53] px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#163e6b] disabled:cursor-not-allowed disabled:bg-[#d8dce2] disabled:text-[#8b95a2]"
+                    className="shrink-0 rounded-xl bg-[#472a3b] px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#6b3f58] disabled:cursor-not-allowed disabled:bg-[#d8dce2] disabled:text-[#8b95a2]"
                     disabled={isCheckingCode || !discountInput.trim()}
                     onClick={applyDiscountCode}
                     type="button"
@@ -721,22 +721,22 @@ export function CheckoutPage() {
 
                 {customer && (
                   <label
-                    className={`mt-5 flex items-center gap-4 rounded-[20px] p-4 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00] ${
+                    className={`mt-5 flex items-center gap-4 rounded-[20px] p-4 ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#b8721e] ${
                       loyaltyBlocked
                         ? "cursor-not-allowed bg-[#fbfaf5] ring-[#fbfaf5]"
                         : redeemLoyalty
-                          ? "cursor-pointer bg-[#fffbea] ring-[#bd9c00]"
+                          ? "cursor-pointer bg-[#fffbea] ring-[#b8721e]"
                           : "cursor-pointer bg-white ring-[#e3dfd3] hover:ring-[#cfcabb]"
                     }`}
                   >
                     <span
-                      className={`grid size-11 shrink-0 place-items-center rounded-2xl ${loyaltyBlocked ? "bg-[#f1eee4] text-[#9aa3af]" : "bg-[#092a53] text-[#ffdc32]"}`}
+                      className={`grid size-11 shrink-0 place-items-center rounded-2xl ${loyaltyBlocked ? "bg-[#f1eee4] text-[#9aa3af]" : "bg-[#472a3b] text-[#ffb84d]"}`}
                     >
                       <Icon path={icons.star} />
                     </span>
                     <span className="min-w-0 flex-1">
                       <span
-                        className={`block text-sm font-extrabold ${loyaltyBlocked ? "text-[#8b95a2]" : "text-[#092a53]"}`}
+                        className={`block text-sm font-extrabold ${loyaltyBlocked ? "text-[#8b95a2]" : "text-[#472a3b]"}`}
                       >
                         {maxRedeemablePoints >= 100
                           ? t("Use {points} points for {amount} off", {
@@ -797,9 +797,9 @@ export function CheckoutPage() {
               className="relative z-10 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300"
             >
               <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_18px_50px_rgba(18,44,80,0.09)] ring-1 ring-[#fbfaf5]">
-                <div className="flex items-end justify-between gap-3 bg-[#092a53] px-6 py-5 text-white sm:px-7">
+                <div className="flex items-end justify-between gap-3 bg-[#472a3b] px-6 py-5 text-white sm:px-7">
                   <div>
-                    <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#ffdc32]">
+                    <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#ffb84d]">
                       {t("Your order")}
                     </p>
                     <h2
@@ -810,7 +810,7 @@ export function CheckoutPage() {
                     </h2>
                   </div>
                   <Link
-                    className="text-xs font-bold text-white/70 underline-offset-4 transition hover:text-[#ffdc32] hover:underline"
+                    className="text-xs font-bold text-white/70 underline-offset-4 transition hover:text-[#ffb84d] hover:underline"
                     to="/cart"
                   >
                     {t("Edit bag")}
@@ -829,19 +829,19 @@ export function CheckoutPage() {
                             className={`size-14 rounded-2xl object-cover ring-1 ring-black/5 ${item.color || "bg-[#fbfaf5]"}`}
                             src={item.image}
                           />
-                          <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#092a53] px-1 text-xs font-extrabold text-white ring-2 ring-white">
+                          <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#472a3b] px-1 text-xs font-extrabold text-white ring-2 ring-white">
                             {item.quantity}
                           </span>
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-extrabold text-[#092a53]">
+                          <p className="truncate text-sm font-extrabold text-[#472a3b]">
                             {t(item.name)}
                           </p>
                           <p className="text-xs text-[#8b95a2]">
                             {money(item.price)} {t("each")}
                           </p>
                         </div>
-                        <span className="shrink-0 whitespace-nowrap text-sm font-bold tabular-nums text-[#092a53]">
+                        <span className="shrink-0 whitespace-nowrap text-sm font-bold tabular-nums text-[#472a3b]">
                           {money(item.price * item.quantity)}
                         </span>
                       </li>
@@ -905,10 +905,10 @@ export function CheckoutPage() {
                   </dl>
 
                   <div className="mt-5 flex items-end justify-between gap-3 border-t border-dashed border-[#dcd8cc] pt-5">
-                    <span className="font-display text-lg font-extrabold text-[#092a53]">
+                    <span className="font-display text-lg font-extrabold text-[#472a3b]">
                       {t("Total")}
                     </span>
-                    <span className="font-display text-3xl font-extrabold tabular-nums leading-none text-[#092a53]">
+                    <span className="font-display text-3xl font-extrabold tabular-nums leading-none text-[#472a3b]">
                       {money(grandTotal)}
                     </span>
                   </div>
@@ -919,7 +919,7 @@ export function CheckoutPage() {
                   )}
 
                   <button
-                    className="group mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#ffdc32] px-6 py-4 text-sm font-extrabold text-[#092a53] shadow-[0_12px_26px_rgba(255,220,50,0.35)] transition hover:-translate-y-0.5 hover:bg-[#ffe76c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#092a53] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-[#ecebe5] disabled:text-[#8b95a2] disabled:shadow-none"
+                    className="group mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#ffb84d] px-6 py-4 text-sm font-extrabold text-[#472a3b] shadow-[0_12px_26px_rgba(255,220,50,0.35)] transition hover:-translate-y-0.5 hover:bg-[#ffcf85] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#472a3b] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-[#ecebe5] disabled:text-[#8b95a2] disabled:shadow-none"
                     disabled={!canSubmit}
                     form="checkout-form"
                     type="submit"
@@ -940,7 +940,7 @@ export function CheckoutPage() {
               </div>
 
               <Link
-                className="mt-4 flex items-center justify-center gap-2 text-sm font-extrabold text-[#bd9c00] transition hover:text-[#092a53]"
+                className="mt-4 flex items-center justify-center gap-2 text-sm font-extrabold text-[#b8721e] transition hover:text-[#472a3b]"
                 to="/cart"
               >
                 <Icon className="size-4 rotate-180" path={icons.arrow} />

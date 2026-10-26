@@ -1,10 +1,10 @@
 .event-orders-page {
-  --event-ink: #092a53;
+  --event-ink: #472a3b;
   --event-muted: #53677e;
   --event-ground: #f4f6f8;
   --event-line: #dfe6ee;
   --event-control: #cbd4df;
-  --event-accent: #ffdc32;
+  --event-accent: #ffb84d;
   background: var(--event-ground);
   color: var(--event-ink);
   font-family: var(--font-sans);
@@ -20,14 +20,14 @@
 
 .event-page-intro {
   padding: 24px 24px 32px;
-  background: #092a53;
+  background: #472a3b;
 }
 
 .event-hero {
   grid-template-columns: 1.08fr 0.92fr;
   gap: 0;
   overflow: hidden;
-  background: #092a53;
+  background: #472a3b;
 }
 
 .event-hero-copy {

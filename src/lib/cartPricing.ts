@@ -1,4 +1,15 @@
+import { toNumber } from "../../shared/numbers.ts";
+
 export { USD_TO_XAF } from "../../shared/currency.js";
+export {
+  toNumber,
+  toInt,
+  toNonNegativeInt,
+  toPositiveInt,
+  toRoundedNumber,
+  toFixedNumber,
+  toIntString,
+} from "../../shared/numbers.ts";
 
 export interface CartPricingItem {
   itemType?: string
@@ -20,7 +31,7 @@ export function getCartPricing(items: CartPricingItem[]): CartPricing {
   const pricedItems = items.map((item) => ({
     itemType: item.itemType,
     quantity: item.quantity,
-    unitPrice: Math.round(Number(item.price)),
+    unitPrice: Math.round(toNumber(item.price, 0)),
   }));
   const flavorItems = pricedItems.filter((item) => item.itemType !== "menu");
   const cartCount = pricedItems.reduce((sum, item) => sum + item.quantity, 0);

@@ -7,7 +7,7 @@ import "./AdminDeliveredBoard.css";
 
 const CHART_DAYS = 14;
 const inputClassName =
-  "w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] placeholder:text-[#9aa5b3]";
+  "w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#472a3b] placeholder:text-[#9aa5b3]";
 
 const icons = {
   delivered: "M4 12.5 9 17.5 20 6.5",
@@ -239,15 +239,15 @@ export function AdminDeliveredBoard() {
     <div className="admin-delivered-board min-w-0">
       <header className="delivered-header flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex min-w-0 items-center gap-4">
-          <span className="delivered-heading-mark shrink-0 text-[#092a53]">
+          <span className="delivered-heading-mark shrink-0 text-[#472a3b]">
             <Icon className="size-7" path={icons.delivered} />
           </span>
           <div className="min-w-0">
             <nav aria-label={t("Breadcrumb")} className="delivered-breadcrumb text-xs font-bold text-[#65748a]">
               {t("Sales")} <span aria-hidden="true" className="mx-1">/</span>
-              <span className="text-[#bd9c00]">{t("Delivered")}</span>
+              <span className="text-[#b8721e]">{t("Delivered")}</span>
             </nav>
-            <h1 className="delivered-title mt-1 text-xl font-semibold tracking-tight text-[#092a53] sm:text-[1.9rem]">{t("Delivered orders")}</h1>
+            <h1 className="delivered-title mt-1 text-xl font-semibold tracking-tight text-[#472a3b] sm:text-[1.9rem]">{t("Delivered orders")}</h1>
             <p className="delivered-description mt-0.5 text-sm text-[#65748a]">{t("Orders confirmed as delivered.")}</p>
           </div>
         </div>
@@ -264,7 +264,7 @@ export function AdminDeliveredBoard() {
             </button>
           )}
           <button
-            className="delivered-action inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-50"
+            className="delivered-action inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#6b3f58] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#472a3b] disabled:opacity-50"
             disabled={!visibleOrders.length}
             onClick={exportCsv}
             type="button"
@@ -273,7 +273,7 @@ export function AdminDeliveredBoard() {
             {t("Export CSV")}
           </button>
           <button
-            className="delivered-action inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:cursor-wait disabled:opacity-60"
+            className="delivered-action inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#6b3f58] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#472a3b] disabled:cursor-wait disabled:opacity-60"
             disabled={isRefreshing || isClearing}
             onClick={refresh}
             type="button"
@@ -350,7 +350,7 @@ export function AdminDeliveredBoard() {
             </div>
             {hasActiveFilters && (
               <button
-                className="delivered-clear-filters text-xs font-bold text-[#123b68] underline decoration-[#ffdc32] decoration-2 underline-offset-4 hover:text-[#092a53]"
+                className="delivered-clear-filters text-xs font-bold text-[#6b3f58] underline decoration-[#ffb84d] decoration-2 underline-offset-4 hover:text-[#472a3b]"
                 onClick={() => { setSearch(""); setTypeFilter("all"); setRangeFilter("all"); }}
                 type="button"
               >
@@ -433,7 +433,7 @@ export function AdminDeliveredBoard() {
         ) : visibleOrders.length === 0 ? (
           <div className="delivered-empty px-6 py-14 text-center">
             <span className="delivered-empty-mark mx-auto grid size-12 place-items-center text-[#65748a]"><Icon className="size-5" path={icons.box} /></span>
-            <p className="delivered-empty-title mt-4 text-sm font-semibold text-[#092a53]">
+            <p className="delivered-empty-title mt-4 text-sm font-semibold text-[#472a3b]">
               {orders.length ? t("No delivered orders match your search") : t("No delivered orders yet.")}
             </p>
             {orders.length > 0 && <p className="delivered-empty-copy mt-1 text-sm text-[#65748a]">{t("Try another customer, order number, or item.")}</p>}
@@ -458,16 +458,16 @@ export function AdminDeliveredBoard() {
                   return (
                     <tr className="delivered-order-row cursor-pointer transition hover:bg-[#f4f6f8]" key={order.id} onClick={() => setSelectedOrderId(order.id)}>
                       <td className="delivered-order-column px-5 py-3.5">
-                        <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#092a53]">
+                        <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#472a3b]">
                           <span aria-hidden="true" className="delivered-order-check"><Icon className="size-3" path={icons.delivered} /></span>
                           #{order.id}
                         </span>
                       </td>
                       <td className="px-3 py-3.5">
                         <div className="flex min-w-0 items-center gap-2.5">
-                          <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full bg-[#eef3f9] text-xs font-extrabold text-[#123b68]">{initials(order.customerName)}</span>
+                          <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full bg-[#eef3f9] text-xs font-extrabold text-[#6b3f58]">{initials(order.customerName)}</span>
                           <div className="min-w-0">
-                            <p className="max-w-[11rem] truncate font-bold text-[#092a53]">{order.customerName}</p>
+                            <p className="max-w-[11rem] truncate font-bold text-[#472a3b]">{order.customerName}</p>
                             <p className="max-w-[11rem] truncate text-xs text-[#65748a]">{order.customerEmail}</p>
                           </div>
                         </div>
@@ -476,7 +476,7 @@ export function AdminDeliveredBoard() {
                         <p className="max-w-[13rem] truncate text-xs font-semibold text-[#65748a]">{order.items.map((item) => `${item.quantity}× ${item.flavorName}`).join(", ")}</p>
                       </td>
                       <td className="px-3 py-3.5">
-                        <p className="flex items-center gap-1.5 text-xs font-bold text-[#092a53]">
+                        <p className="flex items-center gap-1.5 text-xs font-bold text-[#472a3b]">
                           <Icon className="size-3.5 text-[#65748a]" path={order.fulfillmentType === "pickup" ? icons.store : icons.truck} />
                           {t(order.fulfillmentType === "pickup" ? "Pickup" : "Delivery")}
                         </p>
@@ -485,9 +485,9 @@ export function AdminDeliveredBoard() {
                       <td className="delivered-date-cell whitespace-nowrap px-3 py-3.5 text-xs font-semibold text-[#65748a]">
                         {date ? date.toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" }) : "—"}
                       </td>
-                      <td className="delivered-total-cell whitespace-nowrap px-3 py-3.5 text-right font-extrabold tabular-nums text-[#092a53]">{money(toXaf(order.totalCents, order.currency))}</td>
+                      <td className="delivered-total-cell whitespace-nowrap px-3 py-3.5 text-right font-extrabold tabular-nums text-[#472a3b]">{money(toXaf(order.totalCents, order.currency))}</td>
                       <td className="px-5 py-3.5 text-right">
-                        <button aria-label={t("View details")} className="delivered-view-button grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={(event) => { event.stopPropagation(); setSelectedOrderId(order.id); }} type="button">
+                        <button aria-label={t("View details")} className="delivered-view-button grid size-8 place-items-center rounded-lg text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={(event) => { event.stopPropagation(); setSelectedOrderId(order.id); }} type="button">
                           <Icon path={icons.chevron} />
                         </button>
                       </td>
@@ -510,9 +510,9 @@ export function AdminDeliveredBoard() {
                   <Icon className="size-3.5" path={icons.delivered} />
                   {t("Delivered")}
                 </span>
-                <h2 className="mt-2 text-xl font-semibold text-[#092a53]" id="delivered-drawer-title">{t("Order #{id}", { id: selectedOrder.id })}</h2>
+                <h2 className="mt-2 text-xl font-semibold text-[#472a3b]" id="delivered-drawer-title">{t("Order #{id}", { id: selectedOrder.id })}</h2>
               </div>
-              <button aria-label={t("Close")} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setSelectedOrderId(null)} type="button">
+              <button aria-label={t("Close")} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#472a3b]" onClick={() => setSelectedOrderId(null)} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
@@ -525,7 +525,7 @@ export function AdminDeliveredBoard() {
                 ].map((step) => (
                   <li className="relative" key={step.label}>
                     <span aria-hidden="true" className={`absolute -left-[27px] top-0.5 grid size-4 place-items-center rounded-full ring-4 ring-white ${step.done ? "bg-[#35a36b]" : "bg-[#dce3eb]"}`} />
-                    <p className="text-sm font-bold text-[#092a53]">{step.label}</p>
+                    <p className="text-sm font-bold text-[#472a3b]">{step.label}</p>
                     <p className="text-xs text-[#65748a]">{step.date && !Number.isNaN(step.date.getTime()) ? step.date.toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" }) : "—"}</p>
                   </li>
                 ))}
@@ -534,13 +534,13 @@ export function AdminDeliveredBoard() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-md bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb]">
                   <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Customer")}</h3>
-                  <p className="mt-2 font-bold text-[#092a53]">{selectedOrder.customerName}</p>
-                  <a className="mt-1 flex items-center gap-1.5 truncate text-xs font-semibold text-[#123b68] hover:underline" href={`mailto:${selectedOrder.customerEmail}`}>
+                  <p className="mt-2 font-bold text-[#472a3b]">{selectedOrder.customerName}</p>
+                  <a className="mt-1 flex items-center gap-1.5 truncate text-xs font-semibold text-[#6b3f58] hover:underline" href={`mailto:${selectedOrder.customerEmail}`}>
                     <Icon className="size-3.5 shrink-0" path={icons.mail} />
                     <span className="truncate">{selectedOrder.customerEmail}</span>
                   </a>
                   {selectedOrder.customerPhone && (
-                    <a className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-[#123b68] hover:underline" href={`tel:${selectedOrder.customerPhone}`}>
+                    <a className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-[#6b3f58] hover:underline" href={`tel:${selectedOrder.customerPhone}`}>
                       <Icon className="size-3.5 shrink-0" path={icons.phone} />
                       {selectedOrder.customerPhone}
                     </a>
@@ -548,7 +548,7 @@ export function AdminDeliveredBoard() {
                 </div>
                 <div className="rounded-md bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb]">
                   <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Fulfillment destination")}</h3>
-                  <p className="mt-2 flex items-center gap-1.5 font-bold text-[#092a53]">
+                  <p className="mt-2 flex items-center gap-1.5 font-bold text-[#472a3b]">
                     <Icon className="size-4 text-[#65748a]" path={selectedOrder.fulfillmentType === "pickup" ? icons.store : icons.truck} />
                     {t(selectedOrder.fulfillmentType === "pickup" ? "Pickup" : "Delivery")}
                   </p>
@@ -557,10 +557,10 @@ export function AdminDeliveredBoard() {
                   )}
                 </div>
                 <div className="flex items-start gap-3 rounded-md bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb] sm:col-span-2">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-md bg-white text-[#092a53]"><Icon path={icons.pin} /></span>
+                  <span className="grid size-9 shrink-0 place-items-center rounded-md bg-white text-[#472a3b]"><Icon path={icons.pin} /></span>
                   <div className="min-w-0">
                     <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Assigned store")}</h3>
-                    <p className="mt-1 text-sm font-bold text-[#092a53]">{t(selectedOrder.storeName || "Store not recorded")}</p>
+                    <p className="mt-1 text-sm font-bold text-[#472a3b]">{t(selectedOrder.storeName || "Store not recorded")}</p>
                     {selectedOrder.storeAddress && <p className="text-xs leading-5 text-[#65748a]">{t(selectedOrder.storeAddress)}</p>}
                   </div>
                 </div>
@@ -573,7 +573,7 @@ export function AdminDeliveredBoard() {
                     <li className="flex items-center justify-between gap-3 px-4 py-3 text-sm" key={`${selectedOrder.id}-${item.flavorId}-${item.flavorName}`}>
                       <span className="flex min-w-0 items-center gap-3">
                         <span className="grid h-7 min-w-7 shrink-0 place-items-center rounded-lg bg-[#f4f6f8] px-1.5 text-xs font-extrabold text-[#65748a]">{item.quantity}×</span>
-                        <span className="truncate font-semibold text-[#092a53]">{item.flavorName}</span>
+                        <span className="truncate font-semibold text-[#472a3b]">{item.flavorName}</span>
                       </span>
                       <span className="shrink-0 font-bold tabular-nums text-[#65748a]">{money(toXaf(item.lineTotalCents, selectedOrder.currency))}</span>
                     </li>
@@ -593,8 +593,8 @@ export function AdminDeliveredBoard() {
                     </div>
                   )}
                   <div className="flex items-end justify-between gap-3 border-t border-dashed border-[#dce3eb] pt-3">
-                    <dt className="text-sm font-semibold text-[#092a53]">{t("Total")}</dt>
-                    <dd className="text-xl font-semibold tabular-nums text-[#092a53]">{money(toXaf(selectedOrder.totalCents, selectedOrder.currency))}</dd>
+                    <dt className="text-sm font-semibold text-[#472a3b]">{t("Total")}</dt>
+                    <dd className="text-xl font-semibold tabular-nums text-[#472a3b]">{money(toXaf(selectedOrder.totalCents, selectedOrder.currency))}</dd>
                   </div>
                 </dl>
               </div>
@@ -608,7 +608,7 @@ export function AdminDeliveredBoard() {
           <button aria-label={t("Cancel")} className="admin-drawer-backdrop delivered-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45" onClick={() => setIsConfirmingClear(false)} tabIndex={-1} type="button" />
           <section aria-labelledby="clear-delivered-title" aria-modal="true" className="admin-modal-panel delivered-confirm-panel relative w-full max-w-md rounded-md bg-white p-6" role="dialog">
             <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600"><Icon className="size-6" path={icons.trash} /></span>
-            <h2 className="mt-4 text-base font-semibold text-[#092a53]" id="clear-delivered-title">{t("Clear all delivered orders")}</h2>
+            <h2 className="mt-4 text-base font-semibold text-[#472a3b]" id="clear-delivered-title">{t("Clear all delivered orders")}</h2>
             <p className="mt-2 text-sm leading-6 text-[#65748a]">
               {t("Clear all {count} delivered orders? This permanently deletes their order, payment, loyalty, and review history.", { count: deliveredCount })}
             </p>

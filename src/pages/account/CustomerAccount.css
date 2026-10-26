@@ -14,11 +14,11 @@
 .account-masthead {
   --account-ink: #fff;
   --account-muted: #c4d2e2;
-  --account-line: #365273;
-  --account-accent: #ffdc32;
-  background: #092a53;
+  --account-line: #6b3f58;
+  --account-accent: #ffb84d;
+  background: #472a3b;
   color: var(--account-ink);
-  border-bottom: 1px solid #365273;
+  border-bottom: 1px solid #6b3f58;
 }
 .account-masthead-inner {
   padding-top: 32px;
@@ -71,11 +71,11 @@
   font-weight: 600;
 }
 .account-identity-row > div:last-child > a:first-child {
-  background: #ffdc32;
-  color: #092a53;
+  background: #ffb84d;
+  color: #472a3b;
 }
 .account-identity-row > div:last-child > a:first-child:hover {
-  background: #ffe76c;
+  background: #ffcf85;
 }
 .account-identity-row > div:last-child > a:last-child {
   color: #fff;
