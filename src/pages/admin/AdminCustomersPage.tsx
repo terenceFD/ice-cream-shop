@@ -294,7 +294,7 @@ export function AdminCustomersPage() {
         customer.isBanned ? 'Banned' : 'Active',
       ]),
     ]
-    const blob = new Blob([`﻿${rows.map((row) => row.map(escape).join(',')).join('\r\n')}`], { type: 'text/csv;charset=utf-8' })
+    const blob = new Blob([`${rows.map((row) => row.map(escape).join(',')).join('\r\n')}`], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -331,7 +331,7 @@ export function AdminCustomersPage() {
             {t('Customer management')} <span aria-hidden="true" className="mx-1.5 text-[#a3b0bf]">/</span>
             <span className="font-semibold text-[#123b68]">{t('Customer accounts')}</span>
           </nav>
-          <h1 className="mt-0 whitespace-nowrap font-display text-xl font-bold tracking-tight text-[#092a53] sm:text-2xl">{t('Customer accounts')}</h1>
+          <h1 className="mt-0 whitespace-nowrap text-xl font-semibold tracking-tight text-[#092a53] sm:text-2xl">{t('Customer accounts')}</h1>
           <p className="mt-1 hidden max-w-2xl text-sm leading-5 text-[#65748a] sm:block">{t('View registered customers, manage account access, and prepare promotion messages for WhatsApp.')}</p>
         </div>
         <div className="flex shrink-0 gap-1.5 sm:gap-2">
@@ -374,7 +374,7 @@ export function AdminCustomersPage() {
       </header>
 
       {message && (
-        <div className="flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
+        <div className="flex items-center justify-between gap-3 rounded-md bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
           <span className="flex items-center gap-2"><Icon path={icons.check} />{message}</span>
           <button aria-label={t('Dismiss')} className="grid size-7 shrink-0 place-items-center rounded-lg transition hover:bg-[#d7eedf]" onClick={() => setMessage('')} type="button">
             <Icon className="size-3.5" path={icons.close} />
@@ -382,20 +382,20 @@ export function AdminCustomersPage() {
         </div>
       )}
       {error && !isOverlayOpen && (
-        <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+        <p className="flex items-start gap-2 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
           <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
           {error}
         </p>
       )}
 
       {promotionCampaign && currentRecipient && (
-        <section aria-label={t('WhatsApp campaign')} className="sticky top-[84px] z-20 overflow-hidden rounded-2xl bg-[#0f3d26] text-white shadow-[0_14px_32px_rgba(15,61,38,0.25)]">
+        <section aria-label={t('WhatsApp campaign')} className="sticky top-[84px] z-20 overflow-hidden rounded-md bg-[#0f3d26] text-white shadow-[0_14px_32px_rgba(15,61,38,0.25)]">
           <div className="h-1 bg-white/10">
             <div className="h-full bg-[#25d366] transition-[width] duration-500" style={{ width: `${campaignProgress}%` }} />
           </div>
           <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#25d366] text-[#0f3d26]"><WhatsAppIcon className="size-5" /></span>
+              <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#25d366] text-[#0f3d26]"><WhatsAppIcon className="size-5" /></span>
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-white/70" role="status">
                   {t('Customer {current} of {total}', { current: promotionCampaign.currentIndex + 1, total: promotionCampaign.recipients.length })}
@@ -432,7 +432,7 @@ export function AdminCustomersPage() {
         </section>
       )}
 
-      <section aria-label={t('Customer overview')} className="grid grid-cols-3 divide-x divide-[#dce3eb] overflow-hidden rounded-xl border border-[#dce3eb] bg-[#fbfcfe]">
+      <section aria-label={t('Customer overview')} className="grid grid-cols-3 divide-x divide-[#dce3eb] overflow-hidden rounded-md border border-[#dce3eb] bg-[#fbfcfe]">
         {metrics.map((metric) => {
           const isActive = statusFilter === metric.key && metric.key !== 'all'
           return (
@@ -443,7 +443,7 @@ export function AdminCustomersPage() {
               onClick={() => setStatusFilter(isActive || metric.key === 'all' ? 'all' : metric.key)}
               type="button"
             >
-              <p className="font-display text-2xl font-bold leading-none tracking-tight text-[#092a53] tabular-nums">{metric.value.toLocaleString(locale)}</p>
+              <p className="text-xl font-semibold leading-none tracking-tight text-[#092a53] tabular-nums">{metric.value.toLocaleString(locale)}</p>
               <p className="mt-1 text-xs font-semibold leading-4 text-[#65748a] sm:mt-1.5 sm:text-[13px]">{t(metric.label)}</p>
             </button>
           )
@@ -454,7 +454,7 @@ export function AdminCustomersPage() {
         <div className="border-b border-[#dce3eb]">
           <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3 pb-3">
             <div className="flex min-w-0 flex-1 items-baseline justify-between gap-3 sm:flex-none sm:flex-col sm:gap-0">
-              <h2 className="font-display text-lg font-bold text-[#092a53]" id="customer-directory-title">{t('Customer directory')}</h2>
+              <h2 className="text-sm font-semibold text-[#092a53]" id="customer-directory-title">{t('Customer directory')}</h2>
               <p aria-live="polite" className="shrink-0 text-xs font-medium text-[#65748a]">
                 {t('Showing {shown} of {total} customers', { shown: filteredCustomers.length, total: customers.length })}
               </p>
@@ -565,7 +565,7 @@ export function AdminCustomersPage() {
           </div>
         ) : filteredCustomers.length === 0 ? (
           <div className="border-y border-dashed border-[#dce3eb] py-8 text-center">
-            <p className="font-display text-lg font-bold text-[#092a53]">{t(customers.length ? 'No customers match your search.' : 'No customer accounts yet.')}</p>
+            <p className="text-sm font-semibold text-[#092a53]">{t(customers.length ? 'No customers match your search.' : 'No customer accounts yet.')}</p>
             {!customers.length && <p className="mx-auto mt-1 max-w-sm text-sm text-[#65748a]">{t('Customers appear here as soon as they create an account on the website.')}</p>}
             {hasActiveFilters && (
               <button className="mt-3 min-h-10 rounded-lg px-3 text-sm font-semibold text-[#123b68] underline decoration-[#d1a900] decoration-2 underline-offset-4" onClick={() => { setSearch(''); setStatusFilter('all'); setCityFilter('') }} type="button">
@@ -705,20 +705,20 @@ export function AdminCustomersPage() {
           <section aria-labelledby="campaign-title" aria-modal="true" className="admin-drawer-panel relative flex h-full w-full max-w-[32rem] flex-col bg-white shadow-[-24px_0_60px_rgba(9,42,83,0.18)]" role="dialog">
             <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
               <div className="flex items-center gap-3">
-                <span className="grid size-11 place-items-center rounded-xl bg-[#25d366] text-[#0f3d26]"><WhatsAppIcon className="size-5" /></span>
+                <span className="grid size-11 place-items-center rounded-md bg-[#25d366] text-[#0f3d26]"><WhatsAppIcon className="size-5" /></span>
                 <div>
                   <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#1f8f4e]">{t('WhatsApp campaign')}</p>
-                  <h2 className="font-display text-xl font-extrabold text-[#092a53]" id="campaign-title">{t('Promotion message')}</h2>
+                  <h2 className="text-base font-semibold text-[#092a53]" id="campaign-title">{t('Promotion message')}</h2>
                 </div>
               </div>
-              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsComposerOpen(false)} type="button">
+              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsComposerOpen(false)} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
 
             <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
-              <div className="flex items-center gap-3 rounded-2xl bg-[#eefbf3] p-4 ring-1 ring-[#cdeed9]">
-                <span className="font-display text-3xl font-extrabold text-[#1f8f4e]">{counts.whatsapp}</span>
+              <div className="flex items-center gap-3 rounded-md bg-[#eefbf3] p-4 ring-1 ring-[#cdeed9]">
+                <span className="text-xl font-semibold tracking-tight text-[#1f8f4e]">{counts.whatsapp}</span>
                 <p className="text-xs font-semibold leading-5 text-[#2c6a45]">{t('Active customers with a valid WhatsApp number will receive this message.')}</p>
               </div>
 
@@ -740,7 +740,7 @@ export function AdminCustomersPage() {
                 <div className="mt-2 space-y-1.5">
                   {templates.map((template) => (
                     <button
-                      className="block w-full rounded-xl bg-[#f4f6f8] px-3 py-2 text-left text-xs leading-5 text-[#65748a] ring-1 ring-[#dce3eb] transition hover:bg-white hover:text-[#092a53] hover:ring-[#dce3eb]"
+                      className="block w-full rounded-md bg-[#f4f6f8] px-3 py-2 text-left text-xs leading-5 text-[#65748a] ring-1 ring-[#dce3eb] transition hover:bg-white hover:text-[#092a53] hover:ring-[#dce3eb]"
                       key={template}
                       onClick={() => setPromotionMessage(template)}
                       type="button"
@@ -753,8 +753,8 @@ export function AdminCustomersPage() {
 
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Preview')}</p>
-                <div className="mt-2 rounded-2xl bg-[#f4f6f8] p-4">
-                  <div className="ml-auto max-w-[85%] rounded-xl rounded-tr-sm bg-[#d9fdd3] px-3 py-2 text-sm leading-6 text-[#111b21]">
+                <div className="mt-2 rounded-md bg-[#f4f6f8] p-4">
+                  <div className="ml-auto max-w-[85%] rounded-md rounded-tr-sm bg-[#d9fdd3] px-3 py-2 text-sm leading-6 text-[#111b21]">
                     <p className="whitespace-pre-wrap break-words">{promotionMessage.trim() || t('Your message will appear here.')}</p>
                     <p className="mt-0.5 text-right text-xs text-[#667781]">
                       {new Date().toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
@@ -763,7 +763,7 @@ export function AdminCustomersPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3 rounded-xl bg-[#f4f6f8] p-3.5 text-xs leading-5 text-[#65748a] ring-1 ring-[#dce3eb]">
+              <div className="flex gap-3 rounded-md bg-[#f4f6f8] p-3.5 text-xs leading-5 text-[#65748a] ring-1 ring-[#dce3eb]">
                 <Icon className="mt-0.5 size-4 shrink-0 text-[#315982]" path={icons.info} />
                 <span>
                   <span className="block font-bold text-[#65748a]">{t('Admin sends the message')}</span>
@@ -772,7 +772,7 @@ export function AdminCustomersPage() {
               </div>
 
               {error && (
-                <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+                <p className="flex items-start gap-2 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
                   <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
                   {error}
                 </p>
@@ -780,9 +780,9 @@ export function AdminCustomersPage() {
             </div>
 
             <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsComposerOpen(false)} type="button">{t('Cancel')}</button>
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setIsComposerOpen(false)} type="button">{t('Cancel')}</button>
               <button
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#16733f] px-5 text-sm font-bold text-white transition hover:bg-[#125f34] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#16733f] px-5 text-sm font-bold text-white transition hover:bg-[#125f34] disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!promotionMessage.trim() || !counts.whatsapp}
                 onClick={sendPromotionToAll}
                 type="button"
@@ -798,10 +798,10 @@ export function AdminCustomersPage() {
       {customerToBan && (
         <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
           <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setCustomerToBan(null)} tabIndex={-1} type="button" />
-          <section aria-labelledby="ban-customer-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
-            <span className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600"><Icon className="size-6" path={icons.ban} /></span>
-            <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="ban-customer-title">{t('Ban customer')}</h2>
-            <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
+          <section aria-labelledby="ban-customer-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-md bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
+            <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600"><Icon className="size-6" path={icons.ban} /></span>
+            <h2 className="mt-4 text-base font-semibold text-[#092a53]" id="ban-customer-title">{t('Ban customer')}</h2>
+            <div className="mt-4 flex items-center gap-3 rounded-md bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
               <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-[#e9f1fa] text-xs font-bold text-[#245281]">{initials(customerToBan.name)}</span>
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold text-[#092a53]">{customerToBan.name}</p>
@@ -809,11 +809,11 @@ export function AdminCustomersPage() {
               </div>
             </div>
             <p className="mt-3 text-sm leading-6 text-[#65748a]">{t('They will no longer be able to sign in or place orders. You can unban them at any time.')}</p>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
+            {error && <p className="mt-3 rounded-md bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setCustomerToBan(null)} type="button">{t('Cancel')}</button>
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setCustomerToBan(null)} type="button">{t('Cancel')}</button>
               <button
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
                 disabled={savingId === customerToBan.id}
                 onClick={() => setBan(customerToBan, true)}
                 type="button"

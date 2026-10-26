@@ -64,9 +64,9 @@ async function resizeProfilePicture(file: File): Promise<string> {
 }
 
 function Avatar({ name, picture, className = "size-10", highlight = false }: { name: string; picture?: string | null; className?: string; highlight?: boolean }) {
-  if (picture) return <img decoding="async" loading="lazy" alt="" className={`${className} shrink-0 rounded-xl object-cover ring-1 ring-black/5`} src={picture} />;
+  if (picture) return <img decoding="async" loading="lazy" alt="" className={`${className} shrink-0 rounded-md object-cover ring-1 ring-black/5`} src={picture} />;
   return (
-    <span aria-hidden="true" className={`${className} grid shrink-0 place-items-center rounded-xl font-display text-sm font-extrabold ${highlight ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#eaf0f7] text-[#24496f]"}`}>
+    <span aria-hidden="true" className={`${className} grid shrink-0 place-items-center rounded-md text-sm font-semibold ${highlight ? "bg-[#ffdc32] text-[#092a53]" : "bg-[#eaf0f7] text-[#24496f]"}`}>
       {name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join("") || "?"}
     </span>
   );
@@ -149,7 +149,7 @@ function AssignmentPicker({
         aria-haspopup="listbox"
         aria-labelledby="admin-assignment-label"
         aria-required="true"
-        className={`group flex min-h-[4.25rem] w-full items-center gap-3 rounded-2xl border bg-white px-4 py-3 text-left shadow-sm transition duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffdc32]/25 ${isOpen ? "border-[#bd9c00] shadow-[0_0_0_1px_#bd9c00]" : "border-[#dbe3ec] hover:border-[#aebdcd] hover:shadow-md"
+        className={`group flex min-h-[4.25rem] w-full items-center gap-3 rounded-md border bg-white px-4 py-3 text-left shadow-sm transition duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffdc32]/25 ${isOpen ? "border-[#bd9c00] shadow-[0_0_0_1px_#bd9c00]" : "border-[#dbe3ec] hover:border-[#aebdcd] hover:shadow-md"
           }`}
         onClick={() => setIsOpen((open) => !open)}
         onKeyDown={(event) => {
@@ -166,7 +166,7 @@ function AssignmentPicker({
         ref={triggerRef}
         type="button"
       >
-        <span className={`grid size-10 shrink-0 place-items-center rounded-xl transition ${selectedChoice?.kind === "branch" ? "bg-[#fff5c4] text-[#bd9c00]" : "bg-[#eaf1f9] text-[#245281]"
+        <span className={`grid size-10 shrink-0 place-items-center rounded-md transition ${selectedChoice?.kind === "branch" ? "bg-[#fff5c4] text-[#bd9c00]" : "bg-[#eaf1f9] text-[#245281]"
           }`}>
           <Icon className="size-[1.15rem]" path={selectedChoice?.kind === "branch" ? icons.shield : icons.store} />
         </span>
@@ -189,7 +189,7 @@ function AssignmentPicker({
       </button>
 
       {isOpen && (
-        <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-2xl border border-[#dce3eb] bg-white shadow-[0_18px_48px_rgba(9,42,83,0.18)] ring-1 ring-black/[0.03]">
+        <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-md border border-[#dce3eb] bg-white shadow-[0_18px_48px_rgba(9,42,83,0.18)] ring-1 ring-black/[0.03]">
           <div className="border-b border-[#f4f6f8] bg-[#f4f6f8] px-4 py-3">
             <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Choose access scope")}</p>
             <p className="mt-0.5 text-xs text-[#65748a]">{t("Select a main branch or an individual store.")}</p>
@@ -212,7 +212,7 @@ function AssignmentPicker({
                       return (
                         <div
                           aria-selected={isSelected}
-                          className={`flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2.5 outline-none transition focus-visible:ring-2 focus-visible:ring-[#bd9c00] ${isSelected ? "bg-[#f1f6fb]" : "hover:bg-[#f4f6f8]"
+                          className={`flex cursor-pointer items-center gap-3 rounded-md px-2.5 py-2.5 outline-none transition focus-visible:ring-2 focus-visible:ring-[#bd9c00] ${isSelected ? "bg-[#f1f6fb]" : "hover:bg-[#f4f6f8]"
                             }`}
                           data-index={index}
                           id={`admin-assignment-option-${index}`}
@@ -225,7 +225,7 @@ function AssignmentPicker({
                           role="option"
                           tabIndex={-1}
                         >
-                          <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${choice.kind === "branch" ? "bg-[#fff5c4] text-[#bd9c00]" : "bg-[#eaf1f9] text-[#245281]"
+                          <span className={`grid size-9 shrink-0 place-items-center rounded-md ${choice.kind === "branch" ? "bg-[#fff5c4] text-[#bd9c00]" : "bg-[#eaf1f9] text-[#245281]"
                             }`}>
                             <Icon className="size-4" path={choice.kind === "branch" ? icons.shield : icons.store} />
                           </span>
@@ -837,7 +837,7 @@ export function AdminManagementPage() {
       {adminToRemove && (
         <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
           <button aria-label={t("Cancel")} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setAdminToRemove(null)} tabIndex={-1} type="button" />
-          <section aria-labelledby="remove-admin-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-xl bg-white p-6" role="dialog">
+          <section aria-labelledby="remove-admin-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-md bg-white p-6" role="dialog">
             <span className="grid size-12 place-items-center rounded-lg bg-[#ffedea] text-[#831c1e]"><Icon className="size-6" path={icons.trash} /></span>
             <h2 className="mt-4 text-xl font-semibold text-[#111827]" id="remove-admin-title">{t("Remove admin access")}</h2>
             <div className="mt-4 flex items-center gap-3 rounded-lg bg-[#f9fafb] p-3 border border-[#e8e8e8]">

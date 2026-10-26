@@ -387,7 +387,7 @@ function ReviewCard({ review, language, t, eager = false }) {
     : "";
   return (
     <li>
-      <article className="flex h-full flex-col rounded-[20px] border border-[#dce3eb] bg-white p-5 sm:p-6">
+      <article className="flex h-full w-[min(88vw,22rem)] shrink-0 flex-col rounded-[20px] border border-[#dce3eb] bg-white p-5 sm:p-6">
         <StarRating
           className="size-4"
           emptyClassName="text-[#dce3eb]"
@@ -438,7 +438,7 @@ function SkeletonCard({ className = "" }) {
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse rounded-[20px] border border-[#dce3eb] bg-white p-5 sm:p-6 ${className}`}
+      className={`animate-pulse w-[min(88vw,22rem)] shrink-0 rounded-[20px] border border-[#dce3eb] bg-white p-5 sm:p-6 ${className}`}
     >
       <div className="h-4 w-3/4 rounded-full bg-[#e4e8ee]" />
       <div className="mt-3 h-3 w-full rounded-full bg-[#e4e8ee]" />
@@ -465,10 +465,14 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
         <div className="mx-auto max-w-[1320px]">
           <div className="h-10 w-56 animate-pulse rounded-lg bg-[#e1e7ed] sm:h-12" />
           <div className="mt-4 h-4 w-80 max-w-full animate-pulse rounded-md bg-[#e1e7ed]" />
-          <div className="mt-10 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
-            <SkeletonCard />
-            <SkeletonCard className="hidden md:block" />
-            <SkeletonCard className="hidden xl:block" />
+          <div className="review-marquee mt-10">
+            <div className="review-marquee-track">
+              <div className="flex items-stretch gap-5 pr-5">
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -539,17 +543,28 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
             </p>
           </div>
         ) : (
-          <ul className="mt-10 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {displayReviews.map((review, index) => (
-              <ReviewCard
-                eager={index === 0}
-                key={`${review.createdAt}-${review.itemId || review.itemName}-${index}`}
-                language={language}
-                review={review}
-                t={t}
-              />
-            ))}
-          </ul>
+          <div className="review-marquee mt-10">
+            {/* The track is rendered twice so the loop is seamless; the second copy is hidden from assistive tech. */}
+            <div className="review-marquee-track items-stretch gap-5 pr-5">
+              {[0, 1].map((copy) => (
+                <ul
+                  aria-hidden={copy === 1 ? "true" : undefined}
+                  className="flex items-stretch gap-5 pr-5"
+                  key={copy}
+                >
+                  {displayReviews.map((review, index) => (
+                    <ReviewCard
+                      eager={copy === 0 && index === 0}
+                      key={`${review.createdAt}-${review.itemId || review.itemName}-${index}`}
+                      language={language}
+                      review={review}
+                      t={t}
+                    />
+                  ))}
+                </ul>
+              ))}
+            </div>
+          </div>
         )}
 
         <div className="mt-10 flex flex-wrap items-center gap-3">
@@ -597,40 +612,53 @@ function HowItWorksSection({ t }) {
       id="how-it-works"
     >
       <div className="mx-auto max-w-[1320px]">
-        <h2
-          className="max-w-[16ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl"
-          id="how-it-works-heading"
-        >
-          {t("How it works")}
-        </h2>
-        <p className="mt-3 max-w-xl text-base leading-7 text-[#65748a]">
-          {t("Choose your flavor, pay online, then collect your order or have it delivered.")}
-        </p>
-        <ol className="mt-8 sm:mt-10 sm:grid sm:grid-cols-3 sm:gap-x-8">
-          {steps.map(({ step, title, description }, index) => (
-            <li className="grid grid-cols-[2.75rem_minmax(0,1fr)] gap-x-4 sm:grid-cols-1 sm:gap-y-4" key={step}>
-              <span className="relative h-full">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <h2
+              className="max-w-[16ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-[#092a53] sm:text-5xl"
+              id="how-it-works-heading"
+            >
+              {t("How it works")}
+            </h2>
+            <p className="mt-3 max-w-xl text-base leading-7 text-[#65748a]">
+              {t("Choose your flavor, pay online, then collect your order or have it delivered.")}
+            </p>
+          </div>
+          <Link
+            className="inline-flex min-h-11 w-fit items-center gap-2 rounded-lg bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdc32] focus-visible:ring-offset-2"
+            to="/menu"
+          >
+            {t("Start an order")}
+            <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+              <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+            </svg>
+          </Link>
+        </div>
+        <ol className="mt-8 grid gap-4 sm:mt-12 sm:grid-cols-3 sm:gap-5">
+          {steps.map(({ step, title, description }) => (
+            <li
+              className="relative flex gap-4 rounded-2xl border border-[#dce3eb] bg-white p-5 sm:flex-col sm:gap-5 sm:p-6"
+              key={step}
+            >
+              <div className="flex min-w-0 items-start gap-4">
                 <span
                   aria-hidden="true"
-                  className="relative z-10 grid size-11 place-items-center rounded-full bg-[#ffdc32] font-display text-xl font-bold leading-none text-[#092a53]"
+                  className="grid size-11 shrink-0 place-items-center rounded-full bg-[#ffdc32] text-lg font-extrabold leading-none text-[#092a53]"
                 >
                   {step}
                 </span>
-                {index < steps.length - 1 && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute left-1/2 top-11 bottom-0 w-0.5 -translate-x-1/2 bg-[#ffdc32] sm:left-11 sm:top-5 sm:bottom-auto sm:h-0.5 sm:w-[calc(100%-0.75rem)] sm:translate-x-0"
-                  />
-                )}
-              </span>
-              <span className={`min-w-0 ${index < steps.length - 1 ? "pb-7 sm:pb-0" : ""}`}>
-                <span className="block font-display text-lg font-bold leading-tight text-[#092a53]">
+                <span className="block font-display text-lg font-bold leading-tight text-[#092a53] sm:hidden">
+                  {t(title)}
+                </span>
+              </div>
+              <div className="min-w-0 sm:mt-0">
+                <span className="hidden font-display text-lg font-bold leading-tight text-[#092a53] sm:block">
                   {t(title)}
                 </span>
                 <span className="mt-1.5 block max-w-sm text-sm leading-6 text-[#65748a]">
                   {t(description)}
                 </span>
-              </span>
+              </div>
             </li>
           ))}
         </ol>

@@ -61,7 +61,7 @@ const FILTERS = [
 ];
 
 const inputClass =
-  "mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] outline-none! transition focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25";
+  "mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] outline-none! transition focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25";
 
 function formatXaf(amount: number | null | undefined, language: string) {
   return `${new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-US").format(Math.round(amount || 0))} FCFA`;
@@ -181,17 +181,17 @@ export function AdminEventOrdersPage() {
     <div className="space-y-6">
       <header>
         <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t("Parties & events")}</p>
-        <h1 className="mt-1 font-display text-3xl font-extrabold text-[#092a53]">{t("Event orders")}</h1>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight text-[#092a53]">{t("Event orders")}</h1>
         <p className="mt-1 text-sm text-[#65748a]">{t("Review requests, send quotes with a deposit, and confirm events once the deposit is paid.")}</p>
       </header>
 
       {message && (
-        <p className="flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
+        <p className="flex items-center justify-between gap-3 rounded-md bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
           {message}
           <button className="text-xs font-bold underline" onClick={() => setMessage("")} type="button">{t("Dismiss")}</button>
         </p>
       )}
-      {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700" role="alert">{error}</p>}
+      {error && <p className="rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700" role="alert">{error}</p>}
 
       <div className="flex flex-wrap gap-2" role="tablist">
         {FILTERS.map((entry) => (
@@ -211,8 +211,8 @@ export function AdminEventOrdersPage() {
       {loading ? (
         <p className="text-sm text-[#65748a]">{t("Loading…")}</p>
       ) : !visible.length ? (
-        <div className="rounded-[20px] border border-dashed border-[#dce3eb] bg-white px-6 py-14 text-center">
-          <p className="font-display text-lg font-extrabold text-[#092a53]">{t("No event orders here")}</p>
+        <div className="rounded-md border border-dashed border-[#dce3eb] bg-white px-6 py-14 text-center">
+          <p className="text-sm font-semibold text-[#092a53]">{t("No event orders here")}</p>
           <p className="mt-1 text-sm text-[#65748a]">{t("New requests from the Parties & events page will appear here.")}</p>
         </div>
       ) : (
@@ -222,7 +222,7 @@ export function AdminEventOrdersPage() {
             return (
               <li key={order.id}>
                 <button
-                  className="h-full w-full rounded-[18px] border border-[#dce3eb] bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.08)]"
+                  className="h-full w-full rounded-md border border-[#dce3eb] bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(18,44,80,0.08)]"
                   onClick={() => setSelectedId(order.id)}
                   type="button"
                 >
@@ -247,20 +247,20 @@ export function AdminEventOrdersPage() {
             <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t(EVENT_TYPE_LABELS[selected.eventType] || "Event")}</p>
-                <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="event-drawer-title">{t("Event order #{id}", { id: selected.id })}</h2>
+                <h2 className="mt-1 text-xl font-semibold text-[#092a53]" id="event-drawer-title">{t("Event order #{id}", { id: selected.id })}</h2>
                 <span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${(STATUS[selected.status] || STATUS.new).className}`}>{t((STATUS[selected.status] || STATUS.new).label)}</span>
               </div>
-              <button aria-label={t("Close")} className="grid size-9 place-items-center rounded-xl text-[#65748a] hover:bg-[#f4f6f8]" onClick={() => setSelectedId(null)} type="button">✕</button>
+              <button aria-label={t("Close")} className="grid size-9 place-items-center rounded-md text-[#65748a] hover:bg-[#f4f6f8]" onClick={() => setSelectedId(null)} type="button">✕</button>
             </header>
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-6 text-sm">
               <dl className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-[#f4f6f8] p-3"><dt className="text-xs text-[#8592a3]">{t("Date & time")}</dt><dd className="font-bold">{selected.eventDate} · {selected.eventTime}</dd></div>
-                <div className="rounded-xl bg-[#f4f6f8] p-3"><dt className="text-xs text-[#8592a3]">{t("Guests")}</dt><dd className="font-bold">{selected.guestCount}</dd></div>
-                <div className="col-span-2 rounded-xl bg-[#f4f6f8] p-3">
+                <div className="rounded-md bg-[#f4f6f8] p-3"><dt className="text-xs text-[#8592a3]">{t("Date & time")}</dt><dd className="font-bold">{selected.eventDate} · {selected.eventTime}</dd></div>
+                <div className="rounded-md bg-[#f4f6f8] p-3"><dt className="text-xs text-[#8592a3]">{t("Guests")}</dt><dd className="font-bold">{selected.guestCount}</dd></div>
+                <div className="col-span-2 rounded-md bg-[#f4f6f8] p-3">
                   <dt className="text-xs text-[#8592a3]">{t(selected.fulfillmentType === "pickup" ? "Pickup" : "Delivery")}</dt>
                   <dd className="font-bold">{t(selected.storeName || "")}{selected.deliveryAddress ? ` → ${selected.deliveryAddress}` : ""}</dd>
                 </div>
-                <div className="col-span-2 rounded-xl bg-[#f4f6f8] p-3">
+                <div className="col-span-2 rounded-md bg-[#f4f6f8] p-3">
                   <dt className="text-xs text-[#8592a3]">{t("Customer")}</dt>
                   <dd className="font-bold">{selected.customerName}</dd>
                   <dd><a className="text-[#123b68] hover:underline" href={`mailto:${selected.customerEmail}`}>{selected.customerEmail}</a> · <a className="text-[#123b68] hover:underline" href={`tel:${selected.customerPhone}`}>{selected.customerPhone}</a></dd>
@@ -281,7 +281,7 @@ export function AdminEventOrdersPage() {
               </dl>
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#65748a]">{t("Items")}</p>
-                <ul className="mt-2 divide-y divide-[#eef1f5] rounded-xl ring-1 ring-[#eef1f5]">
+                <ul className="mt-2 divide-y divide-[#eef1f5] rounded-md ring-1 ring-[#eef1f5]">
                   {selected.items.map((item) => (
                     <li className="flex justify-between gap-3 px-3 py-2" key={item.itemId}>
                       <span className="min-w-0 truncate">{item.quantity} × {t(item.name)}</span>
@@ -291,10 +291,10 @@ export function AdminEventOrdersPage() {
                   <li className="flex justify-between px-3 py-2 font-extrabold"><span>{t("Estimate from menu prices")}</span><span className="tabular-nums">{formatXaf(selected.estimatedTotal, language)}</span></li>
                 </ul>
               </div>
-              {selected.notes && <p className="rounded-xl bg-[#fffbea] px-3 py-2.5 text-[#5c4a00]"><strong>{t("Customer notes")}:</strong> {selected.notes}</p>}
+              {selected.notes && <p className="rounded-md bg-[#fffbea] px-3 py-2.5 text-[#5c4a00]"><strong>{t("Customer notes")}:</strong> {selected.notes}</p>}
 
               {["new", "quoted"].includes(selected.status) && (
-                <fieldset className="space-y-3 rounded-2xl p-4 ring-1 ring-[#dce3eb]">
+                <fieldset className="space-y-3 rounded-md p-4 ring-1 ring-[#dce3eb]">
                   <legend className="px-1 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Quote")}</legend>
                   <div className="grid grid-cols-2 gap-3">
                     <label className="block text-xs font-bold text-[#65748a]">
@@ -313,33 +313,33 @@ export function AdminEventOrdersPage() {
                 </fieldset>
               )}
               {selected.depositPaidAt && (
-                <p className="rounded-xl bg-[#e3f4e8] px-3 py-2.5 text-[#1f6b3e]">
+                <p className="rounded-md bg-[#e3f4e8] px-3 py-2.5 text-[#1f6b3e]">
                   {t("Deposit of {amount} paid by {method}.", { amount: formatXaf(selected.depositAmount, language), method: selected.depositProvider === "campay" ? t("Mobile Money") : t("card") })}
                 </p>
               )}
-              {actionError && <p className="rounded-xl bg-red-50 px-3 py-2.5 font-semibold text-red-700" role="alert">{actionError}</p>}
+              {actionError && <p className="rounded-md bg-red-50 px-3 py-2.5 font-semibold text-red-700" role="alert">{actionError}</p>}
             </div>
             <footer className="flex flex-wrap justify-end gap-2.5 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
               {selected.status === "declined" && (
-                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-60" disabled={working || isDeleting} onClick={() => setIsDeleteConfirmOpen(true)} type="button">
+                <button className="min-h-10 rounded-md px-4 text-sm font-bold text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-60" disabled={working || isDeleting} onClick={() => setIsDeleteConfirmOpen(true)} type="button">
                   {t("Delete order")}
                 </button>
               )}
               {["new", "quoted", "deposit_paid", "confirmed"].includes(selected.status) && (
-                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-red-700 hover:bg-red-50" disabled={working} onClick={() => act(["new", "quoted"].includes(selected.status) ? "decline" : "cancel")} type="button">
+                <button className="min-h-10 rounded-md px-4 text-sm font-bold text-red-700 hover:bg-red-50" disabled={working} onClick={() => act(["new", "quoted"].includes(selected.status) ? "decline" : "cancel")} type="button">
                   {t(["new", "quoted"].includes(selected.status) ? "Decline" : "Cancel event")}
                 </button>
               )}
               {["new", "quoted"].includes(selected.status) && (
-                <button className="min-h-10 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white hover:bg-[#163e6b] disabled:opacity-60" disabled={working} onClick={() => act("quote")} type="button">
+                <button className="min-h-10 rounded-md bg-[#092a53] px-5 text-sm font-bold text-white hover:bg-[#163e6b] disabled:opacity-60" disabled={working} onClick={() => act("quote")} type="button">
                   {t(selected.status === "quoted" ? "Update quote" : "Send quote")}
                 </button>
               )}
               {selected.status === "deposit_paid" && (
-                <button className="min-h-10 rounded-xl bg-[#1f6b3e] px-5 text-sm font-bold text-white hover:bg-[#185532] disabled:opacity-60" disabled={working} onClick={() => act("confirm")} type="button">{t("Confirm event")}</button>
+                <button className="min-h-10 rounded-md bg-[#1f6b3e] px-5 text-sm font-bold text-white hover:bg-[#185532] disabled:opacity-60" disabled={working} onClick={() => act("confirm")} type="button">{t("Confirm event")}</button>
               )}
               {["deposit_paid", "confirmed"].includes(selected.status) && (
-                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#092a53] ring-1 ring-[#d5dde8] hover:ring-[#092a53] disabled:opacity-60" disabled={working} onClick={() => act("complete")} type="button">{t("Mark completed")}</button>
+                <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#092a53] ring-1 ring-[#d5dde8] hover:ring-[#092a53] disabled:opacity-60" disabled={working} onClick={() => act("complete")} type="button">{t("Mark completed")}</button>
               )}
             </footer>
           </section>
@@ -348,20 +348,20 @@ export function AdminEventOrdersPage() {
       {isDeleteConfirmOpen && selected?.status === "declined" && (
         <div className="fixed inset-0 z-[60] grid place-items-center px-5" role="presentation">
           <button aria-label={t("Cancel")} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/55 backdrop-blur-[2px]" disabled={isDeleting} onClick={() => setIsDeleteConfirmOpen(false)} tabIndex={-1} type="button" />
-          <section aria-labelledby="delete-event-order-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
-            <span className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600">
+          <section aria-labelledby="delete-event-order-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-md bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
+            <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600">
               <svg aria-hidden="true" className="size-6" fill="none" viewBox="0 0 24 24">
                 <path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
               </svg>
             </span>
-            <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="delete-event-order-title">
+            <h2 className="mt-4 text-base font-semibold text-[#092a53]" id="delete-event-order-title">
               {t("Delete declined event order #{id}?", { id: selected.id })}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#65748a]">{t("This permanently deletes the declined event order. This cannot be undone.")}</p>
-            {actionError && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{actionError}</p>}
+            {actionError && <p className="mt-3 rounded-md bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{actionError}</p>}
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] disabled:opacity-60" disabled={isDeleting} onClick={() => setIsDeleteConfirmOpen(false)} type="button">{t("Cancel")}</button>
-              <button className="min-h-10 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60" disabled={isDeleting} onClick={deleteDeclinedOrder} type="button">{isDeleting ? t("Deleting…") : t("Delete")}</button>
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] disabled:opacity-60" disabled={isDeleting} onClick={() => setIsDeleteConfirmOpen(false)} type="button">{t("Cancel")}</button>
+              <button className="min-h-10 rounded-md bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60" disabled={isDeleting} onClick={deleteDeclinedOrder} type="button">{isDeleting ? t("Deleting…") : t("Delete")}</button>
             </div>
           </section>
         </div>

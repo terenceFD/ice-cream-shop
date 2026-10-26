@@ -102,16 +102,16 @@ export function AdminFulfillmentPage() {
       <AdminNotice tone="error">{error}</AdminNotice>
       <AdminNotice>{message}</AdminNotice>
 
-      <section aria-label={t('Overview')} className="admin-stats grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <AdminStatCard accent="bg-[#e9f1fa] text-[#315982]" icon={adminIcons.store} label={t('Active branches')} value={activeZones.length} />
-        <AdminStatCard accent="bg-[#fff4c2] text-[#bd9c00]" icon={adminIcons.box} label={t('Offer pickup')} value={activeZones.filter((zone) => zone.pickupEnabled).length} />
-        <AdminStatCard accent="bg-[#e5f4ea] text-[#2c7a4f]" icon={adminIcons.truck} label={t('Offer delivery')} value={activeZones.filter((zone) => zone.deliveryEnabled).length} />
-        <AdminStatCard accent="bg-[#f3ecfb] text-[#6b4aa0]" icon={adminIcons.clock} label={t('Active time slots')} value={slots.filter((slot) => slot.isActive).length} />
+      <section aria-label={t('Overview')} className="grid grid-cols-2 divide-[#dce3eb] overflow-hidden rounded-md border border-[#dce3eb] bg-white max-lg:gap-px max-lg:bg-[#dce3eb] lg:grid-cols-4 lg:divide-x">
+        <AdminStatCard label={t('Active branches')} value={activeZones.length} />
+        <AdminStatCard label={t('Offer pickup')} value={activeZones.filter((zone) => zone.pickupEnabled).length} />
+        <AdminStatCard label={t('Offer delivery')} value={activeZones.filter((zone) => zone.deliveryEnabled).length} />
+        <AdminStatCard label={t('Active time slots')} value={slots.filter((slot) => slot.isActive).length} />
       </section>
 
-      <form className="rounded-[20px] border border-[#dce3eb] bg-white" onSubmit={saveZones}>
+      <form className="rounded-md border border-[#dce3eb] bg-white" onSubmit={saveZones}>
         <div className="border-b border-[#f4f6f8] p-4 sm:p-5">
-          <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t('Store branches and service areas')}</h2>
+          <h2 className="text-base font-semibold text-[#092a53]">{t('Store branches and service areas')}</h2>
           <p className="mt-0.5 text-xs text-[#65748a]">{t('Switch a branch off to hide it from checkout. The delivery fee is only used when delivery is on.')}</p>
         </div>
         <ul className="divide-y divide-[#f4f6f8]">
@@ -132,7 +132,7 @@ export function AdminFulfillmentPage() {
                 {zone.deliveryEnabled && (
                   <label className="flex items-center gap-2 text-xs font-bold text-[#65748a]">
                     {t('Delivery fee')}
-                    <span className="flex items-center rounded-xl border border-[#dce3eb] bg-[#f4f6f8] pr-3 focus-within:border-[#bd9c00] focus-within:bg-white">
+                    <span className="flex items-center rounded-md border border-[#dce3eb] bg-[#f4f6f8] pr-3 focus-within:border-[#bd9c00] focus-within:bg-white">
                       <input className="w-24 bg-transparent px-3 py-2 text-sm font-bold tabular-nums text-[#092a53] outline-none!" min="0" onChange={(event) => updateZone(zone.id, { deliveryFee: event.target.value })} type="number" value={zone.deliveryFee} />
                       <span className="text-xs font-extrabold text-[#65748a]">FCFA</span>
                     </span>
@@ -146,20 +146,20 @@ export function AdminFulfillmentPage() {
           {message && (
             <p className="text-sm font-semibold text-[#1f5d3c]" role="status">{message}</p>
           )}
-          <button className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b] disabled:opacity-70" disabled={isSavingBranches} type="submit">
+          <button className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b] disabled:opacity-70" disabled={isSavingBranches} type="submit">
             {isSavingBranches && <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-white border-r-transparent motion-reduce:animate-none [animation-duration:2s]" />}
             {isSavingBranches ? t('Saving…') : t('Save branch availability')}
           </button>
         </div>
       </form>
 
-      <form className="rounded-[20px] border border-[#dce3eb] bg-white" onSubmit={saveSlots}>
+      <form className="rounded-md border border-[#dce3eb] bg-white" onSubmit={saveSlots}>
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#f4f6f8] p-4 sm:p-5">
           <div>
-            <h2 className="font-display text-xl font-extrabold text-[#092a53]">{t('Available time slots')}</h2>
+            <h2 className="text-base font-semibold text-[#092a53]">{t('Available time slots')}</h2>
             <p className="mt-0.5 text-xs text-[#65748a]">{t('Customers choose one of the active slots at checkout.')}</p>
           </div>
-          <button className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce3eb] px-4 text-sm font-bold text-[#092a53] transition hover:border-[#092a53] disabled:opacity-50" disabled={slots.length >= 20} onClick={() => setSlots((current) => [...current, { label: '', startTime: '10:00', endTime: '12:00', isActive: true }])} type="button">
+          <button className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce3eb] px-4 text-sm font-bold text-[#092a53] transition hover:border-[#092a53] disabled:opacity-50" disabled={slots.length >= 20} onClick={() => setSlots((current) => [...current, { label: '', startTime: '10:00', endTime: '12:00', isActive: true }])} type="button">
             <AdminIcon path={adminIcons.plus} /> {t('Add time slot')}
           </button>
         </div>
@@ -177,14 +177,14 @@ export function AdminFulfillmentPage() {
           ))}
         </ul>
         <div className="flex justify-end border-t border-[#f4f6f8] p-4 sm:p-5">
-          <button className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b] disabled:opacity-50" disabled={!slots.length} type="submit">{t('Save time slots')}</button>
+          <button className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#092a53] px-5 text-sm font-bold text-white transition hover:bg-[#163e6b] disabled:opacity-50" disabled={!slots.length} type="submit">{t('Save time slots')}</button>
         </div>
       </form>
     </div>
   )
 }
 
-const slotInputClassName = 'mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition focus:border-[#bd9c00] focus:bg-white outline-none!'
+const slotInputClassName = 'mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition focus:border-[#bd9c00] focus:bg-white outline-none!'
 
 export function AdminCakeRequestsPage() {
   return <AdminCakeRequestsBoard />
@@ -434,7 +434,7 @@ export function AdminActivityPage() {
       <AdminPageHeader
         actions={(
           <button
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#123b68] ring-1 ring-[#dce4ed] transition hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex min-h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-bold text-[#123b68] ring-1 ring-[#dce4ed] transition hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
             disabled={isRefreshing}
             onClick={refresh}
             type="button"
@@ -451,7 +451,7 @@ export function AdminActivityPage() {
       />
 
       {error && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
           <span className="inline-flex items-start gap-2">
             <AdminIcon className="mt-0.5 size-4 shrink-0" path={adminIcons.alert} />
             {error}
@@ -462,30 +462,27 @@ export function AdminActivityPage() {
 
       {activity === null ? (error ? null : (
         <div aria-label={t('Loading…')} className="space-y-6" role="status">
-          <div className="h-44 animate-pulse rounded-[24px] bg-[#f4f6f8]" />
-          <div className="h-[28rem] animate-pulse rounded-[20px] bg-[#f4f6f8]" />
+          <div className="h-44 animate-pulse rounded-md bg-[#f4f6f8]" />
+          <div className="h-[28rem] animate-pulse rounded-md bg-[#f4f6f8]" />
         </div>
       )) : (
         <>
-          <section aria-labelledby="activity-overview-title" className="overflow-hidden rounded-[24px] border border-[#dce3eb] bg-white">
-            <div className="border-b border-[#f4f6f8] bg-[#092a53] px-5 py-5 text-white sm:px-7 sm:py-6">
+          <section aria-labelledby="activity-overview-title" className="overflow-hidden rounded-md border border-[#dce3eb] bg-white">
+            <div className="border-b border-[#e8e8e8] px-4 py-4 sm:px-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div className="min-w-0">
-                  <h2 className="text-sm font-semibold text-white/65" id="activity-overview-title">{t('Activity overview')}</h2>
-                  <p className="mt-2 font-display text-[2.1rem] font-extrabold leading-none tabular-nums tracking-tight sm:text-[2.5rem]">
-                    {summary.total}
-                  </p>
-                  <p className="mt-2 text-sm text-white/70">
+                  <h2 className="text-sm font-semibold text-[#111]" id="activity-overview-title">{t('Activity overview')}</h2>
+                  <p className="mt-0.5 text-xs text-[#65748a]">
                     {summary.total === 1 ? t('1 recorded change') : t('{count} recorded changes', { count: summary.total })}
-                    <span aria-hidden="true" className="mx-2 text-white/25">·</span>
+                    <span aria-hidden="true" className="mx-1.5">·</span>
                     {t('Latest 200 entries')}
                   </p>
                 </div>
                 {summary.latest && (
-                  <p className="max-w-sm text-sm leading-5 text-white/75">
-                    <span className="text-white/50">{t('Latest')}</span>{' '}
-                    <span className="font-semibold text-[#ffdc32]">{t(summary.latest.label, { id: summary.latest.id ?? '' })}</span>
-                    <span className="text-white/45"> · {summary.latest.adminName}</span>
+                  <p className="max-w-sm text-sm leading-5 text-[#5f6368]">
+                    <span>{t('Latest')}</span>{' '}
+                    <span className="font-semibold text-[#111]">{t(summary.latest.label, { id: summary.latest.id ?? '' })}</span>
+                    <span> · {summary.latest.adminName}</span>
                   </p>
                 )}
               </div>
@@ -494,19 +491,19 @@ export function AdminActivityPage() {
             <dl className="grid grid-cols-2 divide-x divide-y divide-[#f4f6f8] sm:grid-cols-4 sm:divide-y-0">
               <div className="px-4 py-4 sm:px-5">
                 <dt className="text-xs font-semibold text-[#65748a]">{t('Today')}</dt>
-                <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.today}</dd>
+                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.today}</dd>
               </div>
               <div className="px-4 py-4 sm:px-5">
                 <dt className="text-xs font-semibold text-[#65748a]">{t('People')}</dt>
-                <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.people}</dd>
+                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.people}</dd>
               </div>
               <div className="px-4 py-4 sm:px-5">
                 <dt className="text-xs font-semibold text-[#65748a]">{t('Areas touched')}</dt>
-                <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.areaCounts.length}</dd>
+                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-[#092a53]">{summary.areaCounts.length}</dd>
               </div>
               <div className="px-4 py-4 sm:px-5">
                 <dt className="text-xs font-semibold text-[#65748a]">{t('In this view')}</dt>
-                <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums leading-none tracking-tight text-[#092a53]">{shown.length}</dd>
+                <dd className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-[#092a53]">{shown.length}</dd>
               </div>
             </dl>
 
@@ -535,10 +532,10 @@ export function AdminActivityPage() {
             )}
           </section>
 
-          <section aria-labelledby="activity-timeline-title" className="overflow-hidden rounded-[20px] border border-[#dce3eb] bg-white">
+          <section aria-labelledby="activity-timeline-title" className="overflow-hidden rounded-md border border-[#dce3eb] bg-white">
             <div className="flex flex-col gap-3 border-b border-[#f4f6f8] px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="activity-timeline-title">{t('Change timeline')}</h2>
+                <h2 className="text-sm font-semibold text-[#092a53]" id="activity-timeline-title">{t('Change timeline')}</h2>
                 <p className="mt-0.5 text-sm text-[#65748a]">
                   {t('Showing {shown} of {total} changes', { shown: shown.length, total: entries.length })}
                 </p>
@@ -546,7 +543,7 @@ export function AdminActivityPage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-[#65748a]" id="activity-area-label">{t('Area')}</span>
-                  <div aria-labelledby="activity-area-label" className="inline-flex flex-wrap rounded-xl bg-[#f4f6f8] p-1" role="group">
+                  <div aria-labelledby="activity-area-label" className="inline-flex flex-wrap rounded-md bg-[#f4f6f8] p-1" role="group">
                     <button
                       aria-pressed={!area}
                       className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${!area ? 'bg-white text-[#092a53] shadow-sm' : 'text-[#65748a] hover:text-[#092a53]'}`}
@@ -575,7 +572,7 @@ export function AdminActivityPage() {
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-semibold text-[#65748a]" htmlFor="activity-person">{t('Person')}</label>
                     <select
-                      className="min-h-9 rounded-xl border border-[#dce3eb] bg-white px-3 text-xs font-bold text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+                      className="min-h-9 rounded-md border border-[#dce3eb] bg-white px-3 text-xs font-bold text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
                       id="activity-person"
                       onChange={(event) => setPerson(event.target.value)}
                       value={person}
@@ -590,15 +587,15 @@ export function AdminActivityPage() {
 
             {!entries.length ? (
               <div className="px-6 py-14 text-center">
-                <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f1f5f9] text-[#123b68]">
+                <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#f1f5f9] text-[#123b68]">
                   <AdminIcon className="size-6" path={adminIcons.history} />
                 </span>
-                <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">{t('No admin changes have been recorded yet.')}</p>
+                <p className="mt-4 text-sm font-semibold text-[#092a53]">{t('No admin changes have been recorded yet.')}</p>
                 <p className="mt-1 text-sm text-[#65748a]">{t('Successful edits, orders and account changes will appear here.')}</p>
               </div>
             ) : !shown.length ? (
               <div className="px-6 py-14 text-center">
-                <p className="font-display text-lg font-extrabold text-[#092a53]">{t('No matching changes')}</p>
+                <p className="text-sm font-semibold text-[#092a53]">{t('No matching changes')}</p>
                 <p className="mt-1 text-sm text-[#65748a]">{t('Try another person or area filter.')}</p>
                 <button
                   className="mt-4 text-sm font-bold text-[#123b68] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
@@ -624,7 +621,7 @@ export function AdminActivityPage() {
                         const createdAtLabel = formatAdminTime(entry.createdAt, language)
                         return (
                           <li className="relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 px-4 py-4 sm:gap-4 sm:px-5" key={entry.id}>
-                            <span aria-hidden="true" className={`relative z-[1] grid size-10 shrink-0 place-items-center rounded-xl ring-4 ring-white ${AREA_STYLES[entry.area]}`}>
+                            <span aria-hidden="true" className={`relative z-[1] grid size-10 shrink-0 place-items-center rounded-md ring-4 ring-white ${AREA_STYLES[entry.area]}`}>
                               <AdminIcon className="size-4" path={AREA_ICONS[entry.area]} />
                             </span>
                             <div className="min-w-0 pt-0.5">

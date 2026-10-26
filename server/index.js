@@ -28,6 +28,7 @@ import {
   deleteDiscountCode,
   deleteFailedOrder,
   deleteFlavor,
+  deleteDeliveredOrderForCustomer,
   deleteMenuCategory,
   deleteContactMessage,
   deleteContactMessages,
@@ -1917,7 +1918,7 @@ app.get('/api/customer/orders', requireCustomer, async (request, response) => {
       fulfillment_type AS "fulfillmentType", scheduled_for AS "scheduledFor",
       delivery_fee AS "deliveryFee", delivery_stage AS "deliveryStage",
       loyalty_points_redeemed AS "loyaltyPointsRedeemed"
-    FROM orders WHERE customer_id = ? ORDER BY id DESC LIMIT 100
+    FROM orders WHERE customer_id = ? AND hidden_by_customer = 0 ORDER BY id DESC LIMIT 100
   `).all(request.customer.id)
   if (!orders.length) {
     response.json({ orders: [] })
@@ -2110,6 +2111,20 @@ app.delete('/api/customer/saved-carts/:id', requireCustomer, async (request, res
     return
   }
   response.status(204).end()
+})
+
+app.delete('/api/customer/orders/:id', requireCustomer, async (request, response) => {
+  const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Order ID is invalid.' })
+    return
+  }
+  const result = await deleteDeliveredOrderForCustomer(id, request.customer.id)
+  if (result === 'not_found') {
+    response.status(404).json({ error: 'A delivered order belonging to your account was not found.' })
+    return
+  }
+  response.json({ deleted: true })
 })
 
 app.get('/api/menu/:itemId/reviews', async (request, response) => {
@@ -4297,6 +4312,11 @@ app.use((error, _request, response, _next) => {
     ? error.message
     : 'An unexpected server error occurred.'
   if (!response.headersSent) response.status(500).json({ error: debugMessage })
+})
+
+// Unknown API addresses answer with JSON so clients never parse an HTML error page.
+app.use('/api', (request, response) => {
+  response.status(404).json({ error: 'This API address does not exist.' })
 })
 
 // Review reminders: a day after delivery, ask the customer to rate their order once, by phone

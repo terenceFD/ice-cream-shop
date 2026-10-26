@@ -24,7 +24,7 @@ interface InventoryItem {
   lowStockThreshold?: number
 }
 
-const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
+const inputClassName = 'mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
 
 const icons = {
   search: 'm20 20-4.2-4.2M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z',
@@ -76,12 +76,12 @@ function Thumb({ src }: { src?: string }) {
   const [failed, setFailed] = useState(false)
   if (!src || failed) {
     return (
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f4f6f8] text-[#a3b0bf]">
+      <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#f4f6f8] text-[#a3b0bf]">
         <Icon path={icons.image} />
       </span>
     )
   }
-  return <img decoding="async" alt="" className="size-10 shrink-0 rounded-xl bg-[#f4f6f8] object-cover" loading="lazy" onError={() => setFailed(true)} src={thumbnail(src, 'tiny')} />
+  return <img decoding="async" alt="" className="size-10 shrink-0 rounded-md bg-[#f4f6f8] object-cover" loading="lazy" onError={() => setFailed(true)} src={thumbnail(src, 'tiny')} />
 }
 
 function Switch({ checked, disabled, label, onChange }: { checked: boolean; disabled?: boolean; label: string; onChange: (checked: boolean) => void }) {
@@ -206,7 +206,7 @@ export function AdminInventoryPage() {
         (item.dietaryTags || []).join('; '),
       ]),
     ]
-    const blob = new Blob([`﻿${rows.map((row) => row.map(escape).join(',')).join('\r\n')}`], { type: 'text/csv;charset=utf-8' })
+    const blob = new Blob([`${rows.map((row) => row.map(escape).join(',')).join('\r\n')}`], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -270,7 +270,7 @@ export function AdminInventoryPage() {
             {t('Catalog')} <span aria-hidden="true" className="mx-1">/</span>
             <span className="text-[#092a53]">{t('Menu inventory')}</span>
           </nav>
-          <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-[#092a53]">{t('Menu inventory')}</h1>
+          <h1 className="mt-1 text-xl font-semibold tracking-tight text-[#092a53]">{t('Menu inventory')}</h1>
           <p className="mt-1 text-sm text-[#53647a]">{t('Set stock, availability, and dietary tags for every menu item.')}</p>
         </div>
         <button
@@ -285,7 +285,7 @@ export function AdminInventoryPage() {
       </header>
 
       {message && (
-        <div className="flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
+        <div className="flex items-center justify-between gap-3 rounded-md bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
           <span className="flex items-center gap-2"><Icon path={icons.check} />{message}</span>
           <button aria-label={t('Dismiss')} className="grid size-7 place-items-center rounded-lg transition hover:bg-[#d7eedf]" onClick={() => setMessage('')} type="button">
             <Icon className="size-3.5" path={icons.close} />
@@ -293,13 +293,13 @@ export function AdminInventoryPage() {
         </div>
       )}
       {error && !draft && (
-        <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+        <p className="flex items-start gap-2 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
           <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
           {error}
         </p>
       )}
 
-      <section aria-label={t('Inventory overview')} className="admin-stats grid grid-cols-2 overflow-hidden rounded-xl border border-[#dce3eb] bg-white [&>button:nth-child(odd)]:border-r [&>button:nth-child(-n+2)]:border-b [&>button]:border-[#e5e9ee] sm:grid-cols-4 sm:divide-x sm:divide-[#e5e9ee] sm:[&>button:nth-child(odd)]:border-r-0 sm:[&>button:nth-child(-n+2)]:border-b-0">
+      <section aria-label={t('Inventory overview')} className="admin-stats grid grid-cols-2 overflow-hidden rounded-md border border-[#dce3eb] bg-white [&>button:nth-child(odd)]:border-r [&>button:nth-child(-n+2)]:border-b [&>button]:border-[#e5e9ee] sm:grid-cols-4 sm:divide-x sm:divide-[#e5e9ee] sm:[&>button:nth-child(odd)]:border-r-0 sm:[&>button:nth-child(-n+2)]:border-b-0">
         {metrics.map((metric) => {
           const isActive = inventoryFilter === metric.filter
           return (
@@ -313,14 +313,14 @@ export function AdminInventoryPage() {
               type="button"
             >
               <p className="text-xs font-semibold text-[#53647a]">{t(metric.label)}</p>
-              <p className="mt-1 font-display text-2xl font-bold leading-none tabular-nums text-[#092a53]">{metric.value.toLocaleString()}</p>
+              <p className="mt-1 text-xl font-semibold leading-none tabular-nums text-[#092a53]">{metric.value.toLocaleString()}</p>
               {isActive && <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 bg-[#092a53]" />}
             </button>
           )
         })}
       </section>
 
-      <section aria-label={t('Stock position')} className="grid gap-4 rounded-xl border border-[#dce3eb] bg-white px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5">
+      <section aria-label={t('Stock position')} className="grid gap-4 rounded-md border border-[#dce3eb] bg-white px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5">
         <div className="min-w-0">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <h2 className="text-sm font-semibold text-[#092a53]">{t('Stock position')}</h2>
@@ -350,10 +350,10 @@ export function AdminInventoryPage() {
         </div>
       </section>
 
-      <section aria-labelledby="inventory-table-title" className="min-w-0 rounded-xl border border-[#dce3eb] bg-white">
+      <section aria-labelledby="inventory-table-title" className="min-w-0 rounded-md border border-[#dce3eb] bg-white">
         <div className="flex flex-col gap-4 border-b border-[#e5e9ee] p-4 sm:p-5">
           <div>
-            <h2 className="font-display text-lg font-semibold text-[#092a53]" id="inventory-table-title">{t('Stock levels')}</h2>
+            <h2 className="text-sm font-semibold text-[#092a53]" id="inventory-table-title">{t('Stock levels')}</h2>
             <p aria-live="polite" className="mt-1 text-xs text-[#53647a]">
               {t('Showing {shown} of {total} items', { shown: filteredItems.length, total: items.length })}
             </p>
@@ -412,13 +412,13 @@ export function AdminInventoryPage() {
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="px-6 py-14 text-center">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f4f6f8] text-[#65748a]"><Icon className="size-5" path={icons.search} /></span>
-            <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">
+            <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#f4f6f8] text-[#65748a]"><Icon className="size-5" path={icons.search} /></span>
+            <p className="mt-4 text-sm font-semibold text-[#092a53]">
               {items.length ? t('No inventory items match your filters.') : t('No menu items yet.')}
             </p>
             {hasActiveFilters && (
               <button
-                className="mt-4 min-h-9 rounded-xl border border-[#dce5ef] px-4 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8]"
+                className="mt-4 min-h-9 rounded-md border border-[#dce5ef] px-4 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8]"
                 onClick={() => { setSearch(''); setCategoryFilter(''); setInventoryFilter('all') }}
                 type="button"
               >
@@ -546,10 +546,10 @@ export function AdminInventoryPage() {
                 <Thumb src={draft.image} />
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-[#53647a]">{t(draft.categoryTitle)}</p>
-                  <h2 className="truncate font-display text-xl font-bold text-[#092a53]" id="inventory-drawer-title">{draft.name}</h2>
+                  <h2 className="truncate text-base font-semibold text-[#092a53]" id="inventory-drawer-title">{draft.name}</h2>
                 </div>
               </div>
-              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setDraft(null)} type="button">
+              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setDraft(null)} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
@@ -563,7 +563,7 @@ export function AdminInventoryPage() {
                 ].map((stat) => (
                   <div className="px-2 py-2.5" key={stat.label}>
                     <dt className="text-xs font-semibold text-[#53647a]">{stat.label}</dt>
-                    <dd className="mt-1 font-display text-lg font-semibold tabular-nums text-[#092a53]">{stat.value}</dd>
+                    <dd className="mt-1 text-sm font-semibold tabular-nums text-[#092a53]">{stat.value}</dd>
                   </div>
                 ))}
               </dl>
@@ -573,7 +573,7 @@ export function AdminInventoryPage() {
                 <div className="flex items-center gap-2">
                   <button
                     aria-label={t('Decrease quantity')}
-                    className="grid size-11 place-items-center rounded-xl border border-[#dce3eb] text-[#123b68] transition hover:bg-[#f4f6f8] disabled:opacity-40"
+                    className="grid size-11 place-items-center rounded-md border border-[#dce3eb] text-[#123b68] transition hover:bg-[#f4f6f8] disabled:opacity-40"
                     disabled={Number(draft.stock) <= (draft.reservedStock || 0)}
                     onClick={() => setDraft({ ...draft, stock: Math.max(draft.reservedStock || 0, Number(draft.stock) - 1) })}
                     type="button"
@@ -582,7 +582,7 @@ export function AdminInventoryPage() {
                   </button>
                   <input
                     aria-label={t('Stock quantity')}
-                    className={`${inputClassName} mt-0 text-center font-display text-lg font-extrabold tabular-nums`}
+                    className={`${inputClassName} mt-0 text-center text-sm font-semibold tabular-nums`}
                     min={draft.reservedStock || 0}
                     onChange={(event) => setDraft({ ...draft, stock: Number(event.target.value) })}
                     type="number"
@@ -590,7 +590,7 @@ export function AdminInventoryPage() {
                   />
                   <button
                     aria-label={t('Increase quantity')}
-                    className="grid size-11 place-items-center rounded-xl border border-[#dce3eb] text-[#123b68] transition hover:bg-[#f4f6f8]"
+                    className="grid size-11 place-items-center rounded-md border border-[#dce3eb] text-[#123b68] transition hover:bg-[#f4f6f8]"
                     onClick={() => setDraft({ ...draft, stock: Number(draft.stock) + 1 })}
                     type="button"
                   >
@@ -666,7 +666,7 @@ export function AdminInventoryPage() {
               </fieldset>
 
               {error && (
-                <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+                <p className="flex items-start gap-2 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
                   <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
                   {error}
                 </p>
@@ -674,11 +674,11 @@ export function AdminInventoryPage() {
             </div>
 
             <footer className="flex items-center justify-end gap-3 border-t border-[#e5e9ee] px-6 py-4">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setDraft(null)} type="button">
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={() => setDraft(null)} type="button">
                 {t('Cancel')}
               </button>
               <button
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
                 disabled={savingId === draft.id}
                 onClick={saveDraft}
                 type="button"

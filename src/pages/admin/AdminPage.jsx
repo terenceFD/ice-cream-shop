@@ -12,7 +12,7 @@ import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from "./adminTable";
 import "./AdminPage.css";
 
 const inputClassName =
-  "mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
+  "mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!";
 const labelClassName = "block text-xs font-bold text-[#65748a]";
 const LOW_STOCK_THRESHOLD = 10;
 
@@ -86,7 +86,7 @@ function FlavorThumb({ src, alt = "", className = "size-12" }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) {
     return (
-      <span className={`${className} grid shrink-0 place-items-center rounded-xl bg-[#f4f6f8] text-[#a3b0bf]`}>
+      <span className={`${className} grid shrink-0 place-items-center rounded-md bg-[#f4f6f8] text-[#a3b0bf]`}>
         <Icon className="size-5" path={icons.image} />
       </span>
     );
@@ -94,7 +94,7 @@ function FlavorThumb({ src, alt = "", className = "size-12" }) {
   return (
     <img decoding="async"
       alt={alt}
-      className={`${className} shrink-0 rounded-xl bg-[#f4f6f8] object-cover`}
+      className={`${className} shrink-0 rounded-md bg-[#f4f6f8] object-cover`}
       loading="lazy"
       onError={() => setFailed(true)}
       src={src}
@@ -168,7 +168,7 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
             <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">
               {t(isEdit ? "Edit flavor" : "Catalog setup")}
             </p>
-            <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="flavor-drawer-title">
+            <h2 className="mt-1 text-xl font-semibold text-[#092a53]" id="flavor-drawer-title">
               {t(isEdit ? "Edit flavor details" : "Add a flavor")}
             </h2>
             <p className="mt-1 text-sm text-[#65748a]">
@@ -177,7 +177,7 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
           </div>
           <button
             aria-label={t("Close")}
-            className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
+            className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
             onClick={onClose}
             type="button"
           >
@@ -187,11 +187,11 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
 
         <form className="flex min-h-0 flex-1 flex-col" onSubmit={onSubmit}>
           <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
-            <div className="flex items-center gap-4 rounded-2xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
+            <div className="flex items-center gap-4 rounded-md bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
               <FlavorThumb className="size-20" key={values.image} src={values.image.trim()} />
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t("Live preview")}</p>
-                <p className="mt-1 truncate font-display text-lg font-extrabold text-[#092a53]">
+                <p className="mt-1 truncate text-sm font-semibold text-[#092a53]">
                   {values.name || t("Flavor name")}
                 </p>
                 <p className="truncate text-xs text-[#65748a]">{values.detail || t("Short description")}</p>
@@ -249,7 +249,7 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
               <div className={labelClassName}>
                 {t("Flavor image")}
                 <div
-                  className={`mt-1.5 flex items-center gap-4 rounded-2xl border-2 border-dashed p-3 transition ${isDraggingImage ? "border-[#bd9c00] bg-[#fffbea]" : "border-[#dce3eb] bg-[#f4f6f8]"}`}
+                  className={`mt-1.5 flex items-center gap-4 rounded-md border-2 border-dashed p-3 transition ${isDraggingImage ? "border-[#bd9c00] bg-[#fffbea]" : "border-[#dce3eb] bg-[#f4f6f8]"}`}
                   onDragLeave={() => setIsDraggingImage(false)}
                   onDragOver={(event) => { event.preventDefault(); setIsDraggingImage(true); }}
                   onDrop={handleImageDrop}
@@ -257,7 +257,7 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
                   <FlavorThumb className="size-16" key={values.image} src={values.image.trim()} />
                   <div className="min-w-0 flex-1">
                     <label
-                      className={`inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#bd9c00] ${isUploadingImage ? "pointer-events-none opacity-60" : ""}`}
+                      className={`inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-md bg-[#092a53] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#bd9c00] ${isUploadingImage ? "pointer-events-none opacity-60" : ""}`}
                     >
                       <Icon path={icons.upload} />
                       {isUploadingImage ? t("Uploading…") : t(values.image.trim() ? "Replace image" : "Upload from device")}
@@ -298,7 +298,7 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
             </fieldset>
 
             {error && (
-              <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+              <p className="flex items-start gap-2 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
                 <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
                 {error}
               </p>
@@ -307,14 +307,14 @@ function FlavorDrawer({ mode, values, onChange, onSubmit, onClose, isSaving, err
 
           <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
             <button
-              className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
+              className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
               onClick={onClose}
               type="button"
             >
               {t("Cancel")}
             </button>
             <button
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+              className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
               disabled={isSaving || isUploadingImage}
               type="submit"
             >
@@ -597,7 +597,7 @@ export function AdminPage() {
     <div className="admin-flavors-page min-w-0 space-y-6">
       <header className="admin-flavors-header flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="min-w-0">
-          <h1 className="admin-flavors-title font-display text-2xl font-extrabold tracking-tight text-[#092a53]">
+          <h1 className="admin-flavors-title text-xl font-semibold tracking-tight text-[#092a53]">
             {t("Flavors")}
           </h1>
           <p className="mt-1 text-sm text-[#65748a]">
@@ -606,14 +606,14 @@ export function AdminPage() {
         </div>
         <div className="admin-flavor-header-actions flex flex-wrap gap-2.5">
           <Link
-            className="admin-flavor-secondary inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+            className="admin-flavor-secondary inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
             to="/flavors"
           >
             <Icon path={icons.external} />
             {t("View customer shop")}
           </Link>
           <button
-            className="admin-flavor-primary inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+            className="admin-flavor-primary inline-flex min-h-10 items-center gap-2 rounded-md bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
             onClick={openAddForm}
             type="button"
           >
@@ -625,7 +625,7 @@ export function AdminPage() {
 
       {message && (
         <div
-          className="admin-flavor-message flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]"
+          className="admin-flavor-message flex items-center justify-between gap-3 rounded-md bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]"
           role="status"
         >
           <span className="flex items-center gap-2">
@@ -680,18 +680,18 @@ export function AdminPage() {
       </div>
 
       {/* Catalog */}
-      <section aria-labelledby="flavor-catalog-title" className="admin-flavor-catalog min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
+      <section aria-labelledby="flavor-catalog-title" className="admin-flavor-catalog min-w-0 rounded-md border border-[#dce3eb] bg-white">
         <div className="admin-flavor-catalog-toolbar flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="admin-flavor-catalog-title font-display text-xl font-extrabold text-[#092a53]" id="flavor-catalog-title">
+              <h2 className="admin-flavor-catalog-title text-base font-semibold text-[#092a53]" id="flavor-catalog-title">
                 {t("Available flavors")}
               </h2>
               <p aria-live="polite" className="admin-flavor-result-count mt-0.5 text-xs text-[#65748a]">
                 {t("Showing {shown} of {total} flavors", { shown: filteredFlavors.length, total: flavors.length })}
               </p>
             </div>
-            <div aria-label={t("View")} className="inline-flex rounded-xl bg-[#f4f6f8] p-1" role="group">
+            <div aria-label={t("View")} className="inline-flex rounded-md bg-[#f4f6f8] p-1" role="group">
               {[
                 { key: "table", icon: icons.list, label: t("Table view") },
                 { key: "grid", icon: icons.grid, label: t("Grid view") },
@@ -747,7 +747,7 @@ export function AdminPage() {
                 <option value="stock">{t("Sort: Lowest stock first")}</option>
               </select>
             </label>
-            <div aria-label={t("Stock status")} className="admin-flavor-stock-filters flex overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
+            <div aria-label={t("Stock status")} className="admin-flavor-stock-filters flex overflow-x-auto rounded-md bg-[#f4f6f8] p-1" role="group">
               {[
                 { key: "all", label: t("All") },
                 { key: "available", label: t("In stock") },
@@ -771,7 +771,7 @@ export function AdminPage() {
         </div>
 
         {(flavorsError || (error && !isOverlayOpen)) && (
-          <p className="admin-flavor-error mx-4 mt-4 flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100 sm:mx-5" role="alert">
+          <p className="admin-flavor-error mx-4 mt-4 flex items-start gap-2 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100 sm:mx-5" role="alert">
             <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
             {flavorsError || error}
           </p>
@@ -781,7 +781,7 @@ export function AdminPage() {
           <div aria-label={t("Loading flavors from the database…")} className="admin-flavor-loading space-y-3 p-4 sm:p-5" role="status">
             {[0, 1, 2, 3].map((row) => (
               <div className="flex animate-pulse items-center gap-4" key={row}>
-                <span className="size-12 rounded-xl bg-[#f4f6f8]" />
+                <span className="size-12 rounded-md bg-[#f4f6f8]" />
                 <span className="h-3 flex-1 rounded bg-[#f4f6f8]" />
                 <span className="h-3 w-24 rounded bg-[#f4f6f8]" />
               </div>
@@ -789,16 +789,16 @@ export function AdminPage() {
           </div>
         ) : filteredFlavors.length === 0 ? (
           <div className="px-6 py-14 text-center">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f4f6f8] text-[#65748a]">
+            <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#f4f6f8] text-[#65748a]">
               <Icon className="size-5" path={icons.search} />
             </span>
-            <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">
+            <p className="mt-4 text-sm font-semibold text-[#092a53]">
               {t(flavors.length ? "No flavors match your filters." : "No flavors yet")}
             </p>
             <div className="mt-4 flex justify-center gap-2">
               {hasActiveFilters ? (
                 <button
-                  className="min-h-9 rounded-xl border border-[#dce5ef] px-4 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8]"
+                  className="min-h-9 rounded-md border border-[#dce5ef] px-4 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8]"
                   onClick={resetFilters}
                   type="button"
                 >
@@ -806,7 +806,7 @@ export function AdminPage() {
                 </button>
               ) : (
                 <button
-                  className="inline-flex min-h-9 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-xs font-bold text-white transition hover:bg-[#163e6b]"
+                  className="inline-flex min-h-9 items-center gap-2 rounded-md bg-[#092a53] px-4 text-xs font-bold text-white transition hover:bg-[#163e6b]"
                   onClick={openAddForm}
                   type="button"
                 >
@@ -865,7 +865,7 @@ export function AdminPage() {
           <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5 2xl:grid-cols-3">
             {filteredFlavors.map((flavor) => (
               <article
-                className="admin-flavor-grid-card group flex flex-col overflow-hidden rounded-2xl border border-[#e7edf4] bg-white transition"
+                className="admin-flavor-grid-card group flex flex-col overflow-hidden rounded-md border border-[#e7edf4] bg-white transition"
                 key={flavor.id}
               >
                 <div className="relative h-40 overflow-hidden bg-[#f4f6f8]">
@@ -885,7 +885,7 @@ export function AdminPage() {
                 <div className="flex flex-1 flex-col p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="truncate font-display text-lg font-extrabold text-[#092a53]">{flavor.name}</h3>
+                      <h3 className="truncate text-sm font-semibold text-[#092a53]">{flavor.name}</h3>
                       <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-[#65748a]">{flavor.detail}</p>
                     </div>
                     <p className="shrink-0 text-sm font-extrabold tabular-nums text-[#092a53]">{formatCartMoney(flavor.price, "xaf")}</p>
@@ -940,16 +940,16 @@ export function AdminPage() {
           <section
             aria-labelledby="delete-flavor-title"
             aria-modal="true"
-            className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]"
+            className="admin-modal-panel relative w-full max-w-md rounded-md bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]"
             role="dialog"
           >
-            <span className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600">
+            <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600">
               <Icon className="size-6" path={icons.trash} />
             </span>
-            <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="delete-flavor-title">
+            <h2 className="mt-4 text-base font-semibold text-[#092a53]" id="delete-flavor-title">
               {t("Remove this flavor?")}
             </h2>
-            <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
+            <div className="mt-4 flex items-center gap-3 rounded-md bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
               <FlavorThumb src={flavorToDelete.image} />
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold text-[#092a53]">{flavorToDelete.name}</p>
@@ -960,18 +960,18 @@ export function AdminPage() {
               {t("will be removed from the shop and any saved bags.")}
             </p>
             {error && (
-              <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>
+              <p className="mt-3 rounded-md bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>
             )}
             <div className="mt-6 flex justify-end gap-2.5">
               <button
-                className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]"
+                className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]"
                 onClick={() => setFlavorToDelete(null)}
                 type="button"
               >
                 {t("Cancel")}
               </button>
               <button
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
                 disabled={isDeleting}
                 onClick={handleDeleteFlavor}
                 type="button"

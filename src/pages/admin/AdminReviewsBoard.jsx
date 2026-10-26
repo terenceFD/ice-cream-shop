@@ -242,7 +242,7 @@ export function AdminReviewsBoard() {
             {t('Review management')} <span aria-hidden="true" className="mx-1.5 text-[#a3b0bf]">/</span>
             <span className="font-semibold text-[#123b68]">{t('Customer reviews')}</span>
           </nav>
-          <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-[#092a53]">{t('Customer reviews')}</h1>
+          <h1 className="mt-2 text-xl font-semibold tracking-tight text-[#092a53]">{t('Customer reviews')}</h1>
           <p aria-label={t('Review overview')} className="mt-1 text-xs font-medium text-[#65748a] sm:hidden">
             {t('Average rating')} <span className="font-semibold text-[#092a53]">{approvedReviews.length ? publishedAverage.toFixed(1) : '—'}</span>
             <span aria-hidden="true" className="mx-1.5 text-[#a3b0bf]">·</span>
@@ -263,7 +263,7 @@ export function AdminReviewsBoard() {
       </header>
 
       {message && (
-        <div className="flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
+        <div className="flex items-center justify-between gap-3 rounded-md bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
           <span className="flex items-center gap-2"><Icon path={icons.check} />{message}</span>
           <button aria-label={t('Dismiss')} className="grid size-7 place-items-center rounded-lg transition hover:bg-[#d7eedf]" onClick={() => setMessage('')} type="button">
             <Icon className="size-3.5" path={icons.close} />
@@ -271,18 +271,18 @@ export function AdminReviewsBoard() {
         </div>
       )}
       {error && (
-        <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+        <p className="flex items-start gap-2 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
           <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
           {error}
         </p>
       )}
 
-      <section aria-label={t('Review overview')} className="hidden grid-cols-2 divide-x divide-[#dce3eb] overflow-hidden rounded-xl border border-[#dce3eb] bg-[#fbfcfe] sm:grid">
+      <section aria-label={t('Review overview')} className="hidden grid-cols-2 divide-x divide-[#dce3eb] overflow-hidden rounded-md border border-[#dce3eb] bg-[#fbfcfe] sm:grid">
         {metrics.map((metric) => {
           const body = (
             <div className="flex min-h-16 flex-col justify-center gap-1.5 px-3 py-2.5 sm:min-h-[76px] sm:px-4 sm:py-3">
               <p className="text-xs font-semibold leading-4 text-[#65748a] sm:text-[13px]">{t(metric.label)}</p>
-              <p className="font-display text-2xl font-bold leading-none tracking-tight text-[#092a53] tabular-nums">{metric.value}</p>
+              <p className="text-xl font-semibold leading-none tracking-tight text-[#092a53] tabular-nums">{metric.value}</p>
               {metric.hint && <p className="text-xs leading-4 text-[#65748a]">{metric.hint}</p>}
             </div>
           )
@@ -470,7 +470,7 @@ export function AdminReviewsBoard() {
           </ul>
         ) : (
           <div className="py-12 text-center">
-            <p className="font-display text-lg font-bold text-[#092a53]">
+            <p className="text-sm font-semibold text-[#092a53]">
               {reviews.length ? t('No reviews match your filters.') : t(showApproved ? 'No approved reviews yet.' : 'No reviews are awaiting approval.')}
             </p>
             <p className="mx-auto mt-1 max-w-sm text-sm text-[#65748a]">
@@ -488,23 +488,23 @@ export function AdminReviewsBoard() {
       {isConfirmingBulk && (
         <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
           <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setIsConfirmingBulk(false)} tabIndex={-1} type="button" />
-          <section aria-labelledby="bulk-approve-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
-            <span className="grid size-12 place-items-center rounded-2xl bg-[#eaf6ee] text-[#2c7a4f]"><Icon className="size-6" path={icons.checks} /></span>
-            <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="bulk-approve-title">
+          <section aria-labelledby="bulk-approve-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-md bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
+            <span className="grid size-12 place-items-center rounded-md bg-[#eaf6ee] text-[#2c7a4f]"><Icon className="size-6" path={icons.checks} /></span>
+            <h2 className="mt-4 text-base font-semibold text-[#092a53]" id="bulk-approve-title">
               {t('Approve all shown ({count})', { count: visibleReviews.length })}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#65748a]">
               {t('These reviews will be published on the website right away. Make sure you have read them first.')}
             </p>
             {visibleReviews.some((review) => Number(review.rating) <= 2) && (
-              <p className="mt-3 flex items-start gap-2 rounded-xl bg-[#fff6e5] px-3 py-2.5 text-xs font-semibold text-[#8a5a00]">
+              <p className="mt-3 flex items-start gap-2 rounded-md bg-[#fff6e5] px-3 py-2.5 text-xs font-semibold text-[#8a5a00]">
                 <Icon className="mt-0.5 size-3.5 shrink-0" path={icons.alert} />
                 {t('Some of these reviews have 1 or 2 stars.')}
               </p>
             )}
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setIsConfirmingBulk(false)} type="button">{t('Cancel')}</button>
-              <button className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#35a36b] px-4 text-sm font-bold text-white transition hover:bg-[#2c8a59]" onClick={approveAllVisible} type="button">
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setIsConfirmingBulk(false)} type="button">{t('Cancel')}</button>
+              <button className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#35a36b] px-4 text-sm font-bold text-white transition hover:bg-[#2c8a59]" onClick={approveAllVisible} type="button">
                 <Icon path={icons.checks} />
                 {t('Approve')}
               </button>
@@ -525,22 +525,22 @@ export function AdminReviewsBoard() {
           <section
             aria-labelledby="reject-review-title"
             aria-modal="true"
-            className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]"
+            className="admin-modal-panel relative w-full max-w-md rounded-md bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]"
             role="dialog"
           >
-            <span className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600">
+            <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600">
               <Icon className="size-6" path={icons.trash} />
             </span>
-            <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="reject-review-title">
+            <h2 className="mt-4 text-base font-semibold text-[#092a53]" id="reject-review-title">
               {t('Reject and delete this review?')}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#65748a]">
               {t('This will permanently delete the review from {name}. This cannot be undone.', { name: reviewToReject.customerName })}
             </p>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
+            {error && <p className="mt-3 rounded-md bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
             <div className="mt-6 flex justify-end gap-2.5">
               <button
-                className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] disabled:opacity-60"
+                className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] disabled:opacity-60"
                 disabled={deletingReviewId === reviewToReject.id}
                 onClick={() => setReviewToReject(null)}
                 type="button"
@@ -548,7 +548,7 @@ export function AdminReviewsBoard() {
                 {t('Cancel')}
               </button>
               <button
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
                 disabled={deletingReviewId === reviewToReject.id}
                 onClick={rejectReview}
                 type="button"

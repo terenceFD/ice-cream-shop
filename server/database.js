@@ -587,6 +587,7 @@ if (configuredDatabaseBackend === "postgres") {
   addColumnIfMissing("cake_requests", "deposit_admin_seen", "INTEGER NOT NULL DEFAULT 1");
   addColumnIfMissing("customers", "profile_picture", "TEXT NOT NULL DEFAULT ''");
   addColumnIfMissing("orders", "review_reminder_sent_at", "TEXT");
+  addColumnIfMissing("orders", "hidden_by_customer", "INTEGER NOT NULL DEFAULT 0");
   addColumnIfMissing("customers", "welcome_notification_sent_at", "TEXT");
   addColumnIfMissing("admins", "role", "TEXT NOT NULL DEFAULT 'owner'");
   addColumnIfMissing("admins", "security_pin_hash", "TEXT");
@@ -848,6 +849,9 @@ export async function verifyDatabaseSchema() {
   `).run();
   await database.prepare(`
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS review_reminder_sent_at TEXT
+  `).run();
+  await database.prepare(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS hidden_by_customer SMALLINT NOT NULL DEFAULT 0
   `).run();
   await database.prepare(`
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_notification_sent_at TEXT
@@ -2634,6 +2638,24 @@ export async function deleteFailedOrder(id) {
     database.prepare('DELETE FROM orders WHERE id = ?').run(id)
     return 'deleted'
   })()
+}
+
+export async function deleteDeliveredOrderForCustomer(id, customerId) {
+  // Soft delete: the order stays in the database so admins still see it;
+  // only the customer's own account view hides it.
+  if (databaseKind === "postgres") {
+    const result = await database.prepare(`
+      UPDATE orders SET hidden_by_customer = 1
+      WHERE id = ? AND customer_id = ? AND status = 'delivered'
+    `).run(id, customerId);
+    return result.changes ? "deleted" : "not_found";
+  }
+
+  const result = database.prepare(`
+    UPDATE orders SET hidden_by_customer = 1
+    WHERE id = ? AND customer_id = ? AND status = 'delivered'
+  `).run(id, customerId)
+  return result.changes ? 'deleted' : 'not_found'
 }
 
 export async function createCheckoutOrder({

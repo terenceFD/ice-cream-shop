@@ -8,7 +8,7 @@ import { stockBarPercent } from './stockMeter'
 import { PINNED_ACTION_CELL, PINNED_ACTION_HEAD } from './adminTable'
 import './AdminMenuPage.css'
 
-const inputClassName = 'mt-1.5 w-full rounded-xl border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
+const inputClassName = 'mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-[#092a53] transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-[#bd9c00] focus:bg-white focus:ring-4 focus:ring-[#ffdc32]/25 outline-none!'
 const labelClassName = 'block text-xs font-bold text-[#65748a]'
 const LOW_STOCK_THRESHOLD = 10
 const FALLBACK_IMAGE = '/images/hero-ice-cream.jpg'
@@ -84,7 +84,7 @@ function Thumb({ src, className = 'size-12' }: { src: string; className?: string
   const [failed, setFailed] = useState(false)
   if (!src) {
     return (
-      <span className={`${className} grid shrink-0 place-items-center rounded-xl bg-[#f4f6f8] text-[#a3b0bf]`}>
+      <span className={`${className} grid shrink-0 place-items-center rounded-md bg-[#f4f6f8] text-[#a3b0bf]`}>
         <Icon className="size-5" path={icons.image} />
       </span>
     )
@@ -92,7 +92,7 @@ function Thumb({ src, className = 'size-12' }: { src: string; className?: string
   return (
     <img decoding="async"
       alt=""
-      className={`${className} shrink-0 rounded-xl bg-[#f4f6f8] object-cover`}
+      className={`${className} shrink-0 rounded-md bg-[#f4f6f8] object-cover`}
       loading="lazy"
       onError={() => setFailed(true)}
       src={failed ? FALLBACK_IMAGE : src}
@@ -374,7 +374,7 @@ export function AdminMenuPage() {
     <div className="admin-menu-page min-w-0 space-y-6">
       <header className="admin-menu-header flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="min-w-0">
-            <h1 className="admin-menu-title font-display text-2xl font-extrabold tracking-tight text-[#092a53]">
+            <h1 className="admin-menu-title text-xl font-semibold tracking-tight text-[#092a53]">
               {t('Menu management')}
             </h1>
             <p className="mt-1 max-w-2xl text-sm text-[#65748a]">
@@ -383,14 +383,14 @@ export function AdminMenuPage() {
         </div>
         <div className="admin-menu-actions flex flex-wrap gap-2.5">
           <Link
-            className="admin-menu-secondary inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+            className="admin-menu-secondary inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce5ef] bg-white px-4 text-sm font-bold text-[#123b68] transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-[#092a53] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
             to="/menu"
           >
             <Icon path={icons.external} />
             {t('View public menu')}
           </Link>
           <button
-            className="admin-menu-primary inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50"
+            className="admin-menu-primary inline-flex min-h-10 items-center gap-2 rounded-md bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!categories.length}
             onClick={openAdd}
             type="button"
@@ -402,7 +402,7 @@ export function AdminMenuPage() {
       </header>
 
       {message && (
-        <div className="admin-menu-message flex items-center justify-between gap-3 rounded-xl bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
+        <div className="admin-menu-message flex items-center justify-between gap-3 rounded-md bg-[#eaf6ee] px-4 py-3 text-sm font-semibold text-[#1f5d3c] ring-1 ring-[#cfe8d8]" role="status">
           <span className="flex items-center gap-2">
             <Icon path={icons.check} />
             {message}
@@ -444,16 +444,16 @@ export function AdminMenuPage() {
         </span>
       </div>
 
-      <section aria-labelledby="menu-catalog-title" className="admin-menu-catalog min-w-0 rounded-[20px] border border-[#dce3eb] bg-white">
+      <section aria-labelledby="menu-catalog-title" className="admin-menu-catalog min-w-0 rounded-md border border-[#dce3eb] bg-white">
         <div className="admin-menu-catalog-toolbar flex flex-col gap-4 border-b border-[#f4f6f8] p-4 sm:p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="admin-menu-catalog-title font-display text-xl font-extrabold text-[#092a53]" id="menu-catalog-title">{t('Added menu items')}</h2>
+              <h2 className="admin-menu-catalog-title text-base font-semibold text-[#092a53]" id="menu-catalog-title">{t('Added menu items')}</h2>
               <p aria-live="polite" className="admin-menu-result-count mt-0.5 text-xs text-[#65748a]">
                 {t('Showing {shown} of {total} items', { shown: filteredItems.length, total: items.length })}
               </p>
             </div>
-            <div aria-label={t('View')} className="inline-flex rounded-xl bg-[#f4f6f8] p-1" role="group">
+            <div aria-label={t('View')} className="inline-flex rounded-md bg-[#f4f6f8] p-1" role="group">
               {([
                 { key: 'table', icon: icons.list, label: t('Table view') },
                 { key: 'grid', icon: icons.grid, label: t('Grid view') },
@@ -504,7 +504,7 @@ export function AdminMenuPage() {
                 <option value="stock">{t('Sort: Lowest stock first')}</option>
               </select>
             </label>
-            <div aria-label={t('Availability')} className="admin-menu-status-filters flex overflow-x-auto rounded-xl bg-[#f4f6f8] p-1" role="group">
+            <div aria-label={t('Availability')} className="admin-menu-status-filters flex overflow-x-auto rounded-md bg-[#f4f6f8] p-1" role="group">
               {([
                 { key: 'all', label: t('All') },
                 { key: 'available', label: t('Available') },
@@ -526,7 +526,7 @@ export function AdminMenuPage() {
         </div>
 
         {error && !isOverlayOpen && (
-          <p className="admin-menu-error mx-4 mt-4 flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100 sm:mx-5" role="alert">
+          <p className="admin-menu-error mx-4 mt-4 flex items-start gap-2 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100 sm:mx-5" role="alert">
             <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
             {error}
           </p>
@@ -536,7 +536,7 @@ export function AdminMenuPage() {
           <div aria-label={t('Loading menu items…')} className="admin-menu-loading space-y-3 p-4 sm:p-5" role="status">
             {[0, 1, 2, 3].map((row) => (
               <div className="flex animate-pulse items-center gap-4" key={row}>
-                <span className="size-12 rounded-xl bg-[#f4f6f8]" />
+                <span className="size-12 rounded-md bg-[#f4f6f8]" />
                 <span className="h-3 flex-1 rounded bg-[#f4f6f8]" />
                 <span className="h-3 w-24 rounded bg-[#f4f6f8]" />
               </div>
@@ -544,10 +544,10 @@ export function AdminMenuPage() {
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="px-6 py-14 text-center">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#f4f6f8] text-[#65748a]">
+            <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#f4f6f8] text-[#65748a]">
               <Icon className="size-5" path={items.length ? icons.search : icons.menu} />
             </span>
-            <p className="mt-4 font-display text-lg font-extrabold text-[#092a53]">
+            <p className="mt-4 text-sm font-semibold text-[#092a53]">
               {t(items.length ? 'No menu items match your filters.' : 'No custom menu items yet.')}
             </p>
             {!items.length && (
@@ -558,7 +558,7 @@ export function AdminMenuPage() {
             <div className="mt-4 flex justify-center">
               {hasActiveFilters ? (
                 <button
-                  className="min-h-9 rounded-xl border border-[#dce5ef] px-4 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8]"
+                  className="min-h-9 rounded-md border border-[#dce5ef] px-4 text-xs font-bold text-[#123b68] transition hover:bg-[#f4f6f8]"
                   onClick={() => { setSearch(''); setCategoryFilter(''); setStatusFilter('all') }}
                   type="button"
                 >
@@ -566,7 +566,7 @@ export function AdminMenuPage() {
                 </button>
               ) : (
                 <button
-                  className="inline-flex min-h-9 items-center gap-2 rounded-xl bg-[#092a53] px-4 text-xs font-bold text-white transition hover:bg-[#163e6b] disabled:opacity-50"
+                  className="inline-flex min-h-9 items-center gap-2 rounded-md bg-[#092a53] px-4 text-xs font-bold text-white transition hover:bg-[#163e6b] disabled:opacity-50"
                   disabled={!categories.length}
                   onClick={openAdd}
                   type="button"
@@ -620,7 +620,7 @@ export function AdminMenuPage() {
           <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5 2xl:grid-cols-3">
             {filteredItems.map((item) => (
               <article
-                className="admin-menu-grid-card group flex flex-col overflow-hidden rounded-2xl border border-[#e7edf4] bg-white transition"
+                className="admin-menu-grid-card group flex flex-col overflow-hidden rounded-md border border-[#e7edf4] bg-white transition"
                 key={item.id}
               >
                 <div className="relative aspect-[1.75] overflow-hidden bg-[#f4f6f8]">
@@ -639,7 +639,7 @@ export function AdminMenuPage() {
                 <div className="flex flex-1 flex-col p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="truncate font-display text-lg font-extrabold text-[#092a53]">{item.name}</h3>
+                      <h3 className="truncate text-sm font-semibold text-[#092a53]">{item.name}</h3>
                       <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-[#65748a]">{item.detail}</p>
                     </div>
                     <p className="shrink-0 text-sm font-extrabold tabular-nums text-[#092a53]">{formatPrice(item.priceXaf)}</p>
@@ -667,25 +667,25 @@ export function AdminMenuPage() {
             <header className="flex items-start justify-between gap-4 border-b border-[#f4f6f8] px-6 py-5">
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#bd9c00]">{t(editingItemId ? 'Edit menu item' : 'Menu editor')}</p>
-                <h2 className="mt-1 font-display text-2xl font-extrabold text-[#092a53]" id="menu-drawer-title">
+                <h2 className="mt-1 text-xl font-semibold text-[#092a53]" id="menu-drawer-title">
                   {t(editingItemId ? 'Edit menu item' : 'Add a menu item')}
                 </h2>
                 <p className="mt-1 text-sm text-[#65748a]">
                   {t(editingItemId ? 'Changes will appear in the shop right away.' : 'Add menu items to an existing category. New items are saved and shown in the public menu.')}
                 </p>
               </div>
-              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-xl text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={cancelEdit} type="button">
+              <button aria-label={t('Close')} className="grid size-9 shrink-0 place-items-center rounded-md text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={cancelEdit} type="button">
                 <Icon className="size-5" path={icons.close} />
               </button>
             </header>
 
             <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
               <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
-                <div className="admin-menu-live-preview flex items-center gap-4 rounded-2xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
+                <div className="admin-menu-live-preview flex items-center gap-4 rounded-md bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
                   <Thumb className="size-20" key={form.image} src={form.image.trim()} />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Live preview')}</p>
-                    <p className="mt-1 truncate font-display text-lg font-extrabold text-[#092a53]">{form.name || t('Menu item name')}</p>
+                    <p className="mt-1 truncate text-sm font-semibold text-[#092a53]">{form.name || t('Menu item name')}</p>
                     <p className="truncate text-xs text-[#65748a]">{form.categoryTitle ? t(form.categoryTitle) : t('Select a category')}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <span className="text-sm font-extrabold text-[#092a53]">
@@ -737,7 +737,7 @@ export function AdminMenuPage() {
                       <input className={inputClassName} min={0} name="stock" onChange={handleChange} required step={1} type="number" value={form.stock} />
                     </label>
                   </div>
-                  <label className="flex cursor-pointer items-center gap-4 rounded-xl bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb] transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00]">
+                  <label className="flex cursor-pointer items-center gap-4 rounded-md bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb] transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bd9c00]">
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-bold text-[#092a53]">{t('Available to order')}</span>
                       <span className="block text-xs text-[#65748a]">{t('Turn off to hide this item from the public menu.')}</span>
@@ -750,11 +750,11 @@ export function AdminMenuPage() {
                 <fieldset className="space-y-4">
                   <legend className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-[#65748a]">{t('Image')}</legend>
                   <label
-                    className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition has-[:focus-visible]:border-[#bd9c00] ${
+                    className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-6 text-center transition has-[:focus-visible]:border-[#bd9c00] ${
                       isUploading ? 'cursor-wait border-[#e0c95a] bg-[#fffbea]' : 'border-[#d8e0ea] bg-[#f4f6f8] hover:border-[#9fb3c8] hover:bg-[#f5f8fb]'
                     }`}
                   >
-                    <span className={`admin-menu-upload-mark grid size-10 place-items-center rounded-xl ${isUploading ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white text-[#123b68] shadow-sm'}`}>
+                    <span className={`admin-menu-upload-mark grid size-10 place-items-center rounded-md ${isUploading ? 'bg-[#ffdc32] text-[#092a53]' : 'bg-white text-[#123b68] shadow-sm'}`}>
                       {isUploading
                         ? <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
                         : <Icon className="size-5" path={icons.upload} />}
@@ -771,7 +771,7 @@ export function AdminMenuPage() {
                 </fieldset>
 
                 {error && (
-                  <p className="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
+                  <p className="flex items-start gap-2 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-100" role="alert">
                     <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
                     {error}
                   </p>
@@ -779,11 +779,11 @@ export function AdminMenuPage() {
               </div>
 
               <footer className="flex items-center justify-end gap-3 border-t border-[#f4f6f8] bg-[#f4f6f8] px-6 py-4">
-                <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={cancelEdit} type="button">
+                <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-[#092a53]" onClick={cancelEdit} type="button">
                   {t('Cancel')}
                 </button>
                 <button
-                  className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#092a53] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] disabled:cursor-wait disabled:opacity-60"
                   disabled={isSaving || isUploading}
                   type="submit"
                 >
@@ -802,16 +802,16 @@ export function AdminMenuPage() {
           <section
             aria-labelledby="delete-menu-item-title"
             aria-modal="true"
-            className="admin-modal-panel relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]"
+            className="admin-modal-panel relative w-full max-w-md rounded-md bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]"
             role="dialog"
           >
-            <span className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600">
+            <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600">
               <Icon className="size-6" path={icons.trash} />
             </span>
-            <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="delete-menu-item-title">
+            <h2 className="mt-4 text-base font-semibold text-[#092a53]" id="delete-menu-item-title">
               {t('Delete menu item "{name}"?', { name: itemToDelete.name })}
             </h2>
-            <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
+            <div className="mt-4 flex items-center gap-3 rounded-md bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
               <Thumb src={itemToDelete.image} />
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold text-[#092a53]">{itemToDelete.name}</p>
@@ -819,13 +819,13 @@ export function AdminMenuPage() {
               </div>
             </div>
             <p className="mt-3 text-sm leading-6 text-[#65748a]">{t('It will be removed from the public menu. This cannot be undone.')}</p>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
+            {error && <p className="mt-3 rounded-md bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setItemToDelete(null)} type="button">
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setItemToDelete(null)} type="button">
                 {t('Cancel')}
               </button>
               <button
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
                 disabled={deletingItemId === itemToDelete.id}
                 onClick={handleDelete}
                 type="button"

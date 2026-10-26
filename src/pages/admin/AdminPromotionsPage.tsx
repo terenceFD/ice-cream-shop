@@ -393,7 +393,7 @@ export function AdminPromotionsPage() {
     <div className="min-w-0 space-y-6">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="min-w-0">
-          <h1 className="font-display text-2xl font-bold tracking-tight text-[#092a53]">{t('Promotions and discount codes')}</h1>
+          <h1 className="text-xl font-semibold tracking-tight text-[#092a53]">{t('Promotions and discount codes')}</h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-[#5f6368]">{t('Create percentage or fixed FCFA discounts. Codes are validated and applied on the server when an order is created.')}</p>
         </div>
         <button

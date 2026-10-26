@@ -732,3 +732,40 @@ details[open] > .menu-popover {
     opacity: 1;
   }
 }
+
+/* Review marquee: one line of review cards drifting left-to-right.
+   The track is duplicated for a seamless loop; hover pauses it;
+   reduced motion keeps the full line without the travel. */
+.review-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+}
+
+.review-marquee-track {
+  display: flex;
+  width: max-content;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .review-marquee-track {
+    animation: review-marquee-move 60s linear infinite;
+  }
+  .review-marquee:hover .review-marquee-track,
+  .review-marquee:focus-within .review-marquee-track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes review-marquee-move {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-marquee-track {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+}

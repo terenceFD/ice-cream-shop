@@ -367,7 +367,7 @@ export function AdminNotifications() {
           {isLoading ? (
             <div aria-label={t('Loading…')} className="notification-loading" role="status">
               {[0, 1, 2, 3, 4].map((row) => (
-                <div className="flex gap-3 rounded-xl p-3" key={row}>
+                <div className="flex gap-3 rounded-md p-3" key={row}>
                   <span className="size-10 shrink-0 rounded-full bg-[#f4f6f8]" />
                   <div className="flex-1 space-y-2">
                     <span className="block h-3 w-1/2 rounded bg-[#f4f6f8]" />
@@ -536,7 +536,7 @@ export function AdminNotifications() {
                       value={replyDraft}
                     />
                     {replyErrors[selectedMessage.id] && (
-                      <p className="flex items-start gap-2 rounded-xl bg-red-50 px-3.5 py-2.5 text-sm font-semibold text-red-700" role="alert">
+                      <p className="flex items-start gap-2 rounded-md bg-red-50 px-3.5 py-2.5 text-sm font-semibold text-red-700" role="alert">
                         <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
                         {replyErrors[selectedMessage.id]}
                       </p>
@@ -597,9 +597,9 @@ export function AdminNotifications() {
       {confirm && (
         <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
           <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45" onClick={() => setConfirm(null)} tabIndex={-1} type="button" />
-          <section aria-labelledby="notification-confirm-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-[22px] border border-[#e7ebef] bg-white p-6" role="dialog">
-            <span className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600"><Icon className="size-6" path={icons.trash} /></span>
-            <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="notification-confirm-title">
+          <section aria-labelledby="notification-confirm-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-md border border-[#e7ebef] bg-white p-6" role="dialog">
+            <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600"><Icon className="size-6" path={icons.trash} /></span>
+            <h2 className="mt-4 text-base font-semibold text-[#092a53]" id="notification-confirm-title">
               {confirm.type === 'clear' ? t('Clear all') : t('Delete')}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#65748a]">
@@ -608,9 +608,9 @@ export function AdminNotifications() {
                 : t('Delete notification from {name}? This cannot be undone.', { name: confirm.message.name })}
             </p>
             <div className="mt-6 flex justify-end gap-2.5">
-              <button className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setConfirm(null)} type="button">{t('Cancel')}</button>
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setConfirm(null)} type="button">{t('Cancel')}</button>
               <button
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
                 disabled={isClearingAll || deletingId !== null}
                 onClick={() => (confirm.type === 'clear' ? clearAllMessages() : deleteMessage(confirm.message))}
                 type="button"

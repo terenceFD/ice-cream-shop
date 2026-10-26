@@ -457,10 +457,10 @@ export function AdminLayout() {
     <div className="admin-workspace min-h-screen bg-[#f4f6f8] text-[#092a53]">
       <header className="admin-topbar sticky top-0 z-40">
         <div className="admin-topbar-inner mx-auto flex max-w-[1600px] items-center gap-3 px-4 sm:gap-4 sm:px-6 lg:px-8">
-          <Link aria-label={t('Admin portal')} className="admin-topbar-brand group flex min-w-0 shrink-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#bd9c00]" to={isOwner ? '/admin' : '/admin/overview'}>
+          <Link aria-label={t('Admin portal')} className="admin-topbar-brand group flex min-w-0 shrink-0 items-center gap-3 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#bd9c00]" to={isOwner ? '/admin' : '/admin/overview'}>
             <img decoding="async" loading="eager" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-full shadow-[0_6px_14px_rgba(9,42,83,0.22)] transition group-hover:rotate-[-6deg]" height={40} src="/logo.png" width={40} />
             <span className="hidden min-w-0 sm:block">
-              <span className="block truncate font-display text-[15px] font-extrabold leading-tight text-[#092a53]">
+              <span className="block truncate text-[15px] font-semibold leading-tight text-[#092a53]">
                 Cold Stone <span className="text-[#bd9c00]">Creamery</span>
               </span>
               <span className="mt-0.5 block max-w-52 truncate text-xs font-bold uppercase tracking-[0.14em] text-[#65748a]">
@@ -502,7 +502,7 @@ export function AdminLayout() {
                   aria-controls="admin-branch-menu"
                   aria-expanded={isBranchMenuOpen}
                   aria-haspopup="menu"
-                  className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-1.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${
+                  className={`inline-flex min-h-11 items-center gap-2 rounded-md border px-3 py-1.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${
                     isBranchMenuOpen
                       ? 'border-[#d9c45b] bg-[#fffdf3] text-[#092a53]'
                       : 'border-[#dce3eb] bg-white text-[#173654] hover:border-[#c5d2e0] hover:bg-[#fbfcfd]'
@@ -528,7 +528,7 @@ export function AdminLayout() {
                 </button>
                 {isBranchMenuOpen && (
                   <div
-                    className="admin-modal-panel fixed z-50 overflow-hidden rounded-xl border border-[#dce3eb] bg-white shadow-[0_12px_32px_rgba(9,42,83,0.12)]"
+                    className="admin-modal-panel fixed z-50 overflow-hidden rounded-md border border-[#dce3eb] bg-white shadow-[0_12px_32px_rgba(9,42,83,0.12)]"
                     style={branchMenuBox ? { left: branchMenuBox.left, width: branchMenuBox.width } : undefined}
                     id="admin-branch-menu"
                     role="menu"
@@ -594,7 +594,7 @@ export function AdminLayout() {
                 aria-expanded={isLanguageMenuOpen}
                 aria-haspopup="menu"
                 aria-label={`${t('Language')}: ${currentLanguage.title}`}
-                className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-1.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${
+                className={`inline-flex min-h-11 items-center gap-2 rounded-md border px-3 py-1.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00] ${
                   isLanguageMenuOpen
                     ? 'border-[#d9c45b] bg-[#fffdf3] text-[#092a53]'
                     : 'border-[#dce3eb] bg-white text-[#173654] hover:border-[#c5d2e0] hover:bg-[#fbfcfd]'
@@ -619,7 +619,7 @@ export function AdminLayout() {
               </button>
               {isLanguageMenuOpen && (
                 <div
-                  className="admin-modal-panel absolute right-0 top-[calc(100%+8px)] z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-[#dce3eb] bg-white shadow-[0_12px_32px_rgba(9,42,83,0.12)]"
+                  className="admin-modal-panel absolute right-0 top-[calc(100%+8px)] z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-md border border-[#dce3eb] bg-white shadow-[0_12px_32px_rgba(9,42,83,0.12)]"
                   id="admin-language-menu"
                   role="menu"
                 >
@@ -740,33 +740,33 @@ export function AdminLayout() {
 
               {isAccountMenuOpen && (
                 <div
-                  className="admin-modal-panel absolute right-0 top-[calc(100%+10px)] w-72 overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.18)] ring-1 ring-[#dce3eb]"
+                  className="admin-modal-panel absolute right-0 top-[calc(100%+10px)] w-72 overflow-hidden rounded-md bg-white shadow-[0_24px_60px_rgba(9,42,83,0.18)] ring-1 ring-[#dce3eb]"
                   id="admin-account-menu"
                   role="menu"
                 >
-                  <div className="flex items-center gap-3 bg-gradient-to-br from-[#0d3566] to-[#092a53] p-4 text-white">
+                  <div className="flex items-center gap-3 border-b border-[#e8e8e8] bg-white p-4 text-[#111]">
                     {currentAdmin?.profilePicture ? (
-                      <img decoding="async" loading="lazy" alt="" className="size-11 rounded-xl object-cover ring-2 ring-white/25" src={currentAdmin.profilePicture} />
+                      <img decoding="async" loading="lazy" alt="" className="size-11 rounded-md object-cover ring-1 ring-[#e8e8e8]" src={currentAdmin.profilePicture} />
                     ) : (
-                      <span aria-hidden="true" className="grid size-11 place-items-center rounded-xl bg-[#ffdc32] font-display text-lg font-extrabold text-[#092a53]">{currentAdmin?.name?.charAt(0).toUpperCase()}</span>
+                      <span aria-hidden="true" className="grid size-11 place-items-center rounded-md bg-[#f4f6f8] text-sm font-semibold text-[#092a53]">{currentAdmin?.name?.charAt(0).toUpperCase()}</span>
                     )}
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-extrabold">{currentAdmin?.name}</p>
-                      <p className="truncate text-xs text-white/65">{currentAdmin?.email}</p>
-                      <span className="mt-1.5 inline-flex rounded-full bg-[#ffdc32] px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#092a53]">
+                      <p className="truncate text-sm font-semibold">{currentAdmin?.name}</p>
+                      <p className="truncate text-xs text-[#5f6368]">{currentAdmin?.email}</p>
+                      <span className="mt-1.5 inline-flex rounded-full bg-[#f4f6f8] px-2 py-0.5 text-[10px] font-semibold text-[#5f6368]">
                         {isOwner ? t('Owner') : t(isBranchAdmin ? 'Branch admin' : 'Store admin')}
                       </span>
                       {!isOwner && currentAdmin?.storeName && (
-                        <p className="mt-1 truncate text-xs font-semibold text-white/75">{t(storeDisplayName || currentAdmin.storeName)}</p>
+                        <p className="mt-1 truncate text-xs font-medium text-[#5f6368]">{t(storeDisplayName || currentAdmin.storeName)}</p>
                       )}
                       {currentAdmin?.role === 'store_admin' && currentAdmin.storeTown && (
-                        <p className="truncate text-[9px] font-medium uppercase text-white/55">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</p>
+                        <p className="truncate text-[10px] font-medium text-[#5f6368]">{t('Branch: {branch}', { branch: currentAdmin.storeTown })}</p>
                       )}
                     </div>
                   </div>
                   <div className="p-1.5">
                     <button
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-60"
+                      className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53] disabled:opacity-60"
                       disabled={isSavingProfilePicture}
                       onClick={() => { setIsAccountMenuOpen(false); profilePictureInput.current?.click() }}
                       role="menuitem"
@@ -778,7 +778,7 @@ export function AdminLayout() {
                       {t(isSavingProfilePicture ? 'Saving…' : currentAdmin?.profilePicture ? 'Change profile picture' : 'Add profile picture')}
                     </button>
                     <Link
-                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
+                      className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
                       onClick={() => setIsAccountMenuOpen(false)}
                       role="menuitem"
                       to="/flavors"
@@ -791,7 +791,7 @@ export function AdminLayout() {
                     {isOwner && (
                       <>
                         <button
-                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
+                          className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
                           onClick={() => { setIsAccountMenuOpen(false); setSecurityDialogTab('password') }}
                           role="menuitem"
                           type="button"
@@ -802,7 +802,7 @@ export function AdminLayout() {
                           {t('Change password')}
                         </button>
                         <button
-                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
+                          className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
                           onClick={() => { setIsAccountMenuOpen(false); setSecurityDialogTab('email') }}
                           role="menuitem"
                           type="button"
@@ -816,7 +816,7 @@ export function AdminLayout() {
                     )}
                     {isOwner && (
                       <Link
-                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
+                        className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-bold text-[#123b68] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
                         onClick={() => setIsAccountMenuOpen(false)}
                         role="menuitem"
                         to="/admin/admins"
@@ -830,7 +830,7 @@ export function AdminLayout() {
                   </div>
                   <div className="border-t border-[#f4f6f8] p-1.5">
                     <button
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#b2433a] transition hover:bg-red-50 disabled:opacity-60"
+                      className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-bold text-[#b2433a] transition hover:bg-red-50 disabled:opacity-60"
                       disabled={isLoggingOut}
                       onClick={() => { setIsAccountMenuOpen(false); handleLogout() }}
                       role="menuitem"
@@ -855,24 +855,23 @@ export function AdminLayout() {
       {showWelcome && currentAdmin && (
         <div
           aria-live="polite"
-          className="admin-welcome-toast fixed right-4 top-[84px] z-50 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-2xl bg-[#092a53] text-white shadow-[0_24px_60px_rgba(9,42,83,0.35)] ring-1 ring-white/10"
+          className="admin-welcome-toast fixed right-4 top-[84px] z-50 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-md bg-white text-[#111] shadow-[0_16px_40px_rgba(9,42,83,0.16)] ring-1 ring-[#e8e8e8]"
           role="status"
         >
-          <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-12 size-36 rounded-full bg-[#ffdc32]/15 blur-2xl" />
           <div className="relative flex items-start gap-3.5 p-4 pr-3">
             {currentAdmin.profilePicture ? (
-              <img decoding="async" loading="lazy" alt="" className="size-12 shrink-0 rounded-xl object-cover ring-2 ring-[#ffdc32]/60" src={currentAdmin.profilePicture} />
+              <img decoding="async" loading="lazy" alt="" className="size-12 shrink-0 rounded-md object-cover ring-1 ring-[#e8e8e8]" src={currentAdmin.profilePicture} />
             ) : (
-              <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#ffdc32] font-display text-xl font-extrabold text-[#092a53]">
+              <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-md bg-[#f4f6f8] text-base font-semibold text-[#092a53]">
                 {currentAdmin.name?.charAt(0).toUpperCase()}
               </span>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ffdc32]">{t('Signed in successfully')}</p>
-              <p className="mt-1 font-display text-lg font-extrabold leading-snug">
+              <p className="text-xs font-semibold text-[#5f6368]">{t('Signed in successfully')}</p>
+              <p className="mt-1 text-sm font-semibold leading-snug text-[#111]">
                 {t('Welcome back, {name}!', { name: currentAdmin.name })} <span aria-hidden="true">👋</span>
               </p>
-              <p className="mt-1 text-xs leading-5 text-white/70">
+              <p className="mt-1 text-xs leading-5 text-[#5f6368]">
                 {isOwner
                   ? t('You are signed in as the owner, with access to every store.')
                   : t('You are signed in to {store}. You can manage this store’s orders and customers.', { store: t(storeDisplayName || currentAdmin.storeName || 'your store') })}
@@ -880,7 +879,7 @@ export function AdminLayout() {
             </div>
             <button
               aria-label={t('Dismiss')}
-              className="grid size-8 shrink-0 place-items-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
+              className="grid size-8 shrink-0 place-items-center rounded-md text-[#5f6368] transition hover:bg-[#f4f6f8] hover:text-[#111]"
               onClick={() => setShowWelcome(false)}
               type="button"
             >
@@ -889,15 +888,15 @@ export function AdminLayout() {
               </svg>
             </button>
           </div>
-          <div aria-hidden="true" className="h-1 bg-white/10">
-            <div className="admin-welcome-progress h-full bg-[#ffdc32]" />
+          <div aria-hidden="true" className="h-0.5 bg-[#f4f6f8]">
+            <div className="admin-welcome-progress h-full bg-[#092a53]" />
           </div>
         </div>
       )}
       {(depositNotices.length > 0 || cakeDepositNotices.length > 0) && (
         <div className={`fixed right-4 z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 ${showWelcome ? 'top-[248px]' : 'top-[84px]'}`}>
           {depositNotices.map((notice) => (
-            <div className="flex gap-3 rounded-2xl bg-[#202124] p-3.5 text-white shadow-[0_24px_50px_rgba(0,0,0,0.35)]" key={notice.id} role="status">
+            <div className="flex gap-3 rounded-md bg-[#202124] p-3.5 text-white shadow-[0_24px_50px_rgba(0,0,0,0.35)]" key={notice.id} role="status">
               <img alt="" className="size-10 shrink-0 rounded-full" decoding="async" height={40} loading="lazy" src="/icons/icon-192.png" width={40} />
               <Link
                 className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32]"
@@ -938,7 +937,7 @@ export function AdminLayout() {
             </div>
           ))}
           {cakeDepositNotices.map((notice) => (
-            <div className="flex gap-3 rounded-2xl bg-[#202124] p-3.5 text-white shadow-[0_24px_50px_rgba(0,0,0,0.35)]" key={notice.id} role="status">
+            <div className="flex gap-3 rounded-md bg-[#202124] p-3.5 text-white shadow-[0_24px_50px_rgba(0,0,0,0.35)]" key={notice.id} role="status">
               <img alt="" className="size-10 shrink-0 rounded-full" decoding="async" height={40} loading="lazy" src="/icons/icon-192.png" width={40} />
               <Link
                 className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32]"
@@ -984,7 +983,7 @@ export function AdminLayout() {
         <aside
           data-admin-sidebar
           aria-label={t('Admin dashboard')}
-          className="relative h-fit overflow-hidden rounded-[26px] border border-white/10 text-white shadow-[0_22px_52px_rgba(9,42,83,0.26)] lg:sticky lg:top-[92px] lg:flex lg:max-h-[calc(100vh-112px)] lg:flex-col"
+          className="relative h-fit overflow-hidden rounded-md border border-white/10 text-white shadow-[0_22px_52px_rgba(9,42,83,0.26)] lg:sticky lg:top-[92px] lg:flex lg:max-h-[calc(100vh-112px)] lg:flex-col"
         >
 
           <input
@@ -1001,18 +1000,18 @@ export function AdminLayout() {
           <div className={`admin-sidebar-profile relative flex shrink-0 items-center gap-3 border-b border-white/10 ${isSidebarCollapsed ? 'lg:flex-col lg:px-2 lg:py-4' : ''} px-4 py-5`}>
             <button
               aria-label={t(currentAdmin?.profilePicture ? 'Change profile picture' : 'Add profile picture')}
-              className="group/avatar relative shrink-0 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32]"
+              className="group/avatar relative shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdc32]"
               disabled={isSavingProfilePicture}
               onClick={() => profilePictureInput.current?.click()}
               title={t(currentAdmin?.profilePicture ? 'Change profile picture' : 'Add profile picture')}
               type="button"
             >
               {currentAdmin?.profilePicture ? (
-                <img decoding="async" loading="lazy" alt="" className="size-11 rounded-xl object-cover ring-2 ring-white/20 shadow-[0_8px_18px_rgba(4,14,26,0.28)]" src={currentAdmin.profilePicture} />
+                <img decoding="async" loading="lazy" alt="" className="size-11 rounded-md object-cover ring-2 ring-white/20 shadow-[0_8px_18px_rgba(4,14,26,0.28)]" src={currentAdmin.profilePicture} />
               ) : (
-                <span className="grid size-11 place-items-center rounded-xl bg-[#ffdc32] font-display text-lg font-extrabold text-[#092a53] shadow-[0_8px_18px_rgba(255,220,50,0.32)]">{currentAdmin?.name?.charAt(0).toUpperCase()}</span>
+                <span className="grid size-11 place-items-center rounded-md bg-[#ffdc32] text-sm font-semibold text-[#092a53] shadow-[0_8px_18px_rgba(255,220,50,0.32)]">{currentAdmin?.name?.charAt(0).toUpperCase()}</span>
               )}
-              <span className="absolute inset-0 grid place-items-center rounded-xl bg-[#092a53]/70 opacity-0 transition group-hover/avatar:opacity-100">
+              <span className="absolute inset-0 grid place-items-center rounded-md bg-[#092a53]/70 opacity-0 transition group-hover/avatar:opacity-100">
                 {isSavingProfilePicture ? (
                   <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-white border-r-transparent" />
                 ) : (
@@ -1066,7 +1065,7 @@ export function AdminLayout() {
             </button>
           </div>
           {(profilePictureError || profilePictureSaved) && (
-            <p className={`mx-3 mt-3 rounded-xl border border-white/10 bg-black/10 px-3 py-2 text-xs font-semibold ${profilePictureError ? 'text-red-100' : 'text-[#ccf7d9]'} ${isSidebarCollapsed ? 'lg:hidden' : ''}`} role={profilePictureError ? 'alert' : 'status'}>
+            <p className={`mx-3 mt-3 rounded-md border border-white/10 bg-black/10 px-3 py-2 text-xs font-semibold ${profilePictureError ? 'text-red-100' : 'text-[#ccf7d9]'} ${isSidebarCollapsed ? 'lg:hidden' : ''}`} role={profilePictureError ? 'alert' : 'status'}>
               {profilePictureError || t('Profile picture saved.')}
             </p>
           )}
@@ -1080,7 +1079,7 @@ export function AdminLayout() {
                   <path d="m20 20-4.2-4.2M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
                 </svg>
                 <input
-                  className="h-9 w-full rounded-xl border border-white/10 bg-white/[0.04] pl-9 pr-3 text-xs font-medium text-white transition placeholder:text-white/40 hover:bg-white/[0.07] focus:border-[#ffdc32]/70 focus:bg-white/[0.08] outline-none!"
+                  className="h-9 w-full rounded-md border border-white/10 bg-white/[0.04] pl-9 pr-3 text-xs font-medium text-white transition placeholder:text-white/40 hover:bg-white/[0.07] focus:border-[#ffdc32]/70 focus:bg-white/[0.08] outline-none!"
                   onChange={(event) => setNavQuery(event.target.value)}
                   onKeyDown={(event) => {
                     if (event.key !== 'Enter') return
@@ -1197,7 +1196,7 @@ export function AdminLayout() {
 
             <div className={`admin-sidebar-footer grid shrink-0 grid-cols-2 gap-1 border-t border-white/[0.08] p-3 ${isSidebarCollapsed ? 'lg:grid-cols-1 lg:px-2' : ''}`}>
               <Link
-                className={`flex min-h-10 min-w-0 items-center gap-2 rounded-xl px-2 text-[12px] font-semibold text-white/65 transition hover:bg-white/[0.08] hover:text-white ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
+                className={`flex min-h-10 min-w-0 items-center gap-2 rounded-md px-2 text-[12px] font-semibold text-white/65 transition hover:bg-white/[0.08] hover:text-white ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
                 title={isSidebarCollapsed ? t('View storefront') : undefined}
                 to="/flavors"
               >
@@ -1209,7 +1208,7 @@ export function AdminLayout() {
                 <span className={`truncate ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>{t('Storefront')}</span>
               </Link>
               <button
-                className={`flex min-h-10 w-full min-w-0 items-center gap-2 rounded-xl px-2 text-left text-[12px] font-semibold text-white/65 transition hover:bg-red-500/15 hover:text-red-100 disabled:opacity-60 ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
+                className={`flex min-h-10 w-full min-w-0 items-center gap-2 rounded-md px-2 text-left text-[12px] font-semibold text-white/65 transition hover:bg-red-500/15 hover:text-red-100 disabled:opacity-60 ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
                 disabled={isLoggingOut}
                 onClick={handleLogout}
                 title={isSidebarCollapsed ? t('Log out') : undefined}
@@ -1227,7 +1226,7 @@ export function AdminLayout() {
           </div>
         </aside>
 
-        <main className="min-h-[60vh] min-w-0 rounded-[22px] border border-[#e2e8f0] bg-white p-4 shadow-[0_8px_28px_rgba(16,44,80,0.04)] sm:p-6 lg:p-8">
+        <main className="min-h-[60vh] min-w-0 rounded-md border border-[#e2e8f0] bg-white p-4 shadow-[0_8px_28px_rgba(16,44,80,0.04)] sm:p-6 lg:p-8">
           <Suspense fallback={<div aria-busy="true" className="min-h-[50vh]" role="status" />}>
             <Outlet key={selectedBranch} />
           </Suspense>

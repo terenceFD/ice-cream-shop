@@ -523,6 +523,8 @@ function OrderCard({
   isReordering,
   onSave,
   onReorder,
+  onDelete,
+  isDeleting,
 }) {
   const itemCount = order.items.reduce(
     (count, item) => count + item.quantity,
@@ -676,6 +678,21 @@ function OrderCard({
               />
               {isReordering ? t("Adding…") : t("Reorder")}
             </button>
+            {onDelete && (
+              <button
+                aria-haspopup="dialog"
+                className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#f0c9c8] bg-[#fdf3f2] px-4 py-2.5 text-xs font-bold tracking-wide text-[#b44947] uppercase transition-all hover:border-[#b44947] hover:bg-[#b44947] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b44947] disabled:cursor-wait disabled:opacity-60"
+                disabled={isDeleting}
+                onClick={onDelete}
+                type="button"
+              >
+                <Icon
+                  className="size-4 transition-transform group-hover:scale-110"
+                  path="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m3 0-1 13H8L7 7M10 11v6M14 11v6"
+                />
+                {isDeleting ? t("Removing…") : t("Remove")}
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -953,6 +970,8 @@ export function CustomerOrdersPage() {
   const [showCartLink, setShowCartLink] = useState(false);
   const [reorderingId, setReorderingId] = useState(null);
   const [savingOrderId, setSavingOrderId] = useState(null);
+  const [deletingOrderId, setDeletingOrderId] = useState(null);
+  const [orderToDelete, setOrderToDelete] = useState(null);
   const [deletingSavedCartId, setDeletingSavedCartId] = useState(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [orderFilter, setOrderFilter] = useState("all");
@@ -1161,6 +1180,27 @@ export function CustomerOrdersPage() {
     }
   }
 
+  async function confirmDeleteDeliveredOrder() {
+    const order = orderToDelete;
+    if (!order) return;
+    setDeletingOrderId(order.id);
+    setAccountError("");
+    setAccountNotice("");
+    try {
+      await apiRequest(`/customer/orders/${encodeURIComponent(order.id)}`, {
+        method: "DELETE",
+        token: getCustomerToken(),
+      });
+      setOrders((current) => current.filter((entry) => entry.id !== order.id));
+      setAccountNotice(t("Order removed from your history."));
+    } catch (deleteError) {
+      setAccountError(deleteError.message);
+    } finally {
+      setDeletingOrderId(null);
+      setOrderToDelete(null);
+    }
+  }
+
   const renderOrderCard = (order) => {
     const isSaved = savedCarts.some(
       (savedCart) => savedCart.sourceOrderId === order.id,
@@ -1175,6 +1215,9 @@ export function CustomerOrdersPage() {
           language={language}
           onReorder={() => reorderItems(order.items, order.id)}
           onSave={() => saveOrder(order)}
+          onDelete={isCompleted(order) ? () => setOrderToDelete(order) : null}
+          isDeleting={deletingOrderId === order.id}
+          order={order}
           order={order}
           t={t}
         />
@@ -1255,7 +1298,7 @@ export function CustomerOrdersPage() {
                     {t("Cold Stone Creamery")}
                   </p>
                   <h1 className="mt-1 break-words font-display text-2xl font-bold leading-tight sm:text-3xl">
-                    {t("My account")}
+                    {firstName ? t("Welcome back, {name}", { name: firstName }) : t("My account")}
                   </h1>
                   <p className="account-identity-detail mt-1 truncate text-sm text-white/70">
                     <span>{customer.name || firstName}</span>
@@ -1859,6 +1902,62 @@ export function CustomerOrdersPage() {
           </div>
         </div>
       </main>
+      {orderToDelete && (
+        <div className="fixed inset-0 z-[60] grid place-items-center px-5" role="presentation">
+          <button
+            aria-label={t("Cancel")}
+            className="absolute inset-0 bg-[#092a53]/50 backdrop-blur-[2px]"
+            onClick={() => setOrderToDelete(null)}
+            tabIndex={-1}
+            type="button"
+          />
+          <section
+            aria-labelledby="delete-order-title"
+            aria-modal="true"
+            className="relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]"
+            role="dialog"
+          >
+            <div className="flex items-start gap-4">
+              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fdf0ef] text-[#b44947]">
+                <Icon
+                  className="size-6"
+                  path="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m3 0-1 13H8L7 7M10 11v6M14 11v6"
+                />
+              </span>
+              <div className="min-w-0">
+                <h2 className="font-display text-lg font-extrabold text-[#092a53]" id="delete-order-title">
+                  {t("Remove order #{id}?", { id: orderToDelete.id })}
+                </h2>
+                <p className="mt-1.5 text-sm leading-6 text-[#65748a]">
+                  {t("This order will be removed from your order history. The store keeps its own record of it.")}
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-2.5">
+              <button
+                className="inline-flex min-h-10 items-center rounded-lg border border-[#dce3eb] bg-white px-4 text-sm font-semibold text-[#092a53] transition hover:border-[#bac7d5] focus-visible:outline-2 focus-visible:outline-[#092a53]"
+                disabled={deletingOrderId === orderToDelete.id}
+                onClick={() => setOrderToDelete(null)}
+                type="button"
+              >
+                {t("Cancel")}
+              </button>
+              <button
+                className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#b44947] px-4 text-sm font-bold text-white transition hover:bg-[#9c3937] focus-visible:outline-2 focus-visible:outline-[#b44947] disabled:cursor-wait disabled:opacity-60"
+                disabled={deletingOrderId === orderToDelete.id}
+                onClick={confirmDeleteDeliveredOrder}
+                type="button"
+              >
+                <Icon
+                  className="size-4"
+                  path="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m3 0-1 13H8L7 7M10 11v6M14 11v6"
+                />
+                {deletingOrderId === orderToDelete.id ? t("Removing…") : t("Remove")}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
       <Footer />
     </div>
   );

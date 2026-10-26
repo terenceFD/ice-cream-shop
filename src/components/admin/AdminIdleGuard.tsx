@@ -82,26 +82,26 @@ export function AdminIdleGuard() {
         aria-describedby="idle-warning-text"
         aria-labelledby="idle-warning-title"
         aria-modal="true"
-        className="admin-modal-panel relative w-full max-w-sm rounded-[22px] bg-white p-6 text-center shadow-[0_30px_80px_rgba(9,42,83,0.35)]"
+        className="admin-modal-panel relative w-full max-w-sm rounded-md bg-white p-6 text-center shadow-[0_30px_80px_rgba(9,42,83,0.35)]"
         role="alertdialog"
       >
-        <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#fff6d6] font-display text-xl font-extrabold tabular-nums text-[#8a6d00]">
+        <span className="mx-auto grid size-12 place-items-center rounded-md bg-[#fff6d6] text-lg font-semibold tabular-nums text-[#8a6d00]">
           {secondsLeft}
         </span>
-        <h2 className="mt-4 font-display text-xl font-extrabold text-[#092a53]" id="idle-warning-title">{t('Are you still there?')}</h2>
+        <h2 className="mt-4 text-base font-semibold text-[#092a53]" id="idle-warning-title">{t('Are you still there?')}</h2>
         <p className="mt-2 text-sm leading-6 text-[#65748a]" id="idle-warning-text">
           {t('For your security, you will be signed out in {seconds} seconds because the dashboard has been inactive.', { seconds: secondsLeft })}
         </p>
         <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
           <button
-            className="min-h-10 rounded-xl px-4 text-sm font-bold text-[#65748a] ring-1 ring-[#dce3eb] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
+            className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] ring-1 ring-[#dce3eb] transition hover:bg-[#f4f6f8] hover:text-[#092a53]"
             onClick={() => { lastActivityRef.current = 1 }}
             type="button"
           >
             {t('Sign out now')}
           </button>
           <button
-            className="min-h-10 rounded-xl bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
+            className="min-h-10 rounded-md bg-[#092a53] px-4 text-sm font-bold text-white transition hover:bg-[#163e6b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd9c00]"
             onClick={staySignedIn}
             ref={stayButtonRef}
             type="button"

@@ -14,30 +14,24 @@ export function AdminIcon({ path, className = 'size-4' }) {
 export function AdminPageHeader({ icon, section, title, description, actions, t }) {
   return (
     <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
-      <div className="flex min-w-0 items-center gap-4">
-        <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#092a53] text-[#ffdc32]">
-          <AdminIcon className="size-7" path={icon} />
-        </span>
-        <div className="min-w-0">
-          <nav aria-label={t('Breadcrumb')} className="text-xs font-bold text-[#65748a]">
-            {section} <span aria-hidden="true" className="mx-1">/</span>
-            <span className="text-[#bd9c00]">{title}</span>
-          </nav>
-          <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-[#092a53] sm:text-[1.9rem]">{title}</h1>
-          {description && <p className="mt-0.5 max-w-2xl text-sm text-[#65748a]">{description}</p>}
-        </div>
+      <div className="min-w-0">
+        <nav aria-label={t('Breadcrumb')} className="text-xs font-medium text-[#65748a]">
+          {section} <span aria-hidden="true" className="mx-1">/</span>
+          <span className="text-[#092a53]">{title}</span>
+        </nav>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[#111]">{title}</h1>
+        {description && <p className="mt-1 max-w-2xl text-sm text-[#65748a]">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2 xl:justify-end">{actions}</div>}
     </header>
   )
 }
 
-export function AdminStatCard({ icon, accent, value, label }) {
+export function AdminStatCard({ value, label }) {
   return (
-    <div className="rounded-2xl border border-[#dce3eb] bg-white p-4 sm:p-5">
-      <span className={`grid size-9 place-items-center rounded-xl ${accent}`}><AdminIcon path={icon} /></span>
-      <p className="mt-4 font-display text-[1.75rem] font-extrabold leading-none tracking-tight text-[#092a53]">{value}</p>
-      <p className="mt-1.5 text-xs font-semibold text-[#65748a]">{label}</p>
+    <div className="bg-white px-4 py-4 sm:px-5">
+      <p className="text-xs font-medium text-[#65748a]">{label}</p>
+      <p className="mt-2 break-words text-2xl font-semibold leading-tight tabular-nums tracking-tight text-[#111]">{value}</p>
     </div>
   )
 }
@@ -48,7 +42,7 @@ export function AdminNotice({ tone = 'success', children }) {
     ? 'bg-red-50 text-red-700 ring-red-100'
     : 'bg-[#eaf6ee] text-[#1f5d3c] ring-[#cfe8d8]'
   return (
-    <p className={`flex items-start gap-2 rounded-xl px-4 py-3 text-sm font-semibold ring-1 ${styles}`} role={tone === 'error' ? 'alert' : 'status'}>
+    <p className={`flex items-start gap-2 rounded-md px-4 py-3 text-sm font-semibold ring-1 ${styles}`} role={tone === 'error' ? 'alert' : 'status'}>
       <AdminIcon className="mt-0.5 size-4 shrink-0" path={tone === 'error' ? adminIcons.alert : adminIcons.check} />
       {children}
     </p>
