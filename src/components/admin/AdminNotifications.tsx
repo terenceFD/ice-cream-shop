@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { apiRequest } from '../../api/api'
 import { useAdminAuth } from '../../pages/admin/useAdminAuth'
 import { useLanguage } from '../../language/useLanguage'
+import { whatsappLink } from '../../lib/whatsapp'
 import './AdminNotifications.css'
 
 interface ContactMessage {
@@ -39,6 +40,7 @@ const icons = {
   mailOpen: 'M4 10 12 4l8 6v10H4V10Zm0 0 8 6 8-6',
   phone: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z',
   reply: 'M10 9 5 13l5 4M5 13h9a5 5 0 0 1 5 5v1',
+  whatsapp: 'M20.5 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20l1.2-4.7A8.5 8.5 0 1 1 20.5 11.5ZM8.5 8.5c.3 2 2.6 4.3 4.6 4.6l1-1 2 .8-.2 1.6c-.1.6-.7 1-1.3.9-3.8-.6-6.8-3.6-7.4-7.4-.1-.6.3-1.2.9-1.3l1.6-.2.8 2-1 1Z',
   send: 'M21 3 10 14M21 3l-7 18-4-7-7-4 18-7Z',
   trash: 'M4 7h16M10 11v6m4-6v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
   check: 'm5 12.5 4.5 4.5L19 7.5',
@@ -171,6 +173,8 @@ export function AdminNotifications() {
   }, [filter, messages, replySent, search])
 
   const selectedMessage = messages.find((message) => message.id === selectedId) || null
+  const whatsappReplyUrl = selectedMessage ? whatsappLink(selectedMessage.phone, replyDraft.trim()) : null
+  const canReplyByWhatsApp = Boolean(whatsappReplyUrl && replyDraft.trim())
 
   async function markRead(id: number) {
     setError('')
@@ -187,9 +191,10 @@ export function AdminNotifications() {
 
   function openMessage(message: ContactMessage) {
     setSelectedId(message.id)
-    setIsComposing(false)
+    setIsComposing(true)
     setReplyDraft('')
     setCopied(false)
+    setReplyErrors((current) => ({ ...current, [message.id]: '' }))
     if (!message.isRead) markRead(message.id)
   }
 
@@ -550,6 +555,18 @@ export function AdminNotifications() {
                       >
                         {t('Cancel')}
                       </button>
+                      <a
+                        aria-disabled={!canReplyByWhatsApp}
+                        className="notification-whatsapp"
+                        href={canReplyByWhatsApp ? whatsappReplyUrl ?? undefined : undefined}
+                        rel="noopener noreferrer"
+                        tabIndex={canReplyByWhatsApp ? undefined : -1}
+                        target="_blank"
+                        title={t('Open WhatsApp with your reply')}
+                      >
+                        <Icon path={icons.whatsapp} />
+                        {t('Reply by WhatsApp')}
+                      </a>
                       <button
                         className="notification-send"
                         disabled={sendingId === selectedMessage.id || !replyDraft.trim()}
@@ -559,6 +576,19 @@ export function AdminNotifications() {
                         {sendingId === selectedMessage.id ? t('Sending…') : t('Send email reply')}
                       </button>
                     </div>
+                    {!whatsappReplyUrl && (
+                      <p className="notification-whatsapp-note">
+                        {t('WhatsApp reply is unavailable because no valid phone number was provided.')}
+                      </p>
+                    )}
+                    {whatsappReplyUrl && replyDraft.trim() && (
+                      <p className="notification-whatsapp-note">
+                        {t('WhatsApp opens with your reply filled in. Send it there to complete your reply.')}
+                      </p>
+                    )}
+                    {whatsappReplyUrl && !replyDraft.trim() && (
+                      <p className="notification-whatsapp-note">{t('Write a reply to enable WhatsApp.')}</p>
+                    )}
                   </form>
                 ) : (
                   <button

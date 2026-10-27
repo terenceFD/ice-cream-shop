@@ -312,6 +312,9 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                       {t('We sent a verification code to')}
                     </p>
                     <p className="mt-1 break-all text-sm font-extrabold text-brand-navy">{email}</p>
+                    <p className="mt-2 rounded-lg bg-[#fff6cc] px-3 py-2 text-sm leading-5 text-brand-navy" role="note">
+                      {t("If you don’t see the code in your inbox, check your spam or junk folder.")}
+                    </p>
                     <div
                       aria-label={t('6-digit verification code')}
                       className="mt-5 flex gap-2"

@@ -9,8 +9,11 @@ process.env.VAPID_PUBLIC_KEY = keys.publicKey
 process.env.VAPID_PRIVATE_KEY = keys.privateKey
 process.env.VAPID_SUBJECT = 'https://example.test'
 const {
+  buildAdminOrderNotification,
+  buildEventOrderNotification,
   buildOrderStatusNotification,
   buildPromotionNotification,
+  buildReviewReminderNotification,
   buildWelcomeNotification,
   countCustomerSubscriptions,
   isPushConfigured,
@@ -20,6 +23,7 @@ const {
   normalizePushSubscription,
   publicKeyForPrivateKey,
   pushStatus,
+  sendToAdmins,
   sendToAllCustomers,
   sendToCustomer,
 } = await import('./push.js')
@@ -35,7 +39,7 @@ function memoryDatabase() {
     CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, is_banned INTEGER NOT NULL DEFAULT 0);
     CREATE TABLE push_subscriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
       endpoint TEXT NOT NULL UNIQUE, p256dh TEXT NOT NULL, auth TEXT NOT NULL
     );
     INSERT INTO customers (id, name, is_banned) VALUES (1, 'Ada', 0), (2, 'Ben', 0), (3, 'Banned', 1);
@@ -102,7 +106,7 @@ test('builds the promotion notification with the site name, logo and code', () =
   assert.equal(automatic.title, 'Cold Stone Creamery: 20% off')
   assert.match(automatic.body, /SUMMER20/)
   assert.match(automatic.body, /orders of 3\+ items/)
-  assert.equal(automatic.icon, '/icons/icon-192.png')
+  assert.equal(automatic.icon, '/logo.png')
   assert.equal(automatic.url, '/menu')
 
   const fixed = buildPromotionNotification({ ...code, discountType: 'fixed', discountValue: 1000, minimumTotal: 0 })
@@ -113,7 +117,7 @@ test('builds the welcome notification with the site name, logo and first name', 
   const welcome = buildWelcomeNotification({ name: '  Agnes Forbi ' })
   assert.equal(welcome.title, 'Welcome to Cold Stone Creamery, Agnes!')
   assert.match(welcome.body, /account was created successfully/)
-  assert.equal(welcome.icon, '/icons/icon-192.png')
+  assert.equal(welcome.icon, '/logo.png')
   assert.equal(welcome.tag, 'welcome')
   assert.equal(buildWelcomeNotification({ name: '' }).title, 'Welcome to Cold Stone Creamery!')
 })
@@ -198,20 +202,20 @@ test('detects a public and private key that do not belong together', () => {
 
 test('order notifications describe each step and replace each other', () => {
   const preparing = buildOrderStatusNotification({ orderId: 12, status: 'preparing', fulfillmentType: 'delivery' })
-  assert.equal(preparing.title, 'Order #12 is being prepared')
+  assert.equal(preparing.title, 'Cold Stone Creamery: Order #12 is being prepared')
   assert.equal(preparing.tag, 'order-12')
   assert.equal(preparing.url, '/account/orders?tab=orders')
-  assert.equal(preparing.icon, '/icons/icon-192.png')
-  assert.equal(buildOrderStatusNotification({ orderId: 12, status: 'out_for_delivery', fulfillmentType: 'delivery' }).title, 'Order #12 is out for delivery')
-  assert.equal(buildOrderStatusNotification({ orderId: 12, status: 'delivered', fulfillmentType: 'delivery' }).title, 'Order #12 has been delivered')
-  assert.equal(buildOrderStatusNotification({ orderId: 12, status: 'confirmed' }).title, 'Order #12 confirmed')
+  assert.equal(preparing.icon, '/logo.png')
+  assert.equal(buildOrderStatusNotification({ orderId: 12, status: 'out_for_delivery', fulfillmentType: 'delivery' }).title, 'Cold Stone Creamery: Order #12 is out for delivery')
+  assert.equal(buildOrderStatusNotification({ orderId: 12, status: 'delivered', fulfillmentType: 'delivery' }).title, 'Cold Stone Creamery: Order #12 has been delivered')
+  assert.equal(buildOrderStatusNotification({ orderId: 12, status: 'confirmed' }).title, 'Cold Stone Creamery: Order #12 confirmed')
   assert.equal(buildOrderStatusNotification({ orderId: 12, status: 'nonsense' }), null)
 })
 
 test('pickup orders are worded for pickup', () => {
   const ready = buildOrderStatusNotification({ orderId: 7, status: 'ready', fulfillmentType: 'pickup', storeName: 'Bonapriso' })
   assert.equal(ready.body, 'Your treats are ready for pickup at Bonapriso.')
-  assert.equal(buildOrderStatusNotification({ orderId: 7, status: 'delivered', fulfillmentType: 'pickup' }).title, 'Order #7 has been picked up')
+  assert.equal(buildOrderStatusNotification({ orderId: 7, status: 'delivered', fulfillmentType: 'pickup' }).title, 'Cold Stone Creamery: Order #7 has been picked up')
 })
 
 test("order updates go only to that customer's devices", async () => {
@@ -227,4 +231,69 @@ test("order updates go only to that customer's devices", async () => {
   ])
   const banned = await sendToCustomer(db, 3, { title: 't', body: 'b' }, { send: async () => {} })
   assert.equal(banned.devices, 0)
+})
+
+test('new-order alerts reach the admin devices of the given admin IDs', async () => {
+  const db = memoryDatabase()
+  db.exec('CREATE TABLE admins (id INTEGER PRIMARY KEY)')
+  db.exec('ALTER TABLE push_subscriptions ADD COLUMN admin_id INTEGER REFERENCES admins(id)')
+  db.prepare('INSERT INTO admins (id) VALUES (7), (8)').run()
+  db.prepare('INSERT INTO push_subscriptions (customer_id, admin_id, endpoint, p256dh, auth) VALUES (NULL, ?, ?, ?, ?)')
+    .run(7, 'https://fcm.googleapis.com/fcm/send/admin-7', validKeys.p256dh, validKeys.auth)
+  db.prepare('INSERT INTO push_subscriptions (customer_id, admin_id, endpoint, p256dh, auth) VALUES (NULL, ?, ?, ?, ?)')
+    .run(8, 'https://fcm.googleapis.com/fcm/send/admin-8', validKeys.p256dh, validKeys.auth)
+  const delivered = []
+  const result = await sendToAdmins(db, buildAdminOrderNotification({ orderId: 42, storeName: 'Douala', totalCents: 2500 }), {
+    adminIds: [7],
+    send: async (subscription) => { delivered.push(subscription.endpoint) },
+  })
+  assert.equal(result.sent, 1)
+  assert.deepEqual(delivered, ['https://fcm.googleapis.com/fcm/send/admin-7'])
+  const none = await sendToAdmins(db, { title: 't', body: 'b' }, { adminIds: [] })
+  assert.equal(none.devices, 0)
+})
+
+test('builds the admin new-order notification with store, amount and dashboard link', () => {
+  const notification = buildAdminOrderNotification({ orderId: 42, storeName: 'Douala', totalCents: 2500, currency: 'xaf' })
+  assert.equal(notification.title, 'Cold Stone Creamery: New order #42 at Douala · 2,500 XAF')
+  assert.match(notification.body, /Tap to open it in the admin dashboard/)
+  assert.equal(notification.tag, 'admin-order-42')
+  assert.equal(notification.url, '/admin/orders?order=42')
+  assert.equal(notification.icon, '/logo.png')
+})
+
+test('brands every push type with the site name and logo', () => {
+  const notifications = [
+    buildPromotionNotification({ code: 'SWEET', discountType: 'percent', discountValue: 10, minimumTotal: 0, expiresAt: '' }),
+    buildOrderStatusNotification({ orderId: 8, status: 'preparing' }),
+    buildEventOrderNotification({ eventOrderId: 9, kind: 'confirmed' }),
+    buildAdminOrderNotification({ orderId: 10, storeName: 'Douala', totalCents: 500 }),
+    buildWelcomeNotification(),
+    buildReviewReminderNotification({ orderId: 11 }),
+  ]
+  for (const notification of notifications) {
+    assert.match(notification.title, /Cold Stone Creamery/)
+    assert.equal(notification.icon, '/logo.png')
+    assert.equal(notification.badge, '/logo.png')
+  }
+})
+
+test('adds branding to custom push payloads without duplicating the site name', async () => {
+  const db = memoryDatabase()
+  const delivered = []
+  await sendToCustomer(db, 1, { title: 'Order update', body: 'Ready', icon: '/wrong.png' }, {
+    send: async (_subscription, payload) => delivered.push(JSON.parse(payload)),
+  })
+  assert.equal(delivered.length, 2)
+  for (const notification of delivered) {
+    assert.equal(notification.title, 'Cold Stone Creamery: Order update')
+    assert.equal(notification.icon, '/logo.png')
+    assert.equal(notification.badge, '/logo.png')
+  }
+
+  let duplicateTitle
+  await sendToCustomer(db, 1, { title: 'Cold Stone Creamery: hello', body: 'Hi' }, {
+    send: async (_subscription, payload) => { duplicateTitle = JSON.parse(payload).title },
+  })
+  assert.equal(duplicateTitle, 'Cold Stone Creamery: hello')
 })

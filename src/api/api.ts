@@ -11,6 +11,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
 const ADMIN_TOKEN_KEY = 'cold-stone-admin-token'
 const CUSTOMER_TOKEN_KEY = 'cold-stone-customer-token'
 const ADMIN_WELCOME_KEY = 'cold-stone-admin-welcome'
+const ADMIN_CREDENTIALS_CHANGED_KEY = 'cold-stone-admin-credentials-changed'
 const ADMIN_STORE_TOWN_KEY = 'cold-stone-admin-store-town-v2'
 
 // The customer token lives in localStorage so the sign-in survives reloads, new tabs and browser restarts.
@@ -105,4 +106,4 @@ export async function apiRequest<T = any>(path: string, { body, token, ...option
   return result as T
 }
 
-export { ADMIN_TOKEN_KEY, ADMIN_STORE_TOWN_KEY, ADMIN_WELCOME_KEY, CUSTOMER_TOKEN_KEY }
+export { ADMIN_TOKEN_KEY, ADMIN_STORE_TOWN_KEY, ADMIN_WELCOME_KEY, ADMIN_CREDENTIALS_CHANGED_KEY, CUSTOMER_TOKEN_KEY }

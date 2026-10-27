@@ -5,6 +5,7 @@ import { apiRequest, ADMIN_STORE_TOWN_KEY, ADMIN_WELCOME_KEY } from '../../api/a
 import { useLanguage } from '../../language/useLanguage'
 import { AdminAccountSecurityDialog, type AccountSecurityTab } from './AdminAccountSecurityDialog'
 import { AdminIdleGuard } from './AdminIdleGuard'
+import { disableAdminOrderAlerts, enableAdminOrderAlertsAndSubscribe, getAdminOrderAlertState } from '../../lib/pushNotifications'
 import './AdminSidebar.css'
 import './AdminTopbar.css'
 
@@ -123,6 +124,16 @@ interface CakeDepositNotice {
   storeName: string | null
 }
 
+interface OrderNotice {
+  id: number
+  customerName: string
+  totalCents: number
+  currency: string
+  fulfillmentType: string
+  createdAt: string
+  storeName: string | null
+}
+
 function formatDepositAmount(amount: number, language: string) {
   return `${new Intl.NumberFormat(language === 'fr' ? 'fr-CM' : 'en-US').format(Math.round(amount || 0))} FCFA`
 }
@@ -203,6 +214,9 @@ export function AdminLayout() {
   const [showWelcome, setShowWelcome] = useState(false)
   const [depositNotices, setDepositNotices] = useState<DepositNotice[]>([])
   const [cakeDepositNotices, setCakeDepositNotices] = useState<CakeDepositNotice[]>([])
+  const [orderNotices, setOrderNotices] = useState<OrderNotice[]>([])
+  const [orderAlertState, setOrderAlertState] = useState<'loading' | 'on' | 'off' | 'unavailable' | 'unsupported' | 'denied'>('loading')
+  const [isTogglingOrderAlerts, setIsTogglingOrderAlerts] = useState(false)
 
   useEffect(() => {
     if (!currentAdmin) return undefined
@@ -352,6 +366,9 @@ export function AdminLayout() {
       apiRequest<{ notices: CakeDepositNotice[] }>(`/admin/cake-requests/deposit-notices${branchQuery}`, { token: sessionToken })
         .then((result) => setCakeDepositNotices(result?.notices || []))
         .catch(() => {}),
+      apiRequest<{ notices: OrderNotice[] }>(`/admin/order-notices${branchQuery}`, { token: sessionToken })
+        .then((result) => setOrderNotices(result?.notices || []))
+        .catch(() => {}),
     ])
     setCountsError(failures.filter(Boolean).join(' · '))
   }, [hasTownScope, selectedBranch, sessionToken])
@@ -374,6 +391,35 @@ export function AdminLayout() {
   function hideCakeDepositNotice(id: number) {
     setCakeDepositNotices((current) => current.filter((notice) => notice.id !== id))
     apiRequest(`/admin/cake-requests/${id}/deposit-notice`, { method: 'PATCH', token: sessionToken }).catch(() => {})
+  }
+
+  function hideOrderNotice(id: number) {
+    setOrderNotices((current) => current.filter((notice) => notice.id !== id))
+    apiRequest(`/admin/order-notices/${id}/dismiss`, { method: 'PATCH', token: sessionToken }).catch(() => {})
+  }
+
+  useEffect(() => {
+    if (!sessionToken) return
+    let cancelled = false
+    getAdminOrderAlertState(sessionToken)
+      .then((state) => { if (!cancelled) setOrderAlertState(state as typeof orderAlertState) })
+      .catch(() => { if (!cancelled) setOrderAlertState('off') })
+    return () => { cancelled = true }
+  }, [sessionToken])
+
+  async function toggleOrderAlerts() {
+    if (!sessionToken || isTogglingOrderAlerts) return
+    setIsTogglingOrderAlerts(true)
+    try {
+      const next = orderAlertState === 'on'
+        ? await disableAdminOrderAlerts(sessionToken)
+        : await enableAdminOrderAlertsAndSubscribe(sessionToken)
+      setOrderAlertState((next as typeof orderAlertState) || 'off')
+    } catch {
+      setOrderAlertState('off')
+    } finally {
+      setIsTogglingOrderAlerts(false)
+    }
   }
 
   async function handleLogout() {
@@ -789,32 +835,28 @@ export function AdminLayout() {
                       </svg>
                       {t('View storefront')}
                     </Link>
-                    {isOwner && (
-                      <>
-                        <button
-                          className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-bold text-brand-blue transition hover:bg-[#f4f6f8] hover:text-brand-navy"
-                          onClick={() => { setIsAccountMenuOpen(false); setSecurityDialogTab('password') }}
-                          role="menuitem"
-                          type="button"
-                        >
-                          <svg aria-hidden="true" className="size-[18px] text-[#65748a]" fill="none" viewBox="0 0 24 24">
-                            <path d="M6 11h12v9H6v-9Zm2 0V8a4 4 0 0 1 8 0v3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-                          </svg>
-                          {t('Change password')}
-                        </button>
-                        <button
-                          className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-bold text-brand-blue transition hover:bg-[#f4f6f8] hover:text-brand-navy"
-                          onClick={() => { setIsAccountMenuOpen(false); setSecurityDialogTab('email') }}
-                          role="menuitem"
-                          type="button"
-                        >
-                          <svg aria-hidden="true" className="size-[18px] text-[#65748a]" fill="none" viewBox="0 0 24 24">
-                            <path d="M4 6h16v12H4V6Zm0 0 8 7 8-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-                          </svg>
-                          {t('Change email')}
-                        </button>
-                      </>
-                    )}
+                    <button
+                      className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-bold text-brand-blue transition hover:bg-[#f4f6f8] hover:text-brand-navy"
+                      onClick={() => { setIsAccountMenuOpen(false); setSecurityDialogTab('password') }}
+                      role="menuitem"
+                      type="button"
+                    >
+                      <svg aria-hidden="true" className="size-[18px] text-[#65748a]" fill="none" viewBox="0 0 24 24">
+                        <path d="M6 11h12v9H6v-9Zm2 0V8a4 4 0 0 1 8 0v3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                      </svg>
+                      {t('Change password')}
+                    </button>
+                    <button
+                      className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-bold text-brand-blue transition hover:bg-[#f4f6f8] hover:text-brand-navy"
+                      onClick={() => { setIsAccountMenuOpen(false); setSecurityDialogTab('email') }}
+                      role="menuitem"
+                      type="button"
+                    >
+                      <svg aria-hidden="true" className="size-[18px] text-[#65748a]" fill="none" viewBox="0 0 24 24">
+                        <path d="M4 6h16v12H4V6Zm0 0 8 7 8-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                      </svg>
+                      {t('Change email')}
+                    </button>
                     {isOwner && (
                       <Link
                         className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-bold text-brand-blue transition hover:bg-[#f4f6f8] hover:text-brand-navy"
@@ -828,6 +870,45 @@ export function AdminLayout() {
                         {t('Admin accounts')}
                       </Link>
                     )}
+                  </div>
+                  <div className="border-t border-[#f4f6f8] p-1.5">
+                    <button
+                      className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-bold text-brand-blue transition hover:bg-[#f4f6f8] hover:text-brand-navy disabled:opacity-60"
+                      disabled={orderAlertState === 'loading' || orderAlertState === 'unsupported' || isTogglingOrderAlerts}
+                      onClick={() => { toggleOrderAlerts() }}
+                      role="menuitem"
+                      type="button"
+                    >
+                      <svg aria-hidden="true" className="size-[18px] text-[#65748a]" fill="none" viewBox="0 0 24 24">
+                        <path d={navIconPaths.notifications} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                      </svg>
+                      <span className="flex-1">
+                        {t(isTogglingOrderAlerts
+                          ? 'Saving…'
+                          : orderAlertState === 'on'
+                            ? 'Order alerts on'
+                            : orderAlertState === 'off'
+                              ? 'Turn on order alerts'
+                              : orderAlertState === 'denied'
+                                ? 'Order alerts blocked'
+                                : orderAlertState === 'unavailable'
+                                  ? 'Order alerts not set up'
+                                  : 'Order alerts not supported')}
+                        <span className="mt-0.5 block text-xs font-medium text-[#65748a]">
+                          {t('Get a browser notification the moment an order is placed.')}
+                        </span>
+                        {orderAlertState === 'on' && (
+                          <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#e5f4ec] px-2 py-0.5 text-[10px] font-bold text-[#2c7a4f]">
+                            <span aria-hidden="true" className="size-1.5 rounded-full bg-[#35a36b]" /> {t('On for this device')}
+                          </span>
+                        )}
+                        {orderAlertState === 'denied' && (
+                          <span className="mt-1 block text-[11px] text-[#b2433a]">
+                            {t('Allow notifications for this site in your browser settings, then try again.')}
+                          </span>
+                        )}
+                      </span>
+                    </button>
                   </div>
                   <div className="border-t border-[#f4f6f8] p-1.5">
                     <button
@@ -850,7 +931,7 @@ export function AdminLayout() {
         </div>
       </header>
       <AdminIdleGuard />
-      {isOwner && securityDialogTab && (
+      {securityDialogTab && (
         <AdminAccountSecurityDialog initialTab={securityDialogTab} onClose={() => setSecurityDialogTab(null)} />
       )}
       {showWelcome && currentAdmin && (
@@ -894,8 +975,43 @@ export function AdminLayout() {
           </div>
         </div>
       )}
-      {(depositNotices.length > 0 || cakeDepositNotices.length > 0) && (
+      {(depositNotices.length > 0 || cakeDepositNotices.length > 0 || orderNotices.length > 0) && (
         <div className={`fixed right-4 z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 ${showWelcome ? 'top-[248px]' : 'top-[84px]'}`}>
+          {orderNotices.map((notice) => (
+            <div className="flex gap-3 rounded-md bg-[#202124] p-3.5 text-white shadow-[0_24px_50px_rgba(0,0,0,0.35)]" key={notice.id} role="status">
+              <img alt="" className="size-10 shrink-0 rounded-full" decoding="async" height={40} src="/icons/icon-192.png" width={40} />
+              <Link
+                className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
+                onClick={() => hideOrderNotice(notice.id)}
+                to={`/admin/orders?order=${notice.id}`}
+              >
+                <p className="flex items-center gap-1.5 text-xs text-white/55">
+                  <span className="truncate">{window.location.host}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{t('now')}</span>
+                </p>
+                <p className="mt-0.5 truncate text-sm font-semibold">{t('New order placed')}</p>
+                <p className="mt-0.5 line-clamp-3 break-words text-[13px] leading-5 text-white/75">
+                  {t('{name} placed order #{id} · {amount}.', {
+                    name: notice.customerName,
+                    id: notice.id,
+                    amount: formatDepositAmount(notice.totalCents, language),
+                  })}
+                  {notice.storeName ? ` ${t('at {store}', { store: t(notice.storeName) })}` : ''}
+                </p>
+              </Link>
+              <button
+                aria-label={t('Dismiss')}
+                className="grid size-7 shrink-0 place-items-center rounded-full text-white/55 transition hover:bg-white/10 hover:text-white"
+                onClick={() => hideOrderNotice(notice.id)}
+                type="button"
+              >
+                <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                  <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                </svg>
+              </button>
+            </div>
+          ))}
           {depositNotices.map((notice) => (
             <div className="flex gap-3 rounded-md bg-[#202124] p-3.5 text-white shadow-[0_24px_50px_rgba(0,0,0,0.35)]" key={notice.id} role="status">
               <img alt="" className="size-10 shrink-0 rounded-full" decoding="async" height={40} loading="lazy" src="/icons/icon-192.png" width={40} />

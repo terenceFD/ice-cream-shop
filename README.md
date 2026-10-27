@@ -19,7 +19,7 @@ Research references:
 - Add any quantity of a product or flavor to the bag from its page and keep shopping.
 - Order online for pickup or delivery from a chosen store, and pay by card (Stripe) or Mobile Money (CamPay).
 - Customer accounts are created after email verification; no order is required for an account to be active. Sign-in is remembered across page refreshes and browser restarts, with sessions expiring after 8 hours.
-- Customer account features include order history with live progress, saved delivery details, favorites, one-tap reorder, loyalty points, and reviews of purchased items.
+- Customer account features include order history with live progress, saved delivery details, favorites, one-tap reorder, loyalty points, and a dedicated Reviews section with a prominent overview shortcut for rating delivered orders.
 - **Notifications on their device** (with the site's logo and name): order updates (confirmed, being prepared, out for delivery, delivered) and new promotions. Customers turn them on from a small invitation, the account page, or the payment confirmation page.
 - **Review reminder** a day after delivery, by notification and email, linking straight to that order's review form.
 - **Parties & events** (`/events`): request a bulk order for a birthday, office event or wedding, get a quote from the store, and pay a 30% deposit online.
@@ -201,7 +201,7 @@ If sign-in reports that the saved MFA configuration cannot be read, restore the 
 
 ### Store admin access
 
-An owner account has access to all stores. The owner can use the dashboard's branch selector to view **ALL** branches or filter to Douala or Yaoundé; the selected town is reflected in the dashboard data and the **Stores** summaries. From **Admin accounts**, the owner can assign a branch admin to a whole town or assign a store admin to one store. Branch admins can see and manage operational data across **all stores in their assigned town**—including orders, payments, related customer accounts, order reviews, custom-cake requests, event orders, contact messages, and sales reports—and cannot switch to another town. Adding a store admin does not narrow or replace the branch admin's town-wide access. Store admins remain limited to their individually assigned store. The server enforces these scopes for reads and updates. Catalog, inventory, discounts, promotion notifications, and fulfillment configuration remain owner-managed.
+An owner account has access to all stores. The owner can use the dashboard's branch selector to view **ALL** branches or filter to Douala or Yaoundé; the selected town is reflected in the dashboard data and the **Stores** summaries. From **Admin accounts**, an owner can add or remove other owner accounts, or assign a branch admin to a whole town or a store admin to one store. An owner cannot remove their own account, and the final owner account cannot be removed. Branch admins can see and manage operational data across **all stores in their assigned town**—including orders, payments, related customer accounts, order reviews, custom-cake requests, event orders, contact messages, and sales reports—and cannot switch to another town. Adding a store admin does not narrow or replace the branch admin's town-wide access. Store admins remain limited to their individually assigned store. The server enforces these scopes for reads and updates. Catalog, inventory, discounts, promotion notifications, and fulfillment configuration remain owner-managed.
 
 The **Stores** page summarizes orders, paid sales, open orders, customers, event orders, cake requests and reviews for each store in the admin's permitted view. The review queue lets authorized admins approve a review or reject it, which deletes it. The event-order sidebar count includes requests that need staff action: new requests and requests with a deposit paid.
 
@@ -243,6 +243,8 @@ Customers with an account can turn on notifications. They then receive, on that 
 | Event orders | quote ready · deposit received · confirmed · declined or cancelled |
 
 Each order's updates replace each other, so a customer never collects a pile of notifications. Signing out turns notifications off on that device. On iPhone and iPad, notifications work only after the site is added to the Home Screen and opened from there; private/incognito windows refuse them.
+
+All push and email notifications, including customer and admin alerts, display the Cold Stone Creamery name and the website logo. Email messages include the logo inline, so recipients do not need to load it from the website.
 
 **Set-up:** generate one key pair and set both values on the server:
 
@@ -304,6 +306,10 @@ The dashboard pages share a few building blocks in `src/pages/admin/`:
 **Adding an admin action:** when you add a new `POST`, `PUT`, `PATCH` or `DELETE` route under `/api/admin`, add its sentence to `describeAdminActivity.js`. `scripts/admin-activity.test.js` fails if any admin route is missing one, so it never shows up in the log as "Made a change".
 
 On phones, the stat cards at the top of each page become one row that scrolls sideways (the `.admin-stats` class in `src/index.css`), so the page's list starts on the first screen. The admin profile picture is changed from the account menu at the top right.
+
+Admins can update their sign-in email or password from the account menu. Each change requires the account password and security PIN, signs out every active session, and requires a fresh sign-in with the updated credentials.
+
+In **Notifications**, selecting a contact message opens its details and reply form beside the inbox. Replies can be sent by email or opened as a prefilled WhatsApp message when the customer provided a valid phone number; the admin completes the send in WhatsApp.
 
 The **Customer accounts** directory lists verified accounts even when they have not placed an order. Owners see customers across all branches regardless of the selected branch filter; branch admins see customers with no orders yet and customers whose orders belong to their assigned town; store admins see customers with no orders yet and customers whose orders belong to their assigned store. The list refreshes when the page becomes visible, every 30 seconds while open, and from its **Refresh** button.
 

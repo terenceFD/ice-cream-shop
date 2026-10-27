@@ -11,6 +11,8 @@ const RULES = [
   ['PUT', /^\/api\/admin\/email$/, 'Changed the account email', 'account'],
   ['PUT', /^\/api\/admin\/password$/, 'Changed the account password', 'account'],
   ['PUT', /^\/api\/admin\/profile-picture$/, 'Updated the profile picture', 'account'],
+  ['POST', /^\/api\/admin\/push-subscription$/, 'Turned on new-order alerts for a device', 'account'],
+  ['DELETE', /^\/api\/admin\/push-subscription$/, 'Turned off new-order alerts for a device', 'account'],
   ['POST', /^\/api\/admin\/security-pin$/, 'Set a security PIN', 'account'],
   ['POST', /^\/api\/admin\/security-pin\/verify$/, 'Confirmed the security PIN', 'account'],
   ['POST', /^\/api\/admin\/authenticator\/replace$/, 'Started authenticator replacement', 'account'],
@@ -40,6 +42,7 @@ const RULES = [
   ['PATCH', /^\/api\/admin\/cake-requests\/(\d+)$/, 'Sent a quote for cake request #{id}', 'orders'],
   ['PATCH', /^\/api\/admin\/cake-requests\/(\d+)\/deposit-notice$/, 'Dismissed the deposit notice for cake request #{id}', 'orders'],
   ['PATCH', /^\/api\/admin\/event-orders\/(\d+)\/deposit-notice$/, 'Dismissed the deposit notice for event #{id}', 'orders'],
+  ['PATCH', /^\/api\/admin\/order-notices\/(\d+)\/dismiss$/, 'Dismissed the new-order notice for order #{id}', 'orders'],
   ['PATCH', /^\/api\/admin\/event-orders\/(\d+)$/, 'Updated event order #{id}', 'orders'],
   ['DELETE', /^\/api\/admin\/event-orders\/(\d+)$/, 'Deleted declined event order #{id}', 'orders'],
 

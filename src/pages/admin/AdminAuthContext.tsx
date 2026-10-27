@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { AdminAuthContext } from './useAdminAuth'
-import { apiRequest, ADMIN_TOKEN_KEY, ADMIN_WELCOME_KEY } from '../../api/api'
+import { apiRequest, ADMIN_TOKEN_KEY, ADMIN_WELCOME_KEY, ADMIN_CREDENTIALS_CHANGED_KEY } from '../../api/api'
 
 export interface AdminAccount {
   id: number;
@@ -27,14 +27,14 @@ export interface AdminAuthContextValue {
   verifyAdminMfaLogin: (challengeToken: string, code: string) => Promise<{ token: string; admin: AdminAccount }>;
   completeLogin: (result: { token: string; admin: AdminAccount }) => void;
   refreshAdmins: () => Promise<AdminAccount[]>;
-  createAdmin: (details: { name: string; email: string; password: string; profilePicture: string; storeId?: number; branchTown?: string }) => Promise<AdminAccount>;
+  createAdmin: (details: { name: string; email: string; password: string; profilePicture: string; storeId?: number; branchTown?: string; role?: 'owner' }) => Promise<AdminAccount>;
   removeAdmin: (id: number) => Promise<void>;
   updateProfilePicture: (profilePicture: string) => Promise<AdminAccount>;
   getSecurityPinStatus: () => Promise<boolean>;
   createSecurityPin: (pin: string) => Promise<void>;
   verifySecurityPin: (pin: string) => Promise<string>;
   changePassword: (currentPassword: string, newPassword: string, pinToken: string) => Promise<void>;
-  changeEmail: (currentPassword: string, newEmail: string, pinToken: string) => Promise<AdminAccount>;
+  changeEmail: (currentPassword: string, newEmail: string, pinToken: string) => Promise<string>;
   beginAuthenticatorReplacement: (currentPassword: string, code: string, pinToken: string) => Promise<{ secret: string; authenticatorUri: string }>;
   confirmAuthenticatorReplacement: (code: string, pinToken: string) => Promise<{ recoveryCodes: string[] }>;
   logout: () => Promise<void>;
@@ -163,11 +163,11 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     return result.admins
   }, [sessionToken])
 
-  async function createAdmin({ name, email, password, profilePicture, storeId, branchTown }: { name: string; email: string; password: string; profilePicture: string; storeId?: number; branchTown?: string }) {
+  async function createAdmin({ name, email, password, profilePicture, storeId, branchTown, role }: { name: string; email: string; password: string; profilePicture: string; storeId?: number; branchTown?: string; role?: 'owner' }) {
     const result = await apiRequest<{ admin: AdminAccount }>('/admin/admins', {
       method: 'POST',
       token: sessionToken,
-      body: { name, email, password, profilePicture, storeId, branchTown },
+      body: { name, email, password, profilePicture, storeId, branchTown, role },
     })
     setAdmins((currentAdmins) => [...currentAdmins, result.admin])
     return result.admin
@@ -213,27 +213,36 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function changePassword(currentPassword: string, newPassword: string, pinToken: string) {
-    const result = await apiRequest<{ token: string }>('/admin/password', {
+    await apiRequest<{ changed: boolean }>('/admin/password', {
       method: 'PUT',
       token: sessionToken,
       body: { currentPassword, newPassword, pinToken },
     })
-    verifiedTokenRef.current = result.token
-    sessionStorage.setItem(ADMIN_TOKEN_KEY, result.token)
-    setSessionToken(result.token)
+    signOutAfterCredentialChange()
   }
 
   async function changeEmail(currentPassword: string, newEmail: string, pinToken: string) {
-    const result = await apiRequest<{ admin: AdminAccount }>('/admin/email', {
+    await apiRequest<{ changed: boolean }>('/admin/email', {
       method: 'PUT',
       token: sessionToken,
       body: { currentPassword, newEmail, pinToken },
     })
-    setCurrentAdmin(result.admin)
-    setAdmins((currentAdmins) => currentAdmins.map((admin) =>
-      admin.id === result.admin.id ? result.admin : admin,
-    ))
-    return result.admin
+    signOutAfterCredentialChange()
+    return newEmail
+  }
+
+  function signOutAfterCredentialChange() {
+    verifiedTokenRef.current = ''
+    devAutoLoginAttemptedRef.current = true
+    try {
+      sessionStorage.setItem(ADMIN_CREDENTIALS_CHANGED_KEY, '1')
+      sessionStorage.removeItem(ADMIN_TOKEN_KEY)
+    } catch (error) {
+      console.warn('Unable to save the admin sign-in notice after credential changes:', error)
+    }
+    setSessionToken('')
+    setCurrentAdmin(null)
+    setAdmins([])
   }
 
   async function beginAuthenticatorReplacement(currentPassword: string, code: string, pinToken: string) {

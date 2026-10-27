@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Link,
   Navigate,
@@ -31,6 +31,7 @@ const PROFILE_IMAGE_DIMENSION = 256;
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024;
 const POINTS_PER_REWARD = 100;
 const REWARD_VALUE_FCFA = 1000;
+const REVIEW_ICON = "M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7L12 3Z";
 
 const TABS = [
   {
@@ -42,6 +43,11 @@ const TABS = [
     key: "orders",
     label: "Orders",
     icon: "M6 7h12l-1 13H7L6 7Zm3 0V6a3 3 0 0 1 6 0v1",
+  },
+  {
+    key: "reviews",
+    label: "Reviews",
+    icon: REVIEW_ICON,
   },
   {
     key: "saved",
@@ -378,13 +384,15 @@ function StarRating({ value, onChange, t }) {
   );
 }
 
-function OrderReviewForm({ order, token, t, autoOpen = false }) {
+function OrderReviewForm({ order, token, t, autoOpen = false, onReviewed }) {
   const detailsRef = useRef(null);
   const reviewInputRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(autoOpen);
+  const reviewedItemIds = new Set(order.reviewedItemIds || []);
   const items = [
     ...new Map(
       order.items
-        .filter((item) => item.productId)
+        .filter((item) => item.productId && !reviewedItemIds.has(item.productId))
         .map((item) => [item.productId, item]),
     ).values(),
   ];
@@ -397,33 +405,52 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
   const [saving, setSaving] = useState(false);
 
   // Arriving from a review reminder opens this order's form and brings it into view.
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!autoOpen || !detailsRef.current) return;
     detailsRef.current.open = true;
-    detailsRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-    window.requestAnimationFrame(() =>
-      reviewInputRef.current?.focus({ preventScroll: true }),
-    );
+    setIsOpen(true);
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      reviewInputRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      secondFrame = window.requestAnimationFrame(() => {
+        reviewInputRef.current?.focus({ preventScroll: true });
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame) window.cancelAnimationFrame(secondFrame);
+    };
   }, [autoOpen]);
 
-  if (!items.length) return null;
+  if (!items.length && !message) {
+    return order.items.some((item) => item.productId) ? (
+      <p className="mt-4 rounded-xl bg-[#eef6e8] px-4 py-3 text-sm font-semibold text-[#3f6b22]">
+        {t("You’ve reviewed all items in this order.")}
+      </p>
+    ) : null;
+  }
 
   async function submitReview(event) {
     event.preventDefault();
     setSaving(true);
     setMessage("");
     setError("");
+    const itemIds = applyToAll ? items.map((item) => item.productId) : [itemId];
     try {
       await apiRequest("/customer/reviews", {
         method: "POST",
         token,
         body: {
           orderId: order.id,
-          itemIds: applyToAll ? items.map((item) => item.productId) : [itemId],
+          itemIds,
           rating,
           review,
         },
       });
+      onReviewed?.(itemIds);
       setMessage(t("Thanks! Your review is awaiting approval."));
     } catch (submitError) {
       setError(submitError.message);
@@ -435,6 +462,9 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
   return (
     <details
       className="group/review mt-5 scroll-mt-28 rounded-2xl ring-1 ring-[#fbfaf5] open:bg-[#fbfaf5]"
+      id={`review-order-${order.id}`}
+      onToggle={(event) => setIsOpen(event.currentTarget.open)}
+      open={isOpen}
       ref={detailsRef}
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-sm font-extrabold text-brand-navy transition hover:bg-[#f3f6f8] [&::-webkit-details-marker]:hidden">
@@ -1070,6 +1100,10 @@ export function CustomerOrdersPage() {
   const activeOrders = orders.filter(isActive);
   const currentOrder = activeOrders[0];
   const lastCompletedOrder = orders.find(isCompleted);
+  const completedOrders = orders.filter(isCompleted);
+  const reviewOrders = completedOrders.filter((order) =>
+    order.items?.some((item) => item.productId && !(order.reviewedItemIds || []).includes(item.productId)),
+  );
   const filteredOrders = orders.filter((order) =>
     orderFilter === "active"
       ? isActive(order)
@@ -1080,6 +1114,7 @@ export function CustomerOrdersPage() {
   const tabCounts = {
     orders: orders.length,
     saved: favorites.length + savedCarts.length,
+    reviews: reviewOrders.length,
   };
 
   function selectTab(key) {
@@ -1239,12 +1274,16 @@ export function CustomerOrdersPage() {
           onDelete={isCompleted(order) ? () => setOrderToDelete(order) : null}
           isDeleting={deletingOrderId === order.id}
           order={order}
-          order={order}
           t={t}
         />
         {!isPaymentIssue(order) && (
           <OrderReviewForm
-            autoOpen={Number(searchParams.get("review")) === order.id}
+            autoOpen={searchParams.get("review") === String(order.id)}
+            onReviewed={(itemIds) => setOrders((current) => current.map((entry) =>
+              entry.id === order.id
+                ? { ...entry, reviewedItemIds: [...new Set([...(entry.reviewedItemIds || []), ...itemIds])] }
+                : entry,
+            ))}
             order={order}
             t={t}
             token={getCustomerToken()}
@@ -1537,6 +1576,42 @@ export function CustomerOrdersPage() {
                     )}
                   </section>
 
+                  <section
+                    aria-labelledby="account-review-shortcut-title"
+                    className="relative overflow-hidden rounded-2xl bg-[#fff7d6] p-5 ring-1 ring-[#f0df9e] sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6"
+                  >
+                    <div className="flex items-start gap-4">
+                      <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-brand-yellow text-brand-navy">
+                        <Icon className="size-6" path={TABS.find((tab) => tab.key === "reviews").icon} />
+                      </span>
+                      <div>
+                        <h2 className="font-display text-lg font-extrabold text-brand-navy" id="account-review-shortcut-title">
+                          {t("Your reviews")}
+                        </h2>
+                        <p className="mt-1 max-w-xl text-sm leading-6 text-[#65748a]">
+                          {loadingOrders
+                            ? t("Your delivered orders and review options are here.")
+                            : reviewOrders.length
+                            ? t("You have {count} delivered orders waiting for a review.", { count: reviewOrders.length })
+                            : t("Rate items from your delivered orders and share what you loved.")}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand-navy px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2 sm:mt-0 sm:w-auto sm:shrink-0"
+                      onClick={() => selectTab("reviews")}
+                      type="button"
+                    >
+                      {t(reviewOrders.length ? "Write a review" : "View my reviews")}
+                      {reviewOrders.length > 0 && (
+                        <span className="grid min-w-5 place-items-center rounded-full bg-white/15 px-1.5 py-0.5 text-xs">
+                          {reviewOrders.length}
+                        </span>
+                      )}
+                      <Icon className="size-4" path="M5 12h14m-5-5 5 5-5 5" />
+                    </button>
+                  </section>
+
                   <section className="account-benefits grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                     <RewardsCard points={points} t={t} />
                     <div className={cardClass}>
@@ -1699,6 +1774,56 @@ export function CustomerOrdersPage() {
                       <Link className={`${primaryButton} mt-6`} to="/menu">
                         {t("Browse the menu")}
                       </Link>
+                    </EmptyState>
+                  )}
+                </section>
+              )}
+
+              {activeTab === "reviews" && (
+                <section aria-labelledby="account-reviews-title">
+                  <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                      <p className={eyebrowClass}>{t("Your feedback")}</p>
+                      <h2
+                        className="mt-2 font-display text-2xl font-extrabold text-brand-navy sm:text-[1.75rem]"
+                        id="account-reviews-title"
+                      >
+                        {t("Your reviews")}
+                      </h2>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-[#65748a]">
+                        {t("Choose a delivered order to rate the items you’ve enjoyed. Your review will appear after approval.")}
+                      </p>
+                    </div>
+                    <span className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[#fff5c2] px-3 text-sm font-bold text-brand-navy">
+                      <Icon className="size-4 text-brand-yellow-deep" path={REVIEW_ICON} />
+                      {t("{count} orders to review", { count: reviewOrders.length })}
+                    </span>
+                  </div>
+                  {loadingOrders ? (
+                    <div className="h-48 animate-pulse rounded-2xl bg-white ring-1 ring-[#e5e9ee]" />
+                  ) : reviewOrders.length ? (
+                    <div className="space-y-5">
+                      {reviewOrders.map(renderOrderCard)}
+                    </div>
+                  ) : completedOrders.length ? (
+                    <EmptyState
+                      body={t("You’ve reviewed every item in your delivered orders. Thank you for sharing your feedback.")}
+                      icon={REVIEW_ICON}
+                      title={t("You’re all caught up")}
+                    >
+                      <button className={`${ghostButton} mt-5`} onClick={() => selectTab("orders")} type="button">
+                        {t("View order history")}
+                      </button>
+                    </EmptyState>
+                  ) : (
+                    <EmptyState
+                      body={t("Once an order is delivered, you can rate its items here.")}
+                      icon={REVIEW_ICON}
+                      title={t("No delivered orders yet")}
+                    >
+                      <button className={`${primaryButton} mt-5`} onClick={() => selectTab("orders")} type="button">
+                        {t("View order history")}
+                      </button>
                     </EmptyState>
                   )}
                 </section>

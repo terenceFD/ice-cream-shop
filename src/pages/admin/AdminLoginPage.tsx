@@ -5,6 +5,7 @@ import { useAdminAuth } from "./useAdminAuth";
 import { PasswordField } from "../../components/PasswordField";
 import { useLanguage } from "../../language/useLanguage";
 import { IDLE_SIGN_OUT_KEY } from "../../components/admin/AdminIdleGuard";
+import { ADMIN_CREDENTIALS_CHANGED_KEY } from "../../api/api";
 
 const fieldClassName = "mt-2 min-h-12 w-full rounded-lg border border-[#dce3eb] bg-white px-4 text-sm font-semibold text-brand-navy outline-none! placeholder:font-normal placeholder:text-[#65748a] focus:border-brand-navy";
 const labelClassName = "text-sm font-bold text-brand-navy";
@@ -40,11 +41,19 @@ export function AdminLoginPage() {
       return false;
     }
   });
+  const [credentialsWereChanged] = useState(() => {
+    try {
+      return sessionStorage.getItem(ADMIN_CREDENTIALS_CHANGED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
   const signedOutForInactivity = wasSignedOutIdle && !error;
 
   useEffect(() => {
     try {
       sessionStorage.removeItem(IDLE_SIGN_OUT_KEY);
+      sessionStorage.removeItem(ADMIN_CREDENTIALS_CHANGED_KEY);
     } catch {
       // Storage unavailable; nothing to clear.
     }
@@ -192,6 +201,12 @@ export function AdminLoginPage() {
           {signedOutForInactivity && (
             <p className="mt-6 text-sm leading-6 text-brand-blue" role="status">
               {t("You were signed out after 30 minutes of inactivity to keep the dashboard secure. Sign in again to continue.")}
+            </p>
+          )}
+
+          {credentialsWereChanged && (
+            <p className="mt-6 rounded-lg bg-[#e7f6ee] px-4 py-3 text-sm leading-6 text-[#1f7a46]" role="status">
+              {t("Your sign-in details were updated. Sign in again with your new email and current password.")}
             </p>
           )}
 

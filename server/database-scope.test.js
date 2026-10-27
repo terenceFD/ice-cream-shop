@@ -14,6 +14,7 @@ const {
   createCakeRequest,
   createContactMessage,
   createAdminAccount,
+  removeAdminAccount,
   database,
   deleteContactMessage,
   deleteContactMessages,
@@ -193,4 +194,26 @@ test('store-scoped contact-message actions cannot affect another store, while ow
   assert.ok(database.prepare('SELECT id FROM contact_messages WHERE id = ?').get(second.messageId))
   assert.equal(await deleteContactMessage(second.messageId), true)
   assert.equal(database.prepare('SELECT COUNT(*) AS count FROM contact_messages').get().count, 0)
+})
+
+test('owner accounts can be created and removed without removing the last owner', async () => {
+  database.prepare('DELETE FROM admins').run()
+  const firstOwner = await createAdminAccount({
+    name: 'First Owner',
+    email: 'first-owner@example.com',
+    passwordHash: 'test-hash',
+    role: 'owner',
+  })
+  const secondOwner = await createAdminAccount({
+    name: 'Second Owner',
+    email: 'second-owner@example.com',
+    passwordHash: 'test-hash',
+    role: 'owner',
+  })
+
+  assert.equal(firstOwner.role, 'owner')
+  assert.equal(secondOwner.role, 'owner')
+  assert.equal(await removeAdminAccount(secondOwner.id), 'deleted')
+  assert.equal(await removeAdminAccount(firstOwner.id), 'last-owner')
+  assert.equal(database.prepare('SELECT role FROM admins WHERE id = ?').get(firstOwner.id).role, 'owner')
 })

@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url'
 import {
   addCustomerFavorite,
   createAdminAccount,
+  removeAdminAccount,
   createAdminActivity,
   createCakeRequest,
   createCheckoutOrder,
@@ -107,6 +108,8 @@ import {
   buildEventOrderNotification,
   buildWelcomeNotification,
   sendToCustomer,
+  buildAdminOrderNotification,
+  sendToAdmins,
 } from './push.js'
 import { registerEventOrderRoutes } from './event-orders.js'
 import { registerCakeQuoteRoutes } from './cake-quotes.js'
@@ -125,6 +128,36 @@ import {
 
 // Tells the customer who placed an order about its new status on every device where they turned
 // notifications on. Runs in the background so staff never wait on it, and never throws.
+// Tells the admins of the order's branch and store about a new order on every device
+// where they turned alerts on. Runs in the background so staff never wait on it, and never throws.
+function notifyAdminsOfNewOrder(orderId) {
+  ;(async () => {
+    const order = await database.prepare(`
+      SELECT o.total_cents AS "totalCents", o.currency, s.id AS "storeId", s.town AS "storeTown", s.name AS "storeName"
+      FROM orders o LEFT JOIN stores s ON s.id = o.store_id
+      WHERE o.id = ?
+    `).get(orderId)
+    if (!order) return
+    const recipientIds = (await database.prepare(`
+      SELECT id FROM admins
+      WHERE role = 'owner'
+        OR (role = 'store_admin' AND store_id = ?)
+        OR (role = 'branch_admin' AND branch_town = ?)
+    `).all(order.storeId, order.storeTown)).map((row) => Number(row.id))
+    if (!recipientIds.length) return
+    const notification = buildAdminOrderNotification({
+      orderId,
+      storeName: order.storeName,
+      totalCents: Number(order.totalCents) || 0,
+      currency: order.currency,
+    })
+    const result = await sendToAdmins(database, notification, { adminIds: recipientIds })
+    if (result.devices > 0) {
+      console.log(`New-order alert for #${orderId}: ${result.sent} sent, ${result.failed} failed.`)
+    }
+  })().catch((error) => console.error(`Unable to send the new-order alert for #${orderId}:`, error.message))
+}
+
 function notifyCustomerOfOrderStatus(orderId, status) {
   ;(async () => {
     const order = await database.prepare(`
@@ -366,6 +399,7 @@ async function recordPaidCheckout(session, provider = 'stripe') {
   const { paymentRecorded, earnedPoints } = await finalizePaidCheckout(orderId, paymentDetails, provider)
   if (!paymentRecorded) return false
   notifyCustomerOfOrderStatus(orderId, 'confirmed')
+  notifyAdminsOfNewOrder(orderId)
 
   const order = await database.prepare(`
     SELECT customer_email AS "customerEmail", customer_name AS "customerName",
@@ -919,6 +953,20 @@ app.get('/api/push/public-key', (_request, response) => {
   response.json({ enabled: Boolean(config), publicKey: config?.publicKey || null })
 })
 
+// Tells the admin dashboard whether push order alerts can work on this device, and
+// whether this admin has turned them on, so the settings control shows the right state.
+app.get('/api/admin/push-status', requireAdmin, async (request, response) => {
+  const status = pushStatus()
+  const subscription = await database.prepare(`
+    SELECT 1 AS "subscribed" FROM push_subscriptions WHERE admin_id = ? LIMIT 1
+  `).get(request.admin.id)
+  response.json({
+    configured: status.configured,
+    problem: status.problem,
+    subscribed: Boolean(subscription?.subscribed),
+  })
+})
+
 app.post('/api/customer/push-subscription', requireCustomer, async (request, response) => {
   if (!isPushConfigured()) {
     response.status(503).json({ error: 'Promotion alerts are not available right now.' })
@@ -948,6 +996,37 @@ app.delete('/api/customer/push-subscription', requireCustomer, async (request, r
   }
   await database.prepare('DELETE FROM push_subscriptions WHERE endpoint = ? AND customer_id = ?')
     .run(endpoint, request.customer.id)
+  response.json({ subscribed: false })
+})
+
+// Admin devices can also turn on order alerts. The device belongs to whoever turned alerts on last.
+app.post('/api/admin/push-subscription', requireAdmin, async (request, response) => {
+  if (!isPushConfigured()) {
+    response.status(503).json({ error: 'Order alerts are not available right now.' })
+    return
+  }
+  const subscription = normalizePushSubscription(request.body)
+  if (!subscription) {
+    response.status(400).json({ error: 'This device could not be registered for order alerts.' })
+    return
+  }
+  await database.prepare(`
+    INSERT INTO push_subscriptions (customer_id, admin_id, endpoint, p256dh, auth)
+    VALUES (NULL, ?, ?, ?, ?)
+    ON CONFLICT(endpoint) DO UPDATE SET
+      customer_id = NULL, admin_id = excluded.admin_id, p256dh = excluded.p256dh, auth = excluded.auth
+  `).run(request.admin.id, subscription.endpoint, subscription.p256dh, subscription.auth)
+  response.status(201).json({ subscribed: true })
+})
+
+app.delete('/api/admin/push-subscription', requireAdmin, async (request, response) => {
+  const endpoint = normalizePushUnsubscribe(request.body)
+  if (!endpoint) {
+    response.status(400).json({ error: 'Provide the device to turn alerts off for.' })
+    return
+  }
+  await database.prepare('DELETE FROM push_subscriptions WHERE endpoint = ? AND admin_id = ?')
+    .run(endpoint, request.admin.id)
   response.json({ subscribed: false })
 })
 
@@ -1199,6 +1278,8 @@ app.post('/api/checkout/session', requireCustomer, checkoutLimiter, async (reque
     }
     // Emails the owner and the assigned store's admins a direct link to this order.
     const notifyAdmins = async (paymentStatus) => {
+      // In-app order alert, on every admin device where alerts are turned on.
+      notifyAdminsOfNewOrder(orderId)
       try {
         const recipients = await listOrderNotificationRecipients(store.id)
         const orderUrl = new URL('/admin/orders', frontendUrl)
@@ -1923,14 +2004,26 @@ app.get('/api/customer/orders', requireCustomer, async (request, response) => {
       line_total_cents AS "lineTotalCents"
     FROM order_items WHERE order_id IN (${placeholders}) ORDER BY id
   `).all(...orders.map((order) => order.id))
+  const reviews = await database.prepare(`
+    SELECT order_id AS "orderId", item_id AS "itemId"
+    FROM menu_reviews
+    WHERE customer_id = ? AND order_id IN (${placeholders})
+  `).all(request.customer.id, ...orders.map((order) => order.id))
   const itemsByOrder = new Map()
+  const reviewedItemsByOrder = new Map()
   for (const item of items) {
     const current = itemsByOrder.get(item.orderId) || []
     current.push(item)
     itemsByOrder.set(item.orderId, current)
   }
+  for (const review of reviews) {
+    const current = reviewedItemsByOrder.get(review.orderId) || []
+    current.push(review.itemId)
+    reviewedItemsByOrder.set(review.orderId, current)
+  }
   response.json({ orders: orders.map((order) => ({
     ...order,
+    reviewedItemIds: reviewedItemsByOrder.get(order.id) || [],
     items: (itemsByOrder.get(order.id) || []).map((item) => ({
       ...item,
       productId: item.menuItemId || (item.flavorId ? `flavor:${item.flavorId}` : ''),
@@ -2663,13 +2756,11 @@ function requireCredentialsToken(request, response) {
 }
 
 app.get('/api/admin/security-pin', requireAdmin, async (request, response) => {
-  if (!requireOwner(request, response)) return
   const account = await database.prepare('SELECT security_pin_hash FROM admins WHERE id = ?').get(request.admin.id)
   response.json({ hasPin: Boolean(account?.security_pin_hash) })
 })
 
 app.post('/api/admin/security-pin', requireAdmin, async (request, response, next) => {
-  if (!requireOwner(request, response)) return
   try {
     const pin = typeof request.body.pin === 'string' ? request.body.pin : ''
     if (!SECURITY_PIN_PATTERN.test(pin)) {
@@ -2694,7 +2785,6 @@ app.post('/api/admin/security-pin', requireAdmin, async (request, response, next
 })
 
 app.post('/api/admin/security-pin/verify', securityPinLimiter, requireAdmin, async (request, response, next) => {
-  if (!requireOwner(request, response)) return
   try {
     const pin = typeof request.body.pin === 'string' ? request.body.pin : ''
     const account = await database.prepare('SELECT security_pin_hash FROM admins WHERE id = ?').get(request.admin.id)
@@ -2801,10 +2891,9 @@ app.post('/api/admin/authenticator/replace/confirm', adminMfaLoginLimiter, requi
   }
 })
 
-// Owners change their own password. Wrong-password replies use 400, not 401, so the
-// dashboard keeps the current session; the new token keeps this session signed in while others end.
+// Admins change their own password. The updated password stamp invalidates every active session.
 app.put('/api/admin/password', passwordChangeLimiter, requireAdmin, async (request, response, next) => {
-  if (!requireOwner(request, response) || !requireCredentialsToken(request, response)) return
+  if (!requireCredentialsToken(request, response)) return
   try {
     const currentPassword = typeof request.body.currentPassword === 'string' ? request.body.currentPassword : ''
     const newPassword = typeof request.body.newPassword === 'string' ? request.body.newPassword : ''
@@ -2829,15 +2918,15 @@ app.put('/api/admin/password', passwordChangeLimiter, requireAdmin, async (reque
 
     const passwordHash = await bcrypt.hash(newPassword, 12)
     await database.prepare('UPDATE admins SET password_hash = ? WHERE id = ?').run(passwordHash, request.admin.id)
-    response.json({ token: signAdminToken(request.admin.id, passwordHash) })
+    response.json({ changed: true })
   } catch (error) {
     next(error)
   }
 })
 
-// Owners change their own sign-in email after confirming their password.
+// Admins change their own sign-in email after confirming their password.
 app.put('/api/admin/email', passwordChangeLimiter, requireAdmin, async (request, response, next) => {
-  if (!requireOwner(request, response) || !requireCredentialsToken(request, response)) return
+  if (!requireCredentialsToken(request, response)) return
   try {
     const currentPassword = typeof request.body.currentPassword === 'string' ? request.body.currentPassword : ''
     const newEmail = typeof request.body.newEmail === 'string' ? request.body.newEmail.trim().toLowerCase() : ''
@@ -2861,14 +2950,10 @@ app.put('/api/admin/email', passwordChangeLimiter, requireAdmin, async (request,
       return
     }
 
-    await database.prepare('UPDATE admins SET email = ? WHERE id = ?').run(newEmail, request.admin.id)
-    const admin = await database.prepare(`
-      SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture", a.role,
-        a.store_id AS "storeId", s.name AS "storeName", s.town AS "storeTown",
-        a.branch_town AS "branchTown"
-      FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
-    `).get(request.admin.id)
-    response.json({ admin })
+    const passwordHash = await bcrypt.hash(currentPassword, 12)
+    await database.prepare('UPDATE admins SET email = ?, password_hash = ? WHERE id = ?')
+      .run(newEmail, passwordHash, request.admin.id)
+    response.json({ changed: true })
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       response.status(409).json({ error: 'An admin account already uses that email address.' })
@@ -2901,16 +2986,17 @@ app.delete('/api/admin/admins/:id', requireAdmin, async (request, response) => {
     return
   }
 
-  const result = await database.prepare(`
-    DELETE FROM admins WHERE id = ? AND role IN ('store_admin', 'branch_admin')
-  `).run(id)
-  if (!result.changes) {
-    const admin = await database.prepare('SELECT role FROM admins WHERE id = ?').get(id)
-    if (!admin) {
-      response.status(404).json({ error: 'Admin account not found.' })
-      return
-    }
-    response.status(409).json({ error: 'Owner accounts cannot be removed here.' })
+  const result = await removeAdminAccount(id)
+  if (result === 'not-found') {
+    response.status(404).json({ error: 'Admin account not found.' })
+    return
+  }
+  if (result === 'last-owner') {
+    response.status(409).json({ error: 'The last owner account cannot be removed.' })
+    return
+  }
+  if (result !== 'deleted') {
+    response.status(409).json({ error: 'This admin account cannot be removed.' })
     return
   }
   response.json({ deleted: true })
@@ -3327,6 +3413,53 @@ app.get('/api/admin/notifications', requireAdmin, async (_request, response) => 
   })
 })
 
+// "New order" pop-up for the admin dashboard, in the style of the deposit notices:
+// the frontend polls this on a short interval and shows one card per unseen order.
+app.get('/api/admin/order-notices', requireAdmin, async (request, response) => {
+  const isTownScoped = hasTownScopedData(request.admin)
+  const town = selectedStoreTown(request.admin)
+  const storeFilter = isTownScoped
+    ? town ? 'WHERE s.town = ?' : ''
+    : 'WHERE o.store_id = ?'
+  const parameters = isTownScoped ? town ? [town] : [] : [request.admin.storeId]
+  const notices = (await database.prepare(`
+    SELECT o.id, o.customer_name AS "customerName", o.total_cents AS "totalCents",
+      o.currency, o.fulfillment_type AS "fulfillmentType", o.created_at AS "createdAt",
+      s.name AS "storeName"
+    FROM orders o LEFT JOIN stores s ON s.id = o.store_id
+    ${storeFilter ? `${storeFilter} AND` : 'WHERE'} o.order_admin_seen = 0
+    ORDER BY o.order_notified_at DESC, o.id DESC
+    LIMIT 5
+  `).all(...parameters)).map((notice) => ({
+    ...notice,
+    totalCents: Number(notice.totalCents) || 0,
+  }))
+  response.json({ notices })
+})
+
+app.patch('/api/admin/order-notices/:id/dismiss', requireAdmin, async (request, response) => {
+  const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Order notice ID is invalid.' })
+    return
+  }
+  const isTownScoped = hasTownScopedData(request.admin)
+  const town = selectedStoreTown(request.admin)
+  const storeFilter = isTownScoped
+    ? town ? ' AND s.town = ?' : ''
+    : ' AND o.store_id = ?'
+  const parameters = [id, ...(town ? [town] : []), ...(isTownScoped ? [] : [request.admin.storeId])]
+  const result = await database.prepare(`
+    UPDATE orders SET order_admin_seen = 1
+    WHERE id = ?${storeFilter}
+  `).run(...parameters)
+  if (!result.changes) {
+    response.status(404).json({ error: 'Order notice not found.' })
+    return
+  }
+  response.status(204).end()
+})
+
 app.patch('/api/admin/notifications/:id/read', requireAdmin, async (request, response) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
@@ -3430,17 +3563,23 @@ app.post('/api/admin/admins', requireAdmin, async (request, response, next) => {
   if (!requireOwner(request, response)) return
   try {
     const { name, email, password, profilePicture = '' } = request.body
-    const storeId = request.body.storeId === undefined ? null : Number(request.body.storeId)
-    const branchTown = typeof request.body.branchTown === 'string' ? request.body.branchTown : null
+    const role = request.body.role === undefined ? null : request.body.role
+    const storeId = request.body.storeId == null ? null : Number(request.body.storeId)
+    const branchTown = typeof request.body.branchTown === 'string' && request.body.branchTown ? request.body.branchTown : null
     const hasStoreAssignment = Number.isSafeInteger(storeId) && storeId > 0
     const hasBranchAssignment = branchTown !== null && branchTown.length > 0
+    const isOwnerAccount = role === 'owner'
+    const hasValidAssignment = isOwnerAccount
+      ? storeId === null && branchTown === null
+      : hasStoreAssignment !== hasBranchAssignment
     if (typeof name !== 'string' || !name.trim() || typeof email !== 'string'
       || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
       || typeof password !== 'string' || password.length < 8 || password.length > 128
-      || hasStoreAssignment === hasBranchAssignment
+      || (role !== null && role !== 'owner')
+      || !hasValidAssignment
       || (hasStoreAssignment && !await database.prepare('SELECT 1 FROM stores WHERE id = ?').get(storeId))
       || (hasBranchAssignment && !await database.prepare('SELECT 1 FROM stores WHERE town = ?').get(branchTown))) {
-      response.status(400).json({ error: 'Provide a name, valid email, password of 8 to 128 characters, and either a valid store or branch.' })
+      response.status(400).json({ error: 'Provide a name, valid email, password of 8 to 128 characters, and either owner access or a valid store or branch assignment.' })
       return
     }
     if (typeof profilePicture !== 'string' || (profilePicture
@@ -3461,6 +3600,7 @@ app.post('/api/admin/admins', requireAdmin, async (request, response, next) => {
       profilePicture,
       storeId: hasStoreAssignment ? storeId : null,
       branchTown: hasBranchAssignment ? branchTown : null,
+      role: isOwnerAccount ? 'owner' : undefined,
     })
     response.status(201).json({ admin })
   } catch (error) {

@@ -1,4 +1,40 @@
 import nodemailer from 'nodemailer'
+import { fileURLToPath } from 'node:url'
+
+const SITE_NAME = 'Cold Stone Creamery'
+const LOGO_PATH = fileURLToPath(new URL('../public/logo.png', import.meta.url))
+
+function escapeHtml(value) {
+  return value.replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  })[character])
+}
+
+export function buildBrandedEmail(message) {
+  const text = typeof message.text === 'string' ? message.text : ''
+  const body = message.html || `<div style="font-family:Arial,sans-serif;color:#102c50;white-space:pre-wrap">${escapeHtml(text)}</div>`
+  const fromAddress = message.from.match(/<([^<>]+)>/)?.[1] || message.from
+  const attachments = Array.isArray(message.attachments) ? message.attachments : []
+
+  return {
+    ...message,
+    from: `${SITE_NAME} <${fromAddress}>`,
+    text: text.trimEnd().endsWith(SITE_NAME) ? text : `${text.trimEnd()}\n\n${SITE_NAME}`,
+    html: `<div style="font-family:Arial,sans-serif;color:#102c50;max-width:600px;margin:0 auto;padding:24px"><table role="presentation" style="width:100%;border-bottom:1px solid #e6ebf1;margin-bottom:24px;padding-bottom:16px"><tr><td style="width:64px;vertical-align:middle"><img src="cid:cold-stone-logo" alt="${SITE_NAME}" width="56" height="56" style="display:block;width:56px;height:56px;border:0;border-radius:50%"></td><td style="vertical-align:middle;padding-left:12px"><strong style="font-size:20px;color:#092a53">${SITE_NAME}</strong></td></tr></table>${body}<p style="border-top:1px solid #e6ebf1;margin-top:28px;padding-top:16px;color:#65748a;font-size:13px">${SITE_NAME}</p></div>`,
+    attachments: [
+      ...attachments,
+      { filename: 'cold-stone-logo.png', path: LOGO_PATH, cid: 'cold-stone-logo' },
+    ],
+  }
+}
+
+function sendBrandedMail(transporter, message) {
+  return transporter.sendMail(buildBrandedEmail(message))
+}
 
 export class EmailConfigurationError extends Error {
   constructor(message) {
@@ -76,7 +112,7 @@ function createTransporter() {
 
 export async function sendContactReply({ to, recipientName, subject, reply, adminName }) {
   const { transporter, from } = createTransporter()
-  await transporter.sendMail({
+  await sendBrandedMail(transporter, {
     from,
     to,
     subject: `Re: ${subject.replace(/[\r\n]+/g, ' ')}`,
@@ -86,7 +122,7 @@ export async function sendContactReply({ to, recipientName, subject, reply, admi
 
 export async function sendCustomerVerificationCode({ to, code }) {
   const { transporter, from } = createTransporter()
-  return transporter.sendMail({
+  return sendBrandedMail(transporter, {
     from: `Cold Stone Creamery <${from}>`,
     to,
     subject: 'Your Cold Stone Creamery verification code',
@@ -103,7 +139,7 @@ export async function sendCustomerVerificationCode({ to, code }) {
 
 export async function sendPasswordResetCode({ to, code }) {
   const { transporter, from } = createTransporter()
-  return transporter.sendMail({
+  return sendBrandedMail(transporter, {
     from: `Cold Stone Creamery <${from}>`,
     to,
     subject: 'Your Cold Stone Creamery password reset code',
@@ -131,7 +167,7 @@ export async function sendNewOrderNotification({ recipients, orderId, customerNa
   const itemLines = items.map((item) =>
     `- ${item.quantity} × ${item.flavorName} (${formatAmount(item.lineTotalCents)})`
   )
-  await transporter.sendMail({
+  await sendBrandedMail(transporter, {
     from,
     to: recipients,
     subject: `New order #${orderId} placed`,
@@ -193,7 +229,7 @@ export async function sendOrderStatusUpdate({
         ...(earnedPoints > 0 ? [`Loyalty points earned: ${earnedPoints}`] : []),
       ]
     : []
-  await transporter.sendMail({
+  await sendBrandedMail(transporter, {
     from,
     to,
     subject: `Update on your Cold Stone Creamery order #${orderId}`,
@@ -212,7 +248,7 @@ export async function sendOrderStatusUpdate({
 export async function sendReviewReminder({ to, recipientName, orderId, items = [], reviewUrl }) {
   const { transporter, from } = createTransporter()
   const itemNames = [...new Set(items.map((item) => item.flavorName).filter(Boolean))]
-  await transporter.sendMail({
+  await sendBrandedMail(transporter, {
     from,
     to,
     subject: `How was your Cold Stone Creamery order #${orderId}?`,
@@ -241,7 +277,7 @@ const eventSummary = (order) => [
 export async function sendEventRequestNotification({ recipients, order, adminUrl }) {
   if (!recipients.length) return
   const { transporter, from } = createTransporter()
-  await transporter.sendMail({
+  await sendBrandedMail(transporter, {
     from,
     to: recipients,
     subject: `New event order request #${order.id} for ${order.eventDate}`,
@@ -263,7 +299,7 @@ export async function sendEventRequestNotification({ recipients, order, adminUrl
 
 export async function sendEventQuote({ to, order, payUrl }) {
   const { transporter, from } = createTransporter()
-  await transporter.sendMail({
+  await sendBrandedMail(transporter, {
     from,
     to,
     subject: `Your Cold Stone Creamery event quote #${order.id}`,
@@ -293,7 +329,7 @@ export async function sendEventQuote({ to, order, payUrl }) {
 export async function sendEventDepositReceived({ recipients, order, adminUrl }) {
   if (!recipients.length) return
   const { transporter, from } = createTransporter()
-  await transporter.sendMail({
+  await sendBrandedMail(transporter, {
     from,
     to: recipients,
     subject: `Deposit received for event order #${order.id}`,
@@ -310,7 +346,7 @@ export async function sendEventDepositReceived({ recipients, order, adminUrl }) 
 
 export async function sendCakeQuote({ to, request, payUrl }) {
   const { transporter, from } = createTransporter()
-  await transporter.sendMail({
+  await sendBrandedMail(transporter, {
     from,
     to,
     subject: `Your Cold Stone Creamery cake quote #${request.id}`,
@@ -338,7 +374,7 @@ export async function sendCakeQuote({ to, request, payUrl }) {
 export async function sendCakeDepositReceived({ recipients, request, adminUrl }) {
   if (!recipients.length) return
   const { transporter, from } = createTransporter()
-  await transporter.sendMail({
+  await sendBrandedMail(transporter, {
     from,
     to: recipients,
     subject: `Deposit received for cake request #${request.id}`,
@@ -370,7 +406,7 @@ export async function sendCakeRequestNotification({
     throw new Error('No admin email addresses are available for cake-request notifications.')
   }
   const { transporter, from } = createTransporter()
-  await transporter.sendMail({
+  await sendBrandedMail(transporter, {
     from,
     to: recipients,
     subject: `Custom cake request #${requestId}`,

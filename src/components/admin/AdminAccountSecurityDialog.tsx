@@ -444,7 +444,7 @@ function PasswordPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
   if (isDone) {
     return (
       <SuccessPanel
-        message={t('You are still signed in here. Any other devices using this account have been signed out and will need the new password.')}
+        message={t('For your security, all devices have been signed out. Sign in again with your new password.')}
         onClose={onClose}
         title={t('Password updated')}
       />
@@ -523,7 +523,7 @@ function PasswordPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
 
         <p className="flex items-start gap-2 rounded-md bg-[#f4f6f8] px-3.5 py-3 text-xs leading-5 text-[#65748a] ring-1 ring-[#dce3eb]">
           <Icon className="mt-0.5 size-4 shrink-0 text-brand-blue" path={iconPaths.shield} />
-          {t('For your security, other devices signed in to this account will be signed out after the change.')}
+          {t('For your security, all devices will be signed out after the change. Sign in again with your new password.')}
         </p>
 
         {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -565,8 +565,7 @@ function EmailPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
     setIsSaving(true)
     onBusyChange(true)
     try {
-      const admin = await changeEmail(currentPassword, trimmedEmail, pinToken)
-      setSavedEmail(admin.email)
+      setSavedEmail(await changeEmail(currentPassword, trimmedEmail, pinToken))
     } catch (submitError) {
       const message = errorMessage(submitError, 'Unable to change your email address.')
       if (message === PIN_REQUIRED_MESSAGE) onPinExpired()
@@ -630,7 +629,7 @@ function EmailPanel({ pinToken, onPinExpired, onClose, onBusyChange }: {
 
         <p className="flex items-start gap-2 rounded-md bg-[#fff6e5] px-3.5 py-3 text-xs leading-5 text-[#8a5a00]">
           <Icon className="mt-0.5 size-4 shrink-0" path={iconPaths.mail} />
-          {t('Use an address you can access. It becomes the email you sign in with right away.')}
+          {t('Use an address you can access. You will be signed out and need to sign in again with this email and your current password.')}
         </p>
 
         {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -874,7 +873,9 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
   const tabs: { id: AccountSecurityTab; label: string; icon: string }[] = [
     { id: 'password', label: t('Password'), icon: iconPaths.lock },
     { id: 'email', label: t('Email'), icon: iconPaths.mail },
-    { id: 'authenticator', label: t('Authenticator'), icon: iconPaths.key },
+    ...(currentAdmin?.role === 'owner'
+      ? [{ id: 'authenticator' as const, label: t('Authenticator'), icon: iconPaths.key }]
+      : []),
   ]
 
   return (
@@ -900,7 +901,7 @@ export function AdminAccountSecurityDialog({ initialTab = 'password', onClose }:
               <Icon className="size-5" path={iconPaths.shield} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-yellow-deep">{t('Owner account')}</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-yellow-deep">{t('Admin account')}</p>
               <h2 className="mt-0.5 text-base font-semibold text-brand-navy" id="account-security-title">{t('Account security')}</h2>
               <p className="mt-0.5 truncate text-xs text-[#65748a]">{currentAdmin?.email}</p>
             </div>

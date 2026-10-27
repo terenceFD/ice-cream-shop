@@ -9,8 +9,8 @@ import { z } from 'zod'
 // name, even when the site is closed. Only devices of signed-in customers are ever subscribed.
 
 export const SITE_NAME = 'Cold Stone Creamery'
-const NOTIFICATION_ICON = '/icons/icon-192.png'
-const NOTIFICATION_BADGE = '/icons/notification-badge.png'
+const NOTIFICATION_ICON = '/logo.png'
+const NOTIFICATION_BADGE = '/logo.png'
 const SEND_CONCURRENCY = 10
 const PUSH_SERVICE_HOSTS = new Set([
   'fcm.googleapis.com',
@@ -180,6 +180,23 @@ export function normalizeNotificationMessage(value) {
   return value.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
+function addSiteName(title) {
+  const cleanTitle = typeof title === 'string' ? title.trim() : ''
+  if (!cleanTitle) return SITE_NAME
+  return cleanTitle.toLowerCase().includes(SITE_NAME.toLowerCase())
+    ? cleanTitle
+    : `${SITE_NAME}: ${cleanTitle}`
+}
+
+function brandNotification(notification) {
+  return {
+    ...notification,
+    title: addSiteName(notification.title),
+    icon: NOTIFICATION_ICON,
+    badge: NOTIFICATION_BADGE,
+  }
+}
+
 /**
  * The notification a customer sees when the owner publishes a new discount code.
  * When the owner wrote a message it is used as written; the code is added if the message leaves it out.
@@ -233,7 +250,7 @@ export function buildOrderStatusNotification({ orderId, status, fulfillmentType,
   const title = (isPickup && message.pickupTitle) || message.title
   const body = isPickup && message.pickupBody ? message.pickupBody(storeName) : message.body
   return {
-    title: `Order #${orderId} ${title}`,
+    title: `${SITE_NAME}: Order #${orderId} ${title}`,
     body,
     icon: NOTIFICATION_ICON,
     badge: NOTIFICATION_BADGE,
@@ -241,6 +258,33 @@ export function buildOrderStatusNotification({ orderId, status, fulfillmentType,
     tag: `order-${orderId}`,
     url: '/account/orders?tab=orders',
   }
+}
+
+/**
+ * Sends one notification to every device of every signed-in admin who turned alerts on.
+ * Scope (which branch/store to notify) is decided by the caller.
+ */
+export async function sendToAdmins(database, notification, { adminIds = [], send = webpush.sendNotification } = {}) {
+  if (!pushConfiguration()) return { devices: 0, sent: 0, removed: 0, failed: 0, skipped: true, errors: [] }
+  const safeIds = adminIds.filter((id) => Number.isSafeInteger(id))
+  if (!safeIds.length) return { devices: 0, sent: 0, removed: 0, failed: 0, skipped: true, errors: [] }
+  const subscriptions = await database.prepare(`
+    SELECT s.id, s.endpoint, s.p256dh, s.auth
+    FROM push_subscriptions s JOIN admins a ON a.id = s.admin_id
+    WHERE a.id IN (${safeIds.map(() => '?').join(',')})
+  `).all(...safeIds)
+  return sendToSubscriptions(database, subscriptions, notification, { send })
+}
+
+/** Sends a notification to every device of one admin, such as order alerts they opted into. */
+export async function sendToAdminDevice(database, adminId, notification) {
+  if (!pushConfiguration() || !Number.isSafeInteger(adminId)) return { devices: 0, sent: 0, removed: 0, failed: 0, skipped: true, errors: [] }
+  const subscriptions = await database.prepare(`
+    SELECT s.id, s.endpoint, s.p256dh, s.auth
+    FROM push_subscriptions s JOIN admins a ON a.id = s.admin_id
+    WHERE s.admin_id = ?
+  `).all(adminId)
+  return sendToSubscriptions(database, subscriptions, notification)
 }
 
 /** Updates about a party or event order. */
@@ -254,7 +298,7 @@ export function buildEventOrderNotification({ eventOrderId, kind }) {
   }
   const [title, body] = messages[kind] || ['Event order update', 'Tap to see your event order.']
   return {
-    title: `${title} (event #${eventOrderId})`,
+    title: `${SITE_NAME}: ${title} (event #${eventOrderId})`,
     body,
     icon: NOTIFICATION_ICON,
     badge: NOTIFICATION_BADGE,
@@ -264,6 +308,18 @@ export function buildEventOrderNotification({ eventOrderId, kind }) {
 }
 
 /** Sent a day after delivery to ask for a star rating. Opens that order's review form. */
+export function buildAdminOrderNotification({ orderId, storeName, totalCents, currency = 'xaf' }) {
+  const store = storeName ? ` at ${storeName}` : ''
+  const amount = ` · ${numberFormat.format(Math.round(totalCents || 0))} ${String(currency).toUpperCase()}`
+  return {
+    title: `${SITE_NAME}: New order #${orderId}${store}${amount}`,
+    body: 'A new order just came in. Tap to open it in the admin dashboard.',
+    icon: NOTIFICATION_ICON,
+    badge: NOTIFICATION_BADGE,
+    tag: `admin-order-${orderId}`,
+    url: `/admin/orders?order=${orderId}`,
+  }
+}
 /** Sent once to a new account on the first device where notifications are turned on. */
 export function buildWelcomeNotification({ name } = {}) {
   const firstName = String(name || '').trim().split(/\s+/)[0]?.slice(0, 40) || ''
@@ -279,7 +335,7 @@ export function buildWelcomeNotification({ name } = {}) {
 
 export function buildReviewReminderNotification({ orderId }) {
   return {
-    title: `How was order #${orderId}?`,
+    title: `${SITE_NAME}: How was order #${orderId}?`,
     body: 'Tap to rate your treats. It takes 10 seconds and helps other customers choose.',
     icon: NOTIFICATION_ICON,
     badge: NOTIFICATION_BADGE,
@@ -325,7 +381,7 @@ export async function sendToCustomer(database, customerId, notification, options
 }
 
 async function sendToSubscriptions(database, subscriptions, notification, { send = webpush.sendNotification } = {}) {
-  const payload = JSON.stringify(notification)
+  const payload = JSON.stringify(brandNotification(notification))
   const result = { devices: subscriptions.length, sent: 0, removed: 0, failed: 0, skipped: false, errors: [] }
   const agent = createPushServiceAgent()
   try {

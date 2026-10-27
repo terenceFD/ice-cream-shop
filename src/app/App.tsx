@@ -77,69 +77,69 @@ function App() {
             <AuthProvider>
               <AdminAuthProvider>
                 <Suspense fallback={<PageLoading />}>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/flavors" element={<FlavorsPage />} />
-                  <Route path="/menu" element={<MenuPage />} />
-                  <Route path="/menu/all" element={<AllMenuPage />} />
-                  <Route path="/custom-cake" element={<CustomCakeRequestPage />} />
-                  <Route path="/events" element={<EventOrdersPage />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/locations" element={<LocationsPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/flavor/:id" element={<FlavorDetailPage />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/payment" element={<PaymentPage />} />
-                  <Route path="/login" element={<AuthPage mode="login" />} />
-                  <Route path="/signup" element={<AuthPage mode="signup" />} />
-                  <Route path="/account/orders" element={<CustomerOrdersPage />} />
-                  <Route path="/admin/login" element={<AdminLoginPage />} />
-                  <Route
-                    element={
-                      <AdminRoute>
-                        <AdminLayout />
-                      </AdminRoute>
-                    }
-                  >
-                    <Route path="/admin" element={<AdminPage />} />
-                    <Route path="/admin/overview" element={<AdminStoreOverviewPage />} />
-                    <Route path="/admin/stores" element={<AdminStoresPage />} />
-                    <Route path="/admin/menu" element={<AdminMenuPage />} />
-                    <Route path="/admin/inventory" element={<AdminInventoryPage />} />
-                    <Route path="/admin/categories" element={<AdminCategoriesPage />} />
-                    <Route path="/admin/stock-alerts" element={<AdminStockAlertsPage />} />
-                    <Route path="/admin/fulfillment" element={<AdminFulfillmentPage />} />
-                    <Route path="/admin/activity" element={<AdminActivityPage />} />
-                    <Route path="/admin/promotions" element={<AdminPromotionsPage />} />
-                    <Route path="/admin/reports" element={<AdminReportsPage />} />
-                    <Route path="/admin/reviews" element={<AdminReviewsPage />} />
-                    <Route path="/admin/cake-requests" element={<AdminCakeRequestsPage />} />
-                    <Route path="/admin/events" element={<AdminEventOrdersPage />} />
-                    <Route path="/admin/orders" element={<AdminOrdersPage />} />
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/flavors" element={<FlavorsPage />} />
+                    <Route path="/menu" element={<MenuPage />} />
+                    <Route path="/menu/all" element={<AllMenuPage />} />
+                    <Route path="/custom-cake" element={<CustomCakeRequestPage />} />
+                    <Route path="/events" element={<EventOrdersPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/locations" element={<LocationsPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/flavor/:id" element={<FlavorDetailPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/payment" element={<PaymentPage />} />
+                    <Route path="/login" element={<AuthPage mode="login" />} />
+                    <Route path="/signup" element={<AuthPage mode="signup" />} />
+                    <Route path="/account/orders" element={<CustomerOrdersPage />} />
+                    <Route path="/admin/login" element={<AdminLoginPage />} />
                     <Route
-                      path="/admin/delivered"
-                      element={<AdminDeliveredPage />}
-                    />
-                    <Route
-                      path="/admin/payments"
-                      element={<AdminPaymentsPage />}
-                    />
-                    <Route
-                      path="/admin/notifications"
-                      element={<AdminNotificationsPage />}
-                    />
-                    <Route
-                      path="/admin/admins"
-                      element={<AdminManagementPage />}
-                    />
-                    <Route
-                      path="/admin/customers"
-                      element={<AdminCustomersPage />}
-                    />
-                  </Route>
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
+                      element={
+                        <AdminRoute>
+                          <AdminLayout />
+                        </AdminRoute>
+                      }
+                    >
+                      <Route path="/admin" element={<AdminPage />} />
+                      <Route path="/admin/overview" element={<AdminStoreOverviewPage />} />
+                      <Route path="/admin/stores" element={<AdminStoresPage />} />
+                      <Route path="/admin/menu" element={<AdminMenuPage />} />
+                      <Route path="/admin/inventory" element={<AdminInventoryPage />} />
+                      <Route path="/admin/categories" element={<AdminCategoriesPage />} />
+                      <Route path="/admin/stock-alerts" element={<AdminStockAlertsPage />} />
+                      <Route path="/admin/fulfillment" element={<AdminFulfillmentPage />} />
+                      <Route path="/admin/activity" element={<AdminActivityPage />} />
+                      <Route path="/admin/promotions" element={<AdminPromotionsPage />} />
+                      <Route path="/admin/reports" element={<AdminReportsPage />} />
+                      <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+                      <Route path="/admin/cake-requests" element={<AdminCakeRequestsPage />} />
+                      <Route path="/admin/events" element={<AdminEventOrdersPage />} />
+                      <Route path="/admin/orders" element={<AdminOrdersPage />} />
+                      <Route
+                        path="/admin/delivered"
+                        element={<AdminDeliveredPage />}
+                      />
+                      <Route
+                        path="/admin/payments"
+                        element={<AdminPaymentsPage />}
+                      />
+                      <Route
+                        path="/admin/notifications"
+                        element={<AdminNotificationsPage />}
+                      />
+                      <Route
+                        path="/admin/admins"
+                        element={<AdminManagementPage />}
+                      />
+                      <Route
+                        path="/admin/customers"
+                        element={<AdminCustomersPage />}
+                      />
+                    </Route>
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Routes>
                 </Suspense>
                 <InstallAppPrompt />
                 <PromotionAlertsPrompt />

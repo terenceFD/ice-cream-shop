@@ -563,10 +563,12 @@ if (configuredDatabaseBackend === "postgres") {
     CREATE INDEX IF NOT EXISTS idx_event_orders_customer ON event_orders(customer_id);
     CREATE INDEX IF NOT EXISTS idx_event_orders_store_date ON event_orders(store_id, event_date);
 
-    -- Devices where a signed-in customer turned on promotion alerts.
+    -- Devices where a signed-in customer turned on promotion alerts, or an admin turned on
+    -- new-order alerts (customer_id and admin_id are mutually exclusive).
     CREATE TABLE IF NOT EXISTS push_subscriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
+      admin_id INTEGER REFERENCES admins(id) ON DELETE CASCADE,
       endpoint TEXT NOT NULL UNIQUE,
       p256dh TEXT NOT NULL,
       auth TEXT NOT NULL,
@@ -588,7 +590,16 @@ if (configuredDatabaseBackend === "postgres") {
   addColumnIfMissing("customers", "profile_picture", "TEXT NOT NULL DEFAULT ''");
   addColumnIfMissing("orders", "review_reminder_sent_at", "TEXT");
   addColumnIfMissing("orders", "hidden_by_customer", "INTEGER NOT NULL DEFAULT 0");
+  // In-app admin notification for a newly placed order (mirrors the deposit "notices" pattern).
+  addColumnIfMissing("orders", "order_admin_seen", "INTEGER NOT NULL DEFAULT 1");
+  addColumnIfMissing("orders", "order_notified_at", "TEXT");
   addColumnIfMissing("customers", "welcome_notification_sent_at", "TEXT");
+  // Admin devices can subscribe to "new order" push notifications.
+  addColumnIfMissing(
+    "push_subscriptions",
+    "admin_id",
+    "INTEGER REFERENCES admins(id) ON DELETE CASCADE",
+  );
   addColumnIfMissing("admins", "role", "TEXT NOT NULL DEFAULT 'owner'");
   addColumnIfMissing("admins", "security_pin_hash", "TEXT");
   addColumnIfMissing("admins", "totp_secret", "TEXT");
@@ -2168,8 +2179,8 @@ export async function clearDeliveredOrders(storeId = null, storeTown = null) {
   })()
 }
 
-export async function createAdminAccount({ name, email, passwordHash, profilePicture = '', storeId = null, branchTown = null }) {
-  const role = branchTown === null ? 'store_admin' : 'branch_admin'
+export async function createAdminAccount({ name, email, passwordHash, profilePicture = '', storeId = null, branchTown = null, role: requestedRole }) {
+  const role = requestedRole || (branchTown === null ? 'store_admin' : 'branch_admin')
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const result = await database.prepare(`
@@ -2197,6 +2208,32 @@ export async function createAdminAccount({ name, email, passwordHash, profilePic
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
     `).get(Number(result.lastInsertRowid))
   })()
+}
+
+export async function removeAdminAccount(adminId) {
+  if (databaseKind === 'postgres') {
+    return database.transaction(async () => {
+      const owners = await database.prepare("SELECT id FROM admins WHERE role = 'owner' ORDER BY id FOR UPDATE").all()
+      const admin = await database.prepare('SELECT role FROM admins WHERE id = ?').get(adminId)
+      if (!admin) return 'not-found'
+      if (!['owner', 'store_admin', 'branch_admin'].includes(admin.role)) return 'not-removable'
+      if (admin.role === 'owner' && owners.length <= 1) return 'last-owner'
+      const result = await database.prepare('DELETE FROM admins WHERE id = ?').run(adminId)
+      return result.changes ? 'deleted' : 'not-found'
+    })
+  }
+
+  const result = database.prepare(`
+    DELETE FROM admins
+    WHERE id = ?
+      AND role IN ('owner', 'store_admin', 'branch_admin')
+      AND (role != 'owner' OR (SELECT COUNT(*) FROM admins WHERE role = 'owner') > 1)
+  `).run(adminId)
+  if (result.changes) return 'deleted'
+  const admin = database.prepare('SELECT role FROM admins WHERE id = ?').get(adminId)
+  if (!admin) return 'not-found'
+  if (admin.role === 'owner') return 'last-owner'
+  return 'not-removable'
 }
 
 export async function updateFulfillmentZones(zones) {
@@ -2854,8 +2891,8 @@ export async function createCheckoutOrder({
         store_id, store_name, store_address, store_phone,
         delivery_postal_code, delivery_residence, subtotal_cents, discount_cents, total_cents,
         currency, discount_code, discount_code_id, fulfillment_type, scheduled_for,
-        delivery_fee, loyalty_points_redeemed
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        delivery_fee, loyalty_points_redeemed, order_admin_seen, order_notified_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
     `).run(
       customer?.id ?? null,
       name,

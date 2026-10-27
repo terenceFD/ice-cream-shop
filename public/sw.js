@@ -103,8 +103,23 @@ self.addEventListener('fetch', (event) => {
   // every hero photo was fetched twice.
 })
 
-// Promotion alerts sent by the server. The notification carries the site name and logo.
+// Push alerts carry the site name and logo, including alerts from older server versions.
 const SITE_NAME = 'Cold Stone Creamery'
+let pushNotificationQueue = Promise.resolve()
+
+function showPushNotification(title, options) {
+  const next = pushNotificationQueue.then(async () => {
+    const existing = await self.registration.getNotifications({ tag: options.tag })
+    if (existing.some((notification) => (
+      notification.title === title
+      && notification.body === options.body
+      && notification.data?.url === options.data.url
+    ))) return
+    await self.registration.showNotification(title, options)
+  })
+  pushNotificationQueue = next.catch(() => {})
+  return next
+}
 
 self.addEventListener('push', (event) => {
   let data = {}
@@ -114,10 +129,14 @@ self.addEventListener('push', (event) => {
     data = { body: event.data ? event.data.text() : '' }
   }
   const url = typeof data.url === 'string' && data.url.startsWith('/') ? data.url : '/'
-  event.waitUntil(self.registration.showNotification(data.title || SITE_NAME, {
+  const suppliedTitle = typeof data.title === 'string' ? data.title.trim() : ''
+  const title = suppliedTitle.toLowerCase().includes(SITE_NAME.toLowerCase())
+    ? suppliedTitle
+    : suppliedTitle ? `${SITE_NAME}: ${suppliedTitle}` : SITE_NAME
+  event.waitUntil(showPushNotification(title, {
     body: data.body || '',
-    icon: data.icon || '/icons/icon-192.png',
-    badge: data.badge || '/icons/notification-badge.png',
+    icon: '/logo.png',
+    badge: '/logo.png',
     tag: data.tag || 'cold-stone-promotion',
     renotify: true,
     data: { url },

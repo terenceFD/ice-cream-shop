@@ -266,6 +266,7 @@ export function AdminManagementPage() {
   const [removingAdminId, setRemovingAdminId] = useState<number | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [adminToRemove, setAdminToRemove] = useState<(typeof admins)[number] | null>(null);
+  const [creatingOwner, setCreatingOwner] = useState(false);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "owner" | "store_admin" | "branch_admin">("all");
   const isOverlayOpen = isFormOpen || Boolean(adminToRemove);
@@ -325,9 +326,10 @@ export function AdminManagementPage() {
         : a.role === "owner" ? -1 : b.role === "owner" ? 1 : a.role === "branch_admin" ? -1 : 1));
   }, [admins, roleFilter, search]);
 
-  function openForm(presetStoreId?: number) {
+  function openForm(presetStoreId?: number, asOwner = false) {
     setError("");
     setMessage("");
+    setCreatingOwner(asOwner);
     if (presetStoreId) setAssignment(`store:${presetStoreId}`);
     setIsFormOpen(true);
   }
@@ -351,7 +353,7 @@ export function AdminManagementPage() {
     event.preventDefault();
     setMessage("");
     setError("");
-    if (!assignment) {
+    if (!creatingOwner && !assignment) {
       setError(t("Choose a store or branch."));
       return;
     }
@@ -368,7 +370,9 @@ export function AdminManagementPage() {
         email,
         password,
         profilePicture,
-        ...(assignmentType === "branch" ? { branchTown: assignmentValue } : { storeId: Number(assignmentValue) }),
+        ...(creatingOwner ? { role: "owner" as const } : {}),
+        ...(!creatingOwner && assignmentType === "branch" ? { branchTown: assignmentValue } : {}),
+        ...(!creatingOwner && assignmentType !== "branch" ? { storeId: Number(assignmentValue) } : {}),
       });
 
       setName("");
@@ -378,7 +382,7 @@ export function AdminManagementPage() {
       setProfilePicture("");
       setAssignment(stores[0] ? `store:${stores[0].id}` : "");
       setIsFormOpen(false);
-      setMessage(t("Admin account created. They can sign in with their email and password."));
+      setMessage(t(creatingOwner ? "Owner account created. They can sign in with their email and password." : "Admin account created. They can sign in with their email and password."));
     } catch (creationError) {
       setError(t(creationError instanceof Error ? creationError.message : "Unable to create admin account."));
     } finally {
@@ -459,15 +463,27 @@ export function AdminManagementPage() {
           <h1 className="mt-1 text-2xl font-bold tracking-[-0.01em] text-[#111827]">{t("Admin accounts")}</h1>
           <p className="mt-1 text-sm text-[#6b6b6b]">{t("Create separate branch or store admin logins and assign their access.")}</p>
         </div>
-        <button
-          className="inline-flex h-9 flex-none items-center gap-1.5 rounded-lg bg-[#1d1f20] px-3 text-sm font-medium text-white transition hover:bg-[#3a3d3f] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#1d1f20] disabled:opacity-50"
-          disabled={!stores.length}
-          onClick={() => openForm()}
-          type="button"
-        >
-          <Icon path={icons.plus} />
-          {t("Add an admin")}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          {currentAdmin?.role === "owner" && (
+            <button
+              className="inline-flex h-9 flex-none items-center gap-1.5 rounded-lg border border-[#d1d5db] bg-white px-3 text-sm font-medium text-[#111827] transition hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#111827]/40"
+              onClick={() => openForm(undefined, true)}
+              type="button"
+            >
+              <Icon path={icons.crown} />
+              {t("Add an owner")}
+            </button>
+          )}
+          <button
+            className="inline-flex h-9 flex-none items-center gap-1.5 rounded-lg bg-[#1d1f20] px-3 text-sm font-medium text-white transition hover:bg-[#3a3d3f] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#1d1f20] disabled:opacity-50"
+            disabled={!stores.length}
+            onClick={() => openForm()}
+            type="button"
+          >
+            <Icon path={icons.plus} />
+            {t("Add an admin")}
+          </button>
+        </div>
       </header>
 
       {message && (
@@ -633,19 +649,19 @@ export function AdminManagementPage() {
                     </div>
 
                     <div className="flex justify-end">
-                      {!isOwnerAccount && !isCurrentAdmin ? (
+                      {!isCurrentAdmin && (currentAdmin?.role === "owner" || !isOwnerAccount) ? (
                         <button
                           aria-label={`${t("Remove")} ${admin.name}`}
                           className="grid size-9 place-items-center rounded-lg text-[#6b6b6b] transition hover:bg-[#ffedea] hover:text-[#831c1e] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#111827]/40 disabled:cursor-wait"
                           disabled={removingAdminId === admin.id}
                           onClick={() => { setError(""); setAdminToRemove(admin); }}
-                          title={t("Remove")}
+                          title={t(isOwnerAccount ? "Remove owner access" : "Remove")}
                           type="button"
                         >
                           <Icon path={icons.trash} />
                         </button>
                       ) : (
-                        <span className="grid size-9 place-items-center rounded-lg text-[#c3ccd7]" title={t(isOwnerAccount ? "Owner accounts cannot be removed here." : "You cannot remove your own account.")}>
+                        <span className="grid size-9 place-items-center rounded-lg text-[#c3ccd7]" title={t(isCurrentAdmin ? "You cannot remove your own account." : "Owner accounts can only be managed by an owner.")}>
                           <Icon path={icons.lock} />
                         </span>
                       )}
@@ -748,17 +764,17 @@ export function AdminManagementPage() {
                     <p className="truncate text-xs text-[#6b6b6b]">{email || t("Email address")}</p>
                     <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#e8f0fb] px-2 py-0.5 text-xs font-medium text-[#1d4f91]">
                       <Icon className="size-3" path={icons.store} />
-                      {selectedStore ? t(selectedStore.name) : selectedBranch ? t(selectedBranch) : t("Store admin")}
+                      {creatingOwner ? t("Owner") : selectedStore ? t(selectedStore.name) : selectedBranch ? t(selectedBranch) : t("Store admin")}
                     </span>
                   </div>
                 </div>
                 <p className="-mt-2 text-xs text-[#6b6b6b]">{t("Optional. Image will be resized before saving (5 MB max).")}</p>
 
-                <div>
+                {!creatingOwner && <div>
                   <span className={labelClassName} id="admin-assignment-label">{t("Assigned store or branch")}</span>
                   <AssignmentPicker groups={assignmentGroups} onChange={setAssignment} t={t} value={assignment} />
                   <p className="mt-2 text-xs leading-4 text-[#6b6b6b]">{t("Branch admins can access every store in the selected town.")}</p>
-                </div>
+                </div>}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className={labelClassName}>
                     {t("Full name")}
@@ -792,7 +808,7 @@ export function AdminManagementPage() {
                   )}
                 </div>
 
-                <div className="rounded-lg bg-[#f9fafb] p-4 border border-[#e8e8e8]">
+                {!creatingOwner ? <div className="rounded-lg bg-[#f9fafb] p-4 border border-[#e8e8e8]">
                   <p className="text-xs font-medium text-[#6b6b6b]">{t("This admin can access")}</p>
                   <ul className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1.5">
                     {STORE_ADMIN_PAGES.map((page) => (
@@ -803,11 +819,14 @@ export function AdminManagementPage() {
                     ))}
                   </ul>
                   <p className="mt-3 text-xs leading-5 text-[#6b6b6b]">{t("Catalog, promotions and admin accounts stay owner-only.")}</p>
-                </div>
+                </div> : <div className="rounded-lg border border-[#f2ddb0] bg-[#fffbeb] p-4">
+                  <p className="flex items-center gap-2 text-sm font-semibold text-[#92400e]"><Icon path={icons.crown} />{t("Owner access")}</p>
+                  <p className="mt-2 text-xs leading-5 text-[#6b6b6b]">{t("Owners can manage every store, admin account, and website setting.")}</p>
+                </div>}
 
                 <p className="flex items-start gap-2 rounded-lg bg-[#fffbeb] px-3.5 py-3 text-xs leading-5 text-[#92400e]">
                   <Icon className="mt-0.5 size-4 shrink-0" path={icons.shield} />
-                  {t("Only create administrator accounts for people you trust with store access.")}
+                  {t(creatingOwner ? "Only grant owner access to people you trust with full control of the website." : "Only create administrator accounts for people you trust with store access.")}
                 </p>
 
                 {error && (
@@ -826,7 +845,7 @@ export function AdminManagementPage() {
                   type="submit"
                 >
                   <Icon path={icons.plus} />
-                  {isSaving ? t("Creating account…") : t("Create admin account")}
+                  {isSaving ? t("Creating account…") : t(creatingOwner ? "Create owner account" : "Create admin account")}
                 </button>
               </footer>
             </form>
@@ -839,7 +858,7 @@ export function AdminManagementPage() {
           <button aria-label={t("Cancel")} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setAdminToRemove(null)} tabIndex={-1} type="button" />
           <section aria-labelledby="remove-admin-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-md bg-white p-6" role="dialog">
             <span className="grid size-12 place-items-center rounded-lg bg-[#ffedea] text-[#831c1e]"><Icon className="size-6" path={icons.trash} /></span>
-            <h2 className="mt-4 text-xl font-semibold text-[#111827]" id="remove-admin-title">{t("Remove admin access")}</h2>
+            <h2 className="mt-4 text-xl font-semibold text-[#111827]" id="remove-admin-title">{t(adminToRemove.role === "owner" ? "Remove owner access" : "Remove admin access")}</h2>
             <div className="mt-4 flex items-center gap-3 rounded-lg bg-[#f9fafb] p-3 border border-[#e8e8e8]">
               <Avatar name={adminToRemove.name} picture={adminToRemove.profilePicture} />
               <div className="min-w-0">
@@ -848,7 +867,12 @@ export function AdminManagementPage() {
               </div>
             </div>
             <p className="mt-3 text-sm leading-6 text-[#6b6b6b]">
-              {t("Remove admin {name} ({email})? They will immediately lose access, and this cannot be undone.", { name: adminToRemove.name, email: adminToRemove.email })}
+              {t(adminToRemove.role === "owner"
+                ? "Remove owner {name} ({email})? They will immediately lose owner access, and this cannot be undone."
+                : "Remove admin {name} ({email})? They will immediately lose access, and this cannot be undone.", {
+                name: adminToRemove.name,
+                email: adminToRemove.email,
+              })}
             </p>
             {error && <p className="mt-3 rounded-lg bg-[#ffedea] px-3 py-2.5 text-sm font-medium text-[#831c1e]" role="alert">{error}</p>}
             <div className="mt-6 flex justify-end gap-2.5">

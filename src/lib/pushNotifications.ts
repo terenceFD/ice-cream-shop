@@ -3,6 +3,48 @@
 import { apiRequest } from "../api/api";
 import { isAppleMobileDevice, isRunningAsInstalledApp } from "./installPrompt";
 
+// The admin dashboard calls these instead of the customer endpoints so that
+// order-alert subscriptions are stored against the admin account, not the customer.
+export async function enableAdminOrderAlertsAndSubscribe(token: string) {
+  const { enabled, publicKey } = await getServerKey();
+  if (!enabled || !publicKey) return "unavailable";
+  const registration = await getWorkerRegistration();
+  preparedPush = { registration, publicKey };
+  if (Notification.permission === "denied") return "denied";
+  if (Notification.permission !== "granted") {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") return "denied";
+  }
+  let subscription = await registration.pushManager.getSubscription();
+  if (!subscription || !sameKey(subscription, publicKey)) {
+    subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: base64UrlToBytes(publicKey) });
+  }
+  await apiRequest("/admin/push-subscription", { method: "POST", token, body: subscription.toJSON() });
+  return "on";
+}
+
+export async function disableAdminOrderAlerts(token: string) {
+  const registration = await getWorkerRegistration();
+  const subscription = await registration.pushManager.getSubscription();
+  if (!subscription) return "off";
+  await apiRequest("/admin/push-subscription", { method: "DELETE", token, body: { endpoint: subscription.endpoint } });
+  return "off";
+}
+
+export async function getAdminOrderAlertState(token: string) {
+  if (!isPushSupported()) return "unsupported";
+  const { enabled, publicKey } = await getServerKey();
+  if (!enabled || !publicKey) return "unavailable";
+  if (Notification.permission === "denied") return "denied";
+  const registration = await getWorkerRegistration();
+  preparedPush = { registration, publicKey };
+  const subscription = await registration.pushManager.getSubscription();
+  if (!subscription) return "off";
+  // The server is the source of truth: this device counts as on only if the admin account has it.
+  const status = await apiRequest<{ configured: boolean; subscribed: boolean }>("/admin/push-status", { token });
+  return status.subscribed ? "on" : "off";
+}
+
 export type PromotionAlertState =
   | "on"
   | "off"
