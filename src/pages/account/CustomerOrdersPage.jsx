@@ -1307,7 +1307,7 @@ export function CustomerOrdersPage() {
         {/* Hero */}
         <section className="account-masthead relative isolate overflow-hidden bg-brand-navy text-white">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-            <HeroBackground quietOnMobile variant="navy" theme="ice-cream" />
+            <HeroBackground animated quietOnMobile variant="navy" theme="ice-cream" />
           </div>
           <div className="account-masthead-inner relative z-10 mx-auto max-w-[1200px] px-5 pb-7 pt-7 sm:px-8 sm:pb-8 sm:pt-9 lg:px-10">
             <div className="account-identity-row flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">

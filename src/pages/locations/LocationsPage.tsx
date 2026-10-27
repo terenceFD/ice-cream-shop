@@ -106,7 +106,7 @@ export function LocationsPage() {
       <main id="main" tabIndex={-1}>
         <section className="relative overflow-hidden bg-brand-navy text-white">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-30">
-            <HeroBackground quietOnMobile variant="navy" theme="plain" />
+            <HeroBackground animated quietOnMobile variant="navy" theme="ice-cream" />
           </div>
           <svg aria-hidden="true" className="pointer-events-none absolute -right-56 top-[30rem] h-[26rem] w-[22rem] text-brand-yellow/25 sm:-right-32 sm:top-[22rem] sm:h-[38rem] sm:w-[32rem] lg:-top-64 lg:h-[44rem] lg:w-[38rem]" fill="currentColor" viewBox="0 0 400 500">
             <path d="M200 486C162 430 31 300 31 199a169 169 0 1 1 338 0c0 101-131 231-169 287Z" />

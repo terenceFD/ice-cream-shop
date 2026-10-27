@@ -298,7 +298,7 @@ export function ContactPage() {
       <main id="main" tabIndex={-1}>
         <section className="relative isolate overflow-hidden bg-brand-navy text-white">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-25">
-            <HeroBackground quietOnMobile variant="navy" theme="plain" />
+            <HeroBackground animated quietOnMobile variant="navy" theme="ice-cream" />
           </div>
           <div className="relative mx-auto max-w-[1320px] px-5 py-12 sm:px-8 sm:py-16 lg:px-12">
             <h1 className="max-w-[12ch] font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">

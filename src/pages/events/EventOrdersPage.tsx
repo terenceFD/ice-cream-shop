@@ -488,7 +488,7 @@ export function EventOrdersPage() {
       <main className="event-orders-main" id="main" tabIndex={-1}>
         <section className="event-page-intro relative isolate overflow-hidden bg-brand-navy px-5 pb-10 pt-10 text-white sm:px-8 lg:px-12 lg:pb-12 lg:pt-14">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-0 opacity-25 overflow-hidden">
-            <HeroBackground quietOnMobile variant="navy" theme="celebration" />
+            <HeroBackground animated quietOnMobile variant="navy" theme="celebration" />
           </div>
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-0 overflow-hidden">
             {[
