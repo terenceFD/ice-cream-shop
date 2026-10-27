@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 /* Keep every interactive control recognizable, while preserving disabled affordances. */
 button,
@@ -622,7 +622,7 @@ body {
 /* Every hero decor layer animates only composited properties (transform/opacity),
    but large semi-transparent layers (blobs, dot grid) still cost paint time.
    Promoting them gives the compositor its own texture so it never repains the
-   page on every frame — and when the hero scrolls out of view the browser can
+   page on every frame â€” and when the hero scrolls out of view the browser can
    drop the layers instead of animating off-screen. */
 .hero-blob-a,
 .hero-blob-b,
@@ -979,3 +979,4 @@ details[open] > .menu-popover {
     scrollbar-width: thin;
   }
 }
+

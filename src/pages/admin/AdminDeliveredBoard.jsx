@@ -4,6 +4,7 @@ import { useAdminAuth } from "./useAdminAuth";
 import { useLanguage } from "../../language/useLanguage";
 import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
 import "./AdminDeliveredBoard.css";
+import { exportOrdersCsv, orderWeekday } from "./orderCsv";
 
 const CHART_DAYS = 14;
 const inputClassName =
@@ -76,7 +77,8 @@ export function AdminDeliveredBoard() {
   const [storeFilter, setStoreFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [rangeFilter, setRangeFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("recent");
+  const [weekdayFilter, setWeekdayFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("weekday");
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [isConfirmingClear, setIsConfirmingClear] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -185,48 +187,29 @@ export function AdminDeliveredBoard() {
           || (rangeFilter === "today" && date && dayKey(date) === todayKey)
           || (rangeMs && date && now - date.getTime() <= rangeMs);
         const matchesType = typeFilter === "all" || order.fulfillmentType === typeFilter;
+        const matchesWeekday = weekdayFilter === "all" || orderWeekday(order.createdAt) === Number(weekdayFilter);
         const matchesSearch = !query || [
           order.id, order.customerName, order.customerEmail, order.customerPhone,
           order.storeName, order.deliveryCity, order.deliveryResidence,
           ...order.items.map((item) => item.flavorName),
         ].some((value) => String(value || "").toLowerCase().includes(query));
-        return matchesRange && matchesType && matchesSearch;
+        return matchesRange && matchesType && matchesWeekday && matchesSearch;
       })
       .sort((a, b) => {
+        if (sortBy === "weekday") {
+          const aDay = orderWeekday(a.createdAt);
+          const bDay = orderWeekday(b.createdAt);
+          const dayDifference = (aDay < 0 ? 7 : (aDay + 6) % 7) - (bDay < 0 ? 7 : (bDay + 6) % 7);
+          return dayDifference || ((deliveredDate(b)?.getTime() || 0) - (deliveredDate(a)?.getTime() || 0));
+        }
         if (sortBy === "oldest") return (deliveredDate(a)?.getTime() || 0) - (deliveredDate(b)?.getTime() || 0);
         if (sortBy === "total") return toXaf(b.totalCents, b.currency) - toXaf(a.totalCents, a.currency);
         return (deliveredDate(b)?.getTime() || 0) - (deliveredDate(a)?.getTime() || 0);
       });
-  }, [orders, rangeFilter, search, sortBy, typeFilter]);
+  }, [orders, rangeFilter, search, sortBy, typeFilter, weekdayFilter]);
 
   const visibleRevenue = visibleOrders.reduce((sum, order) => sum + toXaf(order.totalCents, order.currency), 0);
-  const hasActiveFilters = Boolean(search.trim() || typeFilter !== "all" || rangeFilter !== "all");
-
-  function exportCsv() {
-    const escape = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
-    const rows = [
-      ["Order", "Delivered", "Placed", "Customer", "Email", "Phone", "Fulfillment", "Store", "Items", "Total (FCFA)"],
-      ...visibleOrders.map((order) => [
-        order.id,
-        deliveredDate(order)?.toISOString() || "",
-        parseDate(order.createdAt)?.toISOString() || "",
-        order.customerName,
-        order.customerEmail,
-        order.customerPhone,
-        order.fulfillmentType,
-        order.storeName,
-        order.items.map((item) => `${item.quantity}x ${item.flavorName}`).join("; "),
-        toXaf(order.totalCents, order.currency),
-      ]),
-    ];
-    const blob = new Blob([`﻿${rows.map((row) => row.map(escape).join(",")).join("\r\n")}`], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `delivered-orders-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
+  const hasActiveFilters = Boolean(search.trim() || typeFilter !== "all" || rangeFilter !== "all" || weekdayFilter !== "all");
 
   const metrics = [
     { label: "Total delivered", value: deliveredCount.toLocaleString(locale), hint: t("Completed orders") },
@@ -266,7 +249,7 @@ export function AdminDeliveredBoard() {
           <button
             className="delivered-action inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dce5ef] bg-white px-4 text-sm font-bold text-brand-blue transition hover:border-[#bacbdc] hover:bg-[#f4f6f8] hover:text-brand-navy disabled:opacity-50"
             disabled={!visibleOrders.length}
-            onClick={exportCsv}
+            onClick={() => exportOrdersCsv(visibleOrders, `delivered-orders-${new Date().toISOString().slice(0, 10)}.csv`)}
             type="button"
           >
             <Icon path={icons.download} />
@@ -351,14 +334,14 @@ export function AdminDeliveredBoard() {
             {hasActiveFilters && (
               <button
                 className="delivered-clear-filters text-xs font-bold text-brand-blue underline decoration-[#ffb84d] decoration-2 underline-offset-4 hover:text-brand-navy"
-                onClick={() => { setSearch(""); setTypeFilter("all"); setRangeFilter("all"); }}
+                onClick={() => { setSearch(""); setTypeFilter("all"); setRangeFilter("all"); setWeekdayFilter("all"); }}
                 type="button"
               >
                 {t("Clear filters")}
               </button>
             )}
           </div>
-          <div className="delivered-toolbar grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+          <div className="delivered-toolbar grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto]">
             <label className="relative block">
               <span className="sr-only">{t("Search delivered orders")}</span>
               <Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#65748a]" path={icons.search} />
@@ -374,8 +357,18 @@ export function AdminDeliveredBoard() {
               </label>
             )}
             <label className="block">
+              <span className="sr-only">{t("Filter orders by day of week")}</span>
+              <select className={`${inputClassName} delivered-control lg:w-44`} onChange={(event) => setWeekdayFilter(event.target.value)} value={weekdayFilter}>
+                <option value="all">{t("All days of the week")}</option>
+                {[1, 2, 3, 4, 5, 6, 0].map((day) => (
+                  <option key={day} value={day}>{new Date(2024, 0, 7 + day).toLocaleDateString(locale, { weekday: "long" })}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
               <span className="sr-only">{t("Sort by")}</span>
               <select className={`${inputClassName} delivered-control lg:w-48`} onChange={(event) => setSortBy(event.target.value)} value={sortBy}>
+                <option value="weekday">{t("Sort: Day of week")}</option>
                 <option value="recent">{t("Sort: Newest first")}</option>
                 <option value="oldest">{t("Sort: Oldest first")}</option>
                 <option value="total">{t("Sort: Highest total")}</option>

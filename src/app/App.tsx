@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { lazy, Suspense, type ComponentType } from "react";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { lazy, Suspense, useEffect, useState, type ComponentType } from "react";
 import { CartProvider } from "../context/CartContext";
 import { NotFoundPage } from "../pages/notfound/NotFoundPage";
 import { FlavorProvider } from "../context/FlavorContext";
@@ -12,6 +12,7 @@ import { WhatsAppButton } from "../components/WhatsAppButton";
 import { ScrollToTop } from "../components/ScrollToTop";
 import { WebsiteLoader } from "../components/WebsiteLoader";
 import { RouteMeta } from "../seo/RouteMeta";
+import { useLanguage } from "../language/useLanguage";
 
 // Each page below downloads only when a visitor opens it, so the first visit to the shop
 // does not carry the admin dashboard, checkout and other pages' code.
@@ -65,12 +66,66 @@ function PageLoading() {
   return <div aria-busy="true" className="min-h-[60vh]" role="status" />;
 }
 
+function AccountCreatedNotice() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { t } = useLanguage();
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    const state = location.state && typeof location.state === "object"
+      ? location.state as Record<string, unknown>
+      : null;
+    if (!state?.accountCreated) return;
+
+    setNotice(t("Your account was created successfully."));
+    const remainingState = { ...state };
+    delete remainingState.accountCreated;
+    navigate(`${location.pathname}${location.search}${location.hash}`, {
+      replace: true,
+      state: Object.keys(remainingState).length ? remainingState : null,
+    });
+  }, [location, navigate, t]);
+
+  useEffect(() => {
+    if (!notice) return undefined;
+    const timeout = window.setTimeout(() => setNotice(""), 6000);
+    return () => window.clearTimeout(timeout);
+  }, [notice]);
+
+  if (!notice) return null;
+  return (
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      className="fixed right-4 top-4 z-[100] flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-xl bg-[#eef6e8] px-4 py-3 text-sm font-bold text-[#315d22] shadow-[0_12px_35px_rgba(16,44,80,0.18)] ring-1 ring-[#cfe3bf]"
+      role="status"
+    >
+      <svg aria-hidden="true" className="size-5 shrink-0" fill="none" viewBox="0 0 24 24">
+        <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      </svg>
+      <span>{notice}</span>
+      <button
+        aria-label={t("Dismiss")}
+        className="ml-1 grid size-7 shrink-0 place-items-center rounded-full transition hover:bg-[#dcebd2]"
+        onClick={() => setNotice("")}
+        type="button"
+      >
+        <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+          <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 function App() {
   return (
     <LanguageProvider>
       <FlavorProvider>
         <CartProvider>
           <BrowserRouter>
+            <AccountCreatedNotice />
             <ScrollToTop />
             <ScrollProgress />
             <WebsiteLoader />

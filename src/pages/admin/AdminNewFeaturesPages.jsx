@@ -366,6 +366,8 @@ export function AdminActivityPage() {
   const [activity, setActivity] = useState(null)
   const [error, setError] = useState('')
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
   const [person, setPerson] = useState('')
   const [area, setArea] = useState('')
 
@@ -385,6 +387,20 @@ export function AdminActivityPage() {
   useEffect(() => {
     refresh()
   }, [refresh])
+
+  async function clearActivity() {
+    setError('')
+    setIsClearing(true)
+    try {
+      await request('/admin/activity', { method: 'DELETE' })
+      setIsConfirmingClear(false)
+      await refresh()
+    } catch (clearError) {
+      setError(clearError instanceof Error ? clearError.message : t('Unable to clear the activity log.'))
+    } finally {
+      setIsClearing(false)
+    }
+  }
 
   const entries = useMemo(() => (activity || []).map((item) => {
     const described = describeAdminActivity(item.method, item.path)
@@ -433,6 +449,16 @@ export function AdminActivityPage() {
     <div className="min-w-0 space-y-6">
       <AdminPageHeader
         actions={(
+          <>
+          <button
+            className="inline-flex min-h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-bold text-[#831c1e] ring-1 ring-[#dce4ed] transition hover:bg-[#fff1f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep disabled:cursor-wait disabled:opacity-60"
+            disabled={isRefreshing || isClearing || !(activity?.length)}
+            onClick={() => { setError(''); setIsConfirmingClear(true) }}
+            type="button"
+          >
+            <AdminIcon className="size-4" path={adminIcons.trash} />
+            {t('Clear all logs')}
+          </button>
           <button
             className="inline-flex min-h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-bold text-brand-blue ring-1 ring-[#dce4ed] transition hover:bg-[#f4f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep disabled:cursor-wait disabled:opacity-60"
             disabled={isRefreshing}
@@ -442,6 +468,7 @@ export function AdminActivityPage() {
             <AdminIcon className={`size-4 ${isRefreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} path={adminIcons.history} />
             {t('Refresh')}
           </button>
+          </>
         )}
         description={t('A clear record of successful admin changes across the workspace.')}
         icon={adminIcons.history}
@@ -617,10 +644,10 @@ export function AdminActivityPage() {
                     </div>
                     <ol className="relative">
                       <span aria-hidden="true" className="absolute bottom-4 left-[2.15rem] top-4 w-px bg-[#dce3eb] sm:left-[2.4rem]" />
-                      {group.entries.map((entry) => {
+                      {group.entries.map((entry, entryIndex) => {
                         const createdAtLabel = formatAdminTime(entry.createdAt, language)
                         return (
-                          <li className="relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 px-4 py-4 sm:gap-4 sm:px-5" key={entry.id}>
+                          <li className="relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 px-4 py-4 sm:gap-4 sm:px-5" key={`${entry.id ?? 'unknown'}-${group.day}-${entryIndex}`}>
                             <span aria-hidden="true" className={`relative z-[1] grid size-10 shrink-0 place-items-center rounded-md ring-4 ring-white ${AREA_STYLES[entry.area]}`}>
                               <AdminIcon className="size-4" path={AREA_ICONS[entry.area]} />
                             </span>
@@ -662,6 +689,32 @@ export function AdminActivityPage() {
         )}
       </section>
         </>
+      )}
+
+      {isConfirmingClear && (
+        <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
+          <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45" onClick={() => setIsConfirmingClear(false)} tabIndex={-1} type="button" />
+          <section aria-labelledby="clear-activity-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-md border border-[#e7ebef] bg-white p-6" role="dialog">
+            <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600"><AdminIcon className="size-6" path={adminIcons.trash} /></span>
+            <h2 className="mt-4 text-base font-semibold text-brand-navy" id="clear-activity-title">{t('Clear all logs')}</h2>
+            <p className="mt-2 text-sm leading-6 text-[#65748a]">
+              {t('Delete all {count} activity log entries? This cannot be undone.', { count: activity?.length || 0 })}
+            </p>
+            {error && <p className="mt-3 rounded-md bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
+            <div className="mt-6 flex justify-end gap-2.5">
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" onClick={() => setIsConfirmingClear(false)} type="button">{t('Cancel')}</button>
+              <button
+                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                disabled={isClearing}
+                onClick={clearActivity}
+                type="button"
+              >
+                <AdminIcon className="size-4" path={adminIcons.trash} />
+                {isClearing ? t('Clearing…') : t('Clear all logs')}
+              </button>
+            </div>
+          </section>
+        </div>
       )}
     </div>
   )

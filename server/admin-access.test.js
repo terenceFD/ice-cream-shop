@@ -53,6 +53,7 @@ test('blocks access to business-wide records and settings', () => {
     ['GET', '/fulfillment-settings'],
     ['PUT', '/fulfillment-zones'],
     ['PATCH', '/customers/2/ban'],
+    ['DELETE', '/customers/2'],
     ['GET', '/orders/43/status'],
     ['POST', '/notifications'],
     ['GET', '/notifications/14'],

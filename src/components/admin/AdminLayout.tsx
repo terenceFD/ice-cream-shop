@@ -86,6 +86,7 @@ const navIconPaths: Record<string, string> = {
 
 interface NavigationCounts {
   orderCount: number
+  placedOrderCount: number
   notificationCount: number
   cakeRequestCount: number
   reviewCount: number
@@ -178,7 +179,7 @@ export function AdminLayout() {
   const visibleNavItems = isOwner ? navItems : storeNavItems
   const [logoutError, setLogoutError] = useState('')
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [navigationCounts, setNavigationCounts] = useState<NavigationCounts>({ orderCount: 0, notificationCount: 0, cakeRequestCount: 0, reviewCount: 0, eventOrderCount: 0 })
+  const [navigationCounts, setNavigationCounts] = useState<NavigationCounts>({ orderCount: 0, placedOrderCount: 0, notificationCount: 0, cakeRequestCount: 0, reviewCount: 0, eventOrderCount: 0 })
   const [countsError, setCountsError] = useState('')
   const [profilePictureError, setProfilePictureError] = useState('')
   const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false)
@@ -338,6 +339,11 @@ export function AdminLayout() {
         (result) => setNavigationCounts((counts) => ({ ...counts, orderCount: result.orders.length })),
       ),
       refreshNavigationCount(
+        'Orders placed',
+        apiRequest<{ count: number }>(`/admin/orders?countOnly=true${branchQuery ? `&${branchQuery.slice(1)}` : ''}`, { token: sessionToken }),
+        (result) => setNavigationCounts((counts) => ({ ...counts, placedOrderCount: result.count })),
+      ),
+      refreshNavigationCount(
         'Cake requests',
         apiRequest<{ requests: { status: string }[] }>(`/admin/cake-requests${branchQuery}`, { token: sessionToken }),
         (result) => setNavigationCounts((counts) => ({
@@ -377,9 +383,13 @@ export function AdminLayout() {
     refreshNavigationCounts()
     const intervalId = window.setInterval(refreshNavigationCounts, 15000)
     window.addEventListener('focus', refreshNavigationCounts)
+    // Order mutations elsewhere in the dashboard (delete, clear delivered, status
+    // changes) announce themselves so the topbar counters update instantly.
+    window.addEventListener('admin-orders-changed', refreshNavigationCounts)
     return () => {
       window.clearInterval(intervalId)
       window.removeEventListener('focus', refreshNavigationCounts)
+      window.removeEventListener('admin-orders-changed', refreshNavigationCounts)
     }
   }, [refreshNavigationCounts])
 
@@ -730,18 +740,35 @@ export function AdminLayout() {
             </Link>
 
             <Link
+              aria-label={t('Orders placed: {count}', { count: navigationCounts.placedOrderCount })}
+              className={`admin-orders-shortcut ${location.pathname === '/admin/orders' ? 'admin-orders-shortcut-active' : ''}`}
+              title={t('Orders placed: {count}', { count: navigationCounts.placedOrderCount })}
+              to="/admin/orders"
+            >
+              <span className="admin-orders-shortcut-icon">
+                <svg aria-hidden="true" className="size-[17px]" fill="none" viewBox="0 0 24 24">
+                  <path d={navIconPaths.orders} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                </svg>
+              </span>
+              <span className="hidden sm:inline">{t('Orders')}</span>
+              <span className="admin-orders-shortcut-count">
+                {navigationCounts.placedOrderCount > 99 ? '99+' : navigationCounts.placedOrderCount}
+              </span>
+            </Link>
+
+            <Link
               aria-label={`${t('Notifications')}${navigationCounts.notificationCount ? ` (${navigationCounts.notificationCount})` : ''}`}
-              className={`relative grid size-10 place-items-center rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep ${
-                location.pathname === '/admin/notifications' ? 'bg-brand-navy text-white' : 'text-[#65748a] hover:bg-[#f1f5f9] hover:text-brand-navy'
+              className={`admin-notification-bell relative grid size-10 place-items-center rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep ${
+                location.pathname === '/admin/notifications' ? 'bg-brand-navy text-white' : 'text-[#65748a]'
               }`}
               title={t('Notifications')}
               to="/admin/notifications"
             >
-              <svg aria-hidden="true" className="size-[18px]" fill="none" viewBox="0 0 24 24">
+              <svg aria-hidden="true" className="notification-bell-icon size-[18px]" fill="none" viewBox="0 0 24 24">
                 <path d={navIconPaths.notifications} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
               </svg>
               {navigationCounts.notificationCount > 0 && (
-                <span className="absolute right-1 top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#e5484d] px-1 text-xs font-extrabold leading-none text-white ring-2 ring-white">
+                <span className="absolute -right-1 -top-1 grid h-[26px] min-w-[26px] place-items-center rounded-full bg-brand-yellow px-1.5 text-[15px] font-extrabold leading-none text-brand-navy ring-2 ring-white">
                   {navigationCounts.notificationCount > 99 ? '99+' : navigationCounts.notificationCount}
                 </span>
               )}

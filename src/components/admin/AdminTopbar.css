@@ -113,6 +113,62 @@
 .admin-topbar-actions > a:hover {
   background: var(--admin-surface);
 }
+.admin-topbar-actions > a.admin-orders-shortcut {
+  display: inline-flex;
+  width: auto;
+  min-width: 40px;
+  height: 40px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e8d16a;
+  border-radius: 12px;
+  padding: 4px 8px 4px 5px;
+  background: #fff9db;
+  color: #173654;
+  font-size: 11px;
+  font-weight: 800;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+/* Hover effect intentionally removed — the button keeps its resting style. */
+.admin-topbar-actions > a.admin-orders-shortcut-active {
+  border-color: var(--brand-navy);
+  background: var(--brand-navy);
+  color: #fff;
+}
+.admin-orders-shortcut-icon {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--brand-navy);
+  color: var(--brand-yellow);
+}
+.admin-orders-shortcut-active .admin-orders-shortcut-icon {
+  background: rgb(255 255 255 / 12%);
+  color: var(--brand-yellow);
+}
+.admin-orders-shortcut-count {
+  display: grid;
+  min-width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid rgb(23 54 84 / 16%);
+  border-radius: 9px;
+  padding: 0 5px;
+  background: var(--brand-yellow);
+  color: #173654;
+  font-size: 12px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.admin-orders-shortcut-active .admin-orders-shortcut-count {
+  background: #fff;
+}
 .admin-topbar-actions > a > span {
   top: -5px;
   right: -5px;

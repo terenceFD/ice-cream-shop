@@ -47,6 +47,7 @@ const RULES = [
   ['DELETE', /^\/api\/admin\/event-orders\/(\d+)$/, 'Deleted declined event order #{id}', 'orders'],
 
   ['PATCH', /^\/api\/admin\/customers\/(\d+)\/ban$/, 'Changed access for customer #{id}', 'customers'],
+  ['DELETE', /^\/api\/admin\/customers\/(\d+)$/, 'Deleted banned customer account #{id}', 'customers'],
   ['PATCH', /^\/api\/admin\/reviews\/(\d+)\/approval$/, 'Moderated review #{id}', 'customers'],
   ['DELETE', /^\/api\/admin\/reviews\/(\d+)$/, 'Rejected and deleted review #{id}', 'customers'],
   ['DELETE', /^\/api\/admin\/notifications$/, 'Cleared all messages', 'customers'],

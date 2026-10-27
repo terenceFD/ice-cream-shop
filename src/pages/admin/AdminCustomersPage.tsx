@@ -29,6 +29,7 @@ const icons = {
   refresh: 'M20 7v5h-5M4 17v-5h5m-4.1-2a7.5 7.5 0 0 1 12.2-2.4L20 12M4 12l2.9 4.4A7.5 7.5 0 0 0 19.1 14',
   megaphone: 'M4 10v4h3l6 4V6L7 10H4Zm13-1a4 4 0 0 1 0 6',
   close: 'M6 6l12 12M18 6 6 18',
+  trash: 'M4 7h16M10 11v6m4-6v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
   alert: 'M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
   mail: 'M4 6h16v12H4V6Zm0 0 8 7 8-7',
   phone: 'M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm3 15h2',
@@ -88,6 +89,7 @@ export function AdminCustomersPage() {
   } | null>(null)
   const [isComposerOpen, setIsComposerOpen] = useState(false)
   const [customerToBan, setCustomerToBan] = useState<CustomerAccount | null>(null)
+  const [customerToDelete, setCustomerToDelete] = useState<CustomerAccount | null>(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [cityFilter, setCityFilter] = useState('')
@@ -99,7 +101,7 @@ export function AdminCustomersPage() {
   const [copiedId, setCopiedId] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
-  const isOverlayOpen = isComposerOpen || Boolean(customerToBan)
+  const isOverlayOpen = isComposerOpen || Boolean(customerToBan) || Boolean(customerToDelete)
 
   useEffect(() => {
     let cancelled = false
@@ -151,6 +153,7 @@ export function AdminCustomersPage() {
       if (event.key !== 'Escape') return
       setIsComposerOpen(false)
       setCustomerToBan(null)
+      setCustomerToDelete(null)
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => {
@@ -215,6 +218,24 @@ export function AdminCustomersPage() {
       setMessage(t(isBanned ? 'Customer banned.' : 'Customer unbanned.'))
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : 'Unable to update customer access.')
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  async function deleteBannedCustomer() {
+    if (!customerToDelete) return
+    const customer = customerToDelete
+    setError('')
+    setMessage('')
+    setSavingId(customer.id)
+    try {
+      await apiRequest(`/admin/customers/${customer.id}`, { method: 'DELETE', token: sessionToken })
+      setCustomers((current) => current.filter((entry) => entry.id !== customer.id))
+      setCustomerToDelete(null)
+      setMessage(t('Banned customer account deleted.'))
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Unable to delete customer account.')
     } finally {
       setSavingId(null)
     }
@@ -668,15 +689,27 @@ export function AdminCustomersPage() {
                           </a>
                           {isOwner && (
                             customer.isBanned ? (
-                              <button
-                                className="inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-brand-blue transition hover:bg-[#f4f6f8] hover:text-brand-navy disabled:cursor-wait"
-                                disabled={savingId === customer.id}
-                                onClick={() => setBan(customer, false)}
-                                type="button"
-                              >
-                                <Icon path={icons.unban} />
-                                {savingId === customer.id ? t('Saving…') : t('Unban customer')}
-                              </button>
+                              <>
+                                <button
+                                  className="inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-brand-blue transition hover:bg-[#f4f6f8] hover:text-brand-navy disabled:cursor-wait"
+                                  disabled={savingId === customer.id}
+                                  onClick={() => setBan(customer, false)}
+                                  type="button"
+                                >
+                                  <Icon path={icons.unban} />
+                                  {savingId === customer.id ? t('Saving…') : t('Unban customer')}
+                                </button>
+                                <button
+                                  aria-label={`${t('Delete banned account')}: ${customer.name}`}
+                                  className="grid size-10 place-items-center rounded-lg text-[#9b3530] transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-yellow-deep disabled:opacity-50 xl:size-9"
+                                  disabled={savingId === customer.id}
+                                  onClick={() => { setError(''); setCustomerToDelete(customer) }}
+                                  title={t('Delete banned account')}
+                                  type="button"
+                                >
+                                  <Icon path={icons.trash} />
+                                </button>
+                              </>
                             ) : (
                               <button
                                 aria-label={`${t('Ban customer')}: ${customer.name}`}
@@ -820,6 +853,36 @@ export function AdminCustomersPage() {
               >
                 <Icon path={icons.ban} />
                 {savingId === customerToBan.id ? t('Saving…') : t('Ban customer')}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+      {customerToDelete && (
+        <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
+          <button aria-label={t('Cancel')} className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45 backdrop-blur-[2px]" onClick={() => setCustomerToDelete(null)} tabIndex={-1} type="button" />
+          <section aria-labelledby="delete-customer-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md rounded-md bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]" role="dialog">
+            <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600"><Icon className="size-6" path={icons.trash} /></span>
+            <h2 className="mt-4 text-base font-semibold text-brand-navy" id="delete-customer-title">{t('Delete banned account')}</h2>
+            <div className="mt-4 flex items-center gap-3 rounded-md bg-[#f4f6f8] p-3 ring-1 ring-[#dce3eb]">
+              <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-[#e9f1fa] text-xs font-bold text-[#245281]">{initials(customerToDelete.name)}</span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-brand-navy">{customerToDelete.name}</p>
+                <p className="truncate text-xs text-[#65748a]">{customerToDelete.email}</p>
+              </div>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-[#65748a]">{t('This permanently deletes the banned customer account and associated account data. Existing order records are retained.')}</p>
+            {error && <p className="mt-3 rounded-md bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">{error}</p>}
+            <div className="mt-6 flex justify-end gap-2.5">
+              <button className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8]" disabled={savingId === customerToDelete.id} onClick={() => setCustomerToDelete(null)} type="button">{t('Cancel')}</button>
+              <button
+                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                disabled={savingId === customerToDelete.id}
+                onClick={deleteBannedCustomer}
+                type="button"
+              >
+                <Icon path={icons.trash} />
+                {savingId === customerToDelete.id ? t('Deleting…') : t('Delete account')}
               </button>
             </div>
           </section>

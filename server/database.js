@@ -590,6 +590,9 @@ if (configuredDatabaseBackend === "postgres") {
   addColumnIfMissing("customers", "profile_picture", "TEXT NOT NULL DEFAULT ''");
   addColumnIfMissing("orders", "review_reminder_sent_at", "TEXT");
   addColumnIfMissing("orders", "hidden_by_customer", "INTEGER NOT NULL DEFAULT 0");
+  // Admin soft-delete: a delivered order removed from the Orders page stays
+  // visible on the Delivered page, so this only hides it from that one list.
+  addColumnIfMissing("orders", "hidden_from_admin", "INTEGER NOT NULL DEFAULT 0");
   // In-app admin notification for a newly placed order (mirrors the deposit "notices" pattern).
   addColumnIfMissing("orders", "order_admin_seen", "INTEGER NOT NULL DEFAULT 1");
   addColumnIfMissing("orders", "order_notified_at", "TEXT");
@@ -863,6 +866,9 @@ export async function verifyDatabaseSchema() {
   `).run();
   await database.prepare(`
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS hidden_by_customer SMALLINT NOT NULL DEFAULT 0
+  `).run();
+  await database.prepare(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS hidden_from_admin SMALLINT NOT NULL DEFAULT 0
   `).run();
   await database.prepare(`
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_notification_sent_at TEXT
@@ -2179,6 +2185,40 @@ export async function clearDeliveredOrders(storeId = null, storeTown = null) {
   })()
 }
 
+/**
+ * Admin bulk soft-delete: hides all delivered orders from the Orders page while
+ * keeping them visible on the Delivered page. Requires more than three
+ * delivered orders to run, mirroring clearDeliveredOrders' safeguard.
+ */
+export async function hideDeliveredOrdersFromAdmin(storeId = null, storeTown = null) {
+  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}`
+  const parameters = [...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
+  if (databaseKind === "postgres") {
+    return database.transaction(async () => {
+      const count = Number((await database.prepare(
+        `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
+      ).get(...parameters)).count);
+      if (count <= 3) return { count, deleted: false };
+      const hiddenCount = (await database.prepare(
+        `UPDATE orders SET hidden_from_admin = 1 WHERE status = 'delivered'${storeFilter}`,
+      ).run(...parameters)).changes;
+      return { count: hiddenCount, deleted: true };
+    });
+  }
+
+  return database.transaction(() => {
+    const { count } = database.prepare(
+      `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
+    ).get(...parameters)
+    if (count <= 3) return { count, deleted: false }
+
+    const hiddenCount = database.prepare(
+      `UPDATE orders SET hidden_from_admin = 1 WHERE status = 'delivered'${storeFilter}`,
+    ).run(...parameters).changes
+    return { count: hiddenCount, deleted: true }
+  })()
+}
+
 export async function createAdminAccount({ name, email, passwordHash, profilePicture = '', storeId = null, branchTown = null, role: requestedRole }) {
   const role = requestedRole || (branchTown === null ? 'store_admin' : 'branch_admin')
   if (databaseKind === "postgres") {
@@ -2675,6 +2715,27 @@ export async function deleteFailedOrder(id) {
     database.prepare('DELETE FROM orders WHERE id = ?').run(id)
     return 'deleted'
   })()
+}
+
+/**
+ * Admin soft-delete: hides a delivered order from the Orders page (status list)
+ * while keeping it fully visible on the Delivered page. Nothing is removed from
+ * the database, so delivered-order history and reports stay intact.
+ */
+export async function hideDeliveredOrderFromAdmin(id) {
+  if (databaseKind === "postgres") {
+    const result = await database.prepare(`
+      UPDATE orders SET hidden_from_admin = 1
+      WHERE id = ? AND status = 'delivered'
+    `).run(id);
+    return result.changes ? "deleted" : "not_found";
+  }
+
+  const result = database.prepare(`
+    UPDATE orders SET hidden_from_admin = 1
+    WHERE id = ? AND status = 'delivered'
+  `).run(id)
+  return result.changes ? 'deleted' : 'not_found'
 }
 
 export async function deleteDeliveredOrderForCustomer(id, customerId) {

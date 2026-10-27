@@ -136,7 +136,10 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
       }
       navigate(
         returnToCheckout ? '/checkout' : returnToAccount ? previousPath : returnToEvent ? returnToEvent : isSignup ? '/' : '/account/orders',
-        { replace: true },
+        {
+          replace: true,
+          ...(isSignup ? { state: { accountCreated: true } } : {}),
+        },
       )
     } catch (authError) {
       setError(authError instanceof Error ? authError.message : 'Unable to authenticate. Please try again.')

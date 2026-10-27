@@ -28,6 +28,8 @@ import {
   markCheckoutPaymentFailed,
   deleteDiscountCode,
   deleteFailedOrder,
+  hideDeliveredOrderFromAdmin,
+  hideDeliveredOrdersFromAdmin,
   deleteFlavor,
   deleteDeliveredOrderForCustomer,
   deleteMenuCategory,
@@ -815,7 +817,9 @@ function normalizeFlavor(body, existing = {}) {
 }
 
 async function listOrders({ deliveredOnly = false, storeId = null, storeTown = null } = {}) {
-  const conditions = [deliveredOnly ? "status = 'delivered'" : "status != 'delivered'"]
+  // Delivered orders that an admin removed from the Orders page stay visible on
+  // the Delivered page, so only the non-delivered list applies the soft-delete filter.
+  const conditions = deliveredOnly ? ["status = 'delivered'"] : ["hidden_from_admin = 0"]
   const parameters = []
   if (storeTown !== null) {
     conditions.push('store_id IN (SELECT id FROM stores WHERE town = ?)')
@@ -828,7 +832,8 @@ async function listOrders({ deliveredOnly = false, storeId = null, storeTown = n
   const orders = await database.prepare(`
     SELECT id, customer_name AS "customerName", customer_email AS "customerEmail",
       customer_phone AS "customerPhone",
-      delivery_city AS "deliveryCity", delivery_residence AS "deliveryResidence",
+      delivery_address AS "deliveryAddress", delivery_city AS "deliveryCity",
+      delivery_postal_code AS "deliveryPostalCode", delivery_residence AS "deliveryResidence",
       store_id AS "storeId", store_name AS "storeName",
       store_address AS "storeAddress", store_phone AS "storePhone",
       subtotal_cents AS "subtotalCents", discount_cents AS "discountCents",
@@ -839,7 +844,7 @@ async function listOrders({ deliveredOnly = false, storeId = null, storeTown = n
       loyalty_points_redeemed AS "loyaltyPointsRedeemed",
       discount_code AS "discountCode"
     FROM orders
-    WHERE ${conditions.join(" AND ")}
+    ${conditions.length ? `WHERE ${conditions.join(" AND ")}` : ''}
     ORDER BY id DESC
     LIMIT 500
   `).all(...parameters)
@@ -3057,6 +3062,37 @@ app.patch('/api/admin/customers/:id/ban', requireAdmin, ownerOnly, async (reques
   response.json({ id, isBanned })
 })
 
+app.delete('/api/admin/customers/:id', requireAdmin, ownerOnly, async (request, response) => {
+  const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Customer ID is invalid.' })
+    return
+  }
+  const town = selectedStoreTown(request.admin)
+  if (town && !await database.prepare(`
+    SELECT 1 FROM customers c
+    WHERE c.id = ? AND c.is_banned = 1
+      AND (
+        NOT EXISTS (SELECT 1 FROM orders WHERE customer_id = c.id)
+        OR EXISTS (
+          SELECT 1 FROM orders o JOIN stores s ON s.id = o.store_id
+          WHERE o.customer_id = c.id AND s.town = ?
+        )
+      )
+  `).get(id, town)) {
+    response.status(404).json({ error: 'Banned customer account not found.' })
+    return
+  }
+  const result = await database.prepare(
+    'DELETE FROM customers WHERE id = ? AND is_banned = 1',
+  ).run(id)
+  if (!result.changes) {
+    response.status(404).json({ error: 'Banned customer account not found.' })
+    return
+  }
+  response.json({ deleted: true, id })
+})
+
 app.get('/api/admin/orders', requireAdmin, async (request, response) => {
   const deliveredOnly = request.query.status === 'delivered'
   if (request.query.status && !deliveredOnly) {
@@ -3077,6 +3113,26 @@ app.get('/api/admin/orders', requireAdmin, async (request, response) => {
       ).get(...(storeTown === null ? [storeId] : [storeId, storeTown])))
   if (!storeExists || (storeTown !== null && !await database.prepare('SELECT 1 FROM stores WHERE town = ?').get(storeTown))) {
     response.status(400).json({ error: 'Choose a valid store to filter orders.' })
+    return
+  }
+  if (request.query.countOnly === 'true') {
+    const conditions = []
+    const parameters = []
+    // Match the Orders page list: soft-deleted (hidden) orders are not counted.
+    conditions.push('hidden_from_admin = 0')
+    if (storeTown !== null) {
+      conditions.push('store_id IN (SELECT id FROM stores WHERE town = ?)')
+      parameters.push(storeTown)
+    }
+    if (storeId !== null) {
+      conditions.push('store_id = ?')
+      parameters.push(storeId)
+    }
+    const result = await database.prepare(`
+      SELECT COUNT(*) AS count FROM orders
+      ${conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''}
+    `).get(...parameters)
+    response.json({ count: Number(result?.count || 0) })
     return
   }
   const orders = await listOrders({ deliveredOnly, storeId, storeTown })
@@ -3164,6 +3220,37 @@ app.get('/api/admin/stores', requireAdmin, async (request, response) => {
     averageRating: Number(store.averageRating),
   }))
   response.json({ stores })
+})
+
+// Soft clear for the Orders page: hides every delivered order from the Orders
+// list without touching the database rows, so the Delivered page keeps them all.
+app.delete('/api/admin/orders/delivered-soft', requireAdmin, async (request, response) => {
+  const requestedStoreId = request.query.storeId
+  const storeId = request.admin.role !== 'store_admin'
+    ? requestedStoreId === undefined
+      ? null
+      : typeof requestedStoreId === 'string' ? Number(requestedStoreId) : NaN
+    : request.admin.storeId
+  const storeTown = selectedStoreTown(request.admin)
+  if (
+    storeId !== null
+    && (!Number.isSafeInteger(storeId) || storeId < 1
+      || !await database.prepare(
+        `SELECT 1 FROM stores WHERE id = ?${storeTown === null ? '' : ' AND town = ?'}`,
+      ).get(...(storeTown === null ? [storeId] : [storeId, storeTown])))
+  ) {
+    response.status(400).json({ error: 'Choose a valid store to clear delivered orders.' })
+    return
+  }
+  const result = await hideDeliveredOrdersFromAdmin(storeId, storeTown)
+  if (!result.deleted) {
+    response.status(409).json({
+      error: 'More than three delivered orders are required before clearing them.',
+      count: result.count,
+    })
+    return
+  }
+  response.json({ deleted: true, count: result.count })
 })
 
 app.delete('/api/admin/orders/delivered', requireAdmin, async (request, response) => {
@@ -3280,9 +3367,20 @@ app.delete('/api/admin/orders/:id', requireAdmin, async (request, response) => {
     return
   }
 
-  const order = await database.prepare('SELECT store_id AS "storeId" FROM orders WHERE id = ?').get(id)
+  const order = await database.prepare('SELECT store_id AS "storeId", status FROM orders WHERE id = ?').get(id)
   if (!await adminCanAccessOrder(order, request.admin)) {
     response.status(404).json({ error: 'Order not found.' })
+    return
+  }
+  // Delivered orders are soft-deleted from the Orders page: they stay in the
+  // database and remain visible on the Delivered page.
+  if (order.status === 'delivered') {
+    const hideResult = await hideDeliveredOrderFromAdmin(id)
+    if (hideResult === 'not_found') {
+      response.status(404).json({ error: 'Order not found.' })
+      return
+    }
+    response.json({ deleted: true })
     return
   }
   const deleteResult = await deleteFailedOrder(id)
@@ -3689,6 +3787,11 @@ app.get('/api/admin/activity', requireAdmin, ownerOnly, async (_request, respons
     FROM admin_activity ORDER BY id DESC LIMIT 200
   `).all()
   response.json({ activity })
+})
+
+app.delete('/api/admin/activity', requireAdmin, ownerOnly, async (_request, response) => {
+  const result = await database.prepare('DELETE FROM admin_activity').run()
+  response.json({ deleted: true, count: result.changes })
 })
 
 // Party and event orders (see server/event-orders.js).

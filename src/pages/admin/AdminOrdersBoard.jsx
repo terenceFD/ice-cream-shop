@@ -6,6 +6,8 @@ import { useLanguage } from "../../language/useLanguage";
 import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
 import { orderUpdateMessage, whatsappLink } from "../../lib/whatsapp";
 import { WhatsAppIcon } from "../../components/WhatsAppIcon";
+import { exportOrdersSpreadsheet } from "./orderSpreadsheet";
+import { orderWeekday } from "./orderCsv";
 
 const AUTO_REFRESH_MS = 30_000;
 const STALE_PAYMENT_MS = 3 * 60 * 1000;
@@ -17,6 +19,7 @@ const icons = {
   search: "m20 20-4.2-4.2M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z",
   check: "m5 12.5 4.5 4.5L19 7.5",
   alert: "M12 8v5m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z",
+  download: "M12 4v12m0 0-5-5m5 5 5-5M5 20h14",
   close: "M6 6l12 12M18 6 6 18",
   mail: "M4 6h16v12H4V6Zm0 0 8 7 8-7",
   phone: "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z",
@@ -121,11 +124,14 @@ export function AdminOrdersBoard() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [weekdayFilter, setWeekdayFilter] = useState("all");
   const [storeFilter, setStoreFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] = useState("weekday");
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [orderToDelete, setOrderToDelete] = useState(null);
+  const [isConfirmingClearDelivered, setIsConfirmingClearDelivered] = useState(false);
+  const [isClearingDelivered, setIsClearingDelivered] = useState(false);
   // Order notification emails link here as /admin/orders?order=<id>.
   const [searchParams, setSearchParams] = useSearchParams();
   const linkedOrderId = searchParams.get("order");
@@ -142,6 +148,9 @@ export function AdminOrdersBoard() {
       setOrders(result.orders);
       setStores(storeResult.stores);
       setError("");
+      // The topbar counter reads the same data on a slower poll; telling it the
+      // list changed keeps the badge in sync right after deletes and clears.
+      window.dispatchEvent(new Event("admin-orders-changed"));
       const time = Date.now();
       setNow(time);
       setLastUpdated(time);
@@ -180,7 +189,7 @@ export function AdminOrdersBoard() {
       setError("");
       setSelectedOrderId(linkedOrder.id);
     } else {
-      setError(t("Order #{id} is not in the active orders list. It may already be delivered or belong to another store.", { id: linkedOrderId }));
+      setError(t("Order #{id} was not found. It may belong to another store.", { id: linkedOrderId }));
     }
     setSearchParams((params) => {
       const next = new URLSearchParams(params);
@@ -240,7 +249,9 @@ export function AdminOrdersBoard() {
     setDeletingOrderId(order.id);
     try {
       await apiRequest(
-        order.status === "payment_failed" ? `/admin/orders/${order.id}` : `/admin/orders/${order.id}/stale-payment`,
+        order.status === "payment_failed" || order.status === "delivered"
+          ? `/admin/orders/${order.id}`
+          : `/admin/orders/${order.id}/stale-payment`,
         { method: "DELETE", token: sessionToken },
       );
       setOrderToDelete(null);
@@ -255,8 +266,29 @@ export function AdminOrdersBoard() {
 
   function canDelete(order) {
     if (order.status === "payment_failed") return true;
+    if (order.status === "delivered") return true;
     const created = parseDate(order.createdAt);
     return order.status === "pending_payment" && created && now - created.getTime() >= STALE_PAYMENT_MS;
+  }
+
+  async function confirmClearDelivered() {
+    setError("");
+    setIsClearingDelivered(true);
+    try {
+      const query = new URLSearchParams();
+      if (isOwner && storeFilter !== "all") query.set("storeId", storeFilter);
+      await apiRequest(`/admin/orders/delivered-soft${query.size ? `?${query}` : ""}`, {
+        method: "DELETE",
+        token: sessionToken,
+      });
+      setIsConfirmingClearDelivered(false);
+      if (selectedOrder?.status === "delivered") setSelectedOrderId(null);
+      await refresh();
+    } catch (clearError) {
+      setError(t(clearError.message));
+    } finally {
+      setIsClearingDelivered(false);
+    }
   }
 
   const counts = useMemo(() => orders.reduce((result, order) => {
@@ -286,6 +318,7 @@ export function AdminOrdersBoard() {
           || order.status === statusFilter
           || (statusFilter.startsWith("stage:") && order.status === "processing" && currentStage(order) === statusFilter.slice(6));
         const matchesType = typeFilter === "all" || order.fulfillmentType === typeFilter;
+        const matchesWeekday = weekdayFilter === "all" || orderWeekday(order.createdAt) === Number(weekdayFilter);
         const matchesSearch = !query || [
           order.id,
           order.customerName,
@@ -297,9 +330,15 @@ export function AdminOrdersBoard() {
           order.deliveryResidence,
           ...order.items.map((item) => item.flavorName),
         ].some((value) => String(value || "").toLowerCase().includes(query));
-        return matchesStatus && matchesType && matchesSearch;
+        return matchesStatus && matchesType && matchesWeekday && matchesSearch;
       })
       .sort((a, b) => {
+        if (sortBy === "weekday") {
+          const aDay = orderWeekday(a.createdAt);
+          const bDay = orderWeekday(b.createdAt);
+          const dayDifference = (aDay < 0 ? 7 : (aDay + 6) % 7) - (bDay < 0 ? 7 : (bDay + 6) % 7);
+          return dayDifference || ((parseDate(b.createdAt)?.getTime() || 0) - (parseDate(a.createdAt)?.getTime() || 0));
+        }
         if (sortBy === "oldest") return (parseDate(a.createdAt)?.getTime() || 0) - (parseDate(b.createdAt)?.getTime() || 0);
         if (sortBy === "total") return Number(b.totalCents || 0) - Number(a.totalCents || 0);
         if (sortBy === "scheduled") {
@@ -309,14 +348,15 @@ export function AdminOrdersBoard() {
         }
         return (parseDate(b.createdAt)?.getTime() || 0) - (parseDate(a.createdAt)?.getTime() || 0);
       });
-  }, [orders, search, sortBy, statusFilter, typeFilter]);
+  }, [orders, search, sortBy, statusFilter, typeFilter, weekdayFilter]);
 
-  const hasActiveFilters = Boolean(search.trim() || statusFilter !== "all" || typeFilter !== "all");
+  const hasActiveFilters = Boolean(search.trim() || statusFilter !== "all" || typeFilter !== "all" || weekdayFilter !== "all");
   const metrics = [
     { key: "all", label: "All orders", value: counts.all },
     { key: "pending_payment", label: "Awaiting payment", value: counts.pending_payment },
     { key: "processing", label: "Paid · preparing", value: counts.processing },
     { key: "payment_failed", label: "Payment failed", value: counts.payment_failed },
+    { key: "delivered", label: "Delivered", value: orders.filter((order) => order.status === "delivered").length },
   ];
   const pipeline = ["accepted", "preparing", "ready", "out_for_delivery"];
   const bottleneck = pipeline.reduce((lead, stage) => (
@@ -349,6 +389,24 @@ export function AdminOrdersBoard() {
               : t("Live")}
           </span>
           <button
+            className="inline-flex h-8 items-center gap-2 border border-[#d1d5db] bg-white px-3 text-sm font-medium text-[#111] transition hover:border-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy disabled:opacity-50"
+            disabled={!visibleOrders.length}
+            onClick={() => exportOrdersSpreadsheet(visibleOrders, `orders-${new Date().toISOString().slice(0, 10)}.xls`)}
+            type="button"
+          >
+            <Icon path={icons.download} />
+            {t("Export spreadsheet")}
+          </button>
+          <button
+            className="inline-flex h-8 items-center gap-2 border border-[#d1d5db] bg-white px-3 text-sm font-medium text-[#111] transition hover:border-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy disabled:opacity-50"
+            disabled={!visibleOrders.some((order) => order.status === "delivered")}
+            onClick={() => { setError(""); setIsConfirmingClearDelivered(true); }}
+            type="button"
+          >
+            <Icon path={icons.trash} />
+            {t("Clear delivered")}
+          </button>
+          <button
             className="inline-flex h-8 items-center gap-2 border border-[#d1d5db] bg-white px-3 text-sm font-medium text-[#111] transition hover:border-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy disabled:cursor-wait disabled:opacity-60"
             disabled={isRefreshing}
             onClick={refresh}
@@ -367,7 +425,7 @@ export function AdminOrdersBoard() {
         </p>
       )}
 
-      <section aria-label={t("Order overview")} className="grid grid-cols-2 border border-[#e8e8e8] bg-white lg:grid-cols-4">
+      <section aria-label={t("Order overview")} className="grid grid-cols-2 border border-[#e8e8e8] bg-white lg:grid-cols-5">
         {metrics.map((metric, index) => {
           const isActive = statusFilter === metric.key;
           return (
@@ -448,14 +506,14 @@ export function AdminOrdersBoard() {
             {hasActiveFilters && (
               <button
                 className="text-xs font-semibold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4"
-                onClick={() => { setSearch(""); setStatusFilter("all"); setTypeFilter("all"); }}
+                onClick={() => { setSearch(""); setStatusFilter("all"); setTypeFilter("all"); setWeekdayFilter("all"); }}
                 type="button"
               >
                 {t("Clear filters")}
               </button>
             )}
           </div>
-          <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+          <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto]">
             <label className="relative block">
               <span className="sr-only">{t("Search orders")}</span>
               <Icon className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-[#5f6368]" path={icons.search} />
@@ -473,8 +531,18 @@ export function AdminOrdersBoard() {
               </label>
             )}
             <label className="block">
+              <span className="sr-only">{t("Filter orders by day of week")}</span>
+              <select className={`${inputClassName} lg:w-44`} onChange={(event) => setWeekdayFilter(event.target.value)} value={weekdayFilter}>
+                <option value="all">{t("All days of the week")}</option>
+                {[1, 2, 3, 4, 5, 6, 0].map((day) => (
+                  <option key={day} value={day}>{new Date(2024, 0, 7 + day).toLocaleDateString(language === "fr" ? "fr-CM" : "en-CM", { weekday: "long" })}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
               <span className="sr-only">{t("Sort by")}</span>
               <select className={`${inputClassName} lg:w-48`} onChange={(event) => setSortBy(event.target.value)} value={sortBy}>
+                <option value="weekday">{t("Sort: Day of week")}</option>
                 <option value="newest">{t("Sort: Newest first")}</option>
                 <option value="oldest">{t("Sort: Oldest first")}</option>
                 <option value="scheduled">{t("Sort: Scheduled soonest")}</option>
@@ -838,7 +906,13 @@ export function AdminOrdersBoard() {
                   type="button"
                 >
                   <Icon path={icons.trash} />
-                  {t(selectedOrder.status === "payment_failed" ? "Delete failed order" : "Delete unpaid order")}
+                  {t(
+                    selectedOrder.status === "payment_failed"
+                      ? "Delete failed order"
+                      : selectedOrder.status === "delivered"
+                        ? "Remove delivered order from list"
+                        : "Delete unpaid order",
+                  )}
                 </button>
               )}
               <button className="h-9 px-3 text-sm font-medium text-[#5f6368] transition hover:bg-[#f4f6f8] hover:text-[#111]" onClick={() => setSelectedOrderId(null)} type="button">
@@ -865,12 +939,18 @@ export function AdminOrdersBoard() {
           <button aria-label={t("Cancel")} className="admin-drawer-backdrop absolute inset-0 bg-[#111]/40" onClick={() => setOrderToDelete(null)} tabIndex={-1} type="button" />
           <section aria-labelledby="delete-order-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md border border-[#e8e8e8] bg-white p-5" role="dialog">
             <h2 className="text-lg font-semibold text-[#111]" id="delete-order-title">
-              {t(orderToDelete.status === "payment_failed" ? "Delete failed order" : "Delete unpaid order")} #{orderToDelete.id}
+              {t(orderToDelete.status === "payment_failed"
+                ? "Delete failed order"
+                : orderToDelete.status === "delivered"
+                  ? "Remove delivered order"
+                  : "Delete unpaid order")} #{orderToDelete.id}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#5f6368]">
               {orderToDelete.status === "payment_failed"
                 ? t("Delete failed order #{id}? This will permanently remove the order and its payment record.", { id: orderToDelete.id })
-                : t("Delete order #{id}? Stripe will first confirm the checkout is unpaid and expire it. This permanently removes the order.", { id: orderToDelete.id })}
+                : orderToDelete.status === "delivered"
+                  ? t("Remove delivered order #{id} from the orders list? It stays in the delivered orders history.", { id: orderToDelete.id })
+                  : t("Delete order #{id}? Stripe will first confirm the checkout is unpaid and expire it. This permanently removes the order.", { id: orderToDelete.id })}
             </p>
             {error && <p className="mt-3 bg-[#ffedea] px-3 py-2.5 text-sm font-medium text-[#831c1e]" role="alert">{error}</p>}
             <div className="mt-5 flex justify-end gap-2">
@@ -882,6 +962,32 @@ export function AdminOrdersBoard() {
                 type="button"
               >
                 {deletingOrderId === orderToDelete.id ? t("Deleting…") : t("Delete")}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+      {isConfirmingClearDelivered && (
+        <div className="fixed inset-0 z-[60] grid place-items-center px-5" role="presentation">
+          <button aria-label={t("Cancel")} className="admin-drawer-backdrop absolute inset-0 bg-[#111]/40" onClick={() => setIsConfirmingClearDelivered(false)} tabIndex={-1} type="button" />
+          <section aria-labelledby="clear-delivered-soft-title" aria-modal="true" className="admin-modal-panel relative w-full max-w-md border border-[#e8e8e8] bg-white p-5" role="dialog">
+            <h2 className="text-lg font-semibold text-[#111]" id="clear-delivered-soft-title">
+              {t("Clear delivered orders")}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#5f6368]">
+              {t("Remove delivered orders from the orders list? They stay in the delivered orders history and are never deleted.")}
+            </p>
+            {error && <p className="mt-3 bg-[#ffedea] px-3 py-2.5 text-sm font-medium text-[#831c1e]" role="alert">{error}</p>}
+            <div className="mt-5 flex justify-end gap-2">
+              <button className="h-9 px-3 text-sm font-medium text-[#5f6368] transition hover:bg-[#f4f6f8]" onClick={() => setIsConfirmingClearDelivered(false)} type="button">{t("Cancel")}</button>
+              <button
+                className="inline-flex h-9 items-center gap-2 bg-[#831c1e] px-3 text-sm font-semibold text-white transition hover:bg-[#6d1618] disabled:cursor-wait disabled:opacity-60"
+                disabled={isClearingDelivered}
+                onClick={confirmClearDelivered}
+                type="button"
+              >
+                <Icon path={icons.trash} />
+                {isClearingDelivered ? t("Clearing…") : t("Clear delivered")}
               </button>
             </div>
           </section>
