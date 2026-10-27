@@ -1208,7 +1208,7 @@ export function HomePage() {
           id="home"
           className="relative isolate w-full overflow-clip bg-[var(--brand-navy)] text-white"
         >
-          <HeroBackground quietOnMobile variant="navy" theme="ice-cream" />
+          <HeroBackground animated quietOnMobile variant="navy" theme="ice-cream" />
           <div className="mx-auto w-full max-w-[1400px] px-5 pb-2 pt-3 sm:px-8 sm:pb-6 sm:pt-6 lg:px-12 lg:pb-8 lg:pt-8">
             <div className="grid items-center gap-4 lg:grid-cols-12 lg:gap-10">
               {/* Copy */}

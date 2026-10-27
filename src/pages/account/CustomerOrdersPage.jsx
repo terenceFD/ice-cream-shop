@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { apiRequest, getCustomerToken } from "../../api/api";
 import { Footer, Header } from "../../components/Layout";
 import { HeroBackground } from "../../components/HeroBackground";
@@ -374,6 +380,7 @@ function StarRating({ value, onChange, t }) {
 
 function OrderReviewForm({ order, token, t, autoOpen = false }) {
   const detailsRef = useRef(null);
+  const reviewInputRef = useRef(null);
   const items = [
     ...new Map(
       order.items
@@ -394,6 +401,9 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
     if (!autoOpen || !detailsRef.current) return;
     detailsRef.current.open = true;
     detailsRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.requestAnimationFrame(() =>
+      reviewInputRef.current?.focus({ preventScroll: true }),
+    );
   }, [autoOpen]);
 
   if (!items.length) return null;
@@ -487,6 +497,7 @@ function OrderReviewForm({ order, token, t, autoOpen = false }) {
               className={`${fieldClass} resize-y`}
               maxLength={200}
               onChange={(event) => setReview(event.target.value)}
+              ref={reviewInputRef}
               rows={3}
               value={review}
             />
@@ -959,6 +970,7 @@ function RewardsCard({ points, t, compact = false }) {
 export function CustomerOrdersPage() {
   const { customer, isLoading, updateProfile, logout } = useAuth();
   const { t, language } = useLanguage();
+  const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { addItemsToCart } = useCart();
@@ -1040,7 +1052,15 @@ export function CustomerOrdersPage() {
       </div>
     );
   if (!customer)
-    return <Navigate replace state={{ from: "/account/orders" }} to="/login" />;
+    return (
+      <Navigate
+        replace
+        state={{
+          from: `${location.pathname}${location.search}${location.hash}`,
+        }}
+        to="/login"
+      />
+    );
 
   const formatPrice = (amount) =>
     `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(amount)} FCFA`;

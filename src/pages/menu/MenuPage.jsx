@@ -385,10 +385,11 @@ export function MenuPage() {
   const { addItemsToCart } = useCart();
   const { customer } = useAuth();
   const { language, t } = useLanguage();
+  const [selectedItemState, setSelectedItemState] = useState(null);
+  const [search, setSearch] = useState("");
   const gridRef = useScrollReveal([selectedItemState, search]);
   const [categories, setCategories] = useState(coldStoneMenuCategories);
   const [menuError, setMenuError] = useState("");
-  const [selectedItemState, setSelectedItemState] = useState(null);
   const productRef = useRef(null);
   const [cartNotice, setCartNotice] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -397,7 +398,6 @@ export function MenuPage() {
   const quickAddedTimer = useRef(undefined);
   const addedTimer = useRef(undefined);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [dietaryFilter, setDietaryFilter] = useState("");

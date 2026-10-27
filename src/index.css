@@ -601,6 +601,7 @@ body {
 .hero-background--static .hero-heart {
   animation: none;
   will-change: auto;
+  contain: none;
 }
 
 @keyframes hero-rect-drift {
@@ -616,6 +617,27 @@ body {
 
 .home-hero-copy {
   animation: home-hero-copy-in 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Every hero decor layer animates only composited properties (transform/opacity),
+   but large semi-transparent layers (blobs, dot grid) still cost paint time.
+   Promoting them gives the compositor its own texture so it never repains the
+   page on every frame — and when the hero scrolls out of view the browser can
+   drop the layers instead of animating off-screen. */
+.hero-blob-a,
+.hero-blob-b,
+.hero-grid {
+  will-change: transform;
+  contain: strict;
+}
+
+.hero-shape,
+.hero-heart,
+.hero-sprinkle,
+.hero-circle,
+.hero-rect {
+  will-change: transform, opacity;
+  contain: layout style paint;
 }
 
 /* Bag badge flash when an item is added from a card */

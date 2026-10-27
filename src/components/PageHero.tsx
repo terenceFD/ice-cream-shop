@@ -86,7 +86,7 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
         "--hero-accent": accent || "#ffb84d",
       } as CSSProperties}
     >
-      <HeroBackground variant="navy" theme={theme} />
+      <HeroBackground animated variant="navy" theme={theme} />
 
       <div className={`mx-auto grid max-w-[1320px] items-center gap-12 px-5 pt-8 ${compactOnMobile ? "pb-16" : "pb-24"} sm:px-8 sm:pb-28 sm:pt-12 lg:grid-cols-12 lg:gap-8 lg:px-12 lg:pb-32 lg:pt-14`}>
         <div className="lg:col-span-6">

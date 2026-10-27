@@ -13,13 +13,13 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const { t } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
+  const previousPath = typeof location.state?.from === 'string' ? location.state.from : ''
   const returnToCheckout = location.state?.from === '/checkout'
-  const returnToAccount = location.state?.from === '/account/orders'
+  const returnToAccount = previousPath.split(/[?#]/, 1)[0] === '/account/orders'
   const returnToEvent = location.state?.from === '/events'
     ? `/events${isEventType(location.state?.type) ? `?type=${location.state.type}` : ''}`
     : ''
   const checkoutNotice = typeof location.state?.notice === 'string' ? location.state.notice : ''
-  const previousPath = typeof location.state?.from === 'string' ? location.state.from : ''
 
   function goBack() {
     if (previousPath.startsWith('/') && previousPath !== '/login' && previousPath !== '/signup') {
@@ -135,7 +135,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
         await login({ email, password })
       }
       navigate(
-        returnToCheckout ? '/checkout' : returnToAccount ? '/account/orders' : returnToEvent ? returnToEvent : isSignup ? '/' : '/account/orders',
+        returnToCheckout ? '/checkout' : returnToAccount ? previousPath : returnToEvent ? returnToEvent : isSignup ? '/' : '/account/orders',
         { replace: true },
       )
     } catch (authError) {
