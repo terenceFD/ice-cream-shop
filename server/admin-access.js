@@ -6,11 +6,19 @@ export function storeAdminCanAccess(method, path) {
     .replace(/\/+$/, '') || '/'
 
   if (normalizedMethod === 'GET' && ['/me', '/orders', '/payments', '/customers', '/reviews', '/cake-requests', '/reports', '/stores', '/notifications'].includes(normalizedPath)) return true
+  // Push notifications: every role needs to subscribe to new-order alerts, and the
+  // client checks subscription state on load. These are per-account, not business-wide.
+  if (normalizedMethod === 'GET' && normalizedPath === '/push-status') return true
+  if (normalizedMethod === 'POST' && normalizedPath === '/push-subscription') return true
+  if (normalizedMethod === 'DELETE' && normalizedPath === '/push-subscription') return true
   if (normalizedMethod === 'PUT' && normalizedPath === '/profile-picture') return true
   if (normalizedMethod === 'POST' && normalizedPath === '/logout') return true
   if (normalizedMethod === 'PATCH' && /^\/orders\/\d+\/(?:status|delivered)$/.test(normalizedPath)) return true
   if (normalizedMethod === 'DELETE' && /^\/orders\/\d+$/.test(normalizedPath)) return true
   if (normalizedMethod === 'DELETE' && normalizedPath === '/orders/delivered') return true
+  // Soft clear from the Orders page ("Clear delivered"). Shown to every role, and it
+  // only hides rows from the orders list, so store/branch admins must be able to use it.
+  if (normalizedMethod === 'DELETE' && normalizedPath === '/orders/delivered-soft') return true
   if (normalizedMethod === 'DELETE' && /^\/orders\/\d+\/stale-payment$/.test(normalizedPath)) return true
   if (normalizedMethod === 'PATCH' && /^\/reviews\/\d+\/approval$/.test(normalizedPath)) return true
   if (normalizedMethod === 'DELETE' && /^\/reviews\/\d+$/.test(normalizedPath)) return true

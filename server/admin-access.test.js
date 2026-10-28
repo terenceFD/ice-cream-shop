@@ -13,6 +13,12 @@ test('permits store-scoped operations only', () => {
     ['PATCH', '/orders/42/status'],
     ['DELETE', '/orders/42/stale-payment'],
     ['DELETE', '/orders/delivered'],
+    // "Clear delivered" on the Orders page — shown to every role.
+    ['DELETE', '/orders/delivered-soft'],
+    // Per-account push alerts, needed by every role to receive new orders.
+    ['GET', '/push-status'],
+    ['POST', '/push-subscription'],
+    ['DELETE', '/push-subscription'],
     ['PATCH', '/reviews/7/approval'],
     ['DELETE', '/reviews/7'],
     ['PATCH', '/cake-requests/12/status'],
@@ -46,6 +52,7 @@ test('blocks access to business-wide records and settings', () => {
   for (const [method, path] of [
     ['GET', '/admins'],
     ['GET', '/activity'],
+    ['DELETE', '/activity'],
     ['GET', '/inventory'],
     ['GET', '/stock-alerts'],
     ['GET', '/menu-categories'],

@@ -28,6 +28,7 @@ import {
   markCheckoutPaymentFailed,
   deleteDiscountCode,
   deleteFailedOrder,
+  expireAbandonedCheckouts,
   hideDeliveredOrderFromAdmin,
   hideDeliveredOrdersFromAdmin,
   deleteFlavor,
@@ -358,7 +359,15 @@ function isUniqueConstraintError(error) {
 function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY?.trim()
   if (!secretKey) return null
-  if (!stripeClient) stripeClient = new Stripe(secretKey)
+  if (!stripeClient) {
+    stripeClient = new Stripe(secretKey, {
+      // Bound how long a checkout can hold an order (and its reserved stock) open.
+      // Stripe's default is 80s with 2 retries, which turned a slow upstream into
+      // ~20s checkout responses and left stock locked when the browser gave up.
+      timeout: 10_000,
+      maxNetworkRetries: 1,
+    })
+  }
   return stripeClient
 }
 
@@ -638,9 +647,31 @@ const signupCodeAttemptLimiter = rateLimit({
   message: { error: 'Too many verification attempts. Wait 15 minutes and try again.' },
 })
 
+// Public forms (contact, cake requests) are limited per email address, not only per
+// IP. Many customers in Cameroon share one carrier NAT address, so a per-IP cap of 20
+// would let one busy café or office block every other customer behind the same
+// network. Per-address limiting keeps the anti-spam protection without that failure.
 const contactLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (request) => {
+    const email = typeof request.body?.email === 'string' ? request.body.email.trim().toLowerCase() : ''
+    if (email) return `email:${email}`
+    // Requests without an email fall back to the IP. ipKeyGenerator normalises
+    // IPv6 addresses to their /64 prefix, so a visitor cannot bypass the limit by
+    // rotating through addresses in their own IPv6 block.
+    return `ip:${ipKeyGenerator(request.ip)}`
+  },
+  message: { error: 'Too many requests were sent from this network. Wait a few minutes and try again.' },
+})
+
+// A separate, generous per-IP ceiling still stops a single host from flooding the
+// forms while leaving shared networks far below the limit.
+const publicFormIpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: { error: 'Too many requests were sent from this network. Wait a few minutes and try again.' },
@@ -1586,7 +1617,7 @@ app.get('/api/flavors/:id', async (request, response, next) => {
   }
 })
 
-app.post('/api/contact', contactLimiter, async (request, response, next) => {
+app.post('/api/contact', publicFormIpLimiter, contactLimiter, async (request, response, next) => {
   try {
     const name = typeof request.body.name === 'string' ? request.body.name.trim() : ''
     const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
@@ -2304,7 +2335,7 @@ app.post('/api/customer/reviews', requireCustomer, async (request, response) => 
   }
 })
 
-app.post('/api/cake-requests', contactLimiter, async (request, response) => {
+app.post('/api/cake-requests', publicFormIpLimiter, contactLimiter, async (request, response) => {
   const body = request.body
   const customerName = typeof body.name === 'string' ? body.name.trim() : ''
   const customerEmail = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
@@ -4670,7 +4701,18 @@ const server = app.listen(port, () => {
   reconcileStaleCheckouts().catch((error) => {
     console.error('Unable to reconcile expired checkouts:', error.message)
   })
+  // Release stock held by abandoned checkouts even when Stripe is not configured.
+  expireAbandonedCheckouts().then((released) => {
+    if (released) console.log(`Released stock from ${released} abandoned checkout(s).`)
+  }).catch((error) => {
+    console.error('Unable to release abandoned checkouts:', error.message)
+  })
   setInterval(() => {
+    expireAbandonedCheckouts().then((released) => {
+      if (released) console.log(`Released stock from ${released} abandoned checkout(s).`)
+    }).catch((error) => {
+      console.error('Unable to release abandoned checkouts:', error.message)
+    })
     reconcileStaleCheckouts().catch((error) => {
       console.error('Unable to reconcile expired checkouts:', error.message)
     })

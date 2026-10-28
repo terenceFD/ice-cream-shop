@@ -1426,7 +1426,7 @@ export function HomePage() {
                   {t("Pickup or delivery in Douala and Yaoundé.")}
                 </Link>
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-2.5 sm:mt-4 sm:gap-3 lg:grid-cols-4">
+              <div className="home-hero-badges mt-3 grid grid-cols-2 gap-2.5 sm:mt-4 sm:gap-3 lg:grid-cols-4">
                 {[
                   {
                     value: t("5 shops"),

@@ -2010,6 +2010,19 @@ export async function createPaymentRecord({
 }
 
 export async function markCheckoutPaymentFailed(orderId, sessionId, provider = "stripe") {
+  return failPendingCheckout(orderId, sessionId, provider)
+}
+
+/**
+ * Releases the stock, discount reservation and loyalty points held by an
+ * abandoned checkout, then marks the order failed.
+ *
+ * Used by the Stripe reconciler and by the local sweeper that runs without
+ * Stripe: a customer who opens checkout and closes the tab must not keep stock
+ * reserved. The UPDATE on `payments` is the guard, so two sweeps racing on the
+ * same order can only release it once.
+ */
+async function failPendingCheckout(orderId, sessionId, provider) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const result = await database.prepare(`
@@ -2111,6 +2124,36 @@ export async function markCheckoutPaymentFailed(orderId, sessionId, provider = "
 
     return true
   })()
+}
+
+/**
+ * Marks pending checkouts older than `minutes` as failed and releases the stock
+ * they hold. Works without Stripe configured, so abandoned checkouts cannot lock
+ * inventory for the 41-minute Stripe reconciliation window (or forever, when
+ * Stripe is off). Returns the number of orders released.
+ */
+export async function expireAbandonedCheckouts(minutes = 20) {
+  const cutoff = `datetime('now', '-${Number(minutes) || 20} minutes')`
+  const stale = await database.prepare(`
+    SELECT o.id AS "orderId", p.provider_reference AS "sessionId", p.payment_provider AS "provider"
+    FROM orders o
+    JOIN payments p ON p.order_id = o.id
+    WHERE o.status = 'pending_payment' AND p.status = 'pending'
+      AND o.created_at <= ${cutoff}
+    ORDER BY o.id
+    LIMIT 100
+  `).all()
+  let released = 0
+  for (const order of stale) {
+    try {
+      if (await failPendingCheckout(order.orderId, order.sessionId, order.provider || 'stripe')) {
+        released += 1
+      }
+    } catch (error) {
+      console.error(`Unable to release abandoned checkout for order #${order.orderId}:`, error.message)
+    }
+  }
+  return released
 }
 
 export async function updateAdminProfilePicture(adminId, profilePicture) {

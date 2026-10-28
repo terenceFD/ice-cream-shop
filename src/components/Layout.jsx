@@ -1488,7 +1488,7 @@ export function Footer() {
               {t("Ice cream mixed to order on a frozen stone. Order online for pickup or delivery in Douala and Yaoundé.")}
             </p>
             <a
-              className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-white/80 transition-colors hover:text-brand-yellow focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-4 focus-visible:ring-offset-brand-navy"
+              className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md px-2 -mx-2 text-sm font-bold text-white/80 transition-colors hover:bg-white/5 hover:text-brand-yellow focus-visible:text-brand-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
               href={instagramUrl}
               rel="noreferrer"
               target="_blank"
@@ -1501,11 +1501,11 @@ export function Footer() {
           {linkGroups.map((group) => (
             <nav aria-label={group.title} key={group.title}>
               <h2 className="text-base font-bold text-white">{group.title}</h2>
-              <ul className="mt-4 grid gap-3">
+              <ul className="mt-2 grid gap-0 sm:mt-3 sm:gap-1">
                 {group.links.map((link) => (
                   <li key={link.to}>
                     <Link
-                      className="inline-flex min-h-6 items-center text-sm font-medium text-white/70 transition-colors hover:text-brand-yellow focus-visible:rounded-sm focus-visible:text-brand-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
+                      className="-mx-2 flex min-h-11 items-center rounded-md px-2 text-base font-medium text-white/75 transition-colors hover:bg-white/5 hover:text-brand-yellow focus-visible:bg-white/5 focus-visible:text-brand-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow sm:text-sm"
                       to={link.to}
                     >
                       {link.label}
@@ -1521,7 +1521,7 @@ export function Footer() {
               {t("Freshly made treats for pickup or delivery. Questions about an order? We are happy to help.")}
             </p>
             <Link
-              className="mt-4 inline-flex min-h-10 items-center text-sm font-bold text-brand-yellow transition-colors hover:text-white focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
+              className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-md px-2 -mx-2 text-sm font-bold text-brand-yellow transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
               to="/contact"
             >
               {t("Contact us")} <ArrowIcon />
@@ -1534,8 +1534,8 @@ export function Footer() {
         <div className="mx-auto flex max-w-[1320px] flex-col gap-3 px-5 py-5 text-sm text-white/60 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12 border-t border-white/10">
           <p>© 2026 Cold Stone Creamery Cameroon. {t("All smiles reserved.")}</p>
           <button
-            className="group inline-flex min-h-10 w-fit items-center gap-2 font-bold text-white/75 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
-            onClick={() => window.scrollTo({ top: 0 })}
+            className="group inline-flex min-h-11 w-fit items-center gap-2 rounded-md px-2 -mx-2 font-bold text-white/75 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             type="button"
           >
             {t("Back to top")}

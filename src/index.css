@@ -73,6 +73,12 @@ input:disabled,
 
 :root {
   color-scheme: light;
+  /*
+   * Vertical space reserved for the floating WhatsApp button, so page content
+   * (hero badges, footer links) is never hidden behind it. Defined on :root so
+   * every rule that uses it can resolve the value.
+   */
+  --whatsapp-fab-space: 6.5rem;
   --brand-navy: #472a3b;
   --brand-blue: #6b3f58;
   --brand-plum-tint: #5e3850;
@@ -174,6 +180,16 @@ body {
   }
 }
 
+/*
+ * Touch targets on phones and tablets (and any coarse pointer).
+ *
+ * Every interactive control gets at least a 44x44px tap area, which is the
+ * minimum both Apple and Google recommend for a reliably tappable control.
+ * The previous rule forced `min-width: 44px !important` on everything, which
+ * distorted icon-only buttons and could push them outside their container.
+ * Width is now left to the layout and only the *height* is guaranteed; small
+ * icon buttons get their tap area from padding instead of a forced width.
+ */
 @media (max-width: 1023px), (any-pointer: coarse) {
   button,
   [role="button"],
@@ -181,13 +197,31 @@ body {
   input[type="submit"],
   input[type="reset"],
   summary,
+  a[href] {
+    min-height: 44px;
+  }
+
+  /* Round icon buttons (cart, menu, close) stay square but reach 44px. */
   a[class*="rounded-full"],
-  a[class*="rounded-lg"],
-  a[class*="rounded-xl"],
-  a[class*="rounded-md"],
-  a[class*="rounded-2xl"] {
-    min-width: 44px !important;
-    min-height: 44px !important;
+  button[class*="rounded-full"] {
+    min-width: 44px;
+  }
+
+  /* Links inside a list or footer row are tappable across their whole row. */
+  footer a[href],
+  nav a[href],
+  li a[href] {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+/* On phones, keep tap rows comfortable even when a rule sets a smaller height. */
+@media (max-width: 640px) {
+  footer a[href],
+  footer button {
+    min-height: 48px;
   }
 }
 
@@ -970,11 +1004,118 @@ details[open] > .menu-popover {
   }
 }
 
+/*
+ * Floating WhatsApp button.
+ *
+ * The button is fixed to the bottom-left, so it used to sit on top of page
+ * content (the trust badges on the home hero, the "Menu categories" heading on
+ * the menu page). Pages reserve room for it at the bottom, and the button is
+ * lifted above the safe area on phones with a home indicator.
+ */
+.whatsapp-fab {
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Pages that show the floating button keep their content clear of it. */
+body:has(.whatsapp-fab) footer {
+  padding-bottom: calc(var(--whatsapp-fab-space) + env(safe-area-inset-bottom, 0px));
+}
+
+body:has(.whatsapp-fab) #home > .relative {
+  padding-bottom: calc(var(--whatsapp-fab-space) + env(safe-area-inset-bottom, 0px));
+}
+
+/*
+ * The badge grid is the last row of the hero copy. It needs enough bottom
+ * clearance that the floating WhatsApp button cannot sit on top of it.
+ */
+.home-hero-badges {
+  margin-bottom: calc(var(--whatsapp-fab-space) + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 640px) {
+  body:has(.whatsapp-fab) #home > .relative {
+    padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .home-hero-badges {
+    margin-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 640px) {
+  /*
+   * On phones the hero's trust badges fill the bottom-left of the first screen.
+   * Moving the button to the bottom-right keeps it clear of them (the badge grid
+   * has a single column there), and it stays out of the way of headings.
+   */
+  .whatsapp-fab {
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    left: auto;
+    right: 1rem;
+  }
+
+  .whatsapp-fab > span:first-child {
+    left: auto;
+    right: calc(100% + 0.75rem);
+  }
+
+  .whatsapp-fab > span:last-child {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  body:has(.whatsapp-fab) footer {
+    padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  body:has(.whatsapp-fab) #home > .relative {
+    padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .whatsapp-fab > span:last-child,
+  .whatsapp-fab svg {
+    transition: none;
+  }
+}
+
+/* Reduced motion: no auto-scroll, and the row is swiped instead. */
 @media (prefers-reduced-motion: reduce) {
   .review-marquee-track {
     flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: thin;
+  }
+}
+
+/*
+ * On phones and tablets the reviews become a normal swipeable row instead of an
+ * auto-scrolling marquee. A moving row cannot be read at a glance, cannot be
+ * paused by touch, and on a narrow screen the cards scroll past far too fast.
+ * Swiping is the gesture people already use for horizontal lists.
+ */
+@media (max-width: 1023px), (any-pointer: coarse) {
+  .review-marquee {
+    mask-image: none;
+    -webkit-mask-image: none;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .review-marquee::-webkit-scrollbar {
+    display: none;
+  }
+
+  .review-marquee-track {
+    animation: none !important;
+  }
+
+  .review-marquee-track > * {
+    scroll-snap-align: start;
   }
 }
 
