@@ -4576,6 +4576,12 @@ app.use((error, _request, response, _next) => {
     response.status(413).json({ error: 'The uploaded request is too large. Images must be smaller than 5 MB.' })
     return
   }
+  // Malformed JSON is the caller's mistake, not a server fault. Answering 400 (instead
+  // of falling through to the 500 handler) keeps client errors out of the error logs.
+  if (error.type === 'entity.parse.failed') {
+    response.status(400).json({ error: 'The request body is not valid JSON.' })
+    return
+  }
   if (error instanceof EmailConfigurationError) {
     response.status(503).json({ error: 'Email delivery is not configured. Contact the store owner to finish setting up email delivery.' })
     return
