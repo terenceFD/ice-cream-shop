@@ -32,8 +32,9 @@ DELETE FROM event_orders;
 DELETE FROM contact_messages;
 
 -- Test admin accounts and their audit trail.
-DELETE FROM admin_activity WHERE admin_id <> 1;
-DELETE FROM admins         WHERE id <> 1;
+-- KEPT: id=1 Terence Timah, id=2 forteh miright (both real owner accounts).
+DELETE FROM admin_activity WHERE admin_id NOT IN (1, 2);
+DELETE FROM admins         WHERE id    NOT IN (1, 2);
 
 -- Test customer accounts.
 DELETE FROM customers WHERE id <> 23;
@@ -46,7 +47,7 @@ COMMIT;
 
 -- Verify the result:
 -- SELECT COUNT(*) FROM customers;       -- expect 1
--- SELECT COUNT(*) FROM admins;          -- expect 1
+-- SELECT id, name, email, role FROM admins;  -- expect Terence Timah AND forteh miright
 -- SELECT COUNT(*) FROM orders;          -- expect Terence's orders only
 -- SELECT COUNT(*) FROM cake_requests;   -- expect 0
 -- SELECT COUNT(*) FROM event_orders;    -- expect 0
