@@ -870,6 +870,15 @@ export async function verifyDatabaseSchema() {
   await database.prepare(`
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS hidden_from_admin SMALLINT NOT NULL DEFAULT 0
   `).run();
+  // In-app admin notification for a newly placed order. Without these the
+  // order-notices query (and anything else that references them) fails with
+  // "column o.order_admin_seen does not exist" on a migrated production database.
+  await database.prepare(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_admin_seen SMALLINT NOT NULL DEFAULT 1
+  `).run();
+  await database.prepare(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_notified_at TEXT
+  `).run();
   await database.prepare(`
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_notification_sent_at TEXT
   `).run();
