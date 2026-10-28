@@ -159,10 +159,20 @@ test('does not change parameter markers inside SQL strings or comments', () => {
   )
 })
 
-test('removes SQLite NOCASE collation clauses for CITEXT-backed PostgreSQL columns', () => {
+test('turns SQLite NOCASE comparisons into case-insensitive PostgreSQL comparisons', () => {
+  // Postgres has no COLLATE NOCASE and the columns are plain TEXT, so simply
+  // deleting the clause made comparisons case-sensitive. Emails must still match
+  // regardless of case.
   assert.deepEqual(
     translateSql('SELECT id FROM customers WHERE email = ? COLLATE NOCASE', ['a@example.com']),
-    { sql: 'SELECT id FROM customers WHERE email = $1', values: ['a@example.com'] },
+    { sql: 'SELECT id FROM customers WHERE LOWER(email) = LOWER($1)', values: ['a@example.com'] },
+  )
+})
+
+test('drops a NOCASE collation that has no comparison to rewrite', () => {
+  assert.deepEqual(
+    translateSql('CREATE INDEX idx ON customers (email COLLATE NOCASE)'),
+    { sql: 'CREATE INDEX idx ON customers (email)', values: [] },
   )
 })
 

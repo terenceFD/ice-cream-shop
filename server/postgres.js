@@ -144,6 +144,11 @@ export function translateSql(sql, parameters = []) {
   const converted = parameterize(sql, parameters)
   let query = converted.sql
     .replace(/\bINSERT\s+OR\s+IGNORE\s+INTO\b/gi, 'INSERT INTO')
+    // "email = ? COLLATE NOCASE" -> "LOWER(email) = LOWER($1)".
+    // Simply deleting COLLATE NOCASE would silently make comparisons case-SENSITIVE
+    // in Postgres, so admin@example.com and Admin@Example.com would not match.
+    .replace(/(\b[A-Za-z_][\w.]*)\s*=\s*(\$\d+)\s+COLLATE\s+NOCASE\b/gi, 'LOWER($1) = LOWER($2)')
+    // Any remaining COLLATE NOCASE has no portable equivalent; drop it.
     .replace(/\s+COLLATE\s+NOCASE\b/gi, '')
     .replace(/\bdatetime\(\s*([a-z_][a-z0-9_.]*)\s*\)/gi, '$1')
     .replace(/\bMAX\(\s*0\s*,/gi, 'GREATEST(0,')

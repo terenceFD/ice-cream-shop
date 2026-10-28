@@ -286,10 +286,15 @@ function adminSessionMatchesPassword(payload, passwordHash) {
 }
 
 async function verifyPassword(password, passwordHash) {
+  // bcrypt throws on a missing or malformed hash ("data and hash arguments required").
+  // A bad stored hash must read as "password did not match", never as a 500 — a 500
+  // here also confirms to an attacker that the account exists.
+  if (typeof passwordHash !== 'string' || passwordHash.length === 0) return false
   try {
     return await bcrypt.compare(password, passwordHash)
   } catch (error) {
-    throw new PasswordVerificationError(error)
+    console.error('Stored password hash could not be verified; treating as a failed sign-in.', error.message)
+    return false
   }
 }
 
@@ -1564,7 +1569,13 @@ app.get('/api/flavors', async (_request, response, next) => {
 
 app.get('/api/flavors/:id', async (request, response, next) => {
   try {
-    const flavor = await findFlavor(Number(request.params.id))
+    const id = Number(request.params.id)
+    // Reject non-integer input before it reaches the database driver.
+    if (!Number.isSafeInteger(id) || id < 1) {
+      response.status(400).json({ error: 'Flavor ID is invalid.' })
+      return
+    }
+    const flavor = await findFlavor(id)
     if (!flavor) {
       response.status(404).json({ error: 'Flavor not found.' })
       return
@@ -2539,8 +2550,15 @@ app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
       response.status(429).json({ error: lockedAdminMessage(lockedMs) })
       return
     }
-    const admin = await database.prepare('SELECT * FROM admins WHERE email = ? COLLATE NOCASE').get(email)
-    const passwordMatches = admin
+    // Case-insensitive email match that works on both SQLite and Postgres.
+    // (COLLATE NOCASE is SQLite-only; LOWER() is portable and index-friendly enough
+    // for a single-row lookup on a small admins table.)
+    const admin = await database.prepare('SELECT * FROM admins WHERE LOWER(email) = LOWER(?)').get(email)
+    // A stored hash can be null/empty for an account created outside the normal
+    // flow. bcrypt.compare throws on those, which surfaced as a 500 (and told an
+    // attacker the account exists). Treat a missing hash as a normal failed login.
+    const hasUsableHash = Boolean(admin?.password_hash) && typeof admin.password_hash === 'string'
+    const passwordMatches = admin && hasUsableHash
       ? await verifyPassword(password, admin.password_hash)
       : (await spendPasswordCheckTime(password), false)
     if (!passwordMatches) {
@@ -4064,6 +4082,10 @@ app.post('/api/admin/menu-categories', requireAdmin, ownerOnly, async (request, 
 
 app.put('/api/admin/menu-categories/:id', requireAdmin, ownerOnly, async (request, response, next) => {
   const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Category ID is invalid.' })
+    return
+  }
   const existing = (await listMenuCategories()).find((category) => category.id === id)
   if (!existing) {
     response.status(404).json({ error: 'Menu category not found.' })
@@ -4237,6 +4259,10 @@ app.get('/api/admin/push/status', requireAdmin, ownerOnly, async (_request, resp
 // Sends (or resends) the alert for an existing promotion.
 app.post('/api/admin/discount-codes/:id/notify', requireAdmin, ownerOnly, async (request, response) => {
   const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Discount code ID is invalid.' })
+    return
+  }
   const code = (await listDiscountCodes()).find((entry) => entry.id === id)
   if (!code) {
     response.status(404).json({ error: 'Discount code not found.' })
@@ -4256,6 +4282,10 @@ app.post('/api/admin/discount-codes/:id/notify', requireAdmin, ownerOnly, async 
 
 app.put('/api/admin/discount-codes/:id', requireAdmin, ownerOnly, async (request, response, next) => {
   const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Discount code ID is invalid.' })
+    return
+  }
   const existing = (await listDiscountCodes()).find((code) => code.id === id)
   if (!existing) {
     response.status(404).json({ error: 'Discount code not found.' })
