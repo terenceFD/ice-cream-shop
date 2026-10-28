@@ -733,7 +733,6 @@ function MomentGallery({ t }) {
       position: "object-[center_28%]",
       copy: [
         "The first lick of a cone. The spoon you don't want to share. The scoop that turns an ordinary afternoon into a little celebration.",
-        "Welcome to our world of ice cream — where there's always room for a little more happy.",
         "Life's sweeter by the scoop",
       ],
       cta: "Step into our world",

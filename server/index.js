@@ -926,6 +926,10 @@ app.get('/api/menu', async (_request, response) => {
       ],
     }
   })
+  // Public menu data: brief browser cache plus CDN edge caching. Menu edits in
+  // the admin dashboard still appear within a minute for everyone.
+  response.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=300')
+  response.setHeader('CDN-Cache-Control', 'public, max-age=120')
   response.json({ categories })
 })
 
@@ -948,6 +952,10 @@ app.get('/api/fulfillment/options', async (_request, response) => {
     SELECT id, label, start_time AS "startTime", end_time AS "endTime"
     FROM fulfillment_slots WHERE is_active = 1 ORDER BY sort_order, id
   `).all()
+  // Public, slow-changing catalog data: cache briefly at the CDN edge and in the
+  // browser so visitors do not pay a ~600ms origin round-trip on every page view.
+  response.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=300')
+  response.setHeader('CDN-Cache-Control', 'public, max-age=120')
   response.json({ zones, slots })
 })
 
@@ -1540,8 +1548,11 @@ app.get('/api/flavors', async (_request, response, next) => {
       listFlavors(),
       getApprovedReviewSummaries(),
     ])
-    response.json({
-      flavors: flavors.map((flavor) => ({
+    // Public catalog data: brief browser cache plus CDN edge caching so repeat
+    // visits and the menu page do not wait on a slow origin round-trip.
+    response.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=300')
+    response.setHeader('CDN-Cache-Control', 'public, max-age=120')
+    response.json({ flavors: flavors.map((flavor) => ({
         ...flavor,
         ...(reviewSummaries.get(`flavor:${flavor.id}`) || {}),
       })),

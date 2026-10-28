@@ -158,14 +158,12 @@ body {
   }
 }
 
-/* Gallery words stay visible on touch. A pointer reveals them over the photograph. */
+/* Gallery words stay visible everywhere. A pointer adds a gentle rise-in instead
+   of hiding the copy — hiding it left the welcome message invisible on desktop. */
 @media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
   .moment-card .moment-copy {
-    opacity: 0;
-    transform: translateY(1.25rem);
-    transition:
-      opacity 560ms cubic-bezier(0.22, 1, 0.36, 1),
-      transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity: 1;
+    transform: none;
   }
 
   .moment-card:hover .moment-copy,

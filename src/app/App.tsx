@@ -13,6 +13,7 @@ import { ScrollToTop } from "../components/ScrollToTop";
 import { WebsiteLoader } from "../components/WebsiteLoader";
 import { RouteMeta } from "../seo/RouteMeta";
 import { useLanguage } from "../language/useLanguage";
+import { WelcomeMessage } from "../components/WelcomeMessage";
 
 // Each page below downloads only when a visitor opens it, so the first visit to the shop
 // does not carry the admin dashboard, checkout and other pages' code.
@@ -196,6 +197,7 @@ function App() {
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </Suspense>
+                <WelcomeMessage />
                 <InstallAppPrompt />
                 <PromotionAlertsPrompt />
                 <WhatsAppButton />

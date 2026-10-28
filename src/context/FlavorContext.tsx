@@ -63,7 +63,7 @@ export function FlavorProvider({ children }: { children: ReactNode }) {
       inventoryRefresh = window.setInterval(() => {
         if (document.visibilityState === 'hidden') return
         refreshFlavors({ showLoading: false })
-      }, 30000)
+      }, 60000)
     }, delay)
     return () => {
       window.clearTimeout(start)
