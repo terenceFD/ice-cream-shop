@@ -2086,6 +2086,8 @@ const french: Record<string, string> = {
   'Fruity, chocolatey or beautifully classic. Let your cravings lead the way.': 'Fruité, chocolaté ou délicieusement classique. Laissez parler vos envies.',
   'Explore all flavors': 'Découvrir tous les parfums',
   'Show all {count} flavors': 'Voir les {count} parfums',
+  'Show more': 'Afficher plus',
+  'View {name} details': 'Voir les détails de {name}',
   'Show fewer flavors': 'Afficher moins de parfums',
   'Show all {count} cakes': 'Voir les {count} gâteaux',
   'Show fewer cakes': 'Afficher moins de gâteaux',

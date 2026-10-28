@@ -305,6 +305,20 @@ body {
   line-height: 1.5;
 }
 
+/* Floating treat shapes, reusing the hero's hero-shape float animation. The
+   shapes drift gently around the centered content and stay faint so the logo
+   and wordmark remain the focus. */
+.website-loader__shapes {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.website-loader__shape {
+  opacity: 0;
+}
+
 @keyframes website-loader-arrive {
   from {
     opacity: 0;
@@ -349,6 +363,11 @@ body {
 
   .website-loader--leaving {
     display: none;
+  }
+
+  .website-loader__shape {
+    animation: none;
+    opacity: 0.14;
   }
 }
 

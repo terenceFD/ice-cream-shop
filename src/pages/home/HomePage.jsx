@@ -822,10 +822,10 @@ export function HomePage() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [selectedFlavorMood, setSelectedFlavorMood] = useState("all");
   const [flavorSearch, setFlavorSearch] = useState("");
-  const [showAllFlavorResults, setShowAllFlavorResults] = useState(false);
+  const [visibleFlavorCount, setVisibleFlavorCount] = useState(8);
   const [selectedCakeType, setSelectedCakeType] = useState("all");
   const [cakeSearch, setCakeSearch] = useState("");
-  const [showAllCakeResults, setShowAllCakeResults] = useState(false);
+  const [cakeVisibleCount, setCakeVisibleCount] = useState(4);
   const [loadedSlides, setLoadedSlides] = useState([0]);
   const [addedItemKey, setAddedItemKey] = useState(null);
   const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
@@ -1045,8 +1045,10 @@ export function HomePage() {
     ),
     ...catalogFlavorCards,
   ];
+  // The grid starts with 8 flavors and "Show more" adds another 8 each time.
+  const FLAVOR_PAGE_SIZE = 8;
   const flavorFiltersActive =
-    showAllFlavorResults ||
+    visibleFlavorCount > FLAVOR_PAGE_SIZE ||
     selectedFlavorMood !== "all" ||
     Boolean(flavorSearch.trim());
   const matchingFlavors = allFlavorCards.filter((flavor) => {
@@ -1075,8 +1077,11 @@ export function HomePage() {
     return matchesMood && matchesSearch;
   });
   const visibleFlavors = flavorFiltersActive
-    ? matchingFlavors
-    : flavorInspiration.slice(0, 4);
+    ? matchingFlavors.slice(0, visibleFlavorCount)
+    : allFlavorCards.slice(0, visibleFlavorCount);
+  // "Show more" whenever there are more flavors available than currently displayed,
+  // whether that's the default grid or a filtered/search result.
+  const hasMoreFlavors = matchingFlavors.length > visibleFlavors.length;
 
   // Real menu prices for the flavor cards, so the teasers set expectations before clicking.
   const flavorMenuItems = new Map(
@@ -1161,8 +1166,8 @@ export function HomePage() {
         return typeOk && queryOk;
       });
     const hasActiveFilter = selectedCakeType !== "all" || cakeQuery.length > 0;
-    return hasActiveFilter || showAllCakeResults ? items : items.slice(0, 4);
-  }, [cakeMenuCategory, selectedCakeType, cakeQuery, showAllCakeResults]);
+    return items.slice(0, cakeVisibleCount);
+  }, [cakeMenuCategory, selectedCakeType, cakeQuery, cakeVisibleCount]);
   // Every cake card needs a slider (more than one photo), but many catalog items
   // only carry a single image and no gallery. For those, pair the item's own photo
   // with attractive cake photos from the same family (petite/sibling views of the
@@ -1564,7 +1569,7 @@ export function HomePage() {
                       key={mood}
                       onClick={() => {
                         setSelectedFlavorMood(mood);
-                        setShowAllFlavorResults(mood !== "all");
+                        setVisibleFlavorCount(FLAVOR_PAGE_SIZE);
                       }}
                       type="button"
                     >
@@ -1600,9 +1605,7 @@ export function HomePage() {
                   onChange={(event) => {
                     const query = event.target.value;
                     setFlavorSearch(query);
-                    if (query.trim()) setShowAllFlavorResults(true);
-                    else if (selectedFlavorMood === "all")
-                      setShowAllFlavorResults(false);
+                    setVisibleFlavorCount(FLAVOR_PAGE_SIZE);
                   }}
                   placeholder={t("Search flavors")}
                   type="search"
@@ -1614,8 +1617,7 @@ export function HomePage() {
                     className="absolute right-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-[#65748a] transition before:absolute before:-inset-2 before:content-[''] hover:bg-[#f4f6f8] hover:text-brand-navy"
                     onClick={() => {
                       setFlavorSearch("");
-                      if (selectedFlavorMood === "all")
-                        setShowAllFlavorResults(false);
+                      setVisibleFlavorCount(FLAVOR_PAGE_SIZE);
                     }}
                     type="button"
                   >
@@ -1673,12 +1675,24 @@ export function HomePage() {
                   ? catalogFlavor.availableQuantity < 1
                   : item?.isAvailable === false || item?.availableQuantity < 1;
                 const images = getFlavorCardImages(flavor, item);
+                const detailsLink = catalogFlavor
+                  ? `/flavor/${catalogFlavor.id}`
+                  : `/menu?${new URLSearchParams({ category: flavor.category, item: flavor.item })}`;
 
                 return (
                   <li
                     className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-brand-yellow/70 motion-reduce:transform-none motion-reduce:transition-none"
                     key={flavor.id}
                   >
+                    {/* The whole card opens the flavor details. The Add to cart controls are
+                        layered above this link so they still work independently. */}
+                    <Link
+                      aria-label={t("View {name} details", {
+                        name: t(flavor.title),
+                      })}
+                      className="absolute inset-0 z-10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-navy"
+                      to={detailsLink}
+                    />
                     {/* Shine sweep on hover */}
                     <span
                       aria-hidden="true"
@@ -1718,21 +1732,20 @@ export function HomePage() {
                     </div>
                     <div className="flex flex-1 flex-col justify-between gap-3 p-3.5 sm:gap-4 sm:p-5">
                       <div>
-                        <Link
-                          className="line-clamp-2 min-h-[2.5em] font-display text-base font-extrabold leading-tight text-brand-navy transition-colors duration-300 hover:text-brand-blue focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy sm:text-xl"
-                          to={
-                            catalogFlavor
-                              ? `/flavor/${catalogFlavor.id}`
-                              : `/menu?${new URLSearchParams({ category: flavor.category, item: flavor.item })}`
-                          }
-                        >
-                          {t(flavor.title)}
-                        </Link>
+                        <h3 className="font-display text-base font-extrabold leading-tight text-brand-navy sm:text-xl">
+                          <Link
+                            className="line-clamp-2 block min-h-[2.5em] transition-colors duration-300 hover:text-brand-blue"
+                            tabIndex={-1}
+                            to={detailsLink}
+                          >
+                            {t(flavor.title)}
+                          </Link>
+                        </h3>
                         <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#65748a] sm:text-sm">
                           {t(flavor.detail || "")}
                         </p>
                       </div>
-                      <div className="flex flex-col items-stretch gap-2.5 sm:gap-3">
+                      <div className="relative z-10 flex flex-col items-stretch gap-2.5 sm:gap-3">
                         <span
                           className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 sm:text-base ${
                             added
@@ -1779,33 +1792,53 @@ export function HomePage() {
                 );
               })}
             </ul>
-            {selectedFlavorMood === "all" &&
-              !flavorSearch.trim() &&
-              allFlavorCards.length > 4 && (
-                <div className="mt-6 flex flex-col items-center gap-3">
-                  <p className="text-center text-sm leading-5 text-[#65748a]">
-                    {t("Search or choose a craving to see more flavors.")}
-                  </p>
-                  <button
-                    aria-controls="home-flavor-results"
-                    aria-expanded={showAllFlavorResults}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-brand-navy bg-white px-5 py-2.5 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
-                    onClick={() =>
-                      setShowAllFlavorResults((current) => !current)
+            {visibleFlavors.length > 0 && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  aria-controls="home-flavor-results"
+                  aria-expanded={matchingFlavors.length > visibleFlavors.length}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-brand-navy bg-white px-5 py-2.5 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
+                  onClick={() => {
+                    const allShown =
+                      visibleFlavors.length >= matchingFlavors.length;
+                    if (allShown) {
+                      setVisibleFlavorCount(FLAVOR_PAGE_SIZE);
+                      document
+                        .getElementById("flavors")
+                        ?.scrollIntoView({ block: "start", behavior: "smooth" });
+                    } else {
+                      setVisibleFlavorCount(
+                        (current) => current + FLAVOR_PAGE_SIZE,
+                      );
                     }
-                    type="button"
+                  }}
+                  type="button"
+                >
+                  {matchingFlavors.length > visibleFlavors.length
+                    ? t("Show more")
+                    : t("Show less")}
+                  <svg
+                    aria-hidden="true"
+                    className="size-4 transition-transform"
+                    fill="none"
+                    viewBox="0 0 24 24"
                   >
-                    {t(
-                      showAllFlavorResults
-                        ? "Show fewer flavors"
-                        : "Show all {count} flavors",
-                      {
-                        count: allFlavorCards.length,
-                      },
-                    )}
-                  </button>
-                </div>
-              )}
+                    <path
+                      className={
+                        matchingFlavors.length > visibleFlavors.length
+                          ? ""
+                          : "rotate-180"
+                      }
+                      d="M6 9l6 6 6-6"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </section>
 
@@ -1868,7 +1901,7 @@ export function HomePage() {
                       key={id}
                       onClick={() => {
                         setSelectedCakeType(id);
-                        if (id !== "all") setShowAllCakeResults(false);
+                        setCakeVisibleCount(4);
                       }}
                       type="button"
                     >
@@ -1895,7 +1928,10 @@ export function HomePage() {
                   </svg>
                   <input
                     className="min-h-11 w-full rounded-lg border border-[#dce3eb] bg-white py-2.5 pl-12 pr-4 text-sm font-semibold text-brand-navy outline-none transition placeholder:font-medium placeholder:text-[#65748a] hover:border-[#9eafc2] hover:shadow-[0_10px_28px_rgba(9,42,83,0.12)] focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/15"
-                    onChange={(event) => setCakeSearch(event.target.value)}
+                    onChange={(event) => {
+                      setCakeSearch(event.target.value);
+                      setCakeVisibleCount(4);
+                    }}
                     placeholder={t("Search cakes\u2026")}
                     type="search"
                     value={cakeSearch}
@@ -1936,6 +1972,15 @@ export function HomePage() {
                       key={cake.name}
                       style={{ "--card-accent": accent }}
                     >
+                      {/* The whole cake card opens the cake's menu details. The Add to
+                          cart controls are layered above this link so they still work. */}
+                      <Link
+                        aria-label={t("View {name} details", {
+                          name: t(cake.name),
+                        })}
+                        className="absolute inset-0 z-10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-navy"
+                        to={`/menu?${new URLSearchParams({ category: "Cakes & Pies", item: cake.name })}`}
+                      />
                       {/* Shine sweep on hover */}
                       <span
                         aria-hidden="true"
@@ -1976,17 +2021,20 @@ export function HomePage() {
                       </div>
                       <div className="flex flex-1 flex-col justify-between gap-3 p-3.5 sm:gap-4 sm:p-5">
                         <div>
-                          <Link
-                            className="line-clamp-2 min-h-[2.5em] font-display text-base font-extrabold leading-tight text-brand-navy transition-colors duration-300 hover:text-brand-blue focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy sm:text-xl"
-                            to={`/menu?${new URLSearchParams({ category: "Cakes & Pies", item: cake.name })}`}
-                          >
-                            {t(cake.name)}
-                          </Link>
+                          <h3 className="font-display text-base font-extrabold leading-tight text-brand-navy sm:text-xl">
+                            <Link
+                              className="line-clamp-2 block min-h-[2.5em] transition-colors duration-300 hover:text-brand-blue"
+                              tabIndex={-1}
+                              to={`/menu?${new URLSearchParams({ category: "Cakes & Pies", item: cake.name })}`}
+                            >
+                              {t(cake.name)}
+                            </Link>
+                          </h3>
                           <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#65748a] sm:text-sm">
                             {t(cake.detail)}
                           </p>
                         </div>
-                        <div className="mt-auto flex flex-col items-stretch gap-2.5 sm:gap-3">
+                        <div className="relative z-10 mt-auto flex flex-col items-stretch gap-2.5 sm:gap-3">
                           <span
                             className={`whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 sm:text-base ${
                               added
@@ -2030,25 +2078,49 @@ export function HomePage() {
                 })}
               </ul>
             )}
-            {selectedCakeType === "all" &&
-              !cakeQuery &&
-              cakeMenuCategory.items.length > 4 && (
+            {cakeMenuCategory.items.length > 0 &&
+              !cakeQuery && (
                 <div className="mt-6 flex justify-center">
                   <button
                     aria-controls="home-cake-results"
-                    aria-expanded={showAllCakeResults}
+                    aria-expanded={cakeVisibleCount < cakeMenuCategory.items.length}
                     className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-brand-navy bg-white px-5 py-2.5 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
-                    onClick={() => setShowAllCakeResults((current) => !current)}
+                    onClick={() => {
+                      const allShown =
+                        cakeVisibleCount >= cakeMenuCategory.items.length;
+                      if (allShown) {
+                        setCakeVisibleCount(4);
+                        document
+                          .getElementById("cakes")
+                          ?.scrollIntoView({ block: "start", behavior: "smooth" });
+                      } else {
+                        setCakeVisibleCount((current) => current + 4);
+                      }
+                    }}
                     type="button"
                   >
-                    {t(
-                      showAllCakeResults
-                        ? "Show fewer cakes"
-                        : "Show all {count} cakes",
-                      {
-                        count: cakeMenuCategory.items.length,
-                      },
-                    )}
+                    {cakeVisibleCount < cakeMenuCategory.items.length
+                      ? t("Show more")
+                      : t("Show less")}
+                    <svg
+                      aria-hidden="true"
+                      className="size-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        className={
+                          cakeVisibleCount < cakeMenuCategory.items.length
+                            ? ""
+                            : "rotate-180"
+                        }
+                        d="M6 9l6 6 6-6"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                      />
+                    </svg>
                   </button>
                 </div>
               )}
