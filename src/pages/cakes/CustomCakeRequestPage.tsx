@@ -6,6 +6,7 @@ import { useAuth } from '../../context/useAuth'
 import { ArrowIcon, Footer, Header } from '../../components/Layout'
 import { PaymentStatusDialog, type PaymentStatus } from '../../components/PaymentStatusDialog'
 import { useLanguage } from '../../language/useLanguage'
+import { ConsentCheckbox } from '../../components/ConsentCheckbox'
 import { getCameroonDate } from '../../../shared/cameroonDate'
 import { toInt } from '../../../shared/numbers.ts'
 
@@ -73,6 +74,7 @@ export function CustomCakeRequestPage() {
   const [payError, setPayError] = useState('')
   const [paymentDialog, setPaymentDialog] = useState<PaymentDialogState | null>(null)
   const [paymentCheckAttempt, setPaymentCheckAttempt] = useState(0)
+  const [cakeConsented, setCakeConsented] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -558,11 +560,13 @@ export function CustomCakeRequestPage() {
                 </p>
               )}
 
+              <ConsentCheckbox checked={cakeConsented} onToggle={setCakeConsented} />
+
               <div className="mt-10 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm leading-6 text-[#65748a]">{t('We’ll be in touch to confirm your request.')}</p>
                 <button
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-brand-navy px-8 py-3 text-sm font-extrabold text-white transition-colors hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={isSubmitting || !stores.length || Boolean(storeError)}
+                  disabled={!cakeConsented || isSubmitting || !stores.length || Boolean(storeError)}
                   type="submit"
                 >
                   {isSubmitting ? t('Sending…') : t('Send cake request')}

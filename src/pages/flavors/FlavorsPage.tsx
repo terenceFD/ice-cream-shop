@@ -284,10 +284,13 @@ export function FlavorsPage() {
                       <input
                         className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-brand-navy outline-none! placeholder:font-medium placeholder:text-[#a5aebb]"
                         inputMode="numeric"
-                        min="0"
-                        onChange={(event) => setMaxPrice(event.target.value)}
+                        min="1"
+                        onChange={(event) => {
+                          const digits = event.target.value.replace(/[^0-9]/g, "");
+                          setMaxPrice(digits);
+                        }}
                         placeholder={t("Any")}
-                        step="500"
+                        step="1"
                         type="number"
                         value={maxPrice}
                       />

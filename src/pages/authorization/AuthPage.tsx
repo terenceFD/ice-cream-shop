@@ -5,6 +5,7 @@ import { PasswordField } from '../../components/PasswordField'
 import { useAuth } from '../../context/useAuth'
 import { photoSrcSet } from '../../lib/thumbnails'
 import { useLanguage } from '../../language/useLanguage'
+import { ConsentCheckbox } from '../../components/ConsentCheckbox'
 import { isEventType } from '../../../shared/eventTypes.js'
 
 export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
@@ -48,6 +49,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const verificationInputs = useRef<(HTMLInputElement | null)[]>([])
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [authConsented, setAuthConsented] = useState(false)
 
   useEffect(() => {
     if (!verificationId || !resendAvailableAt) return undefined
@@ -495,9 +497,13 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                   </p>
                 )}
 
+                {isSignup && !verificationId && (
+                  <ConsentCheckbox checked={authConsented} onToggle={setAuthConsented} />
+                )}
+
                 <button
                   className="inline-flex min-h-12 w-full items-center justify-center gap-2 bg-brand-yellow px-6 text-sm font-extrabold text-brand-navy transition duration-300 hover:bg-brand-navy hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 active:scale-[0.99] disabled:cursor-wait disabled:opacity-70 motion-reduce:transform-none"
-                  disabled={isSubmitting || Boolean(isSignup && verificationId && verificationCode.some((digit) => !digit))}
+                  disabled={(isSignup && !verificationId && !authConsented) || isSubmitting || Boolean(isSignup && verificationId && verificationCode.some((digit) => !digit))}
                   type="submit"
                 >
                   {isSubmitting && (

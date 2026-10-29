@@ -1,0 +1,26 @@
+Fonts used by this website
+==========================
+
+Both typefaces are served locally from this folder as WOFF2 files.
+
+1. Fredoka (fredoka-latin.woff2)
+   - Designer: Graphi (released via Google Fonts)
+   - Licence: SIL Open Font License 1.1 (OFL-1.1)
+   - Source: https://fonts.google.com/specimen/Fredoka
+
+2. DM Sans (dm-sans-latin.woff2, and any additional weight files in this folder)
+   - Designer: Colophon Foundry (released via Google Fonts)
+   - Licence: SIL Open Font License 1.1 (OFL-1.1)
+   - Source: https://fonts.google.com/specimen/DM+Sans
+
+The SIL Open Font License permits use, redistribution and embedding in any
+project, commercial or personal, provided the licence text travels with the
+font. The full licence text is available at:
+https://openfontlicense.org
+
+Photos
+------
+Photographs of our branches in public/images/locations are third-party
+photographs licensed under Creative Commons Attribution-ShareAlike; the exact
+source, author, licence version and date for each photo are recorded in
+public/images/locations/credits.json.

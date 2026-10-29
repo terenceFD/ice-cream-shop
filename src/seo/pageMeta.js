@@ -52,11 +52,31 @@ export const PUBLIC_PAGES = {
   '/locations': {
     title: 'Cold Stone locations in Cameroon',
     description:
-      'Publicly listed Cold Stone Creamery locations in Douala and Yaoundé, with addresses, landmarks, phone numbers and map links.',
+      'Cold Stone Creamery locations in Douala and Yaoundé, with addresses, landmarks, phone numbers and map links.',
   },
   '/contact': {
     title: 'Contact a store',
     description: 'Have a question for a store? Choose its branch and send a message directly to that store’s team.',
+  },
+  '/privacy': {
+    title: 'Privacy policy',
+    description:
+      'What personal information we collect when you order or contact us, why we collect it, and how we protect it.',
+  },
+  '/terms': {
+    title: 'Terms & conditions',
+    description:
+      'The terms that cover ordering, pickup, delivery and use of this website.',
+  },
+  '/refunds': {
+    title: 'Refund policy',
+    description:
+      'When and how we refund or replace orders, including custom cakes and event orders.',
+  },
+  '/cookies': {
+    title: 'Cookie policy',
+    description:
+      'This website does not use advertising or tracking cookies. What we store on your device and why.',
   },
 }
 

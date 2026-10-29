@@ -1040,25 +1040,27 @@ body:has(.whatsapp-fab) footer {
   padding-bottom: calc(var(--whatsapp-fab-space) + env(safe-area-inset-bottom, 0px));
 }
 
-body:has(.whatsapp-fab) #home > .relative {
-  padding-bottom: calc(var(--whatsapp-fab-space) + env(safe-area-inset-bottom, 0px));
-}
+/*
+ * The hero no longer reserves WhatsApp-button space: the FAB floats over the
+ * page edge and the trust strip is the last element before it, so a large
+ * reservation only created a dead band under the badge cards. On phones the
+ * badge grid is single-column, and the button sits bottom-right below 640px
+ * (see the media query further down), so nothing overlaps.
+ */
 
 /*
- * The badge grid is the last row of the hero copy. It needs enough bottom
- * clearance that the floating WhatsApp button cannot sit on top of it.
+ * The badge grid is the last row of the hero copy. No WhatsApp-button reserve:
+ * on phones the button is moved to the bottom-right (see the 640px query below)
+ * so the single-column badges on the left never collide with it, and on larger
+ * screens the strip sits flush at the bottom edge of the 90vh hero.
  */
 .home-hero-badges {
-  margin-bottom: calc(var(--whatsapp-fab-space) + env(safe-area-inset-bottom, 0px));
+  margin-bottom: 0.5rem;
 }
 
 @media (max-width: 640px) {
-  body:has(.whatsapp-fab) #home > .relative {
-    padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
-  }
-
   .home-hero-badges {
-    margin-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+    margin-bottom: 0.25rem;
   }
 }
 
@@ -1068,15 +1070,16 @@ body:has(.whatsapp-fab) #home > .relative {
    * Moving the button to the bottom-right keeps it clear of them (the badge grid
    * has a single column there), and it stays out of the way of headings.
    */
+  /* Phones: the button stays bottom-LEFT (it sits clear of the hero copy, which
+     occupies the right side of small screens); larger phones match the desktop
+     spacing. The tooltip flips to open leftward so it stays on-screen. */
   .whatsapp-fab {
     bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-    left: auto;
-    right: 1rem;
   }
 
   .whatsapp-fab > span:first-child {
-    left: auto;
-    right: calc(100% + 0.75rem);
+    left: calc(100% + 0.75rem);
+    right: auto;
   }
 
   .whatsapp-fab > span:last-child {
@@ -1097,6 +1100,51 @@ body:has(.whatsapp-fab) #home > .relative {
   .whatsapp-fab > span:last-child,
   .whatsapp-fab svg {
     transition: none;
+  }
+}
+
+/*
+ * Menu highlights cards (home page). On phones the image becomes a compact
+ * thumbnail beside the text; from sm up the image is full-width with the text
+ * below, as before. The phone layout must win over any leftover utilities, so
+ * the block display carries !important at the tablet+ range.
+ */
+.menu-highlight-link {
+  display: block !important;
+  align-items: normal !important;
+  gap: normal !important;
+}
+
+.menu-highlight-media {
+  aspect-ratio: 4 / 3;
+}
+
+.menu-highlight-copy {
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 639.98px) {
+  .menu-highlight-link {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1.25rem !important;
+  }
+
+  .menu-highlight-media {
+    width: 8rem;
+    flex-shrink: 0;
+    aspect-ratio: auto;
+    height: auto;
+  }
+
+  .menu-highlight-media img {
+    height: 100%;
+  }
+
+  .menu-highlight-copy {
+    margin-top: 0;
+    flex: 1;
+    min-width: 0;
   }
 }
 

@@ -1210,11 +1210,11 @@ export function HomePage() {
       <main id="main" tabIndex={-1}>
         <section
           id="home"
-          className="relative isolate w-full overflow-clip bg-[var(--brand-navy)] text-white"
+          className="relative isolate flex w-full flex-col overflow-clip bg-[var(--brand-navy)] text-white sm:min-h-[90vh]"
         >
           <HeroBackground animated quietOnMobile variant="navy" theme="ice-cream" />
-          <div className="mx-auto w-full max-w-[1400px] px-5 pb-2 pt-3 sm:px-8 sm:pb-6 sm:pt-6 lg:px-12 lg:pb-8 lg:pt-8">
-            <div className="grid items-center gap-4 lg:grid-cols-12 lg:gap-10">
+          <div className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col px-5 pb-2 pt-3 sm:px-8 sm:pb-6 sm:pt-6 lg:px-12 lg:pb-8 lg:pt-8">
+            <div className="grid h-full items-center gap-4 lg:grid-cols-12 lg:gap-10">
               {/* Copy */}
               <div className="relative z-10 lg:col-span-6">
                 <div className="home-hero-copy" key={activeSlide}>
@@ -1409,13 +1409,16 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* Trust strip */}
-          <div aria-label={t("Why people love us")} className="relative">
+          {/* Trust strip — hidden on phones, shown sm and up, pinned to the bottom of the hero. */}
+          <div
+            aria-label={t("Why people love us")}
+            className="relative mt-auto hidden shrink-0 sm:block"
+          >
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
             />
-            <div className="mx-auto max-w-[1320px] px-5 pb-5 pt-4 sm:px-8 sm:pb-8 lg:px-12">
+            <div className="mx-auto max-w-[1320px] px-5 pb-16 pt-4 max-sm:pb-10 sm:px-8 sm:pb-20 lg:px-12 lg:pb-24">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="font-display text-xl font-extrabold text-white sm:text-2xl">
                   {t("Why people love us")}
@@ -1431,7 +1434,7 @@ export function HomePage() {
                   {t("Pickup or delivery in Douala and Yaoundé.")}
                 </Link>
               </div>
-              <div className="home-hero-badges mt-3 grid grid-cols-2 gap-2.5 sm:mt-4 sm:gap-3 lg:grid-cols-4">
+              <div className="home-hero-badges mt-3 grid grid-cols-1 gap-2.5 sm:mt-4 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
                 {[
                   {
                     value: t("5 shops"),
@@ -1499,11 +1502,21 @@ export function HomePage() {
               </div>
             </div>
           </div>
+          {/* Same curved bottom edge as the flavors/menu page hero (PageHero). */}
+          <svg
+            aria-hidden="true"
+            className="absolute inset-x-0 -bottom-px z-10 h-10 w-full text-[#fbfaf5] sm:h-14 lg:h-20"
+            fill="currentColor"
+            preserveAspectRatio="none"
+            viewBox="0 0 1440 80"
+          >
+            <path d="M0 80V42C240 4 480 0 720 22s480 44 720 4v54H0Z" />
+          </svg>
         </section>
 
         <section
           aria-labelledby="flavor-inspiration-heading"
-          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-12 lg:px-10 lg:py-14"
           id="flavors"
         >
           <div className="mx-auto max-w-[1320px]">
@@ -2148,7 +2161,7 @@ export function HomePage() {
 
         <section
           aria-labelledby="popular-flavors-heading"
-          className="scroll-mt-20 bg-[#f4f6f8] px-5 pb-20 pt-12 sm:px-8 sm:pb-24 sm:pt-14 lg:px-10 lg:pb-28 lg:pt-16"
+          className="scroll-mt-20 bg-[#f4f6f8] px-5 pb-20 pt-12 sm:px-8 sm:pb-16 sm:pt-14 lg:px-10 lg:pb-18 lg:pt-16"
           id="favorites"
           ref={popularSection}
         >
@@ -2469,7 +2482,7 @@ export function HomePage() {
 
         <section
           aria-labelledby="home-menu-heading"
-          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-12 lg:px-10 lg:py-14"
           id="menu"
         >
           <div className="mx-auto max-w-5xl">
@@ -2485,7 +2498,7 @@ export function HomePage() {
               </p>
             </div>
 
-            <ul className="mt-10 grid gap-10 sm:grid-cols-2 sm:gap-8 lg:gap-10">
+            <ul className="mt-10 grid gap-12 sm:mt-10 sm:grid-cols-2 sm:gap-8 lg:gap-10">
               {[
                 {
                   title: "The full menu",
@@ -2507,8 +2520,8 @@ export function HomePage() {
                 },
               ].map((item, itemIndex) => (
                 <li key={item.to}>
-                  <Link className="group block" to={item.to}>
-                    <span className="relative block aspect-[4/3] overflow-hidden rounded-[20px] bg-[#fbfaf5]">
+                  <Link className="menu-highlight-link group" to={item.to}>
+                    <span className="menu-highlight-media relative block aspect-[4/3] overflow-hidden rounded-[20px] bg-[#fbfaf5]">
                       <img
                         alt=""
                         className="size-full object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03] group-focus-visible:scale-[1.03] motion-reduce:transition-none"
@@ -2521,7 +2534,7 @@ export function HomePage() {
                         srcSet={photoSrcSet(item.image)}
                       />
                     </span>
-                    <span className="mt-5 block">
+                    <span className="menu-highlight-copy mt-5 block">
                       <h3 className="font-display text-2xl font-extrabold leading-tight tracking-tight text-brand-navy sm:text-3xl">
                         {t(item.title)}
                       </h3>

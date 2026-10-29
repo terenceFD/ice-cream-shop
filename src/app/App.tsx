@@ -35,6 +35,10 @@ const AdminCustomersPage = lazyPage(() => import("../pages/admin/AdminCustomersP
 const AboutPage = lazyPage(() => import("../pages/about/AboutPage"), "AboutPage");
 const ContactPage = lazyPage(() => import("../pages/contact/ContactPage"), "ContactPage");
 const LocationsPage = lazyPage(() => import("../pages/locations/LocationsPage"), "LocationsPage");
+const PrivacyPolicyPage = lazyPage(() => import("../pages/legal/PrivacyPolicyPage"), "PrivacyPolicyPage");
+const TermsPage = lazyPage(() => import("../pages/legal/TermsPage"), "TermsPage");
+const RefundPolicyPage = lazyPage(() => import("../pages/legal/RefundPolicyPage"), "RefundPolicyPage");
+const CookiePolicyPage = lazyPage(() => import("../pages/legal/CookiePolicyPage"), "CookiePolicyPage");
 const MenuPage = lazyPage(() => import("../pages/menu/MenuPage"), "MenuPage");
 const AllMenuPage = lazyPage(() => import("../pages/menu/AllMenuPage"), "AllMenuPage");
 const CustomerOrdersPage = lazyPage(() => import("../pages/account/CustomerOrdersPage"), "CustomerOrdersPage");
@@ -142,6 +146,10 @@ function App() {
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/locations" element={<LocationsPage />} />
                     <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                    <Route path="/terms" element={<TermsPage />} />
+                    <Route path="/refunds" element={<RefundPolicyPage />} />
+                    <Route path="/cookies" element={<CookiePolicyPage />} />
                     <Route path="/flavor/:id" element={<FlavorDetailPage />} />
                     <Route path="/cart" element={<CartPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />

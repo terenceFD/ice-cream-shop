@@ -6,6 +6,7 @@ import { Footer, Header } from "../../components/Layout";
 import { HeroBackground } from "../../components/HeroBackground";
 import { PaymentStatusDialog, type PaymentStatus } from "../../components/PaymentStatusDialog";
 import { useLanguage } from "../../language/useLanguage";
+import { ConsentCheckbox } from "../../components/ConsentCheckbox";
 import { numberFormatter } from "../../lib/cartPricing";
 import { toInt } from "../../../shared/numbers.ts";
 import { photoErrorHandler, thumbnail } from "../../lib/thumbnails";
@@ -222,6 +223,7 @@ export function EventOrdersPage() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [itemSearch, setItemSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [eventConsented, setEventConsented] = useState(false);
   const [formError, setFormError] = useState("");
   const [notice, setNotice] = useState("");
   const [paymentDialog, setPaymentDialog] = useState<{ status: PaymentStatus; message: string } | null>(null);
@@ -377,7 +379,9 @@ export function EventOrdersPage() {
   const treatGroups = groupCatalog(visibleCatalog);
 
   function setQuantity(itemId: string, value: number) {
-    setQuantities((current) => ({ ...current, [itemId]: Math.max(0, Math.min(1000, Math.round(value) || 0)) }));
+    // Whole, non-negative, capped: decimals round down, NaN/negatives become 0.
+    const safe = Number.isFinite(value) ? Math.max(0, Math.min(1000, Math.floor(value))) : 0;
+    setQuantities((current) => ({ ...current, [itemId]: safe }));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -588,7 +592,11 @@ export function EventOrdersPage() {
                       </label>
                       <label className={labelClass}>
                         {t("Number of guests")}
-                        <input className={fieldClass} max={2000} min={5} onChange={(event) => setGuestCount(event.target.value)} required type="number" value={guestCount} />
+                        <input className={fieldClass} max={2000} min={5} onChange={(event) => {
+                          const digits = event.target.value.replace(/[^0-9]/g, "");
+                          const parsed = digits ? Number.parseInt(digits, 10) : "";
+                          setGuestCount(Number.isNaN(parsed) ? "" : String(parsed));
+                        }} required type="number" value={guestCount} />
                       </label>
                     </div>
                   </section>
@@ -687,7 +695,12 @@ export function EventOrdersPage() {
                                         className={`w-12 rounded-lg px-1 py-1.5 text-center text-sm font-extrabold tabular-nums outline-none [appearance:textfield] focus:ring-2 focus:ring-brand-yellow [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${picked ? "bg-white/10 text-white" : "bg-white text-brand-navy ring-1 ring-[#e7e1d4]"}`}
                                         inputMode="numeric"
                                         min={0}
-                                        onChange={(event) => setQuantity(item.itemId, toInt(event.target.value, 0))}
+                                        onChange={(event) => {
+                                          // digits only → never NaN, never a symbol or decimal
+                                          const digits = event.target.value.replace(/[^0-9]/g, "");
+                                          const parsed = digits ? Number.parseInt(digits, 10) : 0;
+                                          setQuantity(item.itemId, Number.isNaN(parsed) ? 0 : parsed);
+                                        }}
                                         placeholder="0"
                                         type="number"
                                         value={quantity || ""}
@@ -747,7 +760,11 @@ export function EventOrdersPage() {
                     </dl>
                     <p className="mt-4 text-sm leading-6 text-white">{t("Nothing is charged now. The store confirms the final price first, then you pay the deposit to book your date.")}</p>
                     {formError && <p className="mt-4 rounded-xl bg-white/15 px-3 py-2.5 text-sm font-semibold text-white" role="alert">{formError}</p>}
-                    <button className="mt-5 w-full rounded-full bg-brand-yellow px-6 py-3.5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-wait disabled:opacity-60" disabled={submitting} type="submit">
+                    <ConsentCheckbox
+                      checked={eventConsented}
+                      onToggle={setEventConsented}
+                    />
+                    <button className="mt-5 w-full rounded-full bg-brand-yellow px-6 py-3.5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-wait disabled:opacity-60" disabled={!eventConsented || submitting} type="submit">
                       {submitting ? t("Sending…") : t("Request a quote")}
                     </button>
                   </div>

@@ -1146,16 +1146,6 @@ export function Header() {
                   </button>
                 ))}
               </div>
-              <Link
-                className="flex h-12 items-center justify-center gap-2 rounded-full bg-brand-yellow text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light"
-                onClick={() => setIsMobileMenuOpen(false)}
-                to="/flavors"
-              >
-                {t("Order now")}
-                <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                  <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-              </Link>
             </div>
           </nav>
         </div>
@@ -1531,18 +1521,34 @@ export function Footer() {
       </div>
 
       <div className="bg-brand-navy">
-        <div className="mx-auto flex max-w-[1320px] flex-col gap-3 px-5 py-5 text-sm text-white/60 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12 border-t border-white/10">
-          <p>© 2026 Cold Stone Creamery Cameroon. {t("All smiles reserved.")}</p>
-          <button
-            className="group inline-flex min-h-11 w-fit items-center gap-2 rounded-md px-2 -mx-2 font-bold text-white/75 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            type="button"
-          >
-            {t("Back to top")}
-            <svg aria-hidden="true" className="size-4 transition-transform group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24">
-              <path d="M12 19V5m-6 6 6-6 6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
-            </svg>
-          </button>
+        <div className="mx-auto max-w-[1320px] border-t border-white/10 px-5 pb-8 pt-5 text-sm text-white/60 sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-8 sm:py-7 lg:px-12">
+          <p className="shrink-0">© 2026 Cold Stone Creamery Cameroon. {t("All smiles reserved.")}</p>
+          <nav aria-label={t("Legal")} className="mt-4 grid max-w-full grid-flow-row justify-items-start gap-3 sm:mt-0 sm:grid-flow-col sm:justify-end sm:gap-6">
+              {[[
+                "Privacy policy",
+                "/privacy",
+              ],
+              [
+                "Terms & conditions",
+                "/terms",
+              ],
+              [
+                "Refund policy",
+                "/refunds",
+              ],
+              [
+                "Cookie policy",
+                "/cookies",
+              ]].map(([label, to]) => (
+                <Link
+                  className="rounded-md font-medium text-white/75 transition-colors hover:text-brand-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
+                  key={to}
+                  to={to}
+                >
+                  {t(label)}
+                </Link>
+              ))}
+            </nav>
         </div>
       </div>
     </footer>

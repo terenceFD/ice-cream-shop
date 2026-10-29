@@ -4,6 +4,7 @@ import { Footer, Header } from '../../components/Layout'
 import { HeroBackground } from '../../components/HeroBackground'
 import { apiRequest } from '../../api/api'
 import { useLanguage } from '../../language/useLanguage'
+import { ConsentCheckbox } from '../../components/ConsentCheckbox'
 import { toInt } from '../../../shared/numbers.ts'
 
 const inputClassName = 'mt-2 w-full min-h-12 rounded-lg border border-[#dce3eb] bg-white px-4 text-sm text-brand-navy outline-none! placeholder:text-[#65748a] focus:border-brand-navy'
@@ -242,6 +243,7 @@ export function ContactPage() {
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [consented, setConsented] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -415,11 +417,13 @@ export function ContactPage() {
 
                   {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
 
+                  <ConsentCheckbox checked={consented} onToggle={setConsented} />
+
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm leading-6 text-[#65748a]">{t('Please complete all required fields before sending.')}</p>
                     <button
                       className="inline-flex min-h-12 items-center justify-center rounded-lg bg-brand-navy px-6 text-sm font-bold text-white hover:bg-brand-blue disabled:cursor-wait disabled:opacity-60"
-                      disabled={isSubmitting || isLoadingStores || stores.length === 0}
+                      disabled={!consented || isSubmitting || isLoadingStores || stores.length === 0}
                       type="submit"
                     >
                       {isSubmitting ? t('Sending message…') : t('Send message')}

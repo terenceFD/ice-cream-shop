@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cold-stone-shell-v12'
+const CACHE_NAME = 'cold-stone-shell-v13'
 // A sleeping host can take half a minute to answer. Past this, show the saved page instead of a blank tab.
 const NAVIGATION_TIMEOUT_MS = 1500
 // Caches from before the site was renamed are removed on activation too.
@@ -62,7 +62,10 @@ self.addEventListener('fetch', (event) => {
 
   // Files under /assets/ get a new name whenever they change, and fonts never change, so a saved copy is always current.
   // Using it straight away avoids waiting on the network before every page load.
-  if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/fonts/')) {
+  // Dev-mode CSS is served WITHOUT a content hash (same /src/index.css URL on every
+  // change), so a cached copy would freeze styles across edits — skip caching those.
+  const isHashedAsset = /^\/assets\/[A-Za-z0-9_-]+-[A-Za-z0-9_-]{8,}\.(?:js|css)$/i.test(url.pathname)
+  if (isHashedAsset || url.pathname.startsWith('/fonts/')) {
     event.respondWith(
       caches.match(request).then((cached) => cached || fetch(request).then((response) => {
         if (response.ok) {
@@ -75,10 +78,11 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Unhashed js/css only reaches this branch outside hashed /assets (dev mode).
+  // Always revalidate those against the network first so style edits show up.
   if (/\.(?:js|css)$/i.test(url.pathname)) {
     event.respondWith(
       (async () => {
-        const cached = await caches.match(request)
         try {
           const response = await fetch(request)
           if (response.ok) {
@@ -86,9 +90,11 @@ self.addEventListener('fetch', (event) => {
             event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)))
             return response
           }
+          const cached = await caches.match(request)
           if (cached) return cached
           return response
         } catch (error) {
+          const cached = await caches.match(request)
           if (cached) return cached
           throw error
         }
