@@ -920,6 +920,13 @@ body {
   }
 }
 
+/* Drawer links are one full-width row each. Their "flex" comes from a class built in a
+   template string, which the Tailwind scan can miss, so anchor the layout here instead. */
+#mobile-navigation div.flex-1 > a {
+  display: flex;
+  width: 100%;
+}
+
 /* Admin stat cards (sections marked .admin-stats) on phones: one compact row that scrolls
    sideways, without the icon tiles, so each page's list starts on the first screen instead
    of below four tall cards. The icon tiles are Tailwind's size-9 and the gap above the
