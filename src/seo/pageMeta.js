@@ -85,6 +85,7 @@ const PRIVATE_PAGES = {
   '/cart': 'Your shopping bag',
   '/checkout': 'Checkout',
   '/payment': 'Payment',
+  '/track-order': 'Track your order',
   '/login': 'Log in',
   '/signup': 'Create an account',
   '/account/orders': 'My account',

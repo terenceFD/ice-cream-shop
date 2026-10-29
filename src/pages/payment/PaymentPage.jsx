@@ -112,7 +112,7 @@ export function PaymentPage() {
   const { cartItems, clearCart } = useCart();
   const { refreshFlavors } = useFlavors();
   const { t, language } = useLanguage();
-  const { customer, isLoading } = useAuth();
+  const { customer } = useAuth();
   const { currency, subtotal, freeScoops, discount, total } = getCartPricing(cartItems);
   const hasUnavailableItems = cartItems.some(
     (item) => item.availableQuantity < item.quantity,
@@ -214,18 +214,7 @@ export function PaymentPage() {
   if (!sessionId && !loyaltyOrderId && cartItems.length === 0 && !cancelled) {
     return <Navigate to="/cart" replace />;
   }
-  if (!sessionId && !loyaltyOrderId && !cancelled && !isLoading && !customer) {
-    return (
-      <Navigate
-        to="/signup"
-        state={{
-          from: "/checkout",
-          notice: t("Please sign in to continue placing your order."),
-        }}
-        replace
-      />
-    );
-  }
+  // Guests can pay too, so no sign-in is required here; the account links live on the checkout page.
   if (!sessionId && !loyaltyOrderId && !checkoutDetails && !cancelled) {
     return <Navigate to="/checkout" replace />;
   }
@@ -355,7 +344,14 @@ export function PaymentPage() {
                       {[
                         { title: t("Payment confirmed"), body: t("A receipt is on its way to your inbox."), done: true },
                         { title: t("Preparing"), body: t("The store starts on your treats.") },
-                        { title: t(isPickup ? "Ready" : "Out for delivery"), body: t("Follow every step live from your account, or get a notification at each step.") },
+                        {
+                          title: t(isPickup ? "Ready" : "Out for delivery"),
+                          body: t(
+                            customer
+                              ? "Follow every step live from your account, or get a notification at each step."
+                              : "We will email you at each step. Keep your order number to check the status any time.",
+                          ),
+                        },
                       ].map((step, index) => (
                         <li className="flex items-start gap-3" key={step.title}>
                           <span
@@ -378,10 +374,30 @@ export function PaymentPage() {
                     <PromotionAlertsSetting />
                   </div>
 
+                  {!customer && order?.id && (
+                    <div className="mt-6 rounded-2xl bg-[#fffbea] p-4 ring-1 ring-[#f0e2a0]">
+                      <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#8b7a1f]">
+                        {t("Your order number")}
+                      </p>
+                      <p className="mt-1 font-display text-2xl font-extrabold text-brand-navy">
+                        #{order.id}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[#6b5800]">
+                        {t(
+                          "Save this number and the email you used. You can check your order status here any time.",
+                        )}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                     <Link
                       className="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-yellow px-6 py-3.5 text-sm font-extrabold text-brand-navy shadow-[0_12px_26px_rgba(255,220,50,0.35)] transition hover:-translate-y-0.5 hover:bg-brand-gold-light"
-                      to="/account/orders?tab=orders"
+                      to={
+                        customer
+                          ? "/account/orders?tab=orders"
+                          : `/track-order?order=${encodeURIComponent(order?.id || "")}`
+                      }
                     >
                       {t("Track my order")} <Icon className="size-4" path={icons.arrow} />
                     </Link>

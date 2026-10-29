@@ -113,6 +113,8 @@ export function CheckoutPage() {
   const [latestScheduledDate] = useState(() => getCameroonDate(60));
   const [scheduledDate, setScheduledDate] = useState(() => getCameroonDate(1));
   const [redeemLoyalty, setRedeemLoyalty] = useState(false);
+  // Customers who choose "Continue as guest" order without an account; their details are entered below.
+  const [guestMode, setGuestMode] = useState(false);
   const [discountInput, setDiscountInput] = useState("");
   const [discountCode, setDiscountCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
@@ -195,7 +197,7 @@ export function CheckoutPage() {
   function handleSubmit(event) {
     event.preventDefault();
     if (isLoading) return;
-    if (!customer) {
+    if (!customer && !guestMode) {
       navigate("/signup", {
         state: {
           from: "/checkout",
@@ -207,6 +209,7 @@ export function CheckoutPage() {
 
     const checkoutDetails = {
       ...Object.fromEntries(new FormData(event.currentTarget)),
+      guest: !customer,
       storeId: selectedZone?.storeId,
       fulfillmentType,
       scheduledDate,
@@ -375,34 +378,80 @@ export function CheckoutPage() {
 
         <div className="mx-auto max-w-[1240px] px-5 py-8 sm:px-8 sm:py-12 lg:px-12">
           {!customer && !isLoading && (
-            <div className="mb-6 flex flex-col gap-4 rounded-[24px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 ring-[#efe0a0] sm:flex-row sm:items-center sm:p-6">
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fff6cc] text-brand-yellow-deep">
-                <Icon className="size-6" path={icons.user} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-extrabold text-brand-navy">
-                  {t("Please sign in to continue placing your order.")}
-                </p>
-                <p className="mt-0.5 text-xs leading-5 text-[#65748a]">
-                  {t("Your bag is saved — you will come right back here.")}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <Link
-                  className="rounded-full px-4 py-2.5 text-sm font-extrabold text-brand-navy ring-1 ring-[#dcd8cc] transition hover:ring-brand-navy"
-                  state={authState}
-                  to="/login"
+            <div
+              className={`mb-6 rounded-[24px] bg-white p-5 shadow-[0_10px_30px_rgba(18,44,80,0.05)] ring-1 sm:p-6 ${
+                guestMode ? "ring-[#d6e8c7]" : "ring-[#efe0a0]"
+              }`}
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <span
+                  className={`grid size-12 shrink-0 place-items-center rounded-2xl ${
+                    guestMode
+                      ? "bg-[#eef6e8] text-[#3f6b22]"
+                      : "bg-[#fff6cc] text-brand-yellow-deep"
+                  }`}
                 >
-                  {t("Log in")}
-                </Link>
-                <Link
-                  className="rounded-full bg-brand-navy px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-brand-blue"
-                  state={authState}
-                  to="/signup"
-                >
-                  {t("Sign up")}
-                </Link>
+                  <Icon className="size-6" path={icons.user} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-extrabold text-brand-navy">
+                    {guestMode
+                      ? t("You are checking out as a guest.")
+                      : t("Sign in, create an account, or continue as a guest.")}
+                  </p>
+                  <p className="mt-0.5 text-xs leading-5 text-[#65748a]">
+                    {guestMode
+                      ? t(
+                          "No account needed. Enter your details below and we will email your order updates.",
+                        )
+                      : t(
+                          "An account saves your details and earns loyalty points. As a guest, your bag stays saved either way.",
+                        )}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  {guestMode ? (
+                    <button
+                      className="rounded-full px-4 py-2.5 text-sm font-extrabold text-brand-navy underline-offset-4 ring-1 ring-[#dcd8cc] transition hover:underline hover:ring-brand-navy"
+                      onClick={() => setGuestMode(false)}
+                      type="button"
+                    >
+                      {t("Log in or sign up instead")}
+                    </button>
+                  ) : (
+                    <>
+                      <Link
+                        className="rounded-full px-4 py-2.5 text-sm font-extrabold text-brand-navy transition hover:underline hover:underline-offset-4"
+                        state={authState}
+                        to="/login"
+                      >
+                        {t("Log in")}
+                      </Link>
+                      <Link
+                        className="rounded-full bg-brand-navy px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-brand-blue"
+                        state={authState}
+                        to="/signup"
+                      >
+                        {t("Sign up")}
+                      </Link>
+                    </>
+                  )}
+                </div>
               </div>
+              {!guestMode && (
+                <div className="mt-4 flex flex-col gap-3 border-t border-[#f1eee4] pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs font-semibold leading-5 text-[#65748a]">
+                    {t("In a hurry? You can order without an account.")}
+                  </p>
+                  <button
+                    className="shrink-0 rounded-full bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light"
+                    onClick={() => setGuestMode(true)}
+                    type="button"
+                  >
+                    {t("Continue as guest")}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -788,6 +837,8 @@ export function CheckoutPage() {
                     t(
                       "Your contact and delivery details are saved to your account for future orders.",
                     )}
+                  {!customer &&
+                    ` ${t("You are ordering as a guest. You will receive order updates by email.")}`}
                 </span>
               </p>
             </form>

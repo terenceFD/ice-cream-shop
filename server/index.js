@@ -684,14 +684,26 @@ const contactReplyLimiter = rateLimit({
   legacyHeaders: false,
 })
 
-// Checkout requires sign-in, so it is limited per customer rather than per shared IP.
+// Signed-in checkouts are limited per customer; guest checkouts are limited per IP.
 const checkoutLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
-  keyGenerator: (request) => `customer:${request.customer.id}`,
+  keyGenerator: (request) => request.customer
+    ? `customer:${request.customer.id}`
+    : `guest:${ipKeyGenerator(request.ip)}`,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: { error: 'Too many checkout attempts. Wait a few minutes and try again.' },
+})
+
+// Guest order tracking needs no session, so attempts are capped per IP to stop order-number guessing.
+const guestTrackingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  keyGenerator: (request) => `track:${ipKeyGenerator(request.ip)}`,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many order lookups. Wait a few minutes and try again.' },
 })
 
 function readBearerToken(request) {
@@ -812,6 +824,38 @@ async function requireCustomer(request, response, next) {
     return
   }
   request.customer = customer
+  next()
+}
+
+// Lets a shopper check out without an account: a valid session still identifies the customer,
+// while a missing or unusable session simply continues as a guest.
+async function optionalCustomer(request, response, next) {
+  const token = readBearerToken(request)
+  if (!token) {
+    request.customer = null
+    next()
+    return
+  }
+  let payload
+  try {
+    payload = jwt.verify(token, jwtSecret, JWT_VERIFY_OPTIONS)
+  } catch {
+    request.customer = null
+    next()
+    return
+  }
+  if (payload.type !== 'customer') {
+    request.customer = null
+    next()
+    return
+  }
+  const customer = await database.prepare(`
+    SELECT id, name, email, profile_picture AS "profilePicture", phone,
+      delivery_city AS "deliveryCity", delivery_residence AS "deliveryResidence",
+      loyalty_points AS "loyaltyPoints", is_banned AS "isBanned"
+    FROM customers WHERE id = ?
+  `).get(payload.sub)
+  request.customer = customer && !customer.isBanned ? customer : null
   next()
 }
 
@@ -1116,7 +1160,7 @@ app.post('/api/discount-codes/validate', async (request, response) => {
   response.json({ code: code.code, discountCents })
 })
 
-app.post('/api/checkout/session', requireCustomer, checkoutLimiter, async (request, response) => {
+app.post('/api/checkout/session', optionalCustomer, checkoutLimiter, async (request, response) => {
   const stripe = getStripe()
   const paymentMethod = request.body.paymentMethod || 'card'
   if (!['card', 'campay'].includes(paymentMethod)) {
@@ -2107,6 +2151,40 @@ app.get('/api/customer/orders/:id', requireCustomer, async (request, response) =
   `).get(id, request.customer.id)
   if (!order || order.status !== 'processing') {
     response.status(404).json({ error: 'Paid loyalty order not found.' })
+    return
+  }
+  const items = await database.prepare(`
+    SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId",
+      flavor_name AS name, unit_price_cents AS "unitPriceCents", quantity,
+      line_total_cents AS "lineTotalCents"
+    FROM order_items WHERE order_id = ? ORDER BY id
+  `).all(id)
+  response.json({ order: { ...order, items } })
+})
+
+// Lets a guest look up an order placed without an account. The order number alone is not enough:
+// the email used at checkout must match it too. Signed-in owners can use this as well.
+app.post('/api/orders/track', guestTrackingLimiter, async (request, response) => {
+  const id = Number(request.body.orderId)
+  const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
+  if (!Number.isSafeInteger(id) || id < 1 || email.length < 3 || email.length > 254
+    || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    response.status(400).json({ error: 'Provide the order number and the email used at checkout.' })
+    return
+  }
+  const order = await database.prepare(`
+    SELECT id, customer_name AS "customerName", customer_email AS "customerEmail",
+      subtotal_cents AS "subtotalCents", discount_cents AS "discountCents",
+      total_cents AS "totalCents", currency, status, created_at AS "createdAt",
+      delivery_city AS "deliveryCity", store_name AS "storeName",
+      store_address AS "storeAddress", store_phone AS "storePhone",
+      delivery_residence AS "deliveryResidence",
+      delivery_stage AS "deliveryStage", fulfillment_type AS "fulfillmentType",
+      scheduled_for AS "scheduledFor", delivery_fee AS "deliveryFee"
+    FROM orders WHERE id = ? AND LOWER(customer_email) = ?
+  `).get(id, email)
+  if (!order) {
+    response.status(404).json({ error: 'No order matches that order number and email address.' })
     return
   }
   const items = await database.prepare(`
