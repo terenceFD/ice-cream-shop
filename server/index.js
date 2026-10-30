@@ -580,6 +580,25 @@ app.get('/api/payment/methods', (_request, response) => {
 // Many customers in Cameroon share one public IP through their mobile carrier, so per-IP limits
 // alone would lock out whole groups of real shoppers at busy times. Sign-in counts only failed
 // attempts per IP and email, which still stops password guessing against an account.
+//
+// That leaves credential stuffing: trying a different password against a different account every
+// time never trips a per-account limit, and was demonstrated against the live site (40 attempts
+// across 20 accounts, none throttled). The per-address cap below closes it: 30 failed sign-ins
+// per address per 15 minutes. That still stops a stuffing run early, while a family or small
+// cafe sharing one carrier address can fail sign-in a few times without being locked out.
+//
+// Deliberately no standardHeaders here: a second limiter setting the same draft-7 headers would
+// overwrite these, and the client should be told about the tighter account limit instead.
+const loginIpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  skipSuccessfulRequests: true,
+  keyGenerator: (request) => ipKeyGenerator(request.ip),
+  standardHeaders: false,
+  legacyHeaders: false,
+  message: { error: 'Too many failed sign-in attempts from this connection. Please wait a few minutes.' },
+})
+
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
@@ -1889,7 +1908,7 @@ app.post('/api/auth/register/verify', signupLimiter, signupCodeAttemptLimiter, a
   }
 })
 
-app.post('/api/auth/login', loginLimiter, async (request, response, next) => {
+app.post('/api/auth/login', loginIpLimiter, loginLimiter, async (request, response, next) => {
   try {
     const email = typeof request.body.email === 'string' ? request.body.email.trim() : ''
     const password = typeof request.body.password === 'string' ? request.body.password : ''
