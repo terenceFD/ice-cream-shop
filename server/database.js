@@ -899,6 +899,42 @@ export async function verifyDatabaseSchema() {
   await database.prepare(`
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_notification_sent_at TEXT
   `).run();
+  // Menu inventory: the restock note and the allergen list. Without these the public menu
+  // query selects columns that do not exist, and every menu read answers 500.
+  await database.prepare(`
+    ALTER TABLE menu_inventory ADD COLUMN IF NOT EXISTS restock_eta TEXT
+  `).run();
+  await database.prepare(`
+    ALTER TABLE menu_inventory ADD COLUMN IF NOT EXISTS low_stock_threshold INTEGER NOT NULL DEFAULT 5
+  `).run();
+  await database.prepare(`
+    ALTER TABLE menu_inventory ADD COLUMN IF NOT EXISTS allergens TEXT NOT NULL DEFAULT '[]'
+  `).run();
+  // Columns older than this month's work. A production database created before they existed
+  // was already failing every menu read without them, so they belong here too.
+  await database.prepare(`
+    ALTER TABLE menu_inventory ADD COLUMN IF NOT EXISTS dietary_tags TEXT NOT NULL DEFAULT '[]'
+  `).run();
+  await database.prepare(`
+    ALTER TABLE menu_inventory ADD COLUMN IF NOT EXISTS is_available SMALLINT NOT NULL DEFAULT 1
+  `).run();
+  // Referrals: a shareable code per customer, who introduced them, and whether the bonus paid.
+  await database.prepare(`
+    ALTER TABLE customers ADD COLUMN IF NOT EXISTS referral_code TEXT
+  `).run();
+  await database.prepare(`
+    ALTER TABLE customers ADD COLUMN IF NOT EXISTS referred_by INTEGER
+  `).run();
+  await database.prepare(`
+    ALTER TABLE customers ADD COLUMN IF NOT EXISTS referral_bonus_paid INTEGER NOT NULL DEFAULT 0
+  `).run();
+  // Signups: the guest order to claim, and the referral code a friend arrived with.
+  await database.prepare(`
+    ALTER TABLE pending_customer_signups ADD COLUMN IF NOT EXISTS claim_order_id INTEGER
+  `).run();
+  await database.prepare(`
+    ALTER TABLE pending_customer_signups ADD COLUMN IF NOT EXISTS referral_code TEXT
+  `).run();
   // Built-in menu products need a stock row before they can be ordered; products added to the
   // menu in shared/data.js get theirs here (existing rows and their stock are left untouched).
   for (const category of coldStoneMenuCategories) {
