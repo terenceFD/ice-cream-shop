@@ -118,6 +118,24 @@ body {
   outline-offset: 3px;
 }
 
+/*
+ * The header and drawer search fields carry no outline of their own.
+ *
+ * This rule is unlayered, so it outranks Tailwind's outline utilities no matter how they are
+ * marked. The white pill against the navy bar is the focus cue, and a gold ring around the text
+ * inside it looked like a rendering fault. Scoped to the search field so every other control keeps
+ * the visible keyboard focus ring it needs.
+ */
+input[role="combobox"]:focus,
+input[role="combobox"]:focus-visible,
+input[type="search"]:focus,
+input[type="search"]:focus-visible {
+  outline: none;
+  outline-width: 0;
+  outline-offset: 0;
+  box-shadow: none;
+}
+
 /* One gold light across a menu photo when the pointer arrives. */
 .menu-card-shine {
   pointer-events: none;

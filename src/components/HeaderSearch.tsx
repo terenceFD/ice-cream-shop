@@ -183,9 +183,12 @@ export function HeaderSearch({ onNavigate, variant = "overlay", onOpenChange }: 
     onOpenChange?.(open);
   }, [open, onOpenChange]);
 
+  // Focus the field only when the visitor opened the header's search themselves. In the mobile
+  // drawer the field is on screen as soon as the menu opens, and focusing it there threw up the
+  // keyboard and scrolled the navigation out of the way.
   useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
+    if (open && variant === "overlay") inputRef.current?.focus();
+  }, [open, variant]);
 
   useEffect(() => setActiveIndex(0), [query]);
 
@@ -245,7 +248,9 @@ export function HeaderSearch({ onNavigate, variant = "overlay", onOpenChange }: 
   const panel = (
     // The wrapper is the positioning context for the results panel.
     <div className="relative w-full">
-      <div className="flex w-full items-center gap-2.5 rounded-full bg-white py-1 pl-5 pr-1.5">
+      {/* No focus ring on the pill either: the field inside it is what takes focus, and a ring
+          there would read as an outline around the whole search box. */}
+      <div className="flex w-full items-center gap-2.5 rounded-full border-0 bg-white py-1 pl-5 pr-1.5 outline-none! ring-0! focus-within:ring-0!">
         <SearchIcon className="size-5 shrink-0 text-[#65748a]" />
         <input
           aria-autocomplete="list"
