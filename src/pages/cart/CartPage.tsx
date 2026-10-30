@@ -9,6 +9,9 @@ import { apiRequest } from '../../api/api'
 import { getMenuItemId } from '../../../shared/data'
 import { photoErrorHandler, photoSrcSet } from '../../lib/thumbnails'
 import { rankSimilar } from '../../lib/similarItems'
+import { DeliveryCoverage } from '../../components/DeliveryCoverage'
+import { useAuth } from '../../context/useAuth'
+import { loadCatalog, savedItemsToProducts, type SavedBag } from '../../lib/savedForLater'
 
 type MenuSuggestion = CartItem & {
   priceXaf: number
@@ -38,12 +41,20 @@ const icons = {
   truck: 'M3 7h11v9H3V7Zm11 3h4l3 3v3h-7v-6ZM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
   check: 'm5 12.5 4.5 4.5L19 7.5',
   info: 'M12 11v5m0-8.5v.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+  bookmark: 'M7 4h10v17l-5-4-5 4V4Z',
 }
 
 export function CartPage() {
-  const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
+  const { cartItems, addToCart, addItemsToCart, removeFromCart, updateQuantity, clearCart } = useCart()
+  const { customer } = useAuth()
   const { t, language } = useLanguage()
   const [confirmClear, setConfirmClear] = useState(false)
+  //"Save for later" lists, kept on the account so they follow the customer between devices.
+  const [savedBags, setSavedBags] = useState<SavedBag[]>([])
+  const [savingBag, setSavingBag] = useState(false)
+  const [savedNotice, setSavedNotice] = useState('')
+  const [savedError, setSavedError] = useState('')
+  const [busyBagId, setBusyBagId] = useState<number | null>(null)
   const [suggestions, setSuggestions] = useState<MenuCategory[]>([])
   const [suggestionsError, setSuggestionsError] = useState('')
   const [suggestionsLoading, setSuggestionsLoading] = useState(true)
@@ -60,6 +71,114 @@ export function CartPage() {
   const itemPath = (item: CartItem) => (item.itemType === 'menu' ? '/menu' : `/flavor/${item.id}`)
 
   const steps = [t('Shopping bag'), t('Checkout'), t('Payment')]
+
+  useEffect(() => {
+    if (!customer) {
+      setSavedBags([])
+      return undefined
+    }
+    let cancelled = false
+    apiRequest<{ savedCarts: SavedBag[] }>('/customer/saved-carts')
+      .then((result) => {
+        if (!cancelled) setSavedBags(Array.isArray(result?.savedCarts) ? result.savedCarts : [])
+      })
+      .catch(() => {
+        // Saved bags are a convenience; a failed read must not push an error onto the bag page.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [customer])
+
+  async function saveBagForLater() {
+    setSavedError('')
+    setSavedNotice('')
+    if (!customer) {
+      setSavedError(t('Sign in to keep this bag for later.'))
+      return
+    }
+    setSavingBag(true)
+    try {
+      const result = await apiRequest<{ savedCart: SavedBag }>('/customer/saved-carts', {
+        method: 'POST',
+        body: {
+          label: `Bag saved ${new Date().toLocaleDateString()}`,
+          items: cartItems.map((item) => ({
+            productId: item.itemType === 'menu' ? String(item.id) : `flavor:${item.id}`,
+            quantity: item.quantity,
+          })),
+        },
+      })
+      if (result?.savedCart) setSavedBags((current) => [result.savedCart, ...current])
+      clearCart()
+      setSavedNotice(t('Your bag was saved. Find it under “Saved for later” below.'))
+    } catch (error) {
+      setSavedError(error instanceof Error ? error.message : t('This bag could not be saved. Please try again.'))
+    } finally {
+      setSavingBag(false)
+    }
+  }
+
+  // One product parked for later. It stays a one-line saved bag, so the customer finds it
+  // in the same place as a whole saved bag and can put it back in one tap.
+  async function saveItemForLater(item: CartItem) {
+    setSavedError('')
+    setSavedNotice('')
+    try {
+      const result = await apiRequest<{ savedCart: SavedBag }>('/customer/saved-carts', {
+        method: 'POST',
+        body: {
+          label: item.name,
+          items: [{
+            productId: item.itemType === 'menu' ? String(item.id) : `flavor:${item.id}`,
+            quantity: item.quantity,
+          }],
+        },
+      })
+      if (result?.savedCart) setSavedBags((current) => [result.savedCart, ...current])
+      removeFromCart(item.id)
+      setSavedNotice(t('Moved “{name}” to saved items below.', { name: t(item.name) }))
+    } catch (error) {
+      setSavedError(error instanceof Error ? error.message : t('This item could not be saved. Please try again.'))
+    }
+  }
+
+  async function moveBagToCart(bag: SavedBag) {
+    setBusyBagId(bag.id)
+    setSavedError('')
+    setSavedNotice('')
+    try {
+      const products = await loadCatalog()
+      const requested = bag.items.reduce((sum, item) => sum + item.quantity, 0)
+      const added = addItemsToCart(savedItemsToProducts(bag.items, products))
+      if (added < 1) {
+        setSavedError(t('The products in this bag are currently unavailable.'))
+        return
+      }
+      setSavedNotice(
+        added === requested
+          ? t('Moved to your bag.')
+          : t('Added {added} of {requested} items. Some products are unavailable or limited by stock.', { added, requested }),
+      )
+    } catch (error) {
+      setSavedError(error instanceof Error ? error.message : t('This bag could not be moved. Please try again.'))
+    } finally {
+      setBusyBagId(null)
+    }
+  }
+
+  async function deleteSavedBag(bag: SavedBag) {
+    setBusyBagId(bag.id)
+    setSavedError('')
+    try {
+      await apiRequest(`/customer/saved-carts/${bag.id}`, { method: 'DELETE' })
+      setSavedBags((current) => current.filter((entry) => entry.id !== bag.id))
+    } catch (error) {
+      setSavedError(error instanceof Error ? error.message : t('This bag could not be removed. Please try again.'))
+    } finally {
+      setBusyBagId(null)
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -226,7 +345,57 @@ export function CartPage() {
                 {t('Buy 2 scoops, get the 3rd free')}
               </p>
             </section>
-          ) : (
+          ) : null}
+
+          {/* Saved items stay reachable with an empty bag, so nothing is lost. */}
+          {cartItems.length === 0 && savedBags.length > 0 && (
+            <section aria-labelledby="saved-for-later-heading" className="mx-auto mt-6 max-w-5xl overflow-hidden bg-white">
+              <div className="flex flex-wrap items-center justify-between gap-2 bg-[#f4f6f8] px-5 py-4 sm:px-7">
+                <h2 className="flex items-center gap-2 font-display text-lg font-extrabold text-brand-navy" id="saved-for-later-heading">
+                  <Icon className="size-4" path={icons.bookmark} />
+                  {t('Saved for later')}
+                </h2>
+                <span className="text-xs font-semibold text-[#65748a]">{t('Not in the bag, not counted in the total')}</span>
+              </div>
+              <ul className="divide-y divide-[#f4f6f8]">
+                {savedBags.map((bag) => {
+                  const count = bag.items.reduce((sum, entry) => sum + entry.quantity, 0)
+                  const busy = busyBagId === bag.id
+                  return (
+                    <li className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-7" key={bag.id}>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-extrabold text-brand-navy">{t(bag.label)}</p>
+                        <p className="mt-0.5 text-xs font-semibold text-[#65748a]">
+                          {t(count === 1 ? '{count} item' : '{count} items', { count })}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          className="inline-flex min-h-10 items-center rounded-full bg-brand-navy px-4 text-xs font-extrabold text-white transition hover:bg-brand-blue disabled:opacity-60"
+                          disabled={busy}
+                          onClick={() => moveBagToCart(bag)}
+                          type="button"
+                        >
+                          {busy ? t('Moving…') : t('Move to bag')}
+                        </button>
+                        <button
+                          aria-label={t('Delete {label}', { label: t(bag.label) })}
+                          className="grid size-10 place-items-center rounded-full text-[#9aa3af] transition hover:bg-red-50 hover:text-red-600"
+                          disabled={busy}
+                          onClick={() => deleteSavedBag(bag)}
+                          type="button"
+                        >
+                          <Icon className="size-4" path={icons.trash} />
+                        </button>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          )}
+
+          {cartItems.length > 0 && (
             <div className="grid min-w-0 items-start gap-7 lg:grid-cols-[minmax(0,1fr)_380px] xl:gap-10">
               <section aria-labelledby="cart-items-heading" className="min-w-0 space-y-5">
                 {scoopCount > 0 && (
@@ -294,14 +463,25 @@ export function CartPage() {
                         </button>
                       </span>
                     ) : (
-                      <button
-                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-[#65748a] transition hover:bg-red-50 hover:text-red-700"
-                        onClick={() => setConfirmClear(true)}
-                        type="button"
-                      >
-                        <Icon className="size-4" path={icons.trash} />
-                        {t('Clear bag')}
-                      </button>
+                      <span className="flex items-center gap-1">
+                        <button
+                          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-[#334e6e] transition hover:bg-white hover:text-brand-navy"
+                          disabled={savingBag}
+                          onClick={saveBagForLater}
+                          type="button"
+                        >
+                          <Icon className="size-4" path={icons.bookmark} />
+                          {savingBag ? t('Saving your bag…') : t('Save for later')}
+                        </button>
+                        <button
+                          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-[#65748a] transition hover:bg-red-50 hover:text-red-700"
+                          onClick={() => setConfirmClear(true)}
+                          type="button"
+                        >
+                          <Icon className="size-4" path={icons.trash} />
+                          {t('Clear bag')}
+                        </button>
+                      </span>
                     )}
                   </div>
 
@@ -338,15 +518,26 @@ export function CartPage() {
                                   <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#65748a] sm:text-sm">{t(item.detail)}</p>
                                 )}
                               </div>
-                              <button
-                                aria-label={t('Remove {name} from cart', { name: t(item.name) })}
-                                className="grid size-9 shrink-0 place-items-center rounded-full text-[#9aa3af] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
-                                onClick={() => removeFromCart(item.id)}
-                                title={t('Remove')}
-                                type="button"
-                              >
-                                <Icon className="size-[18px]" path={icons.trash} />
-                              </button>
+                              <div className="flex shrink-0 items-center gap-0.5">
+                                <button
+                                  aria-label={t('Save {name} for later', { name: t(item.name) })}
+                                  className="grid size-9 place-items-center rounded-full text-[#9aa3af] transition hover:bg-[#f4f6f8] hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy"
+                                  onClick={() => saveItemForLater(item)}
+                                  title={t('Save for later')}
+                                  type="button"
+                                >
+                                  <Icon className="size-[18px]" path={icons.bookmark} />
+                                </button>
+                                <button
+                                  aria-label={t('Remove {name} from cart', { name: t(item.name) })}
+                                  className="grid size-9 shrink-0 place-items-center rounded-full text-[#9aa3af] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                                  onClick={() => removeFromCart(item.id)}
+                                  title={t('Remove')}
+                                  type="button"
+                                >
+                                  <Icon className="size-[18px]" path={icons.trash} />
+                                </button>
+                              </div>
                             </div>
 
                             {isShort && (
@@ -417,6 +608,63 @@ export function CartPage() {
                   <Icon className="mt-0.5 size-4 shrink-0" path={icons.info} />
                   {t("Prices are in FCFA. Any delivery fee is shown at checkout before you pay.")}
                 </p>
+
+                {(savedNotice || savedError) && (
+                  <p
+                    className={`rounded-xl px-4 py-3 text-sm font-semibold ring-1 ${savedError ? 'bg-red-50 text-red-700 ring-red-100' : 'bg-[#eef6e8] text-[#315d22] ring-[#cfe3bf]'}`}
+                    role={savedError ? 'alert' : 'status'}
+                  >
+                    {savedError || savedNotice}
+                  </p>
+                )}
+
+                {savedBags.length > 0 && (
+                  <section aria-labelledby="saved-for-later-heading" className="overflow-hidden bg-white">
+                    <div className="flex flex-wrap items-center justify-between gap-2 bg-[#f4f6f8] px-5 py-4 sm:px-7">
+                      <h2 className="flex items-center gap-2 font-display text-lg font-extrabold text-brand-navy" id="saved-for-later-heading">
+                        <Icon className="size-4" path={icons.bookmark} />
+                        {t('Saved for later')}
+                        <span className="rounded-full bg-white px-2.5 py-0.5 font-sans text-xs font-extrabold text-[#65748a]">{savedBags.length}</span>
+                      </h2>
+                      <span className="text-xs font-semibold text-[#65748a]">{t('Not in the bag, not counted in the total')}</span>
+                    </div>
+                    <ul className="divide-y divide-[#f4f6f8]">
+                      {savedBags.map((bag) => {
+                        const count = bag.items.reduce((sum, entry) => sum + entry.quantity, 0)
+                        const busy = busyBagId === bag.id
+                        return (
+                          <li className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-7" key={bag.id}>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-extrabold text-brand-navy">{t(bag.label)}</p>
+                              <p className="mt-0.5 text-xs font-semibold text-[#65748a]">
+                                {t(count === 1 ? '{count} item' : '{count} items', { count })}
+                              </p>
+                            </div>
+                            <div className="flex shrink-0 gap-2">
+                              <button
+                                className="inline-flex min-h-10 items-center rounded-full bg-brand-navy px-4 text-xs font-extrabold text-white transition hover:bg-brand-blue disabled:opacity-60"
+                                disabled={busy}
+                                onClick={() => moveBagToCart(bag)}
+                                type="button"
+                              >
+                                {busy ? t('Moving…') : t('Move to bag')}
+                              </button>
+                              <button
+                                aria-label={t('Delete {label}', { label: t(bag.label) })}
+                                className="grid size-10 place-items-center rounded-full text-[#9aa3af] transition hover:bg-red-50 hover:text-red-600"
+                                disabled={busy}
+                                onClick={() => deleteSavedBag(bag)}
+                                type="button"
+                              >
+                                <Icon className="size-4" path={icons.trash} />
+                              </button>
+                            </div>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </section>
+                )}
               </section>
 
               <aside aria-labelledby="order-summary-heading" className="relative z-10 space-y-4 lg:sticky lg:top-[calc(var(--site-header-offset,0px)+2rem)] lg:transition-[top] lg:duration-300">
@@ -479,6 +727,8 @@ export function CartPage() {
                     )}
                   </div>
                 </div>
+
+                <DeliveryCoverage compact />
 
                 <ul className="grid gap-2.5 bg-white p-5 text-xs">
                   {[

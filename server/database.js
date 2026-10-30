@@ -212,7 +212,9 @@ if (configuredDatabaseBackend === "postgres") {
       stock INTEGER NOT NULL DEFAULT 100 CHECK (stock >= 0),
       reserved_stock INTEGER NOT NULL DEFAULT 0 CHECK (reserved_stock >= 0),
       is_available INTEGER NOT NULL DEFAULT 1 CHECK (is_available IN (0, 1)),
-      dietary_tags TEXT NOT NULL DEFAULT '[]'
+      dietary_tags TEXT NOT NULL DEFAULT '[]',
+      allergens TEXT NOT NULL DEFAULT '[]',
+      restock_eta TEXT
     );
 
     CREATE TABLE IF NOT EXISTS discount_codes (
@@ -343,6 +345,13 @@ if (configuredDatabaseBackend === "postgres") {
     "is_banned",
     "INTEGER NOT NULL DEFAULT 0 CHECK (is_banned IN (0, 1))",
   );
+  // A shareable code for this customer, and who introduced them.
+  addColumnIfMissing("customers", "referral_code", "TEXT");
+  addColumnIfMissing("customers", "referred_by", "INTEGER");
+  // Set once the welcome bonus for being referred has been paid, so it is paid once.
+  addColumnIfMissing("customers", "referral_bonus_paid", "INTEGER NOT NULL DEFAULT 0");
+  // The referral token the customer arrived with, kept on the order that triggers the reward.
+  addColumnIfMissing("orders", "referral_token", "TEXT");
   addColumnIfMissing(
     "orders",
     "customer_id",
@@ -400,11 +409,19 @@ if (configuredDatabaseBackend === "postgres") {
     "dietary_tags",
     "TEXT NOT NULL DEFAULT '[]'",
   );
+  // What could harm someone, as opposed to dietary_tags, which says what a product is for.
+  addColumnIfMissing("menu_inventory", "allergens", "TEXT NOT NULL DEFAULT '[]'");
   addColumnIfMissing(
     "menu_inventory",
     "low_stock_threshold",
     "INTEGER NOT NULL DEFAULT 5",
   );
+  // When a sold-out item is expected back, as a date (YYYY-MM-DD) or a short note such as
+  // "next week". Shown to shoppers on sold-out products instead of a bare "Sold out".
+  addColumnIfMissing("menu_inventory", "restock_eta", "TEXT");
+  // A guest order a new account asked to keep when it signed up, and the referral code used.
+  addColumnIfMissing("pending_customer_signups", "claim_order_id", "INTEGER");
+  addColumnIfMissing("pending_customer_signups", "referral_code", "TEXT");
   addColumnIfMissing(
     "discount_codes",
     "reserved_uses",
@@ -1163,6 +1180,25 @@ export async function migrateFlavorCatalog() {
       .run(new Date().toISOString(), FLAVOR_CATALOG_MIGRATION);
   });
   applyMigration();
+
+  // Flavors seeded before this fix said a vanilla scoop had "no common allergens". Correct it
+  // once, on databases that already exist; the catalog itself is authoritative afterwards.
+  const allergensFix = "cold-stone-flavor-allergens-v1";
+  database.prepare("INSERT OR IGNORE INTO app_migrations (name) VALUES (?)").run(allergensFix);
+  const applied = database.prepare("SELECT applied_at FROM app_migrations WHERE name = ?").get(allergensFix);
+  if (!applied?.applied_at) {
+    database.transaction(() => {
+      for (const flavor of coldStoneFlavors) {
+        const correct = JSON.stringify(flavor.allergies || []);
+        database.prepare(`
+          UPDATE flavors SET allergies = ?
+          WHERE LOWER(name) = LOWER(?) AND (allergies IS NULL OR allergies IN ('["None common"]', '[]'))
+        `).run(correct, flavor.name);
+      }
+      database.prepare("UPDATE app_migrations SET applied_at = ? WHERE name = ?")
+        .run(new Date().toISOString(), allergensFix);
+    })();
+  }
 }
 
 function toMenuItem(row) {
@@ -1181,6 +1217,7 @@ function toMenuItem(row) {
     reservedStock: row.reserved_stock ?? 0,
     isAvailable: row.is_available !== 0,
     dietaryTags: JSON.parse(row.dietary_tags || "[]"),
+    allergens: JSON.parse(row.allergens || "[]"),
     availableQuantity: Math.max(
       0,
       (row.stock ?? 100) - (row.reserved_stock ?? 0),
@@ -1196,7 +1233,7 @@ export async function listCustomMenuItems() {
     SELECT c.id, c.category_title, c.name, c.detail, c.image, c.price_xaf,
       COALESCE(i.stock, c.stock) AS stock,
       COALESCE(i.is_available, c.is_available) AS is_available,
-      i.reserved_stock, i.dietary_tags, i.low_stock_threshold AS "lowStockThreshold"
+      i.reserved_stock, i.dietary_tags, i.allergens, i.low_stock_threshold AS "lowStockThreshold"
     FROM custom_menu_items c
     LEFT JOIN menu_inventory i ON i.item_id = 'menu:custom:' || c.id
     ORDER BY c.id
@@ -1213,7 +1250,7 @@ export async function findCustomMenuItem(id) {
     SELECT c.id, c.category_title, c.name, c.detail, c.image, c.price_xaf,
       COALESCE(i.stock, c.stock) AS stock,
       COALESCE(i.is_available, c.is_available) AS is_available,
-      i.reserved_stock, i.dietary_tags, i.low_stock_threshold AS "lowStockThreshold"
+      i.reserved_stock, i.dietary_tags, i.allergens, i.low_stock_threshold AS "lowStockThreshold"
     FROM custom_menu_items c
     LEFT JOIN menu_inventory i ON i.item_id = 'menu:custom:' || c.id
     WHERE c.id = ?
@@ -1542,14 +1579,19 @@ export async function deleteMenuCategory(id) {
 
 export async function updateMenuInventory(
   itemId,
-  { stock, isAvailable, dietaryTags, lowStockThreshold },
+  { stock, isAvailable, dietaryTags, allergens, lowStockThreshold, restockEta },
 ) {
+  // undefined leaves the stored allergens alone; an array replaces them.
+  const allergenJson = allergens === undefined ? null : JSON.stringify(allergens);
+  // null clears the note, undefined leaves what is stored alone.
+  const eta = restockEta === undefined ? undefined : restockEta ? String(restockEta).slice(0, 120) : null;
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const result = await database
         .prepare(
           `
-        UPDATE menu_inventory SET stock = ?, is_available = ?, dietary_tags = ?, low_stock_threshold = ?
+        UPDATE menu_inventory SET stock = ?, is_available = ?, dietary_tags = ?, low_stock_threshold = ?,
+          restock_eta = COALESCE(?, restock_eta), allergens = COALESCE(?, allergens)
         WHERE item_id = ? AND reserved_stock <= ?
       `,
         )
@@ -1558,6 +1600,8 @@ export async function updateMenuInventory(
           isAvailable ? 1 : 0,
           JSON.stringify(dietaryTags || []),
           lowStockThreshold,
+          eta === undefined ? null : eta,
+          allergenJson,
           itemId,
           stock,
         );
@@ -1577,7 +1621,8 @@ export async function updateMenuInventory(
     const result = database
       .prepare(
         `
-      UPDATE menu_inventory SET stock = ?, is_available = ?, dietary_tags = ?, low_stock_threshold = ?
+      UPDATE menu_inventory SET stock = ?, is_available = ?, dietary_tags = ?, low_stock_threshold = ?,
+        restock_eta = COALESCE(?, restock_eta), allergens = COALESCE(?, allergens)
       WHERE item_id = ? AND reserved_stock <= ?
     `,
       )
@@ -1586,6 +1631,8 @@ export async function updateMenuInventory(
         isAvailable ? 1 : 0,
         JSON.stringify(dietaryTags || []),
         lowStockThreshold,
+        eta === undefined ? null : eta,
+        allergenJson,
         itemId,
         stock,
       );
@@ -1606,8 +1653,8 @@ export async function listMenuInventory() {
     .prepare(
       `
     SELECT item_id AS "itemId", stock, reserved_stock AS "reservedStock",
-      is_available AS "isAvailable", dietary_tags AS "dietaryTags",
-      low_stock_threshold AS "lowStockThreshold"
+      is_available AS "isAvailable", dietary_tags AS "dietaryTags", allergens AS "allergens",
+      low_stock_threshold AS "lowStockThreshold", restock_eta AS "restockEta"
     FROM menu_inventory
   `,
     )
@@ -1616,7 +1663,9 @@ export async function listMenuInventory() {
       ...entry,
       isAvailable: Boolean(entry.isAvailable),
       dietaryTags: JSON.parse(entry.dietaryTags),
+      allergens: JSON.parse(entry.allergens || '[]'),
       lowStockThreshold: entry.lowStockThreshold,
+      restockEta: entry.restockEta || null,
       availableQuantity: Math.max(0, entry.stock - entry.reservedStock),
     }));
 }
@@ -1856,6 +1905,17 @@ export async function finalizePaidCheckout(orderId, session, provider = "stripe"
             VALUES (?, ?, ?, 'earned')
           `).run(order.customerId, orderId, earnedPoints);
         }
+        // If this customer was invited by a friend, this is their first paid order.
+        const referrer = await database.prepare(
+          'SELECT referred_by AS "referredBy" FROM customers WHERE id = ?',
+        ).get(order.customerId);
+        if (referrer?.referredBy) {
+          await awardReferralPoints({
+            referrerId: referrer.referredBy,
+            friendId: order.customerId,
+            orderId,
+          }).catch((error) => console.error('Referral points were not awarded:', error.message));
+        }
       }
       await database.prepare(`
         UPDATE orders SET status = CASE WHEN status = 'pending_payment' THEN 'processing' ELSE status END
@@ -1931,6 +1991,16 @@ export async function finalizePaidCheckout(orderId, session, provider = "stripe"
           INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
           VALUES (?, ?, ?, 'earned')
         `).run(order.customerId, orderId, earnedPoints)
+      }
+      const friend = database.prepare(
+        'SELECT referred_by AS "referredBy" FROM customers WHERE id = ?',
+      ).get(order.customerId)
+      if (friend?.referredBy) {
+        try {
+          awardReferralPointsSync({ referrerId: friend.referredBy, friendId: order.customerId })
+        } catch (error) {
+          console.error('Referral points were not awarded:', error.message)
+        }
       }
     }
 
@@ -2522,19 +2592,107 @@ export async function updateCustomerProfile({ customerId, name, phone, deliveryC
   `).get(customerId)
 }
 
+// How many points a referrer earns when the friend they invited places a first order. One
+// point is 10 FCFA at checkout, so 50 points is 500 FCFA off.
+export const REFERRAL_POINTS = 50;
+
+function makeReferralCode(customerId) {
+  // Short, unambiguous (no O/0 or I/1), and derived from the id so it is stable.
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let number = customerId;
+  let code = '';
+  do {
+    code = alphabet[number % alphabet.length] + code;
+    number = Math.floor(number / alphabet.length);
+  } while (number > 0);
+  return `CS${code}`;
+}
+
+export async function ensureReferralCode(customerId) {
+  const existing = await database.prepare('SELECT referral_code AS "referralCode" FROM customers WHERE id = ?').get(customerId);
+  if (!existing) return null;
+  if (existing.referralCode) return existing.referralCode;
+  const code = makeReferralCode(customerId);
+  await database.prepare('UPDATE customers SET referral_code = ? WHERE id = ? AND referral_code IS NULL').run(code, customerId);
+  return code;
+}
+
+/** The customer who owns a referral code, or null. */
+export async function findCustomerByReferralCode(code) {
+  const normalized = String(code || '').trim().toUpperCase();
+  if (!normalized) return null;
+  return ((await database.prepare(
+    'SELECT id, name FROM customers WHERE UPPER(referral_code) = ?',
+  ).get(normalized)) || null);
+}
+
+/**
+ * Pay the referrer once, when their invited friend places a first paid order.
+ * Returns the points awarded (0 when nothing was due).
+ */
+export async function awardReferralPoints({ referrerId, friendId, orderId }) {
+  if (!referrerId || !friendId || Number(referrerId) === Number(friendId)) return 0;
+  const friend = await database.prepare(
+    'SELECT referred_by AS "referredBy", referral_bonus_paid AS "paid" FROM customers WHERE id = ?',
+  ).get(friendId);
+  if (!friend || Number(friend.referredBy) !== Number(referrerId) || friend.paid) return 0;
+  const claimed = await database.prepare(
+    'UPDATE customers SET referral_bonus_paid = 1 WHERE id = ? AND referral_bonus_paid = 0',
+  ).run(friendId);
+  if (!claimed.changes) return 0;
+  await database.prepare(
+    'UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?',
+  ).run(REFERRAL_POINTS, referrerId);
+  return REFERRAL_POINTS;
+}
+
+// The SQLite payment path is one synchronous transaction, so the same rule is applied inline.
+function awardReferralPointsSync({ referrerId, friendId }) {
+  if (!referrerId || Number(referrerId) === Number(friendId)) return 0;
+  const friend = database.prepare(
+    'SELECT referred_by AS "referredBy", referral_bonus_paid AS "paid" FROM customers WHERE id = ?',
+  ).get(friendId);
+  if (!friend || Number(friend.referredBy) !== Number(referrerId) || friend.paid) return 0;
+  const claimed = database.prepare(
+    'UPDATE customers SET referral_bonus_paid = 1 WHERE id = ? AND referral_bonus_paid = 0',
+  ).run(friendId);
+  if (!claimed.changes) return 0;
+  database.prepare(
+    'UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?',
+  ).run(REFERRAL_POINTS, referrerId);
+  database.prepare(`
+    INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
+    VALUES (?, NULL, ?, 'earned')
+  `).run(referrerId, REFERRAL_POINTS);
+  return REFERRAL_POINTS;
+}
+
 export async function saveCustomerCart({ customerId, orderId, label, items }) {
+  // A bag saved from the cart page has no order, so NULL never collides in the unique key.
+  const sourceOrderId = Number.isSafeInteger(orderId) ? orderId : null
   const result = await database.prepare(`
     INSERT OR IGNORE INTO customer_saved_carts (customer_id, source_order_id, label, items_json)
     VALUES (?, ?, ?, ?)
-  `).run(customerId, orderId, label, JSON.stringify(items))
+  `).run(customerId, sourceOrderId, label, JSON.stringify(items))
   if (result.changes === 0) {
     return null
   }
-  const savedCart = await database.prepare(`
-    SELECT id, source_order_id AS "sourceOrderId", label,
-      items_json AS "itemsJson", created_at AS "createdAt"
-    FROM customer_saved_carts WHERE customer_id = ? AND source_order_id = ?
-  `).get(customerId, orderId)
+  // Read back what was just written. Matching on the order catches the order case; a bag
+  // saved from the cart page is found by its label and contents.
+  const savedCart = sourceOrderId === null
+    ? await database.prepare(`
+        SELECT id, source_order_id AS "sourceOrderId", label,
+          items_json AS "itemsJson", created_at AS "createdAt"
+        FROM customer_saved_carts
+        WHERE customer_id = ? AND source_order_id IS NULL AND items_json = ?
+        ORDER BY id DESC
+      `).get(customerId, JSON.stringify(items))
+    : await database.prepare(`
+        SELECT id, source_order_id AS "sourceOrderId", label,
+          items_json AS "itemsJson", created_at AS "createdAt"
+        FROM customer_saved_carts WHERE customer_id = ? AND source_order_id = ?
+      `).get(customerId, sourceOrderId)
+  if (!savedCart) return null
   return {
     id: savedCart.id,
     sourceOrderId: savedCart.sourceOrderId,

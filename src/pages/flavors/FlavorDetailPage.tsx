@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Header, Footer, ArrowIcon } from "../../components/Layout";
 import { ProductImageSlider } from "../../components/ProductImageSlider";
 import { useCart } from "../../context/useCart";
@@ -14,6 +14,12 @@ import { useDocumentMeta } from "../../seo/useDocumentMeta";
 import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
 import { FLAVOR_PHOTO_SIZES } from "../../../shared/photoSizes.js";
 import { rankSimilar } from "../../lib/similarItems";
+import { RecentlyViewed } from "../../components/RecentlyViewed";
+import { recordRecentlyViewed } from "../../lib/recentlyViewed";
+import { stockSignal, stockSignalLabel } from "../../lib/stockSignal";
+import { RestockNotice } from "../../components/RestockNotice";
+import { AllergenInfo } from "../../components/AllergenInfo";
+import { ShareProduct } from "../../components/ShareProduct";
 import { toInt } from "../../../shared/numbers.ts";
 
 function BagIcon({ className = "size-4" }: { className?: string }) {
@@ -85,6 +91,20 @@ export function FlavorDetailPage() {
 
   useEffect(() => () => window.clearTimeout(addedTimer.current), []);
 
+  // Remember the flavor once it is known, so the row on other products can offer it back.
+  useEffect(() => {
+    if (!flavor) return;
+    recordRecentlyViewed({
+      key: `flavor:${flavor.id}`,
+      flavorId: flavor.id,
+      name: flavor.name,
+      image: flavor.image,
+      priceXaf: flavor.price,
+      detail: flavor.detail,
+      to: `/flavor/${flavor.id}`,
+    });
+  }, [flavor?.id]);
+
   const flashAdded = (key: string) => {
     setAddedKey(key);
     window.clearTimeout(addedTimer.current);
@@ -139,9 +159,9 @@ export function FlavorDetailPage() {
     );
   }
 
-  if (flavor.availableQuantity < 1) {
-    return <Navigate to="/flavors" replace />;
-  }
+  // Sold-out flavors stay on their own page. Bouncing the shopper to the list hid the reason
+  // they could not order it and gave them nowhere to go.
+  const soldOut = flavor.availableQuantity < 1;
 
   const maxQuantity = Math.max(1, Math.min(MAX_QUANTITY, flavor.availableQuantity));
   const lowStock = flavor.availableQuantity <= 5;
@@ -179,7 +199,10 @@ export function FlavorDetailPage() {
       <Header />
 
       <main id="main" tabIndex={-1}>
-        <section className="relative isolate overflow-hidden" style={{ backgroundColor: tint }}>
+        {/* No overflow clipping here: the header's search panel hangs below the header and is a
+            child of <main>, so "overflow-hidden" on this hero cut the results off. The hero's own
+            decorations are clipped by the inner wrappers instead. */}
+        <section className="relative isolate" style={{ backgroundColor: tint }}>
           <div className="mx-auto max-w-[1320px] px-5 pb-14 pt-7 sm:px-8 sm:pb-16 sm:pt-8 lg:px-12 lg:pb-20">
             <nav aria-label={t("Breadcrumb")} className="mb-8 flex flex-wrap items-center gap-2 text-sm font-semibold text-brand-navy/70">
               <Link className="transition hover:text-brand-navy" to="/">{t("Home")}</Link>
@@ -235,13 +258,19 @@ export function FlavorDetailPage() {
                     {formatCartMoney(flavor.price, "xaf", language)}
                     <span className="ml-2 font-sans text-sm font-bold text-[#65748a] max-sm:hidden">/ {t("Price per scoop").toLocaleLowerCase()}</span>
                   </p>
-                  <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold ${lowStock ? "bg-[#fff6dc] text-brand-yellow-deep" : "bg-[#f3f8ef] text-[#37632c]"}`}>
-                    <span aria-hidden="true" className={`size-1.5 rounded-full ${lowStock ? "bg-[#d4ad00]" : "bg-[#4caf50]"}`} />
-                    {lowStock ? t("{count} left", { count: flavor.availableQuantity }) : t("In stock")}
+                  <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold ${soldOut ? "bg-[#f4f6f8] text-[#65748a]" : lowStock ? "bg-[#fff6dc] text-brand-yellow-deep" : "bg-[#f3f8ef] text-[#37632c]"}`}>
+                    <span aria-hidden="true" className={`size-1.5 rounded-full ${soldOut ? "bg-[#c0392b]" : lowStock ? "bg-[#d4ad00]" : "bg-[#4caf50]"}`} />
+                    {soldOut ? t("Sold out") : lowStock ? stockSignalLabel(stockSignal(flavor.availableQuantity), t) : t("In stock")}
                   </span>
                 </div>
 
                 {/* Quantity + add */}
+                {soldOut && (
+                  <div className="mt-6">
+                    <RestockNotice />
+                  </div>
+                )}
+
                 <div className="mt-6 flex gap-3">
                   <div aria-label={t("Quantity")} className="flex shrink-0 items-center rounded-full bg-[#fbfaf5] p-1 ring-1 ring-[#e5e1d7]" role="group">
                     <button
@@ -267,11 +296,12 @@ export function FlavorDetailPage() {
                     </button>
                   </div>
                   <button
-                    className={`inline-flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-4 text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 sm:px-6 ${
+                    className={`inline-flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-4 text-sm font-extrabold transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dce3eb] disabled:text-[#65748a] sm:px-6 ${
                       mainAdded
                         ? "bg-[#4caf50] text-white"
                         : "bg-brand-navy text-white hover:-translate-y-0.5 hover:bg-brand-blue"
                     }`}
+                    disabled={soldOut}
                     onClick={addSelected}
                     type="button"
                   >
@@ -289,6 +319,12 @@ export function FlavorDetailPage() {
                 {cartNotice && (
                   <p className="mt-3 text-xs leading-5 text-red-700" role="alert">{cartNotice}</p>
                 )}
+
+                {/* Allergens sit above the fold on the purchase card, not behind a tab: someone
+                    with an allergy should not have to go looking for it. */}
+                <AllergenInfo allergens={flavor.allergies ?? null} className="mt-6" />
+
+                <ShareProduct className="mt-4" text={flavor.detail} title={flavor.name} />
                 <Link
                   className="mt-4 inline-flex w-fit items-center gap-2 text-sm font-extrabold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition hover:decoration-[#472a3b]"
                   to="/cart"
@@ -387,6 +423,8 @@ export function FlavorDetailPage() {
             </Link>
           </div>
         </section>
+
+        <RecentlyViewed excludeKey={flavor ? `flavor:${flavor.id}` : undefined} />
 
         {relatedFlavors.length > 0 && (
           <section

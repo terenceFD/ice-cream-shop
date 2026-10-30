@@ -10,6 +10,7 @@ import { useLanguage } from "../../language/useLanguage";
 import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
 import { numberFormatter } from "../../lib/cartPricing";
 import { useScrollReveal } from "../../lib/useScrollReveal";
+import { stockSignal, stockSignalLabel } from "../../lib/stockSignal";
 
 const FALLBACK_IMAGE = "/images/hero-ice-cream.jpg";
 const SORTS = [
@@ -62,6 +63,11 @@ function MenuItemCard({ category, item, formatPrice, onAdd, added, showCategory,
         {soldOut && (
           <span className="absolute inset-x-0 bottom-0 z-10 bg-brand-navy/85 py-1.5 text-center text-xs font-extrabold uppercase tracking-[0.16em] text-white">
             {t("Sold out")}
+          </span>
+        )}
+        {!soldOut && stockSignal(item.availableQuantity, { lowStockThreshold: item.lowStockThreshold }).kind !== "none" && (
+          <span className="absolute bottom-2 left-2 z-10 rounded-full bg-[#fff6dc]/95 px-2.5 py-1 text-[11px] font-extrabold text-[#8a6d00] shadow-sm backdrop-blur-sm sm:bottom-3 sm:left-3 sm:text-xs">
+            {stockSignalLabel(stockSignal(item.availableQuantity, { lowStockThreshold: item.lowStockThreshold }), t)}
           </span>
         )}
       </div>

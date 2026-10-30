@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowIcon, Footer, Header } from '../../components/Layout'
 import { HeroBackground } from '../../components/HeroBackground'
 import { cameroonLocations } from '../../../shared/data'
+import { storeOpenState } from '../../../shared/storeHours.js'
 import { useLanguage } from '../../language/useLanguage'
 import './LocationsPage.css'
 
@@ -78,6 +79,16 @@ function Icon({ path, className = 'size-5' }: { path: string; className?: string
   )
 }
 
+// Re-render once a minute so "open until 21:30" flips over when the shop closes.
+function useNow() {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 60_000)
+    return () => window.clearInterval(timer)
+  }, [])
+  return now
+}
+
 function mapsUrl(location: CameroonLocation) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.mapQuery)}`
 }
@@ -94,6 +105,7 @@ function extraLink(location: CameroonLocation) {
 
 export function LocationsPage() {
   const { t } = useLanguage()
+  const now = useNow()
   const [city, setCity] = useState('')
   const towns = [...new Set(cameroonLocations.map((location: CameroonLocation) => location.town))]
   const countIn = (town: string) => cameroonLocations.filter((location: CameroonLocation) => location.town === town).length
@@ -104,7 +116,7 @@ export function LocationsPage() {
     <div className="min-h-[100svh] bg-[#f5f8fb] text-brand-navy">
       <Header />
       <main id="main" tabIndex={-1}>
-        <section className="relative overflow-hidden bg-brand-navy text-white">
+        <section className="locations-hero relative overflow-hidden bg-brand-navy text-white">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-30">
             <HeroBackground animated quietOnMobile variant="navy" theme="ice-cream" />
           </div>
@@ -119,7 +131,7 @@ export function LocationsPage() {
               <p className="location-reveal mt-6 max-w-[60ch] text-base leading-7 text-white/75 sm:text-lg sm:leading-8" style={{ animationDelay: '70ms' }}>
                 {t('Browse five public listings across Douala and Yaoundé. Open a listing for directions, and call ahead where a number is shown.')}
               </p>
-              <div className="location-reveal mt-8 flex flex-wrap gap-3" style={{ animationDelay: '140ms' }}>
+              <div className="locations-hero-actions location-reveal mt-8 flex flex-wrap gap-3" style={{ animationDelay: '140ms' }}>
                 <a
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand-yellow px-6 py-3 text-sm font-extrabold text-brand-navy transition-colors hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy"
                   href="#listed-locations"
@@ -217,6 +229,26 @@ export function LocationsPage() {
                       </span>
                     </div>
 
+                    {(() => {
+                      const state = storeOpenState(location, now)
+                      return (
+                        <p
+                          className={`mt-3 inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-[13px] font-bold ${
+                            state.open ? 'bg-[#eef6e8] text-[#315d22]' : 'bg-[#fff6dc] text-[#7a5f00]'
+                          }`}
+                        >
+                          <span aria-hidden="true" className={`size-2 rounded-full ${state.open ? 'bg-[#4caf50]' : 'bg-[#d4ad00]'}`} />
+                          {state.beforeOpen
+                            ? t('Closed · opens {time}', { time: state.opensAt })
+                            : state.afterClose
+                              ? t('Closed · opens {day} at {time}', { day: t(state.nextOpeningDay), time: state.nextOpening })
+                              : state.acceptingOrders
+                                ? t('Open now · until {time}', { time: state.closesAt })
+                                : t('Open · last order {time}', { time: state.lastOrderAt })}
+                        </p>
+                      )
+                    })()}
+
                     <h3 className="mt-5 font-display text-2xl font-extrabold text-brand-navy">{t(location.area)}</h3>
                     <p className="mt-1 text-base font-semibold leading-6 text-[#334c63]">{t(location.address)}</p>
 
@@ -273,7 +305,7 @@ export function LocationsPage() {
             </span>
             <div className="flex-1">
               <h2 className="font-display text-lg font-extrabold text-brand-navy">{t('Before you go')}</h2>
-              <p className="mt-1 max-w-[60ch] text-base leading-6 text-[#334c63]">{t('Hours are not listed. Directions open each public listing in Google Maps. Where a phone number is shown, call ahead to confirm today’s hours.')}</p>
+              <p className="mt-1 max-w-[60ch] text-base leading-6 text-[#334c63]">{t('Every branch serves from 10:00 to 21:30, and takes its last order at 21:00. These are public listings, so directions open each one in Google Maps; where a phone number is shown, call ahead to confirm on a public holiday.')}</p>
             </div>
             <Link className="inline-flex min-h-11 w-fit shrink-0 items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-bold text-brand-navy transition-colors hover:bg-[#fff4c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2" to="/contact">
               {t('Contact us')} <ArrowIcon />

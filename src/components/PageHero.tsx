@@ -78,9 +78,12 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
   const isWideScreen = useWideScreen();
   // Not rendered at all on phones (a hidden image would still download).
   const showVisual = !compactOnMobile || isWideScreen;
+  // No overflow clipping on the section: the header's search panel hangs below the header,
+  // which sits inside <main>, so clipping the hero cut the results off. HeroBackground clips
+  // its own layers, and the decorative figures are rounded, so nothing escapes the hero.
   return (
     <section
-      className="relative isolate overflow-hidden bg-[var(--hero-surface,#472a3b)] text-white"
+      className="relative isolate bg-[var(--hero-surface,#472a3b)] text-white"
       style={{
         "--hero-surface": surface,
         "--hero-accent": accent || "#ffb84d",

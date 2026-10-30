@@ -13,6 +13,12 @@ import { RatingBadge } from "../../components/RatingBadge";
 import { photoErrorHandler, photoSrcSet, thumbnail } from "../../lib/thumbnails";
 import { rankSimilar } from "../../lib/similarItems";
 import { numberFormatter } from "../../lib/cartPricing";
+import { RecentlyViewed } from "../../components/RecentlyViewed";
+import { recordRecentlyViewed } from "../../lib/recentlyViewed";
+import { stockSignal, stockSignalLabel } from "../../lib/stockSignal";
+import { RestockNotice } from "../../components/RestockNotice";
+import { AllergenInfo } from "../../components/AllergenInfo";
+import { ShareProduct } from "../../components/ShareProduct";
 import { useScrollReveal } from "../../lib/useScrollReveal";
 
 const MAX_QUANTITY = 10;
@@ -870,6 +876,10 @@ export function MenuPage() {
       (selectedItem.isAvailable === false || selectedItem.availableQuantity < 1),
   );
   const maxQuantity = Math.max(1, Math.min(MAX_QUANTITY, selectedItem?.availableQuantity ?? MAX_QUANTITY));
+  const selectedStockSignal = stockSignal(selectedItem?.availableQuantity, {
+    lowStockThreshold: selectedItem?.lowStockThreshold,
+    soldOut: selectedSoldOut,
+  });
   const selectedIsFavorite = Boolean(
     selectedItem &&
       activeCategory &&
@@ -877,6 +887,22 @@ export function MenuPage() {
         selectedItem.id || getMenuItemId(activeCategory.title, selectedItem.name),
       ),
   );
+
+  // Remember the product as soon as it is opened, for the recently viewed row.
+  useEffect(() => {
+    if (!selectedItem || !activeCategory) return;
+    const id = selectedItem.id || getMenuItemId(activeCategory.title, selectedItem.name);
+    recordRecentlyViewed({
+      // The id already carries its "menu:" prefix; adding another broke the exclusion on
+      // this page, so the row never appeared.
+      key: String(id).startsWith("menu:") ? String(id) : `menu:${id}`,
+      name: selectedItem.name,
+      image: selectedItem.image,
+      priceXaf: selectedItem.priceXaf,
+      detail: selectedItem.detail,
+      to: `/menu?${new URLSearchParams({ category: activeCategory.title, item: selectedItem.name })}`,
+    });
+  }, [selectedItem, activeCategory]);
 
   // The all-menu hero picture: the site's own product photography, set as a
   // flat block collage — one dominant tile, two supporting, cleanly aligned.
@@ -1258,22 +1284,64 @@ export function MenuPage() {
                     {t(selectedItem.detail)}
                   </p>
 
-                  {selectedItem.dietaryTags?.length > 0 && (
-                    <ul className="mt-4 flex flex-wrap gap-2">
-                      {selectedItem.dietaryTags.map((tag) => (
-                        <li
-                          className="rounded-full bg-[#f4f6f8] px-3 py-1.5 text-sm font-semibold text-brand-navy"
-                          key={tag}
-                        >
-                          {t(tag)}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <AllergenInfo
+                    allergens={selectedItem.allergens}
+                    allergensRecorded={selectedItem.allergensRecorded}
+                    className="mt-5"
+                    dietaryTags={selectedItem.dietaryTags || []}
+                  />
 
-                  <p className="mt-8 font-display text-4xl font-extrabold tabular-nums leading-none text-brand-navy">
-                    {formatPrice(selectedItem.priceXaf)}
-                  </p>
+                  <ShareProduct
+                    className="mt-4"
+                    text={selectedItem.detail}
+                    title={selectedItem.name}
+                  />
+
+                  <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
+                    <p className="font-display text-4xl font-extrabold tabular-nums leading-none text-brand-navy">
+                      {formatPrice(selectedItem.priceXaf)}
+                    </p>
+                    {/* Plenty in stock gets a quiet confirmation; a thin stock gets a louder
+                        one. Either way the shopper knows before adding to the bag. */}
+                    <span
+                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold ${
+                        selectedSoldOut
+                          ? "bg-[#f4f6f8] text-[#65748a]"
+                          : selectedStockSignal.kind === "last-few"
+                            ? "bg-[#ffe9e3] text-[#9b2c17]"
+                            : selectedStockSignal.kind === "low"
+                              ? "bg-[#fff6dc] text-brand-yellow-deep"
+                              : "bg-[#f3f8ef] text-[#37632c]"
+                      }`}
+                      role="status"
+                    >
+                      {!selectedSoldOut && (
+                        <span
+                          aria-hidden="true"
+                          className={`size-1.5 rounded-full ${
+                            selectedStockSignal.kind === "last-few"
+                              ? "animate-pulse bg-[#c0392b] motion-reduce:animate-none"
+                              : selectedStockSignal.kind === "low"
+                                ? "bg-[#d4ad00]"
+                                : "bg-[#4caf50]"
+                          }`}
+                        />
+                      )}
+                      {selectedSoldOut ? (
+                        t("Sold out")
+                      ) : selectedStockSignal.kind === "last-few" || selectedStockSignal.kind === "low" ? (
+                        stockSignalLabel(selectedStockSignal, t)
+                      ) : (
+                        t("In stock")
+                      )}
+                    </span>
+                  </div>
+
+                  {selectedSoldOut && (
+                    <div className="mt-6">
+                      <RestockNotice restockEta={selectedItem.restockEta} />
+                    </div>
+                  )}
 
                   <div className="mt-6 flex gap-3">
                     {!selectedSoldOut && (
@@ -1485,6 +1553,24 @@ export function MenuPage() {
                     />
                   ))}
                 </div>
+              </section>
+
+              <section id="product-recently-viewed" className="mt-16">
+                <RecentlyViewed
+                  excludeKey={String(selectedItem.id || getMenuItemId(activeCategory.title, selectedItem.name)).replace("menu:", "menu:")}
+                  onSelect={(entry) => {
+                    // Open the remembered product in the same detail view instead of reloading.
+                    const remembered = categories
+                      .flatMap((category) => category.items.map((item) => ({ category, item })))
+                      .find(({ category, item }) =>
+                        String(item.id || getMenuItemId(category.title, item.name)).replace(/^(menu:)+/, "menu:") ===
+                        entry.key.replace(/^(menu:)+/, "menu:"));
+                    if (!remembered) return false;
+                    selectItem(remembered.category, remembered.item);
+                    return true;
+                  }}
+                  title={t("Recently viewed")}
+                />
               </section>
             </section>
           ) : activeCategory ? (

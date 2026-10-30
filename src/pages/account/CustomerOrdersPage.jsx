@@ -1095,6 +1095,10 @@ export function CustomerOrdersPage() {
   const formatPrice = (amount) =>
     `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(amount)} FCFA`;
   const points = loyalty?.points ?? customer.loyaltyPoints ?? 0;
+  const referralCode = customer.referralCode || '';
+  const referralLink = referralCode
+    ? `${window.location.origin}/signup?ref=${encodeURIComponent(referralCode)}`
+    : '';
   const firstName =
     (customer.name || "").trim().split(/\s+/)[0] || customer.name;
   const activeOrders = orders.filter(isActive);
@@ -1611,6 +1615,50 @@ export function CustomerOrdersPage() {
                       <Icon className="size-4" path="M5 12h14m-5-5 5 5-5 5" />
                     </button>
                   </section>
+
+                  {referralCode && (
+                    <section className="rounded-2xl bg-white p-5 ring-1 ring-[#e3dfd3] sm:p-6">
+                      <p className={eyebrowClass}>{t("Refer a friend")}</p>
+                      <h2 className="mt-2 font-display text-xl font-extrabold text-brand-navy">
+                        {t("Give a friend a treat, earn {points} points", { points: 50 })}
+                      </h2>
+                      <p className="mt-2 max-w-xl text-sm leading-6 text-[#65748a]">
+                        {t(
+                          "Share your code. When your friend signs up with it and places their first order, {points} points land in your balance.",
+                          { points: 50 },
+                        )}
+                      </p>
+                      <div className="mt-4 flex flex-wrap items-center gap-3">
+                        <span className="inline-flex min-h-11 items-center rounded-xl bg-[#f4f6f8] px-4 font-display text-lg font-extrabold tracking-[0.08em] text-brand-navy ring-1 ring-dashed ring-[#c9c3b4]">
+                          {referralCode}
+                        </span>
+                        <button
+                          className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand-navy px-5 text-sm font-extrabold text-white transition hover:bg-brand-blue"
+                          onClick={() => {
+                            // A colon right before the link stops WhatsApp treating it as one,
+                            // so the invitation and the link sit on separate lines.
+                            const text = `${t("Join me at Cold Stone Creamery — use my code {code}", { code: referralCode })}\n\n${referralLink} `;
+                            if (navigator.share) {
+                              navigator.share({ title: t("Cold Stone Creamery"), text, url: referralLink }).catch(() => {});
+                            } else {
+                              navigator.clipboard?.writeText(text);
+                            }
+                          }}
+                          type="button"
+                        >
+                          {t("Invite a friend")}
+                        </button>
+                        <a
+                          className="inline-flex min-h-11 items-center rounded-full bg-[#25D366] px-5 text-sm font-extrabold text-white transition hover:brightness-95"
+                          href={`https://wa.me/?text=${encodeURIComponent(`${t("Join me at Cold Stone Creamery — use my code {code}", { code: referralCode })}\n\n${referralLink} `)}`}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          {t("Share on WhatsApp")}
+                        </a>
+                      </div>
+                    </section>
+                  )}
 
                   <section className="account-benefits grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                     <RewardsCard points={points} t={t} />

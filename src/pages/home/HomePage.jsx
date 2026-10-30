@@ -9,11 +9,7 @@ import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
 import { ProductImageSlider } from "../../components/ProductImageSlider";
 import { RatingBadge } from "../../components/RatingBadge";
 import { useLanguage } from "../../language/useLanguage";
-import {
-  photoErrorHandler,
-  photoSrcSet,
-  thumbnail,
-} from "../../lib/thumbnails";
+import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
 import {
   HOME_SLIDE_SIZES,
   normalizePhotoGallery,
@@ -511,7 +507,7 @@ function ReviewsSection({ reviews, stats, error, isLoaded, language, t }) {
   return (
     <section
       aria-labelledby="real-reviews-heading"
-      className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+      className="scroll-mt-24 bg-[#f4f6f8] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
       id="reviews"
     >
       <div className="mx-auto max-w-[1320px]">
@@ -639,7 +635,7 @@ function HowItWorksSection({ t }) {
   return (
     <section
       aria-labelledby="how-it-works-heading"
-      className="scroll-mt-20 px-5 py-12 text-brand-navy sm:px-8 sm:py-16 lg:px-10"
+      className="scroll-mt-24 px-5 py-12 text-brand-navy sm:px-8 sm:py-16 lg:px-10"
       id="how-it-works"
     >
       <div className="mx-auto max-w-[1320px]">
@@ -711,96 +707,6 @@ function HowItWorksSection({ t }) {
   );
 }
 
-function MomentGallery({ t }) {
-  const frames = [
-    {
-      id: "sunshine-heading",
-      title: "Tropical mango sunshine.",
-      src: "/images/mango.jpg",
-      alt: "Mango ice cream scoops with a spoon",
-      position: "object-[center_38%]",
-      copy: [
-        "Golden mango. A cool, creamy scoop. And a little daydream of somewhere sunny. This is your cue to take a sweet escape.",
-      ],
-      cta: "Find your fruity mood",
-      to: "/menu?category=Ice%20Cream",
-    },
-    {
-      id: "moments-heading",
-      title: "Sweet moments at Cold Stone.",
-      src: "/images/vanilla.jpg",
-      alt: "A hand scooping vanilla ice cream from a bowl with a strawberry scoop beside it",
-      position: "object-[center_28%]",
-      copy: [
-        "The first lick of a cone. The spoon you don't want to share. The scoop that turns an ordinary afternoon into a little celebration.",
-        "Life's sweeter by the scoop",
-      ],
-      cta: "Step into our world",
-      to: "/about",
-    },
-  ];
-
-  return (
-    <section
-      aria-labelledby="moments-gallery-heading"
-      className="px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
-    >
-      <div className="mx-auto max-w-[1320px]">
-        <h2 className="sr-only" id="moments-gallery-heading">
-          {t("Sweet moments at Cold Stone.")}
-        </h2>
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-5">
-          {frames.map((frame) => (
-            <Link
-              className="moment-card group relative block overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-navy lg:overflow-hidden"
-              key={frame.id}
-              to={frame.to}
-            >
-              <div className="relative h-[min(16rem,52svh)] overflow-hidden sm:h-[min(20rem,46svh)] lg:h-[min(30rem,calc(100svh-14rem))]">
-                <img
-                  alt={t(frame.alt)}
-                  className={`size-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none ${frame.position}`}
-                  decoding="async"
-                  loading="lazy"
-                  onError={photoErrorHandler(frame.src)}
-                  sizes="(min-width: 1024px) 50vw, 100vw"
-                  src={thumbnail(frame.src)}
-                  srcSet={photoSrcSet(frame.src)}
-                />
-              </div>
-              <div className="moment-copy mt-5 lg:absolute lg:inset-0 lg:z-10 lg:mt-0 lg:flex lg:flex-col lg:justify-end lg:bg-brand-navy/88 lg:p-8 xl:p-10">
-                <h3
-                  className="max-w-[18ch] font-display text-3xl font-extrabold leading-[0.95] tracking-[-0.03em] text-brand-navy lg:max-w-[14ch] lg:text-4xl lg:text-white"
-                  id={frame.id}
-                >
-                  {t(frame.title)}
-                </h3>
-                {frame.copy.map((paragraph) => (
-                  <p
-                    className="mt-3 max-w-[42ch] text-sm font-medium leading-6 text-brand-navy lg:text-base lg:leading-7 lg:text-white"
-                    key={paragraph}
-                  >
-                    {t(paragraph)}
-                  </p>
-                ))}
-                <span className="mt-6 inline-flex min-h-12 w-fit items-center gap-3 bg-brand-yellow px-5 text-sm font-extrabold text-brand-navy">
-                  {t(frame.cta)}
-                  <span
-                    aria-hidden="true"
-                    className="transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1 motion-reduce:transform-none"
-                  >
-                    <ArrowIcon />
-                  </span>
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function HomePage() {
   const { language, t } = useLanguage();
   const { addToCart } = useCart();
@@ -822,15 +728,13 @@ export function HomePage() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [selectedFlavorMood, setSelectedFlavorMood] = useState("all");
   const [flavorSearch, setFlavorSearch] = useState("");
-  const [visibleFlavorCount, setVisibleFlavorCount] = useState(8);
+  const [visibleFlavorCount, setVisibleFlavorCount] = useState(4);
   const [selectedCakeType, setSelectedCakeType] = useState("all");
   const [cakeSearch, setCakeSearch] = useState("");
   const [cakeVisibleCount, setCakeVisibleCount] = useState(4);
   const [loadedSlides, setLoadedSlides] = useState([0]);
   const [addedItemKey, setAddedItemKey] = useState(null);
   const [cartNoticeIsError, setCartNoticeIsError] = useState(false);
-  // A gentle "back to top" helper for the long home page, shown after the first screen.
-  const [showScrollTop, setShowScrollTop] = useState(false);
   const addedTimer = useRef(undefined);
   const cartNoticeTimer = useRef(undefined);
   const heroHoldTimer = useRef(undefined);
@@ -1000,24 +904,6 @@ export function HomePage() {
 
   useEffect(() => () => window.clearTimeout(addedTimer.current), []);
   useEffect(() => () => window.clearTimeout(cartNoticeTimer.current), []);
-  // Show the back-to-top control once the hero has left the screen.
-  useEffect(() => {
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      setShowScrollTop(window.scrollY > window.innerHeight * 0.9);
-    };
-    const onScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const formatPrice = (price) =>
     `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
@@ -1045,8 +931,8 @@ export function HomePage() {
     ),
     ...catalogFlavorCards,
   ];
-  // The grid starts with 8 flavors and "Show more" adds another 8 each time.
-  const FLAVOR_PAGE_SIZE = 8;
+  // Find your flavor shows one row of four cards; "Show more" adds another four each time.
+  const FLAVOR_PAGE_SIZE = 4;
   const flavorFiltersActive =
     visibleFlavorCount > FLAVOR_PAGE_SIZE ||
     selectedFlavorMood !== "all" ||
@@ -1516,7 +1402,7 @@ export function HomePage() {
 
         <section
           aria-labelledby="flavor-inspiration-heading"
-          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-12 lg:px-10 lg:py-14"
+          className="scroll-mt-24 bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-12 lg:px-10 lg:py-14"
           id="flavors"
         >
           <div className="mx-auto max-w-[1320px]">
@@ -1855,13 +1741,12 @@ export function HomePage() {
           </div>
         </section>
 
-        <HowItWorksSection t={t} />
-
         {/* Cake cards — same card design/animations/search as "Follow your flavor", with a
             "Request a custom cake" button that leads to the cake builder page. */}
         <section
           aria-labelledby="cakes-heading"
-          className="relative scroll-mt-20 overflow-hidden bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+          /* scroll-mt clears the 80px sticky header, plus a little breathing room. */
+          className="relative scroll-mt-24 overflow-hidden bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-20 lg:px-10 lg:py-24"
           id="cakes"
         >
           <div className="relative mx-auto max-w-[1320px]">
@@ -2159,9 +2044,11 @@ export function HomePage() {
           </div>
         </section>
 
+        <HowItWorksSection t={t} />
+
         <section
           aria-labelledby="popular-flavors-heading"
-          className="scroll-mt-20 bg-[#f4f6f8] px-5 pb-20 pt-12 sm:px-8 sm:pb-16 sm:pt-14 lg:px-10 lg:pb-18 lg:pt-16"
+          className="scroll-mt-24 bg-[#f4f6f8] px-5 pb-20 pt-12 sm:px-8 sm:pb-16 sm:pt-14 lg:px-10 lg:pb-18 lg:pt-16"
           id="favorites"
           ref={popularSection}
         >
@@ -2478,106 +2365,31 @@ export function HomePage() {
           </div>
         )}
 
-        <MomentGallery t={t} />
-
-        <section
-          aria-labelledby="home-menu-heading"
-          className="scroll-mt-20 bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-12 lg:px-10 lg:py-14"
-          id="menu"
-        >
-          <div className="mx-auto max-w-5xl">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2
-                className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl"
-                id="home-menu-heading"
-              >
-                {t("Menu highlights")}
-              </h2>
-              <p className="mt-4 text-base leading-7 text-[#65748a] sm:text-lg">
-                {t("Explore signature creations and discover every flavor.")}
-              </p>
-            </div>
-
-            <ul className="mt-10 grid gap-12 sm:mt-10 sm:grid-cols-2 sm:gap-8 lg:gap-10">
-              {[
-                {
-                  title: "The full menu",
-                  description:
-                    "All categories, from signature creations to sundaes and cakes.",
-                  cta: "Browse the full menu",
-                  to: "/menu",
-                  image:
-                    "/menu-official/ice-cream/signature-creations/our-dubai-chocolate-creation.webp",
-                },
-                {
-                  title: "All flavors",
-                  description:
-                    "Every flavor — fruity, chocolatey or classic — in one collection.",
-                  cta: "View flavors",
-                  to: "/flavors",
-                  image:
-                    "/menu-official/ice-cream/signature-creations/our-strawberry-blonde-2.webp",
-                },
-              ].map((item, itemIndex) => (
-                <li key={item.to}>
-                  <Link className="menu-highlight-link group" to={item.to}>
-                    <span className="menu-highlight-media relative block aspect-[4/3] overflow-hidden rounded-[20px] bg-[#fbfaf5]">
-                      <img
-                        alt=""
-                        className="size-full object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03] group-focus-visible:scale-[1.03] motion-reduce:transition-none"
-                        decoding="async"
-                        fetchPriority={itemIndex === 0 ? "high" : "auto"}
-                        loading={itemIndex === 0 ? "eager" : "lazy"}
-                        onError={photoErrorHandler(item.image)}
-                        sizes="(min-width: 1024px) 32rem, (min-width: 640px) 46vw, 100vw"
-                        src={item.image}
-                        srcSet={photoSrcSet(item.image)}
-                      />
-                    </span>
-                    <span className="menu-highlight-copy mt-5 block">
-                      <h3 className="font-display text-2xl font-extrabold leading-tight tracking-tight text-brand-navy sm:text-3xl">
-                        {t(item.title)}
-                      </h3>
-                      <p className="mt-2 text-base leading-7 text-[#65748a]">
-                        {t(item.description)}
-                      </p>
-                      <span className="mt-3 inline-flex min-h-12 items-center font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4">
-                        {t(item.cta)}
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            <p className="mx-auto mt-10 max-w-2xl text-center text-sm leading-6 text-[#65748a]">
-              {t("Cards & Mobile Money accepted")}. {t("Pay in FCFA with")}{" "}
-              Visa, Mastercard, MTN MoMo, {t("Orange Money")}.
+        {/* A short close: one call to action, then the footer. */}
+        <section aria-labelledby="home-cta-heading" className="bg-[#f4f6f8] px-5 py-12 text-center sm:px-8 sm:py-14 lg:px-10">
+          <div className="mx-auto max-w-2xl">
+            <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight text-brand-navy sm:text-4xl" id="home-cta-heading">
+              {t("Ready for a scoop?")}
+            </h2>
+            <p className="mt-3 text-base leading-7 text-[#65748a]">
+              {t("Order online for pickup or delivery, or browse the full menu and every flavor.")}
             </p>
+            <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-brand-navy px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 sm:w-auto"
+                to="/flavors"
+              >
+                {t("Order now")}
+              </Link>
+              <Link
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-md px-6 py-3 text-sm font-extrabold text-brand-navy transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 sm:w-auto"
+                to="/menu"
+              >
+                {t("Browse the full menu")}
+              </Link>
+            </div>
           </div>
         </section>
-
-        {/* Back to top — appears after scrolling past the hero */}
-        <button
-          aria-label={t("Back to top")}
-          className={`fixed bottom-6 right-6 z-40 grid size-12 place-items-center rounded-full bg-brand-navy text-white shadow-[0_10px_24px_rgba(9,42,83,0.35)] transition duration-300 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 ${
-            showScrollTop
-              ? "pointer-events-auto opacity-100"
-              : "pointer-events-none hidden"
-          }`}
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          type="button"
-        >
-          <svg fill="none" viewBox="0 0 24 24" className="size-5">
-            <path
-              d="M12 19V5m0 0-6 6m6-6 6 6"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-            />
-          </svg>
-        </button>
       </main>
       <Footer />
     </div>

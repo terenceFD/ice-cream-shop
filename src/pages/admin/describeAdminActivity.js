@@ -35,6 +35,9 @@ const RULES = [
   ['PATCH', /^\/api\/admin\/orders\/(\d+)\/status$/, 'Updated the status of order #{id}', 'orders'],
   ['PATCH', /^\/api\/admin\/orders\/(\d+)\/delivered$/, 'Marked order #{id} delivered', 'orders'],
   ['DELETE', /^\/api\/admin\/orders\/(\d+)\/stale-payment$/, 'Cancelled the unpaid checkout for order #{id}', 'orders'],
+  ['DELETE', /^\/api\/admin\/activity$/, 'Cleared the activity log', 'settings'],
+  // Hides delivered orders from the Orders list only; the Delivered page keeps them.
+  ['DELETE', /^\/api\/admin\/orders\/delivered-soft$/, 'Cleared delivered orders from the Orders list', 'orders'],
   ['DELETE', /^\/api\/admin\/orders\/delivered$/, 'Cleared delivered orders', 'orders'],
   ['DELETE', /^\/api\/admin\/orders\/(\d+)$/, 'Deleted order #{id}', 'orders'],
   ['PATCH', /^\/api\/admin\/cake-requests\/(\d+)\/status$/, 'Updated cake request #{id}', 'orders'],

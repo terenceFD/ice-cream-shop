@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate, useLocation, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Footer, Header } from "../../components/Layout";
 import { useCart } from "../../context/useCart";
 import { useFlavors } from "../../context/useFlavors";
@@ -117,6 +117,7 @@ export function PaymentPage() {
   const hasUnavailableItems = cartItems.some(
     (item) => item.availableQuantity < item.quantity,
   );
+  const navigate = useNavigate();
   const { state } = useLocation();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
@@ -180,6 +181,17 @@ export function PaymentPage() {
     };
   }, []);
 
+  // A failed payment sends the customer back to the checkout form. Keep what they already
+  // entered there so the retry is a review, not a retype.
+  useEffect(() => {
+    if (paymentStatus !== "ready" || !checkoutDetails) return;
+    try {
+      sessionStorage.setItem(CHECKOUT_DETAILS_KEY, JSON.stringify(checkoutDetails));
+    } catch {
+      // Fine to skip; it only saves the customer some typing.
+    }
+  }, [paymentStatus, checkoutDetails]);
+
   useEffect(() => {
     if (!sessionId && !camPayReference && !loyaltyOrderId) return undefined;
     let cancelledRequest = false;
@@ -222,6 +234,13 @@ export function PaymentPage() {
   async function startCheckout() {
     setError("");
     setIsStartingCheckout(true);
+    // Remember the details before the provider is contacted: if payment fails, the customer
+    // comes back to a filled-in checkout instead of retyping the address and phone number.
+    try {
+      sessionStorage.setItem(CHECKOUT_DETAILS_KEY, JSON.stringify(checkoutDetails));
+    } catch {
+      // A blocked sessionStorage only costs the retry convenience; payment still proceeds.
+    }
     try {
       const { url } = await apiRequest("/checkout/session", {
         method: "POST",
@@ -390,6 +409,52 @@ export function PaymentPage() {
                     </div>
                   )}
 
+                  {/* The cheapest moment to turn a guest into an account: they have just paid. */}
+                  {!customer && order?.id && (
+                    <div className="mt-4 overflow-hidden rounded-2xl bg-brand-navy p-5 text-white">
+                      <p className="font-display text-lg font-extrabold leading-tight">
+                        {t("Keep your treats in one place")}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-white/75">
+                        {t(
+                          "Create an account with {email} and this order joins your history. Collect loyalty points, reorder in one tap, and save your favorites.",
+                          { email: order.customerEmail },
+                        )}
+                      </p>
+                      <ul className="mt-3 grid gap-1.5 text-sm font-semibold text-white/85 sm:grid-cols-2">
+                        {[
+                          t("1 point per 100 FCFA spent"),
+                          t("Reorder any past order"),
+                          t("Track every delivery"),
+                          t("Save flavors you love"),
+                        ].map((perk) => (
+                          <li className="flex items-center gap-2" key={perk}>
+                            <span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-full bg-brand-yellow text-brand-navy">
+                              <Icon className="size-3" path={icons.check} />
+                            </span>
+                            {perk}
+                          </li>
+                        ))}
+                      </ul>
+                      <Link
+                        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-yellow px-5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light sm:w-auto"
+                        state={{
+                          from: "/account/orders",
+                          name: order.customerName,
+                          email: order.customerEmail,
+                          claimOrder: order.id,
+                          notice: t("Finish creating your account to keep order #{order}.", { order: order.id }),
+                        }}
+                        to="/signup"
+                      >
+                        {t("Create my account")}
+                      </Link>
+                      <p className="mt-2 text-xs text-white/55">
+                        {t("Takes about 30 seconds. Your guest order number is always enough to track this order.")}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                     <Link
                       className="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-yellow px-6 py-3.5 text-sm font-extrabold text-brand-navy shadow-[0_12px_26px_rgba(255,220,50,0.35)] transition hover:-translate-y-0.5 hover:bg-brand-gold-light"
@@ -459,7 +524,25 @@ export function PaymentPage() {
                     "Your order has not been marked as paid. If your bank shows a charge, please contact us before trying again.",
                   )}
                 </p>
+                {/* Retry first: a declined card or a timed-out Mobile Money prompt is usually
+                    all this was, and the bag and details are still on this page. */}
                 <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                  <button
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-brand-yellow px-6 py-3.5 text-sm font-extrabold text-brand-navy shadow-[0_12px_26px_rgba(255,220,50,0.35)] transition hover:-translate-y-0.5 hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
+                    disabled={isStartingCheckout || cartItems.length === 0}
+                    onClick={() => {
+                      setError("");
+                      if (sessionId) {
+                        // Drop the dead session from the address so the page returns to the form.
+                        navigate("/payment", { replace: true });
+                      } else {
+                        startCheckout();
+                      }
+                    }}
+                    type="button"
+                  >
+                    {isStartingCheckout ? t("Opening payment…") : t("Try again")}
+                  </button>
                   <Link
                     className="inline-flex items-center justify-center gap-2 rounded-full bg-brand-navy px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-brand-blue"
                     to="/contact"
@@ -473,6 +556,9 @@ export function PaymentPage() {
                     {t("View my orders")}
                   </Link>
                 </div>
+                <p className="mx-auto mt-4 max-w-md text-xs leading-5 text-[#8b95a2]">
+                  {t("Your bag and delivery details are still here, so trying again takes one tap.")}
+                </p>
               </div>,
               "error",
             )}
@@ -486,7 +572,8 @@ export function PaymentPage() {
                 <nav aria-label={t("Breadcrumb")} className="text-xs font-semibold text-white/55">
                   <Link className="transition hover:text-brand-yellow" to="/cart">{t("Shopping bag")}</Link>
                   <span aria-hidden="true" className="mx-2">/</span>
-                  <Link className="transition hover:text-brand-yellow" state={{ checkoutDetails }} to="/checkout">{t("Checkout")}</Link>
+                  {/* Back to the bag rather than the checkout form: the form would start empty. */}
+                  <Link className="transition hover:text-brand-yellow" to="/cart">{t("Checkout")}</Link>
                   <span aria-hidden="true" className="mx-2">/</span>
                   <span aria-current="page" className="text-white">{t("Payment")}</span>
                 </nav>

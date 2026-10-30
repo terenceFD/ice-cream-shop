@@ -21,6 +21,24 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     ? `/events${isEventType(location.state?.type) ? `?type=${location.state.type}` : ''}`
     : ''
   const checkoutNotice = typeof location.state?.notice === 'string' ? location.state.notice : ''
+  const claimOrderId = isSignup && location.state?.claimOrder ? String(location.state.claimOrder) : ''
+  // A friend's ?ref=CODE link is remembered for this visit, so it survives a trip to the menu
+  // and back before the customer actually signs up.
+  const referralCode = (() => {
+    const fromUrl = new URLSearchParams(location.search).get('ref')
+    if (fromUrl) {
+      try {
+        sessionStorage.setItem('cold-stone-referral', fromUrl.toUpperCase())
+      } catch { /* Private mode: the code simply is not remembered. */ }
+      return fromUrl.toUpperCase()
+    }
+    if (!isSignup) return ''
+    try {
+      return sessionStorage.getItem('cold-stone-referral') || ''
+    } catch {
+      return ''
+    }
+  })()
 
   function goBack() {
     if (previousPath.startsWith('/') && previousPath !== '/login' && previousPath !== '/signup') {
@@ -33,8 +51,9 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     }
     navigate('/')
   }
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  // A guest who has just paid is sent here with their details already filled in.
+  const [name, setName] = useState(() => (typeof location.state?.name === 'string' ? location.state.name : ''))
+  const [email, setEmail] = useState(() => (typeof location.state?.email === 'string' ? location.state.email : ''))
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [verificationId, setVerificationId] = useState('')
@@ -122,7 +141,13 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     setIsSubmitting(true)
     try {
       if (isSignup && !verificationId) {
-        const result = await requestSignupVerification({ name, email, password })
+        const result = await requestSignupVerification({
+          name,
+          email,
+          password,
+          ...(claimOrderId ? { claimOrderId: Number(claimOrderId) } : {}),
+          ...(referralCode ? { referralCode } : {}),
+        })
         setVerificationId(result.verificationId)
         setVerificationCode(Array(6).fill(''))
         setResendAvailableAt(Date.now() + 60_000)
@@ -131,10 +156,22 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
         return
       }
 
+      let claimedOrderId: number | null = null
       if (isSignup) {
-        await signup({ verificationId, code: verificationCode.join('') })
+        const created = await signup({ verificationId, code: verificationCode.join('') })
+        claimedOrderId = created.claimedOrderId ?? null
       } else {
         await login({ email, password })
+      }
+      if (claimedOrderId) {
+        navigate('/account/orders', {
+          replace: true,
+          state: {
+            accountCreated: true,
+            notice: t('Order #{order} is now in your account.', { order: claimedOrderId }),
+          },
+        })
+        return
       }
       navigate(
         returnToCheckout ? '/checkout' : returnToAccount ? previousPath : returnToEvent ? returnToEvent : isSignup ? '/' : '/account/orders',
@@ -155,7 +192,12 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     setVerificationNotice('')
     setIsSubmitting(true)
     try {
-      const result = await requestSignupVerification({ name, email, password })
+      const result = await requestSignupVerification({
+        name,
+        email,
+        password,
+        ...(claimOrderId ? { claimOrderId: Number(claimOrderId) } : {}),
+      })
       setVerificationId(result.verificationId)
       setVerificationCode(Array(6).fill(''))
       setResendAvailableAt(Date.now() + 60_000)
@@ -262,11 +304,10 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 ].map((tab) => (
                   <Link
                     aria-current={tab.active ? 'page' : undefined}
-                    className={`pb-2 text-sm font-extrabold transition ${
-                      tab.active
+                    className={`pb-2 text-sm font-extrabold transition ${tab.active
                         ? 'text-brand-navy underline decoration-[#ffb84d] decoration-[3px] underline-offset-8'
                         : 'text-[#65748a] hover:text-brand-navy'
-                    }`}
+                      }`}
                     key={tab.to}
                     replace
                     state={location.state}
@@ -294,6 +335,16 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                         ? t('Enter the 6-digit code we sent to your email to finish creating your account.')
                         : t('Good to see you again. Enter your details below.')}
                 </p>
+              )}
+              {claimOrderId && (
+                <div className="mt-5 rounded-2xl bg-[#eef6e8] px-4 py-3.5 ring-1 ring-[#cfe3bf]" role="status">
+                  <p className="text-sm font-extrabold leading-6 text-[#315d22]">
+                    {t('Your order #{order} is confirmed.', { order: claimOrderId })}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-[#3f6b22]">
+                    {t('Create the account below with the same email to keep this order in your history, collect loyalty points on it, and reorder it in one tap.')}
+                  </p>
+                </div>
               )}
               {checkoutNotice && (
                 <p className="mt-5 bg-[#fff6cc] px-4 py-3 text-sm font-semibold leading-6 text-brand-navy" role="status">

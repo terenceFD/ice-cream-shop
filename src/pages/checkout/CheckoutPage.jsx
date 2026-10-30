@@ -7,10 +7,32 @@ import { useLanguage } from "../../language/useLanguage";
 import { apiRequest } from "../../api/api";
 import { useAuth } from "../../context/useAuth";
 import { getCameroonDate } from "../../../shared/cameroonDate";
+import { cameroonLocations } from "../../../shared/data";
+import { storeOpenState } from "../../../shared/storeHours.js";
+
+// Written by the payment page when an attempt fails, so a retry does not lose the details.
+const CHECKOUT_DETAILS_KEY = "cold-stone-checkout-details";
+const readSavedDetails = () => {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(CHECKOUT_DETAILS_KEY) || "null");
+    // Only reuse details that still describe a checkout, not a finished order.
+    return saved && typeof saved === "object" ? saved : null;
+  } catch {
+    return null;
+  }
+};
+const savedDetails = readSavedDetails();
 
 const inputClassName =
   "mt-2 w-full rounded-2xl border border-[#e3dfd3] bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-brand-navy transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#cfcabb] focus:border-brand-yellow-deep focus:bg-white focus:ring-4 focus:ring-brand-yellow/25 outline-none!";
 const labelClassName = "block text-xs font-extrabold text-[#65748a]";
+
+function mapsLink(query) {
+  return (
+    "https://www.google.com/maps/search/?api=1&query=" +
+    encodeURIComponent(query)
+  );
+}
 
 const icons = {
   arrow: "M5 12h14m-5-5 5 5-5 5",
@@ -145,6 +167,71 @@ export function CheckoutPage() {
   );
   const loyaltyBlocked =
     maxRedeemablePoints < 100 || Boolean(discountCode || discount);
+
+  // The shop's opening hours decide whether an order can start now. A closed store still takes
+  // scheduled orders, so this informs the shopper rather than blocking checkout.
+  const storeLocation =
+    cameroonLocations.find(
+      (location) => location.area === selectedZone?.storeArea,
+    ) ||
+    cameroonLocations.find(
+      (location) => location.town === selectedZone?.storeTown,
+    );
+  const storeState = storeOpenState(storeLocation);
+  const selectedStoreClosedNow = !storeState.open;
+  const deliveryLabel = t("Delivery fee") + ": " + money(deliveryFee);
+  const storePanelClass =
+    "mb-5 flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between " +
+    (storeState.acceptingOrders ? "bg-[#eef6e8]" : "bg-[#fff6dc]");
+  const storeDotClass =
+    "mt-1 size-2.5 shrink-0 rounded-full " +
+    (storeState.acceptingOrders ? "bg-[#4caf50]" : "bg-[#d4ad00]");
+  const storePillClass =
+    "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-extrabold shadow-sm " +
+    (storeState.acceptingOrders
+      ? "bg-[#eef6e8] text-[#315d22]"
+      : "bg-[#fff6dc] text-[#7a5f00]");
+  const storePillDotClass =
+    "size-1.5 rounded-full " +
+    (storeState.acceptingOrders ? "bg-[#4caf50]" : "bg-[#d4ad00]");
+
+  // The first line of the schedule card, before any translation.
+  let storeStateLabel;
+  if (selectedStoreClosedNow) {
+    storeStateLabel = storeState.beforeOpen
+      ? t("Closed right now · opens today at {time}", {
+          time: storeState.nextOpening,
+        })
+      : t("Closed right now · opens {day} at {time}", {
+          day: t(storeState.nextOpeningDay),
+          time: storeState.nextOpening,
+        });
+  } else if (storeState.acceptingOrders) {
+    storeStateLabel = t("Open now · until {time}", {
+      time: storeState.closesAt,
+    });
+  } else {
+    storeStateLabel = t("Last orders taken at {time}", {
+      time: storeState.lastOrderAt,
+    });
+  }
+  let storeScheduleLabel;
+  if (storeState.acceptingOrders) {
+    storeScheduleLabel = t("Open now — {type} as soon as possible", {
+      type: fulfillmentType === "pickup" ? t("pickup") : t("delivery"),
+    });
+  } else if (storeState.lastCall) {
+    storeScheduleLabel = t("About to close — start your order for tomorrow");
+  } else {
+    storeScheduleLabel = t("Closed right now — schedule for {when}", {
+      when: t(storeState.nextOpeningDay),
+    });
+  }
+  const openingHoursLabel = t(
+    "Opening hours {open} to {close}. Orders placed now are ready in about 30 minutes.",
+    { open: storeState.opensAt, close: storeState.closesAt },
+  );
+
   const canSubmit =
     !isLoading &&
     selectedZone &&
@@ -397,7 +484,9 @@ export function CheckoutPage() {
                   <p className="text-sm font-extrabold text-brand-navy">
                     {guestMode
                       ? t("You are checking out as a guest.")
-                      : t("Sign in, create an account, or continue as a guest.")}
+                      : t(
+                          "Sign in, create an account, or continue as a guest.",
+                        )}
                   </p>
                   <p className="mt-0.5 text-xs leading-5 text-[#65748a]">
                     {guestMode
@@ -474,7 +563,7 @@ export function CheckoutPage() {
                     <input
                       autoComplete="name"
                       className={inputClassName}
-                      defaultValue={customer?.name || ""}
+                      defaultValue={savedDetails?.name || customer?.name || ""}
                       name="name"
                       required
                     />
@@ -484,7 +573,7 @@ export function CheckoutPage() {
                     <input
                       autoComplete="email"
                       className={inputClassName}
-                      defaultValue={customer?.email || ""}
+                      defaultValue={savedDetails?.email || customer?.email || ""}
                       name="email"
                       required
                       type="email"
@@ -495,7 +584,7 @@ export function CheckoutPage() {
                     <input
                       autoComplete="tel"
                       className={inputClassName}
-                      defaultValue={customer?.phone || ""}
+                      defaultValue={savedDetails?.phone || customer?.phone || ""}
                       inputMode="tel"
                       name="phone"
                       required
@@ -622,18 +711,25 @@ export function CheckoutPage() {
                           )}
                         </div>
                       </div>
-                      <div className="flex shrink-0 items-center gap-3">
+                      <div className="flex shrink-0 flex-wrap items-center gap-3">
+                        <span className={storePillClass}>
+                          <span
+                            aria-hidden="true"
+                            className={storePillDotClass}
+                          />
+                          {storeStateLabel}
+                        </span>
                         {fulfillmentType === "delivery" && (
                           <span className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold text-brand-navy shadow-sm">
                             {deliveryFee > 0
-                              ? `${t("Delivery fee")}: ${money(deliveryFee)}`
+                              ? deliveryLabel
                               : t("Free delivery")}
                           </span>
                         )}
                         {selectedZone.storeMapQuery && (
                           <a
                             className="inline-flex items-center gap-1 text-xs font-extrabold text-brand-yellow-deep transition hover:text-brand-navy"
-                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedZone.storeMapQuery)}`}
+                            href={mapsLink(selectedZone.storeMapQuery)}
                             rel="noreferrer"
                             target="_blank"
                           >
@@ -654,7 +750,7 @@ export function CheckoutPage() {
                       <input
                         autoComplete="address-line2"
                         className={inputClassName}
-                        defaultValue={customer?.deliveryResidence || ""}
+                        defaultValue={savedDetails?.residence || customer?.deliveryResidence || ""}
                         name="residence"
                         placeholder={t(
                           "Neighborhood, building, or residence details",
@@ -674,6 +770,34 @@ export function CheckoutPage() {
                 number={3}
                 title={t("Schedule")}
               >
+                {/* Open or closed decides whether an order can start today at all. */}
+                <div className={storePanelClass} role="status">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span aria-hidden="true" className={storeDotClass} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-extrabold text-brand-navy">
+                        {storeScheduleLabel}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[#5f6b7a]">
+                        {openingHoursLabel}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-brand-navy px-4 text-xs font-extrabold text-white transition hover:bg-brand-blue"
+                    onClick={() =>
+                      setScheduledDate(
+                        storeState.acceptingOrders ? today : getCameroonDate(1),
+                      )
+                    }
+                    type="button"
+                  >
+                    {storeState.acceptingOrders
+                      ? t("Order for today")
+                      : t("Schedule for tomorrow")}
+                  </button>
+                </div>
+
                 <label className={`${labelClassName} sm:max-w-xs`}>
                   {t("Scheduled date")}
                   <input
@@ -799,7 +923,7 @@ export function CheckoutPage() {
                         {t("points")}
                         {maxRedeemablePoints >= 100 &&
                         (discountCode || discount)
-                          ? ` · ${t("Cannot be combined with other offers")}`
+                          ? " · " + t("Cannot be combined with other offers")
                           : ""}
                       </span>
                     </span>
@@ -838,7 +962,10 @@ export function CheckoutPage() {
                       "Your contact and delivery details are saved to your account for future orders.",
                     )}
                   {!customer &&
-                    ` ${t("You are ordering as a guest. You will receive order updates by email.")}`}
+                    " " +
+                      t(
+                        "You are ordering as a guest. You will receive order updates by email.",
+                      )}
                 </span>
               </p>
             </form>

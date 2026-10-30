@@ -11,6 +11,8 @@ interface Customer {
   phone?: string;
   deliveryCity?: string;
   deliveryResidence?: string;
+  loyaltyPoints?: number;
+  referralCode?: string;
 }
 
 interface CustomerProfile {
@@ -24,14 +26,15 @@ interface CustomerProfile {
 interface AuthResponse {
   token: string;
   customer: Customer;
+  claimedOrderId?: number | null;
 }
 
 export interface AuthContextValue {
   customer: Customer | null;
   isLoading: boolean;
   sessionError: string;
-  requestSignupVerification: (credentials: { name: string; email: string; password: string; profilePicture?: string }) => Promise<{ verificationId: string; expiresInSeconds: number }>;
-  signup: (credentials: { verificationId: string; code: string }) => Promise<Customer>;
+  requestSignupVerification: (credentials: { name: string; email: string; password: string; profilePicture?: string; claimOrderId?: number; referralCode?: string }) => Promise<{ verificationId: string; expiresInSeconds: number }>;
+  signup: (credentials: { verificationId: string; code: string }) => Promise<Customer & { claimedOrderId?: number | null }>;
   requestPasswordReset: (email: string) => Promise<{ message?: string; verificationId?: string; expiresInSeconds?: number }>;
   confirmPasswordReset: (credentials: { verificationId: string; code: string; password: string }) => Promise<{ message?: string }>;
   login: (credentials: { email: string; password: string }) => Promise<Customer>;
@@ -111,15 +114,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result.customer;
   }
 
-  function requestSignupVerification(credentials: { name: string; email: string; password: string; profilePicture?: string }) {
+  function requestSignupVerification(credentials: { name: string; email: string; password: string; profilePicture?: string; claimOrderId?: number; referralCode?: string }) {
     return apiRequest<{ verificationId: string; expiresInSeconds: number }>("/auth/register/request-verification", {
       method: "POST",
       body: credentials,
     });
   }
 
-  function signup({ verificationId, code }: { verificationId: string; code: string }) {
-    return authenticate("/auth/register/verify", { verificationId, code });
+  async function signup({ verificationId, code }: { verificationId: string; code: string }) {
+    const result = await apiRequest<AuthResponse>("/auth/register/verify", {
+      method: "POST",
+      body: { verificationId, code },
+    });
+    setCustomerToken(result.token);
+    setToken(result.token);
+    setCustomer(result.customer);
+    setSessionError("");
+    return { ...result.customer, claimedOrderId: result.claimedOrderId ?? null };
   }
 
   function requestPasswordReset(email: string) {

@@ -73,6 +73,9 @@ import {
   updateOrderFulfillmentStatus,
   deleteCustomMenuItem,
   listOrderNotificationRecipients,
+  awardReferralPoints,
+  ensureReferralCode,
+  findCustomerByReferralCode,
 } from './database.js'
 import {
   describeEmailError,
@@ -92,6 +95,7 @@ import {
   sendOrderStatusUpdate,
 } from './email.js'
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../shared/data.js'
+import { allergensForItem } from '../shared/allergens.js'
 import { storeAdminCanAccess } from './admin-access.js'
 import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, saveUploadedImage } from './storage.js'
 import { optimizeUploadedImage, UnreadableImageError } from './images.js'
@@ -989,7 +993,16 @@ app.get('/api/menu', async (_request, response) => {
         reservedStock: stock?.reservedStock ?? 0,
         isAvailable: stock?.isAvailable ?? true,
         dietaryTags: stock?.dietaryTags ?? [],
+        // Staff-recorded allergens win; otherwise the category's known allergens stand in, so
+        // an ice cream never reads as "nothing to declare" just because nobody filled it in.
+        // null means "nobody has checked this item"; an empty list means "checked, nothing in it".
+        allergens: stock?.allergens?.length
+          ? stock.allergens
+          : (allergensForItem(category.title, item.name) ?? null),
+        allergensRecorded: Boolean(stock?.allergens?.length) || allergensForItem(category.title, item.name) !== null,
         lowStockThreshold: stock?.lowStockThreshold ?? 5,
+        // Only meaningful once the item is sold out; a note staff left about the next batch.
+        restockEta: stock?.restockEta || null,
         availableQuantity: Math.max(0, (stock?.stock ?? 100) - (stock?.reservedStock ?? 0)),
       }
     })
@@ -1699,6 +1712,16 @@ app.post('/api/auth/register/request-verification', signupLimiter, signupVerific
     const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
     const password = typeof request.body.password === 'string' ? request.body.password : ''
     const profilePicture = typeof request.body.profilePicture === 'string' ? request.body.profilePicture.trim() : ''
+    // A guest finishing an order signs up with the email the order was paid with. That email
+    // is proven by the verification code below, so their guest order can be linked.
+    const claimOrderId = Number(request.body.claimOrderId)
+    const referralCode = typeof request.body.referralCode === 'string' ? request.body.referralCode.trim().toUpperCase() : ''
+    const claimOrder = Number.isSafeInteger(claimOrderId) && claimOrderId > 0
+      ? await database.prepare(`
+          SELECT id FROM orders
+          WHERE id = ? AND LOWER(email) = ? AND customer_id IS NULL AND status IN ('processing', 'delivered')
+        `).get(claimOrderId, email)
+      : null
     if (!name || name.length > 100 || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
       || password.length < 8 || password.length > 128
       || (profilePicture && (!profilePicture.startsWith('data:image/') || profilePicture.length > 1024 * 1024))) {
@@ -1740,6 +1763,14 @@ app.post('/api/auth/register/request-verification', signupLimiter, signupVerific
         email, verification_id, code_hash, name, password_hash, profile_picture, attempts, created_at, expires_at
       ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
     `).run(email, verificationId, codeHash, name, passwordHash, profilePicture, createdAt, expiresAt)
+    if (referralCode) {
+      await database.prepare('UPDATE pending_customer_signups SET referral_code = ? WHERE verification_id = ?')
+        .run(referralCode.slice(0, 32), verificationId)
+    }
+    if (claimOrder) {
+      await database.prepare('UPDATE pending_customer_signups SET claim_order_id = ? WHERE verification_id = ?')
+        .run(claimOrder.id, verificationId)
+    }
 
     try {
       const sent = await sendCustomerVerificationCode({ to: email, code })
@@ -1769,7 +1800,8 @@ app.post('/api/auth/register/verify', signupLimiter, signupCodeAttemptLimiter, a
     const pending = await database.prepare(`
       SELECT email, verification_id AS "verificationId", code_hash AS "codeHash",
         name, password_hash AS "passwordHash", profile_picture AS "profilePicture",
-        attempts, created_at AS "createdAt", expires_at AS "expiresAt"
+        attempts, created_at AS "createdAt", expires_at AS "expiresAt",
+        claim_order_id AS "claimOrderId", referral_code AS "referralCode"
       FROM pending_customer_signups WHERE verification_id = ?
     `).get(verificationId)
     if (!pending) {
@@ -1818,9 +1850,26 @@ app.post('/api/auth/register/verify', signupLimiter, signupCodeAttemptLimiter, a
       passwordHash: pending.passwordHash,
       profilePicture: pending.profilePicture,
     })
+    // A friend's code is recorded on the account; the referrer is paid on the first order.
+    const referrer = await findCustomerByReferralCode(pending.referralCode)
+    if (referrer && referrer.id !== customer.id) {
+      await database.prepare('UPDATE customers SET referred_by = ? WHERE id = ?')
+        .run(referrer.id, customer.id)
+    }
+    // Attach the guest order the shopper asked to keep. Only a paid or delivered order that
+    // still belongs to nobody, and carries the email just verified, is linked.
+    let claimedOrderId = null
+    if (pending.claimOrderId) {
+      const claimed = await database.prepare(`
+        UPDATE orders SET customer_id = ?
+        WHERE id = ? AND LOWER(email) = ? AND customer_id IS NULL AND status IN ('processing', 'delivered')
+      `).run(customer.id, pending.claimOrderId, pending.email)
+      if (claimed.changes) claimedOrderId = Number(pending.claimOrderId)
+    }
     const token = jwt.sign({ sub: customer.id, type: 'customer' }, jwtSecret, { expiresIn: '8h' })
     response.status(201).json({
       token,
+      claimedOrderId,
       customer: {
         id: customer.id,
         name: customer.name,
@@ -2077,6 +2126,8 @@ app.put('/api/auth/profile', requireCustomer, async (request, response) => {
       profilePicture: customer.profilePicture || '',
       loyaltyPoints: customer.loyaltyPoints,
       isBanned: Boolean(customer.isBanned),
+      // Created on first read, so every account can share a code from the moment it exists.
+      referralCode: await ensureReferralCode(customer.id),
     },
   })
 })
@@ -2277,6 +2328,36 @@ app.get('/api/customer/saved-carts', requireCustomer, async (request, response) 
 })
 
 app.post('/api/customer/saved-carts', requireCustomer, async (request, response) => {
+  // Two ways in: an order (from the account page), or the bag in front of the customer.
+  if (request.body.orderId === undefined) {
+    const rawItems = Array.isArray(request.body.items) ? request.body.items : []
+    const items = rawItems
+      .map((item) => ({
+        productId: typeof item?.productId === 'string' ? item.productId.trim() : '',
+        quantity: Number(item?.quantity),
+      }))
+      .filter((item) => item.productId && Number.isSafeInteger(item.quantity) && item.quantity > 0 && item.quantity <= 99)
+    const label = typeof request.body.label === 'string'
+      ? request.body.label.trim().replace(/[<>]/g, '').slice(0, 80)
+      : ''
+    if (!items.length || items.length > 50 || items.length !== rawItems.length) {
+      response.status(400).json({ error: 'Provide between one and fifty items with valid product IDs and quantities.' })
+      return
+    }
+    const savedCart = await saveCustomerCart({
+      customerId: request.customer.id,
+      orderId: null,
+      label: label || 'Saved bag',
+      items,
+    })
+    if (!savedCart) {
+      response.status(409).json({ error: 'This bag is already saved to your cart list.' })
+      return
+    }
+    response.status(201).json({ savedCart })
+    return
+  }
+
   const orderId = Number(request.body.orderId)
   if (!Number.isSafeInteger(orderId) || orderId < 1) {
     response.status(400).json({ error: 'Choose a valid order to save.' })
@@ -3563,6 +3644,7 @@ async function updateOrderFulfillment(id, fulfillmentStatus, response, admin) {
       recipientName: order.customerName,
       orderId: id,
       status: fulfillmentStatus,
+      trackUrl: `${publicSiteUrl()}/reorder?token=${encodeURIComponent(signReorderToken(id))}`,
     })
   } catch (error) {
     console.error(`Unable to send fulfillment update for order #${id}:`, error.message)
@@ -4253,12 +4335,38 @@ app.put('/api/admin/menu-inventory', requireAdmin, ownerOnly, async (request, re
     response.status(400).json({ error: 'One or more dietary tags are not supported.' })
     return
   }
-  const updated = await updateMenuInventory(itemId, { stock, isAvailable, dietaryTags, lowStockThreshold })
+  // Optional note shown on a sold-out product. Undefined keeps the stored note.
+  const restockEta = request.body.restockEta === undefined
+    ? undefined
+    : request.body.restockEta === null || request.body.restockEta === ''
+      ? null
+      : String(request.body.restockEta).trim()
+  if (typeof restockEta === 'string' && (restockEta.length > 120 || /[<>]/.test(restockEta))) {
+    response.status(400).json({ error: 'Keep the restock note under 120 characters, without < or >.' })
+    return
+  }
+  // Optional allergen list. Undefined leaves what is stored; an array replaces it.
+  const allowedAllergens = new Set([
+    'Dairy', 'Eggs', 'Wheat', 'Gluten', 'Soy', 'Peanuts', 'Tree nuts', 'Almonds',
+    'Hazelnuts', 'Cashews', 'Pistachios', 'Walnuts', 'Pecans', 'Sesame', 'Mustard', 'Sulphites',
+  ])
+  if (request.body.allergens !== undefined && !Array.isArray(request.body.allergens)) {
+    response.status(400).json({ error: 'Allergens must be a list.' })
+    return
+  }
+  const allergens = request.body.allergens === undefined
+    ? undefined
+    : [...new Set(request.body.allergens.filter((entry) => typeof entry === 'string' && allowedAllergens.has(entry)))]
+  if (Array.isArray(request.body.allergens) && allergens.length !== new Set(request.body.allergens).size) {
+    response.status(400).json({ error: 'One or more allergens are not supported.' })
+    return
+  }
+  const updated = await updateMenuInventory(itemId, { stock, isAvailable, dietaryTags, allergens, lowStockThreshold, restockEta })
   if (!updated) {
     response.status(409).json({ error: 'Stock cannot be lower than the quantity reserved for pending checkouts.' })
     return
   }
-  response.json({ itemId, stock, isAvailable, dietaryTags, lowStockThreshold })
+  response.json({ itemId, stock, isAvailable, dietaryTags, allergens, lowStockThreshold, restockEta: restockEta ?? null })
 })
 
 app.post('/api/admin/uploads', requireAdmin, ownerOnly, async (request, response) => {
@@ -4727,6 +4835,65 @@ function publicSiteUrl() {
     || frontendOrigins[0] || '').replace(/\/+$/, '')
 }
 
+// A reorder link in an email has to work without signing in, including for guests. The token
+// names one order and nothing else, is signed with the same secret as sessions, and expires.
+const REORDER_TOKEN_TTL = '30d'
+
+function signReorderToken(orderId) {
+  return jwt.sign({ order: orderId, type: 'reorder' }, jwtSecret, { expiresIn: REORDER_TOKEN_TTL })
+}
+
+/**
+ * The items of a paid order, in the shape the bag and /orders/:id/items both understand.
+ * Only what is still sellable is returned, with quantity capped by live stock.
+ */
+async function orderItemsForReorder(orderId) {
+  const rows = await database.prepare(`
+    SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId",
+      flavor_name AS "flavorName", quantity
+    FROM order_items WHERE order_id = ? ORDER BY id
+  `).all(orderId)
+  return rows
+    .map((row) => ({
+      productId: row.menuItemId || (row.flavorId ? `flavor:${row.flavorId}` : ''),
+      quantity: row.quantity,
+      name: row.flavorName,
+    }))
+    .filter((item) => item.productId)
+}
+
+app.get('/api/orders/reorder', async (request, response) => {
+  const token = typeof request.query.token === 'string' ? request.query.token : ''
+  if (!token) {
+    response.status(400).json({ error: 'This reorder link is incomplete.' })
+    return
+  }
+  let claims
+  try {
+    claims = jwt.verify(token, jwtSecret)
+  } catch {
+    response.status(401).json({ error: 'This reorder link has expired. Open the order from your account instead.' })
+    return
+  }
+  const orderId = Number(claims?.order)
+  if (claims?.type !== 'reorder' || !Number.isSafeInteger(orderId) || orderId < 1) {
+    response.status(401).json({ error: 'This reorder link is not valid.' })
+    return
+  }
+  const order = await database.prepare(`
+    SELECT id, customer_name AS "customerName", status FROM orders WHERE id = ?
+  `).get(orderId)
+  if (!order || !['processing', 'delivered'].includes(order.status)) {
+    response.status(404).json({ error: 'That order can no longer be reordered.' })
+    return
+  }
+  response.json({
+    orderId: order.id,
+    customerName: order.customerName,
+    items: await orderItemsForReorder(order.id),
+  })
+})
+
 async function sendDueReviewReminders() {
   if (isSendingReviewReminders) return
   isSendingReviewReminders = true
@@ -4761,6 +4928,7 @@ async function sendDueReviewReminders() {
             orderId: order.id,
             items,
             reviewUrl: `${publicSiteUrl()}/account/orders?tab=orders&review=${order.id}`,
+            orderUrl: `${publicSiteUrl()}/reorder?token=${encodeURIComponent(signReorderToken(order.id))}`,
           })
           emailed = true
         } catch (error) {

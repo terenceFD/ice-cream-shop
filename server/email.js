@@ -203,6 +203,7 @@ export async function sendOrderStatusUpdate({
   fulfillmentType,
   scheduledFor,
   deliveryFee = 0,
+  trackUrl,
 }) {
   const statusLabels = {
     accepted: 'has been accepted',
@@ -239,13 +240,22 @@ export async function sendOrderStatusUpdate({
       `Your order #${orderId} ${statusLabel}.`,
       ...receipt,
       '',
+      ...(trackUrl
+        ? [
+            // One tap back into the bag, with the order's items already in it. The link is
+            // signed, so it works for a guest who never made an account.
+            'Order the same again:',
+            trackUrl,
+            '',
+          ]
+        : []),
       'Thank you,',
       'Cold Stone Creamery',
     ].join('\n'),
   })
 }
 
-export async function sendReviewReminder({ to, recipientName, orderId, items = [], reviewUrl }) {
+export async function sendReviewReminder({ to, recipientName, orderId, items = [], reviewUrl, orderUrl }) {
   const { transporter, from } = createTransporter()
   const itemNames = [...new Set(items.map((item) => item.flavorName).filter(Boolean))]
   await sendBrandedMail(transporter, {
@@ -259,6 +269,7 @@ export async function sendReviewReminder({ to, recipientName, orderId, items = [
       'Would you rate it? It takes about 10 seconds and helps other customers choose their treats.',
       '',
       `Rate your order: ${reviewUrl}`,
+      ...(orderUrl ? ['', 'Liked it? Order the same again:', orderUrl] : []),
       '',
       'Thank you,',
       'Cold Stone Creamery',

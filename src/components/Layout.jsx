@@ -10,6 +10,7 @@ import { useLanguage } from "../language/useLanguage";
 import { PROMOTION_DISMISSED_KEY, readInitialPromotion } from "../lib/promotion";
 import { coldStoneMenuCategories } from "../../shared/data";
 import { EVENT_OCCASIONS } from "../../shared/eventTypes.js";
+import { HeaderSearch } from "./HeaderSearch";
 
 function ArrowIcon({ diagonal = false }) {
   return (
@@ -830,6 +831,9 @@ export function Header() {
   const location = useLocation();
   const headerRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // While the search is open it takes the header; the logo, navigation and other controls step
+  // aside so the visitor types into the full width of the bar.
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [logoutError, setLogoutError] = useState("");
   // The bag badge pulses briefly when an item is added, so the visitor sees exactly
   // where their item went — feedback anchored to the bag, not a distant message.
@@ -986,15 +990,16 @@ export function Header() {
       >
         <div aria-hidden="true" className={`pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent transition-opacity ${isScrolled ? "opacity-100" : "opacity-0"}`} />
         <header className={`relative mx-auto flex max-w-[1320px] items-center gap-2 px-4 text-white transition-[height] duration-300 sm:px-6 lg:gap-2 lg:px-3 xl:gap-4 xl:px-12 ${isScrolled ? "h-[68px]" : "h-[80px]"}`}>
+          {/* The logo stays put while searching; only the navigation and controls step aside. */}
           <Link aria-label="Cold Stone Creamery Cameroon home" className="group flex shrink-0 items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow" to="/">
             <BrandMark compact={isScrolled} />
-            <span className="font-display text-[18px] font-extrabold leading-[0.95] tracking-tight text-white sm:text-[19px]">
+            <span className={`font-display text-[18px] font-extrabold leading-[0.95] tracking-tight text-white sm:text-[19px] ${isSearchOpen ? "max-lg:hidden" : ""}`}>
               Cold Stone
               <span className="block text-brand-yellow">Creamery</span>
             </span>
           </Link>
 
-          {!isAdminPage && (
+          {!isAdminPage && !isSearchOpen && (
             <nav aria-label={t("Main navigation")} className="hidden flex-1 items-center justify-center lg:flex">
               <div className="flex items-center gap-0.5 xl:gap-4">
                 <Link className={desktopLinkClassName(isHome)} to="/#home">
@@ -1003,21 +1008,18 @@ export function Header() {
                 <NavigationDropdown active={isShopActive} feature={shopFeature} label={t("Flavors")} links={shopLinks} subtitle={t("Browse signature creations and treats.")} />
                 <NavigationDropdown active={isMenuActive} feature={menuFeature} label={t("Menu")} links={menuLinks} subtitle={t("Browse signature creations and treats.")} />
                 <NavigationDropdown active={isEventsActive} feature={eventFeature} label={t("Events")} links={eventLinks} subtitle={t("Ice cream for birthdays, offices and celebrations")} />
-                <Link className={desktopLinkClassName(location.pathname === "/about")} to="/about">
-                  {t("About us")}
-                </Link>
-                <Link className={desktopLinkClassName(location.pathname === "/contact")} to="/contact">
-                  {t("Contact")}
-                </Link>
               </div>
             </nav>
           )}
 
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 lg:ml-0">
-            <div className="hidden sm:block">
-              <LanguageDropdown language={language} setLanguage={setLanguage} t={t} />
-            </div>
-            {!isAdminPage && (
+          <div className={`flex items-center gap-1.5 sm:gap-2 ${isSearchOpen ? "min-w-0 flex-1" : "ml-auto shrink-0 lg:ml-0"}`}>
+            {!isAdminPage && <HeaderSearch onOpenChange={setIsSearchOpen} />}
+            {!isSearchOpen && (
+              <div className="hidden sm:block">
+                <LanguageDropdown language={language} setLanguage={setLanguage} t={t} />
+              </div>
+            )}
+            {!isAdminPage && !isSearchOpen && (
               <>
                 <div className="hidden lg:block">
                   <AccountDropdown
@@ -1104,18 +1106,15 @@ export function Header() {
             </div>
 
             <div className="flex-1 space-y-0 px-5 py-5">
+              <div className="mb-3">
+                <HeaderSearch onNavigate={() => setIsMobileMenuOpen(false)} variant="inline" />
+              </div>
               <Link className={mobileLinkClassName(isHome)} onClick={() => setIsMobileMenuOpen(false)} to="/#home">
                 {t("Home")}
               </Link>
               <NavigationDropdown active={isShopActive} label={t("Flavors")} links={shopLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />
               <NavigationDropdown active={isMenuActive} label={t("Menu")} links={menuLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />
               <NavigationDropdown active={isEventsActive} label={t("Events")} links={eventLinks} mobile onNavigate={() => setIsMobileMenuOpen(false)} />
-              <Link className={mobileLinkClassName(location.pathname === "/about")} onClick={() => setIsMobileMenuOpen(false)} to="/about">
-                {t("About us")}
-              </Link>
-              <Link className={mobileLinkClassName(location.pathname === "/contact")} onClick={() => setIsMobileMenuOpen(false)} to="/contact">
-                {t("Contact")}
-              </Link>
               <Link className={mobileLinkClassName(location.pathname === "/custom-cake")} onClick={() => setIsMobileMenuOpen(false)} to="/custom-cake">
                 {t("Custom cake request")}
               </Link>

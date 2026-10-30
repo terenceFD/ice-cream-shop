@@ -42,6 +42,7 @@ const CookiePolicyPage = lazyPage(() => import("../pages/legal/CookiePolicyPage"
 const MenuPage = lazyPage(() => import("../pages/menu/MenuPage"), "MenuPage");
 const AllMenuPage = lazyPage(() => import("../pages/menu/AllMenuPage"), "AllMenuPage");
 const CustomerOrdersPage = lazyPage(() => import("../pages/account/CustomerOrdersPage"), "CustomerOrdersPage");
+const ReorderPage = lazyPage(() => import("../pages/account/ReorderPage"), "ReorderPage");
 const TrackOrderPage = lazyPage(() => import("../pages/account/TrackOrderPage"), "TrackOrderPage");
 const AdminInventoryPage = lazyPage(() => import("../pages/admin/AdminInventoryPage"), "AdminInventoryPage");
 const AdminCategoriesPage = lazyPage(() => import("../pages/admin/AdminCategoriesPage"), "AdminCategoriesPage");
@@ -159,6 +160,7 @@ function App() {
                     <Route path="/signup" element={<AuthPage mode="signup" />} />
                     <Route path="/account/orders" element={<CustomerOrdersPage />} />
                     <Route path="/track-order" element={<TrackOrderPage />} />
+                    <Route path="/reorder" element={<ReorderPage />} />
                     <Route path="/admin/login" element={<AdminLoginPage />} />
                     <Route
                       element={

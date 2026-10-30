@@ -158,25 +158,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .similar-card,
-  .instagram-photo,
-  .moment-card .moment-copy {
+  .instagram-photo {
     transition: none;
-  }
-}
-
-/* Gallery words stay visible everywhere. A pointer adds a gentle rise-in instead
-   of hiding the copy — hiding it left the welcome message invisible on desktop. */
-@media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
-  .moment-card .moment-copy {
-    opacity: 1;
-    transform: none;
-  }
-
-  .moment-card:hover .moment-copy,
-  .moment-card:focus-visible .moment-copy,
-  .moment-card:focus-within .moment-copy {
-    opacity: 1;
-    transform: none;
   }
 }
 
@@ -1047,6 +1030,12 @@ body:has(.whatsapp-fab) footer {
   padding-bottom: calc(var(--whatsapp-fab-space) + env(safe-area-inset-bottom, 0px));
 }
 
+/* The locations hero's buttons sit in the bottom-left corner, exactly where the fixed WhatsApp
+   button floats. Lift the button row clear of it. */
+body:has(.whatsapp-fab) .locations-hero-actions {
+  padding-bottom: calc(var(--whatsapp-fab-space) - 2rem);
+}
+
 /*
  * The hero no longer reserves WhatsApp-button space: the FAB floats over the
  * page edge and the trust strip is the last element before it, so a large
@@ -1107,51 +1096,6 @@ body:has(.whatsapp-fab) footer {
   .whatsapp-fab > span:last-child,
   .whatsapp-fab svg {
     transition: none;
-  }
-}
-
-/*
- * Menu highlights cards (home page). On phones the image becomes a compact
- * thumbnail beside the text; from sm up the image is full-width with the text
- * below, as before. The phone layout must win over any leftover utilities, so
- * the block display carries !important at the tablet+ range.
- */
-.menu-highlight-link {
-  display: block !important;
-  align-items: normal !important;
-  gap: normal !important;
-}
-
-.menu-highlight-media {
-  aspect-ratio: 4 / 3;
-}
-
-.menu-highlight-copy {
-  margin-top: 1.25rem;
-}
-
-@media (max-width: 639.98px) {
-  .menu-highlight-link {
-    display: flex !important;
-    align-items: center !important;
-    gap: 1.25rem !important;
-  }
-
-  .menu-highlight-media {
-    width: 8rem;
-    flex-shrink: 0;
-    aspect-ratio: auto;
-    height: auto;
-  }
-
-  .menu-highlight-media img {
-    height: 100%;
-  }
-
-  .menu-highlight-copy {
-    margin-top: 0;
-    flex: 1;
-    min-width: 0;
   }
 }
 

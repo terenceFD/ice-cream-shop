@@ -22,8 +22,12 @@ interface InventoryItem {
   availableQuantity: number
   isAvailable: boolean
   dietaryTags: string[]
+  allergens: string[]
   lowStockThreshold?: number
 }
+
+// What could harm a customer. Kept separate from dietary needs, which say who a product suits.
+const allergenOptions = ['Dairy', 'Eggs', 'Wheat', 'Gluten', 'Soy', 'Peanuts', 'Tree nuts', 'Almonds', 'Hazelnuts', 'Cashews', 'Pistachios', 'Walnuts', 'Pecans', 'Sesame', 'Mustard', 'Sulphites']
 
 const inputClassName = 'mt-1.5 w-full rounded-md border border-[#dce3eb] bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-brand-navy transition placeholder:text-[#9aa5b3] hover:border-[#dce3eb] focus:border-brand-yellow-deep focus:bg-white focus:ring-4 focus:ring-brand-yellow/25 outline-none!'
 
@@ -169,6 +173,7 @@ export function AdminInventoryPage() {
           stock: Number(item.stock),
           isAvailable: item.isAvailable,
           dietaryTags: item.dietaryTags || [],
+          allergens: item.allergens || [],
           lowStockThreshold: Number(item.lowStockThreshold ?? DEFAULT_THRESHOLD),
         },
       })
@@ -516,7 +521,7 @@ export function AdminInventoryPage() {
                           <button
                             aria-label={`${t('Edit')} ${item.name}`}
                             className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-brand-blue transition-colors hover:bg-[#f4f6f8] hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-brand-yellow-deep"
-                            onClick={() => { setError(''); setDraft({ ...item, dietaryTags: [...(item.dietaryTags || [])] }) }}
+                            onClick={() => { setError(''); setDraft({ ...item, dietaryTags: [...(item.dietaryTags || [])], allergens: [...(item.allergens || [])] }) }}
                             type="button"
                           >
                             <Icon path={icons.edit} />
@@ -634,6 +639,40 @@ export function AdminInventoryPage() {
                 </span>
                 <Switch checked={draft.isAvailable !== false} label={t('Available to order')} onChange={(checked) => setDraft({ ...draft, isAvailable: checked })} />
               </div>
+
+              <fieldset>
+                <legend className="mb-3 text-sm font-semibold text-brand-navy">{t('Allergens')}</legend>
+                <p className="mb-3 text-xs leading-5 text-[#65748a]">
+                  {t('What could harm a customer. Shows on the product page, and says "not recorded" until it is set.')}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {allergenOptions.map((allergen) => {
+                    const selected = draft.allergens?.includes(allergen) || false
+                    return (
+                      <label
+                        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold ring-1 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-yellow-deep ${
+                          selected ? 'bg-[#fff1ec] text-[#9b2c17] ring-[#f3c9bb]' : 'bg-white text-[#65748a] ring-[#dce3eb] hover:ring-[#dce3eb]'
+                        }`}
+                        key={allergen}
+                      >
+                        <input
+                          checked={selected}
+                          className="sr-only"
+                          onChange={(event) => {
+                            const list = new Set(draft.allergens || [])
+                            if (event.target.checked) list.add(allergen)
+                            else list.delete(allergen)
+                            setDraft({ ...draft, allergens: [...list] })
+                          }}
+                          type="checkbox"
+                        />
+                        <Icon className="size-3.5" path={selected ? icons.check : icons.plus} />
+                        {t(allergen)}
+                      </label>
+                    )
+                  })}
+                </div>
+              </fieldset>
 
               <fieldset>
                 <legend className="mb-3 text-sm font-semibold text-brand-navy">{t('Dietary needs')}</legend>

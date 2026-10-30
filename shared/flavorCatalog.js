@@ -8,7 +8,9 @@ export const coldStoneFlavors = [
     color: "bg-[#fff1cf]",
     tag: "Classics",
     servings: 2,
-    allergies: ["None common"],
+    // A vanilla scoop is still a dairy ice cream. "None common" here told anyone with a dairy
+    // allergy that there was nothing to worry about, which was false.
+    allergies: ["Dairy"],
     origin: "Madagascar",
     stock: 100,
   },
