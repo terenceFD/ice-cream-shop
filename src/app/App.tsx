@@ -65,6 +65,7 @@ const EventOrdersPage = lazyPage(() => import("../pages/events/EventOrdersPage")
 const AdminEventOrdersPage = lazyPage(() => import("../pages/admin/AdminEventOrdersPage"), "AdminEventOrdersPage");
 // Prompts are not needed for the first paint, so they load after the main bundle.
 const InstallAppPrompt = lazyPage(() => import("../components/InstallAppPrompt"), "InstallAppPrompt");
+const BackToTop = lazyPage(() => import("../components/BackToTop"), "BackToTop");
 const PromotionAlertsPrompt = lazyPage(() => import("../components/PromotionAlerts"), "PromotionAlertsPrompt");
 const HomePage = lazyPage(() => import("../pages/home/HomePage"), "HomePage");
 
@@ -123,6 +124,14 @@ function AccountCreatedNotice() {
       </button>
     </div>
   );
+}
+
+// The admin desk and the payment flow have their own layout and their own navigation back,
+// so the floating button would only get in the way there.
+function CustomerBackToTop() {
+  const { pathname } = useLocation();
+  const hidden = pathname.startsWith("/admin") || pathname === "/payment";
+  return hidden ? null : <BackToTop />;
 }
 
 function App() {
@@ -211,6 +220,7 @@ function App() {
                 <InstallAppPrompt />
                 <PromotionAlertsPrompt />
                 <WhatsAppButton />
+                <CustomerBackToTop />
                 <RouteMeta />
               </AdminAuthProvider>
             </AuthProvider>

@@ -1137,3 +1137,61 @@ body:has(.whatsapp-fab) .locations-hero-actions {
   }
 }
 
+
+/*
+ * Back to top.
+ *
+ * Shown once the visitor is well past the header. It sits bottom-right, clear of the WhatsApp
+ * button (bottom-left), and lifts above the phone safe area. Hidden from assistive technology
+ * while it is not visible, so it is not announced before it can be used.
+ */
+.site-back-to-top {
+  position: fixed;
+  right: 1.25rem;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background: var(--brand-navy, #0a2550);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(9, 42, 83, 0.35);
+  opacity: 0;
+  transform: translateY(0.75rem) scale(0.9);
+  pointer-events: none;
+  transition: opacity 250ms ease, transform 250ms ease, background-color 200ms ease;
+}
+
+.site-back-to-top--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.site-back-to-top:hover {
+  background: #14467c;
+}
+
+.site-back-to-top:focus-visible {
+  outline: 2px solid var(--brand-yellow, #ffb84d);
+  outline-offset: 3px;
+}
+
+@media (min-width: 640px) {
+  .site-back-to-top {
+    right: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-back-to-top {
+    transition: opacity 150ms ease;
+    transform: none;
+  }
+
+  .site-back-to-top--visible {
+    transform: none;
+  }
+}
