@@ -1,4 +1,5 @@
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type ChangeEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../../pages/admin/useAdminAuth'
 import { apiRequest, ADMIN_STORE_TOWN_KEY, ADMIN_WELCOME_KEY } from '../../api/api'
@@ -211,6 +212,9 @@ export function AdminLayout() {
     }
   })
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  // The label that follows the pointer over a folded sidebar's icons. Position is measured
+  // from the link, because the scrolling sidebar would clip a CSS-only tooltip.
+  const [navTooltip, setNavTooltip] = useState<{ label: string; count: number | null; top: number; left: number } | null>(null)
   const [navQuery, setNavQuery] = useState('')
   const [showWelcome, setShowWelcome] = useState(false)
   const [depositNotices, setDepositNotices] = useState<DepositNotice[]>([])
@@ -246,7 +250,20 @@ export function AdminLayout() {
     setNavQuery('')
   }, [location.pathname])
 
+  /** Place the folded-sidebar label beside the icon the pointer or focus is on. */
+  function showNavTooltip(link: HTMLElement, label: string, count: number | null) {
+    const box = link.getBoundingClientRect()
+    setNavTooltip({
+      label,
+      count,
+      top: Math.round(box.top + box.height / 2),
+      left: Math.round(box.right + 12),
+    })
+  }
+
   function toggleSidebar() {
+    // Folding the sidebar while a label is showing would leave it floating on its own.
+    setNavTooltip(null)
     setIsSidebarCollapsed((collapsed) => {
       const next = !collapsed
       try {
@@ -1282,7 +1299,16 @@ export function AdminLayout() {
                                   : 'text-[#b9c9dc] hover:bg-white/[0.06] hover:text-white'
                               } ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
                               end={item.end}
-                              title={isSidebarCollapsed ? t(item.label) : undefined}
+                              onBlur={() => setNavTooltip(null)}
+                              onFocus={(event) => {
+                                if (!isSidebarCollapsed) return
+                                showNavTooltip(event.currentTarget, item.label, count)
+                              }}
+                              onMouseEnter={(event) => {
+                                if (!isSidebarCollapsed) return
+                                showNavTooltip(event.currentTarget, item.label, count)
+                              }}
+                              onMouseLeave={() => setNavTooltip(null)}
                               to={item.to}
                             >
                               <span className={`relative grid size-6 shrink-0 place-items-center rounded-md transition ${
@@ -1340,8 +1366,16 @@ export function AdminLayout() {
 
             <div className={`admin-sidebar-footer grid shrink-0 grid-cols-2 gap-1 border-t border-white/[0.08] p-3 ${isSidebarCollapsed ? 'lg:grid-cols-1 lg:px-2' : ''}`}>
               <Link
+                aria-label={isSidebarCollapsed ? t('View storefront') : undefined}
                 className={`flex min-h-10 min-w-0 items-center gap-2 rounded-md px-2 text-[12px] font-semibold text-white/65 transition hover:bg-white/[0.08] hover:text-white ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
-                title={isSidebarCollapsed ? t('View storefront') : undefined}
+                onBlur={() => setNavTooltip(null)}
+                onFocus={(event) => {
+                  if (isSidebarCollapsed) showNavTooltip(event.currentTarget, 'View storefront', null)
+                }}
+                onMouseEnter={(event) => {
+                  if (isSidebarCollapsed) showNavTooltip(event.currentTarget, 'View storefront', null)
+                }}
+                onMouseLeave={() => setNavTooltip(null)}
                 to="/flavors"
               >
                 <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/[0.06]">
@@ -1352,10 +1386,18 @@ export function AdminLayout() {
                 <span className={`truncate ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>{t('Storefront')}</span>
               </Link>
               <button
+                aria-label={isSidebarCollapsed ? t('Log out') : undefined}
                 className={`flex min-h-10 w-full min-w-0 items-center gap-2 rounded-md px-2 text-left text-[12px] font-semibold text-white/65 transition hover:bg-red-500/15 hover:text-red-100 disabled:opacity-60 ${isSidebarCollapsed ? 'lg:justify-center lg:px-0' : ''}`}
                 disabled={isLoggingOut}
+                onBlur={() => setNavTooltip(null)}
                 onClick={handleLogout}
-                title={isSidebarCollapsed ? t('Log out') : undefined}
+                onFocus={(event) => {
+                  if (isSidebarCollapsed) showNavTooltip(event.currentTarget, 'Log out', null)
+                }}
+                onMouseEnter={(event) => {
+                  if (isSidebarCollapsed) showNavTooltip(event.currentTarget, 'Log out', null)
+                }}
+                onMouseLeave={() => setNavTooltip(null)}
                 type="button"
               >
                 <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/[0.06]">
@@ -1369,6 +1411,29 @@ export function AdminLayout() {
             {logoutError && <p className="mx-3 mb-3 rounded-lg bg-red-500/15 px-3 py-2 text-xs text-red-100" role="alert">{logoutError}</p>}
           </div>
         </aside>
+
+        {/* The folded sidebar's label. Rendered at the document root, not here: inside the
+            layout grid a fixed element still contributes to the scrollable width, which pushed
+            the page sideways. aria-hidden because the link already carries the name for screen
+            readers; this is only the visual cue. */}
+        {isSidebarCollapsed && navTooltip
+          ? createPortal(
+              <span
+                // Keyed by label so moving between icons mounts a fresh node and the entrance
+                // animation replays, instead of the same element silently changing text.
+                key={navTooltip.label}
+                aria-hidden="true"
+                className="admin-sidebar-tooltip hidden lg:flex"
+                style={{ top: navTooltip.top, left: navTooltip.left }}
+              >
+                {t(navTooltip.label)}
+                {navTooltip.count !== null && navTooltip.count > 0 && (
+                  <span className="admin-sidebar-tooltip-count">{navTooltip.count > 99 ? '99+' : navTooltip.count}</span>
+                )}
+              </span>,
+              document.body,
+            )
+          : null}
 
         <main className="min-h-[60vh] min-w-0 rounded-md border border-[#e2e8f0] bg-white p-4 shadow-[0_8px_28px_rgba(16,44,80,0.04)] sm:p-6 lg:p-8">
           <Suspense fallback={<div aria-busy="true" className="min-h-[50vh]" role="status" />}>

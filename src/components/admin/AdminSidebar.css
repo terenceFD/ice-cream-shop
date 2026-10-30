@@ -86,8 +86,126 @@
   }
 }
 
+/*
+ * Label shown beside an icon when the sidebar is folded.
+ *
+ * The sidebar and its navigation scroll, so an absolutely positioned tooltip would be clipped.
+ * A fixed layer placed at the link's measured position is not: it floats above everything, to the
+ * right of the icon, and never widens the sidebar or shifts the page.
+ */
+.admin-sidebar-tooltip {
+  position: fixed;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 15rem;
+  padding: 7px 12px 7px 10px;
+  border-radius: 9px;
+  background: #0b2e57;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  box-shadow: 0 10px 26px rgb(4 14 26 / 38%), 0 1px 0 rgb(255 255 255 / 8%) inset;
+  pointer-events: none;
+  transform-origin: left center;
+  /* Centred on the icon even before the first animation frame runs. */
+  transform: translate(0, -50%);
+  /*
+   * Falling edge is slower than the rise and uses an ease that settles rather than stops:
+   * cubic-bezier(0.22, 1, 0.36, 1) starts quickly and decelerates, so the label arrives with
+   * momentum instead of sliding mechanically. Opacity is held above zero for the first half so
+   * the text is readable while it moves, then the container is removed. Re-running the keyframes
+   * on each hover restarts the motion, so moving between icons re-animates rather than snapping.
+   */
+  animation: admin-sidebar-tooltip-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+
+/* A small arrow pointing back at the icon, so the label reads as attached to it. */
+.admin-sidebar-tooltip::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 1.5px;
+  background: inherit;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.admin-sidebar-tooltip-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ffdc32;
+  color: #102944;
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * The vertical centring lives in the keyframes rather than an inline transform, because an
+ * inline transform would override every frame and the label would simply appear.
+ */
+@keyframes admin-sidebar-tooltip-in {
+  0% {
+    opacity: 0;
+    transform: translate(-8px, -50%) scale(0.96);
+  }
+  /* Readable early: the label is legible almost at once, the movement just settles. */
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, -50%) scale(1);
+  }
+}
+
+/*
+ * The icon answers the pointer at the same moment, so the label looks attached to it rather
+ * than appearing on its own. Only on a fine pointer: on touch there is no hover to answer.
+ */
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar-link {
+    transition:
+      background-color 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .admin-sidebar-link svg {
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .admin-sidebar-link:hover svg,
+  .admin-sidebar-link:focus-visible svg {
+    transform: scale(1.1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar-link {
     transition: none;
+  }
+
+  .admin-sidebar-link svg,
+  .admin-sidebar-link:hover svg,
+  .admin-sidebar-link:focus-visible svg {
+    transition: none;
+    transform: none;
+  }
+
+  /* Still shown, simply without movement: the label must not disappear for these users. */
+  .admin-sidebar-tooltip {
+    animation: none;
   }
 }
