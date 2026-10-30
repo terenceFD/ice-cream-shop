@@ -179,7 +179,10 @@ export function HeroBackground({
       ];
 
   return (
-    <div aria-hidden="true" className={`hero-background pointer-events-none absolute inset-0 -z-10${animated ? "" : " hero-background--static"}${quietOnMobile ? " hero-background--quiet-mobile" : ""}`}>
+    // overflow-hidden clips the drifting blobs, which are several hundred pixels wide and sit
+    // past the hero's right edge. Heroes do not clip themselves (a clipping hero also cut off the
+    // header's search results), so the background has to contain its own decoration here.
+    <div aria-hidden="true" className={`hero-background pointer-events-none absolute inset-0 -z-10 overflow-hidden${animated ? "" : " hero-background--static"}${quietOnMobile ? " hero-background--quiet-mobile" : ""}`}>
       {blobs.map((blob, index) => (
         <div
           className={`${blob.className} rounded-full bg-[radial-gradient(closest-side,${blob.background},${blob.background}_35%,transparent)]`}
