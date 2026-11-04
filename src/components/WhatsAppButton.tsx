@@ -10,7 +10,8 @@ const DEFAULT_MESSAGE = "Hello Cold Stone Creamery! I have a question.";
 // Used when WHATSAPP_NUMBER is not set. The first published store number.
 const FALLBACK_NUMBER = cameroonLocations.find((location) => location.phone)?.phone || "";
 
-// Admin, checkout and payment pages stay free of extra buttons.
+// Admin, checkout and payment pages stay free of extra buttons. The home page
+// does not show the chat button at all.
 const HIDDEN_PATHS = ["/admin", "/checkout", "/payment"];
 
 let numberRequest: Promise<string | null> | null = null;
@@ -66,7 +67,8 @@ export function WhatsAppButton() {
     };
   }, [location.pathname]);
 
-  if (!number || HIDDEN_PATHS.some((path) => location.pathname.startsWith(path))) return null;
+  const onHome = location.pathname === "/";
+  if (!number || onHome || HIDDEN_PATHS.some((path) => location.pathname.startsWith(path))) return null;
   const message = t(DEFAULT_MESSAGE);
   const href = whatsappLink(number, message);
   if (!href) return null;
