@@ -827,6 +827,29 @@ export async function verifyDatabaseSchema() {
     )
   `).run();
 
+  // Newsletter subscribers were added after the production database was migrated, so the
+  // startup migration creates the table the same way it does for pending signups and
+  // password resets — otherwise a hosted database fails the required-table check below.
+  await database.prepare(`
+    CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+      id SERIAL PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      source TEXT NOT NULL DEFAULT 'footer',
+      is_subscribed SMALLINT NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+  await database.prepare(`
+    ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'footer'
+  `).run();
+  await database.prepare(`
+    ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS is_subscribed SMALLINT NOT NULL DEFAULT 1
+  `).run();
+  await database.prepare(`
+    ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `).run();
+
   const requiredTables = [
     "admins",
     "admin_activity",
