@@ -397,10 +397,10 @@ export function MenuPage() {
   const money = (amount) => formatCartMoney(amount, 'xaf', language, displayCurrency);
   const [selectedItemState, setSelectedItemState] = useState(null);
   const [search, setSearch] = useState("");
+  const [categories, setCategories] = useState(coldStoneMenuCategories);
   // `categories` is part of the deps: the observer is set up while the built-in menu is
   // showing, and must re-run when the live catalog arrives so new cards get observed.
   const gridRef = useScrollReveal([selectedItemState, search, categories]);
-  const [categories, setCategories] = useState(coldStoneMenuCategories);
   const [menuError, setMenuError] = useState("");
   const productRef = useRef(null);
   const [cartNotice, setCartNotice] = useState("");
