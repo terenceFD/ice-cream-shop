@@ -104,7 +104,7 @@ export function FlavorDetailPage() {
       detail: flavor.detail,
       to: `/flavor/${flavor.id}`,
     });
-  }, [flavor?.id]);
+  }, [flavor]);
 
   const flashAdded = (key: string) => {
     setAddedKey(key);

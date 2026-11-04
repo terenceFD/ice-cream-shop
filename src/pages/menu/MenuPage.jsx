@@ -482,9 +482,6 @@ export function MenuPage() {
     categories.find((category) => category.title === "Ice Cream") ||
     categories[0];
   const heroCategory = activeCategory || featuredCategory;
-  const heroCategoryTheme = heroCategory
-    ? CATEGORY_HERO_THEMES[heroCategory.title] || DEFAULT_CATEGORY_HERO_THEME
-    : DEFAULT_CATEGORY_HERO_THEME;
   const heroCategoryStats = heroCategory
     ? {
         available: heroCategory.items.filter(

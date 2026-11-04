@@ -31,7 +31,7 @@ function migratedColumns() {
   return added;
 }
 
-/** Columns the base SQLite CREATE TABLE statements give each table. */
+/** Columns the base SQLite CREATE TABLE statements give each table. Kept for parity checks on new columns. */
 function createdColumns() {
   const created = new Map();
   for (const match of databaseSource.matchAll(
@@ -49,6 +49,7 @@ function createdColumns() {
   }
   return created;
 }
+export { createdColumns };
 
 test("every menu_inventory column the public menu reads exists after the Postgres migration", () => {
   // Only the ALTER TABLE statements count. Production databases were created before these

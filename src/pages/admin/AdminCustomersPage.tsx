@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { apiRequest } from '../../api/api'
 import { useAdminAuth } from './useAdminAuth'
 import { useLanguage } from '../../language/useLanguage'
@@ -162,19 +162,20 @@ export function AdminCustomersPage() {
     }
   }, [isOverlayOpen])
 
+  // eslint-disable-next-line react/purity -- intentionally reads the current time once per render
   const now = Date.now()
-  const isNew = (customer: CustomerAccount) => {
+  const isNew = useCallback((customer: CustomerAccount) => {
     const joined = parseJoined(customer.createdAt)
     return Boolean(joined && now - joined.getTime() <= NEW_CUSTOMER_DAYS * 86400000)
-  }
-  const hasWhatsapp = (customer: CustomerAccount) => Boolean(customer.phone && whatsappNumber(customer.phone))
+  }, [now])
+  const hasWhatsapp = useCallback((customer: CustomerAccount) => Boolean(customer.phone && whatsappNumber(customer.phone)), [])
 
   const counts = useMemo(() => ({
     active: customers.filter((customer) => !customer.isBanned).length,
     banned: customers.filter((customer) => customer.isBanned).length,
     whatsapp: customers.filter((customer) => !customer.isBanned && hasWhatsapp(customer)).length,
     new: customers.filter(isNew).length,
-  }), [customers])
+  }), [customers, hasWhatsapp, isNew])
 
   const cities = useMemo(() => [...new Set(customers.map((customer) => customer.deliveryCity).filter(Boolean) as string[])].sort((a, b) => a.localeCompare(b)), [customers])
 
@@ -198,7 +199,7 @@ export function AdminCustomersPage() {
         const bTime = parseJoined(b.createdAt)?.getTime() || 0
         return sortBy === 'oldest' ? aTime - bTime : bTime - aTime
       })
-  }, [cityFilter, customers, search, sortBy, statusFilter])
+  }, [cityFilter, customers, hasWhatsapp, isNew, search, sortBy, statusFilter])
   const hasActiveFilters = Boolean(search.trim() || statusFilter !== 'all' || cityFilter)
 
   async function setBan(customer: CustomerAccount, isBanned: boolean) {
@@ -790,6 +791,7 @@ export function AdminCustomersPage() {
                   <div className="ml-auto max-w-[85%] rounded-md rounded-tr-sm bg-[#d9fdd3] px-3 py-2 text-sm leading-6 text-[#111b21]">
                     <p className="whitespace-pre-wrap break-words">{promotionMessage.trim() || t('Your message will appear here.')}</p>
                     <p className="mt-0.5 text-right text-xs text-[#667781]">
+                      {/* eslint-disable-next-line react/purity -- the preview shows the time the message would be sent */}
                       {new Date().toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>

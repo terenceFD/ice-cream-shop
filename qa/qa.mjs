@@ -1,4 +1,4 @@
-export default async function run(page, ui) {
+export default async function run(page) {
   const result = {};
   try {
     await page

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Footer, Header, ArrowIcon } from "../../components/Layout";
 import { HeroBackground } from "../../components/HeroBackground";
 import { useCart } from "../../context/useCart";
@@ -325,29 +325,6 @@ function StarRating({
         );
       })}
     </span>
-  );
-}
-
-function VerifiedIcon({ className = "size-3.5" }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M12 2.5 14.4 4l2.8-.2 1.2 2.6 2.5 1.3-.2 2.8L22 13l-1.5 2.4.2 2.8-2.6 1.2-1.3 2.5-2.8-.2L12 23l-2.4-1.5-2.8.2-1.2-2.6-2.5-1.3.2-2.8L2 13l1.5-2.4-.2-2.8 2.6-1.2L7.2 4.1l2.8.2L12 2.5Z"
-        fill="currentColor"
-      />
-      <path
-        d="m8.5 12.5 2.4 2.4 4.6-5"
-        stroke="#fff"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
   );
 }
 
@@ -712,7 +689,6 @@ export function HomePage() {
   const { language, t } = useLanguage();
   const { addToCart } = useCart();
   const { flavors: catalogFlavors } = useFlavors();
-  const navigate = useNavigate();
   const [popularFlavors, setPopularFlavors] = useState([]);
   const [popularLoaded, setPopularLoaded] = useState(false);
   const [menuCategories, setMenuCategories] = useState(null);
@@ -968,7 +944,6 @@ export function HomePage() {
     : allFlavorCards.slice(0, visibleFlavorCount);
   // "Show more" whenever there are more flavors available than currently displayed,
   // whether that's the default grid or a filtered/search result.
-  const hasMoreFlavors = matchingFlavors.length > visibleFlavors.length;
 
   // Real menu prices for the flavor cards, so the teasers set expectations before clicking.
   const flavorMenuItems = new Map(
@@ -1052,7 +1027,6 @@ export function HomePage() {
             .includes(cakeQuery);
         return typeOk && queryOk;
       });
-    const hasActiveFilter = selectedCakeType !== "all" || cakeQuery.length > 0;
     return items.slice(0, cakeVisibleCount);
   }, [cakeMenuCategory, selectedCakeType, cakeQuery, cakeVisibleCount]);
   // Every cake card needs a slider (more than one photo), but many catalog items

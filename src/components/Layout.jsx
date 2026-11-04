@@ -636,11 +636,6 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
 
   useEffect(() => () => window.clearTimeout(bagPulseTimer.current), []);
 
-  const open = () => {
-    window.clearTimeout(closeTimer.current);
-    setIsOpen(true);
-  };
-
   const openWithDelay = () => {
     window.clearTimeout(closeTimer.current);
     closeTimer.current = window.setTimeout(() => setIsOpen(true), 180);
@@ -836,22 +831,11 @@ export function Header() {
   // aside so the visitor types into the full width of the bar.
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [logoutError, setLogoutError] = useState("");
-  // The bag badge pulses briefly when an item is added, so the visitor sees exactly
-  // where their item went — feedback anchored to the bag, not a distant message.
-  const [bagJustUpdated, setBagJustUpdated] = useState(false);
   const bagPulseTimer = useRef(undefined);
   const previousCartCount = useRef(cartCount);
   const { isScrolled, isHidden } = useHeaderVisibility(headerRef);
 
   useEffect(() => {
-    if (cartCount > previousCartCount.current) {
-      setBagJustUpdated(true);
-      window.clearTimeout(bagPulseTimer.current);
-      bagPulseTimer.current = window.setTimeout(
-        () => setBagJustUpdated(false),
-        1600,
-      );
-    }
     previousCartCount.current = cartCount;
   }, [cartCount]);
 

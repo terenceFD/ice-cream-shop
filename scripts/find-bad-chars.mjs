@@ -13,10 +13,12 @@ let found = false;
 for (const f of walk("src")) {
   if (!/\.(jsx|tsx|ts|js|css)$/.test(f)) continue;
   const text = readFileSync(f, "utf8");
+  // eslint-disable-next-line no-control-regex -- intentionally scanning for corrupt control bytes
   const m = text.match(/[\uFFFD\u0000-\u0008\u000B\u000C\u000E-\u001F]/g);
   if (m) {
     const lines = text.split("\n");
     lines.forEach((line, idx) => {
+      // eslint-disable-next-line no-control-regex -- intentionally scanning for corrupt control bytes
       if (/[\uFFFD\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(line)) {
         console.log(
           `${f}:${idx + 1}: ${JSON.stringify(line.trim().slice(0, 90))}`,

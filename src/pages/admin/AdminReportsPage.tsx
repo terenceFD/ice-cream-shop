@@ -80,6 +80,7 @@ export function AdminReportsPage() {
 
   const series = useMemo(() => {
     const byDate = new Map((report?.recentSales || []).map((row) => [String(row.date).slice(0, 10), row]))
+    // eslint-disable-next-line react/purity -- intentionally reads the current time once per report change
     const today = new Date()
     return Array.from({ length: CHART_DAYS }, (_, index) => {
       const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - (CHART_DAYS - 1 - index)))
@@ -124,7 +125,7 @@ export function AdminReportsPage() {
       [t('Date'), t('Orders'), t('Sales'), t('Currency')],
       ...report.recentSales.map((row) => [row.date, row.orders, row.sales, 'FCFA']),
     ]
-    const csv = `﻿${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}`
+    const csv = `${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}`
     const fileUrl = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
     const link = document.createElement('a')
     const now = new Date()

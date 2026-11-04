@@ -11,7 +11,7 @@ export function AdminIcon({ path, className = 'size-4' }) {
   )
 }
 
-export function AdminPageHeader({ icon, section, title, description, actions, t }) {
+export function AdminPageHeader({ section, title, description, actions, t }) {
   return (
     <header className="flex flex-col gap-5 border-b border-[#f4f6f8] pb-6 xl:flex-row xl:items-end xl:justify-between">
       <div className="min-w-0">

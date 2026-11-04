@@ -124,7 +124,10 @@ export function AdminCakeRequestsBoard() {
     setAdminNote(selected.adminNote || '')
     setPickupDate(selected.pickupDate || '')
     setQuoteError('')
-  }, [selected?.id])
+    // Reset the quote form fields only when switching to a different request, so an
+    // admin's in-progress edits are not clobbered when the same request refreshes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deliberately keyed on the selected request's identity
+    }, [selected?.id])
 
   useEffect(() => {
     if (!selected) return undefined

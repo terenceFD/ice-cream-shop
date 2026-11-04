@@ -54,7 +54,6 @@ const COLUMNS = [
 ];
 
 function orderValues(order) {
-  const placed = parseOrderDate(order.createdAt);
   return [
     order.id,
     weekdayOf(order.createdAt),

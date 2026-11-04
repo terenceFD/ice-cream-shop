@@ -40,7 +40,6 @@ import {
   deleteContactMessage,
   deleteContactMessages,
   deleteSavedCart,
-  databaseKind,
   migrateFlavorCatalog,
   finalizePaidCheckout,
   finalizeZeroAmountCheckout,
@@ -76,7 +75,6 @@ import {
   updateOrderFulfillmentStatus,
   deleteCustomMenuItem,
   listOrderNotificationRecipients,
-  awardReferralPoints,
   ensureReferralCode,
   findCustomerByReferralCode,
 } from './database.js'

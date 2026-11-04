@@ -102,18 +102,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  async function authenticate(path: string, credentials: Record<string, string>) {
-    const result = await apiRequest<AuthResponse>(path, {
-      method: "POST",
-      body: credentials,
-    });
-    setCustomerToken(result.token);
-    setToken(result.token);
-    setCustomer(result.customer);
-    setSessionError("");
-    return result.customer;
-  }
-
   function requestSignupVerification(credentials: { name: string; email: string; password: string; profilePicture?: string; claimOrderId?: number; referralCode?: string }) {
     return apiRequest<{ verificationId: string; expiresInSeconds: number }>("/auth/register/request-verification", {
       method: "POST",

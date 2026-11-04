@@ -84,6 +84,7 @@ function CloseIcon({ className = "size-4" }: { className?: string }) {
  * returns results before any network request; the live menu (stock and admin products) and
  * the flavor catalog refine the list when they arrive.
  */
+// eslint-disable-next-line react/only-export-components -- small local hook; moving it to its own file adds no value
 export function useCatalogSearch(query: string) {
   const { flavors } = useFlavors();
   const [categories, setCategories] = useState<MenuCategory[]>(coldStoneMenuCategories);

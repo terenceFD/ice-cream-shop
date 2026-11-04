@@ -6,7 +6,6 @@ import { metaForPath } from "../../seo/pageMeta";
 import { useDocumentMeta } from "../../seo/useDocumentMeta";
 import {
   deliveryAreaSummary,
-  deliveryFeeSummary,
   fulfillmentWindowSummary,
 } from "../../../shared/faqData.js";
 

@@ -363,6 +363,7 @@ export function AdminPromotionsPage() {
       setField('expiresAt', '')
       return
     }
+    // eslint-disable-next-line react/purity -- the expiry is computed from today when the user picks a preset
     const date = new Date()
     date.setDate(date.getDate() + days)
     date.setHours(23, 59, 0, 0)

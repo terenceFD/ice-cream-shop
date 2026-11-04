@@ -9,9 +9,11 @@ const fixes = [
   [/Founder\uFFFD"s Favorite/g, "Founder\u2019s Favorite"],
   [/Cookie Doughn\uFFFD"t/g, "Cookie Doughn\u2019t"],
   // em dash sequences (FFFD + 0x1D were part of the em dash's bytes)
+  // eslint-disable-next-line no-control-regex -- intentionally matching corrupt control bytes
   [/\uFFFD\u001d/g, "\u2014"],
   // emoji in "How it works"
   [/"\uFFFDx\uFFFD"/g, '"\uD83C\uDFC6"'],
+  // eslint-disable-next-line no-control-regex -- intentionally matching corrupt control bytes
   [/"\uFFFDx\u001c\uFFFD"/g, '"\uD83D\uDCF1"'],
   [/"\uFFFDx:\uFFFD"/g, '"\uD83D\uDEF5"'],
   // quote emoji (star)
@@ -23,6 +25,7 @@ const fixes = [
     "Search \u201CDubai chocolate\u201D, \u201Cmango\u201D\u2026",
   ],
   // payment emoji at 2290
+  // eslint-disable-next-line no-control-regex -- intentionally matching corrupt control bytes
   [/\uFFFDx\u0019\uFFFD/g, "\uD83D\uDCB3"],
 ];
 

@@ -106,6 +106,7 @@ export function AdminStoreOverviewPage() {
 
   const view = useMemo(() => {
     if (!data) return null;
+    // eslint-disable-next-line react/purity -- intentionally reads the current time once per data refresh
     const todayLocal = new Date().toDateString();
     const isToday = (value) => parseDate(value)?.toDateString() === todayLocal;
     const processing = data.orders.filter((order) => order.status === "processing");
@@ -118,9 +119,11 @@ export function AdminStoreOverviewPage() {
     const todaysOrders = [...data.orders, ...data.delivered].filter((order) => isToday(order.createdAt) && order.status !== "payment_failed");
     const deliveredToday = data.delivered.filter((order) => isToday(order.deliveredAt || order.createdAt));
     const recentSales = data.report?.recentSales || [];
+    // eslint-disable-next-line react/purity -- intentionally reads the current time once per data refresh
     const todayKey = isoDay(new Date());
     const todaySales = Number(recentSales.find((row) => String(row.date).slice(0, 10) === todayKey)?.sales || 0);
     const week = Array.from({ length: 7 }, (_, index) => {
+      // eslint-disable-next-line react/purity -- intentionally builds the last-7-days window per data refresh
       const date = new Date();
       date.setUTCDate(date.getUTCDate() - (6 - index));
       const key = isoDay(date);
@@ -129,6 +132,7 @@ export function AdminStoreOverviewPage() {
     });
     const weekTotal = week.reduce((sum, day) => sum + day.sales, 0);
     const weekMax = Math.max(1, ...week.map((day) => day.sales));
+    // eslint-disable-next-line react/purity -- intentionally reads the current time once per data refresh
     const today = new Date();
     today.setHours(12, 0, 0, 0);
     const upcomingCakes = data.cakes
@@ -191,6 +195,7 @@ export function AdminStoreOverviewPage() {
     { key: "cakes", count: view.newCakes, label: t("new cake requests"), to: "/admin/cake-requests" },
   ] : [];
   const openTasks = tasks.filter((task) => task.count > 0);
+  // eslint-disable-next-line react/purity -- the header shows today's date
   const todayLabel = new Date().toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" });
 
   return (
@@ -296,6 +301,7 @@ export function AdminStoreOverviewPage() {
                   <ul className="divide-y divide-[#edf0f4]">
                     {view.liveOrders.map((order) => {
                       const created = parseDate(order.createdAt);
+                      // eslint-disable-next-line react/purity -- live order age relative to now
                       const ageMinutes = created ? Math.round((Date.now() - created.getTime()) / 60000) : 0;
                       const stage = order.deliveryStage || order.fulfillmentStatus || "preparing";
                       return (

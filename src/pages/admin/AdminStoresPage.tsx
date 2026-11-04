@@ -268,6 +268,7 @@ export function AdminStoresPage() {
         <div className="flex flex-wrap items-center gap-3">
           {lastUpdated && (
             <span className="text-xs font-medium text-[#5f6368]" title={fullDate(lastUpdated, language)}>
+              {/* eslint-disable-next-line react/purity -- "just now" is relative to the current time */}
               {Date.now() - lastUpdated.getTime() < 60_000
                 ? t('Updated just now')
                 : t('Updated {time}', { time: relativeTime(lastUpdated, language) })}

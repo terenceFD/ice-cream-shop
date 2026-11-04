@@ -1,4 +1,4 @@
-export default async function run(page, ui) {
+export default async function run(page) {
   const results = {};
   // Fill the footer newsletter form and submit with a fresh address.
   const email = `qa-${Date.now()}@example.com`;

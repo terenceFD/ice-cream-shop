@@ -154,6 +154,7 @@ export function AdminDeliveredBoard() {
   const deliveryShare = orders.length ? Math.round((summary.delivery / orders.length) * 100) : 0;
 
   const chart = useMemo(() => {
+    // eslint-disable-next-line react/purity -- intentionally reads the current time once per orders change
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const days = Array.from({ length: CHART_DAYS }, (_, index) => {
@@ -177,8 +178,10 @@ export function AdminDeliveredBoard() {
 
   const visibleOrders = useMemo(() => {
     const query = search.trim().toLowerCase();
+    // eslint-disable-next-line react/purity -- intentionally reads the current time once per orders change
     const now = Date.now();
     const rangeMs = { today: null, "7d": 7 * 86400000, "30d": 30 * 86400000 }[rangeFilter];
+    // eslint-disable-next-line react/purity -- intentionally reads the current time once per orders change
     const todayKey = dayKey(new Date());
     return orders
       .filter((order) => {

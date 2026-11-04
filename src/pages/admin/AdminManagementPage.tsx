@@ -4,7 +4,6 @@ import { passwordStrength } from "../../components/passwordStrength";
 import { useAdminAuth } from "./useAdminAuth";
 import { useLanguage } from "../../language/useLanguage";
 import { apiRequest } from "../../api/api";
-import { AdminPageHeader } from "./AdminPageHeader";
 
 const inputClassName =
   "mt-1.5 w-full rounded-lg border border-[#d1d5db] bg-white px-3 py-2 text-sm text-[#111827] transition placeholder:text-[#6b7280] hover:border-[#c2c8d0] focus:border-[#111827] focus:outline-2 focus:outline-offset-1 focus:outline-[#111827]/40";

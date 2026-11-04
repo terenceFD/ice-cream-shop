@@ -98,7 +98,7 @@ export function AdminNotifications() {
   const { sessionToken } = useAdminAuth()
   const { t, language } = useLanguage()
   const [messages, setMessages] = useState<ContactMessage[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
+  const [, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState('')

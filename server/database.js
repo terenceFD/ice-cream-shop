@@ -2712,7 +2712,7 @@ export async function findCustomerByReferralCode(code) {
  * Pay the referrer once, when their invited friend places a first paid order.
  * Returns the points awarded (0 when nothing was due).
  */
-export async function awardReferralPoints({ referrerId, friendId, orderId }) {
+export async function awardReferralPoints({ referrerId, friendId, orderId: _orderId }) {
   if (!referrerId || !friendId || Number(referrerId) === Number(friendId)) return 0;
   const friend = await database.prepare(
     'SELECT referred_by AS "referredBy", referral_bonus_paid AS "paid" FROM customers WHERE id = ?',

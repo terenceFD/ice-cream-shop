@@ -419,6 +419,7 @@ export function AdminActivityPage() {
   )
 
   const summary = useMemo(() => {
+    // eslint-disable-next-line react/purity -- intentionally reads the current time once per entries change
     const todayLabel = formatAdminDate(new Date(), language) || ''
     const todayCount = entries.filter((entry) => entry.day === todayLabel).length
     const areaCounts = ACTIVITY_AREAS

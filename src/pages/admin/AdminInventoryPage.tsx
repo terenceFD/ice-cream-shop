@@ -216,6 +216,7 @@ export function AdminInventoryPage() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
+    // eslint-disable-next-line react/purity -- the download filename needs today's date
     link.download = `menu-inventory-${new Date().toISOString().slice(0, 10)}.csv`
     link.click()
     URL.revokeObjectURL(url)

@@ -202,8 +202,10 @@ export function AdminPaymentsDashboard() {
 
   const visiblePayments = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
+    // eslint-disable-next-line react/purity -- intentionally reads the current time once per payments change
     const now = Date.now();
     const rangeMs = { "7d": 7 * 86400000, "30d": 30 * 86400000 }[rangeFilter];
+    // eslint-disable-next-line react/purity -- intentionally reads the current time once per payments change
     const todayString = new Date().toDateString();
     return payments.filter((payment) => {
       const date = parseDate(payment.createdAt);
