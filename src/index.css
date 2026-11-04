@@ -1214,6 +1214,30 @@ body:has(.whatsapp-fab) .locations-hero-actions {
   }
 }
 
+/* Live chat panel: slides up and fades in from the launcher bubble. Motion is
+   skipped for visitors who prefer reduced motion. */
+@keyframes chat-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.site-live-chat-panel {
+  animation: chat-panel-in 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: bottom left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-live-chat-panel {
+    animation: none;
+  }
+}
+
 /* --- Invoice printing -------------------------------------------------- */
 /* When the print dialog opens from the invoice overlay, only the invoice
    document is printed: the app shell, header and overlay chrome are hidden. */

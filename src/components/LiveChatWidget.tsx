@@ -151,7 +151,7 @@ export function LiveChatWidget() {
       <button
         aria-expanded={isOpen}
         aria-label={isOpen ? t("Close chat") : t("Chat with us")}
-        className="fixed bottom-24 left-4 z-[65] grid size-14 place-items-center rounded-full bg-brand-navy text-brand-yellow shadow-[0_14px_36px_rgba(9,42,83,0.4)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
+        className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-4 z-[65] grid size-14 place-items-center rounded-full bg-brand-navy text-brand-yellow shadow-[0_14px_36px_rgba(9,42,83,0.4)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
         onClick={() => setIsOpen((open) => !open)}
         type="button"
       >
@@ -189,7 +189,7 @@ export function LiveChatWidget() {
       {isOpen && (
         <section
           aria-label={t("Chat with us")}
-          className="fixed bottom-44 left-4 z-[65] flex h-[26rem] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.35)] ring-1 ring-[#dce3eb]"
+          className="site-live-chat-panel fixed bottom-24 left-4 z-[65] flex h-[26rem] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(9,42,83,0.35)] ring-1 ring-[#dce3eb]"
         >
           <header className="bg-brand-navy px-4 py-3 text-white">
             <p className="font-display text-base font-extrabold">
