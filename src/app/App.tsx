@@ -15,7 +15,6 @@ import { AuthProvider } from "../context/AuthContext";
 import { LanguageProvider } from "../language/LanguageContext";
 import { CurrencyProvider } from "../context/CurrencyContext";
 import { ScrollProgress } from "../components/ScrollProgress";
-import { WhatsAppButton } from "../components/WhatsAppButton";
 import { ScrollToTop } from "../components/ScrollToTop";
 import { WebsiteLoader } from "../components/WebsiteLoader";
 import { RouteMeta } from "../seo/RouteMeta";
@@ -472,7 +471,6 @@ function App() {
                   </Suspense>
                   <InstallAppPrompt />
                   <PromotionAlertsPrompt />
-                  <WhatsAppButton />
                   <CustomerLiveChat />
                   <CustomerCookieConsent />
                   <CustomerBackToTop />
