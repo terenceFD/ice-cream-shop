@@ -434,3 +434,67 @@ export async function sendCakeRequestNotification({
     ].join('\n'),
   })
 }
+
+// Newsletter emails. Subscribers get one branded welcome note; the owner can
+// broadcast a message to everyone still subscribed. Unsubscribe links point at
+// the public endpoint so a broadcast stays compliant without extra state.
+const unsubscribeFooter = (siteUrl) =>
+  `Unsubscribe: ${siteUrl ? `${siteUrl}/unsubscribe` : 'reply to this email and ask to be removed'}`
+
+export async function sendNewsletterWelcome({ to, siteUrl }) {
+  const { transporter, from } = createTransporter()
+  const url = siteUrl || ''
+  return sendBrandedMail(transporter, {
+    from: `Cold Stone Creamery <${from}>`,
+    to,
+    subject: 'You are on the list — Cold Stone Creamery',
+    text: [
+      'Welcome to the Cold Stone Creamery Cameroon list!',
+      '',
+      'You will hear from us when a new flavor lands or a members-only offer goes live — never more than a few emails a month.',
+      '',
+      `Start browsing: ${url}/menu`,
+      unsubscribeFooter(url),
+    ].join('\n'),
+    html: `<div style="font-family:Arial,sans-serif;color:#102c50;max-width:480px;margin:auto;padding:24px"><h1 style="font-size:21px;color:#092a53">Welcome to the list</h1><p>You will hear from us when a new flavor lands or a members-only offer goes live — never more than a few emails a month.</p>${url ? `<p><a href="${url}/menu" style="color:#092a53">Start browsing the menu</a></p>` : ''}<p style="color:#65748a;font-size:13px">${unsubscribeFooter(url)}</p></div>`,
+  })
+}
+
+export async function sendNewsletterBroadcast({ recipients, subject, message, siteUrl }) {
+  const { transporter, from } = createTransporter()
+  const url = siteUrl || ''
+  // One connection, many recipients: nodemailer accepts an address list for to.
+  return sendBrandedMail(transporter, {
+    from: `Cold Stone Creamery <${from}>`,
+    to: recipients.join(', '),
+    subject: `${subject} — Cold Stone Creamery`,
+    text: [
+      message,
+      '',
+      unsubscribeFooter(url),
+    ].join('\n'),
+    html: `<div style="font-family:Arial,sans-serif;color:#102c50;max-width:480px;margin:auto;padding:24px">${message
+      .split(/\n{2,}/)
+      .map((paragraph) => `<p>${paragraph.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</p>`)
+      .join('')}<p style="color:#65748a;font-size:13px">${unsubscribeFooter(url)}</p></div>`,
+  })
+}
+
+export async function sendAbandonedCartReminder({ to, recipientName, orderId, bagUrl }) {
+  const { transporter, from } = createTransporter()
+  return sendBrandedMail(transporter, {
+    from: `Cold Stone Creamery <${from}>`,
+    to,
+    subject: 'Your bag is waiting — Cold Stone Creamery',
+    text: [
+      `Hello ${recipientName || 'there'},`,
+      '',
+      `Your order #${orderId} was left at the payment step, so we kept the items aside for a short while. If you still want them, your bag is right where you left it:`,
+      '',
+      bagUrl || '',
+      '',
+      'If you changed your mind, no action is needed and nothing was charged.',
+    ].join('\n'),
+    html: `<div style="font-family:Arial,sans-serif;color:#102c50;max-width:480px;margin:auto;padding:24px"><h1 style="font-size:21px;color:#092a53">Your bag is waiting</h1><p>Hello ${recipientName || 'there'}, your order #${orderId} was left at the payment step, so we kept the items aside for a short while.</p>${bagUrl ? `<p><a href="${bagUrl}" style="display:inline-block;padding:12px 22px;border-radius:12px;background:#092a53;color:#ffdc32;font-weight:800;text-decoration:none">Open your bag</a></p>` : ''}<p style="color:#65748a">If you changed your mind, no action is needed and nothing was charged.</p></div>`,
+  })
+}

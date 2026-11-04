@@ -78,6 +78,11 @@ export const PUBLIC_PAGES = {
     description:
       'This website does not use advertising or tracking cookies. What we store on your device and why.',
   },
+  '/faq': {
+    title: 'FAQ — ordering, delivery and discounts',
+    description:
+      'How to order, delivery areas and fees in Douala and Yaoundé, discount codes, loyalty points, tracking your order and what happens when something goes wrong.',
+  },
 }
 
 /** Pages that exist but should stay out of search results. */

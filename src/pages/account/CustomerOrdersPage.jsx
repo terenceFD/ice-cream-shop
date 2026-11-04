@@ -14,6 +14,7 @@ import { useAuth } from "../../context/useAuth";
 import { cameroonDeliveryLocations } from "../../../shared/data";
 import { useLanguage } from "../../language/useLanguage";
 import { PromotionAlertsSetting } from "../../components/PromotionAlerts";
+import { InvoiceButton } from "../../components/Invoice/Invoice";
 import { numberFormatter } from "../../lib/cartPricing";
 import "./CustomerAccount.css";
 
@@ -690,6 +691,10 @@ function OrderCard({
 
         {!paymentIssue && (
           <div className="flex flex-wrap justify-end gap-2.5 border-t border-[#fbfaf5] pt-5">
+            <InvoiceButton
+              className={ghostButton}
+              orderId={order.id}
+            />
             <button
               className={ghostButton}
               disabled={isSaving || isSaved}

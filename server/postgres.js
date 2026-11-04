@@ -19,6 +19,7 @@ const identityTables = new Set([
   'loyalty_ledger',
   'menu_categories',
   'menu_reviews',
+  'newsletter_subscribers',
   'order_items',
   'orders',
   'payments',

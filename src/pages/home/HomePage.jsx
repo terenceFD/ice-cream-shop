@@ -8,6 +8,7 @@ import { apiRequest } from "../../api/api";
 import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
 import { ProductImageSlider } from "../../components/ProductImageSlider";
 import { RatingBadge } from "../../components/RatingBadge";
+import { RecentlyViewed } from "../../components/RecentlyViewed";
 import { useLanguage } from "../../language/useLanguage";
 import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
 import {
@@ -2364,6 +2365,9 @@ export function HomePage() {
             )}
           </div>
         )}
+
+        {/* A returning shopper sees their own products again before the final call to action. */}
+        <RecentlyViewed />
 
         {/* A short close: one call to action, then the footer. */}
         <section aria-labelledby="home-cta-heading" className="bg-[#f4f6f8] px-5 py-12 text-center sm:px-8 sm:py-14 lg:px-10">

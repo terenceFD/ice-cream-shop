@@ -2843,6 +2843,21 @@ const french: Record<string, string> = {
   'Share your code. When your friend signs up with it and places their first order, {points} points land in your balance.': 'Partagez votre code. Quand votre ami s’inscrit avec et passe sa première commande, {points} points arrivent sur votre solde.',
   'Invite a friend': 'Inviter un ami',
   'Join me at Cold Stone Creamery — use my code {code}': 'Rejoignez-moi chez Cold Stone Creamery — utilisez mon code {code}',
+
+  // Storefront conversion features: product reviews, order notes, FAQ page, recently viewed.
+  'What people say': 'Ce que les clients disent',
+  'Note for the store (optional)': 'Note pour la boutique (facultatif)',
+  'Gift message, allergies, or a landmark that helps the rider find you.': 'Message cadeau, allergies, ou un repère qui aide le livreur à vous trouver.',
+  'Up to 500 characters.': 'Jusqu’à 500 caractères.',
+  'Customer note': 'Note du client',
+  'Help center': 'Centre d’aide',
+  'Frequently asked questions': 'Questions fréquentes',
+  'Ordering, delivery, discounts and what happens after you pay — answered. Anything else, the contact form or WhatsApp chat reaches a real person.': 'Commande, livraison, réductions et ce qui se passe après le paiement : tout est expliqué. Pour le reste, le formulaire de contact ou le chat WhatsApp vous met en relation avec une vraie personne.',
+  'Ordering & payment': 'Commande & paiement',
+  'Delivery & pickup': 'Livraison & retrait',
+  'Discounts & loyalty': 'Réductions & fidélité',
+  'After you order': 'Après votre commande',
+  'FAQ': 'FAQ',
 }
 
 export default french

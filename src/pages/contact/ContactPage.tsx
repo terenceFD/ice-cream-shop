@@ -244,6 +244,11 @@ export function ContactPage() {
   const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [consented, setConsented] = useState(false)
+  const formOpenedAt = useRef(0)
+  // When the visitor first saw this form. Set in an effect, not at render time.
+  useEffect(() => {
+    formOpenedAt.current = Date.now()
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -278,7 +283,7 @@ export function ContactPage() {
     setSubmitted(false)
     setIsSubmitting(true)
     try {
-      await apiRequest('/contact', { method: 'POST', body: { ...form, storeId: toInt(form.storeId, 0) } })
+      await apiRequest('/contact', { method: 'POST', body: { ...form, storeId: toInt(form.storeId, 0), website_url: '', formOpenedAt: formOpenedAt.current } })
       setForm({ name: '', email: '', phone: '', storeId: '', subject: '', message: '' })
       setSubmitted(true)
     } catch (submitError) {

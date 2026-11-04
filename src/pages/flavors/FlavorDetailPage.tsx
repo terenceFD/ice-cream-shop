@@ -20,6 +20,7 @@ import { stockSignal, stockSignalLabel } from "../../lib/stockSignal";
 import { RestockNotice } from "../../components/RestockNotice";
 import { AllergenInfo } from "../../components/AllergenInfo";
 import { ShareProduct } from "../../components/ShareProduct";
+import { ProductReviews } from "../../components/ProductReviews";
 import { toInt } from "../../../shared/numbers.ts";
 
 function BagIcon({ className = "size-4" }: { className?: string }) {
@@ -425,6 +426,8 @@ export function FlavorDetailPage() {
         </section>
 
         <RecentlyViewed excludeKey={flavor ? `flavor:${flavor.id}` : undefined} />
+
+        {flavor && <ProductReviews itemId={`flavor:${flavor.id}`} />}
 
         {relatedFlavors.length > 0 && (
           <section

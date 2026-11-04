@@ -1213,3 +1213,24 @@ body:has(.whatsapp-fab) .locations-hero-actions {
     transform: none;
   }
 }
+
+/* --- Invoice printing -------------------------------------------------- */
+/* When the print dialog opens from the invoice overlay, only the invoice
+   document is printed: the app shell, header and overlay chrome are hidden. */
+@media print {
+  body.invoice-printing *:not(.invoice-document):not(.invoice-document *) {
+    display: none !important;
+  }
+  body.invoice-printing {
+    display: block !important;
+  }
+  body.invoice-printing .invoice-document {
+    position: static !important;
+    box-shadow: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    color: #122c50;
+    background: white;
+  }
+}

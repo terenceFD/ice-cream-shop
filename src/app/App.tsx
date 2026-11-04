@@ -39,6 +39,7 @@ const PrivacyPolicyPage = lazyPage(() => import("../pages/legal/PrivacyPolicyPag
 const TermsPage = lazyPage(() => import("../pages/legal/TermsPage"), "TermsPage");
 const RefundPolicyPage = lazyPage(() => import("../pages/legal/RefundPolicyPage"), "RefundPolicyPage");
 const CookiePolicyPage = lazyPage(() => import("../pages/legal/CookiePolicyPage"), "CookiePolicyPage");
+const FaqPage = lazyPage(() => import("../pages/legal/FaqPage"), "FaqPage");
 const MenuPage = lazyPage(() => import("../pages/menu/MenuPage"), "MenuPage");
 const AllMenuPage = lazyPage(() => import("../pages/menu/AllMenuPage"), "AllMenuPage");
 const CustomerOrdersPage = lazyPage(() => import("../pages/account/CustomerOrdersPage"), "CustomerOrdersPage");
@@ -160,6 +161,7 @@ function App() {
                     <Route path="/privacy" element={<PrivacyPolicyPage />} />
                     <Route path="/terms" element={<TermsPage />} />
                     <Route path="/refunds" element={<RefundPolicyPage />} />
+                    <Route path="/faq" element={<FaqPage />} />
                     <Route path="/cookies" element={<CookiePolicyPage />} />
                     <Route path="/flavor/:id" element={<FlavorDetailPage />} />
                     <Route path="/cart" element={<CartPage />} />

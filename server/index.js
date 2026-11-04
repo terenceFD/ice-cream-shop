@@ -25,6 +25,9 @@ import {
   clearDeliveredOrders,
   database,
   verifyDatabaseSchema,
+  listNewsletterSubscribers,
+  subscribeNewsletter,
+  unsubscribeNewsletter,
   markCheckoutPaymentFailed,
   deleteDiscountCode,
   deleteFailedOrder,
@@ -91,12 +94,16 @@ import {
   sendContactReply,
   sendCustomerVerificationCode,
   sendPasswordResetCode,
+  sendNewsletterBroadcast,
+  sendNewsletterWelcome,
+  sendAbandonedCartReminder,
   sendNewOrderNotification,
   sendOrderStatusUpdate,
 } from './email.js'
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../shared/data.js'
 import { allergensForItem } from '../shared/allergens.js'
 import { storeAdminCanAccess } from './admin-access.js'
+import { isSpamSubmission } from './spam-guard.js'
 import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, saveUploadedImage } from './storage.js'
 import { optimizeUploadedImage, UnreadableImageError } from './images.js'
 import {
@@ -945,7 +952,8 @@ async function listOrders({ deliveredOnly = false, storeId = null, storeTown = n
       delivery_stage AS "deliveryStage", fulfillment_type AS "fulfillmentType",
       scheduled_for AS "scheduledFor", delivery_fee AS "deliveryFee",
       loyalty_points_redeemed AS "loyaltyPointsRedeemed",
-      discount_code AS "discountCode"
+      discount_code AS "discountCode",
+      customer_note AS "customerNote"
     FROM orders
     ${conditions.length ? `WHERE ${conditions.join(" AND ")}` : ''}
     ORDER BY id DESC
@@ -1192,6 +1200,88 @@ app.post('/api/discount-codes/validate', async (request, response) => {
   response.json({ code: code.code, discountCents })
 })
 
+// Newsletter: subscribe publicly, unsubscribe publicly, list for the owner.
+// Subscribing answers the same reply whether the address is new or already on the
+// list, so the endpoint cannot be used to probe which emails exist.
+app.post('/api/newsletter/subscribe', publicFormIpLimiter, async (request, response) => {
+  if (isSpamSubmission(request.body).spam) {
+    response.status(201).json({ subscribed: true })
+    return
+  }
+  const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
+  if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    response.status(400).json({ error: 'Enter a valid email address to subscribe.' })
+    return
+  }
+  const source = ['footer', 'checkout'].includes(request.body.source) ? request.body.source : 'footer'
+  const subscription = await subscribeNewsletter(email, source)
+  // A warm hello while the shopper is still on the page. Only first-time
+  // subscribers get one, so a repeat signup never receives a duplicate.
+  if (subscription.created && isEmailDeliveryConfigured()) {
+    sendNewsletterWelcome({ to: email, siteUrl: publicSiteUrl() }).catch((error) => {
+      console.error(`Unable to send newsletter welcome to ${email}:`, describeEmailError(error))
+    })
+  }
+  response.status(201).json({ subscribed: true })
+})
+
+// The owner broadcasts a message to everyone still subscribed. One email per
+// subscriber, sent in small batches so a large list does not hold a request open
+// for minutes. The subscriber list is never echoed back.
+app.post('/api/admin/newsletter/broadcast', requireAdmin, ownerOnly, async (request, response) => {
+  const subject = typeof request.body.subject === 'string' ? request.body.subject.trim().slice(0, 120) : ''
+  const message = typeof request.body.message === 'string' ? request.body.message.trim().slice(0, 2000) : ''
+  if (!subject || !message) {
+    response.status(400).json({ error: 'Write a subject and a message to send.' })
+    return
+  }
+  if (!isEmailDeliveryConfigured()) {
+    response.status(503).json({ error: 'Email delivery is not configured, so a broadcast cannot be sent.' })
+    return
+  }
+  const subscribers = await listNewsletterSubscribers({ subscribedOnly: true })
+  const addresses = subscribers.map((entry) => entry.email)
+  if (!addresses.length) {
+    response.status(400).json({ error: 'Nobody is subscribed yet.' })
+    return
+  }
+  const batchSize = 20
+  const batches = []
+  for (let index = 0; index < addresses.length; index += batchSize) {
+    batches.push(addresses.slice(index, index + batchSize))
+  }
+  let sent = 0
+  const failures = []
+  for (const batch of batches) {
+    try {
+      await sendNewsletterBroadcast({
+        recipients: batch,
+        subject,
+        message,
+        siteUrl: publicSiteUrl(),
+      })
+      sent += batch.length
+    } catch (error) {
+      failures.push(describeEmailError(error))
+    }
+  }
+  response.json({ sent, total: addresses.length, failures })
+})
+
+app.post('/api/newsletter/unsubscribe', async (request, response) => {
+  const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
+  if (!email) {
+    response.status(400).json({ error: 'Enter the email address to unsubscribe.' })
+    return
+  }
+  await unsubscribeNewsletter(email)
+  response.json({ unsubscribed: true })
+})
+
+app.get('/api/admin/newsletter', requireAdmin, ownerOnly, async (_request, response) => {
+  response.json({ subscribers: await listNewsletterSubscribers({ subscribedOnly: false }) })
+})
+
 app.post('/api/checkout/session', optionalCustomer, checkoutLimiter, async (request, response) => {
   const stripe = getStripe()
   const paymentMethod = request.body.paymentMethod || 'card'
@@ -1219,6 +1309,8 @@ app.post('/api/checkout/session', optionalCustomer, checkoutLimiter, async (requ
   const city = typeof details?.city === 'string' ? details.city.trim() : ''
   const storeId = Number(details?.storeId)
   const residence = typeof details?.residence === 'string' ? details.residence.trim() : ''
+  // A short note from the shopper: gift wording, allergies, a landmark for the rider.
+  const customerNote = typeof details?.note === 'string' ? details.note.trim().slice(0, 500) : ''
   const fulfillmentType = details?.fulfillmentType
   const scheduledDate = typeof details?.scheduledDate === 'string' ? details.scheduledDate : ''
   const slotId = Number(details?.slotId)
@@ -1390,6 +1482,7 @@ app.post('/api/checkout/session', optionalCustomer, checkoutLimiter, async (requ
       currency,
       discountCode,
       pointsRedeemed,
+      customerNote,
     })
 
     const frontendUrl = new URL(
@@ -1695,6 +1788,12 @@ app.get('/api/flavors/:id', async (request, response, next) => {
 
 app.post('/api/contact', publicFormIpLimiter, contactLimiter, async (request, response, next) => {
   try {
+    // Hidden field real visitors never fill. A filled one means a bot wrote the form.
+    if (isSpamSubmission(request.body).spam) {
+      // Same reply a real submission gets, so the bot learns nothing.
+      response.status(201).json({ messageId: null })
+      return
+    }
     const name = typeof request.body.name === 'string' ? request.body.name.trim() : ''
     const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
     const phone = typeof request.body.phone === 'string' ? request.body.phone.trim() : ''
@@ -4837,6 +4936,30 @@ app.use('/api', (request, response) => {
   response.status(404).json({ error: 'This API address does not exist.' })
 })
 
+/**
+ * After the sweep releases an abandoned checkout's stock, one gentle email goes
+ * to the shopper: their bag is still there and can be recovered. Guest orders
+ * with a real address get the same note. Failures only log — the sweep must
+ * keep working even when the mail server is down.
+ */
+function handleAbandonedCheckouts({ released, abandoned }) {
+  if (released) console.log(`Released stock from ${released} abandoned checkout(s).`)
+  if (!Array.isArray(abandoned) || !abandoned.length) return
+  if (!isEmailDeliveryConfigured()) return
+  const siteUrl = publicSiteUrl()
+  for (const order of abandoned) {
+    if (!order?.customerEmail) continue
+    sendAbandonedCartReminder({
+      to: order.customerEmail,
+      recipientName: order.customerName,
+      orderId: order.orderId,
+      bagUrl: `${siteUrl}/cart`,
+    }).catch((error) => {
+      console.error(`Unable to email abandoned-cart reminder for order #${order.orderId}:`, describeEmailError(error))
+    })
+  }
+}
+
 // Review reminders: a day after delivery, ask the customer to rate their order once, by phone
 // notification and email. Orders older than a week, already reviewed, or already reminded are skipped.
 const REVIEW_REMINDER_DELAY_HOURS = Math.max(0, Number(process.env.REVIEW_REMINDER_DELAY_HOURS ?? 24) || 0)
@@ -4973,15 +5096,11 @@ const server = app.listen(port, () => {
     console.error('Unable to reconcile expired checkouts:', error.message)
   })
   // Release stock held by abandoned checkouts even when Stripe is not configured.
-  expireAbandonedCheckouts().then((released) => {
-    if (released) console.log(`Released stock from ${released} abandoned checkout(s).`)
-  }).catch((error) => {
+  expireAbandonedCheckouts().then(handleAbandonedCheckouts).catch((error) => {
     console.error('Unable to release abandoned checkouts:', error.message)
   })
   setInterval(() => {
-    expireAbandonedCheckouts().then((released) => {
-      if (released) console.log(`Released stock from ${released} abandoned checkout(s).`)
-    }).catch((error) => {
+    expireAbandonedCheckouts().then(handleAbandonedCheckouts).catch((error) => {
       console.error('Unable to release abandoned checkouts:', error.message)
     })
     reconcileStaleCheckouts().catch((error) => {

@@ -10,6 +10,7 @@ import { type Flavor } from "./FlavorContext";
 import { useFlavors } from "./useFlavors";
 import { findMenuItem } from "../../shared/data";
 import { USD_TO_XAF } from "../lib/cartPricing";
+import { trackAddToCart } from "../lib/analytics";
 
 export interface CartItem {
   id: string | number;
@@ -201,6 +202,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } else {
       setSavedItems((prev) => [...prev, cartItem]);
     }
+    trackAddToCart(item);
     return true;
   };
 
@@ -228,6 +230,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     }
     setSavedItems(updated)
+    if (addedCount > 0) trackAddToCart({ name: 'multiple items', count: addedCount })
     return addedCount
   }
 

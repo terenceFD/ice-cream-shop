@@ -856,6 +856,12 @@ export function AdminOrdersBoard() {
                       {formatDateTime(selectedOrder.scheduledFor, language)}
                     </p>
                   )}
+                  {selectedOrder.customerNote && (
+                    <p className="mt-3 rounded-xl bg-[#fffbea] p-3 text-xs leading-5 text-[#6b5800] ring-1 ring-[#f0e2a0]">
+                      <span className="font-extrabold">{t("Customer note")}: </span>
+                      {selectedOrder.customerNote}
+                    </p>
+                  )}
                 </div>
                 <div className="bg-white p-4 sm:col-span-2">
                   <h3 className="text-xs font-medium text-[#5f6368]">{t("Assigned store")}</h3>

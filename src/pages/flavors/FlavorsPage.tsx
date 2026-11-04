@@ -128,7 +128,6 @@ export function FlavorsPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState("recommended");
   const selectedTag = searchParams.get("tag") || "";
-  const gridRef = useScrollReveal<HTMLDivElement>([search, maxPrice, sortBy, selectedTag]);
   // A tag only becomes a filter when it groups two or more flavors; a button that finds a
   // single flavor is noise. A tag opened from a link (?tag=) is always shown so it can be cleared.
   const tagCounts = new Map<string, number>();
@@ -159,6 +158,16 @@ export function FlavorsPage() {
       if (sortBy === "price-desc") return b.price - a.price;
       return t(a.name).localeCompare(t(b.name));
     });
+  // The flavor count is part of the deps: the observer is set up on mount, when the
+  // grid is still empty because the catalog is loading. Without the count, flavors
+  // arriving from the API never get observed and every card stays invisible.
+  const gridRef = useScrollReveal<HTMLDivElement>([
+    search,
+    maxPrice,
+    sortBy,
+    selectedTag,
+    sortedFlavors.length,
+  ]);
   const lowestPrice = availableFlavors.length
     ? Math.min(...availableFlavors.map((flavor) => flavor.price))
     : null;

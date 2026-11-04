@@ -1,6 +1,13 @@
-import { useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import {
+  useSyncExternalStore,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { photoErrorHandler, photoSrcSet } from "../lib/thumbnails";
-import { COMPACT_HERO_MEDIA, HERO_PHOTO_SIZES } from "../../shared/photoSizes.js";
+import {
+  COMPACT_HERO_MEDIA,
+  HERO_PHOTO_SIZES,
+} from "../../shared/photoSizes.js";
 import { HeroBackground } from "./HeroBackground";
 
 const FALLBACK_IMAGE = "/images/hero-ice-cream.jpg";
@@ -53,12 +60,30 @@ function subscribeToWidth(onChange: () => void) {
   return () => query.removeEventListener("change", onChange);
 }
 function useWideScreen() {
-  return useSyncExternalStore(subscribeToWidth, () => window.matchMedia(WIDE_SCREEN).matches, () => true);
+  return useSyncExternalStore(
+    subscribeToWidth,
+    () => window.matchMedia(WIDE_SCREEN).matches,
+    () => true,
+  );
 }
 
-function HeroImage({ src, alt, className, position, small = false }: { src: string; alt: string; className: string; position?: string; small?: boolean }) {
+function HeroImage({
+  src,
+  alt,
+  className,
+  position,
+  small = false,
+}: {
+  src: string;
+  alt: string;
+  className: string;
+  position?: string;
+  small?: boolean;
+}) {
   return (
-    <img fetchPriority={small ? "auto" : "high"} loading="eager"
+    <img
+      fetchPriority={small ? "auto" : "high"}
+      loading="eager"
       alt={alt}
       aria-hidden={alt ? undefined : true}
       className={className}
@@ -74,7 +99,25 @@ function HeroImage({ src, alt, className, position, small = false }: { src: stri
 
 // Navy hero shared by the menu and the flavors page. It continues the navy header,
 // with the copy on the left and an arch-framed photo group on the right.
-export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, actions, stats = [], image, sideImages, visual, visualClassName = "aspect-[6/5]", badge, curveClassName = "text-[#fbfaf5]", compactOnMobile = false, surface, accent, theme = "ice-cream" }: PageHeroProps) {
+export function PageHero({
+  breadcrumb,
+  eyebrow,
+  title,
+  subtitle,
+  description,
+  actions,
+  stats = [],
+  image,
+  sideImages,
+  visual,
+  visualClassName = "aspect-[6/5]",
+  badge,
+  curveClassName = "text-[#fbfaf5]",
+  compactOnMobile = false,
+  surface,
+  accent,
+  theme = "ice-cream",
+}: PageHeroProps) {
   const isWideScreen = useWideScreen();
   // Not rendered at all on phones (a hidden image would still download).
   const showVisual = !compactOnMobile || isWideScreen;
@@ -84,35 +127,79 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
   return (
     <section
       className="relative isolate bg-[var(--hero-surface,#472a3b)] text-white"
-      style={{
-        "--hero-surface": surface,
-        "--hero-accent": accent || "#ffb84d",
-      } as CSSProperties}
+      style={
+        {
+          "--hero-surface": surface,
+          "--hero-accent": accent || "#ffb84d",
+        } as CSSProperties
+      }
     >
       <HeroBackground animated variant="navy" theme={theme} />
 
-      <div className={`mx-auto grid max-w-[1320px] items-center gap-12 px-5 pt-8 ${compactOnMobile ? "pb-16" : "pb-24"} sm:px-8 sm:pb-28 sm:pt-12 lg:grid-cols-12 lg:gap-8 lg:px-12 lg:pb-32 lg:pt-14`}>
+      <div
+        className={`mx-auto grid max-w-[1320px] items-center gap-12 px-5 pt-8 ${compactOnMobile ? "pb-16" : "pb-24"} sm:px-8 sm:pb-28 sm:pt-12 lg:grid-cols-12 lg:gap-8 lg:px-12 lg:pb-32 lg:pt-14`}
+      >
         <div className="lg:col-span-6">
-          {breadcrumb && <div className="mb-8 text-xs font-bold text-white/55">{breadcrumb}</div>}
+          {breadcrumb && (
+            <div className="mb-8 text-xs font-bold text-white/55">
+              {breadcrumb}
+            </div>
+          )}
           <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] py-1.5 pl-2 pr-4 text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--hero-accent)] backdrop-blur-sm">
-            <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[var(--hero-accent)] text-xs text-[var(--hero-surface,#472a3b)]">✦</span>
+            <span
+              aria-hidden="true"
+              className="grid size-5 place-items-center rounded-full bg-[var(--hero-accent)] text-xs text-[var(--hero-surface,#472a3b)]"
+            >
+              ✦
+            </span>
             {eyebrow}
           </p>
-          <h1 className={`mt-6 font-display font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl ${compactOnMobile ? "text-4xl" : "text-5xl"}`}>
+          <h1
+            className={`mt-6 font-display font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl ${compactOnMobile ? "text-4xl" : "text-5xl"}`}
+          >
             {title}
-            {subtitle && <span className="mt-3 block text-[0.58em] leading-[1.05] text-[var(--hero-accent)]">{subtitle}</span>}
+            {subtitle && (
+              <span className="mt-3 block text-[0.58em] leading-[1.05] text-[var(--hero-accent)]">
+                {subtitle}
+              </span>
+            )}
           </h1>
-          <svg aria-hidden="true" className="mt-3 h-3 w-40 text-[var(--hero-accent)] sm:w-52" fill="none" preserveAspectRatio="none" viewBox="0 0 200 12">
-            <path d="M2 9C40 3 90 1.5 198 6" stroke="currentColor" strokeLinecap="round" strokeWidth="4" />
+          <svg
+            aria-hidden="true"
+            className="mt-3 h-3 w-40 text-[var(--hero-accent)] sm:w-52"
+            fill="none"
+            preserveAspectRatio="none"
+            viewBox="0 0 200 12"
+          >
+            <path
+              d="M2 9C40 3 90 1.5 198 6"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeWidth="4"
+            />
           </svg>
-          <p className="mt-6 max-w-xl text-base leading-7 text-white/70 sm:text-lg sm:leading-8">{description}</p>
-          {actions && <div className={`mt-9 flex-wrap items-center gap-3 ${compactOnMobile ? "hidden sm:flex" : "flex"}`}>{actions}</div>}
+          <p className="mt-6 max-w-xl text-base leading-7 text-white/70 sm:text-lg sm:leading-8">
+            {description}
+          </p>
+          {actions && (
+            <div
+              className={`mt-9 flex-wrap items-center gap-3 ${compactOnMobile ? "hidden sm:flex" : "flex"}`}
+            >
+              {actions}
+            </div>
+          )}
           {stats.length > 0 && (
-            <dl className={`mt-10 w-fit grid-flow-col divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[0.05] backdrop-blur-sm ${compactOnMobile ? "hidden sm:grid" : "grid"}`}>
+            <dl
+              className={`mt-10 w-fit grid-flow-col divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[0.05] backdrop-blur-sm ${compactOnMobile ? "hidden sm:grid" : "grid"}`}
+            >
               {stats.map((stat) => (
                 <div className="px-5 py-4 sm:px-7" key={stat.label}>
-                  <dt className="text-xs font-extrabold uppercase tracking-[0.16em] text-white/50">{stat.label}</dt>
-                  <dd className={`mt-1 font-display text-2xl font-extrabold tabular-nums sm:text-3xl ${stat.accent ? "text-[var(--hero-accent)]" : "text-white"}`}>
+                  <dt className="text-xs font-extrabold uppercase tracking-[0.16em] text-white/50">
+                    {stat.label}
+                  </dt>
+                  <dd
+                    className={`mt-1 font-display text-2xl font-extrabold tabular-nums sm:text-3xl ${stat.accent ? "text-[var(--hero-accent)]" : "text-white"}`}
+                  >
                     {stat.value}
                   </dd>
                 </div>
@@ -121,41 +208,79 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
           )}
         </div>
 
-        {showVisual && <div className={`relative mx-auto w-full max-w-[560px] lg:col-span-6 lg:mr-0 ${visualClassName}`}>
-          {visual}
-          {!visual && image && sideImages && (
-            <>
-              <div aria-hidden="true" className="absolute bottom-[4%] left-[6%] size-[46%] rounded-full bg-brand-yellow" />
-              <div aria-hidden="true" className="absolute right-[2%] top-[2%] size-[78%] rounded-full border border-dashed border-white/20" />
+        {showVisual && (
+          <div
+            className={`relative mx-auto w-full max-w-[560px] lg:col-span-6 lg:mr-0 ${visualClassName}`}
+          >
+            {visual}
+            {!visual && image && sideImages && (
+              <>
+                <div
+                  aria-hidden="true"
+                  className="absolute bottom-[4%] left-[6%] size-[46%] rounded-full bg-brand-yellow"
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute right-[2%] top-[2%] size-[78%] rounded-full border border-dashed border-white/20"
+                />
 
-              <figure className="absolute bottom-0 right-[4%] h-[94%] w-[60%] overflow-hidden rounded-b-[36px] rounded-t-[999px] bg-[#fff3b8] shadow-[0_40px_80px_rgba(2,12,28,0.45)] ring-[6px] ring-white/10">
-                <HeroImage alt={image.alt} className="size-full object-cover" position={image.position} src={image.src} />
-              </figure>
+                <figure className="absolute bottom-0 right-[4%] h-[94%] w-[60%] overflow-hidden rounded-b-[36px] rounded-t-[999px] bg-[#fff3b8] shadow-[0_40px_80px_rgba(2,12,28,0.45)] ring-[6px] ring-white/10">
+                  <HeroImage
+                    alt={image.alt}
+                    className="size-full object-cover"
+                    position={image.position}
+                    src={image.src}
+                  />
+                </figure>
 
-              <figure className="absolute left-[4%] top-[6%] size-[30%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-brand-navy">
-                <HeroImage alt="" className="size-full object-cover" small src={sideImages[0]} />
-              </figure>
-              <figure className="absolute bottom-[10%] left-[18%] size-[24%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-brand-navy">
-                <HeroImage alt="" className="size-full object-cover" small src={sideImages[1]} />
-              </figure>
-            </>
-          )}
+                <figure className="absolute left-[4%] top-[6%] size-[30%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-brand-navy">
+                  <HeroImage
+                    alt=""
+                    className="size-full object-cover"
+                    small
+                    src={sideImages[0]}
+                  />
+                </figure>
+                <figure className="absolute bottom-[10%] left-[18%] size-[24%] overflow-hidden rounded-full bg-[#fff3b8] shadow-[0_20px_44px_rgba(2,12,28,0.4)] ring-[5px] ring-brand-navy">
+                  <HeroImage
+                    alt=""
+                    className="size-full object-cover"
+                    small
+                    src={sideImages[1]}
+                  />
+                </figure>
+              </>
+            )}
 
-          {badge && (
-            <div className="absolute -bottom-5 right-0 flex max-w-[300px] items-center gap-3 rounded-2xl bg-white p-3 pr-4 text-brand-navy shadow-[0_24px_50px_rgba(2,12,28,0.35)] sm:-right-2 sm:p-4">
-              <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-yellow font-display text-sm font-extrabold sm:size-11">
-                {badge.mark}
-              </span>
-              <div className="leading-tight">
-                <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-brand-yellow-deep">{badge.eyebrow}</p>
-                <p className="mt-1 text-xs font-bold leading-4 sm:text-sm sm:leading-5">{badge.text}</p>
+            {badge && (
+              <div className="absolute -bottom-5 right-0 flex max-w-[300px] items-center gap-3 rounded-2xl bg-white p-3 pr-4 text-brand-navy shadow-[0_24px_50px_rgba(2,12,28,0.35)] sm:-right-2 sm:p-4">
+                <span
+                  aria-hidden="true"
+                  className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-yellow font-display text-sm font-extrabold sm:size-11"
+                >
+                  {badge.mark}
+                </span>
+                <div className="leading-tight">
+                  <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-brand-yellow-deep">
+                    {badge.eyebrow}
+                  </p>
+                  <p className="mt-1 text-xs font-bold leading-4 sm:text-sm sm:leading-5">
+                    {badge.text}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-        </div>}
+            )}
+          </div>
+        )}
       </div>
 
-      <svg aria-hidden="true" className={`absolute inset-x-0 -bottom-px h-10 w-full sm:h-14 lg:h-20 ${curveClassName}`} fill="currentColor" preserveAspectRatio="none" viewBox="0 0 1440 80">
+      <svg
+        aria-hidden="true"
+        className={`absolute inset-x-0 -bottom-px h-10 w-full sm:h-14 lg:h-20 ${curveClassName}`}
+        fill="currentColor"
+        preserveAspectRatio="none"
+        viewBox="0 0 1440 80"
+      >
         <path d="M0 80V42C240 4 480 0 720 22s480 44 720 4v54H0Z" />
       </svg>
     </section>
@@ -163,6 +288,6 @@ export function PageHero({ breadcrumb, eyebrow, title, subtitle, description, ac
 }
 
 PageHero.primary =
-"inline-flex items-center gap-2 rounded-full bg-[var(--hero-accent,#ffb84d)] px-7 py-4 text-sm font-extrabold text-[var(--hero-surface,#472a3b)] shadow-[0_12px_30px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hero-accent,#ffb84d)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--hero-surface,#472a3b)]";
+  "inline-flex items-center gap-2 rounded-full bg-[var(--hero-accent,#ffb84d)] px-7 py-4 text-sm font-extrabold text-[var(--hero-surface,#472a3b)] shadow-[0_12px_30px_rgba(255,220,50,0.25)] transition hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hero-accent,#ffb84d)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--hero-surface,#472a3b)]";
 PageHero.secondary =
   "inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-7 py-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy";

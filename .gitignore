@@ -33,6 +33,8 @@ server/uploads/
 # Browser automation snapshots
 .playwright-cli/
 
+# Local database backups and scratch databases
+backups/
 
 # Small photo copies, made by scripts/make-thumbnails.mjs on every build
 public/thumbs/

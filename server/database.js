@@ -161,6 +161,17 @@ if (configuredDatabaseBackend === "postgres") {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Newsletter subscribers from the footer form. A subscribed address stays subscribed
+    -- until it unsubscribes, so a repeat signup just refreshes the subscription.
+    CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+      source TEXT NOT NULL DEFAULT 'footer' CHECK (source IN ('footer', 'checkout', 'admin')),
+      is_subscribed INTEGER NOT NULL DEFAULT 1 CHECK (is_subscribed IN (0, 1)),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS orders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
@@ -179,6 +190,7 @@ if (configuredDatabaseBackend === "postgres") {
       discount_code_id INTEGER REFERENCES discount_codes(id) ON DELETE SET NULL,
       fulfillment_status TEXT NOT NULL DEFAULT 'preparing'
         CHECK (fulfillment_status IN ('preparing', 'ready', 'delivered')),
+      customer_note TEXT NOT NULL DEFAULT '',
       status TEXT NOT NULL DEFAULT 'pending_payment'
         CHECK (status IN ('pending_payment', 'processing', 'delivered', 'payment_failed')),
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -427,6 +439,8 @@ if (configuredDatabaseBackend === "postgres") {
     "reserved_uses",
     "INTEGER NOT NULL DEFAULT 0 CHECK (reserved_uses >= 0)",
   );
+  // A short note the shopper wrote at checkout: gift wording, allergies, a landmark for the rider.
+  addColumnIfMissing("orders", "customer_note", "TEXT NOT NULL DEFAULT ''");
 
   const orderStageMigrationId = "order-delivery-stage-v1";
   if (
@@ -820,6 +834,7 @@ export async function verifyDatabaseSchema() {
     "contact_messages",
     "custom_menu_items",
     "customer_favorites",
+    "newsletter_subscribers",
     "customer_saved_carts",
     "customers",
     "discount_codes",
@@ -895,6 +910,9 @@ export async function verifyDatabaseSchema() {
   `).run();
   await database.prepare(`
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_notified_at TEXT
+  `).run();
+  await database.prepare(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_note TEXT NOT NULL DEFAULT ''
   `).run();
   await database.prepare(`
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_notification_sent_at TEXT
@@ -2250,7 +2268,8 @@ async function failPendingCheckout(orderId, sessionId, provider) {
 export async function expireAbandonedCheckouts(minutes = 20) {
   const cutoff = `datetime('now', '-${Number(minutes) || 20} minutes')`
   const stale = await database.prepare(`
-    SELECT o.id AS "orderId", p.provider_reference AS "sessionId", p.payment_provider AS "provider"
+    SELECT o.id AS "orderId", p.provider_reference AS "sessionId", p.payment_provider AS "provider",
+      o.customer_email AS "customerEmail", o.customer_name AS "customerName"
     FROM orders o
     JOIN payments p ON p.order_id = o.id
     WHERE o.status = 'pending_payment' AND p.status = 'pending'
@@ -2258,8 +2277,12 @@ export async function expireAbandonedCheckouts(minutes = 20) {
     ORDER BY o.id
     LIMIT 100
   `).all()
+  const abandoned = []
   let released = 0
   for (const order of stale) {
+    // Handed to the caller before the order is failed, so a recovery email can
+    // reach the shopper while the items are still in their bag.
+    abandoned.push({ orderId: order.orderId, customerEmail: order.customerEmail, customerName: order.customerName })
     try {
       if (await failPendingCheckout(order.orderId, order.sessionId, order.provider || 'stripe')) {
         released += 1
@@ -2268,7 +2291,7 @@ export async function expireAbandonedCheckouts(minutes = 20) {
       console.error(`Unable to release abandoned checkout for order #${order.orderId}:`, error.message)
     }
   }
-  return released
+  return { released, abandoned }
 }
 
 export async function updateAdminProfilePicture(adminId, profilePicture) {
@@ -2824,6 +2847,45 @@ export async function createContactMessage({ name, email, phone, subject, messag
   return { messageId: Number(result.lastInsertRowid) }
 }
 
+// Newsletter. Upsert by email so a repeat signup refreshes an existing row
+// instead of failing on the UNIQUE constraint. The source must already be one
+// of the allowed values; the API route normalizes it before calling.
+const NEWSLETTER_SOURCES = new Set(['footer', 'checkout', 'admin'])
+
+export async function subscribeNewsletter(email, source = 'footer') {
+  const safeSource = NEWSLETTER_SOURCES.has(source) ? source : 'footer'
+  const existing = await database.prepare(`
+    SELECT id FROM newsletter_subscribers WHERE email = ?
+  `).get(email)
+  await database.prepare(`
+    INSERT INTO newsletter_subscribers (email, source, is_subscribed)
+    VALUES (?, ?, 1)
+    ON CONFLICT (email) DO UPDATE
+      SET source = excluded.source, is_subscribed = 1, updated_at = CURRENT_TIMESTAMP
+  `).run(email, safeSource)
+  const subscriber = await database.prepare(`
+    SELECT id, email, source, is_subscribed AS "isSubscribed", created_at AS "createdAt"
+    FROM newsletter_subscribers WHERE email = ?
+  `).get(email)
+  return { created: !existing, subscriber }
+}
+
+export async function unsubscribeNewsletter(email) {
+  const result = await database.prepare(`
+    UPDATE newsletter_subscribers SET is_subscribed = 0, updated_at = CURRENT_TIMESTAMP WHERE email = ?
+  `).run(email)
+  return result.changes > 0
+}
+
+export async function listNewsletterSubscribers({ subscribedOnly = true } = {}) {
+  return database.prepare(`
+    SELECT id, email, source, is_subscribed AS "isSubscribed", created_at AS "createdAt", updated_at AS "updatedAt"
+    FROM newsletter_subscribers
+    ${subscribedOnly ? 'WHERE is_subscribed = 1' : ''}
+    ORDER BY id DESC LIMIT 500
+  `).all()
+}
+
 export async function markContactMessageRead(id, storeId = null, unassignedOnly = false, storeTown = null) {
   const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}${storeTown === null && storeId === null && unassignedOnly ? ' AND store_id IS NULL' : ''}`
   const parameters = [id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
@@ -3033,6 +3095,7 @@ export async function createCheckoutOrder({
   currency,
   discountCode,
   pointsRedeemed,
+  customerNote = "",
 }) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
@@ -3085,8 +3148,8 @@ export async function createCheckoutOrder({
           store_id, store_name, store_address, store_phone,
           delivery_postal_code, delivery_residence, subtotal_cents, discount_cents, total_cents,
           currency, discount_code, discount_code_id, fulfillment_type, scheduled_for,
-          delivery_fee, loyalty_points_redeemed
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          delivery_fee, loyalty_points_redeemed, customer_note
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         customer?.id ?? null,
         name,
@@ -3110,6 +3173,7 @@ export async function createCheckoutOrder({
         scheduledFor,
         deliveryFee,
         pointsRedeemed,
+        customerNote,
       );
 
       const newOrderId = Number(result.lastInsertRowid);
@@ -3198,8 +3262,8 @@ export async function createCheckoutOrder({
         store_id, store_name, store_address, store_phone,
         delivery_postal_code, delivery_residence, subtotal_cents, discount_cents, total_cents,
         currency, discount_code, discount_code_id, fulfillment_type, scheduled_for,
-        delivery_fee, loyalty_points_redeemed, order_admin_seen, order_notified_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+        delivery_fee, loyalty_points_redeemed, customer_note, order_admin_seen, order_notified_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
     `).run(
       customer?.id ?? null,
       name,
@@ -3223,6 +3287,7 @@ export async function createCheckoutOrder({
       scheduledFor,
       deliveryFee,
       pointsRedeemed,
+      customerNote,
     )
 
     const newOrderId = Number(result.lastInsertRowid)

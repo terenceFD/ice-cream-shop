@@ -62,6 +62,7 @@ const RULES = [
   ['PUT', /^\/api\/admin\/discount-codes\/(\d+)$/, 'Edited discount code #{id}', 'promotions'],
   ['DELETE', /^\/api\/admin\/discount-codes\/(\d+)$/, 'Deleted discount code #{id}', 'promotions'],
   ['POST', /^\/api\/admin\/discount-codes\/(\d+)\/notify$/, 'Sent a promotion alert for code #{id}', 'promotions'],
+  ['POST', /^\/api\/admin\/newsletter\/broadcast$/, 'Sent a newsletter broadcast', 'promotions'],
 
   ['PUT', /^\/api\/admin\/fulfillment-zones$/, 'Updated pickup and delivery areas', 'settings'],
   ['PUT', /^\/api\/admin\/fulfillment-slots$/, 'Updated pickup and delivery times', 'settings'],

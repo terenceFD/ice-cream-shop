@@ -9,6 +9,7 @@ import { useAuth } from "../../context/useAuth";
 import { getCameroonDate } from "../../../shared/cameroonDate";
 import { cameroonLocations } from "../../../shared/data";
 import { storeOpenState } from "../../../shared/storeHours.js";
+import { trackBeginCheckout } from "../../lib/analytics";
 
 // Written by the payment page when an attempt fails, so a retry does not lose the details.
 const CHECKOUT_DETAILS_KEY = "cold-stone-checkout-details";
@@ -283,6 +284,7 @@ export function CheckoutPage() {
 
   function handleSubmit(event) {
     event.preventDefault();
+    trackBeginCheckout(grandTotal, cartItems.reduce((count, item) => count + item.quantity, 0));
     if (isLoading) return;
     if (!customer && !guestMode) {
       navigate("/signup", {
@@ -845,6 +847,26 @@ export function CheckoutPage() {
                     </p>
                   )}
                 </fieldset>
+
+                <label className="mt-5 block">
+                  <span className={labelClassName}>
+                    {t("Note for the store (optional)")}
+                  </span>
+                  <textarea
+                    className={`${inputClassName} min-h-24 resize-y`}
+                    defaultValue={savedDetails?.note || ""}
+                    id="order-note"
+                    maxLength={500}
+                    name="note"
+                    placeholder={t(
+                      "Gift message, allergies, or a landmark that helps the rider find you.",
+                    )}
+                    rows={3}
+                  />
+                  <span className="mt-1 block text-[11px] font-medium text-[#9aa3af]">
+                    {t("Up to 500 characters.")}
+                  </span>
+                </label>
               </StepCard>
 
               <StepCard

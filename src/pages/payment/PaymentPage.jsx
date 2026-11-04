@@ -10,6 +10,7 @@ import {
 } from "../../lib/cartPricing";
 import { apiRequest, getCustomerToken } from "../../api/api";
 import { useLanguage } from "../../language/useLanguage";
+import { trackPurchase } from "../../lib/analytics";
 import { useAuth } from "../../context/useAuth";
 import { PromotionAlertsSetting } from "../../components/PromotionAlerts";
 
@@ -212,6 +213,7 @@ export function PaymentPage() {
         sessionStorage.removeItem(CHECKOUT_DETAILS_KEY);
         clearCart();
         refreshFlavors({ showLoading: false });
+        trackPurchase(paidOrder.id, paidOrder.totalCents);
       })
       .catch((verifyError) => {
         if (cancelledRequest) return;

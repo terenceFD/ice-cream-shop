@@ -11,6 +11,7 @@ import { PROMOTION_DISMISSED_KEY, readInitialPromotion } from "../lib/promotion"
 import { coldStoneMenuCategories } from "../../shared/data";
 import { EVENT_OCCASIONS } from "../../shared/eventTypes.js";
 import { HeaderSearch } from "./HeaderSearch";
+import { NewsletterSignup } from "./NewsletterSignup";
 
 function ArrowIcon({ diagonal = false }) {
   return (
@@ -1428,6 +1429,7 @@ export function Footer() {
     {
       title: t("Help"),
       links: [
+        { label: t("FAQ"), to: "/faq" },
         { label: t("About us"), to: "/about" },
         { label: t("Contact us"), to: "/contact" },
         { label: t("Shopping cart"), to: "/cart" },
@@ -1485,6 +1487,9 @@ export function Footer() {
               <InstagramGlyph className="size-4" />
               @coldstonecameroon
             </a>
+            <div className="mt-6 border-t border-white/10 pt-6">
+              <NewsletterSignup />
+            </div>
           </div>
 
           {linkGroups.map((group) => (

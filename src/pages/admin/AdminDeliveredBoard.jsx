@@ -548,6 +548,12 @@ export function AdminDeliveredBoard() {
                   {(selectedOrder.deliveryResidence || selectedOrder.deliveryCity) && (
                     <p className="mt-1 text-xs leading-5 text-[#65748a]">{selectedOrder.deliveryResidence}{selectedOrder.deliveryResidence ? ", " : ""}{selectedOrder.deliveryCity}</p>
                   )}
+                  {selectedOrder.customerNote && (
+                    <p className="mt-3 rounded-lg bg-[#fffbea] p-3 text-xs leading-5 text-[#6b5800] ring-1 ring-[#f0e2a0]">
+                      <span className="font-extrabold">{t("Customer note")}: </span>
+                      {selectedOrder.customerNote}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-start gap-3 rounded-md bg-[#f4f6f8] p-4 ring-1 ring-[#dce3eb] sm:col-span-2">
                   <span className="grid size-9 shrink-0 place-items-center rounded-md bg-white text-brand-navy"><Icon path={icons.pin} /></span>
