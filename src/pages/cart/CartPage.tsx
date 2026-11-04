@@ -11,6 +11,7 @@ import { photoErrorHandler, photoSrcSet } from '../../lib/thumbnails'
 import { rankSimilar } from '../../lib/similarItems'
 import { DeliveryCoverage } from '../../components/DeliveryCoverage'
 import { useAuth } from '../../context/useAuth'
+import { useCurrency } from '../../context/useCurrency'
 import { loadCatalog, savedItemsToProducts, type SavedBag } from '../../lib/savedForLater'
 
 type MenuSuggestion = CartItem & {
@@ -48,6 +49,8 @@ export function CartPage() {
   const { cartItems, addToCart, addItemsToCart, removeFromCart, updateQuantity, clearCart } = useCart()
   const { customer } = useAuth()
   const { t, language } = useLanguage()
+  // Charges are always in FCFA; the visitor's chosen currency is display-only.
+  const { currency: displayCurrency } = useCurrency()
   const [confirmClear, setConfirmClear] = useState(false)
   //"Save for later" lists, kept on the account so they follow the customer between devices.
   const [savedBags, setSavedBags] = useState<SavedBag[]>([])
@@ -61,7 +64,7 @@ export function CartPage() {
   const [suggestionError, setSuggestionError] = useState('')
   const [addedSuggestionId, setAddedSuggestionId] = useState<string | number | null>(null)
   const { cartCount, currency, subtotal, freeScoops, discount, total } = getCartPricing(cartItems)
-  const money = (amount: number) => formatCartMoney(amount, currency, language)
+  const money = (amount: number) => formatCartMoney(amount, currency, language, displayCurrency)
   const hasUnavailableItems = cartItems.some((item: CartItem) => item.availableQuantity !== undefined && item.availableQuantity < item.quantity)
   const hasMenuItems = cartItems.some((item) => item.itemType === 'menu')
   const scoopCount = cartItems.filter((item) => item.itemType !== 'menu').reduce((sum, item) => sum + item.quantity, 0)
@@ -775,7 +778,7 @@ export function CartPage() {
                       </Link>
                       <div className="flex flex-1 flex-col px-1 pb-1 pt-3 sm:px-1.5">
                         <h3 className="line-clamp-2 min-h-[2.5em] font-display text-sm font-extrabold leading-snug text-brand-navy sm:text-base">{t(item.name)}</h3>
-                        <p className="mt-1 font-display text-sm font-extrabold tabular-nums text-brand-navy">{formatCartMoney(item.priceXaf, 'xaf', language)}</p>
+                        <p className="mt-1 font-display text-sm font-extrabold tabular-nums text-brand-navy">{formatCartMoney(item.priceXaf, 'xaf', language, displayCurrency)}</p>
                         <button
                           aria-label={added ? t('Added to your bag') : t('Add {name} to cart', { name: t(item.name) })}
                           className={`mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-md px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 ${added ? 'bg-[#37632c] text-white' : 'bg-brand-navy text-white hover:bg-brand-blue'}`}

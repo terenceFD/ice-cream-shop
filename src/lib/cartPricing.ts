@@ -1,4 +1,5 @@
 import { toNumber } from "../../shared/numbers.ts";
+import { convertFromXaf } from "../../shared/currency.js";
 
 export { USD_TO_XAF } from "../../shared/currency.js";
 export {
@@ -72,6 +73,17 @@ export function numberFormatter(locale: string): Intl.NumberFormat {
   return formatter;
 }
 
-export function formatCartMoney(amount: number, _currency = "xaf", language = "en"): string {
-  return `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(Math.round(amount))} FCFA`;
+export function formatCartMoney(amount: number, _currency = "xaf", language = "en", displayCurrency = "xaf"): string {
+  const amountXaf = Math.round(amount);
+  if (displayCurrency === "usd" || displayCurrency === "eur") {
+    const converted = convertFromXaf(amountXaf, displayCurrency);
+    const symbol = displayCurrency === "usd" ? "$" : "€";
+    return `${symbol}${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(converted)}`;
+  }
+  return `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(amountXaf)} FCFA`;
+}
+
+/** Formats an amount stored in cents of XAF in the visitor's chosen display currency. */
+export function formatOrderMoney(amountCents: number, language = "en", displayCurrency = "xaf"): string {
+  return formatCartMoney((Number(amountCents) || 0) / 100, "xaf", language, displayCurrency);
 }

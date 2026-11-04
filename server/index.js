@@ -2296,6 +2296,122 @@ app.delete('/api/auth/account', passwordChangeLimiter, requireCustomer, async (r
   }
 })
 
+// Step 1 of changing the account email: verify the password, then send a 6-digit code
+// to the new address. Nothing changes until the code is confirmed.
+app.post('/api/auth/email/change-request', passwordChangeLimiter, requireCustomer, async (request, response, next) => {
+  try {
+    const password = typeof request.body.password === 'string' ? request.body.password : ''
+    const newEmail = typeof request.body.newEmail === 'string' ? request.body.newEmail.trim() : ''
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+      response.status(400).json({ error: 'Enter a valid new email address.' })
+      return
+    }
+    if (newEmail.toLowerCase() === request.customer.email.toLowerCase()) {
+      response.status(400).json({ error: 'That is already the email on your account.' })
+      return
+    }
+    const account = await database.prepare('SELECT id, password_hash FROM customers WHERE id = ?').get(request.customer.id)
+    if (!account || !await verifyPassword(password, account.password_hash)) {
+      response.status(400).json({ error: 'Your password is incorrect.' })
+      return
+    }
+    if (await database.prepare('SELECT id FROM customers WHERE email = ? COLLATE NOCASE').get(newEmail)) {
+      response.status(409).json({ error: 'An account already uses that email address.' })
+      return
+    }
+    if (!isEmailDeliveryConfigured()) {
+      response.status(503).json({ error: 'Email verification is temporarily unavailable. Please try again later.' })
+      return
+    }
+
+    const now = new Date()
+    const createdAt = now.toISOString()
+    const expiresAt = new Date(now.getTime() + 10 * 60 * 1000).toISOString()
+    await database.prepare('DELETE FROM pending_customer_email_changes WHERE expires_at <= ?').run(createdAt)
+    const verificationId = randomUUID()
+    const code = String(randomInt(0, 1_000_000)).padStart(6, '0')
+    const codeHash = createHmac('sha256', jwtSecret).update(`${verificationId}:${code}`).digest('hex')
+    await database.prepare(`
+      INSERT INTO pending_customer_email_changes (
+        customer_id, email, verification_id, code_hash, attempts, created_at, expires_at
+      ) VALUES (?, ?, ?, ?, 0, ?, ?)
+      ON CONFLICT(customer_id) DO UPDATE SET
+        email = excluded.email, verification_id = excluded.verification_id,
+        code_hash = excluded.code_hash, attempts = 0, created_at = excluded.created_at,
+        expires_at = excluded.expires_at
+    `).run(request.customer.id, newEmail, verificationId, codeHash, createdAt, expiresAt)
+
+    try {
+      const sent = await sendCustomerVerificationCode({ to: newEmail, code })
+      console.log(`Email-change verification code queued for ${newEmail}: ${sent?.messageId || 'no message id'}`)
+    } catch (emailError) {
+      console.error('Unable to send email-change verification code:', describeEmailError(emailError))
+      response.status(502).json({ error: 'We could not send your verification code. Please try again shortly.' })
+      return
+    }
+
+    response.status(201).json({ verificationId, expiresInSeconds: 600 })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Step 2: confirm the code and switch the account over to the new address.
+app.post('/api/auth/email/change-confirm', passwordChangeLimiter, signupCodeAttemptLimiter, requireCustomer, async (request, response, next) => {
+  try {
+    const verificationId = typeof request.body.verificationId === 'string' ? request.body.verificationId : ''
+    const code = typeof request.body.code === 'string' ? request.body.code : ''
+    if (!/^[0-9a-f-]{36}$/i.test(verificationId) || !/^\d{6}$/.test(code)) {
+      response.status(400).json({ error: 'Enter the 6-digit code sent to your new email address.' })
+      return
+    }
+    const pending = await database.prepare(`
+      SELECT customer_id AS "customerId", email, code_hash AS "codeHash", attempts, expires_at AS "expiresAt"
+      FROM pending_customer_email_changes
+      WHERE verification_id = ? AND customer_id = ?
+    `).get(verificationId, request.customer.id)
+    const invalidCodeMessage = 'The code is invalid or has expired. Request a new code to continue.'
+    if (!pending || Date.parse(pending.expiresAt) <= Date.now()) {
+      await database.prepare('DELETE FROM pending_customer_email_changes WHERE customer_id = ?').run(request.customer.id)
+      response.status(400).json({ error: invalidCodeMessage })
+      return
+    }
+    if (Number(pending.attempts) >= 5) {
+      await database.prepare('DELETE FROM pending_customer_email_changes WHERE customer_id = ?').run(request.customer.id)
+      response.status(429).json({ error: 'Too many incorrect codes. Request a new verification code.' })
+      return
+    }
+
+    const submittedHash = createHmac('sha256', jwtSecret).update(`${verificationId}:${code}`).digest()
+    const expectedHash = Buffer.from(pending.codeHash, 'hex')
+    if (!(submittedHash.length === expectedHash.length && timingSafeEqual(submittedHash, expectedHash))) {
+      const attempts = Number(pending.attempts) + 1
+      if (attempts >= 5) {
+        await database.prepare('DELETE FROM pending_customer_email_changes WHERE customer_id = ?').run(request.customer.id)
+        response.status(429).json({ error: 'Too many incorrect codes. Request a new verification code.' })
+        return
+      }
+      await database.prepare('UPDATE pending_customer_email_changes SET attempts = ? WHERE customer_id = ?').run(attempts, request.customer.id)
+      response.status(400).json({ error: invalidCodeMessage })
+      return
+    }
+
+    if (await database.prepare('SELECT id FROM customers WHERE email = ? COLLATE NOCASE AND id != ?').get(pending.email, request.customer.id)) {
+      response.status(409).json({ error: 'An account already uses that email address.' })
+      return
+    }
+    const update = await database.prepare('UPDATE customers SET email = ? WHERE id = ?').run(pending.email, request.customer.id)
+    if (!update.changes) {
+      response.status(404).json({ error: 'Customer account not found.' })
+      return
+    }
+    await database.prepare('DELETE FROM pending_customer_email_changes WHERE customer_id = ?').run(request.customer.id)
+    response.json({ email: pending.email, message: 'Your email address has been updated. Sign in with it from now on.' })
+  } catch (error) {
+    next(error)
+  }
+})
+
 app.put('/api/auth/profile', requireCustomer, async (request, response) => {
   const name = typeof request.body.name === 'string' ? request.body.name.trim() : ''
   const phone = typeof request.body.phone === 'string' ? request.body.phone.trim() : ''
@@ -2521,6 +2637,115 @@ app.delete('/api/customer/favorites/:itemId', requireCustomer, async (request, r
     return
   }
   response.status(204).end()
+})
+
+// Ice cream subscriptions: a customer pre-books a recurring flavor box. The plan
+// sets the delivery cycle; each subscription captures its unit price at subscribe
+// time so later menu changes never surprise a subscriber mid-plan.
+const SUBSCRIPTION_PLANS = {
+  weekly: 7,
+  biweekly: 14,
+  monthly: 30,
+}
+
+function nextDeliveryDateFrom(plan, fromDate = new Date()) {
+  const next = new Date(fromDate)
+  next.setDate(next.getDate() + SUBSCRIPTION_PLANS[plan])
+  return next.toISOString().slice(0, 10)
+}
+
+function serializeSubscription(row) {
+  return {
+    id: row.id,
+    plan: row.plan,
+    status: row.status,
+    flavorName: row.flavor_name,
+    quantity: row.quantity,
+    unitPriceCents: row.unit_price_cents,
+    perDeliveryCents: row.unit_price_cents * row.quantity,
+    storeId: row.store_id,
+    storeName: row.store_name || null,
+    nextDeliveryDate: row.next_delivery_date,
+    lastChargeAt: row.last_charge_at,
+    createdAt: row.created_at,
+  }
+}
+
+async function loadSubscription(subscriptionId, customerId) {
+  return database.prepare(`
+    SELECT s.*, st.name AS "store_name" FROM subscriptions s
+    LEFT JOIN stores st ON st.id = s.store_id
+    WHERE s.id = ? AND s.customer_id = ?
+  `).get(subscriptionId, customerId)
+}
+
+app.get('/api/customer/subscriptions', requireCustomer, async (request, response) => {
+  const rows = await database.prepare(`
+    SELECT s.*, st.name AS "store_name" FROM subscriptions s
+    LEFT JOIN stores st ON st.id = s.store_id
+    WHERE s.customer_id = ? ORDER BY s.id DESC
+  `).all(request.customer.id)
+  response.json({ subscriptions: rows.map(serializeSubscription) })
+})
+
+app.post('/api/customer/subscriptions', requireCustomer, async (request, response) => {
+  const plan = typeof request.body.plan === 'string' ? request.body.plan : ''
+  const flavorName = typeof request.body.flavorName === 'string' ? request.body.flavorName.trim().slice(0, 120) : ''
+  const quantity = Number(request.body.quantity)
+  const storeId = Number(request.body.storeId) || null
+  if (!SUBSCRIPTION_PLANS[plan] || !flavorName || !Number.isInteger(quantity) || quantity < 1 || quantity > 24) {
+    response.status(400).json({ error: 'Choose a plan, a flavor and a quantity between 1 and 24.' })
+    return
+  }
+  // Price is looked up from the live catalog, never taken from the request body.
+  const flavor = await database.prepare(
+    'SELECT id, price FROM flavors WHERE name = ? COLLATE NOCASE AND is_available = 1',
+  ).get(flavorName)
+  if (!flavor) {
+    response.status(400).json({ error: 'Choose a flavor that is currently on the menu.' })
+    return
+  }
+  const unitPriceCents = Math.round(Number(flavor.price) || 0)
+  if (unitPriceCents <= 0) {
+    response.status(400).json({ error: 'This flavor has no price yet.' })
+    return
+  }
+  if (storeId) {
+    const store = await database.prepare('SELECT id FROM stores WHERE id = ?').get(storeId)
+    if (!store) {
+      response.status(400).json({ error: 'Choose a store that exists.' })
+      return
+    }
+  }
+  const result = await database.prepare(`
+    INSERT INTO subscriptions (customer_id, store_id, plan, flavor_name, quantity, unit_price_cents, next_delivery_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(request.customer.id, storeId, plan, flavorName, quantity, unitPriceCents, nextDeliveryDateFrom(plan))
+  const row = await loadSubscription(result.lastInsertRowid, request.customer.id)
+  response.status(201).json({ subscription: serializeSubscription(row) })
+})
+
+app.patch('/api/customer/subscriptions/:id', requireCustomer, async (request, response) => {
+  const subscriptionId = Number(request.params.id)
+  const row = await loadSubscription(subscriptionId, request.customer.id)
+  if (!row) {
+    response.status(404).json({ error: 'Subscription not found.' })
+    return
+  }
+  const action = typeof request.body.action === 'string' ? request.body.action : ''
+  if (action === 'pause' && row.status === 'active') {
+    await database.prepare("UPDATE subscriptions SET status = 'paused', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.id)
+  } else if (action === 'resume' && row.status === 'paused') {
+    await database.prepare("UPDATE subscriptions SET status = 'active', next_delivery_date = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+      .run(nextDeliveryDateFrom(row.plan), row.id)
+  } else if (action === 'cancel' && ['active', 'paused'].includes(row.status)) {
+    await database.prepare("UPDATE subscriptions SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.id)
+  } else {
+    response.status(400).json({ error: 'That change does not apply to this subscription.' })
+    return
+  }
+  const updated = await loadSubscription(row.id, request.customer.id)
+  response.json({ subscription: serializeSubscription(updated) })
 })
 
 app.get('/api/customer/saved-carts', requireCustomer, async (request, response) => {
@@ -2985,6 +3210,107 @@ app.get('/api/admin/restock-notifications', requireAdmin, async (request, respon
     ? await database.prepare('SELECT id, email, item_id AS "itemId", created_at AS "createdAt" FROM restock_notifications WHERE item_id = ? ORDER BY id DESC LIMIT 500').all(itemId)
     : await database.prepare('SELECT id, email, item_id AS "itemId", created_at AS "createdAt" FROM restock_notifications ORDER BY id DESC LIMIT 500').all()
   response.json({ notifications: rows })
+})
+
+// ---- Live chat -------------------------------------------------------------
+// A shopper opens a thread with a message; staff reply from the admin inbox.
+// Threads are identified by a random id the browser keeps in localStorage, so an
+// anonymous visitor can keep a conversation across page loads. Signed-in shoppers
+// get their threads linked to their account.
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 20,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many messages at once. Wait a moment and try again.' },
+})
+
+function chatThreadIdValid(threadId) {
+  return /^[0-9a-f-]{8,36}$/i.test(threadId)
+}
+
+app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, response) => {
+  const threadId = typeof request.body.threadId === 'string' ? request.body.threadId.trim() : ''
+  const body = typeof request.body.body === 'string' ? request.body.body.trim().slice(0, 1000) : ''
+  if (!chatThreadIdValid(threadId) || !body) {
+    response.status(400).json({ error: 'Write a message before sending.' })
+    return
+  }
+  await database.prepare(`
+    INSERT INTO chat_messages (thread_id, customer_id, sender, body)
+    VALUES (?, ?, 'customer', ?)
+  `).run(threadId, request.customer ? request.customer.id : null, body)
+  response.status(201).json({ sent: true })
+})
+
+app.get('/api/chat/messages/:threadId', optionalCustomer, async (request, response) => {
+  const threadId = request.params.threadId
+  if (!chatThreadIdValid(threadId)) {
+    response.status(400).json({ error: 'Chat thread is invalid.' })
+    return
+  }
+  const messages = await database.prepare(`
+    SELECT id, sender, body, created_at AS "createdAt"
+    FROM chat_messages WHERE thread_id = ? ORDER BY id DESC LIMIT 50
+  `).all(threadId)
+  // Only store replies count as read by the shopper; their own messages already are.
+  await database.prepare(`
+    UPDATE chat_messages SET is_read_by_customer = 1
+    WHERE thread_id = ? AND sender = 'store'
+  `).run(threadId)
+  response.json({ messages: messages.reverse() })
+})
+
+app.get('/api/admin/chat/threads', requireAdmin, async (request, response) => {
+  if (request.query.countOnly === 'true') {
+    const { count } = await database.prepare(`
+      SELECT COUNT(*) AS count FROM chat_messages WHERE sender = 'customer' AND is_read_by_store = 0
+    `).get()
+    response.json({ count })
+    return
+  }
+  const threads = await database.prepare(`
+    SELECT thread_id AS "threadId",
+      MAX(c.name) FILTER (WHERE m.sender = 'customer') AS "customerName",
+      COUNT(*) AS "messageCount",
+      SUM(CASE WHEN m.sender = 'customer' AND m.is_read_by_store = 0 THEN 1 ELSE 0 END) AS "unreadCount",
+      MIN(m.created_at) AS "startedAt",
+      MAX(m.created_at) AS "lastAt"
+    FROM chat_messages m LEFT JOIN customers c ON c.id = m.customer_id
+    GROUP BY m.thread_id
+    ORDER BY MAX(m.created_at) DESC LIMIT 200
+  `).all()
+  response.json({ threads })
+})
+
+app.get('/api/admin/chat/threads/:threadId', requireAdmin, async (request, response) => {
+  const threadId = request.params.threadId
+  if (!chatThreadIdValid(threadId)) {
+    response.status(400).json({ error: 'Chat thread is invalid.' })
+    return
+  }
+  const messages = await database.prepare(`
+    SELECT id, sender, body, customer_id AS "customerId", created_at AS "createdAt"
+    FROM chat_messages WHERE thread_id = ? ORDER BY id
+  `).all(threadId)
+  await database.prepare(`
+    UPDATE chat_messages SET is_read_by_store = 1 WHERE thread_id = ? AND sender = 'customer'
+  `).run(threadId)
+  response.json({ messages })
+})
+
+app.post('/api/admin/chat/threads/:threadId/reply', requireAdmin, async (request, response) => {
+  const threadId = request.params.threadId
+  const body = typeof request.body.body === 'string' ? request.body.body.trim().slice(0, 1000) : ''
+  if (!chatThreadIdValid(threadId) || !body) {
+    response.status(400).json({ error: 'Write a reply before sending.' })
+    return
+  }
+  await database.prepare(`
+    INSERT INTO chat_messages (thread_id, customer_id, sender, body)
+    VALUES (?, NULL, 'store', ?)
+  `).run(threadId, body)
+  response.status(201).json({ sent: true })
 })
 
 app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
@@ -4334,6 +4660,60 @@ app.patch('/api/admin/cake-requests/:id/status', requireAdmin, async (request, r
     return
   }
   response.json({ id, status })
+})
+
+app.get('/api/admin/subscriptions', requireAdmin, async (request, response) => {
+  const status = typeof request.query.status === 'string' ? request.query.status : ''
+  const allowedStatuses = ['active', 'paused', 'cancelled', 'completed']
+  const town = selectedStoreTown(request.admin)
+  const isTownScoped = hasTownScopedData(request.admin)
+  const filters = []
+  const parameters = []
+  if (allowedStatuses.includes(status)) {
+    filters.push('s.status = ?')
+    parameters.push(status)
+  }
+  if (isTownScoped && town) {
+    filters.push('st.town = ?')
+    parameters.push(town)
+  }
+  const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : ''
+  const rows = await database.prepare(`
+    SELECT s.*, st.name AS "store_name", st.town AS "store_town", c.name AS "customer_name", c.email AS "customer_email"
+    FROM subscriptions s
+    LEFT JOIN stores st ON st.id = s.store_id
+    JOIN customers c ON c.id = s.customer_id
+    ${whereClause}
+    ORDER BY CASE s.status WHEN 'active' THEN 0 WHEN 'paused' THEN 1 ELSE 2 END, s.next_delivery_date, s.id DESC
+    LIMIT 300
+  `).all(...parameters)
+  response.json({ subscriptions: rows.map((row) => ({
+    ...serializeSubscription(row),
+    customerName: row.customer_name,
+    customerEmail: row.customer_email,
+  })) })
+})
+
+app.patch('/api/admin/subscriptions/:id/status', requireAdmin, async (request, response) => {
+  const id = Number(request.params.id)
+  const status = typeof request.body.status === 'string' ? request.body.status : ''
+  if (!Number.isSafeInteger(id) || id < 1 || !['active', 'paused', 'cancelled', 'completed'].includes(status)) {
+    response.status(400).json({ error: 'A valid subscription and status are required.' })
+    return
+  }
+  const row = await database.prepare('SELECT id, plan, status FROM subscriptions WHERE id = ?').get(id)
+  if (!row) {
+    response.status(404).json({ error: 'Subscription not found.' })
+    return
+  }
+  if (status === 'active' && row.status !== 'paused') {
+    response.status(400).json({ error: 'Only a paused subscription can be resumed.' })
+    return
+  }
+  const nextDeliveryDate = status === 'active' ? nextDeliveryDateFrom(row.plan) : row.next_delivery_date
+  await database.prepare('UPDATE subscriptions SET status = ?, next_delivery_date = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+    .run(status, nextDeliveryDate, id)
+  response.json({ ok: true })
 })
 
 app.get('/api/admin/reviews', requireAdmin, async (request, response) => {

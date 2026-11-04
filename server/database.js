@@ -617,6 +617,53 @@ if (configuredDatabaseBackend === "postgres") {
       UNIQUE(email, item_id)
     );
     CREATE INDEX IF NOT EXISTS idx_restock_notifications_item ON restock_notifications(item_id);
+
+    -- A signed-in customer's pending email change. The new address must be confirmed
+    -- with a 6-digit code before the account is switched over.
+    CREATE TABLE IF NOT EXISTS pending_customer_email_changes (
+      customer_id INTEGER PRIMARY KEY REFERENCES customers(id) ON DELETE CASCADE,
+      email TEXT NOT NULL COLLATE NOCASE,
+      verification_id TEXT NOT NULL UNIQUE,
+      code_hash TEXT NOT NULL,
+      attempts INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      expires_at TEXT NOT NULL
+    );
+
+    -- Live chat threads between a shopper and the store. A thread starts with the
+    -- shopper's first message; staff reply from the admin inbox.
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_id TEXT NOT NULL,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+      sender TEXT NOT NULL CHECK (sender IN ('customer', 'store')),
+      body TEXT NOT NULL,
+      is_read_by_store INTEGER NOT NULL DEFAULT 0,
+      is_read_by_customer INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_chat_messages_thread ON chat_messages(thread_id, id);
+
+    -- Ice cream subscriptions: a customer pre-books a recurring order. Each cycle the
+    -- store prepares the box on the next delivery date until the customer pauses or
+    -- cancels. Prices are captured at subscribe time so menu changes never surprise a
+    -- subscriber mid-plan.
+    CREATE TABLE IF NOT EXISTS subscriptions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
+      store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL,
+      plan TEXT NOT NULL CHECK (plan IN ('weekly', 'biweekly', 'monthly')),
+      status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'cancelled', 'completed')),
+      flavor_name TEXT NOT NULL,
+      quantity INTEGER NOT NULL CHECK (quantity > 0),
+      unit_price_cents INTEGER NOT NULL CHECK (unit_price_cents > 0),
+      next_delivery_date TEXT NOT NULL,
+      last_charge_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_subscriptions_customer ON subscriptions(customer_id, id);
+    CREATE INDEX IF NOT EXISTS idx_subscriptions_next ON subscriptions(status, next_delivery_date);
   `);
 
   addColumnIfMissing("event_orders", "deposit_admin_seen", "INTEGER NOT NULL DEFAULT 1");
@@ -1050,6 +1097,32 @@ export async function verifyDatabaseSchema() {
   `).run();
   await database.prepare(`
     CREATE INDEX IF NOT EXISTS idx_push_subscriptions_customer ON push_subscriptions(customer_id)
+  `).run();
+  // Ice cream subscriptions: a customer pre-books a recurring order. Each cycle the
+  // store prepares the box on the next delivery date until the customer pauses or
+  // cancels. Prices are captured at subscribe time so menu changes never surprise a
+  // subscriber mid-plan. Mirrors the SQLite table defined above.
+  await database.prepare(`
+    CREATE TABLE IF NOT EXISTS subscriptions (
+      id SERIAL PRIMARY KEY,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
+      store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL,
+      plan TEXT NOT NULL CHECK (plan IN ('weekly', 'biweekly', 'monthly')),
+      status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'cancelled', 'completed')),
+      flavor_name TEXT NOT NULL,
+      quantity INTEGER NOT NULL CHECK (quantity > 0),
+      unit_price_cents INTEGER NOT NULL CHECK (unit_price_cents > 0),
+      next_delivery_date TEXT NOT NULL,
+      last_charge_at TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `).run();
+  await database.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_subscriptions_customer ON subscriptions(customer_id, id)
+  `).run();
+  await database.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_subscriptions_next ON subscriptions(status, next_delivery_date)
   `).run();
   for (const [baseTitle, previousImage, image] of CATEGORY_IMAGE_UPDATES) {
     await database.prepare(
@@ -3172,6 +3245,8 @@ export async function deleteDeliveredOrderForCustomer(id, customerId) {
   `).run(id, customerId)
   return result.changes ? 'deleted' : 'not_found'
 }
+
+// ---- Customer subscriptions (subscribe & save) ----------------------------
 
 export async function listOrderNotificationRecipients(storeId) {
   const admins = await database.prepare(`

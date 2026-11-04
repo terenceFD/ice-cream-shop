@@ -10,12 +10,13 @@ import { ProductImageSlider } from "../../components/ProductImageSlider";
 import { RatingBadge } from "../../components/RatingBadge";
 import { RecentlyViewed } from "../../components/RecentlyViewed";
 import { useLanguage } from "../../language/useLanguage";
+import { useCurrency } from "../../context/useCurrency";
 import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
 import {
   HOME_SLIDE_SIZES,
   normalizePhotoGallery,
 } from "../../../shared/photoSizes.js";
-import { numberFormatter } from "../../lib/cartPricing";
+import { numberFormatter, formatCartMoney } from "../../lib/cartPricing";
 
 const popularFlavorNames = [
   "Chocolate Devotion",
@@ -687,6 +688,7 @@ function HowItWorksSection({ t }) {
 
 export function HomePage() {
   const { language, t } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
   const { addToCart } = useCart();
   const { flavors: catalogFlavors } = useFlavors();
   const [popularFlavors, setPopularFlavors] = useState([]);
@@ -883,7 +885,7 @@ export function HomePage() {
   useEffect(() => () => window.clearTimeout(cartNoticeTimer.current), []);
 
   const formatPrice = (price) =>
-    `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
+    formatCartMoney(price, "xaf", language, displayCurrency);
 
   const catalogFlavorCards = catalogFlavors
     .filter((flavor) => flavor.availableQuantity > 0)

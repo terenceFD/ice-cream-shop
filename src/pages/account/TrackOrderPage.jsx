@@ -3,6 +3,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../../api/api";
 import { Footer, Header } from "../../components/Layout";
 import { useLanguage } from "../../language/useLanguage";
+import { useCurrency } from "../../context/useCurrency";
+import { formatOrderMoney } from "../../lib/cartPricing";
 
 const inputClassName =
   "mt-2 w-full rounded-2xl border border-[#e3dfd3] bg-[#fbfaf5] px-4 py-3.5 text-sm font-semibold text-brand-navy transition placeholder:font-medium placeholder:text-[#9aa3af] hover:border-[#cfcabb] focus:border-brand-yellow-deep focus:bg-white focus:ring-4 focus:ring-brand-yellow/25 outline-none!";
@@ -59,12 +61,8 @@ function formatDate(value, language) {
   });
 }
 
-function formatMoney(cents, language) {
-  return new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-CM", {
-    style: "currency",
-    currency: "XAF",
-    maximumFractionDigits: 0,
-  }).format(Number(cents) || 0);
+function formatMoney(cents, language, displayCurrency = "xaf") {
+  return formatOrderMoney(cents, language, displayCurrency);
 }
 
 // Maps the order status stored by the store to a step in STATUS_STEPS.
@@ -75,7 +73,7 @@ function statusIndexFromStatus(status) {
   return 0;
 }
 
-function OrderResult({ order, t, language }) {
+function OrderResult({ order, t, language, displayCurrency }) {
   const isPickup = order.fulfillmentType === "pickup";
   const statusIndex = statusIndexFromStatus(order.status);
   const isDone =
@@ -203,6 +201,7 @@ function OrderResult({ order, t, language }) {
 // email address typed at checkout.
 export function TrackOrderPage() {
   const { t, language } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
   const [searchParams] = useSearchParams();
   const [orderId, setOrderId] = useState(() => searchParams.get("order") || "");
   const [email, setEmail] = useState("");
@@ -330,7 +329,7 @@ export function TrackOrderPage() {
 
           {order && (
             <div className="mt-6">
-              <OrderResult language={language} order={order} t={t} />
+              <OrderResult displayCurrency={displayCurrency} language={language} order={order} t={t} />
             </div>
           )}
         </div>

@@ -7,8 +7,9 @@ import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
 import { apiRequest } from "../../api/api";
 import { useCart } from "../../context/useCart";
 import { useLanguage } from "../../language/useLanguage";
+import { useCurrency } from "../../context/useCurrency";
 import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
-import { numberFormatter } from "../../lib/cartPricing";
+import { formatCartMoney } from "../../lib/cartPricing";
 import { useScrollReveal } from "../../lib/useScrollReveal";
 import { stockSignal, stockSignalLabel } from "../../lib/stockSignal";
 
@@ -118,6 +119,9 @@ function MenuItemCard({ category, item, formatPrice, onAdd, added, showCategory,
 
 export function AllMenuPage() {
   const { language, t } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
+  // Prices shown in the visitor's currency; charges stay in FCFA.
+  const money = (amount) => formatCartMoney(amount, "xaf", language, displayCurrency);
   const { addToCart } = useCart();
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState(coldStoneMenuCategories);
@@ -157,7 +161,7 @@ export function AllMenuPage() {
 
   const requestedCategory = searchParams.get("category") || "";
   const activeCategory = categories.some((category) => category.title === requestedCategory) ? requestedCategory : "";
-  const formatPrice = (price) => `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
+  const formatPrice = (price) => money(price);
   const allItems = categories.flatMap((category) => category.items.map((item) => ({ category, item })));
   const prices = allItems.map(({ item }) => item.priceXaf).filter((price) => Number.isFinite(price));
   const query = search.trim().toLowerCase();

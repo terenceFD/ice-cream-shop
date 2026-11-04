@@ -5,6 +5,7 @@ import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
 import { apiRequest, getCustomerToken } from "../../api/api";
 import { useCart } from "../../context/useCart";
 import { useLanguage } from "../../language/useLanguage";
+import { useCurrency } from "../../context/useCurrency";
 import { normalizePhotoGallery } from "../../../shared/photoSizes.js";
 import { useAuth } from "../../context/useAuth";
 import { PageHero } from "../../components/PageHero";
@@ -12,7 +13,7 @@ import { ProductImageSlider } from "../../components/ProductImageSlider";
 import { RatingBadge } from "../../components/RatingBadge";
 import { photoErrorHandler, photoSrcSet, thumbnail } from "../../lib/thumbnails";
 import { rankSimilar } from "../../lib/similarItems";
-import { numberFormatter } from "../../lib/cartPricing";
+import { numberFormatter, formatCartMoney } from "../../lib/cartPricing";
 import { RecentlyViewed } from "../../components/RecentlyViewed";
 import { recordRecentlyViewed } from "../../lib/recentlyViewed";
 import { stockSignal, stockSignalLabel } from "../../lib/stockSignal";
@@ -391,6 +392,9 @@ export function MenuPage() {
   const { addItemsToCart } = useCart();
   const { customer } = useAuth();
   const { language, t } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
+  // Prices shown in the visitor's currency; charges stay in FCFA.
+  const money = (amount) => formatCartMoney(amount, 'xaf', language, displayCurrency);
   const [selectedItemState, setSelectedItemState] = useState(null);
   const [search, setSearch] = useState("");
   // `categories` is part of the deps: the observer is set up while the built-in menu is
@@ -446,7 +450,7 @@ export function MenuPage() {
       ? selectedItemState.item
       : null;
   const formatPrice = (price) =>
-    `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
+    formatCartMoney(price, 'xaf', language, displayCurrency);
 
   // Links such as /menu?category=…&item=… (from the All menu page) open that product once the
   // live menu (with stock) has loaded; the item is then dropped from the address.

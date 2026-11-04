@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { photoErrorHandler, photoSrcSet, thumbnail } from "../lib/thumbnails";
 import { Link, useLocation } from "react-router-dom";
 import { apiRequest } from "../api/api";
-import { numberFormatter } from "../lib/cartPricing";
+import { numberFormatter, formatCartMoney } from "../lib/cartPricing";
 import { useCart } from "../context/useCart";
 import { useAuth } from "../context/useAuth";
 import { useFlavors } from "../context/useFlavors";
 import { useLanguage } from "../language/useLanguage";
+import { useCurrency } from "../context/useCurrency";
 import { PROMOTION_DISMISSED_KEY, readInitialPromotion } from "../lib/promotion";
 import { coldStoneMenuCategories } from "../../shared/data";
 import { EVENT_OCCASIONS } from "../../shared/eventTypes.js";
@@ -247,6 +248,85 @@ function useDismissableDetails(ref, enabled = true) {
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [ref, enabled]);
+}
+
+// Currency picker: sits beside the language dropdown. XAF is the shop's charge
+// currency; the other options convert prices for display only.
+function CurrencyDropdown({ mobile = false }) {
+  const { currency, setCurrency, supported } = useCurrency();
+  const { t } = useLanguage();
+  const detailsRef = useRef(null);
+  useDismissableDetails(detailsRef, !mobile);
+  const active = supported.find((option) => option.code === currency) || supported[0];
+
+  if (mobile) {
+    return (
+      <div aria-label={t("Select currency")} className="flex rounded-md bg-[color:var(--brand-blue)] p-1 ring-1 ring-white/10" role="group">
+        {supported.map((option) => (
+          <button
+            aria-pressed={currency === option.code}
+            className={`min-h-11 flex-1 rounded-sm text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-yellow ${currency === option.code ? "bg-brand-yellow text-brand-navy" : "text-white/75 hover:bg-white/[0.08] hover:text-white"}`}
+            key={option.code}
+            onClick={() => setCurrency(option.code)}
+            type="button"
+          >
+            {option.symbol}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <details className="group relative" ref={detailsRef}>
+      <summary
+        aria-label={`${t("Currency")}: ${active.code.toUpperCase()}`}
+        className="flex cursor-pointer list-none items-center gap-2 rounded-full border border-white/25 bg-white/[0.06] py-1.5 pl-1.5 pr-3 text-xs font-bold text-white transition hover:border-white/50 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy group-open:border-brand-yellow/60 group-open:bg-white/10 [&::-webkit-details-marker]:hidden"
+        onClick={closeOtherDropdowns}
+      >
+        <span aria-hidden="true" className="grid size-7 place-items-center rounded-full bg-brand-yellow text-[9px] font-extrabold tracking-tight text-brand-navy">{active.symbol}</span>
+        <span className="hidden xl:inline">{active.code.toUpperCase()}</span>
+        <svg aria-hidden="true" className="size-3 text-white/70 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
+          <path d="m2 4 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+        </svg>
+      </summary>
+      <div className="menu-popover absolute right-0 top-full z-30 w-72 pt-3">
+        <div className="overflow-hidden rounded-xl bg-white p-2 text-sm text-brand-navy shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb]">
+          <div className="px-3 pb-3 pt-2">
+            <p className="text-sm font-bold text-brand-navy">{t("Select currency")}</p>
+            <p className="mt-0.5 text-xs text-[#65748a]">{t("Prices convert for display; payment is taken in FCFA.")}</p>
+          </div>
+          <div className="grid gap-1" role="group" aria-label={t("Select currency")}>
+            {supported.map((option) => {
+              const selected = currency === option.code;
+              return (
+                <button
+                  aria-pressed={selected}
+                  className={`group/cur flex w-full items-center gap-3 rounded-md p-2.5 pr-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-yellow-deep ${selected ? "bg-[#f4f6f8] text-brand-navy" : "hover:bg-[#f4f6f8]"}`}
+                  key={option.code}
+                  onClick={(event) => {
+                    setCurrency(option.code);
+                    const details = event.currentTarget.closest("details");
+                    if (details) details.open = false;
+                  }}
+                  type="button"
+                >
+                  <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md font-display text-xs font-extrabold ${selected ? "bg-brand-navy text-white" : "bg-[#f4f6f8] text-[#65748a] group-hover/cur:bg-white"}`}>{option.symbol}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-extrabold">{option.code.toUpperCase()}</span>
+                    <span className="mt-0.5 block text-xs font-semibold text-[#65748a]">{option.code === "xaf" ? t("Store currency") : t("Display only")}</span>
+                  </span>
+                  <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full ${selected ? "bg-brand-navy text-white" : "text-transparent"}`}>
+                    {selected && <svg className="size-3" fill="none" viewBox="0 0 16 16"><path d="m3 8 3.2 3.2L13 4.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </details>
+  );
 }
 
 function LanguageDropdown({ language, setLanguage, t }) {
@@ -594,7 +674,7 @@ function BrandMark({ compact = false }) {
 // Mini-cart popover: shows the last items, subtotal and quick links, so the visitor
 // can confirm the bag without leaving the page. Opens on hover/focus (desktop) and
 // on tap (mobile), closes on outside click or Escape.
-function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
+function BagMenu({ cartItems, cartCount, cartTotal, displayCurrency, language, location, t }) {
   const [isOpen, setIsOpen] = useState(false);
   const [bagJustUpdated, setBagJustUpdated] = useState(false);
   const wrapperRef = useRef(null);
@@ -602,7 +682,7 @@ function BagMenu({ cartItems, cartCount, cartTotal, language, location, t }) {
   const bagPulseTimer = useRef(undefined);
   const previousCartCount = useRef(cartCount);
   const formatPrice = (price) =>
-    `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(price)} FCFA`;
+    formatCartMoney(price, "xaf", language, displayCurrency);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -824,6 +904,7 @@ export function Header() {
   const { customer, logout } = useAuth();
   const { flavors } = useFlavors();
   const { language, setLanguage, t } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
   const location = useLocation();
   const headerRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -1000,7 +1081,8 @@ export function Header() {
           <div className={`flex items-center gap-1.5 sm:gap-2 ${isSearchOpen ? "min-w-0 flex-1" : "ml-auto shrink-0 lg:ml-0"}`}>
             {!isAdminPage && <HeaderSearch onOpenChange={setIsSearchOpen} />}
             {!isSearchOpen && (
-              <div className="hidden sm:block">
+              <div className="hidden items-center gap-2 sm:flex">
+                <CurrencyDropdown />
                 <LanguageDropdown language={language} setLanguage={setLanguage} t={t} />
               </div>
             )}
@@ -1019,6 +1101,7 @@ export function Header() {
                   cartCount={cartCount}
                   cartItems={cartItems}
                   cartTotal={cartTotal}
+                  displayCurrency={displayCurrency}
                   language={language}
                   location={location}
                   t={t}
@@ -1117,6 +1200,7 @@ export function Header() {
             </div>
 
             <div className="space-y-3 border-t border-white/10 p-4">
+              <CurrencyDropdown mobile />
               <div aria-label={t("Select language")} className="flex rounded-md bg-[color:var(--brand-blue)] p-1 ring-1 ring-white/10" role="group">
                 {[["en", "English"], ["fr", "Français"]].map(([code, label]) => (
                   <button
@@ -1140,6 +1224,7 @@ export function Header() {
 
 function PromotionCountdown() {
   const { language, t } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
   const [promotion, setPromotion] = useState(readInitialPromotion);
   const [now, setNow] = useState(() => (promotion ? Date.now() : null));
   const [copied, setCopied] = useState(false);
@@ -1206,7 +1291,7 @@ function PromotionCountdown() {
   const numberFormat = new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US");
   const discount = promotion.discountType === "percent"
     ? `${promotion.discountValue}% ${t("off")}`
-    : `${numberFormat.format(promotion.discountValue)} FCFA ${t("off")}`;
+    : `${formatCartMoney(promotion.discountValue, "xaf", language, displayCurrency)} ${t("off")}`;
 
   async function copyCode() {
     try {

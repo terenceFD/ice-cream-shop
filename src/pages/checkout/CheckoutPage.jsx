@@ -9,6 +9,8 @@ import { useAuth } from "../../context/useAuth";
 import { getCameroonDate } from "../../../shared/cameroonDate";
 import { cameroonLocations } from "../../../shared/data";
 import { storeOpenState } from "../../../shared/storeHours.js";
+import { convertFromXaf } from "../../../shared/currency.js";
+import { useCurrency } from "../../context/useCurrency";
 import { trackBeginCheckout } from "../../lib/analytics";
 
 // Written by the payment page when an attempt fails, so a retry does not lose the details.
@@ -122,9 +124,11 @@ export function CheckoutPage() {
   const { cartItems } = useCart();
   const { customer, isLoading } = useAuth();
   const { t, language } = useLanguage();
+  // Charges are always in FCFA; the visitor's chosen currency is display-only.
+  const { currency: displayCurrency } = useCurrency();
   const { cartCount, currency, subtotal, freeScoops, discount, total } =
     getCartPricing(cartItems);
-  const money = (amount) => formatCartMoney(amount, currency, language);
+  const money = (amount) => formatCartMoney(amount, currency, language, displayCurrency);
   const [fulfillment, setFulfillment] = useState({ zones: [], slots: [] });
   const [fulfillmentError, setFulfillmentError] = useState("");
   const [fulfillmentType, setFulfillmentType] = useState("pickup");

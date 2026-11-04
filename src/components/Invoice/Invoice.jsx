@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../../api/api";
 import { useLanguage } from "../../language/useLanguage";
+import { useCurrency } from "../../context/useCurrency";
+import { formatOrderMoney } from "../../lib/cartPricing";
 
 // Printable order invoice. Rendered as a self-contained document inside an
 // overlay; "Download / print" opens the browser print dialog where the customer
 // saves it as a PDF. Print styles hide everything except the invoice.
 
-function money(cents, language) {
-  return new Intl.NumberFormat(language === "fr" ? "fr-CM" : "en-CM", {
-    style: "currency",
-    currency: "XAF",
-    maximumFractionDigits: 0,
-  }).format(Number(cents) || 0);
+function money(cents, language, displayCurrency = "xaf") {
+  return formatOrderMoney(cents, language, displayCurrency);
 }
 
 function formatDate(value, language) {
@@ -26,7 +24,7 @@ function formatDate(value, language) {
   });
 }
 
-export function InvoiceDocument({ order, t, language }) {
+export function InvoiceDocument({ order, t, language, displayCurrency = "xaf" }) {
   const itemCount =
     order.items?.reduce((count, item) => count + item.quantity, 0) || 0;
   const subtotal = order.subtotalCents ?? order.totalCents;
@@ -123,7 +121,7 @@ export function InvoiceDocument({ order, t, language }) {
                 {item.quantity}
               </td>
               <td className="py-2.5 text-right font-bold tabular-nums">
-                {money(item.lineTotalCents, language)}
+                {money(item.lineTotalCents, language, displayCurrency)}
               </td>
             </tr>
           ))}
@@ -136,7 +134,7 @@ export function InvoiceDocument({ order, t, language }) {
             {t("{count} items", { count: itemCount })}
           </dt>
           <dd className="font-bold tabular-nums">
-            {money(subtotal, language)}
+            {money(subtotal, language, displayCurrency)}
           </dd>
         </div>
         {discount > 0 && (
@@ -147,7 +145,7 @@ export function InvoiceDocument({ order, t, language }) {
                 : t("Discount")}
             </dt>
             <dd className="font-extrabold tabular-nums">
-              −{money(discount, language)}
+              −{money(discount, language, displayCurrency)}
             </dd>
           </div>
         )}
@@ -157,14 +155,14 @@ export function InvoiceDocument({ order, t, language }) {
               {t("Delivery fee")}
             </dt>
             <dd className="font-bold tabular-nums">
-              {money(deliveryFee, language)}
+              {money(deliveryFee, language, displayCurrency)}
             </dd>
           </div>
         )}
         <div className="flex justify-between gap-4 border-t-2 border-brand-navy pt-2 text-base">
           <dt className="font-display font-extrabold">{t("Total")}</dt>
           <dd className="font-display font-extrabold tabular-nums">
-            {money(total, language)}
+            {money(total, language, displayCurrency)}
           </dd>
         </div>
       </dl>
@@ -185,6 +183,7 @@ export function InvoiceDocument({ order, t, language }) {
  */
 export function InvoiceButton({ orderId, className = "" }) {
   const { t, language } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
@@ -329,7 +328,7 @@ export function InvoiceButton({ orderId, className = "" }) {
                 </p>
               )}
               {order && (
-                <InvoiceDocument language={language} order={order} t={t} />
+                <InvoiceDocument displayCurrency={displayCurrency} language={language} order={order} t={t} />
               )}
             </div>
           </section>

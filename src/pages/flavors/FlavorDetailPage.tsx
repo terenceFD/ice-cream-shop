@@ -6,11 +6,13 @@ import { useCart } from "../../context/useCart";
 import { type Flavor } from "../../context/FlavorContext";
 import { useFlavors } from "../../context/useFlavors";
 import { useLanguage } from "../../language/useLanguage";
+import { useCurrency } from "../../context/useCurrency";
 import { formatCartMoney } from "../../lib/cartPricing";
 import { coldStoneMenuCategories } from "../../../shared/data";
 import { normalizePhotoGallery } from "../../../shared/photoSizes.js";
 import { metaForFlavor, metaForPath } from "../../seo/pageMeta.js";
 import { useDocumentMeta } from "../../seo/useDocumentMeta";
+import { ProductStructuredData } from "../../seo/ProductStructuredData";
 import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
 import { FLAVOR_PHOTO_SIZES } from "../../../shared/photoSizes.js";
 import { rankSimilar } from "../../lib/similarItems";
@@ -68,6 +70,9 @@ export function FlavorDetailPage() {
   const { addToCart, addItemsToCart } = useCart();
   const { flavors, loading, error } = useFlavors();
   const { t, language } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
+  // Prices shown in the visitor's currency; charges stay in FCFA.
+  const money = (amount: number) => formatCartMoney(amount, "xaf", language, displayCurrency);
   const [quantity, setQuantity] = useState(1);
   const [addedKey, setAddedKey] = useState<string | null>(null);
   const [cartNotice, setCartNotice] = useState("");
@@ -256,7 +261,7 @@ export function FlavorDetailPage() {
 
                 <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#fbfaf5] px-4 py-5">
                   <p className="font-display text-4xl font-extrabold tabular-nums text-brand-navy">
-                    {formatCartMoney(flavor.price, "xaf", language)}
+                    {money(flavor.price)}
                     <span className="ml-2 font-sans text-sm font-bold text-[#65748a] max-sm:hidden">/ {t("Price per scoop").toLocaleLowerCase()}</span>
                   </p>
                   <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold ${soldOut ? "bg-[#f4f6f8] text-[#65748a]" : lowStock ? "bg-[#fff6dc] text-brand-yellow-deep" : "bg-[#f3f8ef] text-[#37632c]"}`}>
@@ -311,7 +316,7 @@ export function FlavorDetailPage() {
                       {mainAdded ? t("Added") : (
                         <>
                           {t("Add to bag")}
-                          <span className="max-sm:hidden"> · {formatCartMoney(flavor.price * quantity, "xaf", language)}</span>
+                          <span className="max-sm:hidden"> · {money(flavor.price * quantity)}</span>
                         </>
                       )}
                     </span>
@@ -427,6 +432,22 @@ export function FlavorDetailPage() {
 
         <RecentlyViewed excludeKey={flavor ? `flavor:${flavor.id}` : undefined} />
 
+        {flavor && (
+          <ProductStructuredData
+            description={[flavor.detail, flavor.description].filter(Boolean).join(". ")}
+            image={flavor.image}
+            inStock={(flavor.availableQuantity ?? 1) > 0}
+            name={flavor.name}
+            price={flavor.price}
+            rating={
+              flavor.reviewCount && flavor.averageRating
+                ? { count: flavor.reviewCount, value: flavor.averageRating }
+                : null
+            }
+            url={`${window.location.origin}/flavor/${flavor.id}`}
+          />
+        )}
+
         {flavor && <ProductReviews itemId={`flavor:${flavor.id}`} />}
 
         {relatedFlavors.length > 0 && (
@@ -506,7 +527,7 @@ export function FlavorDetailPage() {
                         </div>
                         <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                           <span className="whitespace-nowrap font-display text-sm font-extrabold tabular-nums text-brand-navy">
-                            {formatCartMoney(relatedFlavor.price, "xaf", language)}
+                            {money(relatedFlavor.price)}
                           </span>
                           <button
                             aria-label={t("Add {name} to cart", { name: t(relatedFlavor.name) })}

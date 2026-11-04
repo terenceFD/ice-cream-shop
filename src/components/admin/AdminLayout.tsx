@@ -50,6 +50,8 @@ const navItems = [
   { to: '/admin/payments', label: 'Payments', group: 'Sales', icon: 'payments' },
   { to: '/admin/promotions', label: 'Promotions', group: 'Sales', icon: 'promotions' },
   { to: '/admin/reports', label: 'Reports', group: 'Sales', icon: 'reports' },
+  { to: '/admin/chat', label: 'Live chat', group: 'Sales', icon: 'chat' },
+  { to: '/admin/subscriptions', label: 'Subscriptions', group: 'Sales', icon: 'box' },
   { to: '/admin/customers', label: 'Customer accounts', group: 'Customers', icon: 'customers' },
   { to: '/admin/reviews', label: 'Customer reviews', group: 'Customers', icon: 'reviews' },
   { to: '/admin/cake-requests', label: 'Cake requests', group: 'Customers', icon: 'cakes' },
@@ -83,6 +85,7 @@ const navIconPaths: Record<string, string> = {
   alerts: 'M12 9v4m0 3.5v.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
   fulfillment: 'M3 6h11v9H3V6Zm11 3h4l3 3v3h-7V9ZM7 18.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm12 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z',
   activity: 'M12 7v5l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+  chat: 'M4 5h16v11H9l-5 4V5Zm4 5h8m-8 3h5',
 }
 
 interface NavigationCounts {
@@ -92,6 +95,7 @@ interface NavigationCounts {
   cakeRequestCount: number
   reviewCount: number
   eventOrderCount: number
+  chatCount: number
 }
 
 async function refreshNavigationCount<T>(
@@ -171,6 +175,8 @@ export function AdminLayout() {
     '/admin/delivered',
     '/admin/payments',
     '/admin/reports',
+    '/admin/chat',
+    '/admin/subscriptions',
     '/admin/notifications',
     '/admin/customers',
     '/admin/reviews',
@@ -180,7 +186,7 @@ export function AdminLayout() {
   const visibleNavItems = isOwner ? navItems : storeNavItems
   const [logoutError, setLogoutError] = useState('')
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [navigationCounts, setNavigationCounts] = useState<NavigationCounts>({ orderCount: 0, placedOrderCount: 0, notificationCount: 0, cakeRequestCount: 0, reviewCount: 0, eventOrderCount: 0 })
+  const [navigationCounts, setNavigationCounts] = useState<NavigationCounts>({ orderCount: 0, placedOrderCount: 0, notificationCount: 0, cakeRequestCount: 0, reviewCount: 0, eventOrderCount: 0, chatCount: 0 })
   const [countsError, setCountsError] = useState('')
   const [profilePictureError, setProfilePictureError] = useState('')
   const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false)
@@ -382,6 +388,11 @@ export function AdminLayout() {
         'Event orders',
         apiRequest<{ count: number }>(`/admin/event-orders?countOnly=true${branchQuery ? `&${branchQuery.slice(1)}` : ''}`, { token: sessionToken }),
         (result) => setNavigationCounts((counts) => ({ ...counts, eventOrderCount: result.count })),
+      ),
+      refreshNavigationCount(
+        'Live chat',
+        apiRequest<{ count: number }>('/admin/chat/threads?countOnly=true', { token: sessionToken }),
+        (result) => setNavigationCounts((counts) => ({ ...counts, chatCount: result.count })),
       ),
       apiRequest<{ notices: DepositNotice[] }>(`/admin/event-orders/deposit-notices${branchQuery}`, { token: sessionToken })
         .then((result) => setDepositNotices(result?.notices || []))
@@ -1278,6 +1289,8 @@ export function AdminLayout() {
                                 ? navigationCounts.eventOrderCount
                               : item.label === 'Cake requests'
                                 ? navigationCounts.cakeRequestCount
+                              : item.label === 'Live chat'
+                                ? navigationCounts.chatCount
                                 : null
                         const countLabel = item.label === 'Orders'
                           ? t('{count} orders not delivered', { count: count || 0 })
@@ -1287,7 +1300,9 @@ export function AdminLayout() {
                               ? t('{count} unread notifications', { count: count || 0 })
                               : item.label === 'Event orders'
                                 ? t('{count} event orders that need action', { count: count || 0 })
-                                : t('{count} new cake requests', { count: count || 0 })
+                                : item.label === 'Live chat'
+                                  ? t('{count} unread chat messages', { count: count || 0 })
+                                  : t('{count} new cake requests', { count: count || 0 })
                         const isActive = location.pathname === item.to
                         return (
                           <li key={item.to}>
@@ -1318,7 +1333,7 @@ export function AdminLayout() {
                                   <path d={navIconPaths[item.icon]} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
                                 </svg>
                                 {isSidebarCollapsed && count !== null && (
-                                  item.label === 'Event orders'
+                                  item.label === 'Event orders' || item.label === 'Live chat'
                                     ? (
                                       <span
                                         aria-hidden="true"

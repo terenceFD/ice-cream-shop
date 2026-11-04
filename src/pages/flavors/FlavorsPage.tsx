@@ -7,6 +7,7 @@ import { ArrowIcon, Footer, Header } from "../../components/Layout";
 import { PageHero } from "../../components/PageHero";
 import { RatingBadge } from "../../components/RatingBadge";
 import { useLanguage } from "../../language/useLanguage";
+import { useCurrency } from "../../context/useCurrency";
 import { formatCartMoney } from "../../lib/cartPricing";
 import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
 import { useScrollReveal } from "../../lib/useScrollReveal";
@@ -119,6 +120,9 @@ export function FlavorsPage() {
   const { addToCart } = useCart();
   const { flavors, loading, error } = useFlavors();
   const { t, language } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
+  // Prices shown in the visitor's currency; charges stay in FCFA.
+  const money = (amount: number) => formatCartMoney(amount, "xaf", language, displayCurrency);
   const [addedId, setAddedId] = useState<Flavor["id"] | null>(null);
   const addedTimer = useRef<number | undefined>(undefined);
   const availableFlavors = flavors.filter(
@@ -228,7 +232,7 @@ export function FlavorsPage() {
               ? [
                   { label: t("Flavors"), value: availableFlavors.length },
                   ...(lowestPrice !== null
-                    ? [{ label: t("Starting from"), value: formatCartMoney(lowestPrice, "xaf", language), accent: true }]
+                    ? [{ label: t("Starting from"), value: money(lowestPrice), accent: true }]
                     : []),
                 ]
               : []
@@ -441,7 +445,7 @@ export function FlavorsPage() {
                       </div>
                       <div className="flex flex-col gap-2.5 pt-0.5">
                         <span className={`whitespace-nowrap font-display text-lg font-extrabold tabular-nums transition-colors duration-300 ${added ? "text-green-700" : "text-brand-navy"}`}>
-                          {formatCartMoney(flavor.price, "xaf", language)}
+                          {money(flavor.price)}
                         </span>
                         <button
                           aria-label={t("Add {name} to cart", { name: t(flavor.name) })}

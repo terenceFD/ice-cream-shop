@@ -11,11 +11,13 @@ import { Footer, Header } from "../../components/Layout";
 import { HeroBackground } from "../../components/HeroBackground";
 import { useCart } from "../../context/useCart";
 import { useAuth } from "../../context/useAuth";
+import { useFlavors } from "../../context/useFlavors";
 import { cameroonDeliveryLocations } from "../../../shared/data";
 import { useLanguage } from "../../language/useLanguage";
 import { PromotionAlertsSetting } from "../../components/PromotionAlerts";
 import { InvoiceButton } from "../../components/Invoice/Invoice";
-import { numberFormatter } from "../../lib/cartPricing";
+import { numberFormatter, formatOrderMoney } from "../../lib/cartPricing";
+import { useCurrency } from "../../context/useCurrency";
 import "./CustomerAccount.css";
 
 const fieldClass =
@@ -54,6 +56,11 @@ const TABS = [
     key: "saved",
     label: "Saved",
     icon: "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z",
+  },
+  {
+    key: "subscriptions",
+    label: "Subscriptions",
+    icon: "M4 7h16v13H4zM4 7l3-3h10l3 3M9 12h6",
   },
   {
     key: "rewards",
@@ -965,7 +972,7 @@ function CustomerProfileDetails({ customer, onSave, t }) {
   );
 }
 
-function CustomerSecurityCard({ customer, onChangePassword, onDeleteAccount, onSignedOut, t }) {
+function CustomerSecurityCard({ customer, onChangePassword, onDeleteAccount, onEmailChange, onSignedOut, t }) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -976,6 +983,58 @@ function CustomerSecurityCard({ customer, onChangePassword, onDeleteAccount, onS
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [showDelete, setShowDelete] = useState(false);
+  const [emailPassword, setEmailPassword] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [emailVerificationId, setEmailVerificationId] = useState("");
+  const [emailCode, setEmailCode] = useState("");
+  const [isRequestingEmailChange, setIsRequestingEmailChange] = useState(false);
+  const [isConfirmingEmailChange, setIsConfirmingEmailChange] = useState(false);
+  const [emailMessage, setEmailMessage] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  async function handleRequestEmailChange(event) {
+    event.preventDefault();
+    setEmailError("");
+    setEmailMessage("");
+    setIsRequestingEmailChange(true);
+    try {
+      const result = await onEmailChange(emailPassword, newEmail);
+      setEmailVerificationId(result.verificationId);
+      setEmailMessage(
+        t("A 6-digit code was sent to {email}. Enter it below to finish the change.", { email: newEmail }),
+      );
+    } catch (requestError) {
+      setEmailError(
+        requestError instanceof Error
+          ? requestError.message
+          : t("The email change could not be started. Please try again."),
+      );
+    } finally {
+      setIsRequestingEmailChange(false);
+    }
+  }
+
+  async function handleConfirmEmailChange(event) {
+    event.preventDefault();
+    setEmailError("");
+    setIsConfirmingEmailChange(true);
+    try {
+      await onEmailConfirm(emailVerificationId, emailCode);
+      setEmailVerificationId("");
+      setEmailCode("");
+      setNewEmail("");
+      setEmailPassword("");
+      setEmailMessage(t("Your email address has been updated."));
+    } catch (confirmError) {
+      setEmailError(
+        confirmError instanceof Error
+          ? confirmError.message
+          : t("The code could not be confirmed. Please try again."),
+      );
+    } finally {
+      setIsConfirmingEmailChange(false);
+    }
+  }
 
   async function handleChangePassword(event) {
     event.preventDefault();
@@ -1093,6 +1152,85 @@ function CustomerSecurityCard({ customer, onChangePassword, onDeleteAccount, onS
         </button>
       </form>
 
+      <form className="space-y-5" onSubmit={handleRequestEmailChange}>
+        <div>
+          <p className="text-sm font-extrabold text-brand-navy">{t("Change email")}</p>
+          <p className="mt-1 text-xs leading-5 text-[#65748a]">
+            {t(
+              "Your email is how you sign in and how the shop sends order updates. A code is sent to the new address to confirm it is yours.",
+            )}
+          </p>
+        </div>
+        {!emailVerificationId ? (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className={labelClass}>
+                {t("Current email")}
+                <input className={fieldClass} disabled readOnly value={customer?.email || ""} />
+              </label>
+              <label className={labelClass}>
+                {t("New email address")}
+                <input
+                  autoComplete="email"
+                  className={fieldClass}
+                  name="newEmail"
+                  onChange={(event) => setNewEmail(event.target.value)}
+                  required
+                  type="email"
+                  value={newEmail}
+                />
+              </label>
+              <label className={`${labelClass} sm:col-span-2`}>
+                {t("Current password")}
+                <input
+                  autoComplete="current-password"
+                  className={fieldClass}
+                  name="emailChangePassword"
+                  onChange={(event) => setEmailPassword(event.target.value)}
+                  required
+                  type="password"
+                  value={emailPassword}
+                />
+              </label>
+            </div>
+            <button className={primaryButton} disabled={isRequestingEmailChange} type="submit">
+              {isRequestingEmailChange ? t("Sending code…") : t("Send confirmation code")}
+            </button>
+          </>
+        ) : (
+          <div className="grid gap-4 sm:max-w-xs">
+            <label className={labelClass}>
+              {t("6-digit code")}
+              <input
+                autoComplete="one-time-code"
+                className={`${fieldClass} tracking-[0.3em]`}
+                inputMode="numeric"
+                maxLength={6}
+                name="emailChangeCode"
+                onChange={(event) => setEmailCode(event.target.value.replace(/\D/g, ""))}
+                pattern="\d{6}"
+                required
+                value={emailCode}
+              />
+            </label>
+            <button className={primaryButton} disabled={isConfirmingEmailChange || emailCode.length !== 6} type="submit">
+              {isConfirmingEmailChange ? t("Confirming…") : t("Confirm new email")}
+            </button>
+          </div>
+        )}
+        {emailError && (
+          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700" role="alert">
+            {emailError}
+          </p>
+        )}
+        {emailMessage && (
+          <p className="flex items-center gap-2 text-sm font-semibold text-[#3f6b22]" role="status">
+            <Icon className="size-4" path="m5 12.5 4.5 4.5L19 7.5" />
+            {emailMessage}
+          </p>
+        )}
+      </form>
+
       <div className="rounded-2xl bg-[#fdf6f6] p-5 ring-1 ring-[#f0dcda]">
         <p className="text-sm font-extrabold text-[#8a3b3b]">
           {t("Delete account")}
@@ -1146,7 +1284,7 @@ function CustomerSecurityCard({ customer, onChangePassword, onDeleteAccount, onS
   );
 }
 
-function RewardsCard({ points, t, compact = false }) {
+function RewardsCard({ points, t, compact = false, displayCurrency = "xaf", language = "en" }) {
   const rewardsAvailable = Math.floor(points / POINTS_PER_REWARD);
   const progress = points % POINTS_PER_REWARD;
   const remaining = POINTS_PER_REWARD - progress;
@@ -1198,10 +1336,11 @@ function RewardsCard({ points, t, compact = false }) {
         <div className="mt-5 flex flex-wrap items-baseline gap-x-2 border-t border-white/15 pt-4">
           <p className="text-xs font-semibold text-white/70">{t("Worth")}</p>
           <p className="font-display text-xl font-bold text-brand-yellow">
-            {new Intl.NumberFormat("fr-CM").format(
+            {formatOrderMoney(
               rewardsAvailable * REWARD_VALUE_FCFA,
-            )}{" "}
-            <span className="text-sm text-white/80">FCFA</span>
+              language,
+              displayCurrency,
+            )}
           </p>
         </div>
       )}
@@ -1214,15 +1353,18 @@ function RewardsCard({ points, t, compact = false }) {
 }
 
 export function CustomerOrdersPage() {
-  const { customer, isLoading, updateProfile, changePassword, deleteAccount, logout } = useAuth();
+  const { customer, isLoading, updateProfile, changePassword, deleteAccount, requestEmailChange, confirmEmailChange, logout } = useAuth();
   const { t, language } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { addItemsToCart } = useCart();
+  const { flavors } = useFlavors();
   const [orders, setOrders] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [savedCarts, setSavedCarts] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [subscriptionBusy, setSubscriptionBusy] = useState(0);
   const [loyalty, setLoyalty] = useState(null);
   const [accountError, setAccountError] = useState("");
   const [accountNotice, setAccountNotice] = useState("");
@@ -1249,6 +1391,51 @@ export function CustomerOrdersPage() {
     setOrders(result.orders);
   }, []);
 
+  const refreshSubscriptions = useCallback(async () => {
+    const token = getCustomerToken();
+    const result = await apiRequest("/customer/subscriptions", { token });
+    setSubscriptions(result.subscriptions || []);
+  }, []);
+
+  async function subscribe(event) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    setSubscriptionBusy(-1);
+    try {
+      await apiRequest("/customer/subscriptions", {
+        method: "POST",
+        token: getCustomerToken(),
+        body: {
+          plan: String(form.get("plan") || ""),
+          flavorName: String(form.get("flavorName") || ""),
+          quantity: Number(form.get("quantity")) || 1,
+        },
+      });
+      setAccountNotice(t("Your subscription is active. The first box is scheduled."));
+      await refreshSubscriptions();
+    } catch (subscribeError) {
+      setAccountError(subscribeError.message);
+    } finally {
+      setSubscriptionBusy(0);
+    }
+  }
+
+  async function changeSubscription(subscription, action) {
+    setSubscriptionBusy(subscription.id);
+    try {
+      await apiRequest(`/customer/subscriptions/${subscription.id}`, {
+        method: "PATCH",
+        token: getCustomerToken(),
+        body: { action },
+      });
+      await refreshSubscriptions();
+    } catch (changeError) {
+      setAccountError(changeError.message);
+    } finally {
+      setSubscriptionBusy(0);
+    }
+  }
+
   useEffect(() => {
     if (!customer) return undefined;
     let cancelled = false;
@@ -1257,12 +1444,14 @@ export function CustomerOrdersPage() {
       apiRequest("/customer/favorites", { token }),
       apiRequest("/customer/saved-carts", { token }),
       apiRequest("/customer/loyalty", { token }),
+      apiRequest("/customer/subscriptions", { token }),
     ])
-      .then(([favoriteResult, savedCartResult, loyaltyResult]) => {
+      .then(([favoriteResult, savedCartResult, loyaltyResult, subscriptionResult]) => {
         if (cancelled) return;
         setFavorites(favoriteResult.favorites);
         setSavedCarts(savedCartResult.savedCarts);
         setLoyalty(loyaltyResult);
+        setSubscriptions(subscriptionResult.subscriptions || []);
       })
       .catch((loadError) => {
         if (!cancelled) setAccountError(loadError.message);
@@ -1310,8 +1499,9 @@ export function CustomerOrdersPage() {
       />
     );
 
+  const { currency: displayCurrency } = useCurrency();
   const formatPrice = (amount) =>
-    `${numberFormatter(language === "fr" ? "fr-CM" : "en-CM").format(amount)} FCFA`;
+    formatOrderMoney(amount, language, displayCurrency);
   const points = loyalty?.points ?? customer.loyaltyPoints ?? 0;
   const referralCode = customer.referralCode || '';
   const referralLink = referralCode
@@ -1909,7 +2099,7 @@ export function CustomerOrdersPage() {
                   )}
 
                   <section className="account-benefits grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                    <RewardsCard points={points} t={t} />
+                    <RewardsCard displayCurrency={displayCurrency} language={language} points={points} t={t} />
                     <div className={cardClass}>
                       <p className={eyebrowClass}>{t("Shortcuts")}</p>
                       <h2 className="mt-2 font-display text-xl font-extrabold text-brand-navy">
@@ -2252,6 +2442,140 @@ export function CustomerOrdersPage() {
                 </div>
               )}
 
+              {activeTab === "subscriptions" && (
+                <div className="space-y-10">
+                  <section>
+                    <SectionHeading
+                      description={t(
+                        "We prepare and deliver the same box on a schedule. Pause or cancel any time — the price is locked when you subscribe.",
+                      )}
+                      eyebrow={t("Never run out")}
+                      title={t("Ice cream subscriptions")}
+                    />
+                    <form className={`${cardClass} grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,10rem)_minmax(0,7rem)_auto] sm:items-end`} onSubmit={subscribe}>
+                      <label className="block">
+                        <span className={labelClass}>{t("Flavor")}</span>
+                        <select className={fieldClass} defaultValue="" name="flavorName" required>
+                          <option disabled value="">
+                            {t("Choose a flavor")}
+                          </option>
+                          {flavors
+                            .filter((flavor) => flavor.isAvailable !== false)
+                            .map((flavor) => (
+                              <option key={flavor.id} value={flavor.name}>
+                                {flavor.name} · {formatPrice(flavor.price)}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                      <label className="block">
+                        <span className={labelClass}>{t("Plan")}</span>
+                        <select className={fieldClass} defaultValue="weekly" name="plan">
+                          <option value="weekly">{t("Weekly")}</option>
+                          <option value="biweekly">{t("Every 2 weeks")}</option>
+                          <option value="monthly">{t("Monthly")}</option>
+                        </select>
+                      </label>
+                      <label className="block">
+                        <span className={labelClass}>{t("Quantity")}</span>
+                        <input
+                          className={fieldClass}
+                          max={24}
+                          min={1}
+                          name="quantity"
+                          type="number"
+                          defaultValue={1}
+                        />
+                      </label>
+                      <button className={primaryButton} type="submit" disabled={subscriptionBusy === -1}>
+                        {subscriptionBusy === -1 ? t("Starting…") : t("Start subscription")}
+                      </button>
+                    </form>
+                  </section>
+
+                  <section>
+                    <SectionHeading
+                      eyebrow={t("Your plan")}
+                      title={t("Your subscriptions")}
+                    />
+                    {subscriptions.length ? (
+                      <ul className="grid gap-4 md:grid-cols-2">
+                        {subscriptions.map((subscription) => (
+                          <li className={`${cardClass} flex flex-col sm:p-6`} key={subscription.id}>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="truncate font-display text-lg font-extrabold text-brand-navy">
+                                  {subscription.flavorName}
+                                </p>
+                                <p className="text-xs font-semibold text-[#65748a]">
+                                  {t("{count} × per delivery", { count: subscription.quantity })} · {formatPrice(subscription.perDeliveryCents)}
+                                </p>
+                              </div>
+                              <span
+                                className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${
+                                  subscription.status === "active"
+                                    ? "bg-[#eef6e8] text-[#3f6b22]"
+                                    : subscription.status === "paused"
+                                      ? "bg-[#fff3b0] text-brand-yellow-deep"
+                                      : "bg-[#f4f6f8] text-[#65748a]"
+                                }`}
+                              >
+                                {t(subscription.status)}
+                              </span>
+                            </div>
+                            <p className="mt-2 text-sm text-[#65748a]">
+                              {subscription.status === "active"
+                                ? t("Next delivery: {date}", { date: subscription.nextDeliveryDate })
+                                : subscription.status === "paused"
+                                  ? t("Paused — resume to schedule the next delivery.")
+                                  : t("This plan is no longer running.")}
+                            </p>
+                            <div className="mt-5 flex items-center justify-end gap-2 border-t border-[#fbfaf5] pt-4">
+                              {subscription.status === "active" && (
+                                <button
+                                  className={ghostButton}
+                                  disabled={subscriptionBusy === subscription.id}
+                                  onClick={() => changeSubscription(subscription, "pause")}
+                                  type="button"
+                                >
+                                  {t("Pause")}
+                                </button>
+                              )}
+                              {subscription.status === "paused" && (
+                                <button
+                                  className={ghostButton}
+                                  disabled={subscriptionBusy === subscription.id}
+                                  onClick={() => changeSubscription(subscription, "resume")}
+                                  type="button"
+                                >
+                                  {t("Resume")}
+                                </button>
+                              )}
+                              {["active", "paused"].includes(subscription.status) && (
+                                <button
+                                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#e3c8c6] bg-white px-4 py-2.5 text-xs font-bold text-[#a34d4d] transition-colors hover:bg-[#fdf0ef] disabled:opacity-50"
+                                  disabled={subscriptionBusy === subscription.id}
+                                  onClick={() => changeSubscription(subscription, "cancel")}
+                                  type="button"
+                                >
+                                  {t("Cancel plan")}
+                                </button>
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <EmptyState
+                        body={t("Pick a flavor above and the shop delivers it on your schedule.")}
+                        icon="M4 7h16v13H4zM4 7l3-3h10l3 3M9 12h6"
+                        title={t("No subscriptions yet")}
+                      />
+                    )}
+                  </section>
+                </div>
+              )}
+
               {activeTab === "rewards" && (
                 <section>
                   <SectionHeading
@@ -2262,7 +2586,7 @@ export function CustomerOrdersPage() {
                     title={t("Your rewards")}
                   />
                   <div className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-                    <RewardsCard points={points} t={t} />
+                    <RewardsCard displayCurrency={displayCurrency} language={language} points={points} t={t} />
                     <div className={cardClass}>
                       <h3 className="font-display text-lg font-extrabold text-brand-navy">
                         {t("Points history")}
@@ -2346,6 +2670,8 @@ export function CustomerOrdersPage() {
                       customer={customer}
                       onChangePassword={changePassword}
                       onDeleteAccount={deleteAccount}
+                      onEmailChange={requestEmailChange}
+                      onEmailConfirm={confirmEmailChange}
                       onSignedOut={() => navigate("/login", { replace: true })}
                       t={t}
                     />

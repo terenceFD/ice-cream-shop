@@ -42,6 +42,8 @@ export interface AuthContextValue {
   updateProfile: (profile: CustomerProfile) => Promise<Customer>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   deleteAccount: (confirmation: "DELETE") => Promise<void>;
+  requestEmailChange: (password: string, newEmail: string) => Promise<{ verificationId: string; expiresInSeconds: number }>;
+  confirmEmailChange: (verificationId: string, code: string) => Promise<{ email: string }>;
 }
 
 
@@ -187,6 +189,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSessionError("");
   }
 
+  function requestEmailChange(password: string, newEmail: string) {
+    return apiRequest<{ verificationId: string; expiresInSeconds: number }>("/auth/email/change-request", {
+      method: "POST",
+      token,
+      body: { password, newEmail },
+    });
+  }
+
+  async function confirmEmailChange(verificationId: string, code: string) {
+    const result = await apiRequest<{ email: string; message: string }>("/auth/email/change-confirm", {
+      method: "POST",
+      token,
+      body: { verificationId, code },
+    });
+    if (result?.email) setCustomer((current) => current ? { ...current, email: result.email } : current);
+    return result;
+  }
+
   async function logout() {
     try {
       // Turn off promotion alerts for this device first, while the session can still do it.
@@ -206,7 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ customer, isLoading, sessionError, requestSignupVerification, signup, requestPasswordReset, confirmPasswordReset, login, logout, updateProfile, changePassword, deleteAccount }}
+      value={{ customer, isLoading, sessionError, requestSignupVerification, signup, requestPasswordReset, confirmPasswordReset, login, logout, updateProfile, changePassword, deleteAccount, requestEmailChange, confirmEmailChange }}
     >
       {children}
     </AuthContext.Provider>
