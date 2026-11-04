@@ -126,6 +126,7 @@ function stageLabel(stage, t) {
 function orderStatus(order, t) {
   if (order.status === "pending_payment") return t("Awaiting payment");
   if (order.status === "payment_failed") return t("Payment failed");
+  if (order.status === "cancelled_by_customer") return t("Cancelled by you");
   return stageLabel(
     order.deliveryStage ||
       order.fulfillmentStatus ||
@@ -137,6 +138,16 @@ function orderStatus(order, t) {
 function isPaymentIssue(order) {
   return (
     order.status === "pending_payment" || order.status === "payment_failed"
+  );
+}
+
+// The customer can withdraw the order while it is still unpaid or freshly placed.
+// Once the shop starts preparing it, only the store can change it.
+function isCancellable(order) {
+  return (
+    order.customer !== false &&
+    ["pending_payment", "new", "paid", "accepted"].includes(order.status) &&
+    !order.fulfillmentStatus
   );
 }
 
@@ -155,6 +166,8 @@ function isActive(order) {
 function statusTone(order) {
   if (order.status === "payment_failed")
     return "bg-red-50 text-red-700 ring-red-200";
+  if (order.status === "cancelled_by_customer")
+    return "bg-[#f4f6f8] text-[#65748a] ring-[#d5dce5]";
   if (order.status === "pending_payment")
     return "bg-orange-50 text-orange-700 ring-orange-200";
   if (isCompleted(order)) return "bg-[#eef6e8] text-[#3f6b22] ring-[#cfe3bf]";
@@ -568,6 +581,8 @@ function OrderCard({
   onReorder,
   onDelete,
   isDeleting,
+  onCancel,
+  isCancelling,
 }) {
   const itemCount = order.items.reduce(
     (count, item) => count + item.quantity,
@@ -691,6 +706,21 @@ function OrderCard({
 
         {!paymentIssue && (
           <div className="flex flex-wrap justify-end gap-2.5 border-t border-[#fbfaf5] pt-5">
+            {onCancel && (
+              <button
+                aria-haspopup="dialog"
+                className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#f0c9c8] bg-[#fdf3f2] px-4 py-2.5 text-xs font-bold tracking-wide text-[#b44947] uppercase transition-all hover:border-[#b44947] hover:bg-[#b44947] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b44947] disabled:cursor-wait disabled:opacity-60"
+                disabled={isCancelling}
+                onClick={onCancel}
+                type="button"
+              >
+                <Icon
+                  className="size-4"
+                  path="m6 6 12 12M18 6 6 18"
+                />
+                {isCancelling ? t("Cancelling…") : t("Cancel order")}
+              </button>
+            )}
             <InvoiceButton
               className={ghostButton}
               orderId={order.id}
@@ -935,6 +965,187 @@ function CustomerProfileDetails({ customer, onSave, t }) {
   );
 }
 
+function CustomerSecurityCard({ customer, onChangePassword, onDeleteAccount, onSignedOut, t }) {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmText, setConfirmText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [showDelete, setShowDelete] = useState(false);
+
+  async function handleChangePassword(event) {
+    event.preventDefault();
+    setPasswordError("");
+    setPasswordMessage("");
+    if (newPassword !== confirmPassword) {
+      setPasswordError(t("The two passwords do not match."));
+      return;
+    }
+    setIsSavingPassword(true);
+    try {
+      await onChangePassword(currentPassword, newPassword);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordMessage(
+        t("Your password was changed. Other devices have been signed out."),
+      );
+    } catch (changeError) {
+      setPasswordError(
+        changeError instanceof Error
+          ? changeError.message
+          : t("Unable to change your password."),
+      );
+    } finally {
+      setIsSavingPassword(false);
+    }
+  }
+
+  async function handleDelete(event) {
+    event.preventDefault();
+    setDeleteError("");
+    setIsDeleting(true);
+    try {
+      await onDeleteAccount("DELETE");
+      onSignedOut();
+    } catch (deleteRequestError) {
+      setDeleteError(
+        deleteRequestError instanceof Error
+          ? deleteRequestError.message
+          : t("The account could not be deleted. Please try again."),
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <form className="space-y-5" onSubmit={handleChangePassword}>
+        <div>
+          <p className="text-sm font-extrabold text-brand-navy">
+            {t("Change password")}
+          </p>
+          <p className="mt-1 text-xs leading-5 text-[#65748a]">
+            {t(
+              "After the change, every other signed-in device is signed out and this device keeps its session.",
+            )}
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className={labelClass}>
+            {t("Current password")}
+            <input
+              autoComplete="current-password"
+              className={fieldClass}
+              minLength={8}
+              name="currentPassword"
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              required
+              type="password"
+              value={currentPassword}
+            />
+          </label>
+          <label className={labelClass}>
+            {t("New password")}
+            <input
+              autoComplete="new-password"
+              className={fieldClass}
+              minLength={8}
+              name="newPassword"
+              onChange={(event) => setNewPassword(event.target.value)}
+              required
+              type="password"
+              value={newPassword}
+            />
+          </label>
+          <label className={`${labelClass} sm:col-span-2`}>
+            {t("Confirm new password")}
+            <input
+              autoComplete="new-password"
+              className={fieldClass}
+              minLength={8}
+              name="confirmNewPassword"
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              required
+              type="password"
+              value={confirmPassword}
+            />
+          </label>
+        </div>
+        {passwordError && (
+          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700" role="alert">
+            {passwordError}
+          </p>
+        )}
+        {passwordMessage && (
+          <p className="flex items-center gap-2 text-sm font-semibold text-[#3f6b22]" role="status">
+            <Icon className="size-4" path="m5 12.5 4.5 4.5L19 7.5" />
+            {passwordMessage}
+          </p>
+        )}
+        <button className={primaryButton} disabled={isSavingPassword} type="submit">
+          {isSavingPassword ? t("Updating password…") : t("Change password")}
+        </button>
+      </form>
+
+      <div className="rounded-2xl bg-[#fdf6f6] p-5 ring-1 ring-[#f0dcda]">
+        <p className="text-sm font-extrabold text-[#8a3b3b]">
+          {t("Delete account")}
+        </p>
+        <p className="mt-1 max-w-xl text-xs leading-5 text-[#65748a]">
+          {t(
+            "Closing the account removes your favorites, saved bags, loyalty points and sign-in. Your past orders stay in the shop's records without your personal details. This cannot be undone.",
+          )}
+        </p>
+        {showDelete ? (
+          <form className="mt-4 max-w-md space-y-3" onSubmit={handleDelete}>
+            <label className={labelClass}>
+              {t("Type DELETE to confirm")}
+              <input
+                autoComplete="off"
+                className={fieldClass}
+                onChange={(event) => setConfirmText(event.target.value)}
+                placeholder="DELETE"
+                value={confirmText}
+              />
+            </label>
+            {deleteError && (
+              <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700" role="alert">
+                {deleteError}
+              </p>
+            )}
+            <div className="flex gap-2">
+              <button
+                className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#a34d4d] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#8a3b3b] disabled:cursor-wait disabled:opacity-55"
+                disabled={confirmText !== "DELETE" || isDeleting}
+                type="submit"
+              >
+                {isDeleting ? t("Deleting…") : t("Permanently delete account")}
+              </button>
+              <button className={ghostButton} onClick={() => setShowDelete(false)} type="button">
+                {t("Cancel")}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <button
+            className="mt-3 inline-flex min-h-10 items-center rounded-lg border border-[#e3c8c6] bg-white px-4 py-2.5 text-xs font-bold text-[#8a3b3b] transition-colors hover:bg-[#fdf0ef] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a34d4d]"
+            onClick={() => setShowDelete(true)}
+            type="button"
+          >
+            {t("Delete account")}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function RewardsCard({ points, t, compact = false }) {
   const rewardsAvailable = Math.floor(points / POINTS_PER_REWARD);
   const progress = points % POINTS_PER_REWARD;
@@ -1003,7 +1214,7 @@ function RewardsCard({ points, t, compact = false }) {
 }
 
 export function CustomerOrdersPage() {
-  const { customer, isLoading, updateProfile, logout } = useAuth();
+  const { customer, isLoading, updateProfile, changePassword, deleteAccount, logout } = useAuth();
   const { t, language } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
@@ -1020,6 +1231,8 @@ export function CustomerOrdersPage() {
   const [savingOrderId, setSavingOrderId] = useState(null);
   const [deletingOrderId, setDeletingOrderId] = useState(null);
   const [orderToDelete, setOrderToDelete] = useState(null);
+  const [orderToCancel, setOrderToCancel] = useState(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState(null);
   const [deletingSavedCartId, setDeletingSavedCartId] = useState(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [orderFilter, setOrderFilter] = useState("all");
@@ -1266,6 +1479,34 @@ export function CustomerOrdersPage() {
     }
   }
 
+  async function confirmCancelOrder() {
+    if (!orderToCancel) return;
+    const orderId = orderToCancel.id;
+    setCancellingOrderId(orderId);
+    setError("");
+    try {
+      await apiRequest(`/customer/orders/${orderId}/cancel`, {
+        method: "POST",
+        token: getCustomerToken(),
+      });
+      setOrders((current) => current.map((entry) =>
+        entry.id === orderId
+          ? { ...entry, status: "cancelled_by_customer" }
+          : entry,
+      ));
+      setOrderToCancel(null);
+      setAccountNotice(t("The order was cancelled. Reserved items are back in the shop."));
+    } catch (cancelError) {
+      setError(
+        cancelError instanceof Error
+          ? cancelError.message
+          : t("The order could not be cancelled. Please try again."),
+      );
+    } finally {
+      setCancellingOrderId(null);
+    }
+  }
+
   const renderOrderCard = (order) => {
     const isSaved = savedCarts.some(
       (savedCart) => savedCart.sourceOrderId === order.id,
@@ -1282,6 +1523,8 @@ export function CustomerOrdersPage() {
           onSave={() => saveOrder(order)}
           onDelete={isCompleted(order) ? () => setOrderToDelete(order) : null}
           isDeleting={deletingOrderId === order.id}
+          onCancel={isCancellable(order) ? () => setOrderToCancel(order) : null}
+          isCancelling={cancellingOrderId === order.id}
           order={order}
           t={t}
         />
@@ -2098,6 +2341,15 @@ export function CustomerOrdersPage() {
                       t={t}
                     />
                   </div>
+                  <div className={`${cardClass} mt-5`}>
+                    <CustomerSecurityCard
+                      customer={customer}
+                      onChangePassword={changePassword}
+                      onDeleteAccount={deleteAccount}
+                      onSignedOut={() => navigate("/login", { replace: true })}
+                      t={t}
+                    />
+                  </div>
                 </section>
               )}
             </div>
@@ -2155,6 +2407,58 @@ export function CustomerOrdersPage() {
                   path="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m3 0-1 13H8L7 7M10 11v6M14 11v6"
                 />
                 {deletingOrderId === orderToDelete.id ? t("Removing…") : t("Remove")}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+      {orderToCancel && (
+        <div className="fixed inset-0 z-[60] grid place-items-center px-5" role="presentation">
+          <button
+            aria-label={t("Cancel")}
+            className="absolute inset-0 bg-brand-navy/50 backdrop-blur-[2px]"
+            onClick={() => setOrderToCancel(null)}
+            tabIndex={-1}
+            type="button"
+          />
+          <section
+            aria-labelledby="cancel-order-title"
+            aria-modal="true"
+            className="relative w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_80px_rgba(9,42,83,0.3)]"
+            role="dialog"
+          >
+            <div className="flex items-start gap-4">
+              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fdf0ef] text-[#b44947]">
+                <Icon className="size-6" path="m6 6 12 12M18 6 6 18" />
+              </span>
+              <div className="min-w-0">
+                <h2 className="font-display text-lg font-extrabold text-brand-navy" id="cancel-order-title">
+                  {t("Cancel order #{id}?", { id: orderToCancel.id })}
+                </h2>
+                <p className="mt-1.5 text-sm leading-6 text-[#65748a]">
+                  {t(
+                    "The items in this order go back to the shop and any loyalty points you spent return to your account. This cannot be undone.",
+                  )}
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-2.5">
+              <button
+                className="inline-flex min-h-10 items-center rounded-lg border border-[#dce3eb] bg-white px-4 text-sm font-semibold text-brand-navy transition hover:border-[#bac7d5] focus-visible:outline-2 focus-visible:outline-brand-navy"
+                disabled={cancellingOrderId === orderToCancel.id}
+                onClick={() => setOrderToCancel(null)}
+                type="button"
+              >
+                {t("Keep order")}
+              </button>
+              <button
+                className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#b44947] px-4 text-sm font-bold text-white transition hover:bg-[#9c3937] focus-visible:outline-2 focus-visible:outline-[#b44947] disabled:cursor-wait disabled:opacity-60"
+                disabled={cancellingOrderId === orderToCancel.id}
+                onClick={confirmCancelOrder}
+                type="button"
+              >
+                <Icon className="size-4" path="m6 6 12 12M18 6 6 18" />
+                {cancellingOrderId === orderToCancel.id ? t("Cancelling…") : t("Cancel order")}
               </button>
             </div>
           </section>

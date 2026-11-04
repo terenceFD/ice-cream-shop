@@ -35,6 +35,7 @@ import {
   hideDeliveredOrderFromAdmin,
   hideDeliveredOrdersFromAdmin,
   deleteFlavor,
+  cancelOrderForCustomer,
   deleteDeliveredOrderForCustomer,
   deleteMenuCategory,
   deleteContactMessage,
@@ -842,7 +843,7 @@ async function requireCustomer(request, response, next) {
     return
   }
   const customer = await database.prepare(`
-    SELECT id, name, email, profile_picture AS "profilePicture", phone,
+    SELECT id, name, email, profile_picture AS "profilePicture", phone, password_hash,
       delivery_city AS "deliveryCity", delivery_residence AS "deliveryResidence",
       loyalty_points AS "loyaltyPoints", is_banned AS "isBanned"
     FROM customers WHERE id = ?
@@ -851,6 +852,13 @@ async function requireCustomer(request, response, next) {
     response.status(401).json({ error: 'Customer session is no longer valid.' })
     return
   }
+  // A password change re-issues the token with a new stamp; tokens from other devices
+  // still carry the old stamp and are signed out on their next request.
+  if (payload.pwd && payload.pwd !== customerPasswordStamp(customer.password_hash)) {
+    response.status(401).json({ error: 'Your password was changed. Sign in again with the new password.' })
+    return
+  }
+  delete customer.password_hash
   request.customer = customer
   next()
 }
@@ -878,12 +886,15 @@ async function optionalCustomer(request, response, next) {
     return
   }
   const customer = await database.prepare(`
-    SELECT id, name, email, profile_picture AS "profilePicture", phone,
+    SELECT id, name, email, profile_picture AS "profilePicture", phone, password_hash,
       delivery_city AS "deliveryCity", delivery_residence AS "deliveryResidence",
       loyalty_points AS "loyaltyPoints", is_banned AS "isBanned"
     FROM customers WHERE id = ?
   `).get(payload.sub)
-  request.customer = customer && !customer.isBanned ? customer : null
+  if (customer && customer.isBanned) customer = null
+  else if (customer && payload.pwd && payload.pwd !== customerPasswordStamp(customer.password_hash)) customer = null
+  if (customer) delete customer.password_hash
+  request.customer = customer
   next()
 }
 
@@ -1982,7 +1993,11 @@ app.post('/api/auth/register/verify', signupLimiter, signupCodeAttemptLimiter, a
       `).run(customer.id, pending.claimOrderId, pending.email)
       if (claimed.changes) claimedOrderId = Number(pending.claimOrderId)
     }
-    const token = jwt.sign({ sub: customer.id, type: 'customer' }, jwtSecret, { expiresIn: '8h' })
+    const token = jwt.sign(
+      { sub: customer.id, type: 'customer', pwd: customerPasswordStamp(customer.password_hash) },
+      jwtSecret,
+      { expiresIn: '8h' },
+    )
     response.status(201).json({
       token,
       claimedOrderId,
@@ -2022,7 +2037,11 @@ app.post('/api/auth/login', loginIpLimiter, loginLimiter, async (request, respon
       return
     }
 
-    const token = jwt.sign({ sub: customer.id, type: 'customer' }, jwtSecret, { expiresIn: '8h' })
+    const token = jwt.sign(
+      { sub: customer.id, type: 'customer', pwd: customerPasswordStamp(customer.password_hash) },
+      jwtSecret,
+      { expiresIn: '8h' },
+    )
     response.json({
       token,
       customer: {
@@ -2201,6 +2220,80 @@ app.get('/api/auth/me', async (request, response) => {
     return
   }
   response.json({ customer })
+})
+
+// A signed-in customer changes their own password. The password stamp in the token
+// (below) is recomputed after every change, so every other signed-in device is signed out
+// and only the current device keeps its session.
+function customerPasswordStamp(passwordHash) {
+  return createHmac('sha256', jwtSecret).update(`customer-pwd:${passwordHash}`).digest('hex').slice(0, 16)
+}
+
+app.put('/api/auth/password', passwordChangeLimiter, requireCustomer, async (request, response, next) => {
+  try {
+    const currentPassword = typeof request.body.currentPassword === 'string' ? request.body.currentPassword : ''
+    const newPassword = typeof request.body.newPassword === 'string' ? request.body.newPassword : ''
+    if (newPassword.length < 8 || newPassword.length > 128) {
+      response.status(400).json({ error: 'Choose a new password of 8 to 128 characters.' })
+      return
+    }
+    const account = await database.prepare('SELECT id, password_hash FROM customers WHERE id = ?').get(request.customer.id)
+    if (!account || !await verifyPassword(currentPassword, account.password_hash)) {
+      response.status(400).json({ error: 'Your current password is incorrect.' })
+      return
+    }
+    if (await verifyPassword(newPassword, account.password_hash)) {
+      response.status(400).json({ error: 'Choose a new password that is different from your current one.' })
+      return
+    }
+    const weakReason = weakPasswordReason(newPassword, { email: request.customer.email, name: request.customer.name })
+    if (weakReason) {
+      response.status(400).json({ error: weakReason })
+      return
+    }
+    const passwordHash = await bcrypt.hash(newPassword, 12)
+    await database.prepare('UPDATE customers SET password_hash = ? WHERE id = ?').run(passwordHash, request.customer.id)
+    // A fresh token carries the new stamp, so sessions on other devices (whose token
+    // still carries the old stamp) are rejected on their next request.
+    const token = jwt.sign(
+      { sub: request.customer.id, type: 'customer', pwd: customerPasswordStamp(passwordHash) },
+      jwtSecret,
+      { expiresIn: '8h' },
+    )
+    response.json({ changed: true, token })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// A customer can delete their own account. Their name and email are replaced, their
+// favorites, saved bags, push subscriptions and loyalty ledger go with the account, and
+// their orders stay for the shop's accounting record with the personal details stripped.
+app.delete('/api/auth/account', passwordChangeLimiter, requireCustomer, async (request, response, next) => {
+  try {
+    const confirmation = typeof request.body?.confirmation === 'string' ? request.body.confirmation : ''
+    if (confirmation !== 'DELETE') {
+      response.status(400).json({ error: 'Type DELETE in the box to confirm you want the account removed.' })
+      return
+    }
+    const customerId = request.customer.id
+    await database.prepare('DELETE FROM customer_favorites WHERE customer_id = ?').run(customerId)
+    await database.prepare('DELETE FROM customer_saved_carts WHERE customer_id = ?').run(customerId)
+    await database.prepare('DELETE FROM loyalty_ledger WHERE customer_id = ?').run(customerId)
+    await database.prepare('DELETE FROM push_subscriptions WHERE customer_id = ?').run(customerId)
+    // Reviews stay with the order (they are public social proof) and are anonymised on delete.
+    await database.prepare('DELETE FROM menu_reviews WHERE customer_id = ?').run(customerId)
+    await database.prepare(`
+      UPDATE orders
+      SET customer_id = NULL, customer_name = 'Deleted account', customer_email = '', customer_phone = ''
+      WHERE customer_id = ?
+    `).run(customerId)
+    await database.prepare('DELETE FROM pending_customer_signups WHERE email = ?').run(request.customer.email)
+    await database.prepare('DELETE FROM customers WHERE id = ?').run(customerId)
+    response.json({ deleted: true })
+  } catch (error) {
+    next(error)
+  }
 })
 
 app.put('/api/auth/profile', requireCustomer, async (request, response) => {
@@ -2531,6 +2624,26 @@ app.delete('/api/customer/saved-carts/:id', requireCustomer, async (request, res
   response.status(204).end()
 })
 
+// A customer cancels an order they no longer want. Allowed while it is still unpaid or
+// freshly placed; once the shop starts preparing it, contacting the store is the only way out.
+app.post('/api/customer/orders/:id/cancel', requireCustomer, async (request, response) => {
+  const id = Number(request.params.id)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: 'Order ID is invalid.' })
+    return
+  }
+  const result = await cancelOrderForCustomer(id, request.customer.id)
+  if (result === 'not_found') {
+    response.status(404).json({ error: 'No order belonging to your account was found.' })
+    return
+  }
+  if (result === 'not_cancellable') {
+    response.status(409).json({ error: 'This order is already being prepared or finished. Contact the store to change it.' })
+    return
+  }
+  response.json({ cancelled: true })
+})
+
 app.delete('/api/customer/orders/:id', requireCustomer, async (request, response) => {
   const id = Number(request.params.id)
   if (!Number.isSafeInteger(id) || id < 1) {
@@ -2846,6 +2959,33 @@ async function getAdminLoginIdentity(adminId) {
     FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
   `).get(adminId)
 }
+
+// Shoppers leaving an email to hear when a sold-out item returns. Public, but per-address
+// rate limited like the other forms, and the address is stored lower-cased for easy matching.
+app.post('/api/restock-notifications', contactLimiter, async (request, response) => {
+  const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
+  const itemId = typeof request.body.itemId === 'string' ? request.body.itemId.slice(0, 120) : ''
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !itemId) {
+    response.status(400).json({ error: 'Provide a valid email address.' })
+    return
+  }
+  try {
+    await database.prepare(`
+      INSERT OR IGNORE INTO restock_notifications (email, item_id) VALUES (?, ?)
+    `).run(email, itemId)
+  } catch {
+    // A duplicate insert is fine: the shopper is already on the list.
+  }
+  response.status(201).json({ subscribed: true })
+})
+
+app.get('/api/admin/restock-notifications', requireAdmin, async (request, response) => {
+  const itemId = typeof request.query.itemId === 'string' ? request.query.itemId : ''
+  const rows = itemId
+    ? await database.prepare('SELECT id, email, item_id AS "itemId", created_at AS "createdAt" FROM restock_notifications WHERE item_id = ? ORDER BY id DESC LIMIT 500').all(itemId)
+    : await database.prepare('SELECT id, email, item_id AS "itemId", created_at AS "createdAt" FROM restock_notifications ORDER BY id DESC LIMIT 500').all()
+  response.json({ notifications: rows })
+})
 
 app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
   try {

@@ -606,6 +606,17 @@ if (configuredDatabaseBackend === "postgres") {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     CREATE INDEX IF NOT EXISTS idx_push_subscriptions_customer ON push_subscriptions(customer_id);
+
+    -- Shoppers who asked to be told when a sold-out item is back. One row per email
+    -- and item; cleared when the admin restocks the item.
+    CREATE TABLE IF NOT EXISTS restock_notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(email, item_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_restock_notifications_item ON restock_notifications(item_id);
   `);
 
   addColumnIfMissing("event_orders", "deposit_admin_seen", "INTEGER NOT NULL DEFAULT 1");
@@ -3067,6 +3078,81 @@ export async function hideDeliveredOrderFromAdmin(id) {
     WHERE id = ? AND status = 'delivered'
   `).run(id)
   return result.changes ? 'deleted' : 'not_found'
+}
+
+/**
+ * A customer cancels their own order while it is still unpaid or freshly placed.
+ * Stock reserved for the order goes back on sale, a pending payment is marked failed,
+ * redeemed loyalty points return, and the order is marked cancelled for the admin.
+ */
+export async function cancelOrderForCustomer(id, customerId) {
+  const order = await database.prepare(`
+    SELECT id, customer_id AS "customerId", status, loyalty_points_redeemed AS "pointsRedeemed"
+    FROM orders WHERE id = ? AND customer_id = ?
+  `).get(id, customerId)
+  if (!order) return 'not_found'
+  // Once the shop starts preparing or finishes the order it can no longer be cancelled.
+  if (!['pending_payment', 'new', 'paid', 'accepted'].includes(order.status)) return 'not_cancellable'
+
+  const releaseItems = async () => {
+    const items = await database.prepare(
+      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
+    ).all(id)
+    for (const item of items) {
+      if (item.flavorId !== null) {
+        await database.prepare(`
+          UPDATE flavors SET reserved_stock = MAX(0, reserved_stock - ?)
+          WHERE id = ?
+        `).run(item.quantity, item.flavorId);
+      } else if (item.menuItemId) {
+        await database.prepare(`
+          UPDATE menu_inventory SET reserved_stock = MAX(0, reserved_stock - ?)
+          WHERE item_id = ?
+        `).run(item.quantity, item.menuItemId);
+      }
+    }
+    await database.prepare(`
+      UPDATE discount_codes SET reserved_uses = MAX(0, reserved_uses - 1)
+      WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
+    `).run(id);
+    await database.prepare(`
+      UPDATE payments SET status = 'failed', updated_at = CURRENT_TIMESTAMP
+      WHERE order_id = ? AND status = 'pending'
+    `).run(id);
+    await database.prepare(`
+      UPDATE orders SET status = 'cancelled_by_customer', fulfilled_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(id);
+  }
+
+  if (databaseKind === "postgres") {
+    return database.transaction(async () => {
+      await releaseItems();
+      if (order.pointsRedeemed > 0) {
+        await database.prepare(
+          "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
+        ).run(order.pointsRedeemed, order.customerId);
+        await database.prepare(`
+          INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
+          VALUES (?, ?, ?, 'refunded')
+        `).run(order.customerId, id, order.pointsRedeemed);
+      }
+      return "cancelled";
+    });
+  }
+
+  return database.transaction(() => {
+    releaseItems()
+    if (order.pointsRedeemed > 0) {
+      database.prepare('UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?')
+        .run(order.pointsRedeemed, order.customerId)
+      database.prepare(`
+        INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
+        VALUES (?, ?, ?, 'refunded')
+      `).run(order.customerId, id, order.pointsRedeemed)
+    }
+    return 'cancelled'
+  })()
 }
 
 export async function deleteDeliveredOrderForCustomer(id, customerId) {

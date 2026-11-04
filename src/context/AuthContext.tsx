@@ -40,6 +40,8 @@ export interface AuthContextValue {
   login: (credentials: { email: string; password: string }) => Promise<Customer>;
   logout: () => Promise<void>;
   updateProfile: (profile: CustomerProfile) => Promise<Customer>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  deleteAccount: (confirmation: "DELETE") => Promise<void>;
 }
 
 
@@ -159,6 +161,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result.customer;
   }
 
+  async function changePassword(currentPassword: string, newPassword: string) {
+    const result = await apiRequest<{ token: string; changed: boolean }>("/auth/password", {
+      method: "PUT",
+      token,
+      body: { currentPassword, newPassword },
+    });
+    // The new token carries the fresh password stamp; without swapping it in this
+    // device would be signed out alongside the others.
+    if (result?.token) {
+      setCustomerToken(result.token);
+      setToken(result.token);
+    }
+  }
+
+  async function deleteAccount(confirmation: "DELETE") {
+    await apiRequest("/auth/account", {
+      method: "DELETE",
+      token,
+      body: { confirmation },
+    });
+    clearCustomerToken();
+    setToken("");
+    setCustomer(null);
+    setSessionError("");
+  }
+
   async function logout() {
     try {
       // Turn off promotion alerts for this device first, while the session can still do it.
@@ -178,7 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ customer, isLoading, sessionError, requestSignupVerification, signup, requestPasswordReset, confirmPasswordReset, login, logout, updateProfile }}
+      value={{ customer, isLoading, sessionError, requestSignupVerification, signup, requestPasswordReset, confirmPasswordReset, login, logout, updateProfile, changePassword, deleteAccount }}
     >
       {children}
     </AuthContext.Provider>

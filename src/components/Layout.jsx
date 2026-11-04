@@ -1299,6 +1299,17 @@ function InstagramGlyph({ className = "size-5" }) {
   );
 }
 
+export function FacebookGlyph({ className = "size-5" }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="M14 8.5V7a1.5 1.5 0 0 1 1.5-1.5H17V2.8h-2.6A4.4 4.4 0 0 0 10 7.2v1.3H7.5V12H10v9h4v-9h2.6l.4-3.5H14Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export function InstagramSection() {
   const { t } = useLanguage();
   const instagramUrl = "https://www.instagram.com/coldstonecameroon/";
@@ -1470,6 +1481,15 @@ export function Footer() {
             >
               <InstagramGlyph className="size-4" />
               @coldstonecameroon
+            </a>
+            <a
+              className="-mx-2 mt-1 inline-flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-bold text-white/80 transition-colors hover:bg-white/5 hover:text-brand-yellow focus-visible:text-brand-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
+              href="https://www.facebook.com/coldstonecameroon"
+              rel="noreferrer"
+              target="_blank"
+            >
+              <FacebookGlyph className="size-4" />
+              Cold Stone Creamery Cameroon
             </a>
             <div className="mt-6 border-t border-white/10 pt-6">
               <NewsletterSignup />
