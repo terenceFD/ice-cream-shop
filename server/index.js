@@ -127,6 +127,7 @@ import {
 import { registerEventOrderRoutes } from './event-orders.js'
 import { registerCakeQuoteRoutes } from './cake-quotes.js'
 import { isWhatsAppMessagingConfigured, sendWhatsAppText } from './whatsapp.js'
+import { aiConfigured, suggestReply } from './chat-assistant.js'
 import {
   AdminMfaConfigurationError,
   authenticatorUri,
@@ -3236,18 +3237,147 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
     response.status(400).json({ error: 'Write a message before sending.' })
     return
   }
+  const deviceToken = ensureChatDeviceToken(request, response)
+  const accessError = await chatAccessError(threadId, request.customer, deviceToken)
+  if (accessError) {
+    response.status(403).json({ error: accessError })
+    return
+  }
+  // The page the customer is on when they write. The AI uses it to explain the
+  // screen they are looking at ("what page is this?") and to guide them around it.
+  const customerPage = typeof request.body.page === 'string' && request.body.page.startsWith('/')
+    ? request.body.page.slice(0, 120)
+    : ''
+  // A text snapshot of what is actually on the customer's screen, captured by the
+  // chat widget (title, headings, buttons, visible text). The AI uses it to describe
+  // the real page — including detail pages such as a specific flavor — instead of
+  // guessing from the URL alone.
+  const pageSnapshot = typeof request.body.pageSnapshot === 'string'
+    ? request.body.pageSnapshot.slice(0, 2000)
+    : ''
+  // A guest thread is stamped with this browser's device token on first message;
+  // a signed-in customer's messages carry their id instead.
   await database.prepare(`
-    INSERT INTO chat_messages (thread_id, customer_id, sender, body)
-    VALUES (?, ?, 'customer', ?)
-  `).run(threadId, request.customer ? request.customer.id : null, body)
+    INSERT INTO chat_messages (thread_id, customer_id, sender, body, guest_device)
+    VALUES (?, ?, 'customer', ?, ?)
+  `).run(threadId, request.customer ? request.customer.id : null, body,
+        request.customer ? null : deviceToken)
   response.status(201).json({ sent: true })
+
+  // Automatic AI reply. Only when the shop turned it on AND a real generative model is
+  // configured — the template drafter never sends by itself. One reply per customer
+  // message, so retries and refreshes never spam the thread. Failures are logged and
+  // dropped: the customer still sees the human's reply whenever staff answer.
+  if (!chatAutoReplyEnabled() || !aiConfigured()) return
+  try {
+    const history = await database.prepare(`
+      SELECT sender, body FROM chat_messages WHERE thread_id = ? ORDER BY id
+    `).all(threadId)
+    const lastCustomer = [...history].reverse().find((message) => message.sender === 'customer')
+    if (!lastCustomer) return
+    const alreadyAnswered = await database.prepare(`
+      SELECT 1 FROM chat_messages
+      WHERE thread_id = ? AND sender = 'store' AND id > ?
+      LIMIT 1
+    `).get(threadId, lastCustomer.id)
+    if (alreadyAnswered) return
+    const language = /[à-ÿ]/i.test(lastCustomer.body) || /\b(je|nous|bonjour|merci|combien|où|est-ce|c'est|j'ai|vous)\b/i.test(lastCustomer.body) ? 'fr' : 'en'
+    const result = await suggestReply(history, { database, language, customerPage, pageSnapshot })
+    if (!result.suggestion || result.source !== "ai") {
+      console.warn("chat auto-reply skipped: the model produced no usable reply");
+      return;
+    }
+    await database.prepare(`
+      INSERT INTO chat_messages (thread_id, customer_id, sender, body)
+      VALUES (?, NULL, 'store', ?)
+    `).run(threadId, result.suggestion)
+    console.log(`chat auto-reply sent on thread ${threadId} (topic: ${result.topic || 'general'})`)
+  } catch (autoReplyError) {
+    console.error('chat auto-reply failed:', autoReplyError)
+  }
 })
+
+// The shop turns automatic replies on with CHAT_AUTO_REPLY=true in the environment.
+function chatAutoReplyEnabled() {
+  return /^(1|true|yes|on)$/i.test(process.env.CHAT_AUTO_REPLY || '')
+}
+
+// Guest chats are scoped to one browser with a random device token in an HttpOnly
+// cookie. The token is created on first contact, and a guest thread can only be read
+// or continued by the browser that started it. It is random, carries no personal
+// data, and is never exposed to JavaScript.
+const CHAT_DEVICE_COOKIE = 'chat_device'
+const CHAT_DEVICE_MAX_AGE = 180 * 24 * 60 * 60 // six months
+
+function readChatDeviceToken(request) {
+  const header = request.headers.cookie || ''
+  for (const pair of header.split(';')) {
+    const [name, ...rest] = pair.trim().split('=')
+    if (name === CHAT_DEVICE_COOKIE && /^[0-9a-f-]{8,64}$/i.test(rest.join('='))) {
+      return rest.join('=')
+    }
+  }
+  return null
+}
+
+function ensureChatDeviceToken(request, response) {
+  const existing = readChatDeviceToken(request)
+  if (existing) return existing
+  const token = randomUUID()
+  response.setHeader('Set-Cookie',
+    `${CHAT_DEVICE_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${CHAT_DEVICE_MAX_AGE}`)
+  return token
+}
+
+// The thread's owner: the signed-in customer's id, or the guest's device token.
+// NULL for customer_id and NULL for guest_device means the thread predates this
+// scoping; it stays readable until claimed, and is claimed on first contact.
+async function chatThreadOwner(threadId) {
+  const row = await database.prepare(`
+    SELECT customer_id, guest_device FROM chat_messages WHERE thread_id = ? LIMIT 1
+  `).get(threadId)
+  if (!row) return { customer_id: null, guest_device: null }
+  return row
+}
+
+// Returns null when access is allowed, or an error message string when refused.
+async function chatAccessError(threadId, customer, deviceToken) {
+  const owner = await chatThreadOwner(threadId)
+  if (!owner.customer_id && !owner.guest_device) return null // unclaimed thread: claimable
+  if (owner.customer_id) {
+    return customer && owner.customer_id === customer.id
+      ? null
+      : 'This conversation belongs to another customer.'
+  }
+  // Guest thread: the same device token, or the customer the thread was later
+  // linked to, may read it. Another guest (or a fresh browser) may not.
+  if (customer) {
+    const claimed = await database.prepare(`
+      SELECT customer_id FROM chat_messages WHERE thread_id = ? AND customer_id IS NOT NULL LIMIT 1
+    `).get(threadId)
+    if (claimed && claimed.customer_id === customer.id) return null
+  }
+  return owner.guest_device === deviceToken ? null : 'This conversation belongs to another visitor.'
+}
 
 app.get('/api/chat/messages/:threadId', optionalCustomer, async (request, response) => {
   const threadId = request.params.threadId
   if (!chatThreadIdValid(threadId)) {
     response.status(400).json({ error: 'Chat thread is invalid.' })
     return
+  }
+  const deviceToken = ensureChatDeviceToken(request, response)
+  const accessError = await chatAccessError(threadId, request.customer, deviceToken)
+  if (accessError) {
+    response.status(403).json({ error: accessError })
+    return
+  }
+  // A signed-in customer opening a guest thread claims it, so after login the
+  // conversation follows the account rather than staying browser-bound.
+  if (request.customer) {
+    await database.prepare(`
+      UPDATE chat_messages SET customer_id = ? WHERE thread_id = ? AND sender = 'customer'
+    `).run(request.customer.id, threadId)
   }
   const messages = await database.prepare(`
     SELECT id, sender, body, created_at AS "createdAt"
@@ -3259,6 +3389,30 @@ app.get('/api/chat/messages/:threadId', optionalCustomer, async (request, respon
     WHERE thread_id = ? AND sender = 'store'
   `).run(threadId)
   response.json({ messages: messages.reverse() })
+})
+
+// The customer can wipe their own conversation. Only the thread's owner (same
+// account or same guest device token) may clear it, and the thread id itself is
+// retired with the messages so the same id can never be reused or re-read.
+app.delete('/api/chat/messages/:threadId', optionalCustomer, async (request, response) => {
+  const threadId = request.params.threadId
+  if (!chatThreadIdValid(threadId)) {
+    response.status(400).json({ error: 'Chat thread is invalid.' })
+    return
+  }
+  const deviceToken = ensureChatDeviceToken(request, response)
+  const accessError = await chatAccessError(threadId, request.customer, deviceToken)
+  if (accessError) {
+    response.status(403).json({ error: accessError })
+    return
+  }
+  if (!request.customer) {
+    // A guest thread must not stay readable under the same id: retire it entirely.
+    await database.prepare('DELETE FROM chat_messages WHERE thread_id = ?').run(threadId)
+  } else {
+    await database.prepare('DELETE FROM chat_messages WHERE thread_id = ? AND customer_id = ?').run(threadId, request.customer.id)
+  }
+  response.json({ cleared: true })
 })
 
 app.get('/api/admin/chat/threads', requireAdmin, async (request, response) => {
@@ -3281,6 +3435,20 @@ app.get('/api/admin/chat/threads', requireAdmin, async (request, response) => {
     ORDER BY MAX(m.created_at) DESC LIMIT 200
   `).all()
   response.json({ threads })
+})
+
+// Admin inbox: a staff member can clear an entire conversation with a customer.
+// It deletes every message in the thread, which also removes it from the thread
+// list (threads are derived from their messages). The customer's own view simply
+// goes back to an empty chat — a clean start, not an error.
+app.delete('/api/admin/chat/threads/:threadId', requireAdmin, async (request, response) => {
+  const threadId = request.params.threadId
+  if (!chatThreadIdValid(threadId)) {
+    response.status(400).json({ error: 'Chat thread is invalid.' })
+    return
+  }
+  await database.prepare('DELETE FROM chat_messages WHERE thread_id = ?').run(threadId)
+  response.json({ cleared: true })
 })
 
 app.get('/api/admin/chat/threads/:threadId', requireAdmin, async (request, response) => {
@@ -3311,6 +3479,45 @@ app.post('/api/admin/chat/threads/:threadId/reply', requireAdmin, async (request
     VALUES (?, NULL, 'store', ?)
   `).run(threadId, body)
   response.status(201).json({ sent: true })
+})
+
+// Ask the AI assistant to draft a reply to the latest customer message in a thread.
+// The draft is only a suggestion: the admin edits it and sends it with the normal reply
+// endpoint, so nothing reaches the customer without a human pressing Send.
+const chatSuggestLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 20,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: 'Too many suggestion requests, try again in a minute.',
+})
+
+app.post('/api/admin/chat/threads/:threadId/suggest', requireAdmin, chatSuggestLimiter, async (request, response) => {
+  const threadId = request.params.threadId
+  if (!chatThreadIdValid(threadId)) {
+    response.status(400).json({ error: 'Chat thread is invalid.' })
+    return
+  }
+  const history = await database.prepare(`
+    SELECT sender, body FROM chat_messages WHERE thread_id = ? ORDER BY id
+  `).all(threadId)
+  const language = request.body?.language === 'fr' ? 'fr' : 'en'
+  try {
+    const result = await suggestReply(history, { database, language })
+    if (!result.suggestion) {
+      response.status(409).json({ error: 'No customer message to answer yet.' })
+      return
+    }
+    response.json({
+      suggestion: result.suggestion,
+      source: result.source,
+      topic: result.topic || null,
+      confidence: result.confidence || null,
+    })
+  } catch (error) {
+    console.error('chat suggest failed:', error)
+    response.status(502).json({ error: 'The suggestion could not be drafted. Try again.' })
+  }
 })
 
 app.post('/api/admin/login', loginLimiter, async (request, response, next) => {

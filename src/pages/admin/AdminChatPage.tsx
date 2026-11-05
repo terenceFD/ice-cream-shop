@@ -43,7 +43,10 @@ export function AdminChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const [error, setError] = useState("");
+  const [suggestionNote, setSuggestionNote] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
 
   const refreshThreads = useCallback(async () => {
@@ -99,6 +102,38 @@ export function AdminChatPage() {
     if (list) list.scrollTop = list.scrollHeight;
   }, [messages]);
 
+  // The AI answers directly: draft a reply to the latest customer message and send it
+  // with the normal reply path, with no review step. If the model fails, fall back to
+  // the rule-based draft — it is grounded in the shop's data, so it is still safe to send.
+  async function suggestAndSend() {
+    if (!activeThreadId || isSuggesting) return;
+    setIsSuggesting(true);
+    setError("");
+    setSuggestionNote("");
+    try {
+      const result = await request(`/admin/chat/threads/${activeThreadId}/suggest`, {
+        method: "POST",
+        body: { language },
+      });
+      if (result.suggestion) {
+        await request(`/admin/chat/threads/${activeThreadId}/reply`, {
+          method: "POST",
+          body: { body: result.suggestion },
+        });
+      }
+      await loadMessages(activeThreadId);
+      await refreshThreads();
+    } catch (suggestError) {
+      setError(
+        suggestError instanceof Error
+          ? suggestError.message
+          : t("The suggestion could not be drafted."),
+      );
+    } finally {
+      setIsSuggesting(false);
+    }
+  }
+
   async function reply(event: React.FormEvent) {
     event.preventDefault();
     const body = draft.trim();
@@ -111,6 +146,7 @@ export function AdminChatPage() {
         body: { body },
       });
       setDraft("");
+      setSuggestionNote("");
       await loadMessages(activeThreadId);
       await refreshThreads();
     } catch (replyError) {
@@ -121,6 +157,28 @@ export function AdminChatPage() {
       );
     } finally {
       setIsSending(false);
+    }
+  }
+
+  // Clear the open conversation entirely: the thread's messages are wiped on the
+  // server, which removes it from the inbox list. The customer sees an empty chat.
+  async function clearThread() {
+    if (!activeThreadId || isClearing) return;
+    setIsClearing(true);
+    setError("");
+    try {
+      await request(`/admin/chat/threads/${activeThreadId}`, { method: "DELETE" });
+      setMessages([]);
+      setActiveThreadId(null);
+      await refreshThreads();
+    } catch (clearError) {
+      setError(
+        clearError instanceof Error
+          ? clearError.message
+          : t("The conversation could not be cleared."),
+      );
+    } finally {
+      setIsClearing(false);
     }
   }
 
@@ -204,6 +262,31 @@ export function AdminChatPage() {
             </p>
           ) : (
             <>
+              <div className="flex items-center justify-between gap-3 border-b border-[#e5e9ee] bg-white px-4 py-2.5">
+                <p className="min-w-0 truncate text-sm font-bold text-brand-navy">
+                  {threads.find((thread) => thread.threadId === activeThreadId)?.customerName || t("Conversation")}
+                </p>
+                <button
+                  aria-label={t("Clear this conversation")}
+                  className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border border-[#dce3eb] px-3 text-xs font-bold text-[#65748a] transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
+                  disabled={isClearing}
+                  onClick={clearThread}
+                  title={t("Clear this conversation")}
+                  type="button"
+                >
+                  {isClearing ? (
+                    <svg aria-hidden="true" className="size-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" />
+                      <path className="opacity-75" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5" />
+                    </svg>
+                  ) : (
+                    <svg aria-hidden="true" className="size-3.5" fill="none" viewBox="0 0 24 24">
+                      <path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                    </svg>
+                  )}
+                  {t("Clear")}
+                </button>
+              </div>
               <div
                 className="flex-1 space-y-3 overflow-y-auto bg-[#f4f6f8] p-4"
                 ref={listRef}
@@ -233,6 +316,11 @@ export function AdminChatPage() {
                   </div>
                 ))}
               </div>
+              {suggestionNote && (
+                <p className="border-t border-[#e5e9ee] bg-[#f0faf3] px-4 py-2 text-xs font-semibold text-[#1f8f4e]" role="status">
+                  {suggestionNote}
+                </p>
+              )}
               <form
                 className="flex items-center gap-2 border-t border-[#e5e9ee] p-3"
                 onSubmit={reply}
@@ -246,6 +334,26 @@ export function AdminChatPage() {
                   placeholder={t("Type a reply…")}
                   value={draft}
                 />
+                <button
+                  aria-label={t("Reply instantly with AI")}
+                  className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-[#dce3eb] bg-white px-3 text-sm font-bold text-brand-navy transition hover:bg-[#f4f6f8] disabled:opacity-50"
+                  disabled={isSuggesting}
+                  onClick={suggestAndSend}
+                  title={t("Reply instantly with AI")}
+                  type="button"
+                >
+                  {isSuggesting ? (
+                    <svg aria-hidden="true" className="size-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" />
+                      <path className="opacity-75" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5" />
+                    </svg>
+                  ) : (
+                    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+                      <path d="M12 3v4m0 10v4m-9-9h4m10 0h4M5.6 5.6l2.8 2.8m7.2 7.2 2.8 2.8m0-12.8-2.8 2.8m-7.2 7.2-2.8 2.8" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                    </svg>
+                  )}
+                  <span className="hidden sm:inline">{t("Send with AI")}</span>
+                </button>
                 <button
                   className="inline-flex min-h-10 items-center gap-2 rounded-full bg-brand-navy px-4 text-sm font-bold text-white transition hover:bg-brand-blue disabled:opacity-50"
                   disabled={!draft.trim() || isSending}

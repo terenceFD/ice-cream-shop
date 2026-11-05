@@ -398,6 +398,9 @@ const french: Record<string, string> = {
   "Chat with us on WhatsApp": "Discutez avec nous sur WhatsApp",
   "Chat us": "Contactez-nous",
   "Chat with us": "Discutons",
+  "Close chat": "Fermer la discussion",
+  "Clear chat": "Effacer la discussion",
+  "The conversation could not be cleared. Please try again.": "Impossible d’effacer la discussion. Réessayez.",
   // Admin live chat inbox.
   "Live chat": "Messagerie en direct",
   "Answer shoppers in real time. Unread conversations float to the top.":
@@ -407,6 +410,13 @@ const french: Record<string, string> = {
   "The conversation could not be loaded.":
     "Impossible de charger la conversation.",
   "The reply could not be sent.": "Impossible d’envoyer la réponse.",
+  "The conversation could not be cleared.": "Impossible d’effacer la conversation.",
+  "Clear this conversation": "Effacer cette conversation",
+  Clear: "Effacer",
+  Conversation: "Conversation",
+  "The suggestion could not be drafted.": "Impossible de préparer une suggestion.",
+  "Reply instantly with AI": "Répondre instantanément avec l’IA",
+  "Send with AI": "Envoyer avec l’IA",
   Conversations: "Conversations",
   "No conversations yet.": "Aucune conversation pour le moment.",
   Unknown: "Inconnu",
