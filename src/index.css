@@ -1157,6 +1157,22 @@ body:has(.whatsapp-fab) .locations-hero-actions {
 
 
 /*
+ * Breadcrumb links.
+ *
+ * They are styled as small text, which is fine to read and too small to tap: a bare
+ * link is about 18px tall. On a touch screen each one gets a thumb-sized hit area
+ * without changing the look, because the padding is vertical only.
+ */
+@media (pointer: coarse) {
+  nav[aria-label="Breadcrumb"] a,
+  .notification-breadcrumb a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+/*
  * Install card.
  *
  * Rises into the corner with a short overshoot, its icon settles a beat later, and the
@@ -1377,6 +1393,10 @@ body:has(.whatsapp-fab) .locations-hero-actions {
   place-items: center;
   width: 3rem;
   height: 3rem;
+  /* The button is a 48px circle; box-sizing keeps the visible size equal to the hit
+     area, so it stays comfortably tappable on a phone. */
+  box-sizing: border-box;
+  padding: 0;
   border-radius: 9999px;
   background: var(--brand-navy, #0a2550);
   color: #fff;

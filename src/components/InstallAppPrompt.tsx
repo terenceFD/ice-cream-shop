@@ -148,7 +148,7 @@ export function InstallAppPrompt() {
         <div className="relative px-5 pb-5 pt-5 sm:px-6 sm:pb-6">
           <button
             aria-label={t('Close')}
-            className="absolute right-3 top-3 grid size-9 place-items-center rounded-full text-white/55 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
+            className="absolute right-2.5 top-2.5 grid size-11 place-items-center rounded-full text-white/55 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
             onClick={dismiss}
             type="button"
           >

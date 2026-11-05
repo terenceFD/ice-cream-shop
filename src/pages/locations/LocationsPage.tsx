@@ -317,13 +317,13 @@ export function LocationsPage() {
       <Footer />
       <div className="bg-brand-navy px-5 pb-6 text-white/75 sm:px-8 lg:px-12">
         <details className="mx-auto max-w-[1320px] text-[13px]">
-          <summary className="w-fit cursor-pointer font-bold underline decoration-[#ffb84d] underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow">
+          <summary className="flex min-h-11 w-fit cursor-pointer items-center font-bold underline decoration-[#ffb84d] underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow sm:min-h-0">
             {t('Photo credits and licences')}
           </summary>
           <ul className="mt-3 space-y-2 leading-5">
             {neighborhoodPhotos.map((photo) => (
               <li key={photo.src}>
-                <a className="font-semibold underline underline-offset-2" href={photo.sourceUrl} rel="noreferrer" target="_blank">
+                <a className="inline-block py-1 font-semibold underline underline-offset-2" href={photo.sourceUrl} rel="noreferrer" target="_blank">
                   {photo.title}
                 </a>
                 {' '}{t('by')} {photo.creator}.{' '}

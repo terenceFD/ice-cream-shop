@@ -50,7 +50,10 @@ export function CookieConsentBanner() {
               "This site works without tracking. Accept cookies to help us understand which treats people love, or decline and nothing is measured.",
             )}{" "}
             <Link
-              className="font-bold text-brand-yellow underline decoration-2 underline-offset-2"
+              // An inline link inside a paragraph is only as tall as its text (18px).
+              // Padding raises the hit area to a thumb-friendly size without moving the
+              // line it sits on, because the padding is vertical only.
+              className="inline-block py-2 font-bold text-brand-yellow underline decoration-2 underline-offset-2"
               to="/cookies"
             >
               {t("Cookie policy")}

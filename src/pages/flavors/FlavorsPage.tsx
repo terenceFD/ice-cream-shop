@@ -316,7 +316,7 @@ export function FlavorsPage() {
 
               {!flavorTags.length && hasFilters && (
                 <div className="mt-3 flex justify-end">
-                  <button className="min-h-9 rounded-md px-2 text-xs font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition-colors hover:bg-[#f4f6f8] outline-none!" onClick={clearFilters} type="button">
+                  <button className="min-h-11 rounded-md px-2 text-xs font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition-colors hover:bg-[#f4f6f8] outline-none! sm:min-h-9" onClick={clearFilters} type="button">
                     {t("Clear filters")}
                   </button>
                 </div>
@@ -333,7 +333,7 @@ export function FlavorsPage() {
                         return (
                           <button
                             aria-pressed={active}
-                            className={`inline-flex min-h-9 items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold outline-none! transition-colors ${
+                            className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold outline-none! transition-colors sm:min-h-9 ${
                               active
                                 ? "bg-brand-navy text-white"
                                 : "bg-white text-[#65748a] hover:bg-[#f4f6f8] hover:text-brand-navy"
@@ -351,7 +351,7 @@ export function FlavorsPage() {
                   </div>
                   {hasFilters && (
                     <button
-                      className="min-h-9 shrink-0 self-start rounded-md px-2 text-xs font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition-colors hover:bg-[#f4f6f8] outline-none! sm:mt-5"
+                      className="min-h-11 shrink-0 self-start rounded-md px-2 text-xs font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition-colors hover:bg-[#f4f6f8] outline-none! sm:mt-5 sm:min-h-9"
                       onClick={clearFilters}
                       type="button"
                     >
@@ -372,17 +372,20 @@ export function FlavorsPage() {
                     className="scroll-reveal group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[22px] border border-[#f4f6f8] bg-white shadow-[0_12px_24px_rgba(9,42,83,0.08)] transition duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(9,42,83,0.12)] motion-reduce:transform-none motion-reduce:transition-none"
                     key={flavor.id}
                   >
+                    {/* The whole card opens the flavor, not just the name. On a phone the
+                        name is a 20px-tall link, which is far below the 44px a thumb needs.
+                        This overlay covers the card; the add-to-cart button is layered above
+                        it so it still works on its own. */}
+                    <Link
+                      aria-label={t("View {name} details", { name: t(flavor.name) })}
+                      className="absolute inset-0 z-10 rounded-[22px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-navy"
+                      to={`/flavor/${flavor.id}`}
+                    />
                     <span
                       aria-hidden="true"
                       className="pointer-events-none absolute inset-0 z-20 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_30%,rgba(255,255,255,0.55)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
                     />
                     <div className="relative aspect-[4/3] overflow-hidden bg-[#f4f6f8]">
-                      <Link
-                        aria-hidden="true"
-                        className="absolute inset-0 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                        tabIndex={-1}
-                        to={`/flavor/${flavor.id}`}
-                      />
                       <img
                         decoding="async"
                         loading="lazy"
@@ -422,9 +425,7 @@ export function FlavorsPage() {
                     <div className="flex flex-1 flex-col justify-between gap-2.5 p-3.5 sm:gap-3 sm:p-4">
                       <div>
                         <h3 className="line-clamp-2 font-display text-base font-extrabold leading-[1.15] text-brand-navy transition-colors duration-300 group-hover:text-brand-blue sm:text-[1.08rem]">
-                          <Link className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2" to={`/flavor/${flavor.id}`}>
-                            {t(flavor.name)}
-                          </Link>
+                          <span className="rounded-sm">{t(flavor.name)}</span>
                         </h3>
                         <p className="mt-1.5 line-clamp-2 text-[12.5px] font-medium leading-5 text-[#65748a] sm:text-sm">{t(flavor.detail)}</p>
                         {flavor.allergies && flavor.allergies.filter((item) => item !== "None common").length > 0 && (
