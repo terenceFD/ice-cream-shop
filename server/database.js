@@ -321,6 +321,13 @@ if (configuredDatabaseBackend === "postgres") {
     sqliteDatabase.exec("ALTER TABLE contact_messages ADD COLUMN replied_at TEXT");
   }
 
+  function sqliteColumnExists(tableName, columnName) {
+    return sqliteDatabase
+      .prepare(`PRAGMA table_info(${tableName})`)
+      .all()
+      .some((column) => column.name === columnName);
+  }
+
   function addColumnIfMissing(tableName, columnName, definition) {
     const columns = new Set(
       sqliteDatabase
@@ -887,11 +894,9 @@ if (configuredDatabaseBackend === "postgres") {
     CREATE INDEX IF NOT EXISTS idx_chat_messages_customer ON chat_messages(customer_id);
     CREATE INDEX IF NOT EXISTS idx_cake_requests_store ON cake_requests(store_id);
     CREATE INDEX IF NOT EXISTS idx_cake_requests_customer ON cake_requests(customer_id);
-    CREATE INDEX IF NOT EXISTS idx_admin_activity_admin ON admin_activity(admin_id);
     CREATE INDEX IF NOT EXISTS idx_contact_messages_store ON contact_messages(store_id);
     CREATE INDEX IF NOT EXISTS idx_admins_store ON admins(store_id);
     CREATE INDEX IF NOT EXISTS idx_subscriptions_store ON subscriptions(store_id);
-    CREATE INDEX IF NOT EXISTS idx_push_subscriptions_admin ON push_subscriptions(admin_id);
     CREATE INDEX IF NOT EXISTS idx_pending_email_changes_customer ON pending_customer_email_changes(customer_id);
     CREATE INDEX IF NOT EXISTS idx_orders_discount_code ON orders(discount_code_id);
     CREATE INDEX IF NOT EXISTS idx_menu_reviews_item_approved ON menu_reviews(item_id, is_approved);
@@ -900,6 +905,18 @@ if (configuredDatabaseBackend === "postgres") {
     CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_provider_reference
       ON payments(provider_reference);
   `);
+  // Indexes whose column may be missing in an older database file. Creating an index on
+  // a column that is not there throws and aborts startup, so each is checked first.
+  for (const [table, column, indexName] of [
+    ["admin_activity", "admin_id", "idx_admin_activity_admin"],
+    ["push_subscriptions", "customer_id", "idx_push_subscriptions_customer"],
+  ]) {
+    if (sqliteColumnExists(table, column)) {
+      sqliteDatabase.exec(`CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}(${column})`);
+    } else {
+      console.warn(`Skipping index ${indexName}: ${table}.${column} does not exist in this database.`);
+    }
+  }
   // Fresh statistics so the planner uses the new indexes immediately instead of
   // waiting for the next automatic ANALYZE.
   sqliteDatabase.exec("ANALYZE");
@@ -1261,29 +1278,43 @@ export async function verifyDatabaseSchema() {
   // The same hot-path indexes as the SQLite path. Production runs on PostgreSQL, so
   // without these the admin dashboard scans the whole orders table on every poll.
   // DESC is the default for a btree in PostgreSQL, so the plain column is enough.
-  for (const statement of [
-    'CREATE INDEX IF NOT EXISTS idx_orders_admin_visible ON orders(hidden_from_admin, id)',
-    'CREATE INDEX IF NOT EXISTS idx_orders_status_id ON orders(status, id)',
-    'CREATE INDEX IF NOT EXISTS idx_orders_store_id ON orders(store_id, id)',
-    'CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)',
-    'CREATE INDEX IF NOT EXISTS idx_stores_town ON stores(town)',
-    'CREATE INDEX IF NOT EXISTS idx_customers_referral_code ON customers(UPPER(referral_code))',
-    // Foreign keys, which PostgreSQL never indexes on its own.
-    'CREATE INDEX IF NOT EXISTS idx_menu_reviews_order_id ON menu_reviews(order_id)',
-    'CREATE INDEX IF NOT EXISTS idx_loyalty_ledger_order_id ON loyalty_ledger(order_id)',
-    'CREATE INDEX IF NOT EXISTS idx_saved_carts_source_order ON customer_saved_carts(source_order_id)',
-    'CREATE INDEX IF NOT EXISTS idx_chat_messages_customer ON chat_messages(customer_id)',
-    'CREATE INDEX IF NOT EXISTS idx_cake_requests_store ON cake_requests(store_id)',
-    'CREATE INDEX IF NOT EXISTS idx_cake_requests_customer ON cake_requests(customer_id)',
-    'CREATE INDEX IF NOT EXISTS idx_admin_activity_admin ON admin_activity(admin_id)',
-    'CREATE INDEX IF NOT EXISTS idx_contact_messages_store ON contact_messages(store_id)',
-    'CREATE INDEX IF NOT EXISTS idx_admins_store ON admins(store_id)',
-    'CREATE INDEX IF NOT EXISTS idx_subscriptions_store ON subscriptions(store_id)',
-    'CREATE INDEX IF NOT EXISTS idx_push_subscriptions_admin ON push_subscriptions(admin_id)',
-    'CREATE INDEX IF NOT EXISTS idx_pending_email_changes_customer ON pending_customer_email_changes(customer_id)',
-    'CREATE INDEX IF NOT EXISTS idx_orders_discount_code ON orders(discount_code_id)',
-  ]) {
-    await database.prepare(statement).run();
+  //
+  // Each index is created only when its table and column really exist. A hosted
+  // database can predate a table, or carry an older shape of it (admin_activity in
+  // production has no admin_id), and CREATE INDEX on a missing column aborts startup
+  // with 42703. Skipping is correct: an index on a column that is not there cannot
+  // help any query.
+  const indexDefinitions = [
+    ['orders', 'hidden_from_admin', 'idx_orders_admin_visible', 'orders(hidden_from_admin, id)'],
+    ['orders', 'status', 'idx_orders_status_id', 'orders(status, id)'],
+    ['orders', 'store_id', 'idx_orders_store_id', 'orders(store_id, id)'],
+    ['orders', 'discount_code_id', 'idx_orders_discount_code', 'orders(discount_code_id)'],
+    ['order_items', 'order_id', 'idx_order_items_order_id', 'order_items(order_id)'],
+    ['stores', 'town', 'idx_stores_town', 'stores(town)'],
+    ['customers', 'referral_code', 'idx_customers_referral_code', 'customers(UPPER(referral_code))'],
+    ['menu_reviews', 'order_id', 'idx_menu_reviews_order_id', 'menu_reviews(order_id)'],
+    ['loyalty_ledger', 'order_id', 'idx_loyalty_ledger_order_id', 'loyalty_ledger(order_id)'],
+    ['customer_saved_carts', 'source_order_id', 'idx_saved_carts_source_order', 'customer_saved_carts(source_order_id)'],
+    ['chat_messages', 'customer_id', 'idx_chat_messages_customer', 'chat_messages(customer_id)'],
+    ['cake_requests', 'store_id', 'idx_cake_requests_store', 'cake_requests(store_id)'],
+    ['cake_requests', 'customer_id', 'idx_cake_requests_customer', 'cake_requests(customer_id)'],
+    ['admin_activity', 'admin_id', 'idx_admin_activity_admin', 'admin_activity(admin_id)'],
+    ['contact_messages', 'store_id', 'idx_contact_messages_store', 'contact_messages(store_id)'],
+    ['admins', 'store_id', 'idx_admins_store', 'admins(store_id)'],
+    ['subscriptions', 'store_id', 'idx_subscriptions_store', 'subscriptions(store_id)'],
+    ['push_subscriptions', 'customer_id', 'idx_push_subscriptions_customer', 'push_subscriptions(customer_id)'],
+    ['pending_customer_email_changes', 'customer_id', 'idx_pending_email_changes_customer', 'pending_customer_email_changes(customer_id)'],
+  ];
+  for (const [table, column, indexName, target] of indexDefinitions) {
+    const exists = await database.prepare(`
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = ? AND column_name = ?
+    `).get(table, column);
+    if (!exists) {
+      console.warn(`Skipping index ${indexName}: ${table}.${column} does not exist in this database.`);
+      continue;
+    }
+    await database.prepare(`CREATE INDEX IF NOT EXISTS ${indexName} ON ${target}`).run();
   }
   // Refresh planner statistics so the new indexes are used straight away.
   await database.prepare('ANALYZE orders').run();
