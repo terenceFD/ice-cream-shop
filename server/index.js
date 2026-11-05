@@ -3294,9 +3294,8 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
     return
   }
   const deviceToken = ensureChatDeviceToken(request, response)
-  const accessError = await chatAccessError(threadId, request.customer, deviceToken)
-  if (accessError) {
-    response.status(403).json({ error: accessError })
+  if (!(await chatThreadAllowed(threadId, request.customer, deviceToken))) {
+    response.status(403).json({ error: await chatAccessError(threadId) })
     return
   }
   // The page the customer is on when they write. The AI uses it to explain the
@@ -3311,13 +3310,27 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
   const pageSnapshot = typeof request.body.pageSnapshot === 'string'
     ? request.body.pageSnapshot.slice(0, 2000)
     : ''
+  // A signed-in customer continues as their account even when the thread started
+  // as a guest. The chat widget opens its thread as soon as the panel opens, which
+  // can be a moment before the session resolves; without this the new message would
+  // be stamped as a guest message, and the account would then be refused its own
+  // conversation. Only a thread this browser owns (checked above) gets claimed.
+  const claimGuestThread = Boolean(request.customer) && !(await database.prepare(`
+    SELECT 1 FROM chat_messages WHERE thread_id = ? AND customer_id IS NOT NULL LIMIT 1
+  `).get(threadId))
+  if (claimGuestThread) {
+    await database.prepare(`
+      UPDATE chat_messages SET customer_id = ? WHERE thread_id = ? AND sender = 'customer'
+    `).run(request.customer.id, threadId)
+  }
   // A guest thread is stamped with this browser's device token on first message;
-  // a signed-in customer's messages carry their id instead.
+  // a signed-in customer's messages carry their id instead. The column is NOT NULL,
+  // so an account message stores '' rather than null.
   await database.prepare(`
     INSERT INTO chat_messages (thread_id, customer_id, sender, body, guest_device)
     VALUES (?, ?, 'customer', ?, ?)
   `).run(threadId, request.customer ? request.customer.id : null, body,
-        request.customer ? null : deviceToken)
+        request.customer ? '' : deviceToken)
   response.status(201).json({ sent: true })
 
   // Automatic AI reply. Only when the shop turned it on AND a real generative model is
@@ -3405,24 +3418,36 @@ async function chatThreadOwner(threadId) {
   return row
 }
 
-// Returns null when access is allowed, or an error message string when refused.
-async function chatAccessError(threadId, customer, deviceToken) {
+// Whether this request may use the thread: the signed-in customer who owns it,
+// or the browser holding the guest device token.
+async function chatThreadAllowed(threadId, customer, deviceToken) {
   const owner = await chatThreadOwner(threadId)
-  if (!owner.customer_id && !owner.guest_device) return null // unclaimed thread: claimable
-  if (owner.customer_id) {
-    return customer && owner.customer_id === customer.id
-      ? null
-      : 'This conversation belongs to another customer.'
-  }
-  // Guest thread: the same device token, or the customer the thread was later
-  // linked to, may read it. Another guest (or a fresh browser) may not.
+  if (!owner.customer_id && !owner.guest_device) return true // unclaimed thread: claimable
+  if (customer && owner.customer_id === customer.id) return true
+  // The customer the thread was later linked to always keeps it.
   if (customer) {
-    const claimed = await database.prepare(`
+    const linked = await database.prepare(`
       SELECT customer_id FROM chat_messages WHERE thread_id = ? AND customer_id IS NOT NULL LIMIT 1
     `).get(threadId)
-    if (claimed && claimed.customer_id === customer.id) return null
+    if (linked && linked.customer_id === customer.id) return true
   }
-  return owner.guest_device === deviceToken ? null : 'This conversation belongs to another visitor.'
+  // Otherwise only the browser that started the thread may continue it, and
+  // never when the thread has been claimed by a different account.
+  if (owner.guest_device !== deviceToken) return false
+  if (!customer) return true
+  const claimed = await database.prepare(`
+    SELECT customer_id FROM chat_messages WHERE thread_id = ? AND customer_id IS NOT NULL LIMIT 1
+  `).get(threadId)
+  return !claimed
+}
+
+// A refusal is always recoverable: the chat widget starts a fresh conversation
+// on it, so this text is a diagnostic for other clients, never a dead end.
+async function chatAccessError(threadId) {
+  const owner = await chatThreadOwner(threadId)
+  return owner.customer_id
+    ? 'This conversation belongs to another customer.'
+    : 'This conversation belongs to another visitor.'
 }
 
 app.get('/api/chat/messages/:threadId', optionalCustomer, async (request, response) => {
@@ -3432,9 +3457,8 @@ app.get('/api/chat/messages/:threadId', optionalCustomer, async (request, respon
     return
   }
   const deviceToken = ensureChatDeviceToken(request, response)
-  const accessError = await chatAccessError(threadId, request.customer, deviceToken)
-  if (accessError) {
-    response.status(403).json({ error: accessError })
+  if (!(await chatThreadAllowed(threadId, request.customer, deviceToken))) {
+    response.status(403).json({ error: await chatAccessError(threadId) })
     return
   }
   // A signed-in customer opening a guest thread claims it, so after login the
@@ -3466,9 +3490,8 @@ app.delete('/api/chat/messages/:threadId', optionalCustomer, async (request, res
     return
   }
   const deviceToken = ensureChatDeviceToken(request, response)
-  const accessError = await chatAccessError(threadId, request.customer, deviceToken)
-  if (accessError) {
-    response.status(403).json({ error: accessError })
+  if (!(await chatThreadAllowed(threadId, request.customer, deviceToken))) {
+    response.status(403).json({ error: await chatAccessError(threadId) })
     return
   }
   if (!request.customer) {

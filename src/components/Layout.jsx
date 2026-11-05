@@ -303,7 +303,13 @@ export function CurrencySwitcher() {
       // Above the cookie banner (z-70): the banner is full-width across the bottom, so a
       // lower layer would hide the switcher completely on a phone. While the banner is
       // showing, the switcher sits above it instead of on top of it.
-      className={`currency-switcher group fixed right-4 z-[75] transition-[opacity,transform] duration-300 ${installCardOpen ? "pointer-events-none translate-y-2 opacity-0" : "opacity-100"} ${consentOpen ? "bottom-[calc(11rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(9rem+env(safe-area-inset-bottom,0px))]" : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"}`}
+      // The switcher keeps the same bottom-right corner on every screen size. When the
+      // install card is up it lifts above the card instead of disappearing, so the price
+      // control is never missing from the page.
+      // The install card is about 170px tall on a phone (title and button only), so the
+      // switcher clears it at 12rem (192px) — measured, not guessed. On wider screens the
+      // card sits to the left of the corner, so the switcher stays put.
+      className={`currency-switcher group fixed right-4 z-[85] transition-[bottom] duration-300 ${installCardOpen ? "bottom-[calc(12rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]" : consentOpen ? "bottom-[calc(11rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(9rem+env(safe-area-inset-bottom,0px))]" : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"}`}
       ref={detailsRef}
     >
       <summary

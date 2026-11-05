@@ -118,6 +118,16 @@ function capturePageSnapshot(): string {
   }
 }
 
+// The server answers 403 when a thread belongs to another browser. apiRequest throws an
+// Error carrying the status, so the widget can tell that apart from a network failure.
+function isForbidden(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    (error as { status?: number }).status === 403
+  );
+}
+
 function threadStorageKey(customerId: number | null): string {
   // Each signed-in customer keeps their own conversation; guests share a
   // per-browser thread. Logging in as someone else starts a fresh chat.
@@ -191,18 +201,47 @@ export function LiveChatWidget() {
     }
   }, [isOpen]);
 
-  const loadMessages = useCallback(async () => {
-    if (!threadIdRef.current) return;
+  // Abandons a thread this browser can no longer read and starts a new one. The old id
+  // is dropped from storage so the next open does not retry it.
+  const startFreshThread = useCallback(() => {
+    try {
+      localStorage.removeItem(threadStorageKey(customerId));
+    } catch {
+      // Storage unavailable: a new id in memory is still enough for this visit.
+    }
+    threadIdRef.current = crypto.randomUUID();
+    try {
+      localStorage.setItem(threadStorageKey(customerId), threadIdRef.current);
+    } catch {
+      // Ignore; the thread simply does not survive a reload.
+    }
+    setMessages([]);
+    setError("");
+  }, [customerId]);
+
+  const loadMessages = useCallback(async (threadId = threadIdRef.current) => {
+    if (!threadId) return;
     try {
       const result = await apiRequest<{ messages: ChatMessage[] }>(
-        `/chat/messages/${threadIdRef.current}`,
+        `/chat/messages/${threadId}`,
       );
+      // A fresh thread may have been started while this answer was in flight.
+      if (threadId !== threadIdRef.current) return;
       setMessages(result.messages || []);
       setError("");
-    } catch {
+    } catch (loadError) {
+      // The thread id in this browser no longer belongs to it — the device cookie was
+      // cleared, or the browser blocked it. Retrying can never succeed, so start a
+      // fresh conversation instead of leaving the visitor with a dead, empty chat.
+      // Only the current thread may trigger that: a late answer about an abandoned
+      // thread must not throw away the new one.
+      if (isForbidden(loadError) && threadId === threadIdRef.current) {
+        startFreshThread();
+        return;
+      }
       // A network hiccup should not empty the visible thread; keep what is shown.
     }
-  }, []);
+  }, [startFreshThread]);
 
   // A different signed-in person gets a different storage key, so switching
   // accounts (or signing out) starts an empty chat instead of inheriting the
@@ -244,20 +283,33 @@ export function LiveChatWidget() {
     event.preventDefault();
     const body = draft.trim();
     if (!body || isSending) return;
+    if (!threadIdRef.current) threadIdRef.current = readThreadId(customerId);
     setIsSending(true);
     setError("");
     try {
-      await apiRequest("/chat/messages", {
-        method: "POST",
-        body: {
-          threadId: threadIdRef.current,
-          body,
-          page: location.pathname,
-          // A snapshot of what is actually on the screen, so the assistant can
-          // answer "what is this page?" from the real content, not guesses.
-          pageSnapshot: capturePageSnapshot(),
-        },
-      });
+      const post = (threadId: string) =>
+        apiRequest("/chat/messages", {
+          method: "POST",
+          body: {
+            threadId,
+            body,
+            page: location.pathname,
+            // A snapshot of what is actually on the screen, so the assistant can
+            // answer "what is this page?" from the real content, not guesses.
+            pageSnapshot: capturePageSnapshot(),
+          },
+        });
+      try {
+        await post(threadIdRef.current);
+      } catch (postError) {
+        // The thread belongs to a browser whose device cookie this one no longer
+        // has (cookies cleared, private window, blocked cookie). The server says
+        // so with a 403, which must never reach the shopper as error text: the
+        // message itself is still theirs, so open a fresh thread and send it there.
+        if (!isForbidden(postError)) throw postError;
+        startFreshThread();
+        await post(threadIdRef.current);
+      }
       setDraft("");
       // The AI auto-reply takes a couple of seconds to write. Show a typing bubble
       // while the customer waits, and clear it once the reply actually arrives.
@@ -266,7 +318,9 @@ export function LiveChatWidget() {
       ).length;
       setIsAwaitingReply(true);
       typingTimeout.current = window.setTimeout(() => setIsAwaitingReply(false), TYPING_TIMEOUT_MS);
-      await loadMessages();
+      // Only show the messages of the thread the post actually landed in; sending
+      // again may have moved the conversation to a new thread.
+      await loadMessages(threadIdRef.current);
     } catch (sendError) {
       setError(
         sendError instanceof Error

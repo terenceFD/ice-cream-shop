@@ -99,9 +99,15 @@ export async function apiRequest<T = any>(path: string, { body, token, ...option
         window.dispatchEvent(new Event('customer-session-expired'))
       }
     }
-    if (result.error) throw new Error(result.error)
-    const endpoint = new URL(`${API_BASE_URL}/api${requestPath}`, window.location.origin).pathname
-    throw new Error(`API request failed (${response.status}) for ${options.method || 'GET'} ${endpoint}.`)
+    // The status travels with the error so callers can tell "not allowed" (403) from
+    // "server broke" (500) and react differently — the chat widget restarts its thread
+    // on a 403 instead of retrying forever.
+    const failure = new Error(
+      result.error
+        || `API request failed (${response.status}) for ${options.method || 'GET'} ${new URL(`${API_BASE_URL}/api${requestPath}`, window.location.origin).pathname}.`,
+    ) as Error & { status?: number }
+    failure.status = response.status
+    throw failure
   }
   return result as T
 }

@@ -62,14 +62,24 @@ export function InstallAppPrompt() {
     if (isRunningAsInstalledApp() || shownThisSession()) return undefined
     let timer = 0
     let settled = false
+    // StrictMode runs this effect twice in development (mount, unmount, mount again). Without
+    // this, the first timer is cleared on the remount while the old callback still fires.
+    let cancelled = false
     function offerInstall(nextMode: Mode) {
       if (settled) return
       settled = true
       setMode(nextMode)
       window.clearTimeout(timer)
-      markShownThisSession()
-      timer = window.setTimeout(() => setIsVisible(true), SHOW_AFTER_MS)
+      timer = window.setTimeout(showCard, SHOW_AFTER_MS)
     }
+    // The card counts as shown only when it is actually on screen. Marking it here, not when
+    // the timer is scheduled, means a reload within the delay still gets its one invitation.
+    function showCard() {
+      if (cancelled) return
+      markShownThisSession()
+      setIsVisible(true)
+    }
+
     if (getInstallPrompt()) offerInstall('install')
     else if (isAppleMobileDevice()) offerInstall('ios')
     const onAvailable = () => offerInstall('install')
@@ -81,6 +91,7 @@ export function InstallAppPrompt() {
     window.addEventListener(INSTALL_AVAILABLE_EVENT, onAvailable)
     window.addEventListener(APP_INSTALLED_EVENT, onInstalled)
     return () => {
+      cancelled = true
       window.clearTimeout(timer)
       window.removeEventListener(INSTALL_AVAILABLE_EVENT, onAvailable)
       window.removeEventListener(APP_INSTALLED_EVENT, onInstalled)
@@ -133,8 +144,12 @@ export function InstallAppPrompt() {
     // question while it is on screen.
     <section
       aria-labelledby="install-app-title"
-      aria-describedby="install-app-description"
-      className="install-app-card fixed inset-x-3 bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] z-[80] max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain sm:inset-x-auto sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:right-[10rem] sm:w-[25rem]"
+      // The description is hidden on a phone, so it is only referenced when it is rendered.
+      aria-describedby={mode === 'ios' ? 'install-app-description' : undefined}
+      // On a phone the card is a compact sheet in the corner, not a full-width panel:
+      // it must never cover the page or the currency switcher beside it. It sits below
+      // the switcher (z-85) so the price control stays on top and reachable.
+      className="install-app-card fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-3 z-[80] max-h-[calc(100dvh-2rem)] w-[min(21rem,calc(100vw-1.5rem))] overflow-y-auto overscroll-contain sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:right-[10rem] sm:w-[25rem]"
       role="dialog"
     >
       <div className="install-app-shell relative overflow-hidden rounded-[28px] bg-[linear-gradient(158deg,#5a3352_0%,#472a3b_46%,#341d2b_100%)] text-white shadow-[0_28px_70px_-12px_rgba(52,29,43,0.7)] ring-1 ring-white/10">
@@ -145,7 +160,7 @@ export function InstallAppPrompt() {
         {/* A thin gold hairline along the top edge catches the eye first. */}
         <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,184,77,0.9),transparent)]" />
 
-        <div className="relative px-5 pb-5 pt-5 sm:px-6 sm:pb-6">
+        <div className="relative px-4 pb-4 pt-4 sm:px-6 sm:pb-6 sm:pt-5">
           <button
             aria-label={t('Close')}
             className="absolute right-2.5 top-2.5 grid size-11 place-items-center rounded-full text-white/55 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
@@ -158,13 +173,13 @@ export function InstallAppPrompt() {
           </button>
 
           {/* The app icon floats on its own gold plinth. */}
-          <div className="flex items-center gap-4 pr-10">
-            <span className="install-app-icon relative grid size-14 shrink-0 place-items-center rounded-[18px] bg-[linear-gradient(150deg,#ffcf85,#ffb84d)] shadow-[0_12px_28px_-6px_rgba(255,184,77,0.75)]">
-              <img decoding="async" loading="lazy" alt="" className="size-11 rounded-[13px]" height={44} src="/icons/icon-192.png" width={44} />
+          <div className="flex items-center gap-3 pr-10 sm:gap-4">
+            <span className="install-app-icon relative grid size-11 shrink-0 place-items-center rounded-[14px] bg-[linear-gradient(150deg,#ffcf85,#ffb84d)] shadow-[0_12px_28px_-6px_rgba(255,184,77,0.75)] sm:size-14 sm:rounded-[18px]">
+              <img decoding="async" loading="lazy" alt="" className="size-9 rounded-[10px] sm:size-11 sm:rounded-[13px]" height={44} src="/icons/icon-192.png" width={44} />
             </span>
             <div className="min-w-0">
               <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-yellow">{t('Free · No download')}</p>
-              <h2 className="mt-1 font-display text-[20px] font-extrabold leading-tight text-white" id="install-app-title">
+              <h2 className="mt-0.5 font-display text-[17px] font-extrabold leading-tight text-white sm:mt-1 sm:text-[20px]" id="install-app-title">
                 {t('Cold Stone, one tap away')}
               </h2>
             </div>
@@ -172,12 +187,20 @@ export function InstallAppPrompt() {
 
           {mode === 'install' ? (
             <>
-              <p className="mt-4 text-[14px] leading-6 text-white/70" id="install-app-description">
+              {/* On a phone the card is the title and the button only. The button opens
+                  the browser's own install dialog, which explains the rest, so the
+                  description and the benefit list are kept for wider screens where the
+                  card has room. This keeps the phone card to about a quarter of the
+                  screen instead of half of it. */}
+              <p className="mt-3 hidden text-[14px] leading-6 text-white/70 sm:block" id="install-app-description" aria-hidden="true">
                 {t('Install for quick access to the menu and your orders.')}
               </p>
-              <ul className="mt-4 grid gap-2">
+              <ul className="mt-4 hidden gap-2 sm:grid">
                 {benefits.map((benefit) => (
-                  <li className="flex items-center gap-3 rounded-xl bg-white/[0.06] px-3 py-2.5 text-[14px] leading-5 text-white/90 ring-1 ring-white/[0.07]" key={benefit}>
+                  <li
+                    className="flex items-center gap-3 rounded-xl bg-white/[0.06] px-3 py-2.5 text-[14px] leading-5 text-white/90 ring-1 ring-white/[0.07]"
+                    key={benefit}
+                  >
                     <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full bg-brand-yellow/15 text-brand-yellow">
                       <svg className="size-3.5" fill="none" viewBox="0 0 24 24">
                         <path d="m5 12.5 4.5 4.5L19 7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
@@ -187,7 +210,7 @@ export function InstallAppPrompt() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-5 flex items-center gap-2">
+              <div className="mt-3 flex items-center gap-2 sm:mt-5">
                 <button
                   className="min-h-11 shrink-0 rounded-full px-4 text-sm font-bold text-white/55 transition hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
                   onClick={dismiss}
@@ -210,21 +233,24 @@ export function InstallAppPrompt() {
             </>
           ) : (
             <>
-              <p className="mt-4 text-[14px] leading-6 text-white/70" id="install-app-description">
+              {/* iPhone has no install dialog, so the two steps are the whole instruction
+                  and stay on every screen. They are tightened on a phone so the card
+                  still fits in the corner. */}
+              <p className="mt-2.5 text-[13px] leading-5 text-white/70 sm:mt-4 sm:text-[14px] sm:leading-6" id="install-app-description">
                 {t('Add the site to your home screen in two quick steps.')}
               </p>
-              <ol className="mt-4 grid gap-2">
-                <li className="flex items-center gap-3 rounded-xl bg-white/[0.06] px-3 py-3 text-[14px] leading-5 text-white/90 ring-1 ring-white/[0.07]">
-                  <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-[linear-gradient(150deg,#ffcf85,#ffb84d)] font-display text-xs font-extrabold text-[#3b2113]">1</span>
+              <ol className="mt-2.5 grid gap-1.5 sm:mt-4 sm:gap-2">
+                <li className="flex items-center gap-2.5 rounded-xl bg-white/[0.06] px-2.5 py-2 text-[13px] leading-5 text-white/90 ring-1 ring-white/[0.07] sm:gap-3 sm:px-3 sm:py-3 sm:text-[14px]">
+                  <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full bg-[linear-gradient(150deg,#ffcf85,#ffb84d)] font-display text-[11px] font-extrabold text-[#3b2113] sm:size-7 sm:text-xs">1</span>
                   <span>{t('Tap the Share button')} <span className="text-brand-yellow"><ShareIcon /></span> {t('in your browser')}</span>
                 </li>
-                <li className="flex items-center gap-3 rounded-xl bg-white/[0.06] px-3 py-3 text-[14px] leading-5 text-white/90 ring-1 ring-white/[0.07]">
-                  <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-[linear-gradient(150deg,#ffcf85,#ffb84d)] font-display text-xs font-extrabold text-[#3b2113]">2</span>
+                <li className="flex items-center gap-2.5 rounded-xl bg-white/[0.06] px-2.5 py-2 text-[13px] leading-5 text-white/90 ring-1 ring-white/[0.07] sm:gap-3 sm:px-3 sm:py-3 sm:text-[14px]">
+                  <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full bg-[linear-gradient(150deg,#ffcf85,#ffb84d)] font-display text-[11px] font-extrabold text-[#3b2113] sm:size-7 sm:text-xs">2</span>
                   <span>{t('Choose')} <strong className="font-extrabold text-white">{t('Add to Home Screen')}</strong></span>
                 </li>
               </ol>
               <button
-                className="install-app-cta mt-5 min-h-12 w-full rounded-full bg-[linear-gradient(135deg,#ffcf85,#ffb84d)] px-4 text-sm font-extrabold text-[#3b2113] shadow-[0_10px_26px_-6px_rgba(255,184,77,0.8)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="install-app-cta mt-3 min-h-11 w-full rounded-full bg-[linear-gradient(135deg,#ffcf85,#ffb84d)] px-4 text-sm font-extrabold text-[#3b2113] shadow-[0_10px_26px_-6px_rgba(255,184,77,0.8)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:mt-5 sm:min-h-12"
                 onClick={dismiss}
                 type="button"
               >

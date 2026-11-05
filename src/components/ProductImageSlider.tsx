@@ -29,6 +29,12 @@ interface ProductImageSliderProps {
   priority?: boolean;
   /** Hide the thumbnail strip when the surrounding card needs a shorter footprint. */
   showThumbnails?: boolean;
+  /**
+   * Hide the counter, the pause button and the arrows on phones only. Swiping still moves the
+   * photos and the small dot indicators stay, so the card keeps working on a touch screen.
+   * The controls return from 640px up.
+   */
+  hideControlsOnMobile?: boolean;
   /** Hide the decorative photo scrim when the image is already clearly labeled. */
   showScrim?: boolean;
   /** Rendered width of the image, used to select the smallest suitable srcset entry. */
@@ -40,7 +46,7 @@ interface ProductImageSliderProps {
 // Product photos with arrows, thumbnails, swipe on touch screens and left/right arrow keys.
 // Photos advance every few seconds, pausing while a mouse rests on them or a keyboard user is inside.
 // A single photo shows on its own, without controls.
-export function ProductImageSlider({ images: sourceImages, name, imageClassName = "aspect-square", frameClassName = "bg-[#fbfaf5]", overlay, priority = false, showThumbnails = true, showScrim = true, sizes = "(min-width: 1024px) 600px, 100vw", resetKey }: ProductImageSliderProps) {
+export function ProductImageSlider({ images: sourceImages, name, imageClassName = "aspect-square", frameClassName = "bg-[#fbfaf5]", overlay, priority = false, showThumbnails = true, showScrim = true, hideControlsOnMobile = false, sizes = "(min-width: 1024px) 600px, 100vw", resetKey }: ProductImageSliderProps) {
   const { t } = useLanguage();
   const images = [...new Set(sourceImages.filter(Boolean))];
   const [active, setActive] = useState(0);
@@ -50,6 +56,9 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
   const swipeStart = useRef<number | null>(null);
   const hasSlides = images.length > 1;
   const current = Math.min(active, images.length - 1);
+  // On a phone the count, pause and arrows are dropped; these keys switch them back on at sm.
+  const phoneHidden = hideControlsOnMobile ? "hidden sm:flex" : "flex";
+  const arrowHidden = hideControlsOnMobile ? "hidden sm:grid" : "grid";
 
   useEffect(() => setActive(0), [resetKey]);
 
@@ -125,7 +134,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
         {overlay}
         {hasSlides && showThumbnails && (
           <>
-            <div className="absolute right-5 top-5 flex items-center gap-2 sm:right-6 sm:top-6">
+            <div className={`absolute right-5 top-5 items-center gap-2 sm:right-6 sm:top-6 ${phoneHidden}`}>
               <span aria-live={paused ? "polite" : "off"} className="rounded-full bg-brand-navy/80 px-3 py-1.5 text-xs font-extrabold tabular-nums text-white backdrop-blur-sm">
                 {current + 1} / {images.length}
               </span>
@@ -142,7 +151,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
             </div>
             <button
               aria-label={t("Previous photo")}
-              className="absolute left-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-brand-navy shadow-lg transition hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy sm:left-4 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+              className={`absolute left-3 top-1/2 size-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-brand-navy shadow-lg transition hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy sm:left-4 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 ${arrowHidden}`}
               onClick={() => go(current - 1)}
               type="button"
             >
@@ -150,7 +159,7 @@ export function ProductImageSlider({ images: sourceImages, name, imageClassName 
             </button>
             <button
               aria-label={t("Next photo")}
-              className="absolute right-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-brand-navy shadow-lg transition hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy sm:right-4 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+              className={`absolute right-3 top-1/2 size-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-brand-navy shadow-lg transition hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy sm:right-4 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 ${arrowHidden}`}
               onClick={() => go(current + 1)}
               type="button"
             >

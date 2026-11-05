@@ -1087,7 +1087,7 @@ export function HomePage() {
                       {t(homeSlides[activeSlide].accent)}
                     </span>
                   </h1>
-                  <p className="mt-3 max-w-lg text-base leading-6 text-white/75 sm:mt-4 sm:text-lg sm:leading-7">
+                  <p className="mt-3 hidden max-w-lg text-base leading-6 text-white/75 sm:block sm:mt-4 sm:text-lg sm:leading-7">
                     {t(homeSlides[activeSlide].description)}
                   </p>
                 </div>
@@ -1609,20 +1609,21 @@ export function HomePage() {
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-1 flex-col justify-between gap-3 p-3.5 sm:gap-4 sm:p-5">
+                    <div className="flex flex-1 flex-col justify-between gap-3 p-4 sm:gap-4 sm:p-5">
                       <div>
-                        <h3 className="font-display text-base font-extrabold leading-tight text-brand-navy sm:text-xl">
+                        <h3 className="font-display text-[15px] font-extrabold leading-snug text-brand-navy sm:text-xl sm:leading-tight">
                           <Link
-                            className="line-clamp-2 block min-h-[2.5em] transition-colors duration-300 hover:text-brand-blue"
+                            className="line-clamp-2 block min-h-[2.4em] transition-colors duration-300 hover:text-brand-blue"
                             tabIndex={-1}
                             to={detailsLink}
                           >
                             {t(flavor.title)}
                           </Link>
                         </h3>
-                        <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#65748a] sm:text-sm">
+                        <p className="mt-1.5 hidden line-clamp-2 text-[13px] font-medium leading-5 text-[#65748a] sm:block sm:text-sm">
                           {t(flavor.detail || "")}
                         </p>
+
                       </div>
                       <div className="relative z-10 flex flex-col items-stretch gap-2.5 sm:gap-3">
                         <span
@@ -1867,6 +1868,7 @@ export function HomePage() {
                       <div className="relative bg-[#f4f6f8]">
                         <ProductImageSlider
                           frameClassName="rounded-none bg-[#f4f6f8] shadow-none"
+                          hideControlsOnMobile
                           imageClassName="aspect-square transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none sm:aspect-[4/3]"
                           images={images}
                           name={t(cake.name)}
@@ -1897,18 +1899,18 @@ export function HomePage() {
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-1 flex-col justify-between gap-3 p-3.5 sm:gap-4 sm:p-5">
+                      <div className="flex flex-1 flex-col justify-between gap-3 p-4 sm:gap-4 sm:p-5">
                         <div>
-                          <h3 className="font-display text-base font-extrabold leading-tight text-brand-navy sm:text-xl">
+                          <h3 className="font-display text-[15px] font-extrabold leading-snug text-brand-navy sm:text-xl sm:leading-tight">
                             <Link
-                              className="line-clamp-2 block min-h-[2.5em] transition-colors duration-300 hover:text-brand-blue"
+                              className="line-clamp-2 block min-h-[2.4em] transition-colors duration-300 hover:text-brand-blue"
                               tabIndex={-1}
                               to={`/menu?${new URLSearchParams({ category: "Cakes & Pies", item: cake.name })}`}
                             >
                               {t(cake.name)}
                             </Link>
                           </h3>
-                          <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] font-medium leading-5 text-[#65748a] sm:text-sm">
+                          <p className="mt-1.5 hidden line-clamp-2 text-[13px] font-medium leading-5 text-[#65748a] sm:block sm:text-sm">
                             {t(cake.detail)}
                           </p>
                         </div>
@@ -2162,7 +2164,7 @@ export function HomePage() {
                                 reviewCount={item.reviewCount}
                               />
                             </div>
-                            <p className="mt-2 max-w-lg text-sm leading-6 text-[#65748a] sm:text-base sm:leading-7">
+                            <p className="mt-2 hidden max-w-lg text-sm leading-6 text-[#65748a] sm:block sm:text-base sm:leading-7">
                               {t(item.detail)}
                             </p>
                             <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-5">
@@ -2233,7 +2235,7 @@ export function HomePage() {
                               reviewCount={item.reviewCount}
                             />
                           </div>
-                          <p className="mt-1 line-clamp-1 text-xs leading-5 text-[#65748a] sm:text-sm sm:leading-6">
+                          <p className="mt-1 hidden line-clamp-1 text-xs leading-5 text-[#65748a] sm:block sm:text-sm sm:leading-6">
                             {t(item.detail)}
                           </p>
                           <p
@@ -2254,7 +2256,9 @@ export function HomePage() {
                                     name: t(item.name),
                                   })
                           }
-                          className={`relative z-10 mt-0 inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-md px-4 text-xs font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto sm:px-4 ${
+                          // On a phone the card is a row: photo and text on top, button full width
+                          // underneath. `w-full` alone wrapped into the gap beside the photo.
+                          className={`relative z-10 mt-1 inline-flex min-h-10 w-full shrink-0 basis-full items-center justify-center gap-2 rounded-md px-4 text-xs font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:mt-0 sm:w-auto sm:basis-auto sm:px-4 ${
                             added
                               ? "bg-[#37632c] text-white"
                               : "bg-brand-navy text-white hover:bg-brand-blue"
