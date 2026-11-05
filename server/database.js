@@ -336,6 +336,23 @@ if (configuredDatabaseBackend === "postgres") {
   }
 
   addColumnIfMissing("customers", "phone", "TEXT NOT NULL DEFAULT ''");
+  // Live chat was added after the first databases were created; a database that
+  // predates it has no chat_messages, and the ALTER below would throw
+  // "no such table: chat_messages" at startup. Create it first (same schema as below).
+  sqliteDatabase.exec(`
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_id TEXT NOT NULL,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+      sender TEXT NOT NULL CHECK (sender IN ('customer', 'store')),
+      body TEXT NOT NULL,
+      is_read_by_store INTEGER NOT NULL DEFAULT 0,
+      is_read_by_customer INTEGER NOT NULL DEFAULT 0,
+      guest_device TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_chat_messages_thread ON chat_messages(thread_id, id);
+  `);
   addColumnIfMissing("chat_messages", "guest_device", "TEXT NOT NULL DEFAULT ''");
   addColumnIfMissing(
     "contact_messages",
@@ -999,6 +1016,25 @@ export async function verifyDatabaseSchema() {
   `).run();
   await database.prepare(`
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_notification_sent_at TEXT
+  `).run();
+  // Live chat: the table itself first. A hosted database that predates the live-chat
+  // feature has no chat_messages at all, and the ALTER below would fail with
+  // "relation chat_messages does not exist" — crashing startup before the port binds.
+  await database.prepare(`
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id SERIAL PRIMARY KEY,
+      thread_id TEXT NOT NULL,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+      sender TEXT NOT NULL CHECK (sender IN ('customer', 'store')),
+      body TEXT NOT NULL,
+      is_read_by_store SMALLINT NOT NULL DEFAULT 0,
+      is_read_by_customer SMALLINT NOT NULL DEFAULT 0,
+      guest_device TEXT NOT NULL DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `).run();
+  await database.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_chat_messages_thread ON chat_messages(thread_id, id)
   `).run();
   // Live-chat privacy: guest threads are bound to a browser device token so two
   // visitors never read each other's conversation. A production database created
