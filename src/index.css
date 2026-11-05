@@ -1157,6 +1157,93 @@ body:has(.whatsapp-fab) .locations-hero-actions {
 
 
 /*
+ * Install card.
+ *
+ * Rises into the corner with a short overshoot, its icon settles a beat later, and the
+ * gold call-to-action glows on hover. Reduced motion keeps the card static.
+ */
+.install-app-card {
+  animation: install-card-in 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes install-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* The icon lands slightly after the card, which draws the eye to it first. */
+.install-app-icon {
+  animation: install-icon-in 520ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+
+@keyframes install-icon-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-12deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* A slow gold pulse behind the icon, so the card keeps a little life without moving. */
+.install-app-icon::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 184, 77, 0.55);
+  animation: install-ring 2.8s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes install-ring {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.28);
+  }
+}
+
+.install-app-cta {
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 200ms ease, filter 200ms ease;
+}
+
+.install-app-cta:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow: 0 16px 34px -8px rgba(255, 184, 77, 0.95);
+}
+
+.install-app-cta:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .install-app-card,
+  .install-app-icon,
+  .install-app-icon::after {
+    animation: none;
+  }
+  .install-app-cta,
+  .install-app-cta:hover:not(:disabled) {
+    transition: none;
+    transform: none;
+  }
+}
+
+/*
  * Back to top.
  *
  * Shown once the visitor is well past the header. It sits bottom-right, clear of the WhatsApp

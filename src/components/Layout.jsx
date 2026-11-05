@@ -251,6 +251,21 @@ function useDismissableDetails(ref, enabled = true) {
   }, [ref, enabled]);
 }
 
+// True while the install card is asking the visitor to add the site to their home screen.
+// Both float in the same corner, so the currency switcher steps aside for the few
+// seconds the card is up instead of being buried under it.
+const INSTALL_CARD_EVENT = "cold-stone-install-card";
+
+function useInstallCardOpen() {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const onChange = (event) => setOpen(Boolean(event.detail));
+    window.addEventListener(INSTALL_CARD_EVENT, onChange);
+    return () => window.removeEventListener(INSTALL_CARD_EVENT, onChange);
+  }, []);
+  return open;
+}
+
 // True while the cookie banner is asking for an answer. The currency switcher floats in
 // the same corner, so it has to move up out of the banner's way until it is dismissed.
 // Polled instead of shared through context because the banner mounts far above this
@@ -281,13 +296,14 @@ export function CurrencySwitcher() {
   useDismissableDetails(detailsRef);
   const active = supported.find((option) => option.code === currency) || supported[0];
   const consentOpen = useCookieConsentPending();
+  const installCardOpen = useInstallCardOpen();
 
   return (
     <details
       // Above the cookie banner (z-70): the banner is full-width across the bottom, so a
       // lower layer would hide the switcher completely on a phone. While the banner is
       // showing, the switcher sits above it instead of on top of it.
-      className={`currency-switcher group fixed right-4 z-[75] ${consentOpen ? "bottom-[calc(11rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(9rem+env(safe-area-inset-bottom,0px))]" : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"}`}
+      className={`currency-switcher group fixed right-4 z-[75] transition-[opacity,transform] duration-300 ${installCardOpen ? "pointer-events-none translate-y-2 opacity-0" : "opacity-100"} ${consentOpen ? "bottom-[calc(11rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(9rem+env(safe-area-inset-bottom,0px))]" : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"}`}
       ref={detailsRef}
     >
       <summary
