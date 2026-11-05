@@ -1163,10 +1163,128 @@ body:has(.whatsapp-fab) .locations-hero-actions {
  * button (bottom-left), and lifts above the phone safe area. Hidden from assistive technology
  * while it is not visible, so it is not announced before it can be used.
  */
+/*
+ * Currency switcher (bottom-right of the page).
+ *
+ * The trigger lifts and glows on hover, its symbol does a slow spin, and the panel
+ * unfolds from the corner it is anchored to. All of it respects prefers-reduced-motion.
+ */
+.currency-switcher summary {
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    background-color 220ms ease;
+}
+
+.currency-switcher summary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 42px rgba(9, 42, 83, 0.42);
+}
+
+.currency-switcher summary:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* The symbol disc: a gentle spin and a brighter ring when the trigger is hovered. */
+.currency-switcher summary > span:first-child {
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease;
+}
+
+.currency-switcher summary:hover > span:first-child {
+  transform: rotate(-8deg) scale(1.08);
+  box-shadow: 0 0 0 3px rgba(255, 184, 77, 0.25);
+}
+
+/* The panel unfolds from the bottom-right corner the trigger sits in. */
+.currency-switcher[open] .menu-popover {
+  animation: currency-panel-in 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: right bottom;
+}
+
+@keyframes currency-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Each option slides toward the selected state on hover, with its disc filling in. */
+.currency-switcher [role="group"] button {
+  position: relative;
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.currency-switcher [role="group"] button:hover {
+  transform: translateX(3px);
+}
+
+.currency-switcher [role="group"] button > span:first-child {
+  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.currency-switcher [role="group"] button:hover > span:first-child {
+  transform: scale(1.06);
+}
+
+/* Hover signals "clickable", never "selected": no tick, no navy disc. Only the row
+   the visitor actually picked carries those, so the two states cannot be confused. */
+.currency-switcher [role="group"] button:hover > span:first-child {
+  background: #e9edf3;
+  color: var(--brand-navy, #0a2550);
+}
+
+.currency-switcher [role="group"] button[aria-pressed="true"]:hover > span:first-child {
+  background: var(--brand-navy, #0a2550);
+  color: #fff;
+}
+
+/* A navy rail grows down the left edge of the hovered row, echoing the tick on the
+   selected one without imitating it. */
+.currency-switcher [role="group"] button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 0;
+  border-radius: 9999px;
+  background: var(--brand-yellow-deep, #d99a14);
+  transform: translateY(-50%);
+  transition: height 180ms ease;
+}
+
+.currency-switcher [role="group"] button:hover::before {
+  height: 60%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .currency-switcher summary,
+  .currency-switcher summary > span:first-child,
+  .currency-switcher [role="group"] button,
+  .currency-switcher [role="group"] button > span:first-child {
+    transition: none;
+  }
+  .currency-switcher summary:hover,
+  .currency-switcher summary:hover > span:first-child,
+  .currency-switcher [role="group"] button:hover,
+  .currency-switcher [role="group"] button:hover > span:first-child {
+    transform: none;
+  }
+  .currency-switcher[open] .menu-popover {
+    animation: none;
+  }
+}
+
+/* The currency switcher owns the bottom-right corner, so the back-to-top button
+   lifts above it instead of overlapping. */
 .site-back-to-top {
   position: fixed;
   right: 1.25rem;
-  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
   z-index: 40;
   display: grid;
   place-items: center;

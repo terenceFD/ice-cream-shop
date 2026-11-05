@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { apiRequest } from "../../api/api";
 import { useAdminAuth } from "./useAdminAuth";
 import { useLanguage } from "../../language/useLanguage";
+import { useCurrency } from "../../context/useCurrency";
 import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
 
 const REFRESH_MS = 60_000;
@@ -48,8 +49,9 @@ export function AdminStoreOverviewPage() {
   const { sessionToken, currentAdmin } = useAdminAuth();
   const isOwner = currentAdmin?.role === "owner";
   const { t, language } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
   const locale = language === "fr" ? "fr-CM" : "en-CM";
-  const money = (amount) => formatCartMoney(amount, "xaf", language);
+  const money = (amount) => formatCartMoney(amount, "xaf", language, displayCurrency);
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);

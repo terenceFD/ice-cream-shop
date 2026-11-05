@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../api/api";
 import { useLanguage } from "../language/useLanguage";
+import { useCurrency } from "../context/useCurrency";
 import { formatCartMoney } from "../lib/cartPricing";
 import { storeOpenState } from "../../shared/storeHours.js";
 import { cameroonLocations } from "../../shared/data";
@@ -39,6 +40,8 @@ const PinIcon = ({ className = "size-4" }: { className?: string }) => (
  */
 export function DeliveryCoverage({ compact = false }: { compact?: boolean }) {
   const { t, language } = useLanguage();
+  // The delivery fee follows the visitor's chosen display currency.
+  const { currency: displayCurrency } = useCurrency();
   const [zones, setZones] = useState<Zone[] | null>(null);
   const [area, setArea] = useState("");
   const [checked, setChecked] = useState("");
@@ -171,7 +174,7 @@ export function DeliveryCoverage({ compact = false }: { compact?: boolean }) {
                 <p className="mt-0.5 text-xs leading-5 text-[#3f6b22]">
                   {t("From {store}. Delivery fee {fee}. Open today until {close}.", {
                     store: t(match.storeName),
-                    fee: match.deliveryFee > 0 ? formatCartMoney(match.deliveryFee, "xaf", language) : t("Free"),
+                    fee: match.deliveryFee > 0 ? formatCartMoney(match.deliveryFee, "xaf", language, displayCurrency) : t("Free"),
                     close: storeOpenState(
                       cameroonLocations.find((entry) => entry.area === match.storeArea) ||
                       cameroonLocations.find((entry) => entry.town === match.storeTown),

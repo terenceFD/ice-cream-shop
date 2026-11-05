@@ -427,6 +427,19 @@ async function gatherShopFacts(database) {
     "Track order (/track-order) — follow an order",
     "Account (/account/orders) — order history, favorites, subscriptions",
     "Privacy (/privacy), terms (/terms), refunds (/refunds), cookies (/cookies) — policies",
+    // The currency switcher floats in the bottom-right corner of every customer page.
+    "Currency switcher (bottom-right corner of every page) — FCFA, USD or EUR; the chosen code is shown and pressing it opens the list. Prices convert for display only; the customer is always charged in FCFA",
+  ];
+  // What the site does today, written down so the assistant answers from the real
+  // behaviour instead of guessing or describing an older version of the shop.
+  facts.siteBehaviour = [
+    "CURRENCY: one floating switcher in the bottom-right corner of every customer page (not in the header). It shows only the currency currently chosen. Choosing FCFA, USD or EUR converts EVERY price on the site for display — menu, flavors, cakes, events, cart, search, recently viewed and the admin dashboard. The charge is always taken in FCFA; the other currencies are for reading prices only. The choice is remembered in the browser.",
+    "ADMIN DESK: staff see prices in the same currency they chose in the switcher, so the dashboard and the storefront always agree.",
+    "PRICE SHOWN IN FCFA: if a customer says a price looks wrong or unexpected, it is usually the display currency they picked. Choosing FCFA in the bottom-right switcher restores the shop's own prices.",
+    "RECENTLY VIEWED: a row of the products a customer looked at most recently appears on product and menu pages. Its prices follow the chosen currency too.",
+    "SEARCH: the header search finds products by name or flavour and shows their prices in the chosen currency.",
+    "DELIVERY FEE: the delivery-area checker shows the fee for the matched branch, converted to the chosen currency like every other price.",
+    "PAYING IN ANOTHER CURRENCY: customers can read prices in USD or EUR, but payment is collected in FCFA only. A card or mobile-money payment of a USD price is not possible.",
   ];
   factCache = facts;
   factCacheAt = Date.now();
@@ -487,6 +500,7 @@ const ROLE_RULES = [
   "- Point customers to the right website page when one matches their question (the pages are listed in the facts).",
   "- WHEN THE CUSTOMER ASKS WHAT PAGE THEY ARE ON ('what page is this', 'where am I', 'how do I use this page'): name the page, then explain what is on it and how to move around it — what to tap, what each section is for — in two to four sentences, from the page description given above. If a different page serves them better, say so and end with the matching [ACTION:...] line.",
   "- When pointing to a page, end the reply with an action line on its own: [ACTION:menu_all] for the All Menu page, [ACTION:custom_cake] for custom cakes, [ACTION:events] for event orders, [ACTION:locations] for branches, [ACTION:track_order] for order tracking, [ACTION:contact] for the contact page. The website turns this line into a button for the customer; the text before it must still mention the page naturally.",
+  "- CURRENCY: the site has a currency switcher in the bottom-right corner of every page (FCFA, USD, EUR). If a customer asks about prices in another currency, tell them to tap it and choose the currency; every price on the site then shows in that currency. Prices always quote in FCFA, which is what is charged, so convert the shop's FCFA facts only when the customer asks and say the charge is in FCFA.",
 ];
 
 function pageSection(customerPage) {
@@ -535,6 +549,8 @@ function shopFactsSection(context) {
     `Discount codes: ${context.discounts.map((code) => `${code.code} (${code.type === "percent" ? `${code.value}% off` : `${code.value} FCFA off`}${code.minimum ? `, min ${code.minimum} FCFA` : ""})`).join("; ") || "none"}.`,
     "Website pages the customer can be pointed to:",
     ...context.sitePages.map((page) => `  - ${page}`),
+    "How the site behaves today (answers about prices, currency or the admin desk come from here):",
+    ...(context.siteBehaviour || []).map((line) => `  - ${line}`),
     "Menu grouped by category (name|price|detail|tags; SOLD OUT marked):",
     ...Object.entries(context.menuByCategory).flatMap(([category, items]) => [
       `  ${category}:`,

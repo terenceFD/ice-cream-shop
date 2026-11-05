@@ -15,6 +15,7 @@ import { AuthProvider } from "../context/AuthContext";
 import { LanguageProvider } from "../language/LanguageContext";
 import { CurrencyProvider } from "../context/CurrencyContext";
 import { ScrollProgress } from "../components/ScrollProgress";
+import { CurrencySwitcher } from "../components/Layout";
 import { ScrollToTop } from "../components/ScrollToTop";
 import { WebsiteLoader } from "../components/WebsiteLoader";
 import { RouteMeta } from "../seo/RouteMeta";
@@ -317,6 +318,15 @@ function CustomerCookieConsent() {
   return hidden ? null : <CookieConsentBanner />;
 }
 
+// The currency switcher floats over the page content. It is hidden where a floating
+// control would sit on top of a payment step or the admin desk, which have their own
+// fixed actions in that corner.
+function CustomerCurrencySwitcher() {
+  const { pathname } = useLocation();
+  const hidden = pathname.startsWith("/admin") || pathname === "/payment";
+  return hidden ? null : <CurrencySwitcher />;
+}
+
 // The chat launcher would overlap the payment page's own call-to-action, and staff
 // already answer from the admin inbox instead of the storefront bubble.
 function CustomerLiveChat() {
@@ -471,6 +481,7 @@ function App() {
                   </Suspense>
                   <InstallAppPrompt />
                   <PromotionAlertsPrompt />
+                  <CustomerCurrencySwitcher />
                   <CustomerLiveChat />
                   <CustomerCookieConsent />
                   <CustomerBackToTop />

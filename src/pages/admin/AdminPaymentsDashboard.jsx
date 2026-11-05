@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "../../api/api";
 import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
 import { useLanguage } from "../../language/useLanguage";
+import { useCurrency } from "../../context/useCurrency";
 import { useAdminAuth } from "./useAdminAuth";
 
 const controlClassName =
@@ -118,8 +119,9 @@ function ProviderMark({ provider, size = "size-8" }) {
 export function AdminPaymentsDashboard() {
   const { sessionToken } = useAdminAuth();
   const { t, language } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
   const locale = language === "fr" ? "fr-CM" : "en-CM";
-  const money = (amount) => formatCartMoney(amount, "xaf", language);
+  const money = (amount) => formatCartMoney(amount, "xaf", language, displayCurrency);
   const [payments, setPayments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);

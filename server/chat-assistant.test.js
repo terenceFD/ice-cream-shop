@@ -29,7 +29,14 @@ const context = {
     },
   ],
   discounts: [{ code: "SCOOP10", type: "percent", value: 10, minimum: 5000 }],
-  sitePages: ["All Menu (/menu/all) — every product on one page"],
+  sitePages: [
+    "All Menu (/menu/all) — every product on one page",
+    "Currency switcher (bottom-right corner of every page) — FCFA, USD or EUR",
+  ],
+  siteBehaviour: [
+    "CURRENCY: one floating switcher in the bottom-right corner of every customer page (not in the header). Choosing FCFA, USD or EUR converts EVERY price on the site for display. The charge is always taken in FCFA.",
+    "PAYING IN ANOTHER CURRENCY: customers can read prices in USD or EUR, but payment is collected in FCFA only.",
+  ],
   menuByCategory: {
     "Ice Cream": [
       {
@@ -70,6 +77,31 @@ test("the prompt keeps its grounding rules (no invented prices/facts)", () => {
   const text = prompt();
   assert.match(text, /Use ONLY the facts given/i);
   assert.match(text, /Never invent prices/i);
+});
+
+test("the prompt knows about the currency switcher", () => {
+  const text = prompt();
+  // Added when the switcher moved to the page's bottom-right corner.
+  assert.match(text, /currency switcher/i);
+  assert.match(text, /bottom-right corner/i);
+  assert.match(text, /FCFA, USD, EUR/i);
+  // Prices are converted for display only; the charge stays in FCFA.
+  assert.match(text, /charged in FCFA|charge is in FCFA/i);
+});
+
+test("the site page list includes the currency switcher", () => {
+  const text = prompt();
+  assert.match(text, /Currency switcher \(bottom-right corner of every page\)/);
+});
+
+test("the prompt carries how the site behaves today", () => {
+  const text = prompt();
+  assert.match(text, /How the site behaves today/);
+  // The switcher is in the page, not the header — a detail the model must not get wrong.
+  assert.match(text, /not in the header/i);
+  // Every price converts, and the charge does not.
+  assert.match(text, /converts EVERY price/i);
+  assert.match(text, /payment is collected in FCFA only/i);
 });
 
 test("the prompt keeps the ordering rule: the website, never a phone call", () => {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../language/useLanguage";
+import { useCurrency } from "../context/useCurrency";
 import { formatCartMoney } from "../lib/cartPricing";
 import { photoErrorHandler, photoSrcSet } from "../lib/thumbnails";
 import { readRecentlyViewed, subscribeToRecentlyViewed, type RecentView } from "../lib/recentlyViewed";
@@ -62,6 +63,9 @@ function viewedAgo(viewedAt: number | undefined, t: (key: string, vars?: Record<
 
 export function RecentlyViewed({ excludeKey, onSelect, title }: RecentlyViewedProps) {
   const { t, language } = useLanguage();
+  // Prices here follow the currency the visitor picked, like every other price on the
+  // site. Without this the card always showed FCFA whatever was selected.
+  const { currency: displayCurrency } = useCurrency();
   const [entries, setEntries] = useState<RecentView[]>([]);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -153,7 +157,7 @@ export function RecentlyViewed({ excludeKey, onSelect, title }: RecentlyViewedPr
           ref={railRef}
         >
           {visible.map((entry) => {
-            const price = formatCartMoney(entry.priceXaf, "xaf", language);
+            const price = formatCartMoney(entry.priceXaf, "xaf", language, displayCurrency);
             const ago = viewedAgo(entry.viewedAt, t);
             const body = (
               <>

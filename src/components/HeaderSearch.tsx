@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { apiRequest } from "../api/api";
 import { useFlavors } from "../context/useFlavors";
 import { useLanguage } from "../language/useLanguage";
+import { useCurrency } from "../context/useCurrency";
 import { formatCartMoney } from "../lib/cartPricing";
 import { coldStoneMenuCategories, getMenuItemId } from "../../shared/data";
 
@@ -166,6 +167,7 @@ type HeaderSearchProps = {
 export function HeaderSearch({ onNavigate, variant = "overlay", onOpenChange }: HeaderSearchProps) {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
   const [open, setOpen] = useState(variant === "inline");
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -240,8 +242,11 @@ export function HeaderSearch({ onNavigate, variant = "overlay", onOpenChange }: 
     }
   };
 
+  // Shown in the currency the visitor picked, like the rest of the shop.
   const money = (amount?: number) =>
-    typeof amount === "number" ? formatCartMoney(amount, "xaf", language) : "";
+    typeof amount === "number"
+      ? formatCartMoney(amount, "xaf", language, displayCurrency)
+      : "";
 
   // In the dark mobile drawer the field and results sit on navy; elsewhere they sit on white.
   const dark = variant === "inline";

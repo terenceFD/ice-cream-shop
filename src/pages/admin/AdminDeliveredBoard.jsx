@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "../../api/api";
 import { useAdminAuth } from "./useAdminAuth";
 import { useLanguage } from "../../language/useLanguage";
+import { useCurrency } from "../../context/useCurrency";
 import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
 import "./AdminDeliveredBoard.css";
 import { exportOrdersCsv, orderWeekday } from "./orderCsv";
@@ -65,8 +66,9 @@ export function AdminDeliveredBoard() {
   const { sessionToken, currentAdmin } = useAdminAuth();
   const isOwner = currentAdmin?.role === "owner";
   const { t, language } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
   const locale = language === "fr" ? "fr-CM" : "en-CM";
-  const money = (amount) => formatCartMoney(amount, "xaf", language);
+  const money = (amount) => formatCartMoney(amount, "xaf", language, displayCurrency);
   const [orders, setOrders] = useState([]);
   const [deliveredCount, setDeliveredCount] = useState(0);
   const [stores, setStores] = useState([]);

@@ -13,6 +13,7 @@ import { coldStoneMenuCategories } from "../../shared/data";
 import { EVENT_OCCASIONS } from "../../shared/eventTypes.js";
 import { HeaderSearch } from "./HeaderSearch";
 import { NewsletterSignup } from "./NewsletterSignup";
+import { readCookieConsent } from "../lib/analytics";
 
 function ArrowIcon({ diagonal = false }) {
   return (
@@ -250,47 +251,64 @@ function useDismissableDetails(ref, enabled = true) {
   }, [ref, enabled]);
 }
 
-// Currency picker: sits beside the language dropdown. XAF is the shop's charge
-// currency; the other options convert prices for display only.
-function CurrencyDropdown({ mobile = false }) {
+// True while the cookie banner is asking for an answer. The currency switcher floats in
+// the same corner, so it has to move up out of the banner's way until it is dismissed.
+// Polled instead of shared through context because the banner mounts far above this
+// component, and the answer only changes once per visitor.
+function useCookieConsentPending() {
+  const [pending, setPending] = useState(() => readCookieConsent() === null);
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      const stillPending = readCookieConsent() === null;
+      setPending((previous) => (previous === stillPending ? previous : stillPending));
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+  return pending;
+}
+
+// Currency picker. It lives in the page itself, pinned to the bottom-right corner, so a
+// shopper can always see which currency prices are shown in — the header was too
+// crowded, and on a phone the control was hidden entirely.
+//
+// Only the chosen currency is shown until the picker is opened: the trigger names one
+// code, and the other options stay hidden. XAF is the shop's charge currency; the
+// others convert prices for display only.
+export function CurrencySwitcher() {
   const { currency, setCurrency, supported } = useCurrency();
   const { t } = useLanguage();
   const detailsRef = useRef(null);
-  useDismissableDetails(detailsRef, !mobile);
+  useDismissableDetails(detailsRef);
   const active = supported.find((option) => option.code === currency) || supported[0];
-
-  if (mobile) {
-    return (
-      <div aria-label={t("Select currency")} className="flex rounded-md bg-[color:var(--brand-blue)] p-1 ring-1 ring-white/10" role="group">
-        {supported.map((option) => (
-          <button
-            aria-pressed={currency === option.code}
-            className={`min-h-11 flex-1 rounded-sm text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-yellow ${currency === option.code ? "bg-brand-yellow text-brand-navy" : "text-white/75 hover:bg-white/[0.08] hover:text-white"}`}
-            key={option.code}
-            onClick={() => setCurrency(option.code)}
-            type="button"
-          >
-            {option.symbol}
-          </button>
-        ))}
-      </div>
-    );
-  }
+  const consentOpen = useCookieConsentPending();
 
   return (
-    <details className="group relative" ref={detailsRef}>
+    <details
+      // Above the cookie banner (z-70): the banner is full-width across the bottom, so a
+      // lower layer would hide the switcher completely on a phone. While the banner is
+      // showing, the switcher sits above it instead of on top of it.
+      className={`currency-switcher group fixed right-4 z-[75] ${consentOpen ? "bottom-[calc(11rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(9rem+env(safe-area-inset-bottom,0px))]" : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"}`}
+      ref={detailsRef}
+    >
       <summary
         aria-label={`${t("Currency")}: ${active.code.toUpperCase()}`}
-        className="flex cursor-pointer list-none items-center gap-2 rounded-full border border-white/25 bg-white/[0.06] py-1.5 pl-1.5 pr-3 text-xs font-bold text-white transition hover:border-white/50 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy group-open:border-brand-yellow/60 group-open:bg-white/10 [&::-webkit-details-marker]:hidden"
-        onClick={closeOtherDropdowns}
+        className="relative flex h-12 cursor-pointer list-none items-center gap-2 overflow-hidden rounded-full border border-white/20 bg-brand-navy pl-1.5 pr-3.5 text-xs font-bold text-white shadow-[0_14px_36px_rgba(9,42,83,0.34)] transition hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
       >
-        <span aria-hidden="true" className="grid size-7 place-items-center rounded-full bg-brand-yellow text-[9px] font-extrabold tracking-tight text-brand-navy">{active.symbol}</span>
-        <span className="hidden xl:inline">{active.code.toUpperCase()}</span>
+        {/* A soft light sweeps across the pill on hover. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_35%,rgba(255,255,255,0.35)_50%,transparent_65%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
+        />
+        <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-yellow text-[10px] font-extrabold tracking-tight text-brand-navy">
+          {active.symbol}
+        </span>
+        <span className="tabular-nums">{active.code.toUpperCase()}</span>
         <svg aria-hidden="true" className="size-3 text-white/70 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
           <path d="m2 4 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
         </svg>
       </summary>
-      <div className="menu-popover absolute right-0 top-full z-30 w-72 pt-3">
+      {/* Opens upward, because the trigger is pinned to the bottom of the screen. */}
+      <div className="menu-popover absolute bottom-full right-0 z-30 w-[min(18rem,calc(100vw-2rem))] pb-3">
         <div className="overflow-hidden rounded-xl bg-white p-2 text-sm text-brand-navy shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb]">
           <div className="px-3 pb-3 pt-2">
             <p className="text-sm font-bold text-brand-navy">{t("Select currency")}</p>
@@ -350,7 +368,8 @@ function LanguageDropdown({ language, setLanguage, t }) {
           <path d="m2 4 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
         </svg>
       </summary>
-      <div className="menu-popover absolute right-0 top-full z-30 w-72 pt-3">
+      {/* Anchored to the right edge of the trigger, and never wider than the screen. */}
+      <div className="menu-popover absolute right-0 top-full z-30 w-[min(18rem,calc(100vw-2rem))] pt-3">
         <div className="overflow-hidden rounded-xl bg-white p-2 text-sm text-brand-navy shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb]">
           <div className="px-3 pb-3 pt-2">
             <p className="text-sm font-bold text-brand-navy">{t("Select language")}</p>
@@ -1078,11 +1097,13 @@ export function Header() {
             </nav>
           )}
 
-          <div className={`flex items-center gap-1.5 sm:gap-2 ${isSearchOpen ? "min-w-0 flex-1" : "ml-auto shrink-0 lg:ml-0"}`}>
+          {/* ml-auto keeps the controls pinned to the right edge of the header, so the
+              currency and language pickers sit in the top-right corner rather than
+              floating in the middle of the bar. */}
+          <div className={`flex items-center gap-1.5 sm:gap-2 ${isSearchOpen ? "min-w-0 flex-1" : "ml-auto shrink-0"}`}>
             {!isAdminPage && <HeaderSearch onOpenChange={setIsSearchOpen} />}
             {!isSearchOpen && (
-              <div className="hidden items-center gap-2 sm:flex">
-                <CurrencyDropdown />
+              <div className="hidden sm:block">
                 <LanguageDropdown language={language} setLanguage={setLanguage} t={t} />
               </div>
             )}
@@ -1200,7 +1221,7 @@ export function Header() {
             </div>
 
             <div className="space-y-3 border-t border-white/10 p-4">
-              <CurrencyDropdown mobile />
+
               <div aria-label={t("Select language")} className="flex rounded-md bg-[color:var(--brand-blue)] p-1 ring-1 ring-white/10" role="group">
                 {[["en", "English"], ["fr", "Français"]].map(([code, label]) => (
                   <button

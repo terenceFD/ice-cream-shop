@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { apiRequest } from "../../api/api";
 import { useAdminAuth } from "./useAdminAuth";
 import { useLanguage } from "../../language/useLanguage";
+import { useCurrency } from "../../context/useCurrency";
 import { formatCartMoney, USD_TO_XAF } from "../../lib/cartPricing";
 import { orderUpdateMessage, whatsappLink } from "../../lib/whatsapp";
 import { WhatsAppIcon } from "../../components/WhatsAppIcon";
@@ -35,9 +36,12 @@ function Icon({ path, className = "size-4" }) {
   );
 }
 
-function formatMoney(cents, currency = "xaf", language = "en") {
+// Formats an amount for the admin desk. `currency` is the order's own currency (orders are
+// charged in XAF, older ones may be in USD); `displayCurrency` is what the staff member
+// chose in the currency switcher, so the desk matches the rest of the site.
+function formatMoney(cents, currency = "xaf", language = "en", displayCurrency = "xaf") {
   const amountXaf = String(currency).toLowerCase() === "usd" ? Math.round((cents / 100) * USD_TO_XAF) : cents;
-  return formatCartMoney(amountXaf, "xaf", language);
+  return formatCartMoney(amountXaf, "xaf", language, displayCurrency);
 }
 
 function parseDate(value) {
@@ -113,6 +117,7 @@ export function AdminOrdersBoard() {
   const { sessionToken, currentAdmin } = useAdminAuth();
   const isOwner = currentAdmin?.role === "owner";
   const { t, language } = useLanguage();
+  const { currency: displayCurrency } = useCurrency();
   const [orders, setOrders] = useState([]);
   const [stores, setStores] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -463,7 +468,7 @@ export function AdminOrdersBoard() {
           </div>
           <p className="text-xs font-medium text-[#5f6368]">
             {t("Paid orders in progress")}
-            <span className="ml-2 tabular-nums text-[#111]">{formatMoney(openRevenue, "xaf", language)}</span>
+            <span className="ml-2 tabular-nums text-[#111]">{formatMoney(openRevenue, "xaf", language, displayCurrency)}</span>
           </p>
         </div>
         <ol className="grid grid-cols-2 border-t border-[#e8e8e8] lg:grid-cols-4">
@@ -612,7 +617,7 @@ export function AdminOrdersBoard() {
                         <span className="mt-2 inline-flex"><StatusBadge status={order.status} t={t} /></span>
                       </span>
                       <span className="shrink-0 text-right text-sm font-semibold tabular-nums text-[#111]">
-                        {formatMoney(order.totalCents, order.currency, language)}
+                        {formatMoney(order.totalCents, order.currency, language, displayCurrency)}
                       </span>
                     </button>
                     {next && (
@@ -686,7 +691,7 @@ export function AdminOrdersBoard() {
                           </p>
                         </td>
                         <td className="whitespace-nowrap px-3 py-3 text-right font-semibold tabular-nums text-[#111]">
-                          {formatMoney(order.totalCents, order.currency, language)}
+                          {formatMoney(order.totalCents, order.currency, language, displayCurrency)}
                         </td>
                         <td className="px-3 py-3">
                           <StatusBadge status={order.status} t={t} />
@@ -879,7 +884,7 @@ export function AdminOrdersBoard() {
                       <span className="min-w-0 truncate text-[#111]">
                         <span className="tabular-nums text-[#5f6368]">{item.quantity}×</span> {item.flavorName}
                       </span>
-                      <span className="shrink-0 font-medium tabular-nums text-[#111]">{formatMoney(item.lineTotalCents, selectedOrder.currency, language)}</span>
+                      <span className="shrink-0 font-medium tabular-nums text-[#111]">{formatMoney(item.lineTotalCents, selectedOrder.currency, language, displayCurrency)}</span>
                     </li>
                   ))}
                 </ul>
@@ -887,18 +892,18 @@ export function AdminOrdersBoard() {
                   {selectedOrder.discountCents > 0 && (
                     <div className="flex justify-between gap-3 text-[#247b50]">
                       <dt>{t("Discount")}</dt>
-                      <dd className="font-medium tabular-nums">−{formatMoney(selectedOrder.discountCents, selectedOrder.currency, language)}</dd>
+                      <dd className="font-medium tabular-nums">−{formatMoney(selectedOrder.discountCents, selectedOrder.currency, language, displayCurrency)}</dd>
                     </div>
                   )}
                   {selectedOrder.deliveryFee > 0 && (
                     <div className="flex justify-between gap-3 text-[#5f6368]">
                       <dt>{t("Delivery fee")}</dt>
-                      <dd className="font-medium tabular-nums">{formatMoney(selectedOrder.deliveryFee, selectedOrder.currency, language)}</dd>
+                      <dd className="font-medium tabular-nums">{formatMoney(selectedOrder.deliveryFee, selectedOrder.currency, language, displayCurrency)}</dd>
                     </div>
                   )}
                   <div className="flex items-end justify-between gap-3 border-t border-[#e8e8e8] pt-3">
                     <dt className="font-semibold text-[#111]">{t("Total")}</dt>
-                    <dd className="text-2xl font-semibold tabular-nums tracking-tight text-[#111]">{formatMoney(selectedOrder.totalCents, selectedOrder.currency, language)}</dd>
+                    <dd className="text-2xl font-semibold tabular-nums tracking-tight text-[#111]">{formatMoney(selectedOrder.totalCents, selectedOrder.currency, language, displayCurrency)}</dd>
                   </div>
                 </dl>
               </section>
