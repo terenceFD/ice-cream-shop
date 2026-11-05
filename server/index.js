@@ -49,6 +49,7 @@ import {
   getValidDiscountCode,
   listDiscountCodes,
   listCakeRequests,
+  countNewCakeRequests,
   listMenuCategories,
   listMenuInventory,
   listCustomMenuItems,
@@ -262,6 +263,10 @@ const contentSecurityDirectives = helmet.contentSecurityPolicy.getDefaultDirecti
 contentSecurityDirectives['img-src'] = ["'self'", 'data:', 'https://images.unsplash.com', ...(imageStorageOrigin() ? [imageStorageOrigin()] : [])]
 contentSecurityDirectives['style-src'] = ["'self'", "'unsafe-inline'"]
 contentSecurityDirectives['font-src'] = ["'self'", 'data:']
+// Nothing on this site is meant to be framed — not even by the site itself. helmet's
+// default is 'self', which leaves a clickjacking gap if any page ever reflects untrusted
+// markup; 'none' closes it, and xFrameOptions stays in step for older browsers.
+contentSecurityDirectives['frame-ancestors'] = ["'none'"]
 
 // Tokens are only ever signed with HS256; refuse any other algorithm a forged token might claim.
 const JWT_VERIFY_OPTIONS = { algorithms: ['HS256'] }
@@ -314,6 +319,8 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: contentSecurityDirectives,
   },
+  // Matches frame-ancestors 'none' above so older browsers enforce the same rule.
+  frameguard: { action: 'deny' },
 }))
 // Pages, scripts, styles and API answers are sent compressed (about a quarter of the size).
 // Render's CDN also compresses, but the site should not depend on its host doing it.
@@ -3226,6 +3233,49 @@ const chatLimiter = rateLimit({
   message: { error: 'Too many messages at once. Wait a moment and try again.' },
 })
 
+// Each customer message can trigger a paid model call when automatic replies are on,
+// so the per-minute message limit above is too generous for a free API: one visitor
+// could spend 20 calls a minute, and several visitors could drain the budget. These
+// cap the automatic model calls separately — per visitor and for the whole shop.
+const AUTO_REPLY_PER_THREAD_MINUTE = 6
+const AUTO_REPLY_PER_THREAD_DAY = 60
+const AUTO_REPLY_PER_DAY = 400
+const autoReplyThreadCalls = new Map() // threadId -> { minuteStart, minuteCount, dayStart, dayCount }
+let autoReplyDaily = { dayStart: 0, count: 0 }
+
+// Returns true when the automatic reply may call the model, false when it must skip
+// (the customer still gets a human reply, nothing is lost).
+function claimAutoReplyBudget(threadId, now = Date.now()) {
+  const minute = 60 * 1000
+  const day = 24 * 60 * 60 * 1000
+  if (now - autoReplyDaily.dayStart >= day) autoReplyDaily = { dayStart: now, count: 0 }
+  if (autoReplyDaily.count >= AUTO_REPLY_PER_DAY) return false
+
+  let entry = autoReplyThreadCalls.get(threadId)
+  if (!entry) {
+    entry = { minuteStart: now, minuteCount: 0, dayStart: now, dayCount: 0 }
+    autoReplyThreadCalls.set(threadId, entry)
+  }
+  if (now - entry.minuteStart >= minute) entry = { ...entry, minuteStart: now, minuteCount: 0 }
+  if (now - entry.dayStart >= day) entry = { ...entry, dayStart: now, dayCount: 0 }
+  if (entry.minuteCount >= AUTO_REPLY_PER_THREAD_MINUTE || entry.dayCount >= AUTO_REPLY_PER_THREAD_DAY) {
+    autoReplyThreadCalls.set(threadId, entry)
+    return false
+  }
+  entry.minuteCount += 1
+  entry.dayCount += 1
+  autoReplyThreadCalls.set(threadId, entry)
+  autoReplyDaily.count += 1
+
+  // Keep the map from growing without bound on a long-running server.
+  if (autoReplyThreadCalls.size > 5000) {
+    for (const [key, value] of autoReplyThreadCalls) {
+      if (now - value.dayStart >= day) autoReplyThreadCalls.delete(key)
+    }
+  }
+  return true
+}
+
 function chatThreadIdValid(threadId) {
   return /^[0-9a-f-]{8,36}$/i.test(threadId)
 }
@@ -3269,6 +3319,10 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
   // message, so retries and refreshes never spam the thread. Failures are logged and
   // dropped: the customer still sees the human's reply whenever staff answer.
   if (!chatAutoReplyEnabled() || !aiConfigured()) return
+  if (!claimAutoReplyBudget(threadId)) {
+    console.warn(`chat auto-reply skipped on thread ${threadId}: automatic reply budget reached`)
+    return
+  }
   try {
     const history = await database.prepare(`
       SELECT sender, body FROM chat_messages WHERE thread_id = ? ORDER BY id
@@ -3284,8 +3338,13 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
     const language = /[à-ÿ]/i.test(lastCustomer.body) || /\b(je|nous|bonjour|merci|combien|où|est-ce|c'est|j'ai|vous)\b/i.test(lastCustomer.body) ? 'fr' : 'en'
     const result = await suggestReply(history, { database, language, customerPage, pageSnapshot })
     if (!result.suggestion || result.source !== "ai") {
-      console.warn("chat auto-reply skipped: the model produced no usable reply");
-      return;
+      // The model was configured but did not answer. Log the actual cause (timeout, bad
+      // key, empty completion...) instead of a generic "no usable reply", so a broken
+      // integration is visible in the logs rather than looking like a quiet day.
+      console.warn(
+        `chat auto-reply skipped on thread ${threadId}: ${result.aiFailure?.reason || 'no reply'} — ${result.aiFailure?.detail || 'no detail'}`,
+      )
+      return
     }
     await database.prepare(`
       INSERT INTO chat_messages (thread_id, customer_id, sender, body)
@@ -3513,6 +3572,9 @@ app.post('/api/admin/chat/threads/:threadId/suggest', requireAdmin, chatSuggestL
       source: result.source,
       topic: result.topic || null,
       confidence: result.confidence || null,
+      // Present when the model was asked and failed. The inbox shows a warning beside
+      // the draft, because a template answer must never look like the model's work.
+      aiFailure: result.aiFailure || null,
     })
   } catch (error) {
     console.error('chat suggest failed:', error)
@@ -4848,6 +4910,12 @@ const cakeQuoteRoutes = registerCakeQuoteRoutes(app, {
 app.get('/api/admin/cake-requests', requireAdmin, async (request, response) => {
   const town = selectedStoreTown(request.admin)
   const storeId = request.admin.role === 'store_admin' ? request.admin.storeId : null
+  // The sidebar badge only needs the number of unhandled requests; sending the whole
+  // list (up to 200 rows, each with a toppings JSON blob) every 15 seconds is wasteful.
+  if (request.query.countOnly === 'true') {
+    response.json({ count: await countNewCakeRequests(storeId, town) })
+    return
+  }
   response.json({ requests: await listCakeRequests(storeId, town) })
 })
 
@@ -5545,9 +5613,46 @@ app.delete('/api/admin/flavors/:id', requireAdmin, ownerOnly, async (request, re
   }
 })
 
+// The site's one public address. SITE_URL wins: it is set when the shop moves to its own
+// domain, and every canonical tag, sitemap entry and email link should follow it rather
+// than whatever host the request arrived on. Without it, the first configured frontend
+// origin (or Render's own address) is used.
+//
+// A mistyped SITE_URL would otherwise silently break every canonical and every emailed
+// link, so a value that is not a plain http(s) origin is logged and ignored.
+function normalizeSiteUrl(value) {
+  const raw = String(value || '').trim().replace(/\/+$/, '')
+  if (!raw) return ''
+  try {
+    const url = new URL(raw)
+    if (!['http:', 'https:'].includes(url.protocol)) return ''
+    // Only the origin is useful: a path or query would corrupt every link built on it.
+    return url.origin
+  } catch {
+    return ''
+  }
+}
+
+const configuredSiteUrl = normalizeSiteUrl(process.env.SITE_URL)
+if (process.env.SITE_URL?.trim() && !configuredSiteUrl) {
+  console.error('SITE_URL is not a valid http(s) address and is being ignored:', process.env.SITE_URL)
+}
+
+export function publicSiteUrl() {
+  return configuredSiteUrl
+    || normalizeSiteUrl(process.env.FRONTEND_URL)
+    || normalizeSiteUrl(process.env.RENDER_EXTERNAL_URL)
+    || normalizeSiteUrl(process.env.RENDER_EXTERNAL_HOSTNAME ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME}` : '')
+    || normalizeSiteUrl(frontendOrigins[0])
+}
+
+// Chosen once, at startup, so the SEO layer never depends on the request's Host header.
+const siteUrl = publicSiteUrl()
+if (siteUrl) console.log(`Public site address: ${siteUrl}`)
+
 const frontendDirectory = fileURLToPath(new URL('../dist/', import.meta.url))
 const frontendEntry = fileURLToPath(new URL('../dist/index.html', import.meta.url))
-const seo = createSeo({ templatePath: frontendEntry, listFlavors, getActivePromotion, siteUrl: process.env.SITE_URL })
+const seo = createSeo({ templatePath: frontendEntry, listFlavors, getActivePromotion, siteUrl })
 app.get('/robots.txt', seo.robots)
 app.get('/sitemap.xml', seo.sitemap)
 if (existsSync(frontendEntry)) {
@@ -5695,13 +5800,6 @@ function sqlTimestamp(date) {
   return date.toISOString().replace('T', ' ').slice(0, 19)
 }
 
-function publicSiteUrl() {
-  return (process.env.FRONTEND_URL?.trim()
-    || process.env.RENDER_EXTERNAL_URL?.trim()
-    || (process.env.RENDER_EXTERNAL_HOSTNAME ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME.trim()}` : '')
-    || frontendOrigins[0] || '').replace(/\/+$/, '')
-}
-
 // A reorder link in an email has to work without signing in, including for guests. The token
 // names one order and nothing else, is signed with the same secret as sessions, and expires.
 const REORDER_TOKEN_TTL = '30d'
@@ -5737,7 +5835,9 @@ app.get('/api/orders/reorder', async (request, response) => {
   }
   let claims
   try {
-    claims = jwt.verify(token, jwtSecret)
+    // Same algorithm pin as every other token check: without it a forged token could
+    // claim a different algorithm and be accepted.
+    claims = jwt.verify(token, jwtSecret, JWT_VERIFY_OPTIONS)
   } catch {
     response.status(401).json({ error: 'This reorder link has expired. Open the order from your account instead.' })
     return

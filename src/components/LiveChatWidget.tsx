@@ -217,7 +217,9 @@ export function LiveChatWidget() {
     if (!threadIdRef.current) threadIdRef.current = readThreadId(customerId);
     loadMessages();
     const interval = window.setInterval(() => {
-      if (isOpenRef.current) loadMessages();
+      // A shopper who switched tabs is not reading the chat: skip the request and
+      // catch up on the next tick once the tab is visible again.
+      if (isOpenRef.current && document.visibilityState !== "hidden") loadMessages();
     }, POLL_INTERVAL_MS);
     return () => window.clearInterval(interval);
   }, [isOpen, loadMessages, customerId]);

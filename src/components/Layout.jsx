@@ -1254,11 +1254,22 @@ function PromotionCountdown() {
     // so this request does not compete with the hero photo. Development has no embedded copy.
     const hasEmbeddedPromotion = Boolean(document.getElementById("initial-promotion"));
     const firstRefresh = hasEmbeddedPromotion ? null : window.setTimeout(loadPromotion, 0);
-    const refreshInterval = window.setInterval(loadPromotion, 60_000);
+    // A background tab should not keep every open customer page asking the API every
+    // minute. Skip the tick while hidden and refresh the moment the tab is shown again,
+    // which is when the shopper can actually see the promotion bar.
+    const refreshInterval = window.setInterval(() => {
+      if (document.visibilityState === "hidden") return;
+      loadPromotion();
+    }, 60_000);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") loadPromotion();
+    };
+    document.addEventListener("visibilitychange", refreshWhenVisible);
     return () => {
       cancelled = true;
       if (firstRefresh !== null) window.clearTimeout(firstRefresh);
       window.clearInterval(refreshInterval);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
     };
   }, []);
 

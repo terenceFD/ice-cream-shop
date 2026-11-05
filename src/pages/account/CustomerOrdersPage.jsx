@@ -1473,7 +1473,12 @@ export function CustomerOrdersPage() {
           if (!cancelled) setLoadingOrders(false);
         });
     loadOrders();
-    const intervalId = window.setInterval(loadOrders, 15000);
+    // Order status changes are worth polling for, but not from a tab the shopper
+    // left open in the background.
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "hidden") return;
+      loadOrders();
+    }, 15000);
     window.addEventListener("focus", loadOrders);
     return () => {
       cancelled = true;

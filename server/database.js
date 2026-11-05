@@ -864,12 +864,45 @@ if (configuredDatabaseBackend === "postgres") {
     CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON orders(customer_id);
     CREATE INDEX IF NOT EXISTS idx_orders_fulfillment_status ON orders(fulfillment_status);
     CREATE INDEX IF NOT EXISTS idx_order_items_menu_item_id ON order_items(menu_item_id);
+    -- The admin dashboard's three hottest reads, measured on 20k orders: the orders list
+    -- and its count (hidden_from_admin), the Delivered page (status), and the branch
+    -- filter (store_id). Each was a full table scan before these existed.
+    CREATE INDEX IF NOT EXISTS idx_orders_admin_visible ON orders(hidden_from_admin, id DESC);
+    CREATE INDEX IF NOT EXISTS idx_orders_status_id ON orders(status, id DESC);
+    CREATE INDEX IF NOT EXISTS idx_orders_store_id ON orders(store_id, id DESC);
+    -- Every order list loads its line items with one IN (...) query; without this the
+    -- join scanned order_items once per order.
+    CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+    -- Branch scoping filters stores by town on every admin request.
+    CREATE INDEX IF NOT EXISTS idx_stores_town ON stores(town);
+    -- Referral lookups compare UPPER(referral_code), so the index must match that form.
+    CREATE INDEX IF NOT EXISTS idx_customers_referral_code ON customers(UPPER(referral_code));
+    -- Foreign keys are not indexed automatically, and every one below is filtered on
+    -- directly by the app (order history, reviews, loyalty, saved carts, chat, cake
+    -- requests, admin activity). Without these each lookup scans the whole table, and
+    -- an ON DELETE CASCADE has to scan it too.
+    CREATE INDEX IF NOT EXISTS idx_menu_reviews_order_id ON menu_reviews(order_id);
+    CREATE INDEX IF NOT EXISTS idx_loyalty_ledger_order_id ON loyalty_ledger(order_id);
+    CREATE INDEX IF NOT EXISTS idx_saved_carts_source_order ON customer_saved_carts(source_order_id);
+    CREATE INDEX IF NOT EXISTS idx_chat_messages_customer ON chat_messages(customer_id);
+    CREATE INDEX IF NOT EXISTS idx_cake_requests_store ON cake_requests(store_id);
+    CREATE INDEX IF NOT EXISTS idx_cake_requests_customer ON cake_requests(customer_id);
+    CREATE INDEX IF NOT EXISTS idx_admin_activity_admin ON admin_activity(admin_id);
+    CREATE INDEX IF NOT EXISTS idx_contact_messages_store ON contact_messages(store_id);
+    CREATE INDEX IF NOT EXISTS idx_admins_store ON admins(store_id);
+    CREATE INDEX IF NOT EXISTS idx_subscriptions_store ON subscriptions(store_id);
+    CREATE INDEX IF NOT EXISTS idx_push_subscriptions_admin ON push_subscriptions(admin_id);
+    CREATE INDEX IF NOT EXISTS idx_pending_email_changes_customer ON pending_customer_email_changes(customer_id);
+    CREATE INDEX IF NOT EXISTS idx_orders_discount_code ON orders(discount_code_id);
     CREATE INDEX IF NOT EXISTS idx_menu_reviews_item_approved ON menu_reviews(item_id, is_approved);
     CREATE INDEX IF NOT EXISTS idx_cake_requests_status ON cake_requests(status, id);
     CREATE INDEX IF NOT EXISTS idx_admin_activity_created ON admin_activity(created_at DESC);
     CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_provider_reference
       ON payments(provider_reference);
   `);
+  // Fresh statistics so the planner uses the new indexes immediately instead of
+  // waiting for the next automatic ANALYZE.
+  sqliteDatabase.exec("ANALYZE");
 
   database = sqliteDatabase;
 }
@@ -1224,6 +1257,39 @@ export async function verifyDatabaseSchema() {
     CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_provider_reference
     ON payments(provider_reference)
   `).run();
+
+  // The same hot-path indexes as the SQLite path. Production runs on PostgreSQL, so
+  // without these the admin dashboard scans the whole orders table on every poll.
+  // DESC is the default for a btree in PostgreSQL, so the plain column is enough.
+  for (const statement of [
+    'CREATE INDEX IF NOT EXISTS idx_orders_admin_visible ON orders(hidden_from_admin, id)',
+    'CREATE INDEX IF NOT EXISTS idx_orders_status_id ON orders(status, id)',
+    'CREATE INDEX IF NOT EXISTS idx_orders_store_id ON orders(store_id, id)',
+    'CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)',
+    'CREATE INDEX IF NOT EXISTS idx_stores_town ON stores(town)',
+    'CREATE INDEX IF NOT EXISTS idx_customers_referral_code ON customers(UPPER(referral_code))',
+    // Foreign keys, which PostgreSQL never indexes on its own.
+    'CREATE INDEX IF NOT EXISTS idx_menu_reviews_order_id ON menu_reviews(order_id)',
+    'CREATE INDEX IF NOT EXISTS idx_loyalty_ledger_order_id ON loyalty_ledger(order_id)',
+    'CREATE INDEX IF NOT EXISTS idx_saved_carts_source_order ON customer_saved_carts(source_order_id)',
+    'CREATE INDEX IF NOT EXISTS idx_chat_messages_customer ON chat_messages(customer_id)',
+    'CREATE INDEX IF NOT EXISTS idx_cake_requests_store ON cake_requests(store_id)',
+    'CREATE INDEX IF NOT EXISTS idx_cake_requests_customer ON cake_requests(customer_id)',
+    'CREATE INDEX IF NOT EXISTS idx_admin_activity_admin ON admin_activity(admin_id)',
+    'CREATE INDEX IF NOT EXISTS idx_contact_messages_store ON contact_messages(store_id)',
+    'CREATE INDEX IF NOT EXISTS idx_admins_store ON admins(store_id)',
+    'CREATE INDEX IF NOT EXISTS idx_subscriptions_store ON subscriptions(store_id)',
+    'CREATE INDEX IF NOT EXISTS idx_push_subscriptions_admin ON push_subscriptions(admin_id)',
+    'CREATE INDEX IF NOT EXISTS idx_pending_email_changes_customer ON pending_customer_email_changes(customer_id)',
+    'CREATE INDEX IF NOT EXISTS idx_orders_discount_code ON orders(discount_code_id)',
+  ]) {
+    await database.prepare(statement).run();
+  }
+  // Refresh planner statistics so the new indexes are used straight away.
+  await database.prepare('ANALYZE orders').run();
+  await database.prepare('ANALYZE order_items').run();
+  await database.prepare('ANALYZE stores').run();
+  await database.prepare('ANALYZE customers').run();
 }
 
 export function toFlavor(row) {
@@ -2682,9 +2748,40 @@ export async function updateFulfillmentSlots(slots) {
   })()
 }
 
+// The store/town scope shared by every cake-request query, so the list and the count
+// can never drift apart.
+function cakeRequestScope(storeId, storeTown) {
+  const conditions = []
+  const parameters = []
+  if (storeTown !== null) {
+    conditions.push('s.town = ?')
+    parameters.push(storeTown)
+  }
+  if (storeId !== null) {
+    conditions.push('r.store_id = ?')
+    parameters.push(storeId)
+  }
+  return { conditions, parameters }
+}
+
+/**
+ * How many cake requests need attention, without loading any of them.
+ * The sidebar badge used to call listCakeRequests() and filter in the browser, which
+ * also capped the badge at the list's LIMIT 200 and downloaded every request every
+ * 15 seconds.
+ */
+export async function countNewCakeRequests(storeId = null, storeTown = null) {
+  const { conditions, parameters } = cakeRequestScope(storeId, storeTown)
+  const result = await database.prepare(`
+    SELECT COUNT(*) AS count FROM cake_requests r LEFT JOIN stores s ON s.id = r.store_id
+    WHERE ${["r.status = 'new'", ...conditions].join(' AND ')}
+  `).get(...parameters)
+  return Number(result?.count || 0)
+}
+
 export async function listCakeRequests(storeId = null, storeTown = null) {
-  const storeFilter = `${storeTown === null ? '' : 'WHERE s.town = ?'}${storeId === null ? '' : `${storeTown === null ? 'WHERE' : 'AND'} r.store_id = ?`}`
-  const parameters = [...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
+  const { conditions, parameters } = cakeRequestScope(storeId, storeTown)
+  const storeFilter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
   const requests = await database.prepare(`
     SELECT r.id, r.customer_id AS "customerId", r.customer_name AS "customerName", r.customer_email AS "customerEmail",
       r.customer_phone AS "customerPhone", r.size, r.flavor, r.message, r.toppings,

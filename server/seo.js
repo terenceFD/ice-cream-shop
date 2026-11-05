@@ -82,6 +82,104 @@ function headTags(meta, base, structuredData) {
 // asked the API for it. A JSON data block is never run, so the Content-Security-Policy still holds.
 const PROMOTION_CACHE_MS = 30 * 1000
 
+// The app is drawn by JavaScript, so <div id="root"></div> ships empty: a crawler that
+// does not run scripts (and a screen reader before hydration) sees a page with no <h1>
+// and no text. Every indexable page gets a small, readable fallback inside <noscript>:
+// the page's own title as the single <h1>, its description, and links to the main pages.
+// <noscript> content is never rendered for JavaScript users, so nothing is duplicated on
+// screen and the app's own <h1> stays the only one in the live DOM.
+const FALLBACK_PAGES = [
+  ['/', 'Home'],
+  ['/menu/all', 'Full menu'],
+  ['/flavors', 'Flavors'],
+  ['/custom-cake', 'Custom cakes'],
+  ['/events', 'Event orders'],
+  ['/locations', 'Locations'],
+  ['/contact', 'Contact'],
+  ['/faq', 'FAQ'],
+]
+
+// A plain-language heading per page, without the "| Cold Stone Creamery Cameroon" suffix
+// the <title> carries for search results.
+const PRERENDER_HEADINGS = {
+  '/': 'Ice cream mixed to order in Cameroon',
+  '/menu/all': 'Every item on the menu',
+  '/menu': 'The menu, by category',
+  '/flavors': 'Ice cream flavours',
+  '/custom-cake': 'Order a custom ice cream cake',
+  '/events': 'Catering for events and parties',
+  '/locations': 'Our branches in Douala and Yaoundé',
+  '/contact': 'Contact Cold Stone Creamery Cameroon',
+  '/faq': 'Ordering, delivery and discounts',
+}
+
+// Inlined so the static copy renders before the app's stylesheet arrives.
+const FALLBACK_STYLE =
+  'max-width:64rem;margin:0 auto;padding:2rem 1.25rem 3rem;font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif;color:#092a53'
+
+const MAX_LISTED_FLAVORS = 24
+
+/**
+ * Server-rendered content for the page, visible to crawlers that do not run JavaScript.
+ *
+ * The app is drawn by React into <div id="root"></div>, so without this the HTML carries
+ * a title and a description but no content at all: no <h1>, no text, no internal links.
+ * Search engines that execute scripts see the real page, but link previews, some
+ * crawlers and the first paint do not.
+ *
+ * This renders the page's own heading, summary, real flavour names and prices (when
+ * `flavors` is given), and links to the rest of the site. It lives inside <noscript>,
+ * so it is never shown to someone whose browser runs the app — there is no duplicate
+ * <h1> in the live DOM and no flash of unstyled duplicate text.
+ */
+// Real products, so the static copy is useful text rather than a placeholder: crawlers
+// see the flavour names and XAF prices the menu page also shows.
+function flavorListHtml(flavors, base) {
+  if (!flavors.length) return ''
+  const items = flavors
+    .slice(0, MAX_LISTED_FLAVORS)
+    .map((flavor) => {
+      const name = `<a href="${escapeHtml(absolute(base, `/flavor/${flavor.id}`))}">${escapeHtml(flavor.name)}</a>`
+      const price = flavor.price
+        ? ` — ${escapeHtml(`${Math.round(Number(flavor.price)).toLocaleString('en-US')} FCFA`)}`
+        : ''
+      const soldOut = flavor.availableQuantity > 0 ? '' : ' <em>(sold out)</em>'
+      return `<li style="margin:0 0 .35rem;break-inside:avoid">${name}${price}${soldOut}</li>`
+    })
+    .join('')
+  return (
+    `<h2 style="font-size:1.15rem;margin:1.75rem 0 .5rem">Flavours and prices</h2>` +
+    `<ul style="margin:0;padding-left:1.25rem;columns:2;column-gap:2rem">${items}</ul>`
+  )
+}
+
+function prerenderedContent({ meta, base, flavors = [] }) {
+  if (!meta.index) return ''
+  const heading = PRERENDER_HEADINGS[meta.path] || SITE_NAME
+  const links = FALLBACK_PAGES.filter(([path]) => path !== meta.path)
+    .map(([path, label]) => `<li><a href="${escapeHtml(absolute(base, path))}">${escapeHtml(label)}</a></li>`)
+    .join('')
+  const productList = flavorListHtml(flavors, base)
+
+  return (
+    `<noscript><div style="${FALLBACK_STYLE}">` +
+    // Not the <title>: that string is built for a search result and repeats the brand.
+    // The heading should say what the page is, in the words a reader would use.
+    `<h1 style="font-size:1.85rem;line-height:1.2;margin:0 0 .75rem">${escapeHtml(heading)}</h1>` +
+    `<p style="margin:0 0 1rem;font-size:1.05rem">${escapeHtml(meta.description)}</p>` +
+    // The meta description already ends with "order online..." on some pages, so this
+    // line only adds what it does not say.
+    `<p style="margin:0 0 .5rem">This site needs JavaScript to take an order; ` +
+    `every page below opens without it.</p>` +
+    productList +
+    `<h2 style="font-size:1.15rem;margin:1.75rem 0 .5rem">Pages</h2>` +
+    `<ul style="margin:0;padding-left:1.25rem">${links}</ul>` +
+    `</div></noscript>`
+  )
+}
+
+
+
 function promotionDataTag(promotion) {
   const json = JSON.stringify({ promotion: promotion || null }).replace(/</g, '\\u003c')
   return `<script type="application/json" id="initial-promotion">${json}</script>`
@@ -183,6 +281,21 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
       // Admin pages have no promotion bar. When the database cannot answer, the app asks the API as before.
       const promotion = request.path.startsWith('/admin') ? undefined : await getPromotion()
       if (promotion !== undefined) page = page.replace('</head>', `  ${promotionDataTag(promotion)}\n  </head>`)
+      // Server-rendered content and one <h1> for readers and crawlers that do not run
+      // the app. The home and flavor-list pages also list real flavours with prices, so
+      // the static copy is the same catalogue a visitor sees; private pages get nothing.
+      const showFlavors = meta.index && ['/', '/flavors', '/menu/all'].includes(meta.path)
+      let fallbackFlavors = []
+      if (showFlavors && !flavorMatch) {
+        try {
+          fallbackFlavors = await getFlavors()
+        } catch (error) {
+          // A database hiccup must not fail the page; the rest of the copy still renders.
+          console.warn('Could not include flavours in the static page copy:', error.message)
+        }
+      }
+      const fallback = prerenderedContent({ meta, base, flavors: fallbackFlavors })
+      if (fallback) page = page.replace('<div id="root"></div>', `<div id="root"></div>${fallback}`)
 
       response
         .status(meta.found ? 200 : 404)

@@ -294,7 +294,7 @@ input[type="search"]:focus-visible {
   background: var(--brand-yellow);
   transform: scaleX(0);
   transform-origin: left center;
-  animation: website-loader-fill 420ms cubic-bezier(0.22, 1, 0.36, 1) 40ms both;
+  animation: website-loader-fill 220ms cubic-bezier(0.22, 1, 0.36, 1) 20ms both;
 }
 
 .website-loader__message {

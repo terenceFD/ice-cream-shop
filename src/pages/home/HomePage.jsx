@@ -1581,7 +1581,10 @@ export function HomePage() {
                         images={images}
                         name={t(flavor.title)}
                         resetKey={flavor.id}
-                        sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 100vw"
+                        // Must match the grid above, which is `grid-cols-2` on phones and
+                        // `lg:grid-cols-4` on computers. Claiming 100vw here made phones pick
+                        // the full-size photo (~160 KB) instead of the 480px WebP (~5 KB).
+                        sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, calc(50vw - 28px)"
                         showScrim={false}
                         showThumbnails={false}
                       />

@@ -356,10 +356,12 @@ export function AdminLayout() {
     const selectedStoreTown = selectedBranch === 'ALL' ? 'all' : selectedBranch
     const branchQuery = hasTownScope ? `?storeTown=${encodeURIComponent(selectedStoreTown)}` : ''
     const failures = await Promise.all([
+      // Count only: the badge needs a number, and the full order list is thousands of
+      // rows on a busy week — it was downloaded and thrown away every 15 seconds.
       refreshNavigationCount(
         'Orders',
-        apiRequest<{ orders: unknown[] }>(`/admin/orders${branchQuery}`, { token: sessionToken }),
-        (result) => setNavigationCounts((counts) => ({ ...counts, orderCount: result.orders.length })),
+        apiRequest<{ count: number }>(`/admin/orders?countOnly=true${branchQuery ? `&${branchQuery.slice(1)}` : ''}`, { token: sessionToken }),
+        (result) => setNavigationCounts((counts) => ({ ...counts, orderCount: result.count })),
       ),
       refreshNavigationCount(
         'Orders placed',
@@ -368,11 +370,8 @@ export function AdminLayout() {
       ),
       refreshNavigationCount(
         'Cake requests',
-        apiRequest<{ requests: { status: string }[] }>(`/admin/cake-requests${branchQuery}`, { token: sessionToken }),
-        (result) => setNavigationCounts((counts) => ({
-          ...counts,
-          cakeRequestCount: result.requests.filter((request) => request.status === 'new').length,
-        })),
+        apiRequest<{ count: number }>(`/admin/cake-requests?countOnly=true${branchQuery ? `&${branchQuery.slice(1)}` : ''}`, { token: sessionToken }),
+        (result) => setNavigationCounts((counts) => ({ ...counts, cakeRequestCount: result.count })),
       ),
       refreshNavigationCount(
         'Customer reviews',
@@ -409,14 +408,32 @@ export function AdminLayout() {
 
   useEffect(() => {
     refreshNavigationCounts()
-    const intervalId = window.setInterval(refreshNavigationCounts, 15000)
-    window.addEventListener('focus', refreshNavigationCounts)
+    // Nine requests per tick: pause while the tab is hidden instead of polling a
+    // dashboard nobody is looking at, and refresh immediately when it comes back.
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === 'hidden') return
+      refreshNavigationCounts()
+    }, 15000)
+    // Coming back to the tab fires both 'focus' and 'visibilitychange'. Without a guard
+    // that is 18 requests instead of 9, so refreshes that land within a moment of each
+    // other are collapsed into the first one.
+    let lastRefreshAt = 0
+    function refreshWhenVisible() {
+      if (document.visibilityState !== 'visible') return
+      const now = Date.now()
+      if (now - lastRefreshAt < 1000) return
+      lastRefreshAt = now
+      refreshNavigationCounts()
+    }
+    window.addEventListener('focus', refreshWhenVisible)
+    document.addEventListener('visibilitychange', refreshWhenVisible)
     // Order mutations elsewhere in the dashboard (delete, clear delivered, status
     // changes) announce themselves so the topbar counters update instantly.
     window.addEventListener('admin-orders-changed', refreshNavigationCounts)
     return () => {
       window.clearInterval(intervalId)
-      window.removeEventListener('focus', refreshNavigationCounts)
+      window.removeEventListener('focus', refreshWhenVisible)
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
       window.removeEventListener('admin-orders-changed', refreshNavigationCounts)
     }
   }, [refreshNavigationCounts])

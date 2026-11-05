@@ -39,3 +39,7 @@ backups/
 # Small photo copies, made by scripts/make-thumbnails.mjs on every build
 public/thumbs/
 screenshots/
+
+// Agent files or the Agent skills
+.claude
+.agents

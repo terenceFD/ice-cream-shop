@@ -169,8 +169,18 @@ export function AdminStoresPage() {
 
   useEffect(() => {
     refresh()
-    const timer = window.setInterval(refresh, REFRESH_MS)
-    return () => window.clearInterval(timer)
+    // Hidden-tab polling only adds load; refresh when the tab comes back instead.
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') refresh()
+    }, REFRESH_MS)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [refresh])
 
   const towns = useMemo(() => [...new Set((stores || []).map((store) => store.town))], [stores])

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Footer, Header } from "../../components/Layout";
 import { PageHero } from "../../components/PageHero";
@@ -39,7 +39,17 @@ function SearchIcon({ className = "size-5" }) {
   );
 }
 
-function MenuItemCard({ category, item, formatPrice, onAdd, added, showCategory, t }) {
+// Memoised: the grid renders every product, and without this each "add to cart" click
+// re-rendered all of them (measured: 784 component renders for one click).
+const MenuItemCard = memo(function MenuItemCard({
+  category,
+  item,
+  formatPrice,
+  onAdd,
+  added,
+  showCategory,
+  t,
+}) {
   const soldOut = isSoldOut(item);
   return (
     <li className="scroll-reveal group relative flex flex-col rounded-[20px] bg-white p-2 [content-visibility:auto] [contain-intrinsic-size:auto_420px] ring-1 ring-[#fbfaf5] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_52px_rgba(9,42,83,0.13)] hover:ring-[#e2d39a] sm:rounded-[24px] sm:p-2.5">
@@ -115,7 +125,7 @@ function MenuItemCard({ category, item, formatPrice, onAdd, added, showCategory,
       </div>
     </li>
   );
-}
+});
 
 export function AllMenuPage() {
   const { language, t } = useLanguage();
@@ -161,23 +171,38 @@ export function AllMenuPage() {
 
   const requestedCategory = searchParams.get("category") || "";
   const activeCategory = categories.some((category) => category.title === requestedCategory) ? requestedCategory : "";
-  const formatPrice = (price) => money(price);
-  const allItems = categories.flatMap((category) => category.items.map((item) => ({ category, item })));
-  const prices = allItems.map(({ item }) => item.priceXaf).filter((price) => Number.isFinite(price));
+  // Stable across renders: a new function here would make every memoised card re-render.
+  const formatPrice = useCallback((price) => money(price), [money]);
+  const allItems = useMemo(
+    () => categories.flatMap((category) => category.items.map((item) => ({ category, item }))),
+    [categories],
+  );
+  const prices = useMemo(
+    () => allItems.map(({ item }) => item.priceXaf).filter((price) => Number.isFinite(price)),
+    [allItems],
+  );
   const query = search.trim().toLowerCase();
 
-  const matches = allItems.filter(({ category, item }) => {
-    if (activeCategory && category.title !== activeCategory) return false;
-    if (!query) return true;
-    return [item.name, item.detail, t(item.name), t(item.detail), category.title, t(category.title)]
-      .some((text) => String(text || "").toLowerCase().includes(query));
-  });
-  const sorted = [...matches].sort((first, second) => {
-    if (sortBy === "price-asc") return first.item.priceXaf - second.item.priceXaf;
-    if (sortBy === "price-desc") return second.item.priceXaf - first.item.priceXaf;
-    if (sortBy === "name") return t(first.item.name).localeCompare(t(second.item.name), language);
-    return 0;
-  });
+  const matches = useMemo(
+    () =>
+      allItems.filter(({ category, item }) => {
+        if (activeCategory && category.title !== activeCategory) return false;
+        if (!query) return true;
+        return [item.name, item.detail, t(item.name), t(item.detail), category.title, t(category.title)]
+          .some((text) => String(text || "").toLowerCase().includes(query));
+      }),
+    [activeCategory, allItems, query, t],
+  );
+  const sorted = useMemo(
+    () =>
+      [...matches].sort((first, second) => {
+        if (sortBy === "price-asc") return first.item.priceXaf - second.item.priceXaf;
+        if (sortBy === "price-desc") return second.item.priceXaf - first.item.priceXaf;
+        if (sortBy === "name") return t(first.item.name).localeCompare(t(second.item.name), language);
+        return 0;
+      }),
+    [language, matches, sortBy, t],
+  );
   // With no search or sort, the menu reads best grouped by category.
   const grouped = !query && !sortBy;
   const sections = grouped
@@ -194,18 +219,22 @@ export function AllMenuPage() {
     setSearchParams(next, { replace: true });
   }
 
-  function addItem(category, item) {
-    setCartError("");
-    const key = `${category.title}:${item.name}`;
-    const added = addToCart({
-      ...item,
-      id: item.id || getMenuItemId(category.title, item.name),
-      itemType: "menu",
-      categoryTitle: category.title,
-    });
-    if (added) setAddedKey(key);
-    else setCartError(t("This item could not be added to your bag. Please try again."));
-  }
+  // Stable identity so the memoised cards keep their props equal between renders.
+  const addItem = useCallback(
+    (category, item) => {
+      setCartError("");
+      const key = `${category.title}:${item.name}`;
+      const added = addToCart({
+        ...item,
+        id: item.id || getMenuItemId(category.title, item.name),
+        itemType: "menu",
+        categoryTitle: category.title,
+      });
+      if (added) setAddedKey(key);
+      else setCartError(t("This item could not be added to your bag. Please try again."));
+    },
+    [addToCart, t],
+  );
 
   const renderGrid = (entries, showCategory = false) => (
     <ul className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">

@@ -83,17 +83,21 @@ export function AdminChatPage() {
   useEffect(() => {
     refreshThreads();
     // New shopper messages arrive while the inbox is open; refresh the list quietly.
-    const interval = window.setInterval(refreshThreads, POLL_INTERVAL_MS);
+    // A hidden tab polls nothing — staff often leave this dashboard open all day.
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === 'hidden') return;
+      refreshThreads();
+    }, POLL_INTERVAL_MS);
     return () => window.clearInterval(interval);
   }, [refreshThreads]);
 
   useEffect(() => {
     if (!activeThreadId) return undefined;
     loadMessages(activeThreadId);
-    const interval = window.setInterval(
-      () => loadMessages(activeThreadId),
-      POLL_INTERVAL_MS,
-    );
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === 'hidden') return;
+      loadMessages(activeThreadId);
+    }, POLL_INTERVAL_MS);
     return () => window.clearInterval(interval);
   }, [activeThreadId, loadMessages]);
 
@@ -120,6 +124,16 @@ export function AdminChatPage() {
           method: "POST",
           body: { body: result.suggestion },
         });
+      }
+      // The server reports why the model was not used. A template answer must never look
+      // like the AI's own words, so say plainly that a fallback draft was sent instead.
+      const failure = result.aiFailure as { reason?: string; detail?: string } | null;
+      if (failure?.reason && failure.reason !== "not-configured") {
+        setSuggestionNote(
+          t("The AI could not be reached ({{reason}}), so a standard reply was sent. Check it before the customer reads it.", {
+            reason: failure.reason,
+          }),
+        );
       }
       await loadMessages(activeThreadId);
       await refreshThreads();
