@@ -446,23 +446,25 @@ async function recordPaidCheckout(session, provider = 'stripe') {
     FROM order_items WHERE order_id = ? ORDER BY id
   `).all(orderId)
 
-  if (process.env.PAYMENT_CONFIRMATION_EMAILS_ENABLED === 'true') {
-    sendOrderStatusUpdate({
-      to: order.customerEmail,
-      recipientName: order.customerName,
-      orderId,
-      status: 'preparing',
-      totalCents: order.totalCents,
-      currency: order.currency,
-      items,
-      earnedPoints,
-      fulfillmentType: order.fulfillmentType,
-      scheduledFor: order.scheduledFor,
-      deliveryFee: order.deliveryFee,
-    }).catch((error) => {
-      console.error(`Unable to send payment confirmation for order #${orderId}:`, error.message)
-    })
-  }
+  // The receipt is part of a paid order, not an optional extra: a customer who has been
+  // charged must always have it in writing. It used to sit behind
+  // PAYMENT_CONFIRMATION_EMAILS_ENABLED, which was never set, so the email silently
+  // never went out.
+  sendOrderStatusUpdate({
+    to: order.customerEmail,
+    recipientName: order.customerName,
+    orderId,
+    status: 'preparing',
+    totalCents: order.totalCents,
+    currency: order.currency,
+    items,
+    earnedPoints,
+    fulfillmentType: order.fulfillmentType,
+    scheduledFor: order.scheduledFor,
+    deliveryFee: order.deliveryFee,
+  }).catch((error) => {
+    console.error(`Unable to send payment confirmation for order #${orderId}:`, error.message)
+  })
 
   return true
 }
@@ -1636,6 +1638,10 @@ app.post('/api/checkout/session', optionalCustomer, checkoutLimiter, async (requ
       checkoutUrl = session.url
     }
     await notifyAdmins()
+    // The order exists and its stock is reserved, but nothing is paid yet. Tell a
+    // signed-in shopper now, so closing the payment page leaves them a record instead
+    // of silence. Guests have no device to notify; their receipt arrives by email.
+    notifyCustomerOfOrderStatus(orderId, 'reserved')
     response.status(201).json({ url: checkoutUrl })
   } catch (error) {
     if (orderId) {

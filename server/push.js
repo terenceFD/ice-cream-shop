@@ -224,6 +224,12 @@ export function buildPromotionNotification(code, customMessage = '') {
 
 // What the customer sees at each step of an order. Pickup and delivery orders word "ready" differently.
 const ORDER_STATUS_MESSAGES = {
+  // Sent the moment checkout creates the order, before payment. Without it a shopper who
+  // closes the payment page is left with no record that their order exists.
+  reserved: {
+    title: 'is waiting for payment',
+    body: "We've reserved your treats. Complete the payment to confirm — the order is not placed until you do.",
+  },
   confirmed: { title: 'confirmed', body: "Payment received. We'll let you know as soon as the store starts on your treats." },
   accepted: { title: 'accepted', body: 'The store has accepted your order and will start on it shortly.' },
   preparing: { title: 'is being prepared', body: 'The store is preparing your treats right now.' },
