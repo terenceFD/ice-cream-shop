@@ -122,6 +122,152 @@ export function isLostPageQuestion(text) {
   return LOST_PAGE_PHRASES.some((phrase) => message.includes(phrase));
 }
 
+// ------------------------------------------------------------- social openers
+//
+// A customer who types "hi" has asked for nothing yet, but the reply sets the tone for
+// the whole conversation. These lists are whole-message matches, not substring ones: a
+// message is a greeting only when it is *only* a greeting, so "hi, how much is vanilla"
+// keeps its question and a product name can never be mistaken for one.
+const GREETING_WORDS = [
+  "hi", "hey", "hello", "hullo", "hiya", "howdy", "yo", "sup", "wassup",
+  "greetings", "morning", "afternoon", "evening",
+  // "good morning" has to be matched whole: the multisets are compared against the
+  // phrase as written, so "good" left over from stripping "morning" would look like
+  // an unmatched word and the message would fall through to the generic reply.
+  "good morning", "good afternoon", "good evening", "good day",
+  "bonjour", "bonsoir", "salut", "coucou", "allo",
+];
+
+const THANKS_WORDS = [
+  "thanks", "thank you", "thx", "ty", "cheers", "merci", "merci beaucoup",
+  "thanks a lot", "thank you very much", "appreciate it", "much appreciated",
+];
+
+const FAREWELL_WORDS = [
+  "bye", "goodbye", "good bye", "see you", "see ya", "later", "cya",
+  "au revoir", "a bientot", "bonne journee",
+];
+
+const POLITE_FILLER = [
+  "and", "so", "well", "ok", "okay", "dear", "team", "there", "everyone",
+  "i", "am", "just", "wanted", "want", "to", "say", "a", "quick", "note",
+  "you", "all", "much", "very", "bien", "et", "je", "voulais", "dire",
+  "vraiment", "beaucoup", "equipe", "tout", "le", "monde",
+];
+
+/** The whole message, lowercased, without accents, punctuation or emoji. */
+function socialWords(message) {
+  return message
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z\s']/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isOnlySocial(words, vocabulary) {
+  if (!words) return false;
+  let rest = ` ${words} `;
+  // Strip the social phrase itself, then anything left that is pure politeness filler.
+  for (const phrase of [...vocabulary].sort((a, b) => b.length - a.length)) {
+    rest = rest.split(` ${phrase} `).join(" ");
+  }
+  const leftover = rest
+    .trim()
+    .split(" ")
+    .filter((word) => word && !POLITE_FILLER.includes(word));
+  return leftover.length === 0;
+}
+
+/** True when the message is nothing but a greeting ("hi", "hello there", "bonjour"). */
+export function isGreeting(text) {
+  return isOnlySocial(socialWords(text), GREETING_WORDS);
+}
+
+/** True when the message is nothing but thanks. */
+export function isThanks(text) {
+  return isOnlySocial(socialWords(text), THANKS_WORDS);
+}
+
+/** True when the message is nothing but a goodbye. */
+export function isFarewell(text) {
+  return isOnlySocial(socialWords(text), FAREWELL_WORDS);
+}
+
+// ------------------------------------------------------------- language detection
+//
+// The reply language must follow the message, not the site's language setting: a
+// customer who types French on an English page still expects French back. Detection is
+// a scored vote rather than a single regex, because one accent or one keyword is not
+// enough — "Quel est le prix" has no accents at all, and "salut" and "bonsoir" were
+// missing from the original word list entirely.
+//
+// Words that exist in both languages ("menu", "orange", "chocolat") are deliberately
+// absent so they can never tip the vote.
+const FRENCH_MARKERS = [
+  // function words — the most reliable signal in short messages
+  "le", "la", "les", "un", "une", "des", "du", "de", "au", "aux",
+  "je", "j", "tu", "il", "elle", "nous", "vous", "ils", "elles", "on",
+  "mon", "ma", "mes", "votre", "vos", "notre", "nos", "ce", "cet", "cette", "ces",
+  "et", "ou", "mais", "donc", "que", "qui", "quoi", "comment", "pourquoi",
+  "est", "suis", "etes", "sont", "ai", "avez", "peux", "peut", "voudrais", "veux",
+  "pour", "avec", "sans", "dans", "sur", "chez", "combien", "quel", "quelle",
+  "quels", "quelles", "svp", "merci", "bonjour", "bonsoir", "salut", "coucou",
+  "allo", "revoir", "bientot", "bonne", "journee", "oui", "non", "daccord", "accord",
+  "il", "y", "a", "s", "qu", "n", "d", "l", "c", "jusqu", "aussi", "tres",
+];
+
+const FRENCH_ACCENTS = /[àâäéèêëîïôöùûüÿçœæ]/i;
+
+// Accented letters alone are strong evidence; ordinary French words are weaker, since
+// an English sentence can borrow "a" or "on". Accents are counted but never decisive
+// on their own for a single character.
+function frenchScore(message) {
+  const words = socialWords(message).split(" ").filter(Boolean);
+  const accented = (message.match(/[àâäéèêëîïôöùûüÿçœæ]/gi) || []).length;
+  let score = words.filter((word) => FRENCH_MARKERS.includes(word)).length;
+  score += Math.min(accented, 3) * 1.5;
+  return { score, words: words.length, accented };
+}
+
+const ENGLISH_MARKERS = [
+  "the", "a", "an", "is", "are", "do", "does", "did", "can", "could", "would",
+  "should", "will", "have", "has", "want", "wanna", "need", "my", "your", "our",
+  "i", "you", "we", "they", "he", "she", "it", "this", "that", "these", "those",
+  "how", "what", "when", "where", "why", "which", "who", "much", "many", "price",
+  "cost", "deliver", "delivery", "open", "closed", "order", "thanks", "thank",
+  "please", "hello", "hi", "hey", "bye", "goodbye", "and", "or", "for", "with",
+  "to", "of", "in", "at", "on", "from", "there", "here", "get", "buy", "shop",
+];
+
+function englishScore(message) {
+  const words = socialWords(message).split(" ").filter(Boolean);
+  return words.filter((word) => ENGLISH_MARKERS.includes(word)).length;
+}
+
+/**
+ * Which language the customer is writing in: "fr" or "en".
+ * Ties fall back to the caller's default, so a bare "ok" or a product name does not
+ * switch the conversation's language.
+ */
+export function detectMessageLanguage(text, fallback = "en") {
+  if (!text) return fallback;
+  const french = frenchScore(text);
+  const english = englishScore(text);
+
+  // A lone accented character in an otherwise English sentence ("a café") should not
+  // flip the reply. Two or more accents, or any accent with a French word, is enough.
+  const frenchEvidence = french.score;
+  if (frenchEvidence >= 2 && frenchEvidence > english) return "fr";
+  if (english >= 2 && english > frenchEvidence) return "en";
+  if (frenchEvidence > english) return "fr";
+  if (english > frenchEvidence) return "en";
+  // A single accent with no competing signal is still French ("salut !", "bonjour").
+  if (french.accented > 0 && english === 0) return "fr";
+  return fallback;
+}
+
 // The page snapshot is text read out of the customer's own browser, so treat it as
 // untrusted data and never as instructions: strip anything that looks like a prompt
 // override or a fake system/role marker before it reaches the model, and cap its
@@ -216,29 +362,41 @@ export async function suggestReply(
     .find((message) => message.sender === "customer");
   if (!lastCustomer) return { suggestion: null, reason: "no-customer-message" };
 
+  // The customer's own words decide the reply language; `language` is only the fallback
+  // for a message with no language signal at all ("ok", a product name). That keeps a
+  // French message answered in French even when the page or the caller says English.
+  const replyLanguage = detectMessageLanguage(lastCustomer.body, language);
+
   const context = await gatherShopFacts(database);
+  // "Good morning" only earns its own greeting back on the first message; later on it is
+  // just another line and a mirrored echo would read oddly.
+  const isFirstMessage = history.filter((message) => message.sender === "customer").length === 1;
+  // The cached facts are shared between threads, so the per-message flag is composed
+  // view here rather than written onto the cache.
+  const shopFacts = { ...context, isFirstMessage };
   const recent = history.slice(-12);
 
   if (!aiConfigured()) {
-    return fallbackToRules({ lastCustomer, shopFacts: context, language, customerPage }, {
+    return fallbackToRules({ lastCustomer, shopFacts, language: replyLanguage, customerPage }, {
       reason: "not-configured",
       detail: "AI_API_KEY or AI_MODEL is not set",
     });
   }
 
-  const ai = await generateWithModel(recent, context, language, customerPage, pageSnapshot);
+  const ai = await generateWithModel(recent, shopFacts, replyLanguage, customerPage, pageSnapshot);
   if (ai.text) {
     return {
       suggestion: ai.text,
       source: "ai",
-      topic: detectTopic(lastCustomer.body),
+      topic: detectTopic(lastCustomer.body, shopFacts),
+      language: replyLanguage,
     };
   }
 
   // The model was configured and asked, and did not answer. Say so instead of quietly
   // returning a template: the admin UI shows the reason, and the drafter still gives
   // staff something to send rather than an empty box.
-  return fallbackToRules({ lastCustomer, shopFacts: context, language, customerPage }, {
+  return fallbackToRules({ lastCustomer, shopFacts, language: replyLanguage, customerPage }, {
     reason: ai.reason,
     detail: ai.detail,
   });
@@ -491,6 +649,8 @@ const ROLE_RULES = [
   "SCOPE — you know ONLY what is in SHOP FACTS below.",
   "- If a question is about the shop, the menu, prices, ordering, delivery, branches, hours, payments, policies or anything on this website: answer it using the facts.",
   "- If a question is about ANYTHING ELSE (general knowledge, news, weather, maths, other businesses, other cities, coding, health advice, jokes, the customer's personal life...): politely say you only know about Cold Stone Creamery Cameroon and its website, and invite them to ask about that. Never answer off-topic questions, not even briefly.",
+  "- A greeting is NOT off-topic. When the customer only says hello (hi, hey, hello, good morning, bonjour, salut...), greet them back warmly, say who you are, list briefly what you can help with (the menu and prices, branches and opening hours, delivery, tracking an order), and ask what they would like. Mirror their greeting when they use a time-specific one (\"good morning\" gets \"Good morning\").",
+  "- The same politeness applies to a simple thank-you or goodbye: answer it briefly and kindly, and offer to help further if they need it. Do not reply to these with the menu or with a template.",
   "- Use ONLY the facts given. Never invent prices, flavours, branches, discount codes, policies, opening dates or promises. If the facts do not cover something about the shop (for example a specific nutrition question or a price for a custom cake), say honestly that you do not have that information and suggest the Contact page.",
   "",
   "ORDERING — the single most important rule:",
@@ -530,7 +690,8 @@ function styleSection(language) {
     "STYLE:",
     "- Warm, brief, two to four sentences.",
     language === "fr" ? "- Reply in French." : "- Reply in English.",
-    "- Match the language the customer writes in, even if it differs from the instruction above.",
+    "- LANGUAGE RULE, and it overrides the line above: always reply in the language of the customer's LAST message. If they write in French, answer in French. If they write in English, answer in English. If they switch language mid-conversation, switch with them from that message on. Only when the message has no language at all (a single product name, 'ok', a number) keep the previous language.",
+    "- A French message deserves a French answer even when the website itself is in English, and the reverse.",
     "- Do not sign the message and do not mention being an AI.",
   ];
 }
@@ -655,6 +816,12 @@ function networkError(error) {
 function detectTopic(text, context = {}) {
   const message = text.toLowerCase();
   const has = (...words) => words.some((word) => message.includes(word));
+  // Pure social openers come first: "hi" contains no question, so none of the topic
+  // keywords below should win by accident. "hi, how much is vanilla" is not social and
+  // falls through to the price topic as before.
+  if (isGreeting(text)) return "greeting";
+  if (isThanks(text)) return "thanks";
+  if (isFarewell(text)) return "farewell";
   // A lost-customer question outranks everything else: no matter how the message is
   // phrased, if it is about the page they are on, the answer is the page guide.
   if (isLostPageQuestion(text) && !has("how much", "combien", "open", "closed"))
@@ -709,15 +876,52 @@ function draftFromRules(message, context, language, customerPage = "") {
   const fr = language === "fr";
   const topic = detectTopic(message, context);
   const lines = [];
-  const greeting = fr ? "Bonjour !" : "Hello!";
-
+  // This summary is spliced into both price and menu replies, so it has to follow the
+  // reply language — an English sentence in the middle of a French answer read as a bug.
   const menuSummary = context.menu.length
-    ? `${context.menu.length} flavours and treats on the menu, from ${formatMoney(Math.min(...context.menu.map((item) => item.price)))}.`
+    ? fr
+      ? `${context.menu.length} parfums et gourmandises au menu, à partir de ${formatMoney(Math.min(...context.menu.map((item) => item.price)))}.`
+      : `${context.menu.length} flavours and treats on the menu, from ${formatMoney(Math.min(...context.menu.map((item) => item.price)))}.`
     : fr
       ? "Notre menu complet est sur la page Menu du site."
       : "The full menu is on the Menu page of the site.";
 
+  // A first message is an opener when nothing has been said yet. "Good morning"
+  // deserves "Good morning!" back, not "Hello!". The echo is only used when it is in
+  // the reply's own language: echoing "Good morning" into a French answer mixed the
+  // two languages in one sentence.
+  const timeGreeting = message.trim().match(/(good\s+)?(morning|afternoon|evening)|bonjour|bonsoir|coucou|bonne\s+journ[eé]e/i);
+  const opener =
+    context.isFirstMessage && timeGreeting && detectMessageLanguage(timeGreeting[0], language) === language
+      ? timeGreeting[0].replace(/[!.\s]+$/, "")
+      : null;
+  const plainGreeting = fr ? "Bonjour" : "Hello";
+
   switch (topic) {
+    case "greeting":
+      // The customer said hello and nothing else. Greet back, say who they are talking
+      // to, name what can be helped with, and hand the conversation back with a question
+      // so they never have to invent what to type next.
+      lines.push(
+        fr
+          ? `${opener || plainGreeting} ! Je suis l'assistant Cold Stone. Comment puis-je vous aider ? Je connais le menu et les prix, les boutiques et leurs horaires, la livraison et le suivi de commande — dites-moi ce qui vous ferait plaisir.`
+          : `${opener || plainGreeting}! I am the Cold Stone assistant. How can I help you today? I know the menu and prices, our branches and opening hours, delivery, and how to track an order — just tell me what you need.`,
+      );
+      break;
+    case "thanks":
+      lines.push(
+        fr
+          ? "Avec plaisir ! Si vous avez une autre question sur le menu, la livraison ou votre commande, je suis là."
+          : "You're very welcome! If anything else comes up about the menu, delivery or your order, I am right here.",
+      );
+      break;
+    case "farewell":
+      lines.push(
+        fr
+          ? "Merci de votre visite et à bientôt ! Le site reste ouvert 24h/24 pour vos commandes."
+          : "Thank you for stopping by — see you soon! The website stays open around the clock for orders.",
+      );
+      break;
     case "price": {
       const named = context.menu.find((item) =>
         message
@@ -730,14 +934,14 @@ function draftFromRules(message, context, language, customerPage = "") {
       if (named) {
         lines.push(
           fr
-            ? `${greeting} ${named.name} coûte ${formatMoney(named.price)}${named.soldOut ? ", mais il est en rupture de stock pour le moment" : ""}.`
-            : `${greeting} ${named.name} is ${formatMoney(named.price)}${named.soldOut ? ", though it is sold out right now" : ""}.`,
+            ? `${named.name} coûte ${formatMoney(named.price)}${named.soldOut ? ", mais il est en rupture de stock pour le moment" : ""}.`
+            : `${named.name} is ${formatMoney(named.price)}${named.soldOut ? ", though it is sold out right now" : ""}.`,
         );
       } else {
         lines.push(
           fr
-            ? `${greeting} ${menuSummary} Dites-moi lequel vous intéresse et je vous donne le prix exact.`
-            : `${greeting} ${menuSummary} Tell me which one you are eyeing and I will give you the exact price.`,
+            ? `${menuSummary} Dites-moi lequel vous intéresse et je vous donne le prix exact.`
+            : `${menuSummary} Tell me which one you are eyeing and I will give you the exact price.`,
         );
       }
       break;
@@ -745,43 +949,43 @@ function draftFromRules(message, context, language, customerPage = "") {
     case "menu":
       lines.push(
         fr
-          ? `${greeting} ${menuSummary} Le menu complet avec photos est sur la page Menu — je peux aussi vous recommander selon vos goûts.`
-          : `${greeting} ${menuSummary} The full menu with photos is on the Menu page — I can also recommend something for your taste.`,
+          ? `${menuSummary} Le menu complet avec photos est sur la page Menu — je peux aussi vous recommander selon vos goûts.`
+          : `${menuSummary} The full menu with photos is on the Menu page — I can also recommend something for your taste.`,
       );
       break;
     case "hours":
       lines.push(
         fr
-          ? `${greeting} Nous sommes ouverts tous les jours de ${context.hours.open} à ${context.hours.close}, dernière commande à ${context.hours.lastOrder}.`
-          : `${greeting} We are open every day from ${context.hours.open} to ${context.hours.close}, with the last order at ${context.hours.lastOrder}.`,
+          ? `Nous sommes ouverts tous les jours de ${context.hours.open} à ${context.hours.close}, dernière commande à ${context.hours.lastOrder}.`
+          : `We are open every day from ${context.hours.open} to ${context.hours.close}, with the last order at ${context.hours.lastOrder}.`,
       );
       break;
     case "stores":
       lines.push(
         fr
-          ? `${greeting} Nous sommes à : ${context.stores.map((store) => `${store.name} (${store.area})`).join(", ")}. Lequel vous arrange ?`
-          : `${greeting} You can find us at: ${context.stores.map((store) => `${store.name} (${store.area})`).join(", ")}. Which one suits you?`,
+          ? `Nous sommes à : ${context.stores.map((store) => `${store.name} (${store.area})`).join(", ")}. Lequel vous arrange ?`
+          : `You can find us at: ${context.stores.map((store) => `${store.name} (${store.area})`).join(", ")}. Which one suits you?`,
       );
       break;
     case "delivery":
       lines.push(
         fr
-          ? `${greeting} Oui, nous livrons ! Commandez sur le site, choisissez la livraison et une heure ; un livreur part de la boutique la plus proche.`
-          : `${greeting} Yes, we deliver! Order on the site, choose delivery and a time slot; a rider leaves from the branch closest to you.`,
+          ? `Oui, nous livrons ! Commandez sur le site, choisissez la livraison et une heure ; un livreur part de la boutique la plus proche.`
+          : `Yes, we deliver! Order on the site, choose delivery and a time slot; a rider leaves from the branch closest to you.`,
       );
       break;
     case "discount":
       if (context.discounts.length) {
         lines.push(
           fr
-            ? `${greeting} En ce moment : ${context.discounts.map((code) => `${code.code} — ${code.type === "percent" ? `-${code.value}%` : `-${formatMoney(code.value)}`}`).join(", ")}.`
-            : `${greeting} Running right now: ${context.discounts.map((code) => `${code.code} — ${code.type === "percent" ? `${code.value}% off` : `${formatMoney(code.value)} off`}`).join(", ")}.`,
+            ? `En ce moment : ${context.discounts.map((code) => `${code.code} — ${code.type === "percent" ? `-${code.value}%` : `-${formatMoney(code.value)}`}`).join(", ")}.`
+            : `Running right now: ${context.discounts.map((code) => `${code.code} — ${code.type === "percent" ? `${code.value}% off` : `${formatMoney(code.value)} off`}`).join(", ")}.`,
         );
       } else {
         lines.push(
           fr
-            ? `${greeting} Pas de promotion active en ce moment, mais de nouvelles offres arrivent bientôt — inscrivez-vous à la newsletter !`
-            : `${greeting} No active promotion right now, but new offers land soon — join the newsletter to hear first!`,
+            ? `Pas de promotion active en ce moment, mais de nouvelles offres arrivent bientôt — inscrivez-vous à la newsletter !`
+            : `No active promotion right now, but new offers land soon — join the newsletter to hear first!`,
         );
       }
       break;
@@ -798,17 +1002,17 @@ function draftFromRules(message, context, language, customerPage = "") {
         lines.push(
           named.soldOut
             ? fr
-              ? `${greeting} ${named.name} est en rupture pour le moment — revenez bientôt, le réapprovisionnement est régulier !`
-              : `${greeting} ${named.name} is sold out at the moment — check back soon, restocks are regular!`
+              ? `${named.name} est en rupture pour le moment — revenez bientôt, le réapprovisionnement est régulier !`
+              : `${named.name} is sold out at the moment — check back soon, restocks are regular!`
             : fr
-              ? `${greeting} Bonne nouvelle : ${named.name} est disponible !`
-              : `${greeting} Good news: ${named.name} is available!`,
+              ? `Bonne nouvelle : ${named.name} est disponible !`
+              : `Good news: ${named.name} is available!`,
         );
       } else {
         lines.push(
           fr
-            ? `${greeting} Dites-moi quel parfum vous cherchez et je vérifie le stock.`
-            : `${greeting} Tell me which flavour you are after and I will check the stock.`,
+            ? `Dites-moi quel parfum vous cherchez et je vérifie le stock.`
+            : `Tell me which flavour you are after and I will check the stock.`,
         );
       }
       break;
@@ -816,8 +1020,8 @@ function draftFromRules(message, context, language, customerPage = "") {
     case "order":
       lines.push(
         fr
-          ? `${greeting} Je regarde votre commande — pouvez-vous me donner le numéro de commande (il commence par #) ou l'email utilisé au paiement ?`
-          : `${greeting} Let me look into your order — could you share the order number (it starts with #) or the email used at checkout?`,
+          ? `Je regarde votre commande — pouvez-vous me donner le numéro de commande (il commence par #) ou l'email utilisé au paiement ?`
+          : `Let me look into your order — could you share the order number (it starts with #) or the email used at checkout?`,
       );
       break;
     case "navigation": {
@@ -828,14 +1032,14 @@ function draftFromRules(message, context, language, customerPage = "") {
       if (guide) {
         lines.push(
           fr
-            ? `${greeting} Vous êtes sur ${guide}. Dites-moi ce que vous cherchez et je vous guide vers la bonne page.`
-            : `${greeting} You are on ${guide}. Tell me what you are looking for and I will point you to the right page.`,
+            ? `Vous êtes sur ${guide}. Dites-moi ce que vous cherchez et je vous guide vers la bonne page.`
+            : `You are on ${guide}. Tell me what you are looking for and I will point you to the right page.`,
         );
       } else {
         lines.push(
           fr
-            ? `${greeting} Vous êtes sur une page du site Cold Stone Creamery. Je peux vous guider vers le menu, les boutiques ou vos commandes — dites-moi ce que vous cherchez.`
-            : `${greeting} You are on a page of the Cold Stone Creamery website. I can guide you to the menu, the branches or your orders — tell me what you are looking for.`,
+            ? `Vous êtes sur une page du site Cold Stone Creamery. Je peux vous guider vers le menu, les boutiques ou vos commandes — dites-moi ce que vous cherchez.`
+            : `You are on a page of the Cold Stone Creamery website. I can guide you to the menu, the branches or your orders — tell me what you are looking for.`,
         );
       }
       break;
@@ -843,15 +1047,15 @@ function draftFromRules(message, context, language, customerPage = "") {
     case "refund":
       lines.push(
         fr
-          ? `${greeting} Désolé pour ça ! Écrivez-nous via la page Contact avec votre numéro de commande sous 24h et nous arrangerons un remboursement ou un remplacement.`
-          : `${greeting} Sorry about that! Message us through the Contact page with your order number within 24 hours and we will arrange a refund or a replacement.`,
+          ? `Désolé pour ça ! Écrivez-nous via la page Contact avec votre numéro de commande sous 24h et nous arrangerons un remboursement ou un remplacement.`
+          : `Sorry about that! Message us through the Contact page with your order number within 24 hours and we will arrange a refund or a replacement.`,
       );
       break;
     default:
       lines.push(
         fr
-          ? `${greeting} Merci pour votre message ! Un collègue va vous répondre très vite. En attendant, le menu complet et les boutiques sont sur le site.`
-          : `${greeting} Thanks for your message! A colleague will reply very shortly. In the meantime, the full menu and branch list are on the site.`,
+          ? `Merci pour votre message ! Un collègue va vous répondre très vite. En attendant, le menu complet et les boutiques sont sur le site.`
+          : `Thanks for your message! A colleague will reply very shortly. In the meantime, the full menu and branch list are on the site.`,
       );
   }
   return {

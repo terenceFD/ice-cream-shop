@@ -314,7 +314,11 @@ export function CurrencySwitcher() {
       // The install card is about 170px tall on a phone (title and button only), so the
       // switcher clears it at 12rem (192px) — measured, not guessed. On wider screens the
       // card sits to the left of the corner, so the switcher stays put.
-      className={`currency-switcher group fixed right-4 z-[85] transition-[bottom] duration-300 ${installCardOpen ? "bottom-[calc(12rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]" : consentOpen ? "bottom-[calc(11rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(9rem+env(safe-area-inset-bottom,0px))]" : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"}`}
+      // The consent banner stacks its text above the buttons below the sm breakpoint (640px),
+      // which makes it up to 342px tall at 320px wide — taller than the old flat 11rem lift,
+      // so the switcher used to sit on top of the banner's text. Each range now clears the
+      // measured banner (which ends 12px above the viewport bottom) plus a 16px gap.
+      className={`currency-switcher group fixed right-4 z-[85] transition-[bottom] duration-300 ${installCardOpen ? "bottom-[calc(12rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]" : consentOpen ? "bottom-[calc(22.75rem+env(safe-area-inset-bottom,0px))] min-[360px]:bottom-[calc(21.25rem+env(safe-area-inset-bottom,0px))] min-[390px]:bottom-[calc(19.75rem+env(safe-area-inset-bottom,0px))] min-[414px]:bottom-[calc(18.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(14.25rem+env(safe-area-inset-bottom,0px))] min-[700px]:bottom-[calc(12.25rem+env(safe-area-inset-bottom,0px))] min-[768px]:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]" : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"}`}
       ref={detailsRef}
     >
       <summary

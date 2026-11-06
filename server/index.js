@@ -128,7 +128,7 @@ import {
 import { registerEventOrderRoutes } from './event-orders.js'
 import { registerCakeQuoteRoutes } from './cake-quotes.js'
 import { isWhatsAppMessagingConfigured, sendWhatsAppText } from './whatsapp.js'
-import { aiConfigured, suggestReply } from './chat-assistant.js'
+import { aiConfigured, detectMessageLanguage, suggestReply } from './chat-assistant.js'
 import {
   AdminMfaConfigurationError,
   authenticatorUri,
@@ -3354,7 +3354,9 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
       LIMIT 1
     `).get(threadId, lastCustomer.id)
     if (alreadyAnswered) return
-    const language = /[à-ÿ]/i.test(lastCustomer.body) || /\b(je|nous|bonjour|merci|combien|où|est-ce|c'est|j'ai|vous)\b/i.test(lastCustomer.body) ? 'fr' : 'en'
+    // Reply in the language the customer just wrote in, so French and English
+    // switch naturally inside one conversation instead of sticking to the page language.
+    const language = detectMessageLanguage(lastCustomer.body, 'en')
     const result = await suggestReply(history, { database, language, customerPage, pageSnapshot })
     if (!result.suggestion || result.source !== "ai") {
       // The model was configured but did not answer. Log the actual cause (timeout, bad

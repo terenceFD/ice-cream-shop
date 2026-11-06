@@ -1439,6 +1439,66 @@ body:has(.whatsapp-fab) .locations-hero-actions {
   }
 }
 
+/* Account-created welcome card: drops in from the top, then fades out on its
+   own. The thin bar underneath shows how long it stays. Motion is skipped for
+   visitors who prefer reduced motion. */
+@keyframes account-created-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.75rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes account-created-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.98);
+  }
+}
+
+@keyframes account-created-timer {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+.account-created-enter {
+  animation: account-created-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.account-created-leave {
+  animation: account-created-out 220ms ease-in both;
+}
+
+.account-created-timer {
+  transform-origin: left center;
+  animation: account-created-timer 8s linear both;
+}
+
+.account-created-timer-leave {
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-created-enter,
+  .account-created-leave {
+    animation: none;
+  }
+
+  .account-created-timer {
+    animation: none;
+    transform: scaleX(1);
+  }
+}
+
 /* Live chat panel: slides up and fades in from the launcher bubble. Motion is
    skipped for visitors who prefer reduced motion. */
 @keyframes chat-panel-in {

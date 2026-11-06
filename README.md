@@ -48,9 +48,7 @@ src/            App source code
 shared/         Code used by both the site and the server (menu data, photo sizes, currency, dates)
 server/         Express API, database, payments, email and push notifications
 scripts/        Dev runner, thumbnail maker, migrations and tests for shared code
-  oneoff/       One-time maintenance scripts (e.g. cover-docx.js for the documentation cover)
 public/         Photos, icons and fonts served as-is
-assets/original-photos/   Original photos kept for reference (not served)
 ```
 
 ### Folders outside the app (repository root)
@@ -60,11 +58,8 @@ Non-app files live beside `ice-cream-site/` at the repository root, documented i
 | Folder | Contents |
 |---|---|
 | `docs/` | Project documentation (PDF/DOCX guide, cover preview) and a snapshot of a previous site version |
-| `qa/` | Throwaway browser-QA scripts (`resp-check*.mjs`) and their screenshot output; safe to delete |
-| `assets-source/hd-images/` | High-resolution source images used to generate thumbnails in `public/`; not referenced by the site directly |
-| `certs/` | Local HTTPS certificate |
 
-Nothing under `src/`, `shared/`, `server/`, `scripts/` (except `oneoff/cover-docx.js`, which points at `docs/`) or the build references these folders.
+Nothing under `src/`, `shared/`, `server/`, `scripts/` or the build references this folder.
 
 ## Homepage design system
 

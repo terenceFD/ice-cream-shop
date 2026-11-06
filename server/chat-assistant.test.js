@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import {
   AI_FAILURE_REASONS,
   buildSystemPrompt,
+  detectMessageLanguage,
   isLostPageQuestion,
   looksPolicyShaped,
   suggestReply,
@@ -257,4 +258,187 @@ test("lost-page questions are still recognised in both languages", () => {
   assert.equal(isLostPageQuestion("what page is this"), true);
   assert.equal(isLostPageQuestion("je suis perdu"), true);
   assert.equal(isLostPageQuestion("how much is vanilla"), false);
+});
+
+// ------------------------------------------------------------- greetings and social replies
+//
+// A greeting used to fall through to the generic "a colleague will reply very shortly"
+// template, and every other reply was prefixed with "Hello!" — so "how much is vanilla"
+// came back as "Hello! ... Tell me which one you are eyeing". These bind that behaviour
+// to a mechanism, so a prompt or template edit cannot quietly restore it.
+
+const social = (body, language = "en") =>
+  suggestReply([{ sender: "customer", body }], { database: fakeDb, language });
+
+test("a greeting is recognised as a greeting, not as an unknown question", async () => {
+  for (const body of ["hi", "Hello!", "hey there", "Good morning", "bonjour", "salut !", "Bonsoir"]) {
+    const result = await social(body);
+    assert.equal(result.topic, "greeting", `"${body}" should be a greeting`);
+  }
+});
+
+test("a greeting gets a polite welcome that says what the assistant can help with", async () => {
+  const english = await social("hi");
+  assert.match(english.suggestion, /Cold Stone assistant/i);
+  assert.match(english.suggestion, /help/i);
+  // It must hand the conversation back, not answer with the menu or a template.
+  assert.match(english.suggestion, /\?/);
+  assert.doesNotMatch(english.suggestion, /a colleague will reply/i);
+
+  const french = await social("bonjour", "fr");
+  assert.match(french.suggestion, /assistant Cold Stone/i);
+  assert.match(french.suggestion, /\?/);
+});
+
+test("a time-specific greeting is mirrored back", async () => {
+  const morning = await social("Good morning");
+  assert.match(morning.suggestion, /^Good morning!/);
+  // On a later message the echo would read oddly, so a plain Hello is used instead.
+  const followUp = await suggestReply(
+    [
+      { sender: "customer", body: "hi" },
+      { sender: "store", body: "Hello!" },
+      { sender: "customer", body: "good morning" },
+    ],
+    { database: fakeDb, language: "en" },
+  );
+  assert.match(followUp.suggestion, /^Hello!/);
+});
+
+test("only a message that is only a greeting counts as one", async () => {
+  // A question that opens with a greeting keeps its question.
+  assert.equal((await social("hi, how much is vanilla")).topic, "price");
+  assert.equal((await social("hello, are you open")).topic, "hours");
+  // A product name must never be mistaken for one.
+  assert.notEqual((await social("Chocolate")).topic, "greeting");
+});
+
+test("thanks and goodbye are answered politely and briefly", async () => {
+  const thanks = await social("thanks");
+  assert.equal(thanks.topic, "thanks");
+  assert.match(thanks.suggestion, /welcome/i);
+
+  const frenchThanks = await social("merci beaucoup", "fr");
+  assert.equal(frenchThanks.topic, "thanks");
+  assert.match(frenchThanks.suggestion, /plaisir/i);
+
+  const farewell = await social("bye");
+  assert.equal(farewell.topic, "farewell");
+  assert.match(farewell.suggestion, /see you/i);
+});
+
+test("a normal question is not prefixed with a greeting", async () => {
+  for (const body of ["how much is vanilla", "is the shop open", "where are you"]) {
+    const result = await social(body);
+    assert.doesNotMatch(result.suggestion, /^Hello!/, `"${body}" should not open with Hello!`);
+  }
+});
+
+test("the model is told a greeting is not an off-topic question", () => {
+  const text = prompt();
+  assert.match(text, /A greeting is NOT off-topic/i);
+  assert.match(text, /thank-you or goodbye/i);
+});
+
+// ------------------------------------------------------------- reply language
+//
+// The reply language follows the customer's message, not the page or the caller. Before
+// this, detection was one regex in index.js that missed French written without accents
+// ("Quel est le prix", "salut", "bonsoir"), so those customers were answered in English.
+
+const frenchMessages = [
+  "Bonjour, je voudrais commander une glace",
+  "Quel est le prix du chocolat ?",
+  "Est-ce que vous livrez à Bonapriso ?",
+  "Avez-vous des parfums sans lactose ?",
+  "Ou se trouve la boutique ?",
+  "Je veux payer par mobile money",
+  "Combien coûte le milkshake ?",
+  "bonjour",
+  "ca coute combien",
+  "merci",
+  "je suis interesse",
+  "Quels sont vos horaires ?",
+  "Je peux payer en ligne ?",
+  "La livraison est gratuite ?",
+  "bonsoir",
+  "salut",
+  "Annuler ma commande",
+  "Je veux un gateau d'anniversaire",
+  "Puis-je avoir une facture ?",
+  "quels sont les parfums disponibles",
+];
+
+const englishMessages = [
+  "Hi, I want to order an ice cream",
+  "How much is the chocolate?",
+  "Do you deliver to Bonapriso?",
+  "Is the shop open now?",
+  "Do you have sugar free options?",
+  "I want to pay with mobile money",
+  "Can I get a refund?",
+  "thanks",
+  "hello",
+  "where are you located",
+  "what flavors do you have",
+  "i need a birthday cake",
+];
+
+test("French and English messages are told apart, accents or not", () => {
+  for (const message of frenchMessages) {
+    assert.equal(detectMessageLanguage(message, "en"), "fr", `"${message}" should be French`);
+  }
+  for (const message of englishMessages) {
+    assert.equal(detectMessageLanguage(message, "en"), "en", `"${message}" should be English`);
+  }
+});
+
+test("a message with no language signal keeps the current one", () => {
+  for (const message of ["ok", "Chocolate Devotion", "???", "3000", "menu"]) {
+    assert.equal(detectMessageLanguage(message, "en"), "en", `"${message}" should stay English`);
+    assert.equal(detectMessageLanguage(message, "fr"), "fr", `"${message}" should stay French`);
+  }
+});
+
+test("the reply language follows the customer, not the caller's setting", async () => {
+  // The caller says English both times; the French message must still be answered in French.
+  const french = await suggestReply([{ sender: "customer", body: "bonjour" }], {
+    database: fakeDb,
+    language: "en",
+  });
+  assert.match(french.suggestion, /assistant Cold Stone/i);
+  // And the other way round.
+  const english = await suggestReply([{ sender: "customer", body: "hello" }], {
+    database: fakeDb,
+    language: "fr",
+  });
+  assert.match(english.suggestion, /Cold Stone assistant/i);
+});
+
+test("a French question never comes back with an English body", async () => {
+  for (const body of ["Quel est le prix du chocolat ?", "Quels sont vos horaires ?", "Combien coûte le milkshake ?"]) {
+    const { suggestion } = await suggestReply([{ sender: "customer", body }], {
+      database: fakeDb,
+      language: "en",
+    });
+    // The English words that only ever appeared in the English templates.
+    assert.doesNotMatch(suggestion, /\b(the menu|flavours and treats|We are open every day|Tell me which)\b/i, `"${body}" leaked English`);
+  }
+});
+
+test("switching language mid-thread switches the reply", async () => {
+  const history = [
+    { sender: "customer", body: "hi" },
+    { sender: "store", body: "Hello! How can I help?" },
+    { sender: "customer", body: "Combien coûte le milkshake ?" },
+  ];
+  const { suggestion } = await suggestReply(history, { database: fakeDb, language: "en" });
+  assert.match(suggestion, /parfums|Dites-moi/i);
+});
+
+test("the prompt tells the model to follow the customer's last message", () => {
+  const text = prompt();
+  assert.match(text, /language of the customer's LAST message/i);
+  assert.match(text, /answer in French/i);
+  assert.match(text, /France?is|French message deserves a French answer/i);
 });

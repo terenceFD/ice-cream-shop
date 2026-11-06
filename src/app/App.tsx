@@ -234,6 +234,7 @@ function AccountCreatedNotice() {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [notice, setNotice] = useState("");
+  const [isLeaving, setIsLeaving] = useState(false);
 
   useEffect(() => {
     const state =
@@ -243,6 +244,7 @@ function AccountCreatedNotice() {
     if (!state?.accountCreated) return;
 
     setNotice(t("Your account was created successfully."));
+    setIsLeaving(false);
     const remainingState = { ...state };
     delete remainingState.accountCreated;
     navigate(`${location.pathname}${location.search}${location.hash}`, {
@@ -253,53 +255,92 @@ function AccountCreatedNotice() {
 
   useEffect(() => {
     if (!notice) return undefined;
-    const timeout = window.setTimeout(() => setNotice(""), 6000);
+    const timeout = window.setTimeout(() => setIsLeaving(true), 8000);
     return () => window.clearTimeout(timeout);
   }, [notice]);
+
+  useEffect(() => {
+    if (!isLeaving) return undefined;
+    const timeout = window.setTimeout(() => setNotice(""), 220);
+    return () => window.clearTimeout(timeout);
+  }, [isLeaving]);
 
   if (!notice) return null;
   return (
     <div
       aria-atomic="true"
       aria-live="polite"
-      className="fixed right-4 top-4 z-[100] flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-xl bg-[#eef6e8] px-4 py-3 text-sm font-bold text-[#315d22] shadow-[0_12px_35px_rgba(16,44,80,0.18)] ring-1 ring-[#cfe3bf]"
+      className={`fixed inset-x-3 top-3 z-[100] sm:inset-x-auto sm:right-6 sm:top-6 sm:w-[24rem] ${isLeaving ? "account-created-leave" : "account-created-enter"}`}
       role="status"
     >
-      <svg
-        aria-hidden="true"
-        className="size-5 shrink-0"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="m5 12.5 4.5 4.5L19 7.5"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-        />
-      </svg>
-      <span>{notice}</span>
-      <button
-        aria-label={t("Dismiss")}
-        className="ml-1 grid size-7 shrink-0 place-items-center rounded-full transition hover:bg-[#dcebd2]"
-        onClick={() => setNotice("")}
-        type="button"
-      >
-        <svg
+      <div className="relative overflow-hidden rounded-[22px] bg-white shadow-[0_24px_60px_-20px_rgba(71,42,59,0.45),0_2px_8px_rgba(71,42,59,0.08)] ring-1 ring-[#e6dfe3]">
+        <div
           aria-hidden="true"
-          className="size-4"
-          fill="none"
-          viewBox="0 0 24 24"
+          className="h-1 bg-gradient-to-r from-brand-yellow via-brand-gold-light to-brand-yellow"
+        />
+        <button
+          aria-label={t("Dismiss")}
+          className="absolute right-2.5 top-3.5 grid size-8 place-items-center rounded-full text-[#8b95a2] transition hover:bg-[#f4f6f8] hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep"
+          onClick={() => setIsLeaving(true)}
+          type="button"
         >
-          <path
-            d="m6 6 12 12M18 6 6 18"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeWidth="2"
+          <svg
+            aria-hidden="true"
+            className="size-4"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="m6 6 12 12M18 6 6 18"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeWidth="2"
+            />
+          </svg>
+        </button>
+        <div className="flex items-start gap-3.5 p-4 pr-12 sm:p-5 sm:pr-12">
+          <span
+            aria-hidden="true"
+            className="relative grid size-11 shrink-0 place-items-center rounded-2xl bg-[#eef7f0] text-[#2f7d4f] ring-1 ring-[#d5ebdc]"
+          >
+            <svg className="size-5" fill="none" viewBox="0 0 24 24">
+              <path
+                d="m5 12.5 4.5 4.5L19 7.5"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2.2"
+              />
+            </svg>
+            <span className="absolute -bottom-1 -right-1 grid size-5 place-items-center rounded-full bg-brand-yellow text-brand-navy ring-2 ring-white">
+              <svg className="size-3" fill="none" viewBox="0 0 24 24">
+                <path
+                  d="M12 3.5 14.2 9l5.8.5-4.4 3.8 1.3 5.7L12 16l-4.9 3 1.3-5.7L4 9.5 9.8 9 12 3.5Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+          </span>
+          <div className="min-w-0">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-brand-yellow-deep">
+              {t("Welcome")}
+            </p>
+            <p className="mt-0.5 font-display text-[17px] font-extrabold leading-snug text-brand-navy">
+              {notice}
+            </p>
+            <p className="mt-1 text-[13px] leading-5 text-[#65748a]">
+              {t(
+                "Your orders, saved addresses and rewards are now in one place.",
+              )}
+            </p>
+          </div>
+        </div>
+        <div aria-hidden="true" className="h-0.5 bg-[#f1ecef]">
+          <div
+            className={`h-full bg-brand-yellow ${isLeaving ? "account-created-timer-leave" : "account-created-timer"}`}
           />
-        </svg>
-      </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -324,8 +365,11 @@ function CustomerCookieConsent() {
 // form as the only thing on screen.
 function CustomerCurrencySwitcher() {
   const { pathname } = useLocation();
-  const hidden = pathname.startsWith("/admin") || pathname === "/payment"
-    || pathname === "/login" || pathname === "/signup";
+  const hidden =
+    pathname.startsWith("/admin") ||
+    pathname === "/payment" ||
+    pathname === "/login" ||
+    pathname === "/signup";
   return hidden ? null : <CurrencySwitcher />;
 }
 
@@ -468,7 +512,7 @@ function App() {
                         <Route
                           path="/admin/subscriptions"
                           element={<AdminSubscriptionsPage />}
- />
+                        />
                         <Route
                           path="/admin/admins"
                           element={<AdminManagementPage />}

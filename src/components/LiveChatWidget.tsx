@@ -23,6 +23,39 @@ interface ChatMessage {
   sender: "customer" | "store";
   body: string;
   createdAt: string;
+  /** "sent" once the server confirmed this browser's own message. */
+  delivery?: "sent";
+}
+
+// The tick on a message the customer sent. It appears only after the server has stored
+// the message, so it can never claim a delivery that did not happen. Two overlapping
+// checks in a 16px box: the back check sits behind and to the left, the front one is
+// nudged right, so the pair reads as a double tick rather than two separate marks.
+function DeliveryTick() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-4 shrink-0 text-brand-yellow"
+      fill="none"
+      viewBox="0 0 16 16"
+    >
+      <title>{"Delivered"}</title>
+      <path
+        d="M1 8.6 4.1 11.7 10.4 4.6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+      <path
+        d="M6.2 8.6 9.3 11.7 15.6 4.6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </svg>
+  );
 }
 
 // The AI ends a reply with an action line like [ACTION:menu_all] when it wants the
@@ -185,6 +218,8 @@ export function LiveChatWidget() {
 
   useEffect(() => () => window.clearTimeout(typingTimeout.current), []);
 
+
+
   // A new store message ends the wait; polling picks it up within a few seconds.
   useEffect(() => {
     if (!isAwaitingReply) return;
@@ -289,6 +324,9 @@ export function LiveChatWidget() {
     if (!threadIdRef.current) threadIdRef.current = readThreadId(customerId);
     setIsSending(true);
     setError("");
+    // No optimistic bubble: the message appears only once the server has it, so a
+    // failed send shows an error instead of a message that never leaves — and every
+    // customer bubble on screen is therefore a confirmed one, which is what earns its tick.
     try {
       const post = (threadId: string) =>
         apiRequest("/chat/messages", {
@@ -376,10 +414,14 @@ export function LiveChatWidget() {
 
   return (
     <>
+      {/* The launcher and its greeting tooltip share one hover target. The tooltip is
+          desktop-only: on a touch screen there is no hover, and the message would sit
+          over the page. It also stays hidden while the chat panel is open. */}
+      <div className="group fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-4 z-[65]">
       <button
         aria-expanded={isOpen}
         aria-label={isOpen ? t("Close chat") : t("Chat with us")}
-        className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-4 z-[65] grid size-14 place-items-center rounded-full bg-brand-navy text-brand-yellow shadow-[0_14px_36px_rgba(9,42,83,0.4)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
+        className="grid size-14 place-items-center rounded-full bg-brand-navy text-brand-yellow shadow-[0_14px_36px_rgba(9,42,83,0.4)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
         onClick={() => setIsOpen((open) => !open)}
         type="button"
       >
@@ -413,16 +455,38 @@ export function LiveChatWidget() {
           </svg>
         )}
       </button>
+        {!isOpen && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-0 left-[calc(100%+0.75rem)] w-max max-w-[19rem] origin-left scale-95 rounded-2xl rounded-bl-md bg-brand-navy px-4 py-3 text-white opacity-0 shadow-[0_16px_40px_rgba(9,42,83,0.35)] ring-1 ring-white/15 transition-all duration-200 ease-out group-hover:scale-100 group-hover:opacity-100 group-focus-within:scale-100 group-focus-within:opacity-100 max-sm:hidden"
+          >
+            <span
+              aria-hidden="true"
+              className="absolute -left-1.5 bottom-4 size-3 rotate-45 rounded-[2px] bg-brand-navy ring-1 ring-white/15 [clip-path:polygon(0_0,0_100%,100%_100%)]"
+            />
+            <p className="font-display text-sm font-extrabold leading-tight text-brand-yellow">
+              {t("Hi")} 👋
+            </p>
+            <p className="mt-1 text-[13px] leading-5 text-white/85">
+              {t("I am your Cold Stone assistant. I can help you with anything concerning this platform.")}
+            </p>
+          </div>
+        )}
+      </div>
 
       {isOpen && (
         <section
           aria-label={t("Chat with us")}
-          className="site-live-chat-panel fixed bottom-24 left-4 z-[65] flex h-[27rem] w-[min(23rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[20px] bg-white shadow-[0_28px_70px_rgba(9,42,83,0.32)] ring-1 ring-[#e2e8f0]"
+          // The panel floats above the launcher: 5.25rem below (the 3.5rem launcher plus
+          // its 1.5rem bottom offset and a small gap), so the launcher stays reachable with
+          // the chat open. On phones it grows to 30rem tall as long as 10rem of the page
+          // stays visible, so it never swallows the whole screen; from sm up it takes 38rem.
+          className="site-live-chat-panel fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] left-4 z-[65] flex h-[min(30rem,calc(100dvh-10rem))] w-[min(28rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[20px] bg-white shadow-[0_28px_70px_rgba(9,42,83,0.32)] ring-1 ring-[#e2e8f0] sm:h-[min(38rem,calc(100dvh-7rem))] sm:w-[30rem]"
         >
-          <header className="relative flex items-center gap-3 bg-brand-navy px-4 py-3.5 text-white">
+          <header className="relative flex items-center gap-2.5 bg-brand-navy px-3 py-3 text-white sm:gap-3 sm:px-4 sm:py-3.5">
             <span
               aria-hidden="true"
-              className="grid size-9 shrink-0 place-items-center rounded-full bg-white/10 ring-1 ring-white/15"
+              className="grid size-8 shrink-0 place-items-center rounded-full bg-white/10 ring-1 ring-white/15 sm:size-9"
             >
               <svg className="size-5" fill="none" viewBox="0 0 24 24">
                 <path
@@ -437,14 +501,20 @@ export function LiveChatWidget() {
               <p className="font-display text-[15px] font-extrabold leading-tight">
                 {t("Chat with us")}
               </p>
+              {/* The full sentence wraps to five lines on a 280px phone and pushed the
+                  header to 212px, so narrow screens get a short equivalent instead. */}
               <p className="mt-0.5 flex items-center gap-1.5 text-xs text-white/70">
-                <span aria-hidden="true" className="inline-block size-1.5 rounded-full bg-[#4ade80]" />
-                {t("We usually reply within a few minutes during opening hours.")}
+                <span aria-hidden="true" className="inline-block size-1.5 shrink-0 rounded-full bg-[#4ade80]" />
+                <span className="min-[480px]:hidden">{t("Usually replies in minutes")}</span>
+                <span className="hidden min-[480px]:inline">{t("We usually reply within a few minutes during opening hours.")}</span>
               </p>
             </div>
             <button
               aria-label={t("Clear chat")}
-              className="grid size-8 shrink-0 place-items-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
+              // Hidden on the narrowest phones: two 32px buttons plus the avatar left the
+              // title only ~90px wide there, so both labels cut off mid-word. Clearing a
+              // thread is a rare action, and it is still reachable from 400px up.
+              className="hidden size-8 shrink-0 place-items-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow min-[400px]:grid"
               onClick={clearChat}
               title={t("Clear chat")}
               type="button"
@@ -501,6 +571,11 @@ export function LiveChatWidget() {
             {messages.map((message) => {
               const isCustomer = message.sender === "customer";
               const { text: bodyText, action } = isCustomer ? { text: message.body, action: undefined } : splitChatAction(message.body);
+              // A customer message only reaches this list after the server stored it, so
+              // its presence IS the delivery confirmation. (The server sends no `delivery`
+              // field, and an earlier version pruned its own sent-message record as soon
+              // as the poll returned the message — which removed the tick it was drawing.)
+              const delivered = isCustomer;
               return (
                 <div
                   className={`site-chat-bubble flex ${isCustomer ? "justify-end" : "justify-start"}`}
@@ -518,9 +593,10 @@ export function LiveChatWidget() {
                     </p>
                     {action && <ChatActionButton action={action} />}
                     <p
-                      className={`mt-1 text-right text-[10px] font-medium ${isCustomer ? "text-white/50" : "text-[#94a3b8]"}`}
+                      className={`mt-1 flex items-center justify-end gap-1 text-[10px] font-medium ${isCustomer ? "text-white/50" : "text-[#94a3b8]"}`}
                     >
-                      {time(message.createdAt)}
+                      <span>{time(message.createdAt)}</span>
+                      {delivered && <DeliveryTick />}
                     </p>
                   </div>
                 </div>
@@ -547,13 +623,13 @@ export function LiveChatWidget() {
           )}
 
           <form
-            className="flex items-center gap-2 border-t border-[#eef2f6] bg-white p-3"
+            className="flex items-center gap-2 border-t border-[#eef2f6] bg-white p-2.5 sm:p-3"
             onSubmit={send}
           >
             <input
               aria-label={t("Your message")}
               autoComplete="off"
-              className="min-w-0 flex-1 rounded-full border border-transparent bg-[#f4f6f8] px-4 py-2.5 text-sm font-medium text-brand-navy outline-none! transition-colors placeholder:text-[#94a3b8] focus:border-brand-yellow-deep focus:bg-white"
+              className="min-w-0 flex-1 rounded-full border border-transparent bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-brand-navy outline-none! transition-colors placeholder:text-[#94a3b8] focus:border-brand-yellow-deep focus:bg-white sm:px-4"
               maxLength={1000}
               onChange={(event) => setDraft(event.target.value)}
               placeholder={t("Type a message…")}

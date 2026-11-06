@@ -64,6 +64,12 @@ const french: Record<string, string> = {
     "Votre e-mail sert à vous connecter et à recevoir les mises à jour de commande. Un code est envoyé à la nouvelle adresse pour confirmer qu’elle vous appartient.",
   "Your account was created successfully.":
     "Votre compte a été créé avec succès.",
+  "Your orders, saved addresses and rewards are now in one place.":
+    "Vos commandes, adresses enregistrées et récompenses sont désormais réunies au même endroit.",
+  "Usually replies in minutes": "Répond en quelques minutes",
+  "Hi": "Salut",
+  "I am your Cold Stone assistant. I can help you with anything concerning this platform.":
+    "Je suis votre assistant Cold Stone. Je peux vous aider pour tout ce qui concerne cette plateforme.",
   "Orders placed: {count}": "Commandes passées : {count}",
   "Deposit received. Your cake and pickup date are booked.":
     "Acompte reçu. Votre gâteau et la date de retrait sont réservés.",
