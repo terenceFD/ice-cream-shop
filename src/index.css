@@ -1422,15 +1422,15 @@ body:has(.whatsapp-fab) .locations-hero-actions {
   outline-offset: 3px;
 }
 
-/* Hidden on phones: the button sat on top of whatever passed underneath it in the
-   bottom-right corner, and flicking back up is the natural gesture there anyway. */
-.site-back-to-top {
+/* Hidden while the header search is open on a phone: the button shares the
+   bottom-right corner with the search results, and a results list is exactly
+   where a stray tap would cost the visitor their query. */
+body.site-search-open .site-back-to-top {
   display: none;
 }
 
 @media (min-width: 640px) {
   .site-back-to-top {
-    display: grid;
     right: 1.5rem;
   }
 }

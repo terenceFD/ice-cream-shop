@@ -15,6 +15,7 @@ import { HeaderSearch } from "./HeaderSearch";
 import { NewsletterSignup } from "./NewsletterSignup";
 import { readCookieConsent } from "../lib/analytics";
 import { setMobileMenuOpen, useMobileMenuOpen } from "../lib/mobileMenu";
+import { setSearchOpen } from "../lib/searchOpen";
 
 function ArrowIcon({ diagonal = false }) {
   return (
@@ -1058,6 +1059,13 @@ export function Header() {
   }, [isMobileMenuOpen]);
 
   useEffect(() => () => setMobileMenuOpen(false), []);
+
+  // The back-to-top button hides while the search results are showing.
+  useEffect(() => {
+    setSearchOpen(isSearchOpen);
+  }, [isSearchOpen]);
+
+  useEffect(() => () => setSearchOpen(false), []);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return undefined;
