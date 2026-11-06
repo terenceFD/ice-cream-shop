@@ -36,24 +36,23 @@ function sendBrandedMail(transporter, message) {
   return transporter.sendMail(buildBrandedEmail(message))
 }
 
-// Mailjet's HTTPS API. Some hosts (Render's free plan among them) block every outgoing
-// SMTP port, so the mail server can never be reached from there. Port 443 is always open,
-// so the same Mailjet account can deliver over HTTPS instead. See
-// https://dev.mailjet.com/email/guides/send-api-v31/
-const MAILJET_SEND_URL = 'https://api.mailjet.com/v3.1/send'
-const MAILJET_TIMEOUT_MS = 20_000
+// Brevo's HTTPS API. Some hosts (Render's free plan among them) block every outgoing
+// SMTP port, so a mail server can never be reached from there. Port 443 is always open,
+// so mail is sent over HTTPS instead. See https://developers.brevo.com/reference/sendtransacemail
+const BREVO_SEND_URL = 'https://api.brevo.com/v3/smtp/email'
+const BREVO_TIMEOUT_MS = 20_000
 
-function mailjetCredentials() {
-  const username = process.env.SMTP_USER?.trim()
-  const password = process.env.SMTP_PASSWORD
-  return username && password ? { username, password } : null
+/** The Brevo API key, when one is configured. */
+function brevoApiKey() {
+  return process.env.BREVO_API_KEY?.trim() || ''
 }
 
-/** True when the Mailjet HTTPS API can be used, whatever the SMTP settings say. */
-export function isMailjetApiConfigured() {
-  return Boolean(mailjetCredentials())
+/** True when the Brevo HTTPS API can be used. */
+export function isBrevoConfigured() {
+  return Boolean(brevoApiKey())
 }
 
+/** Splits "Name <address>, other@example.com" into the addresses Brevo expects. */
 function addressList(value) {
   return String(value || '')
     .split(',')
@@ -61,51 +60,51 @@ function addressList(value) {
     .filter(Boolean)
     .map((entry) => {
       const match = /^(.*?)\s*<([^<>]+)>$/.exec(entry)
-      return match ? { Email: match[2].trim(), Name: match[1].trim() } : { Email: entry }
+      return match
+        ? { email: match[2].trim(), ...(match[1].trim() ? { name: match[1].trim() } : {}) }
+        : { email: entry }
     })
 }
 
-function mailjetError(status, body) {
-  const detail = body?.Messages?.[0]?.Errors?.[0]
-  const error = new Error(detail?.ErrorMessage || `Mailjet refused the message (HTTP ${status}).`)
+function brevoError(status, body) {
+  const error = new Error(body?.message || `Brevo refused the message (HTTP ${status}).`)
   error.responseCode = status
-  error.response = `${detail?.ErrorCode || ''} ${detail?.ErrorMessage || ''}`.trim()
+  error.response = `${body?.code || ''} ${body?.message || ''}`.trim()
   return error
 }
 
-async function sendViaMailjetApi(message) {
-  const credentials = mailjetCredentials()
-  if (!credentials) {
-    throw new EmailConfigurationError('Email delivery requires both SMTP_USER and SMTP_PASSWORD, or neither.')
+async function sendViaBrevo(message) {
+  const apiKey = brevoApiKey()
+  if (!apiKey) {
+    throw new EmailConfigurationError('Email delivery is not configured. Set BREVO_API_KEY and MAIL_FROM.')
   }
   const branded = buildBrandedEmail(message)
-  const from = addressList(branded.from)[0]
+  const [sender] = addressList(branded.from)
   const payload = {
-    Messages: [{
-      From: from,
-      To: addressList(branded.to),
-      Subject: branded.subject,
-      TextPart: branded.text,
-      HTMLPart: branded.html,
-    }],
+    sender,
+    to: addressList(branded.to),
+    subject: branded.subject,
+    htmlContent: branded.html,
+    textContent: branded.text,
   }
-  if (branded.cc) payload.Messages[0].Cc = addressList(branded.cc)
-  if (branded.bcc) payload.Messages[0].Bcc = addressList(branded.bcc)
-  if (branded.replyTo) payload.Messages[0].ReplyTo = addressList(branded.replyTo)[0]
+  if (branded.cc) payload.cc = addressList(branded.cc)
+  if (branded.bcc) payload.bcc = addressList(branded.bcc)
+  if (branded.replyTo) payload.replyTo = addressList(branded.replyTo)[0]
 
   let response
   try {
-    response = await fetch(MAILJET_SEND_URL, {
+    response = await fetch(BREVO_SEND_URL, {
       method: 'POST',
       headers: {
-        Authorization: `Basic ${Buffer.from(`${credentials.username}:${credentials.password}`).toString('base64')}`,
+        'api-key': apiKey,
         'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(MAILJET_TIMEOUT_MS),
+      signal: AbortSignal.timeout(BREVO_TIMEOUT_MS),
     })
   } catch (error) {
-    const failure = new Error(`The Mailjet API could not be reached: ${error?.message || 'network error'}`)
+    const failure = new Error(`The Brevo API could not be reached: ${error?.message || 'network error'}`)
     failure.code = error?.name === 'TimeoutError' ? 'ETIMEDOUT' : 'ECONNECTION'
     throw failure
   }
@@ -116,30 +115,28 @@ async function sendViaMailjetApi(message) {
   } catch {
     // A non-JSON body is reported through the status code below.
   }
-  if (!response.ok) throw mailjetError(response.status, body)
-  const result = body?.Messages?.[0]
-  if (result?.Status && result.Status !== 'success') throw mailjetError(response.status, body)
-  return {
-    messageId: result?.To?.[0]?.MessageUUID || String(result?.To?.[0]?.MessageID || ''),
-    response: result?.Status || 'success',
-  }
+  if (!response.ok) throw brevoError(response.status, body)
+  return { messageId: body?.messageId || '', response: 'success' }
 }
 
 /**
- * Sends one branded message. SMTP is used when it is configured; otherwise the Mailjet
- * HTTPS API, which works on hosts that block SMTP ports.
+ * Sends one branded message. Brevo is used when its key is set; otherwise SMTP, for a
+ * host that allows it.
  */
 function deliver(message) {
+  if (isBrevoConfigured()) {
+    return sendViaBrevo(message)
+  }
   if (isEmailDeliveryConfigured()) {
     const { transporter } = createTransporter()
     return sendBrandedMail(transporter, message)
   }
-  return sendViaMailjetApi(message)
+  throw new EmailConfigurationError('Email delivery is not configured. Set BREVO_API_KEY and MAIL_FROM.')
 }
 
 /** The sender address every message is sent from. */
 function mailFrom() {
-  return { from: process.env.SMTP_FROM?.trim() || '' }
+  return { from: process.env.MAIL_FROM?.trim() || process.env.SMTP_FROM?.trim() || '' }
 }
 
 export class EmailConfigurationError extends Error {
@@ -156,20 +153,29 @@ export class EmailConfigurationError extends Error {
 export function describeEmailError(error) {
   const code = Number(error?.responseCode) || 0
   const text = `${error?.response || ''} ${error?.message || ''}`
-  if (code === 525 || /unauthori[sz]ed ip/i.test(text)) {
-    return "Mailjet blocked the website server's IP address. In Mailjet, open Account settings and check the API key restrictions."
+  if (code === 401 || /key not found|unauthori[sz]ed|invalid api key/i.test(text)) {
+    return 'Brevo rejected the API key. Copy BREVO_API_KEY again from app.brevo.com > SMTP & API > API Keys.'
+  }
+  if (/sender|from address|not (a )?valid|unverified|not verified/i.test(text) && code >= 400) {
+    return 'Brevo refused the sender address. Add and verify the domain of MAIL_FROM under app.brevo.com > Senders, Domains & Dedicated IPs.'
+  }
+  if (code === 402 || /payment required|credit/i.test(text)) {
+    return 'The Brevo account has no email credits left. Check the plan at app.brevo.com.'
+  }
+  if (code === 400 || /invalid|missing/i.test(text)) {
+    return `Brevo refused the message: ${error?.message || 'check MAIL_FROM and the recipient address.'}`
+  }
+  if (code === 429 || /rate limit|too many/i.test(text)) {
+    return 'Brevo is rate limiting this account. Wait a moment and try again, or raise the limit in your Brevo plan.'
   }
   if (code === 535 || error?.code === 'EAUTH') {
-    return 'The mail server rejected the login. SMTP_USER must be the Mailjet API key and SMTP_PASSWORD the secret key, from Account settings > SMTP and SEND API settings. Do not use your Mailjet sign-in password.'
-  }
-  if (/sender|from address|not (a )?valid|unverified|not verified/i.test(text) && code >= 500) {
-    return 'The mail server refused the sender address. Validate SMTP_FROM in Mailjet under Account settings > Sender addresses and domains.'
+    return 'The mail server rejected the login. Check SMTP_USER and SMTP_PASSWORD.'
   }
   if (['ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNREFUSED', 'ENOTFOUND', 'EDNS'].includes(error?.code)) {
-    return "The website server could not reach the mail server. Some hosts, including Render's free plan, block outgoing SMTP ports. Set SMTP_USER and SMTP_PASSWORD (the Mailjet API key and secret) so mail is sent over HTTPS instead, or set SMTP_PORT to 2525, SMTP_SECURE to false, and SMTP_HOST to in-v3.mailjet.com."
+    return "The website server could not reach the mail service. Some hosts, including Render's free plan, block outgoing SMTP ports; set BREVO_API_KEY so mail is sent over HTTPS instead."
   }
-  if (code) return `The mail server refused the message (code ${code}).`
-  return 'The mail server could not be reached.'
+  if (code) return `The mail service refused the message (code ${code}).`
+  return 'The mail service could not be reached.'
 }
 
 const SENDER_ADDRESS = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -177,7 +183,7 @@ const SENDER_ADDRESS = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export function isEmailDeliveryConfigured() {
   const host = process.env.SMTP_HOST?.trim()
   const port = Number(process.env.SMTP_PORT || 587)
-  const from = process.env.SMTP_FROM?.trim()
+  const from = process.env.MAIL_FROM?.trim() || process.env.SMTP_FROM?.trim()
   const username = process.env.SMTP_USER?.trim()
   const password = process.env.SMTP_PASSWORD
 
@@ -190,23 +196,23 @@ export function isEmailDeliveryConfigured() {
   return true
 }
 
-/** True when mail can be sent at all: over SMTP, or over the Mailjet HTTPS API. */
+/** True when mail can be sent at all: over Brevo, or over SMTP. */
 export function isEmailDeliveryAvailable() {
-  return isEmailDeliveryConfigured() || isMailjetApiConfigured()
+  return isBrevoConfigured() || isEmailDeliveryConfigured()
 }
 
 function createTransporter() {
   const host = process.env.SMTP_HOST?.trim()
   const port = Number(process.env.SMTP_PORT || 587)
-  const from = process.env.SMTP_FROM?.trim()
+  const from = process.env.MAIL_FROM?.trim() || process.env.SMTP_FROM?.trim()
   const username = process.env.SMTP_USER?.trim()
   const password = process.env.SMTP_PASSWORD
 
   if (!host || !from || !Number.isInteger(port) || port < 1 || port > 65535) {
-    throw new EmailConfigurationError('Email delivery is not configured. Set SMTP_HOST, SMTP_PORT, and SMTP_FROM.')
+    throw new EmailConfigurationError('Email delivery is not configured. Set SMTP_HOST, SMTP_PORT, and MAIL_FROM.')
   }
   if (!SENDER_ADDRESS.test(from)) {
-    throw new EmailConfigurationError('SMTP_FROM must be a full email address validated as a sender in Mailjet.')
+    throw new EmailConfigurationError('MAIL_FROM must be a full email address.')
   }
   if (Boolean(username) !== Boolean(password)) {
     throw new EmailConfigurationError('Email delivery requires both SMTP_USER and SMTP_PASSWORD, or neither.')

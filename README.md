@@ -278,13 +278,15 @@ Prices are always recalculated on the server from the menu; the deposit uses the
 
 ## Email
 
-Email is used for contact-form replies, admin new-order and cake/event request notices, customer order updates, payment receipts (`PAYMENT_CONFIRMATION_EMAILS_ENABLED=true`), event quotes, and review reminders. Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM`.
+Email is used for contact-form replies, admin new-order and cake/event request notices, customer order updates, payment receipts (`PAYMENT_CONFIRMATION_EMAILS_ENABLED=true`), event quotes, and review reminders.
 
-With **Mailjet**:
-- `SMTP_USER` is the API key and `SMTP_PASSWORD` is the secret key, from Account settings › SMTP and SEND API settings. Do not use the password you use to sign in to Mailjet.
-- Validate `SMTP_FROM` under Account settings › Sender addresses and domains. An address on a domain you control delivers more reliably than a Gmail address.
-- **On Render's free plan, every outgoing SMTP port is blocked.** Leave `SMTP_HOST` and `SMTP_PORT` unset there: with only `SMTP_USER`, `SMTP_PASSWORD` and `SMTP_FROM` set, mail is sent through Mailjet's HTTPS API (`https://api.mailjet.com/v3.1/send`) on port 443, which is never blocked. Setting `SMTP_HOST` switches delivery back to SMTP.
-- Locally, or on a host that allows SMTP, set `SMTP_HOST=in-v3.mailjet.com`, `SMTP_PORT=2525` and `SMTP_SECURE=false`.
+**Brevo** is the mail provider. Set two variables:
+- `BREVO_API_KEY` — from [app.brevo.com](https://app.brevo.com) › SMTP & API › API Keys.
+- `MAIL_FROM` — the sender address, e.g. `Cold Stone Creamery <orders@yourdomain.com>`. Its domain must be verified under Senders, Domains & Dedicated IPs. A Gmail address cannot be used as the sender.
+
+Brevo sends over HTTPS on port 443, so it works on hosts that block outgoing SMTP ports — including Render's free plan.
+
+SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`) is kept only as a fallback and is used when `BREVO_API_KEY` is empty.
 
 When a reply cannot be sent, the dashboard shows the mail server's reason in plain words (blocked IP, rejected login, refused sender, or unreachable server). Email failures are logged and never reverse orders or payments.
 

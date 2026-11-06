@@ -108,6 +108,10 @@ test('password reset emails a code, rejects invalid codes, updates the password,
       DATABASE_PATH: join(directory, 'password-reset.sqlite'),
       PORT: String(apiPort),
       JWT_SECRET: 'password-reset-test-secret-with-at-least-32-characters',
+      // The test drives a local SMTP server, so the Brevo HTTPS path must stay off, and
+      // MAIL_FROM must not leak in from the developer's .env.
+      BREVO_API_KEY: '',
+      MAIL_FROM: '',
       SMTP_HOST: '127.0.0.1',
       SMTP_PORT: String(smtpPort),
       SMTP_SECURE: 'false',
