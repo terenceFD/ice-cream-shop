@@ -83,7 +83,7 @@ import {
 import {
   describeEmailError,
   EmailConfigurationError,
-  isEmailDeliveryConfigured,
+  isEmailDeliveryAvailable,
   sendReviewReminder,
   sendEventRequestNotification,
   sendEventQuote,
@@ -1236,7 +1236,7 @@ app.post('/api/newsletter/subscribe', publicFormIpLimiter, async (request, respo
   const subscription = await subscribeNewsletter(email, source)
   // A warm hello while the shopper is still on the page. Only first-time
   // subscribers get one, so a repeat signup never receives a duplicate.
-  if (subscription.created && isEmailDeliveryConfigured()) {
+  if (subscription.created && isEmailDeliveryAvailable()) {
     sendNewsletterWelcome({ to: email, siteUrl: publicSiteUrl() }).catch((error) => {
       console.error(`Unable to send newsletter welcome to ${email}:`, describeEmailError(error))
     })
@@ -1254,7 +1254,7 @@ app.post('/api/admin/newsletter/broadcast', requireAdmin, ownerOnly, async (requ
     response.status(400).json({ error: 'Write a subject and a message to send.' })
     return
   }
-  if (!isEmailDeliveryConfigured()) {
+  if (!isEmailDeliveryAvailable()) {
     response.status(503).json({ error: 'Email delivery is not configured, so a broadcast cannot be sent.' })
     return
   }
@@ -1875,7 +1875,7 @@ app.post('/api/auth/register/request-verification', signupLimiter, signupVerific
       return
     }
 
-    if (!isEmailDeliveryConfigured()) {
+    if (!isEmailDeliveryAvailable()) {
       response.status(503).json({ error: 'Email verification is temporarily unavailable. Please try again later.' })
       return
     }
@@ -2081,7 +2081,7 @@ app.post('/api/auth/password/reset-request', loginLimiter, async (request, respo
       response.status(400).json({ error: 'Enter the email address on your account.' })
       return
     }
-    if (!isEmailDeliveryConfigured()) {
+    if (!isEmailDeliveryAvailable()) {
       response.status(503).json({ error: 'Password reset is temporarily unavailable. Please try again later.' })
       return
     }
@@ -2333,7 +2333,7 @@ app.post('/api/auth/email/change-request', passwordChangeLimiter, requireCustome
       response.status(409).json({ error: 'An account already uses that email address.' })
       return
     }
-    if (!isEmailDeliveryConfigured()) {
+    if (!isEmailDeliveryAvailable()) {
       response.status(503).json({ error: 'Email verification is temporarily unavailable. Please try again later.' })
       return
     }
@@ -4910,7 +4910,7 @@ const eventOrderRoutes = registerEventOrderRoutes(app, {
   buildNotification: buildEventOrderNotification,
   describeEmailError,
   email: {
-    isConfigured: isEmailDeliveryConfigured,
+    isConfigured: isEmailDeliveryAvailable,
     sendEventRequestNotification,
     sendEventQuote,
     sendEventDepositReceived,
@@ -4930,7 +4930,7 @@ const cakeQuoteRoutes = registerCakeQuoteRoutes(app, {
   selectedStoreTown,
   describeEmailError,
   email: {
-    isConfigured: isEmailDeliveryConfigured,
+    isConfigured: isEmailDeliveryAvailable,
     sendCakeQuote,
     sendCakeDepositReceived,
   },
@@ -5804,7 +5804,7 @@ app.use('/api', (request, response) => {
 function handleAbandonedCheckouts({ released, abandoned }) {
   if (released) console.log(`Released stock from ${released} abandoned checkout(s).`)
   if (!Array.isArray(abandoned) || !abandoned.length) return
-  if (!isEmailDeliveryConfigured()) return
+  if (!isEmailDeliveryAvailable()) return
   const siteUrl = publicSiteUrl()
   for (const order of abandoned) {
     if (!order?.customerEmail) continue
@@ -5915,7 +5915,7 @@ async function sendDueReviewReminders() {
       const push = await sendToCustomer(database, Number(order.customerId), buildReviewReminderNotification({ orderId: order.id }))
         .catch((error) => ({ sent: 0, failed: 1, errors: [error.message] }))
       let emailed = false
-      if (isEmailDeliveryConfigured() && order.customerEmail) {
+      if (isEmailDeliveryAvailable() && order.customerEmail) {
         const items = await database.prepare('SELECT flavor_name AS "flavorName" FROM order_items WHERE order_id = ? ORDER BY id').all(order.id)
         try {
           await sendReviewReminder({

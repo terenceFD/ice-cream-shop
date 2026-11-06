@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer'
+﻿import nodemailer from 'nodemailer'
 import { fileURLToPath } from 'node:url'
 
 const SITE_NAME = 'Cold Stone Creamery'
@@ -36,6 +36,112 @@ function sendBrandedMail(transporter, message) {
   return transporter.sendMail(buildBrandedEmail(message))
 }
 
+// Mailjet's HTTPS API. Some hosts (Render's free plan among them) block every outgoing
+// SMTP port, so the mail server can never be reached from there. Port 443 is always open,
+// so the same Mailjet account can deliver over HTTPS instead. See
+// https://dev.mailjet.com/email/guides/send-api-v31/
+const MAILJET_SEND_URL = 'https://api.mailjet.com/v3.1/send'
+const MAILJET_TIMEOUT_MS = 20_000
+
+function mailjetCredentials() {
+  const username = process.env.SMTP_USER?.trim()
+  const password = process.env.SMTP_PASSWORD
+  return username && password ? { username, password } : null
+}
+
+/** True when the Mailjet HTTPS API can be used, whatever the SMTP settings say. */
+export function isMailjetApiConfigured() {
+  return Boolean(mailjetCredentials())
+}
+
+function addressList(value) {
+  return String(value || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const match = /^(.*?)\s*<([^<>]+)>$/.exec(entry)
+      return match ? { Email: match[2].trim(), Name: match[1].trim() } : { Email: entry }
+    })
+}
+
+function mailjetError(status, body) {
+  const detail = body?.Messages?.[0]?.Errors?.[0]
+  const error = new Error(detail?.ErrorMessage || `Mailjet refused the message (HTTP ${status}).`)
+  error.responseCode = status
+  error.response = `${detail?.ErrorCode || ''} ${detail?.ErrorMessage || ''}`.trim()
+  return error
+}
+
+async function sendViaMailjetApi(message) {
+  const credentials = mailjetCredentials()
+  if (!credentials) {
+    throw new EmailConfigurationError('Email delivery requires both SMTP_USER and SMTP_PASSWORD, or neither.')
+  }
+  const branded = buildBrandedEmail(message)
+  const from = addressList(branded.from)[0]
+  const payload = {
+    Messages: [{
+      From: from,
+      To: addressList(branded.to),
+      Subject: branded.subject,
+      TextPart: branded.text,
+      HTMLPart: branded.html,
+    }],
+  }
+  if (branded.cc) payload.Messages[0].Cc = addressList(branded.cc)
+  if (branded.bcc) payload.Messages[0].Bcc = addressList(branded.bcc)
+  if (branded.replyTo) payload.Messages[0].ReplyTo = addressList(branded.replyTo)[0]
+
+  let response
+  try {
+    response = await fetch(MAILJET_SEND_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${credentials.username}:${credentials.password}`).toString('base64')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(MAILJET_TIMEOUT_MS),
+    })
+  } catch (error) {
+    const failure = new Error(`The Mailjet API could not be reached: ${error?.message || 'network error'}`)
+    failure.code = error?.name === 'TimeoutError' ? 'ETIMEDOUT' : 'ECONNECTION'
+    throw failure
+  }
+
+  let body = null
+  try {
+    body = await response.json()
+  } catch {
+    // A non-JSON body is reported through the status code below.
+  }
+  if (!response.ok) throw mailjetError(response.status, body)
+  const result = body?.Messages?.[0]
+  if (result?.Status && result.Status !== 'success') throw mailjetError(response.status, body)
+  return {
+    messageId: result?.To?.[0]?.MessageUUID || String(result?.To?.[0]?.MessageID || ''),
+    response: result?.Status || 'success',
+  }
+}
+
+/**
+ * Sends one branded message. SMTP is used when it is configured; otherwise the Mailjet
+ * HTTPS API, which works on hosts that block SMTP ports.
+ */
+function deliver(message) {
+  if (isEmailDeliveryConfigured()) {
+    const { transporter } = createTransporter()
+    return sendBrandedMail(transporter, message)
+  }
+  return sendViaMailjetApi(message)
+}
+
+/** The sender address every message is sent from. */
+function mailFrom() {
+  return { from: process.env.SMTP_FROM?.trim() || '' }
+}
+
 export class EmailConfigurationError extends Error {
   constructor(message) {
     super(message)
@@ -60,7 +166,7 @@ export function describeEmailError(error) {
     return 'The mail server refused the sender address. Validate SMTP_FROM in Mailjet under Account settings > Sender addresses and domains.'
   }
   if (['ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNREFUSED', 'ENOTFOUND', 'EDNS'].includes(error?.code)) {
-    return "The website server could not reach the mail server. Some hosts, including Render's free plan, block ports 25, 465 and 587. Set SMTP_PORT to 2525, SMTP_SECURE to false, and SMTP_HOST to in-v3.mailjet.com."
+    return "The website server could not reach the mail server. Some hosts, including Render's free plan, block outgoing SMTP ports. Set SMTP_USER and SMTP_PASSWORD (the Mailjet API key and secret) so mail is sent over HTTPS instead, or set SMTP_PORT to 2525, SMTP_SECURE to false, and SMTP_HOST to in-v3.mailjet.com."
   }
   if (code) return `The mail server refused the message (code ${code}).`
   return 'The mail server could not be reached.'
@@ -82,6 +188,11 @@ export function isEmailDeliveryConfigured() {
     return false
   }
   return true
+}
+
+/** True when mail can be sent at all: over SMTP, or over the Mailjet HTTPS API. */
+export function isEmailDeliveryAvailable() {
+  return isEmailDeliveryConfigured() || isMailjetApiConfigured()
 }
 
 function createTransporter() {
@@ -111,8 +222,8 @@ function createTransporter() {
 }
 
 export async function sendContactReply({ to, recipientName, subject, reply, adminName }) {
-  const { transporter, from } = createTransporter()
-  await sendBrandedMail(transporter, {
+  const { from } = mailFrom()
+  await deliver( {
     from,
     to,
     subject: `Re: ${subject.replace(/[\r\n]+/g, ' ')}`,
@@ -121,8 +232,8 @@ export async function sendContactReply({ to, recipientName, subject, reply, admi
 }
 
 export async function sendCustomerVerificationCode({ to, code }) {
-  const { transporter, from } = createTransporter()
-  return sendBrandedMail(transporter, {
+  const { from } = mailFrom()
+  return deliver( {
     from: `Cold Stone Creamery <${from}>`,
     to,
     subject: 'Your Cold Stone Creamery verification code',
@@ -138,8 +249,8 @@ export async function sendCustomerVerificationCode({ to, code }) {
 }
 
 export async function sendPasswordResetCode({ to, code }) {
-  const { transporter, from } = createTransporter()
-  return sendBrandedMail(transporter, {
+  const { from } = mailFrom()
+  return deliver( {
     from: `Cold Stone Creamery <${from}>`,
     to,
     subject: 'Your Cold Stone Creamery password reset code',
@@ -159,7 +270,7 @@ export async function sendNewOrderNotification({ recipients, orderId, customerNa
     throw new Error('No admin email addresses are available for order notifications.')
   }
 
-  const { transporter, from } = createTransporter()
+  const { from } = mailFrom()
   const formatAmount = (amount) => new Intl.NumberFormat('en-CM', {
     style: 'currency',
     currency: currency.toUpperCase(),
@@ -167,7 +278,7 @@ export async function sendNewOrderNotification({ recipients, orderId, customerNa
   const itemLines = items.map((item) =>
     `- ${item.quantity} × ${item.flavorName} (${formatAmount(item.lineTotalCents)})`
   )
-  await sendBrandedMail(transporter, {
+  await deliver( {
     from,
     to: recipients,
     subject: `New order #${orderId} placed`,
@@ -214,7 +325,7 @@ export async function sendOrderStatusUpdate({
   }
   const statusLabel = statusLabels[status]
   if (!statusLabel) throw new Error('The requested order status cannot be emailed.')
-  const { transporter, from } = createTransporter()
+  const { from } = mailFrom()
   const formatAmount = (amount) => new Intl.NumberFormat('en-CM', {
     style: 'currency',
     currency: currency.toUpperCase(),
@@ -230,7 +341,7 @@ export async function sendOrderStatusUpdate({
         ...(earnedPoints > 0 ? [`Loyalty points earned: ${earnedPoints}`] : []),
       ]
     : []
-  await sendBrandedMail(transporter, {
+  await deliver( {
     from,
     to,
     subject: `Update on your Cold Stone Creamery order #${orderId}`,
@@ -256,9 +367,9 @@ export async function sendOrderStatusUpdate({
 }
 
 export async function sendReviewReminder({ to, recipientName, orderId, items = [], reviewUrl, orderUrl }) {
-  const { transporter, from } = createTransporter()
+  const { from } = mailFrom()
   const itemNames = [...new Set(items.map((item) => item.flavorName).filter(Boolean))]
-  await sendBrandedMail(transporter, {
+  await deliver( {
     from,
     to,
     subject: `How was your Cold Stone Creamery order #${orderId}?`,
@@ -287,8 +398,8 @@ const eventSummary = (order) => [
 
 export async function sendEventRequestNotification({ recipients, order, adminUrl }) {
   if (!recipients.length) return
-  const { transporter, from } = createTransporter()
-  await sendBrandedMail(transporter, {
+  const { from } = mailFrom()
+  await deliver( {
     from,
     to: recipients,
     subject: `New event order request #${order.id} for ${order.eventDate}`,
@@ -309,8 +420,8 @@ export async function sendEventRequestNotification({ recipients, order, adminUrl
 }
 
 export async function sendEventQuote({ to, order, payUrl }) {
-  const { transporter, from } = createTransporter()
-  await sendBrandedMail(transporter, {
+  const { from } = mailFrom()
+  await deliver( {
     from,
     to,
     subject: `Your Cold Stone Creamery event quote #${order.id}`,
@@ -339,8 +450,8 @@ export async function sendEventQuote({ to, order, payUrl }) {
 
 export async function sendEventDepositReceived({ recipients, order, adminUrl }) {
   if (!recipients.length) return
-  const { transporter, from } = createTransporter()
-  await sendBrandedMail(transporter, {
+  const { from } = mailFrom()
+  await deliver( {
     from,
     to: recipients,
     subject: `Deposit received for event order #${order.id}`,
@@ -356,8 +467,8 @@ export async function sendEventDepositReceived({ recipients, order, adminUrl }) 
 }
 
 export async function sendCakeQuote({ to, request, payUrl }) {
-  const { transporter, from } = createTransporter()
-  await sendBrandedMail(transporter, {
+  const { from } = mailFrom()
+  await deliver( {
     from,
     to,
     subject: `Your Cold Stone Creamery cake quote #${request.id}`,
@@ -384,8 +495,8 @@ export async function sendCakeQuote({ to, request, payUrl }) {
 
 export async function sendCakeDepositReceived({ recipients, request, adminUrl }) {
   if (!recipients.length) return
-  const { transporter, from } = createTransporter()
-  await sendBrandedMail(transporter, {
+  const { from } = mailFrom()
+  await deliver( {
     from,
     to: recipients,
     subject: `Deposit received for cake request #${request.id}`,
@@ -416,8 +527,8 @@ export async function sendCakeRequestNotification({
   if (!recipients.length) {
     throw new Error('No admin email addresses are available for cake-request notifications.')
   }
-  const { transporter, from } = createTransporter()
-  await sendBrandedMail(transporter, {
+  const { from } = mailFrom()
+  await deliver( {
     from,
     to: recipients,
     subject: `Custom cake request #${requestId}`,
@@ -442,9 +553,9 @@ const unsubscribeFooter = (siteUrl) =>
   `Unsubscribe: ${siteUrl ? `${siteUrl}/unsubscribe` : 'reply to this email and ask to be removed'}`
 
 export async function sendNewsletterWelcome({ to, siteUrl }) {
-  const { transporter, from } = createTransporter()
+  const { from } = mailFrom()
   const url = siteUrl || ''
-  return sendBrandedMail(transporter, {
+  return deliver( {
     from: `Cold Stone Creamery <${from}>`,
     to,
     subject: 'You are on the list — Cold Stone Creamery',
@@ -461,10 +572,10 @@ export async function sendNewsletterWelcome({ to, siteUrl }) {
 }
 
 export async function sendNewsletterBroadcast({ recipients, subject, message, siteUrl }) {
-  const { transporter, from } = createTransporter()
+  const { from } = mailFrom()
   const url = siteUrl || ''
   // One connection, many recipients: nodemailer accepts an address list for to.
-  return sendBrandedMail(transporter, {
+  return deliver( {
     from: `Cold Stone Creamery <${from}>`,
     to: recipients.join(', '),
     subject: `${subject} — Cold Stone Creamery`,
@@ -481,8 +592,8 @@ export async function sendNewsletterBroadcast({ recipients, subject, message, si
 }
 
 export async function sendAbandonedCartReminder({ to, recipientName, orderId, bagUrl }) {
-  const { transporter, from } = createTransporter()
-  return sendBrandedMail(transporter, {
+  const { from } = mailFrom()
+  return deliver( {
     from: `Cold Stone Creamery <${from}>`,
     to,
     subject: 'Your bag is waiting — Cold Stone Creamery',

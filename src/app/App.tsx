@@ -320,10 +320,12 @@ function CustomerCookieConsent() {
 
 // The currency switcher floats over the page content. It is hidden where a floating
 // control would sit on top of a payment step or the admin desk, which have their own
-// fixed actions in that corner.
+// fixed actions in that corner, and on the sign-in and sign-up pages, which keep the
+// form as the only thing on screen.
 function CustomerCurrencySwitcher() {
   const { pathname } = useLocation();
-  const hidden = pathname.startsWith("/admin") || pathname === "/payment";
+  const hidden = pathname.startsWith("/admin") || pathname === "/payment"
+    || pathname === "/login" || pathname === "/signup";
   return hidden ? null : <CurrencySwitcher />;
 }
 

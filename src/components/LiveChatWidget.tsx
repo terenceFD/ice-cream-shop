@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { apiRequest } from "../api/api";
 import { useLanguage } from "../language/useLanguage";
 import { useAuth } from "../context/useAuth";
+import { useMobileMenuOpen } from "../lib/mobileMenu";
 
 /**
  * Live chat bubble: a small launcher in the corner opens a thread with the store.
@@ -154,6 +155,8 @@ export function LiveChatWidget() {
   const { t, language } = useLanguage();
   const { customer } = useAuth();
   const customerId = customer?.id ?? null;
+  // The hamburger drawer covers the phone screen; the launcher and panel would float on top.
+  const mobileMenuOpen = useMobileMenuOpen();
   const [isOpen, setIsOpen] = useState(() => {
     try {
       return sessionStorage.getItem(OPEN_STORAGE_KEY) === "1";
@@ -368,6 +371,8 @@ export function LiveChatWidget() {
           minute: "2-digit",
         });
   };
+
+  if (mobileMenuOpen) return null;
 
   return (
     <>

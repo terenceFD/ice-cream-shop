@@ -280,10 +280,11 @@ Prices are always recalculated on the server from the menu; the deposit uses the
 
 Email is used for contact-form replies, admin new-order and cake/event request notices, customer order updates, payment receipts (`PAYMENT_CONFIRMATION_EMAILS_ENABLED=true`), event quotes, and review reminders. Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM`.
 
-With **Mailjet** (`in-v3.mailjet.com`):
-- **On Render's free plan, outgoing ports 25, 465 and 587 are blocked: use `SMTP_PORT=2525`** with `SMTP_SECURE=false`. The same port works locally.
+With **Mailjet**:
 - `SMTP_USER` is the API key and `SMTP_PASSWORD` is the secret key, from Account settings › SMTP and SEND API settings. Do not use the password you use to sign in to Mailjet.
 - Validate `SMTP_FROM` under Account settings › Sender addresses and domains. An address on a domain you control delivers more reliably than a Gmail address.
+- **On Render's free plan, every outgoing SMTP port is blocked.** Leave `SMTP_HOST` and `SMTP_PORT` unset there: with only `SMTP_USER`, `SMTP_PASSWORD` and `SMTP_FROM` set, mail is sent through Mailjet's HTTPS API (`https://api.mailjet.com/v3.1/send`) on port 443, which is never blocked. Setting `SMTP_HOST` switches delivery back to SMTP.
+- Locally, or on a host that allows SMTP, set `SMTP_HOST=in-v3.mailjet.com`, `SMTP_PORT=2525` and `SMTP_SECURE=false`.
 
 When a reply cannot be sent, the dashboard shows the mail server's reason in plain words (blocked IP, rejected login, refused sender, or unreachable server). Email failures are logged and never reverse orders or payments.
 

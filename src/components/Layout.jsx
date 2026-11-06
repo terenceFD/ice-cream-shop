@@ -14,6 +14,7 @@ import { EVENT_OCCASIONS } from "../../shared/eventTypes.js";
 import { HeaderSearch } from "./HeaderSearch";
 import { NewsletterSignup } from "./NewsletterSignup";
 import { readCookieConsent } from "../lib/analytics";
+import { setMobileMenuOpen, useMobileMenuOpen } from "../lib/mobileMenu";
 
 function ArrowIcon({ diagonal = false }) {
   return (
@@ -297,6 +298,10 @@ export function CurrencySwitcher() {
   const active = supported.find((option) => option.code === currency) || supported[0];
   const consentOpen = useCookieConsentPending();
   const installCardOpen = useInstallCardOpen();
+  // The hamburger drawer covers the phone screen; the switcher would float on top of it.
+  const mobileMenuOpen = useMobileMenuOpen();
+
+  if (mobileMenuOpen) return null;
 
   return (
     <details
@@ -1042,6 +1047,13 @@ export function Header() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname, location.search]);
+
+  // The floating currency switcher and live chat hide while this drawer is open.
+  useEffect(() => {
+    setMobileMenuOpen(isMobileMenuOpen);
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => () => setMobileMenuOpen(false), []);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return undefined;
