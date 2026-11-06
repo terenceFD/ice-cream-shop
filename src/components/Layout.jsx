@@ -16,7 +16,7 @@ import { NewsletterSignup } from "./NewsletterSignup";
 import { readCookieConsent } from "../lib/analytics";
 import { setMobileMenuOpen, useMobileMenuOpen } from "../lib/mobileMenu";
 import { useSetSearchOpen } from "../lib/searchOpen";
-import { useScrolledPastHeader } from "../lib/pageScrolled";
+import { useDockOffset, usePublishDockOffset } from "../lib/headerDock";
 
 function ArrowIcon({ diagonal = false }) {
   return (
@@ -302,10 +302,11 @@ export function CurrencySwitcher() {
   const installCardOpen = useInstallCardOpen();
   // The hamburger drawer covers the phone screen; the switcher would float on top of it.
   const mobileMenuOpen = useMobileMenuOpen();
-  // Past the header the switcher would sit over the content, so it only shows above it.
-  const scrolledPastHeader = useScrolledPastHeader();
+  // While the sticky header is on screen the switcher rides up behind it, so it is
+  // hidden there and comes back in the open page below.
+  const dockOffset = useDockOffset();
 
-  if (mobileMenuOpen || scrolledPastHeader) return null;
+  if (mobileMenuOpen) return null;
 
   return (
     <details
@@ -322,7 +323,8 @@ export function CurrencySwitcher() {
       // which makes it up to 342px tall at 320px wide — taller than the old flat 11rem lift,
       // so the switcher used to sit on top of the banner's text. Each range now clears the
       // measured banner (which ends 12px above the viewport bottom) plus a 16px gap.
-      className={`currency-switcher group fixed right-4 z-[85] transition-[bottom] duration-300 ${installCardOpen ? "bottom-[calc(12rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]" : consentOpen ? "bottom-[calc(22.75rem+env(safe-area-inset-bottom,0px))] min-[360px]:bottom-[calc(21.25rem+env(safe-area-inset-bottom,0px))] min-[390px]:bottom-[calc(19.75rem+env(safe-area-inset-bottom,0px))] min-[414px]:bottom-[calc(18.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(14.25rem+env(safe-area-inset-bottom,0px))] min-[700px]:bottom-[calc(12.25rem+env(safe-area-inset-bottom,0px))] min-[768px]:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]" : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"}`}
+      data-docked={dockOffset > 0 ? "true" : "false"}
+      className={`currency-switcher group fixed right-4 z-[85] transition-[bottom,translate] duration-300 motion-reduce:transition-none ${dockOffset > 0 ? "translate-y-[220%]" : "translate-y-0"} ${installCardOpen ? "bottom-[calc(12rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]" : consentOpen ? "bottom-[calc(22.75rem+env(safe-area-inset-bottom,0px))] min-[360px]:bottom-[calc(21.25rem+env(safe-area-inset-bottom,0px))] min-[390px]:bottom-[calc(19.75rem+env(safe-area-inset-bottom,0px))] min-[414px]:bottom-[calc(18.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(14.25rem+env(safe-area-inset-bottom,0px))] min-[700px]:bottom-[calc(12.25rem+env(safe-area-inset-bottom,0px))] min-[768px]:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]" : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"}`}
       ref={detailsRef}
     >
       <summary
@@ -969,6 +971,8 @@ export function Header() {
   const bagPulseTimer = useRef(undefined);
   const previousCartCount = useRef(cartCount);
   const { isScrolled, isHidden } = useHeaderVisibility(headerRef);
+  // One scroll listener for every floating widget: they read the offset this publishes.
+  usePublishDockOffset();
 
   useEffect(() => {
     previousCartCount.current = cartCount;

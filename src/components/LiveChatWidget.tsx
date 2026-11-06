@@ -4,7 +4,7 @@ import { apiRequest } from "../api/api";
 import { useLanguage } from "../language/useLanguage";
 import { useAuth } from "../context/useAuth";
 import { useMobileMenuOpen } from "../lib/mobileMenu";
-import { useScrolledPastHeader } from "../lib/pageScrolled";
+import { useDockOffset } from "../lib/headerDock";
 
 /**
  * Live chat bubble: a small launcher in the corner opens a thread with the store.
@@ -191,8 +191,9 @@ export function LiveChatWidget() {
   const customerId = customer?.id ?? null;
   // The hamburger drawer covers the phone screen; the launcher and panel would float on top.
   const mobileMenuOpen = useMobileMenuOpen();
-  // Past the header the launcher would sit over the content, so it only shows above it.
-  const scrolledPastHeader = useScrolledPastHeader();
+  // 0 while the hero is showing, the header height once it has slid in. The launcher
+  // rides this so it is hidden while the header is on screen and back below it.
+  const dockOffset = useDockOffset();
   const [isOpen, setIsOpen] = useState(() => {
     try {
       return sessionStorage.getItem(OPEN_STORAGE_KEY) === "1";
@@ -414,15 +415,21 @@ export function LiveChatWidget() {
   };
 
   if (mobileMenuOpen) return null;
-  // An open conversation stays put; only the idle launcher steps aside.
-  if (scrolledPastHeader && !isOpen) return null;
 
   return (
     <>
       {/* The launcher and its greeting tooltip share one hover target. The tooltip is
           desktop-only: on a touch screen there is no hover, and the message would sit
-          over the page. It also stays hidden while the chat panel is open. */}
-      <div className="group fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-4 z-[65]">
+          over the page. It also stays hidden while the chat panel is open.
+
+          It sits in the bottom corner with the hero. While the sticky header is on
+          screen it slides down out of the viewport (see --site-dock-offset), so it never
+          reaches the header; it comes back in the open page below. */}
+      <div
+        className={`group fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-4 z-[65] transition-[translate] duration-300 ease-out motion-reduce:transition-none ${
+          dockOffset > 0 ? "translate-y-[220%]" : "translate-y-0"
+        }`}
+      >
       <button
         aria-expanded={isOpen}
         aria-label={isOpen ? t("Close chat") : t("Chat with us")}
