@@ -361,6 +361,11 @@ function TreatShape({
   }
 }
 
+// The splash must never outstay its welcome. However long the dictionary or the
+// first page takes, it steps aside after this long so a slow dependency cannot
+// leave a visitor staring at a loading screen.
+const MAX_VISIBLE_MS = 2500;
+
 export function WebsiteLoader() {
   const { isReady, t } = useLanguage();
   const [hasHeld, setHasHeld] = useState(false);
@@ -373,11 +378,23 @@ export function WebsiteLoader() {
   }, []);
 
   useEffect(() => {
-    if (!isReady || !hasHeld) return undefined;
+    if (!hasHeld) return undefined;
+    // Leave as soon as the app is ready — or at the deadline, whichever comes first.
+    const deadline = window.setTimeout(
+      () => setIsLeaving(true),
+      Math.max(0, MAX_VISIBLE_MS - MIN_VISIBLE_MS),
+    );
+    if (!isReady) return () => window.clearTimeout(deadline);
+    window.clearTimeout(deadline);
     setIsLeaving(true);
+    return undefined;
+  }, [hasHeld, isReady]);
+
+  useEffect(() => {
+    if (!isLeaving) return undefined;
     const removeTimer = window.setTimeout(() => setIsVisible(false), EXIT_MS);
     return () => window.clearTimeout(removeTimer);
-  }, [hasHeld, isReady]);
+  }, [isLeaving]);
 
   if (!isVisible) return null;
 

@@ -242,6 +242,15 @@ input[type="search"]:focus-visible {
 .website-loader--leaving {
   pointer-events: none;
   opacity: 0;
+  /* Belt and braces: the component unmounts the splash itself, but if React never
+     gets there, an overlay at this z-index would trap the visitor on a blank screen. */
+  animation: website-loader-dismiss 1ms linear 1s forwards;
+}
+
+@keyframes website-loader-dismiss {
+  to {
+    visibility: hidden;
+  }
 }
 
 .website-loader__content {
