@@ -374,10 +374,15 @@ function CustomerCurrencySwitcher() {
 }
 
 // The chat launcher would overlap the payment page's own call-to-action, and staff
-// already answer from the admin inbox instead of the storefront bubble.
+// already answer from the admin inbox instead of the storefront bubble. The home page
+// leaves it out too: a greeting bubble over the hero sells nothing, and the visitor has
+// not asked anything yet. It appears from the menu onwards, where they are choosing.
 function CustomerLiveChat() {
   const { pathname } = useLocation();
-  const hidden = pathname.startsWith("/admin") || pathname === "/payment";
+  const hidden =
+    pathname.startsWith("/admin") ||
+    pathname === "/payment" ||
+    pathname === "/";
   return hidden ? null : <LiveChatWidget />;
 }
 
