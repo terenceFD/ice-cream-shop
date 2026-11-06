@@ -1422,8 +1422,15 @@ body:has(.whatsapp-fab) .locations-hero-actions {
   outline-offset: 3px;
 }
 
+/* Hidden on phones: the button sat on top of whatever passed underneath it in the
+   bottom-right corner, and flicking back up is the natural gesture there anyway. */
+.site-back-to-top {
+  display: none;
+}
+
 @media (min-width: 640px) {
   .site-back-to-top {
+    display: grid;
     right: 1.5rem;
   }
 }
