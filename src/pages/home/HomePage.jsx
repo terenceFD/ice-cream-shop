@@ -643,27 +643,25 @@ function HowItWorksSection({ t }) {
         <ol className="mt-8 grid gap-4 sm:mt-12 sm:grid-cols-3 sm:gap-5">
           {steps.map(({ step, title, description }) => (
             <li
-              className="relative flex gap-4 rounded-2xl border border-[#dce3eb] bg-white p-5 sm:flex-col sm:gap-5 sm:p-6"
+              className="group relative flex gap-4 rounded-2xl border border-[#dce3eb] bg-white p-5 transition duration-300 hover:-translate-y-0.5 hover:border-[#e2d39a] hover:shadow-[0_18px_36px_rgba(9,42,83,0.10)] motion-reduce:transform-none motion-reduce:transition-none sm:flex-col sm:gap-5 sm:p-6"
               key={step}
             >
-              <div className="flex min-w-0 items-start gap-4">
-                <span
-                  aria-hidden="true"
-                  className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-yellow text-lg font-extrabold leading-none text-brand-navy"
-                >
-                  {step}
-                </span>
-                <span className="block font-display text-lg font-bold leading-tight text-brand-navy sm:hidden">
+              {/* The number sits on its own line on a phone, so the title and the
+                  description get the full width instead of being squeezed into a
+                  narrow column beside it. */}
+              <span
+                aria-hidden="true"
+                className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-yellow text-lg font-extrabold leading-none text-brand-navy ring-4 ring-[#fff6dd] transition group-hover:bg-brand-gold-light"
+              >
+                {step}
+              </span>
+              <div className="min-w-0">
+                <h3 className="font-display text-lg font-bold leading-tight text-brand-navy">
                   {t(title)}
-                </span>
-              </div>
-              <div className="min-w-0 sm:mt-0">
-                <span className="hidden font-display text-lg font-bold leading-tight text-brand-navy sm:block">
-                  {t(title)}
-                </span>
-                <span className="mt-1.5 block max-w-sm text-sm leading-6 text-[#65748a]">
+                </h3>
+                <p className="mt-1.5 max-w-sm text-sm leading-6 text-[#65748a]">
                   {t(description)}
-                </span>
+                </p>
               </div>
             </li>
           ))}
