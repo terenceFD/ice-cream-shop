@@ -29,8 +29,8 @@ const neighborhoodPhotos = [
   },
   {
     src: '/images/locations/rue-de-narvik-yaounde-cameroon.jpg',
-    alt: 'Street scene in Yaoundé, Cameroon',
-    label: 'Yaoundé',
+    alt: 'Street scene in Yaounde, Cameroon',
+    label: 'Yaounde',
     className: 'col-start-3 row-span-2',
     width: 1280,
     height: 720,
@@ -57,8 +57,8 @@ const neighborhoodPhotos = [
   },
   {
     src: '/images/locations/carrefour-bastos.jpg',
-    alt: 'Carrefour in Bastos, Yaoundé',
-    label: 'Bastos, Yaoundé',
+    alt: 'Carrefour in Bastos, Yaounde',
+    label: 'Bastos, Yaounde',
     className: 'col-start-2 row-start-2',
     width: 1024,
     height: 768,
@@ -129,7 +129,7 @@ export function LocationsPage() {
                 {t('Find us in Cameroon')}
               </h1>
               <p className="location-reveal mt-6 max-w-[60ch] text-base leading-7 text-white/75 sm:text-lg sm:leading-8" style={{ animationDelay: '70ms' }}>
-                {t('Browse five public listings across Douala and Yaoundé. Open a listing for directions, and call ahead where a number is shown.')}
+                {t('Browse five public listings across Douala and Yaounde. Open a listing for directions, and call ahead where a number is shown.')}
               </p>
               <div className="locations-hero-actions location-reveal mt-8 flex flex-wrap gap-3" style={{ animationDelay: '140ms' }}>
                 <a
@@ -156,7 +156,7 @@ export function LocationsPage() {
                 {neighborhoodPhotos.map((photo, index) => (
                   <li className={`location-reveal group relative isolate min-h-0 overflow-hidden rounded-[22px] bg-[#dce6ee] ${photo.className}`} key={photo.src} style={{ animationDelay: `${140 + index * 70}ms` }}>
                     <img
-                      alt={photo.alt}
+                      alt={t(photo.alt)}
                       className="size-full object-cover transition-transform duration-500 motion-reduce:transition-none motion-reduce:group-hover:scale-100 sm:group-hover:scale-[1.03]"
                       decoding="async"
                       data-location-shutter={index === 0 ? '' : undefined}

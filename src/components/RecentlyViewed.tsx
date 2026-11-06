@@ -16,7 +16,16 @@ type RecentlyViewedProps = {
    */
   onSelect?: (view: RecentView) => boolean | void;
   title?: string;
+  /**
+   * Show the row four cards at a time with a "Show more" button that reveals four more,
+   * and a "Show less" button once every card is out. The home page uses this; the product
+   * pages keep the plain scrolling rail.
+   */
+  paged?: boolean;
 };
+
+/** Cards shown before the first "Show more", and added by each click. */
+const PAGE_SIZE = 4;
 
 function HistoryIcon({ className = "size-4" }: { className?: string }) {
   return (
@@ -61,7 +70,7 @@ function viewedAgo(viewedAt: number | undefined, t: (key: string, vars?: Record<
   return t("{count} d ago", { count: Math.floor(hours / 24) });
 }
 
-export function RecentlyViewed({ excludeKey, onSelect, title }: RecentlyViewedProps) {
+export function RecentlyViewed({ excludeKey, onSelect, title, paged = false }: RecentlyViewedProps) {
   const { t, language } = useLanguage();
   // Prices here follow the currency the visitor picked, like every other price on the
   // site. Without this the card always showed FCFA whatever was selected.
@@ -69,6 +78,9 @@ export function RecentlyViewed({ excludeKey, onSelect, title }: RecentlyViewedPr
   const [entries, setEntries] = useState<RecentView[]>([]);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  // How many cards the paged row is showing. It only ever grows by PAGE_SIZE, and
+  // "Show less" puts it back to the first page.
+  const [shownCount, setShownCount] = useState(PAGE_SIZE);
   const railRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -77,7 +89,10 @@ export function RecentlyViewed({ excludeKey, onSelect, title }: RecentlyViewedPr
     return subscribeToRecentlyViewed(load);
   }, []);
 
-  const visible = entries.filter((entry) => entry.key !== excludeKey).slice(0, 8);
+  const allEntries = entries.filter((entry) => entry.key !== excludeKey).slice(0, 8);
+  const visible = paged ? allEntries.slice(0, shownCount) : allEntries;
+  const hasMore = paged && shownCount < allEntries.length;
+  const canShowLess = paged && shownCount > PAGE_SIZE;
 
   // The rail itself scrolls horizontally on small screens; the arrows only appear when there
   // is somewhere to go, so the controls never sit there dead.
@@ -97,6 +112,12 @@ export function RecentlyViewed({ excludeKey, onSelect, title }: RecentlyViewedPr
       observer.disconnect();
     };
   }, [visible.length]);
+
+  // A new product viewed elsewhere can shrink the list; never leave the row asking for
+  // more cards than exist.
+  useEffect(() => {
+    setShownCount((count) => Math.min(count, Math.max(PAGE_SIZE, allEntries.length)));
+  }, [allEntries.length]);
 
   if (visible.length === 0) return null;
 
@@ -124,11 +145,11 @@ export function RecentlyViewed({ excludeKey, onSelect, title }: RecentlyViewedPr
               {heading}
             </h2>
             <p className="mt-1.5 text-sm font-medium text-[#65748a]">
-              {t("Pick up where you left off — your last {count} products.", { count: visible.length })}
+              {t("Pick up where you left off — your last {count} products.", { count: allEntries.length })}
             </p>
           </div>
 
-          {canScrollLeft || canScrollRight ? (
+          {!paged && (canScrollLeft || canScrollRight) ? (
             <div className="flex items-center gap-2">
               <button
                 aria-label={t("Scroll left")}
@@ -154,6 +175,7 @@ export function RecentlyViewed({ excludeKey, onSelect, title }: RecentlyViewedPr
 
         <ul
           className="-mx-5 mt-7 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-2 sm:-mx-8 sm:px-8 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          id="recently-viewed-list"
           ref={railRef}
         >
           {visible.map((entry) => {
@@ -225,6 +247,31 @@ export function RecentlyViewed({ excludeKey, onSelect, title }: RecentlyViewedPr
             );
           })}
         </ul>
+
+        {paged && (hasMore || canShowLess) && (
+          <div className="mt-8 flex justify-center">
+            <button
+              aria-controls="recently-viewed-list"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand-navy px-6 py-3 text-sm font-extrabold text-white transition hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 motion-reduce:transition-none"
+              onClick={() =>
+                setShownCount((count) =>
+                  hasMore ? Math.min(count + PAGE_SIZE, allEntries.length) : PAGE_SIZE,
+                )
+              }
+              type="button"
+            >
+              {hasMore ? t("Show more") : t("Show less")}
+              <svg
+                aria-hidden="true"
+                className={`size-4 transition-transform duration-300 motion-reduce:transition-none ${hasMore ? "" : "rotate-180"}`}
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

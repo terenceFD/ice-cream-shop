@@ -382,8 +382,8 @@ function LanguageDropdown({ language, setLanguage, t }) {
   const detailsRef = useRef(null);
   useDismissableDetails(detailsRef);
   const languages = [
-    { value: "en", label: "English", nativeLabel: "English", code: "EN", mark: "EN", region: "Cameroon · English" },
-    { value: "fr", label: "French", nativeLabel: "Français", code: "FR", mark: "FR", region: "Cameroun · Français" },
+    { value: "en", label: "English", nativeLabel: "English", code: "EN", mark: "EN", region: t("Cameroon · English") },
+    { value: "fr", label: "French", nativeLabel: "Français", code: "FR", mark: "FR", region: t("Cameroun · Français") },
   ];
   const activeLanguage = languages.find((option) => option.value === language) || languages[0];
   return (

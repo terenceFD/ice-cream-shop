@@ -545,13 +545,13 @@ export function AdminLayout() {
 
   const branchChoices = [
     { id: 'ALL' as const, mark: 'ALL', title: t('All cities'), detail: t('Douala and Yaoundé') },
-    { id: 'Douala' as const, mark: 'DLA', title: 'Douala', detail: t('Bonanjo, Bonamoussadi, Bonabéri, Ange Raphaël') },
-    { id: 'Yaoundé' as const, mark: 'YDE', title: 'Yaoundé', detail: t('Bastos') },
+    { id: 'Douala' as const, mark: 'DLA', title: t('Douala'), detail: t('Bonanjo, Bonamoussadi, Bonabéri, Ange Raphaël') },
+    { id: 'Yaoundé' as const, mark: 'YDE', title: t('Yaoundé'), detail: t('Bastos') },
   ].filter((choice) => isOwner || choice.id === selectedBranch)
   const currentBranch = branchChoices.find((choice) => choice.id === selectedBranch) || branchChoices[0]
   const languageChoices = [
-    { id: 'en' as const, mark: 'EN', title: 'English', detail: t('English for the admin workspace') },
-    { id: 'fr' as const, mark: 'FR', title: 'Français', detail: t('French for the admin workspace') },
+    { id: 'en' as const, mark: 'EN', title: t('English'), detail: t('English for the admin workspace') },
+    { id: 'fr' as const, mark: 'FR', title: t('Français'), detail: t('French for the admin workspace') },
   ]
   const currentLanguage = languageChoices.find((choice) => choice.id === language) || languageChoices[0]
 

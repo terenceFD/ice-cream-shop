@@ -95,7 +95,7 @@ export function AllergenInfo({
                     className="rounded-md bg-[#fff1ec] px-2.5 py-1 text-xs font-extrabold text-[#9b2c17] ring-1 ring-[#f3d3c9]"
                     key={allergen}
                   >
-                    {t(allergen)}
+                    {t(allergen.charAt(0).toUpperCase() + allergen.slice(1))}
                   </li>
                 ))}
                 {notes.map((note) => (

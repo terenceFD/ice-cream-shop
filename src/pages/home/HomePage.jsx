@@ -2349,8 +2349,10 @@ export function HomePage() {
           </div>
         )}
 
-        {/* A returning shopper sees their own products again before the final call to action. */}
-        <RecentlyViewed />
+        {/* A returning shopper sees their own products again before the final call to action.
+            Four cards at a time, with "Show more" revealing four more and "Show less" folding
+            the row back to the first four. */}
+        <RecentlyViewed paged />
 
         {/* A short close: one call to action, then the footer. */}
         <section aria-labelledby="home-cta-heading" className="bg-[#f4f6f8] px-5 py-12 text-center sm:px-8 sm:py-14 lg:px-10">
