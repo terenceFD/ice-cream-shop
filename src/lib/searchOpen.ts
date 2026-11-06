@@ -23,3 +23,9 @@ export function useSearchOpen() {
   }, []);
   return open;
 }
+
+export function useSetSearchOpen(isOpen: boolean) {
+  useEffect(() => {
+    setSearchOpen(isOpen);
+  }, [isOpen]);
+}

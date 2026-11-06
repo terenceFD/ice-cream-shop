@@ -15,7 +15,8 @@ import { HeaderSearch } from "./HeaderSearch";
 import { NewsletterSignup } from "./NewsletterSignup";
 import { readCookieConsent } from "../lib/analytics";
 import { setMobileMenuOpen, useMobileMenuOpen } from "../lib/mobileMenu";
-import { setSearchOpen } from "../lib/searchOpen";
+import { useSetSearchOpen } from "../lib/searchOpen";
+import { useScrolledPastHeader } from "../lib/pageScrolled";
 
 function ArrowIcon({ diagonal = false }) {
   return (
@@ -301,8 +302,10 @@ export function CurrencySwitcher() {
   const installCardOpen = useInstallCardOpen();
   // The hamburger drawer covers the phone screen; the switcher would float on top of it.
   const mobileMenuOpen = useMobileMenuOpen();
+  // Past the header the switcher would sit over the content, so it only shows above it.
+  const scrolledPastHeader = useScrolledPastHeader();
 
-  if (mobileMenuOpen) return null;
+  if (mobileMenuOpen || scrolledPastHeader) return null;
 
   return (
     <details
@@ -1060,12 +1063,9 @@ export function Header() {
 
   useEffect(() => () => setMobileMenuOpen(false), []);
 
-  // The back-to-top button hides while the search results are showing.
-  useEffect(() => {
-    setSearchOpen(isSearchOpen);
-  }, [isSearchOpen]);
-
-  useEffect(() => () => setSearchOpen(false), []);
+  // The floating widgets (back to top, chat launcher, currency switcher) step aside once
+  // the visitor has scrolled past the header.
+  useSetSearchOpen(isSearchOpen || isScrolled);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return undefined;

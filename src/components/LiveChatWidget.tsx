@@ -4,6 +4,7 @@ import { apiRequest } from "../api/api";
 import { useLanguage } from "../language/useLanguage";
 import { useAuth } from "../context/useAuth";
 import { useMobileMenuOpen } from "../lib/mobileMenu";
+import { useScrolledPastHeader } from "../lib/pageScrolled";
 
 /**
  * Live chat bubble: a small launcher in the corner opens a thread with the store.
@@ -190,6 +191,8 @@ export function LiveChatWidget() {
   const customerId = customer?.id ?? null;
   // The hamburger drawer covers the phone screen; the launcher and panel would float on top.
   const mobileMenuOpen = useMobileMenuOpen();
+  // Past the header the launcher would sit over the content, so it only shows above it.
+  const scrolledPastHeader = useScrolledPastHeader();
   const [isOpen, setIsOpen] = useState(() => {
     try {
       return sessionStorage.getItem(OPEN_STORAGE_KEY) === "1";
@@ -411,6 +414,8 @@ export function LiveChatWidget() {
   };
 
   if (mobileMenuOpen) return null;
+  // An open conversation stays put; only the idle launcher steps aside.
+  if (scrolledPastHeader && !isOpen) return null;
 
   return (
     <>

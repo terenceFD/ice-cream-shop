@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "../language/useLanguage";
-import { useSearchOpen } from "../lib/searchOpen";
 
 // The button appears once the visitor is well past the header, not as soon as they scroll a
 // little: on a short page it would sit there for no reason.
@@ -8,7 +7,6 @@ const SHOW_AFTER_VIEWPORTS = 1.5;
 
 export function BackToTop() {
   const { t } = useLanguage();
-  const searchOpen = useSearchOpen();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -30,12 +28,7 @@ export function BackToTop() {
     };
   }, []);
 
-  // The header search publishes its open state on <body>, so the button can step
-  // aside while the results list is showing in the same corner.
-  useEffect(() => {
-    document.body.classList.toggle("site-search-open", searchOpen);
-    return () => document.body.classList.remove("site-search-open");
-  }, [searchOpen]);
+
 
   const toTop = () => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
