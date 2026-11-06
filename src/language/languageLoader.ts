@@ -23,7 +23,7 @@ export function loadFrenchDictionary() {
   return frenchDictionaryRequest
 }
 
-/** The saved language, or French when the browser prefers it. */
+/** The saved language, or English by default. */
 export function initialLanguage(): Language {
   try {
     const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY)
@@ -31,8 +31,5 @@ export function initialLanguage(): Language {
   } catch (error) {
     console.error('Unable to read the saved language preference.', error)
   }
-  return navigator.languages?.some((value) => value.toLowerCase().startsWith('fr'))
-    || navigator.language?.toLowerCase().startsWith('fr')
-    ? 'fr'
-    : 'en'
+  return 'en'
 }
