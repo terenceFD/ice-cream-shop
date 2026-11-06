@@ -11,20 +11,14 @@ import { RatingBadge } from "../../components/RatingBadge";
 import { RecentlyViewed } from "../../components/RecentlyViewed";
 import { useLanguage } from "../../language/useLanguage";
 import { useCurrency } from "../../context/useCurrency";
-import { photoErrorHandler, photoSrcSet } from "../../lib/thumbnails";
+import { photoSrcSet } from "../../lib/thumbnails";
 import {
   HOME_SLIDE_SIZES,
   normalizePhotoGallery,
 } from "../../../shared/photoSizes.js";
-import { numberFormatter, formatCartMoney } from "../../lib/cartPricing";
+import { formatCartMoney } from "../../lib/cartPricing";
 
-const popularFlavorNames = [
-  "Chocolate Devotion",
-  "Cheesecake Fantasy",
-  "Founder’s Favorite",
-  "Birthday Cake Remix",
-];
-const popularFlavorColors = ["#e9f6dd", "#fff0df", "#fff5d2", "#fff5c8"];
+
 const cakeSliderFallbacks = {
   birthday: [
     "/cake-images/cake-1.webp",
@@ -212,14 +206,7 @@ const homeSlides = [
   },
 ];
 
-function getPopularFlavors(categories) {
-  const iceCream = categories.find(
-    (category) => category.title === "Ice Cream",
-  );
-  return popularFlavorNames
-    .map((name) => iceCream?.items.find((item) => item.name === name))
-    .filter(Boolean);
-}
+
 
 // Menu price (in XAF) for a flavor card's featured item, or null when unavailable.
 function findMenuItem(categories, categoryTitle, itemName) {
@@ -691,10 +678,9 @@ export function HomePage() {
   const { currency: displayCurrency } = useCurrency();
   const { addToCart } = useCart();
   const { flavors: catalogFlavors } = useFlavors();
-  const [popularFlavors, setPopularFlavors] = useState([]);
-  const [popularLoaded, setPopularLoaded] = useState(false);
+  // The live menu, loaded once the flavor section is near the screen. Until then the
+  // built-in catalog supplies the cards, so the page never waits on the network.
   const [menuCategories, setMenuCategories] = useState(null);
-  const [menuError, setMenuError] = useState("");
   const [cartNotice, setCartNotice] = useState("");
   const [reviews, setReviews] = useState([]);
   const [reviewStats, setReviewStats] = useState({
@@ -719,7 +705,7 @@ export function HomePage() {
   const heroHoldTimer = useRef(undefined);
   const [heroPaused, setHeroPaused] = useState(false);
   const reviewsSentinel = useRef(null);
-  const popularSection = useRef(null);
+  const flavorSection = useRef(null);
 
   // The photo on screen, plus the next one, so the crossfade has a picture ready.
   useEffect(() => {
@@ -756,32 +742,22 @@ export function HomePage() {
     heroHoldTimer.current = window.setTimeout(() => setHeroPaused(false), 4000);
   };
 
+  // The live menu is fetched once the flavor section is near the screen, so it does
+  // not compete with the hero photo. Until it arrives the built-in catalog is used.
   useEffect(() => {
-    const node = popularSection.current;
+    const node = flavorSection.current;
     if (!node) return undefined;
     let cancelled = false;
-    // The cards are already drawn from the built-in menu. Stock is loaded when this section
-    // is near the screen, so it does not compete with the hero photo.
     const observer = new IntersectionObserver(
       (entries) => {
         if (!entries.some((entry) => entry.isIntersecting)) return;
         observer.disconnect();
         apiRequest("/menu")
           .then(({ categories }) => {
-            if (!cancelled) {
-              setMenuCategories(categories);
-              setPopularFlavors(getPopularFlavors(categories));
-              setPopularLoaded(true);
-              setMenuError("");
-            }
+            if (!cancelled) setMenuCategories(categories);
           })
-          .catch((error) => {
-            if (!cancelled) {
-              setMenuCategories(coldStoneMenuCategories);
-              setPopularFlavors(getPopularFlavors(coldStoneMenuCategories));
-              setPopularLoaded(true);
-              setMenuError(error.message);
-            }
+          .catch(() => {
+            // The built-in catalog already drew the cards; nothing to report.
           });
       },
       { rootMargin: "400px" },
@@ -1377,10 +1353,16 @@ export function HomePage() {
           </svg>
         </section>
 
+        {/* How ordering works, before the browsing starts: a first-time visitor should
+            not have to scroll past two product grids to learn that they pay online and
+            collect in about 30 minutes. */}
+        <HowItWorksSection t={t} />
+
         <section
           aria-labelledby="flavor-inspiration-heading"
           className="scroll-mt-24 bg-[#f4f6f8] px-5 py-16 text-brand-navy sm:px-8 sm:py-12 lg:px-10 lg:py-14"
           id="flavors"
+          ref={flavorSection}
         >
           <div className="mx-auto max-w-[1320px]">
             <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
@@ -2026,305 +2008,6 @@ export function HomePage() {
           </div>
         </section>
 
-        <HowItWorksSection t={t} />
-
-        <section
-          aria-labelledby="popular-flavors-heading"
-          className="scroll-mt-24 bg-[#f4f6f8] px-5 pb-20 pt-12 sm:px-8 sm:pb-16 sm:pt-14 lg:px-10 lg:pb-18 lg:pt-16"
-          id="favorites"
-          ref={popularSection}
-        >
-          <div className="mx-auto max-w-[1320px]">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-              <div className="max-w-2xl">
-                <h2
-                  className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-brand-navy sm:text-5xl"
-                  id="popular-flavors-heading"
-                >
-                  {t("Fan favorites")}
-                </h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-[#65748a]">
-                  {t(
-                    "Our most-loved signature creations, mixed to order on the frozen stone.",
-                  )}
-                </p>
-              </div>
-              <Link
-                className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 self-start rounded-md bg-brand-navy px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 sm:self-auto"
-                to={`/menu?category=${encodeURIComponent("Ice Cream")}`}
-              >
-                {t("View all")} <ArrowIcon />
-              </Link>
-            </div>
-
-            <div
-              aria-busy={!popularLoaded}
-              aria-label={!popularLoaded ? t("Loading favorites") : undefined}
-              className="mt-12 grid gap-5 lg:grid-cols-12 lg:gap-6"
-              role={!popularLoaded ? "status" : undefined}
-            >
-              {popularLoaded
-                ? popularFlavors.map((item, index) => {
-                    const soldOut =
-                      item.isAvailable === false || item.availableQuantity < 1;
-                    const featured = index === 0;
-                    const itemKey = item.id || item.name;
-                    const added = addedItemKey === itemKey;
-                    const itemLink = `/menu?category=${encodeURIComponent("Ice Cream")}`;
-                    const bagIcon = added ? (
-                      <svg
-                        aria-hidden="true"
-                        className="size-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="m5 12.5 4.5 4.5L19 7.5"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2.5"
-                        />
-                      </svg>
-                    ) : !soldOut ? (
-                      <svg
-                        aria-hidden="true"
-                        className="size-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z"
-                          stroke="currentColor"
-                          strokeLinejoin="round"
-                          strokeWidth="1.8"
-                        />
-                        <path
-                          d="M9 8V6.5a3 3 0 0 1 6 0V8"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeWidth="1.8"
-                        />
-                      </svg>
-                    ) : null;
-                    const image = (
-                      <img
-                        decoding="async"
-                        alt=""
-                        className={`size-full object-cover transition-transform duration-500 group-hover:scale-[1.025] motion-reduce:transition-none ${soldOut ? "grayscale-[60%]" : ""}`}
-                        loading="lazy"
-                        onError={photoErrorHandler(
-                          item.image,
-                          "/images/hero-ice-cream.jpg",
-                        )}
-                        sizes={
-                          featured
-                            ? "(min-width: 1024px) 40vw, 100vw"
-                            : "(min-width: 1024px) 25vw, 50vw"
-                        }
-                        src={item.image}
-                        srcSet={photoSrcSet(item.image)}
-                      />
-                    );
-
-                    if (featured) {
-                      return (
-                        <article
-                          className="group flex min-w-0 flex-col lg:col-span-5 lg:row-span-4"
-                          key={itemKey}
-                        >
-                          <Link
-                            aria-label={t(item.name)}
-                            className="relative block aspect-[4/3] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-4"
-                            style={{
-                              backgroundColor: popularFlavorColors[index],
-                            }}
-                            to={itemLink}
-                          >
-                            {image}
-                            {soldOut && (
-                              <span className="absolute left-4 top-4 rounded-sm bg-white px-3 py-1.5 text-xs font-bold text-red-700">
-                                {t("Sold out")}
-                              </span>
-                            )}
-                          </Link>
-
-                          <div className="flex flex-1 flex-col pt-5 sm:pt-6">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <h3 className="font-display text-2xl font-extrabold leading-tight text-brand-navy sm:text-3xl">
-                                <Link
-                                  className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2"
-                                  to={itemLink}
-                                >
-                                  {t(item.name)}
-                                </Link>
-                              </h3>
-                              <RatingBadge
-                                averageRating={item.averageRating}
-                                reviewCount={item.reviewCount}
-                              />
-                            </div>
-                            <p className="mt-2 hidden max-w-lg text-sm leading-6 text-[#65748a] sm:block sm:text-base sm:leading-7">
-                              {t(item.detail)}
-                            </p>
-                            <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-5">
-                              <p
-                                className={`whitespace-nowrap font-display text-xl font-extrabold tabular-nums transition-colors duration-300 sm:text-2xl ${added ? "text-green-700" : "text-brand-navy"}`}
-                              >
-                                {soldOut
-                                  ? t("Sold out")
-                                  : formatPrice(item.priceXaf)}
-                              </p>
-                              <button
-                                aria-label={
-                                  soldOut
-                                    ? t("Sold out")
-                                    : t("Add {name} to cart", {
-                                        name: t(item.name),
-                                      })
-                                }
-                                className={`relative z-10 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:w-auto ${
-                                  added
-                                    ? "bg-[#37632c] text-white"
-                                    : "bg-brand-navy text-white hover:bg-brand-blue"
-                                }`}
-                                disabled={soldOut}
-                                onClick={() => handleAddToCart(item)}
-                                type="button"
-                              >
-                                {bagIcon}
-                                {soldOut
-                                  ? t("Sold out")
-                                  : added
-                                    ? t("Added")
-                                    : t("Add to cart")}
-                              </button>
-                            </div>
-                          </div>
-                        </article>
-                      );
-                    }
-
-                    return (
-                      <article
-                        className="group flex min-w-0 flex-wrap gap-3 bg-white/80 p-3 sm:flex-nowrap sm:items-center sm:gap-4 sm:p-4 lg:col-span-7"
-                        key={itemKey}
-                      >
-                        <Link
-                          aria-label={t(item.name)}
-                          className="relative size-20 shrink-0 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2 sm:size-24"
-                          style={{
-                            backgroundColor: popularFlavorColors[index],
-                          }}
-                          to={itemLink}
-                        >
-                          {image}
-                        </Link>
-                        <div className="min-w-0 flex-1 self-center">
-                          <h3 className="font-display text-base font-extrabold leading-snug text-brand-navy sm:text-lg">
-                            <Link
-                              className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2"
-                              to={itemLink}
-                            >
-                              {t(item.name)}
-                            </Link>
-                          </h3>
-                          <div className="mt-1">
-                            <RatingBadge
-                              averageRating={item.averageRating}
-                              reviewCount={item.reviewCount}
-                            />
-                          </div>
-                          <p className="mt-1 hidden line-clamp-1 text-xs leading-5 text-[#65748a] sm:block sm:text-sm sm:leading-6">
-                            {t(item.detail)}
-                          </p>
-                          <p
-                            className={`mt-1 whitespace-nowrap font-display text-sm font-extrabold tabular-nums transition-colors duration-300 ${added ? "text-green-700" : "text-brand-navy"}`}
-                          >
-                            {soldOut
-                              ? t("Sold out")
-                              : formatPrice(item.priceXaf)}
-                          </p>
-                        </div>
-                        <button
-                          aria-label={
-                            soldOut
-                              ? t("Sold out")
-                              : added
-                                ? t("Added")
-                                : t("Add {name} to cart", {
-                                    name: t(item.name),
-                                  })
-                          }
-                          // On a phone the card is a row: photo and text on top, button full width
-                          // underneath. `w-full` alone wrapped into the gap beside the photo.
-                          className={`relative z-10 mt-1 inline-flex min-h-10 w-full shrink-0 basis-full items-center justify-center gap-2 rounded-md px-4 text-xs font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dfe5e7] disabled:text-[#65748a] sm:mt-0 sm:w-auto sm:basis-auto sm:px-4 ${
-                            added
-                              ? "bg-[#37632c] text-white"
-                              : "bg-brand-navy text-white hover:bg-brand-blue"
-                          }`}
-                          disabled={soldOut}
-                          onClick={() => handleAddToCart(item)}
-                          title={soldOut ? t("Sold out") : t("Add to cart")}
-                          type="button"
-                        >
-                          {bagIcon && (
-                            <svg
-                              aria-hidden="true"
-                              className="size-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                d="m5 12.5 4.5 4.5L19 7.5"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                              />
-                            </svg>
-                          )}
-                          {soldOut
-                            ? t("Sold out")
-                            : added
-                              ? t("Added")
-                              : t("Add to cart")}
-                        </button>
-                      </article>
-                    );
-                  })
-                : Array.from({ length: 5 }, (_, index) => (
-                    <div
-                      aria-hidden="true"
-                      className={`animate-pulse bg-[#e4e8ee] ${
-                        index === 0
-                          ? "aspect-[4/3] min-h-[400px] sm:min-h-[480px] lg:col-span-5 lg:row-span-4 lg:aspect-auto lg:min-h-[520px]"
-                          : "min-h-28 lg:col-span-7"
-                      }`}
-                      key={`favorite-skeleton-${index}`}
-                    />
-                  ))}
-            </div>
-
-            {menuError && (
-              <p className="mt-6 text-xs text-[#65748a]" role="status">
-                {t("Menu availability could not be refreshed")}: {menuError}
-              </p>
-            )}
-          </div>
-        </section>
-
-        {/* Always shown: the reviews, or an invitation to write the first one. */}
-        <div aria-hidden="true" className="h-px" ref={reviewsSentinel} />
-        <ReviewsSection
-          error={reviewsError}
-          isLoaded={reviewsLoaded}
-          language={language}
-          reviews={reviews}
-          stats={reviewStats}
-          t={t}
-        />
-
         {cartNotice && (
           <div
             aria-live="polite"
@@ -2348,6 +2031,17 @@ export function HomePage() {
             )}
           </div>
         )}
+
+        {/* Always shown: the reviews, or an invitation to write the first one. */}
+        <div aria-hidden="true" className="h-px" ref={reviewsSentinel} />
+        <ReviewsSection
+          error={reviewsError}
+          isLoaded={reviewsLoaded}
+          language={language}
+          reviews={reviews}
+          stats={reviewStats}
+          t={t}
+        />
 
         {/* A returning shopper sees their own products again before the final call to action.
             Four cards at a time, with "Show more" revealing four more and "Show less" folding
