@@ -26,6 +26,30 @@ import {
 } from "../shared/storeHours.js";
 import { buildChunks, retrieveChunks } from "./retrieval.js";
 import { createToolExecutor, toolDefinitions } from "./chat-tools.js";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+/**
+ * Inline a stored chat photo as a base64 data URI — the format vision-capable
+ * providers require (they do not fetch external URLs). Accepts an already-inline
+ * data URI (returns it unchanged), a site /uploads/ path (read from disk), or a
+ * safe http(s) URL (returned unchanged for providers that do fetch URLs). Anything
+ * unreadable returns "" and the message simply travels as text.
+ */
+function inlineImage(url) {
+  if (!url) return "";
+  if (url.startsWith("data:image/")) return url;
+  if (!url.startsWith("/uploads/")) return url;
+  try {
+    // Uploads live beside this file: server/uploads/<name> (same layout index.js uses).
+    const filePath = fileURLToPath(new URL(`./${url}`, import.meta.url));
+    const buffer = readFileSync(filePath);
+    const mime = url.endsWith(".png") ? "image/png" : url.endsWith(".gif") ? "image/gif" : "image/webp";
+    return `data:${mime};base64,${buffer.toString("base64")}`;
+  } catch {
+    return "";
+  }
+}
 
 const TIME_WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -355,6 +379,9 @@ function providerChain() {
     baseUrl: process.env.AI_BASE_URL || "https://api.openai.com/v1",
     model: process.env.AI_MODEL,
     apiKey: process.env.AI_API_KEY,
+    // The vision variant of the primary: used when the customer attached a photo.
+    // Falls back to the text model when unset (the photo then cannot be analysed).
+    visionModel: process.env.AI_VISION_MODEL || "",
   };
   const chain = [primary];
   if (process.env.AI_FAILOVER_BASE_URL && process.env.AI_FAILOVER_MODEL && process.env.AI_FAILOVER_API_KEY) {
@@ -363,6 +390,7 @@ function providerChain() {
       baseUrl: process.env.AI_FAILOVER_BASE_URL.replace(/\/$/, ""),
       model: process.env.AI_FAILOVER_MODEL,
       apiKey: process.env.AI_FAILOVER_API_KEY,
+      visionModel: process.env.AI_FAILOVER_VISION_MODEL || "",
     });
   }
   return chain;
@@ -853,9 +881,12 @@ async function runWithTools(systemPrompt, history, context, database, { imageUrl
     ...history.slice(-8).map((message) => ({
       role: message.sender === "customer" ? "user" : "assistant",
       content: message.body,
+      // The attached photo becomes an image part of THIS message only. Cerebras
+      // (and OpenAI-compatible providers) require a base64 data URI — an external
+      // URL is not fetched — so the stored /uploads/ path is inlined from disk.
       ...(message.imageUrl ? { content: [
         { type: "text", text: message.body || "(photo attached)" },
-        { type: "image_url", image_url: { url: imageUrl || message.imageUrl } },
+        { type: "image_url", image_url: { url: inlineImage(imageUrl || message.imageUrl) } },
       ] } : {}),
     })),
   ];
@@ -867,7 +898,7 @@ async function runWithTools(systemPrompt, history, context, database, { imageUrl
   // concurrent chat threads would otherwise swap providers under each other.
   let lastFailure = null;
   for (const provider of providerChain()) {
-    const attempt = await runOneProvider(provider, { messages, executeTool, controller });
+    const attempt = await runOneProvider(provider, { messages, executeTool, controller, imageUrl });
     if (attempt.text || attempt.toolCalls) return attempt;
     lastFailure = attempt;
     if (attempt.reason === "timeout") break; // the outer budget is shared; no point switching
@@ -877,8 +908,14 @@ async function runWithTools(systemPrompt, history, context, database, { imageUrl
 
 // One provider's full tool-call conversation: generate, run tools, finish. Returns
 // the final exchange in `conversation` so the verify pass can see what the model saw.
-async function runOneProvider(provider, { messages, executeTool, controller }) {
-  const first = await fetchCompletion({ messages, tools: toolDefinitions(), provider }, controller);
+async function runOneProvider(provider, { messages, executeTool, controller, imageUrl = "" }) {
+  // Photo routing (#3): a message with an image goes to the provider's vision
+  // model, not the text one — gpt-oss-120b ignores images entirely. The choice is
+  // per-message: text replies on the same thread keep using the text model.
+  const withVision = imageUrl && provider.visionModel
+    ? { ...provider, model: provider.visionModel }
+    : provider;
+  const first = await fetchCompletion({ messages, tools: toolDefinitions(), provider: withVision }, controller);
   if (!first.text && !first.toolCalls) return first;
   if (first.toolCalls?.length) {
     const assistantMessage = first.raw?.choices?.[0]?.message;
@@ -895,7 +932,7 @@ async function runOneProvider(provider, { messages, executeTool, controller }) {
     }
     const conversation = [...messages, assistantMessage, ...toolResults];
     const second = await fetchCompletion(
-      { messages: conversation, provider },
+      { messages: conversation, provider: withVision },
       controller,
     );
     if (second.text) return { ...second, conversation };
