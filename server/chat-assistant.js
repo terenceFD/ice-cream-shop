@@ -786,6 +786,9 @@ export async function gatherShopFacts(database) {
     "CONTACT: the /contact form sends a message to one chosen store, and only that store's team receives it; replies come by email. There is also a WhatsApp chat button on customer pages.",
     "APP: the website installs as an app (from the browser's install prompt) and keeps working offline for browsing; orders need a connection.",
     "PRIVACY: card details stay on Stripe, Mobile Money PINs stay on CamPay, and the browser never talks to the database directly. The privacy (/privacy), terms (/terms), refund (/refunds) and cookie (/cookies) policies are on the site.",
+    "CHAT AND THE SHOP TEAM: this conversation is read by the shop team as well. When the assistant flags a conversation for the team (a complaint, a money dispute, or a question it cannot answer), a staff member picks it up in the shop's inbox and replies right here — so a promised follow-up genuinely arrives in this same thread. If the assistant says a colleague will follow up, that is exactly what happens.",
+    "PROMOTION ANNOUNCEMENTS: when the shop launches a promotion, customers who are already chatting receive the announcement right in this thread — with the discount code and how to use it. A message from the shop about a discount is genuine; the code is also live on the Promotions the assistant can see.",
+    "STAFF REPLY TIMES: the shop team usually replies within a few minutes during opening hours. Outside opening hours the website still takes orders 24/7, and messages sent at night are answered the next morning.",
   ];
 
   // Find-your-flavor quiz support (#8): moods come from the flavor catalog, so the
