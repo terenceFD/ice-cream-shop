@@ -326,9 +326,11 @@ app.use(helmet({
 // Pages, scripts, styles and API answers are sent compressed (about a quarter of the size).
 // Render's CDN also compresses, but the site should not depend on its host doing it.
 app.use(compression())
-// The site never needs these browser features, so embedded or injected content cannot ask for them.
+// The site never needs these browser features beyond its own pages, so embedded or
+// injected content cannot ask for them. The chat's voice input is a first-party use
+// of the microphone, so the site's own origin keeps it; everything else stays off.
 app.use((_request, response, next) => {
-  response.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), usb=(), payment=(), interest-cohort=()')
+  response.set('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), usb=(), payment=(), interest-cohort=()')
   next()
 })
 const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER)
@@ -3407,10 +3409,14 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
     return
   }
   // Optional photo attachment (#7): a URL this server produced through the public
-  // chat-upload endpoint. Only site-owned paths are accepted, so a caller cannot
-  // point the thread at an arbitrary external image.
-  const imageUrl = typeof request.body.imageUrl === 'string' && /^\/uploads\/[\w./-]+$/.test(request.body.imageUrl)
-    ? request.body.imageUrl.slice(0, 300)
+  // chat-upload endpoint. Production stores uploads in Supabase Storage, so the
+  // site's own storage origins are accepted alongside local /uploads/ paths; an
+  // arbitrary external image is still refused.
+  const uploadOrigins = imageStorageOrigin() ? [new URL(imageStorageOrigin()).origin] : []
+  const imageUrl = typeof request.body.imageUrl === 'string'
+    && (/^\/uploads\/[\w./-]+$/.test(request.body.imageUrl)
+      || uploadOrigins.some((origin) => request.body.imageUrl.startsWith(`${origin}/uploads/`)))
+    ? request.body.imageUrl.slice(0, 400)
     : ''
   const deviceToken = ensureChatDeviceToken(request, response)
   if (!(await chatThreadAllowed(threadId, request.customer, deviceToken))) {
