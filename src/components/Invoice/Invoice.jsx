@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiRequest } from "../../api/api";
+import { apiRequest, getCustomerToken } from "../../api/api";
 import { useLanguage } from "../../language/useLanguage";
 import { useCurrency } from "../../context/useCurrency";
 import { formatOrderMoney } from "../../lib/cartPricing";
@@ -212,6 +212,10 @@ export function InvoiceButton({ orderId, className = "" }) {
     try {
       const result = await apiRequest(
         `/customer/orders/${encodeURIComponent(orderId)}`,
+        // The token must travel with the fetch — without it the server sees an
+        // anonymous caller and answers "Customer sign-in is required" even for
+        // a signed-in customer trying to print their invoice.
+        { token: getCustomerToken() },
       );
       setOrder(result.order);
     } catch (loadError) {

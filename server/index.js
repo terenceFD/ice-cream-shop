@@ -106,6 +106,7 @@ import { storeAdminCanAccess } from './admin-access.js'
 import { isSpamSubmission } from './spam-guard.js'
 import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, saveUploadedImage } from './storage.js'
 import { optimizeUploadedImage, UnreadableImageError } from './images.js'
+import sharp from 'sharp'
 import {
   buildPromotionNotification,
   countCustomerSubscriptions,
@@ -2657,20 +2658,64 @@ async function resolveFavoriteItem(itemId) {
   return menuItem ? { ...menuItem, itemId, itemType: 'menu' } : null
 }
 
-app.get('/api/reviews', async (_request, response) => {
-  const reviews = await database.prepare(`
-    SELECT r.rating, r.review, r.created_at AS "createdAt",
-      c.name AS "customerName", c.profile_picture AS "profilePicture",
-      r.item_id AS "itemId"
-    FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
-    WHERE r.is_approved = 1
-    ORDER BY r.id DESC LIMIT 50
-  `).all()
-  const reviewsWithItems = await Promise.all(reviews.map(async (review) => ({
-    ...review,
-    itemName: (await resolveFavoriteItem(review.itemId))?.name || review.itemId,
-  })))
-  response.json({ reviews: reviewsWithItems })
+// Reviews stay public; their avatar pictures no longer travel inline as base64
+// data URIs (up to 1 MB each). The review queries return the customer id, and the
+// frontend renders a small, cacheable thumbnail served by /api/avatars/:id.
+const AVATAR_SIDE = 72
+const avatarCache = new Map() // customerId -> { body, contentType, at } | null
+const AVATAR_CACHE_MS = 10 * 60 * 1000
+
+async function avatarThumbnail(customerId) {
+  const cached = avatarCache.get(customerId)
+  if (cached !== undefined && Date.now() - cached.at < AVATAR_CACHE_MS) return cached
+  const row = await database.prepare('SELECT profile_picture FROM customers WHERE id = ?').get(customerId)
+  const dataUri = row?.profile_picture || ''
+  const match = /^data:image\/(jpeg|png|webp|gif);base64,([A-Za-z0-9+/]+={0,2})$/.exec(dataUri)
+  let result = null
+  if (match) {
+    try {
+      const buffer = Buffer.from(match[2], 'base64')
+      // Avatars render at 36 px (72 px on sharp screens), so the stored photo is
+      // shrunk here; the heavy original never leaves the server for this route.
+      const thumbnail = await sharp(buffer, { failOn: 'error' })
+        .rotate()
+        .resize({ width: AVATAR_SIDE, height: AVATAR_SIDE, fit: 'cover' })
+        .webp({ quality: 78, effort: 4 })
+        .toBuffer()
+      result = { body: thumbnail, contentType: 'image/webp', at: Date.now() }
+    } catch {
+      result = null // unreadable stored image: answer 404 rather than crash
+    }
+  }
+  avatarCache.set(customerId, result)
+  // Keep the cache from growing without bound on a long-running server.
+  if (avatarCache.size > 1000) {
+    for (const [key, value] of avatarCache) {
+      if (!value || Date.now() - value.at >= AVATAR_CACHE_MS) avatarCache.delete(key)
+    }
+  }
+  return result
+}
+
+app.get('/api/avatars/:customerId', async (request, response) => {
+  const customerId = Number(request.params.customerId)
+  if (!Number.isSafeInteger(customerId) || customerId < 1) {
+    response.status(404).end()
+    return
+  }
+  try {
+    const avatar = await avatarThumbnail(customerId)
+    if (!avatar) {
+      response.status(404).end()
+      return
+    }
+    response.setHeader('Content-Type', avatar.contentType)
+    response.setHeader('Cache-Control', 'public, max-age=86400')
+    response.setHeader('CDN-Cache-Control', 'public, max-age=604800')
+    response.send(avatar.body)
+  } catch {
+    response.status(404).end()
+  }
 })
 
 app.get('/api/customer/favorites', requireCustomer, async (request, response) => {
@@ -2960,11 +3005,15 @@ app.get('/api/menu/:itemId/reviews', async (request, response) => {
   `).get(itemId)
   const reviews = await database.prepare(`
     SELECT r.rating, r.review, r.created_at AS "createdAt",
-      c.name AS "customerName", c.profile_picture AS "profilePicture"
+      c.name AS "customerName", c.id AS "customerId"
     FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
     WHERE r.item_id = ? AND r.is_approved = 1 ORDER BY r.id DESC LIMIT 50
   `).all(itemId)
-  response.json({ ...summary, reviews })
+  // The avatar is a small cacheable URL instead of an inline base64 picture.
+  response.json({ ...summary, reviews: reviews.map((review) => ({
+    ...review,
+    profilePicture: review.customerId ? `/api/avatars/${review.customerId}` : null,
+  })) })
 })
 
 app.post('/api/customer/reviews', requireCustomer, async (request, response) => {

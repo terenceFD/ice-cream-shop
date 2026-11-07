@@ -57,10 +57,15 @@ export function clearCustomerToken() {
 export async function apiRequest<T = any>(path: string, { body, token, ...options }: ApiOptions = {}): Promise<T | null> {
   const headers = new Headers(options.headers)
   if (body !== undefined) headers.set('Content-Type', 'application/json')
-  if (token) headers.set('Authorization', `Bearer ${token}`)
+  // Customer endpoints are customer-scoped: when a caller forgets to pass a token,
+  // use the signed-in customer's own, so an authenticated-looking call can never
+  // go out anonymous and fail with "Customer sign-in is required". A caller that
+  // deliberately passes another token (admin) is untouched.
+  const resolvedToken = token ?? (path.startsWith('/customer/') ? getCustomerToken() : undefined)
+  if (resolvedToken) headers.set('Authorization', `Bearer ${resolvedToken}`)
 
   let requestPath = path
-  if (token && path.startsWith('/admin/') && !/[?&]storeTown=/.test(path)) {
+  if (resolvedToken && path.startsWith('/admin/') && !/[?&]storeTown=/.test(path)) {
     try {
       const storeTown = sessionStorage.getItem(ADMIN_STORE_TOWN_KEY)
       if (storeTown) {
@@ -95,7 +100,7 @@ export async function apiRequest<T = any>(path: string, { body, token, ...option
   }
   if (!response.ok) {
     // Only end the session whose token was rejected, so an expired admin session does not sign the customer out.
-    if (response.status === 401 && token) {
+    if (response.status === 401 && resolvedToken) {
       if (token === sessionStorage.getItem(ADMIN_TOKEN_KEY)) {
         sessionStorage.removeItem(ADMIN_TOKEN_KEY)
         window.dispatchEvent(new Event('admin-session-expired'))
