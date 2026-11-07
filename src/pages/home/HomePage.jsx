@@ -1045,7 +1045,10 @@ export function HomePage() {
     <div className="min-h-screen overflow-clip bg-[#fbfaf5] text-brand-navy">
       <Header />
       <main id="main" tabIndex={-1}>
+        {/* The floating widgets (chat, currency) step aside over the hero and the footer,
+            and are available in every section between them. */}
         <section
+          data-floating-hide="hero"
           id="home"
           className="relative isolate flex w-full flex-col overflow-clip bg-[var(--brand-navy)] text-white sm:min-h-[90vh]"
         >

@@ -128,7 +128,7 @@ import {
 import { registerEventOrderRoutes } from './event-orders.js'
 import { registerCakeQuoteRoutes } from './cake-quotes.js'
 import { isWhatsAppMessagingConfigured, sendWhatsAppText } from './whatsapp.js'
-import { aiConfigured, detectMessageLanguage, suggestReply } from './chat-assistant.js'
+import { aiConfigured, detectMessageLanguage, gatherCustomerContext, suggestReply } from './chat-assistant.js'
 import {
   AdminMfaConfigurationError,
   authenticatorUri,
@@ -3293,6 +3293,12 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
     response.status(400).json({ error: 'Write a message before sending.' })
     return
   }
+  // Optional photo attachment (#7): a URL this server produced through the public
+  // chat-upload endpoint. Only site-owned paths are accepted, so a caller cannot
+  // point the thread at an arbitrary external image.
+  const imageUrl = typeof request.body.imageUrl === 'string' && /^\/uploads\/[\w./-]+$/.test(request.body.imageUrl)
+    ? request.body.imageUrl.slice(0, 300)
+    : ''
   const deviceToken = ensureChatDeviceToken(request, response)
   if (!(await chatThreadAllowed(threadId, request.customer, deviceToken))) {
     response.status(403).json({ error: await chatAccessError(threadId) })
@@ -3327,10 +3333,10 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
   // a signed-in customer's messages carry their id instead. The column is NOT NULL,
   // so an account message stores '' rather than null.
   await database.prepare(`
-    INSERT INTO chat_messages (thread_id, customer_id, sender, body, guest_device)
-    VALUES (?, ?, 'customer', ?, ?)
+    INSERT INTO chat_messages (thread_id, customer_id, sender, body, guest_device, image_url)
+    VALUES (?, ?, 'customer', ?, ?, ?)
   `).run(threadId, request.customer ? request.customer.id : null, body,
-        request.customer ? '' : deviceToken)
+        request.customer ? '' : deviceToken, imageUrl)
   response.status(201).json({ sent: true })
 
   // Automatic AI reply. Only when the shop turned it on AND a real generative model is
@@ -3344,7 +3350,7 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
   }
   try {
     const history = await database.prepare(`
-      SELECT sender, body FROM chat_messages WHERE thread_id = ? ORDER BY id
+      SELECT sender, body, image_url AS "imageUrl" FROM chat_messages WHERE thread_id = ? ORDER BY id
     `).all(threadId)
     const lastCustomer = [...history].reverse().find((message) => message.sender === 'customer')
     if (!lastCustomer) return
@@ -3357,7 +3363,23 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
     // Reply in the language the customer just wrote in, so French and English
     // switch naturally inside one conversation instead of sticking to the page language.
     const language = detectMessageLanguage(lastCustomer.body, 'en')
-    const result = await suggestReply(history, { database, language, customerPage, pageSnapshot })
+    // The signed-in customer's live bag and latest order travel into the prompt, so
+    // "what's in my bag?" and "where is my order?" get real answers without staff.
+    const threadCustomer = await database.prepare(`
+      SELECT customer_id AS id FROM chat_messages WHERE thread_id = ? AND customer_id IS NOT NULL LIMIT 1
+    `).get(threadId)
+    const customerProfile = threadCustomer?.id
+      ? await database.prepare('SELECT id, name FROM customers WHERE id = ?').get(threadCustomer.id)
+      : null
+    const customerContext = customerProfile
+      ? {
+        firstName: String(customerProfile.name || '').trim().split(/\s+/)[0] || '',
+        ...(await gatherCustomerContext(database, customerProfile.id)),
+      }
+      : {}
+    // The photo attached to the latest customer message, if any (#3 vision).
+    const imageUrl = lastCustomer.imageUrl || ''
+    const result = await suggestReply(history, { database, language, customerPage, pageSnapshot, customerContext, imageUrl })
     if (!result.suggestion || result.source !== "ai") {
       // The model was configured but did not answer. Log the actual cause (timeout, bad
       // key, empty completion...) instead of a generic "no usable reply", so a broken
@@ -3365,21 +3387,75 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
       console.warn(
         `chat auto-reply skipped on thread ${threadId}: ${result.aiFailure?.reason || 'no reply'} — ${result.aiFailure?.detail || 'no detail'}`,
       )
+      // Even without a reply, a complaint must reach a person.
+      if (result.needsAttention) {
+        await raiseThreadNeedsAttention(threadId)
+        return
+      }
+      // The model missed (rate limit, timeout...). The rule-based drafter answers
+      // from live shop data, so those replies are safe to send automatically; the
+      // generic "a colleague will reply" template stays staff-only.
+      await sendFallbackAutoReply(threadId, result, language)
       return
     }
+    await database.prepare(`
+      UPDATE chat_messages SET topic = ? WHERE id = ?
+    `).run(String(result.topic || 'general').slice(0, 30), lastCustomer.id)
     await database.prepare(`
       INSERT INTO chat_messages (thread_id, customer_id, sender, body)
       VALUES (?, NULL, 'store', ?)
     `).run(threadId, result.suggestion)
-    console.log(`chat auto-reply sent on thread ${threadId} (topic: ${result.topic || 'general'})`)
+    // Handoff (#10): complaints, money disputes or repeated confusion page the team
+    // by raising needs_attention on the thread; the inbox shows the flag.
+    if (result.needsAttention) {
+      await raiseThreadNeedsAttention(threadId)
+    }
+    console.log(`chat auto-reply sent on thread ${threadId} (topic: ${result.topic || 'general'}${result.needsAttention ? ', NEEDS ATTENTION' : ''})`)
   } catch (autoReplyError) {
     console.error('chat auto-reply failed:', autoReplyError)
   }
 })
 
+// When the model is rate-limited or failed, the rule-based drafter still answers from
+// live shop data (prices, stock, branches, hours, discounts) — those facts are safe
+// to send automatically. Only the 'general' template ("a colleague will reply soon")
+// stays staff-only: it says nothing useful and a silent thread reads as broken.
+const AUTO_REPLYABLE_TOPICS = new Set([
+  'greeting', 'thanks', 'farewell', 'price', 'menu', 'hours', 'stores',
+  'delivery', 'discount', 'stock', 'order', 'navigation', 'account', 'cake',
+  'event', 'loyalty', 'notification', 'review', 'app', 'payment', 'refund',
+])
+
+async function sendFallbackAutoReply(threadId, result, language) {
+  if (!result.suggestion) return false
+  if (!AUTO_REPLYABLE_TOPICS.has(result.topic)) return false
+  await database.prepare(`
+    INSERT INTO chat_messages (thread_id, customer_id, sender, body)
+    VALUES (?, NULL, 'store', ?)
+  `).run(threadId, result.suggestion)
+  if (result.needsAttention) {
+    await raiseThreadNeedsAttention(threadId)
+  }
+  console.log(`chat auto-reply sent on thread ${threadId} (topic: ${result.topic}, source: rules fallback, language: ${language})`)
+  return true
+}
+
 // The shop turns automatic replies on with CHAT_AUTO_REPLY=true in the environment.
 function chatAutoReplyEnabled() {
   return /^(1|true|yes|on)$/i.test(process.env.CHAT_AUTO_REPLY || '')
+}
+
+// Raise the human-handoff flag on a thread (#10). Every message in the thread carries
+// the flag, so the inbox reads it with MAX() over the thread's rows. Clearing it from
+// the inbox resets every row at once.
+async function raiseThreadNeedsAttention(threadId) {
+  try {
+    await database.prepare(`
+      UPDATE chat_messages SET needs_attention = 1 WHERE thread_id = ?
+    `).run(threadId)
+  } catch (flagError) {
+    console.error('chat needs_attention flag failed:', flagError)
+  }
 }
 
 // Guest chats are scoped to one browser with a random device token in an HttpOnly
@@ -3471,7 +3547,7 @@ app.get('/api/chat/messages/:threadId', optionalCustomer, async (request, respon
     `).run(request.customer.id, threadId)
   }
   const messages = await database.prepare(`
-    SELECT id, sender, body, created_at AS "createdAt"
+    SELECT id, sender, body, image_url AS "imageUrl", created_at AS "createdAt"
     FROM chat_messages WHERE thread_id = ? ORDER BY id DESC LIMIT 50
   `).all(threadId)
   // Only store replies count as read by the shopper; their own messages already are.
@@ -3518,6 +3594,7 @@ app.get('/api/admin/chat/threads', requireAdmin, async (request, response) => {
       MAX(c.name) FILTER (WHERE m.sender = 'customer') AS "customerName",
       COUNT(*) AS "messageCount",
       SUM(CASE WHEN m.sender = 'customer' AND m.is_read_by_store = 0 THEN 1 ELSE 0 END) AS "unreadCount",
+      MAX(m.needs_attention) AS "needsAttention",
       MIN(m.created_at) AS "startedAt",
       MAX(m.created_at) AS "lastAt"
     FROM chat_messages m LEFT JOIN customers c ON c.id = m.customer_id
@@ -3548,13 +3625,28 @@ app.get('/api/admin/chat/threads/:threadId', requireAdmin, async (request, respo
     return
   }
   const messages = await database.prepare(`
-    SELECT id, sender, body, customer_id AS "customerId", created_at AS "createdAt"
+    SELECT id, sender, body, customer_id AS "customerId", needs_attention AS "needsAttention", created_at AS "createdAt"
     FROM chat_messages WHERE thread_id = ? ORDER BY id
   `).all(threadId)
   await database.prepare(`
     UPDATE chat_messages SET is_read_by_store = 1 WHERE thread_id = ? AND sender = 'customer'
   `).run(threadId)
   response.json({ messages })
+})
+
+// Staff have taken over the thread (#10): clear the AI's handoff flag. A human reply
+// arriving is the natural signal, so the reply endpoint clears it automatically; this
+// explicit route also lets staff dismiss a false alarm without replying.
+app.post('/api/admin/chat/threads/:threadId/acknowledge', requireAdmin, async (request, response) => {
+  const threadId = request.params.threadId
+  if (!chatThreadIdValid(threadId)) {
+    response.status(400).json({ error: 'Chat thread is invalid.' })
+    return
+  }
+  await database.prepare(`
+    UPDATE chat_messages SET needs_attention = 0 WHERE thread_id = ?
+  `).run(threadId)
+  response.json({ acknowledged: true })
 })
 
 app.post('/api/admin/chat/threads/:threadId/reply', requireAdmin, async (request, response) => {
@@ -3565,15 +3657,83 @@ app.post('/api/admin/chat/threads/:threadId/reply', requireAdmin, async (request
     return
   }
   await database.prepare(`
-    INSERT INTO chat_messages (thread_id, customer_id, sender, body)
-    VALUES (?, NULL, 'store', ?)
+    INSERT INTO chat_messages (thread_id, customer_id, sender, body, needs_attention)
+    VALUES (?, NULL, 'store', ?, 0)
   `).run(threadId, body)
+  // A human has answered, so the AI's handoff flag is no longer needed.
+  await database.prepare(`
+    UPDATE chat_messages SET needs_attention = 0 WHERE thread_id = ?
+  `).run(threadId)
+  // Correction learning (#8): if this thread has a pending AI draft, record what was
+  // actually sent. Staff edits are the signal the shop learns from; sending the draft
+  // untouched is a positive signal too.
+  try {
+    const pending = await database.prepare(`
+      SELECT id, draft FROM chat_corrections
+      WHERE thread_id = ? AND sent = '' ORDER BY id DESC LIMIT 1
+    `).get(threadId)
+    if (pending) {
+      const wasEdited = body !== pending.draft ? 1 : 0
+      await database.prepare(`
+        UPDATE chat_corrections SET sent = ?, was_edited = ? WHERE id = ?
+      `).run(body, wasEdited, pending.id)
+    }
+  } catch (correctionError) {
+    console.error('chat correction record failed:', correctionError)
+  }
   response.status(201).json({ sent: true })
 })
 
+// Public photo upload for a chat message (#7): same validation as the admin upload,
+// a tighter 3 MB cap, and its own rate limit. Returns a site /uploads/ path only.
+const chatUploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: 'Too many photo uploads, try again later.',
+})
+
+app.post('/api/chat/uploads', chatLimiter, chatUploadLimiter, async (request, response) => {
+  const dataUrl = typeof request.body.dataUrl === 'string' ? request.body.dataUrl : ''
+  const match = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(dataUrl)
+  if (!match) {
+    response.status(400).json({ error: 'Upload a JPEG, PNG, or WebP image.' })
+    return
+  }
+  const buffer = Buffer.from(match[2], 'base64')
+  if (buffer.length < 1 || buffer.length > 3 * 1024 * 1024) {
+    response.status(413).json({ error: 'Photos must be smaller than 3 MB.' })
+    return
+  }
+  const signatures = {
+    jpeg: buffer.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])),
+    png: buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
+    webp: buffer.subarray(0, 4).toString() === 'RIFF' && buffer.subarray(8, 12).toString() === 'WEBP',
+  }
+  if (!signatures[match[1]]) {
+    response.status(400).json({ error: 'The uploaded file does not match its image type.' })
+    return
+  }
+  let optimized
+  try {
+    optimized = await optimizeUploadedImage(buffer, match[1])
+  } catch (error) {
+    if (!(error instanceof UnreadableImageError)) throw error
+    response.status(400).json({ error: error.message })
+    return
+  }
+  const image = await saveUploadedImage({
+    buffer: optimized.buffer,
+    filename: `chat-${randomUUID()}${optimized.extension}`,
+    contentType: optimized.contentType,
+    uploadDirectory,
+    isProduction,
+  })
+  response.status(201).json({ image })
+})
+
 // Ask the AI assistant to draft a reply to the latest customer message in a thread.
-// The draft is only a suggestion: the admin edits it and sends it with the normal reply
-// endpoint, so nothing reaches the customer without a human pressing Send.
 const chatSuggestLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 20,
@@ -3598,6 +3758,13 @@ app.post('/api/admin/chat/threads/:threadId/suggest', requireAdmin, chatSuggestL
       response.status(409).json({ error: 'No customer message to answer yet.' })
       return
     }
+    // Correction learning (#8): remember the draft so the reply endpoint can record
+    // what the staff actually sent. The draft is also stashed on the thread's latest
+    // store-pending row via this standalone table, keyed by thread.
+    await database.prepare(`
+      INSERT INTO chat_corrections (thread_id, draft, sent, was_edited)
+      VALUES (?, ?, '', 0)
+    `).run(threadId, result.suggestion)
     response.json({
       suggestion: result.suggestion,
       source: result.source,
@@ -5436,8 +5603,48 @@ app.post('/api/admin/discount-codes/:id/notify', requireAdmin, ownerOnly, async 
     response.status(400).json({ error: `Keep the notification message under ${MAX_NOTIFICATION_MESSAGE_LENGTH} characters.` })
     return
   }
-  response.json({ notification: await sendPromotionAlert(code, notificationMessage) })
+  const result = await sendPromotionAlert(code, notificationMessage)
+  // Announcement in chat (#11): also post the promotion into every conversation that
+  // is still open, so customers mid-chat hear about it too. A thread that already
+  // received this promotion (promo_code column) is skipped, so Notify again never
+  // spams the same conversation twice. Failures never block the push notification.
+  try {
+    const text = buildChatPromotionMessage(code, notificationMessage)
+    const openThreads = await database.prepare(`
+      SELECT thread_id AS id FROM chat_messages
+      WHERE thread_id NOT IN (SELECT thread_id FROM chat_messages WHERE promo_code = ?)
+      GROUP BY thread_id
+      HAVING MAX(created_at) >= datetime('now', '-2 days')
+      LIMIT 500
+    `).all(code.code)
+    for (const thread of openThreads) {
+      await database.prepare(`
+        INSERT INTO chat_messages (thread_id, customer_id, sender, body, promo_code)
+        VALUES (?, NULL, 'store', ?, ?)
+      `).run(thread.id, text, code.code)
+    }
+    if (openThreads.length) {
+      console.log(`Promotion ${code.code} announced in ${openThreads.length} open chat thread(s).`)
+    }
+  } catch (chatBroadcastError) {
+    console.error('Promotion chat announcement failed:', chatBroadcastError)
+  }
+  response.json({ notification: result })
 })
+
+// The chat wording for a promotion announcement: how much, the code, the conditions,
+// then the menu action button. Reads as the shop speaking, not a template.
+function buildChatPromotionMessage(code, message) {
+  const amount = code.discountType === 'percent'
+    ? `${code.discountValue}% off`
+    : `${new Intl.NumberFormat('en-CM').format(code.discountValue)} FCFA off`
+  const details = [
+    code.minimumTotal > 0 ? `on orders of ${new Intl.NumberFormat('en-CM').format(code.minimumTotal)}+ FCFA` : '',
+    code.expiresAt ? `(valid until ${String(code.expiresAt).slice(0, 10)})` : '',
+  ].filter(Boolean).join(' ')
+  const ownerLine = message ? `${message} ` : ''
+  return `${ownerLine}Enjoy ${amount} with code ${code.code}${details ? ` ${details}` : ''} — add your treats on the All Menu page and enter the code in the bag.\n[ACTION:menu_all]`
+}
 
 app.put('/api/admin/discount-codes/:id', requireAdmin, ownerOnly, async (request, response, next) => {
   const id = Number(request.params.id)
@@ -5519,6 +5726,22 @@ app.get('/api/admin/reports', requireAdmin, async (request, response) => {
       AND created_at >= datetime('now', '-30 days')
     GROUP BY date(created_at) ORDER BY date
   `).all(...storeParameters)
+  // Chat questions (#9): what customers actually ask, from the topics the auto-reply
+  // stamped on their messages in the last 30 days. Role-agnostic — chat is site-wide.
+  const chatTopics = await database.prepare(`
+    SELECT topic, COUNT(*) AS count
+    FROM chat_messages
+    WHERE sender = 'customer' AND topic != ''
+      AND created_at >= datetime('now', '-30 days')
+    GROUP BY topic ORDER BY count DESC LIMIT 10
+  `).all()
+  const chatSummary = await database.prepare(`
+    SELECT COUNT(DISTINCT thread_id) AS threads,
+      SUM(CASE WHEN sender = 'customer' THEN 1 ELSE 0 END) AS "customerMessages",
+      SUM(CASE WHEN needs_attention = 1 THEN 1 ELSE 0 END) AS flagged
+    FROM chat_messages
+    WHERE created_at >= datetime('now', '-30 days')
+  `).get()
   response.json({
     summary,
     popularItems,
@@ -5526,6 +5749,12 @@ app.get('/api/admin/reports', requireAdmin, async (request, response) => {
     // Postgres returns DATE values as local-midnight Date objects; send plain YYYY-MM-DD
     // so browsers in any timezone place each day correctly.
     recentSales: recentSales.map((row) => ({ ...row, date: formatReportDate(row.date) })),
+    chat: {
+      topics: chatTopics.map((row) => ({ topic: row.topic, count: Number(row.count) })),
+      threads: Number(chatSummary?.threads || 0),
+      customerMessages: Number(chatSummary?.customerMessages || 0),
+      flagged: Number(chatSummary?.flagged || 0),
+    },
   })
 })
 

@@ -361,6 +361,33 @@ if (configuredDatabaseBackend === "postgres") {
     CREATE INDEX IF NOT EXISTS idx_chat_messages_thread ON chat_messages(thread_id, id);
   `);
   addColumnIfMissing("chat_messages", "guest_device", "TEXT NOT NULL DEFAULT ''");
+  // Human-handoff flag: the AI auto-reply raises this when the thread needs a person
+  // (repeated confusion, refunds, complaints...). Staff clear it from the admin inbox.
+  addColumnIfMissing("chat_messages", "needs_attention", "INTEGER NOT NULL DEFAULT 0");
+  // Optional photo attachment on a customer chat message: a URL in the site's own
+  // image storage (uploads or Supabase), uploaded through the public upload endpoint.
+  addColumnIfMissing("chat_messages", "image_url", "TEXT NOT NULL DEFAULT ''");
+  // Promotion → chat: records which promotion broadcast was already announced in chat,
+  // so a re-notify never spams the same thread twice.
+  addColumnIfMissing("chat_messages", "promo_code", "TEXT NOT NULL DEFAULT ''");
+  // Analytics (#9): the detected topic of the customer's message, stamped by the
+  // auto-reply path, powers the admin Reports chat questions chart.
+  addColumnIfMissing("chat_messages", "topic", "TEXT NOT NULL DEFAULT ''");
+
+  // Correction learning (#8): what the AI drafted vs what the staff actually sent.
+  // The diffs show which facts the model gets wrong, so they can be added to the
+  // prompt or the retrieval index — a self-improving loop with no ML work.
+  sqliteDatabase.exec(`
+    CREATE TABLE IF NOT EXISTS chat_corrections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_id TEXT NOT NULL,
+      draft TEXT NOT NULL,
+      sent TEXT NOT NULL,
+      was_edited INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_chat_corrections_time ON chat_corrections(created_at);
+  `);
   addColumnIfMissing(
     "contact_messages",
     "store_id",
@@ -1091,6 +1118,36 @@ export async function verifyDatabaseSchema() {
   // before this column existed must still start.
   await database.prepare(`
     ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS guest_device TEXT NOT NULL DEFAULT ''
+  `).run();
+  // Human-handoff flag raised by the AI auto-reply; staff clear it in the inbox.
+  await database.prepare(`
+    ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS needs_attention SMALLINT NOT NULL DEFAULT 0
+  `).run();
+  // Optional photo attachment on a customer chat message (public upload endpoint).
+  await database.prepare(`
+    ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS image_url TEXT NOT NULL DEFAULT ''
+  `).run();
+  // Promotion → chat announcement marker (the promo code already announced).
+  await database.prepare(`
+    ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS promo_code TEXT NOT NULL DEFAULT ''
+  `).run();
+  // Analytics (#9): the auto-reply stamps the detected topic on the customer message.
+  await database.prepare(`
+    ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS topic TEXT NOT NULL DEFAULT ''
+  `).run();
+  // Correction learning (#8): the AI draft vs what staff actually sent.
+  await database.prepare(`
+    CREATE TABLE IF NOT EXISTS chat_corrections (
+      id SERIAL PRIMARY KEY,
+      thread_id TEXT NOT NULL,
+      draft TEXT NOT NULL,
+      sent TEXT NOT NULL,
+      was_edited SMALLINT NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `).run();
+  await database.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_chat_corrections_time ON chat_corrections(created_at)
   `).run();
   // Menu inventory: the restock note and the allergen list. Without these the public menu
   // query selects columns that do not exist, and every menu read answers 500.

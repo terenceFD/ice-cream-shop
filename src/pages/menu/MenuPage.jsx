@@ -398,9 +398,6 @@ export function MenuPage() {
   const [selectedItemState, setSelectedItemState] = useState(null);
   const [search, setSearch] = useState("");
   const [categories, setCategories] = useState(coldStoneMenuCategories);
-  // `categories` is part of the deps: the observer is set up while the built-in menu is
-  // showing, and must re-run when the live catalog arrives so new cards get observed.
-  const gridRef = useScrollReveal([selectedItemState, search, categories]);
   const [menuError, setMenuError] = useState("");
   const productRef = useRef(null);
   const [cartNotice, setCartNotice] = useState("");
@@ -442,6 +439,23 @@ export function MenuPage() {
   const activeCategoryTheme = activeCategory
     ? CATEGORY_HERO_THEMES[activeCategory.title] || DEFAULT_CATEGORY_HERO_THEME
     : DEFAULT_CATEGORY_HERO_THEME;
+  // The full filter set is part of the deps: every one of these can swap the set of
+  // rendered cards, and a card mounted after the observer ran keeps `opacity: 0`
+  // (the .scroll-reveal default) forever — the "items not showing" bug.
+  // Declared here, after every value it depends on.
+  const gridRef = useScrollReveal([
+    selectedItemState,
+    search,
+    categories,
+    activeCategoryTitle,
+    categoryFilter,
+    maxPrice,
+    dietaryFilter,
+    availabilityFilter,
+    sortBy,
+    displayCurrency,
+    language,
+  ]);
   const categoryHeroPreviews = (activeCategory?.items ?? [])
     .filter((item) => item.image && item.image !== activeCategory?.image)
     .slice(0, 2);

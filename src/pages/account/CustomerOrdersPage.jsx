@@ -1791,7 +1791,7 @@ export function CustomerOrdersPage() {
       <Header />
       <main id="main" tabIndex={-1}>
         {/* Hero */}
-        <section className="account-masthead relative isolate overflow-hidden bg-brand-navy text-white">
+        <section className="account-masthead relative isolate overflow-hidden bg-brand-navy text-white" data-floating-hide="hero">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <HeroBackground animated quietOnMobile variant="navy" theme="ice-cream" />
           </div>

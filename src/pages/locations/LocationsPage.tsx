@@ -116,7 +116,7 @@ export function LocationsPage() {
     <div className="min-h-[100svh] bg-[#f5f8fb] text-brand-navy">
       <Header />
       <main id="main" tabIndex={-1}>
-        <section className="locations-hero relative overflow-hidden bg-brand-navy text-white">
+        <section className="locations-hero relative overflow-hidden bg-brand-navy text-white" data-floating-hide="hero">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-30">
             <HeroBackground animated quietOnMobile variant="navy" theme="ice-cream" />
           </div>

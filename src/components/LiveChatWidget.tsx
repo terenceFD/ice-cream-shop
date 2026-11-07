@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { apiRequest } from "../api/api";
 import { useLanguage } from "../language/useLanguage";
 import { useAuth } from "../context/useAuth";
 import { useMobileMenuOpen } from "../lib/mobileMenu";
-import { useDockOffset } from "../lib/headerDock";
+import { useShowFloatingWidgets } from "../lib/floatingWidgets";
 
 /**
  * Live chat bubble: a small launcher in the corner opens a thread with the store.
@@ -21,6 +21,7 @@ const POLL_INTERVAL_MS = 5000;
 
 interface ChatMessage {
   id: number;
+  imageUrl?: string | null;
   sender: "customer" | "store";
   body: string;
   createdAt: string;
@@ -191,9 +192,9 @@ export function LiveChatWidget() {
   const customerId = customer?.id ?? null;
   // The hamburger drawer covers the phone screen; the launcher and panel would float on top.
   const mobileMenuOpen = useMobileMenuOpen();
-  // 0 while the hero is showing, the header height once it has slid in. The launcher
-  // rides this so it is hidden while the header is on screen and back below it.
-  const dockOffset = useDockOffset();
+  // The launcher belongs to the page's middle: it steps aside over the hero and the
+  // footer, and is available in every section between them.
+  const showFloating = useShowFloatingWidgets();
   const [isOpen, setIsOpen] = useState(() => {
     try {
       return sessionStorage.getItem(OPEN_STORAGE_KEY) === "1";
@@ -206,6 +207,18 @@ export function LiveChatWidget() {
   const [isSending, setIsSending] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [error, setError] = useState("");
+  // Starter chips (#2): page-aware question suggestions shown before the first message.
+  const [showStarters, setShowStarters] = useState(false);
+  // Photo attachment (#7): a chosen file and the site path it was uploaded to.
+  const [attachment, setAttachment] = useState<{ url: string; name: string } | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  // Voice input (#4): recording state and whether the browser offers speech input.
+  const [isListening, setIsListening] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
+  const recognitionRef = useRef<{ stop: () => void } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Proactive nudge (#6): a one-time gentle bubble on slow pages.
+  const [showNudge, setShowNudge] = useState(false);
   const threadIdRef = useRef<string>("");
   const listRef = useRef<HTMLDivElement>(null);
   const isOpenRef = useRef(isOpen);
@@ -242,6 +255,19 @@ export function LiveChatWidget() {
       // Ignore; the widget just starts closed next visit.
     }
   }, [isOpen]);
+
+  // The chat panel follows the launcher: when the launcher steps aside over the
+  // hero or the footer, an open panel would be stranded on the screen alone, so
+  // it closes too. Closing (not merely hiding) keeps the panel and its
+  // sessionStorage state in step, so reopening mid-page starts where it left off.
+  const wasOpenRef = useRef(false);
+  useEffect(() => {
+    if (showFloating) {
+      wasOpenRef.current = isOpen;
+      return;
+    }
+    if (isOpen) setIsOpen(false);
+  }, [showFloating, isOpen]);
 
   // Abandons a thread this browser can no longer read and starts a new one. The old id
   // is dropped from storage so the next open does not retry it.
@@ -305,11 +331,31 @@ export function LiveChatWidget() {
     return () => window.clearInterval(interval);
   }, [isOpen, loadMessages, customerId]);
 
-  // Keep the newest message in view while the thread grows.
+  // Keep the newest message in view while the thread grows — but only while the
+  // reader is already at the bottom. The thread is polled every few seconds, so an
+  // unconditional scroll-to-bottom would yank the reader down on every poll while
+  // they are reading an earlier reply; when they scroll up, scrolling is theirs.
+  // Returning to the bottom (or sending a message of their own) resumes following.
+  const isAtBottomRef = useRef(true);
+  const stickToBottomRef = useRef(true);
   useEffect(() => {
     const list = listRef.current;
-    if (list) list.scrollTop = list.scrollHeight;
-  }, [messages]);
+    if (!list) return;
+    const onScroll = () => {
+      const nearBottom =
+        list.scrollHeight - list.scrollTop - list.clientHeight < 48;
+      isAtBottomRef.current = nearBottom;
+      // Scrolling up unpins the follow; reaching the bottom re-pins it. Sending
+      // a message pins it too (see send()), so the reply is always in view.
+      stickToBottomRef.current = nearBottom;
+    };
+    list.addEventListener("scroll", onScroll, { passive: true });
+    return () => list.removeEventListener("scroll", onScroll);
+  }, [isOpen]);
+  useEffect(() => {
+    const list = listRef.current;
+    if (list && stickToBottomRef.current) list.scrollTop = list.scrollHeight;
+  }, [messages, isAwaitingReply]);
 
   // Clicking an AI action button navigates; close the panel so the page is visible.
   const location = useLocation();
@@ -321,11 +367,216 @@ export function LiveChatWidget() {
     }
   }, [location.pathname]);
 
+  // ---------------------------------------------------------------- starters (#2)
+  //
+  // Page-aware question suggestions: what makes sense to ask depends on where the
+  // customer is. Product detail pages ask about the product; the cake and event pages
+  // ask about those flows; elsewhere the everyday questions apply.
+  const starterQuestions = useMemo(() => {
+    if (/item=/.test(location.search)) {
+      return [
+        t("Tell me about this product"),
+        t("What is in it?"),
+        t("Do you have something similar?"),
+        t("How do I order it?"),
+      ];
+    }
+    if (location.pathname === "/custom-cake") {
+      return [
+        t("How does the custom cake work?"),
+        t("What sizes do you offer?"),
+        t("How much is the deposit?"),
+        t("How far ahead should I order?"),
+      ];
+    }
+    if (location.pathname === "/events") {
+      return [
+        t("How do event orders work?"),
+        t("What is the minimum order?"),
+        t("How much is the deposit?"),
+        t("Can you deliver to a venue?"),
+      ];
+    }
+    if (location.pathname === "/checkout") {
+      return [
+        t("How do I pay?"),
+        t("When will my order arrive?"),
+        t("Can I change my order?"),
+        t("How does pickup work?"),
+      ];
+    }
+    return [
+      t("What's popular?"),
+      t("Any promos today?"),
+      t("Do you deliver to me?"),
+      t("How do loyalty points work?"),
+    ];
+  }, [location.pathname, location.search, t]);
+
+  // Starters show until the customer sends their first message of the visit.
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      setShowStarters(
+        !sessionStorage.getItem("chat-used") && messages.length === 0,
+      );
+    } catch {
+      setShowStarters(messages.length === 0);
+    }
+  }, [isOpen, messages.length]);
+
+  const useStarter = (question: string) => {
+    setDraft(question);
+    try {
+      sessionStorage.setItem("chat-used", "1");
+    } catch {
+      // Storage unavailable: the starters simply show until a message is sent.
+    }
+    setShowStarters(false);
+  };
+
+  // ------------------------------------------------------------- voice input (#4)
+  //
+  // The browser's own speech recognition — no server round-trip, no extra cost.
+  // Supported on Chromium browsers and Android; gracefully absent elsewhere.
+  const speechSupported = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      Boolean(
+        (window as unknown as Record<string, unknown>).SpeechRecognition ||
+          (window as unknown as Record<string, unknown>).webkitSpeechRecognition,
+      ),
+    [],
+  );
+  const toggleVoice = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+    const RecognitionCtor = (
+      (window as unknown as Record<string, unknown>).SpeechRecognition ||
+      (window as unknown as Record<string, unknown>).webkitSpeechRecognition
+    ) as
+      | (new () => {
+            lang: string;
+            interimResults: boolean;
+            maxAlternatives: number;
+            onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+            onerror: ((event: { error?: string }) => void) | null;
+            onend: (() => void) | null;
+            stop: () => void;
+            start: () => void;
+          })
+      | null;
+    if (!RecognitionCtor) {
+      setVoiceError(t("Voice input is not supported in this browser."));
+      return;
+    }
+    const recognition = new RecognitionCtor();
+    recognition.lang = language === "fr" ? "fr-FR" : "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript || "";
+      if (transcript) setDraft((current) => (current ? `${current} ${transcript}` : transcript));
+    };
+    recognition.onerror = (event) => {
+      setVoiceError(
+        event.error === "not-allowed"
+          ? t("Allow microphone access to use voice input.")
+          : t("Voice input failed. Please try again."),
+      );
+      setIsListening(false);
+    };
+    recognition.onend = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    setVoiceError("");
+    setIsListening(true);
+    try {
+      recognition.start();
+    } catch {
+      setIsListening(false);
+    }
+  };
+
+  // ------------------------------------------------------------ photo attach (#7)
+  const pickPhoto = () => fileInputRef.current?.click();
+
+  const onPhotoChosen = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      setError(t("Photos must be smaller than 3 MB."));
+      return;
+    }
+    setIsUploadingPhoto(true);
+    setError("");
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("read failed"));
+        reader.readAsDataURL(file);
+      });
+      const result = await apiRequest<{ image: { url: string } }>("/chat/uploads", {
+        method: "POST",
+        body: { dataUrl },
+      });
+      if (result.image?.url) {
+        setAttachment({ url: result.image.url, name: file.name });
+      }
+    } catch {
+      setError(t("The photo could not be attached. Please try again."));
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  // ------------------------------------------------------------ proactive nudge (#6)
+  //
+  // Checkout and the custom-cake form are the two spots where a silent struggle is
+  // costly. One gentle offer per session, at most once, after a short dwell — never
+  // while the customer is actively typing or the chat is already open.
+  useEffect(() => {
+    const nudged = (() => {
+      try {
+        return sessionStorage.getItem("chat-nudged") === "1";
+      } catch {
+        return false;
+      }
+    })();
+    const applies = location.pathname === "/checkout" || location.pathname === "/custom-cake";
+    if (!applies || nudged || isOpen) return undefined;
+    const timer = window.setTimeout(() => {
+      try {
+        if (sessionStorage.getItem("chat-nudged") === "1") return;
+        sessionStorage.setItem("chat-nudged", "1");
+      } catch {
+        // No storage: still show once for this page view.
+      }
+      setShowNudge(true);
+    }, 25000);
+    return () => window.clearTimeout(timer);
+  }, [location.pathname, isOpen]);
+
+  const acceptNudge = () => {
+    setShowNudge(false);
+    setIsOpen(true);
+  };
+
+  const dismissNudge = () => setShowNudge(false);
+
   async function send(event: React.FormEvent) {
     event.preventDefault();
     const body = draft.trim();
-    if (!body || isSending) return;
+    // A photo can travel on its own: text is optional when an image is attached.
+    if ((!body && !attachment) || isSending) return;
     if (!threadIdRef.current) threadIdRef.current = readThreadId(customerId);
+    // Sending a message re-pins the follow: the reply that lands next should be
+    // scrolled into view even if the reader was scrolled up in the thread.
+    stickToBottomRef.current = true;
     setIsSending(true);
     setError("");
     // No optimistic bubble: the message appears only once the server has it, so a
@@ -339,6 +590,7 @@ export function LiveChatWidget() {
             threadId,
             body,
             page: location.pathname,
+            imageUrl: attachment?.url || "",
             // A snapshot of what is actually on the screen, so the assistant can
             // answer "what is this page?" from the real content, not guesses.
             pageSnapshot: capturePageSnapshot(),
@@ -356,6 +608,7 @@ export function LiveChatWidget() {
         await post(threadIdRef.current);
       }
       setDraft("");
+      setAttachment(null);
       // The AI auto-reply takes a couple of seconds to write. Show a typing bubble
       // while the customer waits, and clear it once the reply actually arrives.
       storeCountAtWaitStart.current = messages.filter(
@@ -422,12 +675,13 @@ export function LiveChatWidget() {
           desktop-only: on a touch screen there is no hover, and the message would sit
           over the page. It also stays hidden while the chat panel is open.
 
-          It sits in the bottom corner with the hero. While the sticky header is on
-          screen it slides down out of the viewport (see --site-dock-offset), so it never
-          reaches the header; it comes back in the open page below. */}
+          It sits in the bottom corner while the hero is on screen, and slides down out
+          of the viewport once the visitor scrolls into the sections below. */}
       <div
-        className={`group fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-4 z-[65] transition-[translate] duration-300 ease-out motion-reduce:transition-none ${
-          dockOffset > 0 ? "translate-y-[220%]" : "translate-y-0"
+        className={`group fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-4 z-[65] transition-[translate,opacity] duration-300 ease-out motion-reduce:transition-none ${
+          showFloating
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none translate-y-[220%] opacity-0"
         }`}
       >
       <button
@@ -482,6 +736,36 @@ export function LiveChatWidget() {
             <p className="mt-1 text-[13px] leading-5 text-white/85">
               {t("I am your Cold Stone assistant. I can help you with anything concerning this platform.")}
             </p>
+          </div>
+        )}
+        {!isOpen && showNudge && (
+          <div
+            className="absolute bottom-[calc(100%+0.6rem)] left-0 w-64 rounded-2xl rounded-bl-md bg-white p-3 shadow-[0_16px_40px_rgba(9,42,83,0.25)] ring-1 ring-[#e2e8f0]"
+            role="status"
+          >
+            <p className="text-[13px] font-bold text-brand-navy">
+              {t("Need a hand?")}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-[#5d7186]">
+              {t("I can walk you through this. Ask me anything.")}
+            </p>
+            <div className="mt-2 flex gap-2">
+              <button
+                className="min-h-8 flex-1 rounded-full bg-brand-navy px-3 text-xs font-bold text-white transition hover:bg-brand-blue"
+                onClick={acceptNudge}
+                type="button"
+              >
+                {t("Chat with us")}
+              </button>
+              <button
+                aria-label={t("Dismiss")}
+                className="min-h-8 rounded-full px-3 text-xs font-bold text-[#65748a] transition hover:bg-[#f4f6f8]"
+                onClick={dismissNudge}
+                type="button"
+              >
+                {t("Not now")}
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -578,6 +862,23 @@ export function LiveChatWidget() {
                     "Ask about flavors, cakes, delivery — anything. We are happy to help.",
                   )}
                 </p>
+                {/* Starter questions (#2): tappable suggestions matched to the page the
+                    customer is on. Tapping fills the input; the row disappears once the
+                    conversation starts. */}
+                {showStarters && (
+                  <div className="mt-2 flex max-w-full flex-wrap justify-center gap-1.5">
+                    {starterQuestions.map((question) => (
+                      <button
+                        className="rounded-full border border-[#dce3eb] bg-white px-3 py-1.5 text-xs font-bold text-brand-navy transition hover:border-brand-yellow hover:bg-brand-yellow/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep"
+                        key={question}
+                        onClick={() => useStarter(question)}
+                        type="button"
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {messages.map((message) => {
@@ -603,6 +904,16 @@ export function LiveChatWidget() {
                     <p className="whitespace-pre-wrap break-words">
                       {bodyText}
                     </p>
+                    {/* A photo attached to a customer message (#7), shown under its text. */}
+                    {message.imageUrl && (
+                      <img
+                        alt=""
+                        className="mt-1.5 max-h-48 w-full rounded-xl object-cover"
+                        decoding="async"
+                        loading="lazy"
+                        src={message.imageUrl}
+                      />
+                    )}
                     {action && <ChatActionButton action={action} />}
                     <p
                       className={`mt-1 flex items-center justify-end gap-1 text-[10px] font-medium ${isCustomer ? "text-white/50" : "text-[#94a3b8]"}`}
@@ -633,11 +944,92 @@ export function LiveChatWidget() {
               {error}
             </p>
           )}
+          {voiceError && (
+            <p
+              className="bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-800"
+              role="status"
+            >
+              {voiceError}
+            </p>
+          )}
+
+          {/* Pending photo attachment (#7): a small preview chip above the input. */}
+          {attachment && (
+            <div className="flex items-center gap-2 border-t border-[#eef2f6] bg-white px-3 py-2">
+              <img
+                alt=""
+                aria-hidden="true"
+                className="size-9 rounded-lg object-cover"
+                src={attachment.url}
+              />
+              <span className="min-w-0 flex-1 truncate text-xs text-[#65748a]">
+                {attachment.name}
+              </span>
+              <button
+                aria-label={t("Remove photo")}
+                className="grid size-7 place-items-center rounded-full text-[#94a3b8] transition hover:bg-[#f4f6f8] hover:text-brand-navy"
+                onClick={() => setAttachment(null)}
+                type="button"
+              >
+                <svg aria-hidden="true" className="size-3.5" fill="none" viewBox="0 0 24 24">
+                  <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                </svg>
+              </button>
+            </div>
+          )}
 
           <form
             className="flex items-center gap-2 border-t border-[#eef2f6] bg-white p-2.5 sm:p-3"
             onSubmit={send}
           >
+            {/* Photo attach (#7) and voice input (#4) sit beside the text field. */}
+            <input
+              accept="image/jpeg,image/png,image/webp"
+              aria-hidden="true"
+              className="hidden"
+              onChange={onPhotoChosen}
+              ref={fileInputRef}
+              tabIndex={-1}
+              type="file"
+            />
+            <button
+              aria-label={t("Attach a photo")}
+              className="grid size-10 shrink-0 place-items-center rounded-full text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep"
+              disabled={isUploadingPhoto || isSending}
+              onClick={pickPhoto}
+              title={t("Attach a photo")}
+              type="button"
+            >
+              {isUploadingPhoto ? (
+                <svg aria-hidden="true" className="size-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" />
+                  <path className="opacity-75" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5" />
+                </svg>
+              ) : (
+                <svg aria-hidden="true" className="size-4.5" fill="none" viewBox="0 0 24 24">
+                  <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h1L9 3.5h6L16.5 5h1A2.5 2.5 0 0 1 20 7.5v10a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-10Z" stroke="currentColor" strokeWidth="1.8" />
+                  <circle cx="12" cy="12.5" r="3.25" stroke="currentColor" strokeWidth="1.8" />
+                </svg>
+              )}
+            </button>
+            {speechSupported && (
+              <button
+                aria-label={isListening ? t("Stop voice input") : t("Speak your message")}
+                className={`grid size-10 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep ${
+                  isListening
+                    ? "bg-red-50 text-red-600"
+                    : "text-[#65748a] hover:bg-[#f4f6f8] hover:text-brand-navy"
+                }`}
+                onClick={toggleVoice}
+                title={isListening ? t("Stop voice input") : t("Speak your message")}
+                type="button"
+              >
+                <svg aria-hidden="true" className="size-4.5" fill="none" viewBox="0 0 24 24">
+                  <rect height="11" rx="5.5" stroke="currentColor" strokeWidth="1.8" width="11" x="6.5" y="2.5" />
+                  <path d="M12 18.5V21m-3 0h6" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                </svg>
+              </button>
+            )}
             <input
               aria-label={t("Your message")}
               autoComplete="off"
@@ -650,11 +1042,11 @@ export function LiveChatWidget() {
             <button
               aria-label={t("Send message")}
               className={`grid size-10 shrink-0 place-items-center rounded-full transition disabled:opacity-40 ${
-                draft.trim() && !isSending
+                (draft.trim() || attachment) && !isSending
                   ? "bg-brand-yellow text-brand-navy shadow-[0_4px_12px_rgba(255,184,77,0.4)] hover:scale-105"
                   : "bg-[#eef2f6] text-[#94a3b8]"
               }`}
-              disabled={!draft.trim() || isSending}
+              disabled={(!draft.trim() && !attachment) || isSending}
               type="submit"
             >
               <svg

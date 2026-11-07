@@ -10,6 +10,7 @@ import {
   AI_FAILURE_REASONS,
   buildSystemPrompt,
   detectMessageLanguage,
+  gatherShopFacts,
   isLostPageQuestion,
   looksPolicyShaped,
   suggestReply,
@@ -37,6 +38,10 @@ const context = {
   siteBehaviour: [
     "CURRENCY: one floating switcher in the bottom-right corner of every customer page (not in the header). Choosing FCFA, USD or EUR converts EVERY price on the site for display. The charge is always taken in FCFA.",
     "PAYING IN ANOTHER CURRENCY: customers can read prices in USD or EUR, but payment is collected in FCFA only.",
+  ],
+  sitePolicies: [
+    "ORDERING: all orders are placed on the website, 24/7.",
+    "LOYALTY: 1 point per 100 FCFA spent; 100 points = 1,000 FCFA off; not combinable with another discount.",
   ],
   menuByCategory: {
     "Ice Cream": [
@@ -271,7 +276,15 @@ const social = (body, language = "en") =>
   suggestReply([{ sender: "customer", body }], { database: fakeDb, language });
 
 test("a greeting is recognised as a greeting, not as an unknown question", async () => {
-  for (const body of ["hi", "Hello!", "hey there", "Good morning", "bonjour", "salut !", "Bonsoir"]) {
+  for (const body of [
+    "hi",
+    "Hello!",
+    "hey there",
+    "Good morning",
+    "bonjour",
+    "salut !",
+    "Bonsoir",
+  ]) {
     const result = await social(body);
     assert.equal(result.topic, "greeting", `"${body}" should be a greeting`);
   }
@@ -328,9 +341,17 @@ test("thanks and goodbye are answered politely and briefly", async () => {
 });
 
 test("a normal question is not prefixed with a greeting", async () => {
-  for (const body of ["how much is vanilla", "is the shop open", "where are you"]) {
+  for (const body of [
+    "how much is vanilla",
+    "is the shop open",
+    "where are you",
+  ]) {
     const result = await social(body);
-    assert.doesNotMatch(result.suggestion, /^Hello!/, `"${body}" should not open with Hello!`);
+    assert.doesNotMatch(
+      result.suggestion,
+      /^Hello!/,
+      `"${body}" should not open with Hello!`,
+    );
   }
 });
 
@@ -386,17 +407,33 @@ const englishMessages = [
 
 test("French and English messages are told apart, accents or not", () => {
   for (const message of frenchMessages) {
-    assert.equal(detectMessageLanguage(message, "en"), "fr", `"${message}" should be French`);
+    assert.equal(
+      detectMessageLanguage(message, "en"),
+      "fr",
+      `"${message}" should be French`,
+    );
   }
   for (const message of englishMessages) {
-    assert.equal(detectMessageLanguage(message, "en"), "en", `"${message}" should be English`);
+    assert.equal(
+      detectMessageLanguage(message, "en"),
+      "en",
+      `"${message}" should be English`,
+    );
   }
 });
 
 test("a message with no language signal keeps the current one", () => {
   for (const message of ["ok", "Chocolate Devotion", "???", "3000", "menu"]) {
-    assert.equal(detectMessageLanguage(message, "en"), "en", `"${message}" should stay English`);
-    assert.equal(detectMessageLanguage(message, "fr"), "fr", `"${message}" should stay French`);
+    assert.equal(
+      detectMessageLanguage(message, "en"),
+      "en",
+      `"${message}" should stay English`,
+    );
+    assert.equal(
+      detectMessageLanguage(message, "fr"),
+      "fr",
+      `"${message}" should stay French`,
+    );
   }
 });
 
@@ -416,13 +453,21 @@ test("the reply language follows the customer, not the caller's setting", async 
 });
 
 test("a French question never comes back with an English body", async () => {
-  for (const body of ["Quel est le prix du chocolat ?", "Quels sont vos horaires ?", "Combien coûte le milkshake ?"]) {
+  for (const body of [
+    "Quel est le prix du chocolat ?",
+    "Quels sont vos horaires ?",
+    "Combien coûte le milkshake ?",
+  ]) {
     const { suggestion } = await suggestReply([{ sender: "customer", body }], {
       database: fakeDb,
       language: "en",
     });
     // The English words that only ever appeared in the English templates.
-    assert.doesNotMatch(suggestion, /\b(the menu|flavours and treats|We are open every day|Tell me which)\b/i, `"${body}" leaked English`);
+    assert.doesNotMatch(
+      suggestion,
+      /\b(the menu|flavours and treats|We are open every day|Tell me which)\b/i,
+      `"${body}" leaked English`,
+    );
   }
 });
 
@@ -432,7 +477,10 @@ test("switching language mid-thread switches the reply", async () => {
     { sender: "store", body: "Hello! How can I help?" },
     { sender: "customer", body: "Combien coûte le milkshake ?" },
   ];
-  const { suggestion } = await suggestReply(history, { database: fakeDb, language: "en" });
+  const { suggestion } = await suggestReply(history, {
+    database: fakeDb,
+    language: "en",
+  });
   assert.match(suggestion, /parfums|Dites-moi/i);
 });
 
@@ -441,4 +489,81 @@ test("the prompt tells the model to follow the customer's last message", () => {
   assert.match(text, /language of the customer's LAST message/i);
   assert.match(text, /answer in French/i);
   assert.match(text, /France?is|French message deserves a French answer/i);
+});
+
+// ------------------------------------------------------------- shop knowledge coverage
+//
+// The assistant claims to know the whole website; these checks pin the knowledge that
+// exists, so a prompt or facts edit that drops a service makes the suite fail.
+
+test("the prompt carries the shop policies section", () => {
+  const text = prompt();
+  assert.match(text, /SHOP POLICIES/i);
+  assert.match(text, /accounts, loyalty, reviews, cakes, events/i);
+  assert.match(text, /1 point per 100 FCFA/);
+});
+
+test("the prompt covers accounts, payment, cakes, events and notifications", async () => {
+  // Built from the REAL production facts, so the check fails if gatherShopFacts()
+  // ever drops one of the services the assistant claims to know.
+  const text = await buildSystemPrompt(
+    await gatherShopFacts(fakeDb),
+    "en",
+    "",
+    "",
+  );
+  assert.match(text, /email verification/i);
+  assert.match(text, /session lasts 8 hours/i);
+  assert.match(text, /Stripe/i);
+  assert.match(text, /CamPay/i);
+  assert.match(text, /Buy 2 Get 1 Free/i);
+  assert.match(text, /90 days/i); // custom-cake pickup window
+  assert.match(text, /2 to 180 days/i); // event date window
+  assert.match(text, /30% deposit/i);
+  assert.match(text, /Home Screen/i); // iPhone notification requirement
+  assert.match(text, /installs as an app/i);
+});
+
+test("the page guides cover every customer page", () => {
+  const text = prompt({ customerPage: "/events" });
+  assert.match(text, /events page/i);
+  const cakePrompt = prompt({ customerPage: "/custom-cake" });
+  assert.match(cakePrompt, /custom-cake page/i);
+});
+
+test("rules-based replies answer account, cake, event, loyalty and payment questions", async () => {
+  const cases = [
+    ["how do I reset my password", /password|sign-in page|verification code/i],
+    ["I need a birthday cake", /custom-cake|deposit|quote/i],
+    ["do you cater events", /events page|deposit/i],
+    ["how do loyalty points work", /100 points/i],
+    ["can I pay with mobile money", /CamPay|Stripe/i],
+    ["how do notifications work", /Home Screen/i],
+  ];
+  for (const [body, pattern] of cases) {
+    const result = await suggestReply([{ sender: "customer", body }], {
+      database: fakeDb,
+      language: "en",
+    });
+    assert.ok(
+      pattern.test(result.suggestion),
+      `"${body}" should be answered with knowledge, got: ${result.suggestion}`,
+    );
+  }
+});
+
+test("cake and event template replies never quote a price", async () => {
+  // "how much is a cake" is a menu-price question and correctly checks the menu;
+  // the request-style phrasing must route to the cake knowledge, without a price.
+  for (const body of [
+    "I want to order a custom cake",
+    "quote me for a party of 50",
+  ]) {
+    const result = await suggestReply([{ sender: "customer", body }], {
+      database: fakeDb,
+      language: "en",
+    });
+    assert.match(result.suggestion, /custom-cake page|events page/i);
+    assert.doesNotMatch(result.suggestion, /\d{3,} FCFA/);
+  }
 });

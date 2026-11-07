@@ -21,6 +21,12 @@ interface AdminReport {
     isAvailable: boolean
   }[]
   recentSales: { date: string; orders: number; sales: number }[]
+  chat?: {
+    topics: { topic: string; count: number }[]
+    threads: number
+    customerMessages: number
+    flagged: number
+  }
 }
 
 const CHART_DAYS = 30
@@ -353,6 +359,43 @@ export function AdminReportsPage() {
             <p className="mt-4 rounded-lg border border-dashed border-[#e8e8e8] px-5 py-6 text-center text-sm text-[#6b6b6b]">{t('No paid orders yet.')}</p>
           )}
         </section>
+
+        {/* Chat insights (#9): what customers actually ask the assistant. */}
+        {report.chat && (
+          <section aria-labelledby="chat-insights-title" className="rounded-lg border border-[#e8e8e8] bg-white p-4 sm:p-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="text-base font-semibold text-[#111827]" id="chat-insights-title">{t('What customers ask the assistant')}</h2>
+              <p className="num text-sm text-[#6b6b6b]">
+                {report.chat.customerMessages} {t('messages')} · {report.chat.threads} {t('conversations')}
+                {report.chat.flagged > 0 && (
+                  <span className="num ml-2 inline-flex rounded-full bg-[#ffedea] px-2 py-0.5 text-xs font-medium text-[#831c1e]">
+                    {report.chat.flagged} {t('flagged for the team')}
+                  </span>
+                )}
+              </p>
+            </div>
+            {report.chat.topics.length ? (
+              <ul className="mt-4 space-y-2">
+                {report.chat.topics.map((entry) => {
+                  const max = Math.max(...report.chat!.topics.map((row) => row.count))
+                  return (
+                    <li className="grid grid-cols-[9rem_minmax(0,1fr)_auto] items-center gap-x-3" key={entry.topic}>
+                      <span className="truncate text-sm font-medium capitalize text-[#111827]">{entry.topic}</span>
+                      <span aria-hidden="true" className="h-1.5 overflow-hidden rounded-full bg-[#eef1f5]">
+                        <span className="num block h-full rounded-full bg-[#1d1f20]" style={{ width: `${Math.max(4, (entry.count / max) * 100)}%` }} />
+                      </span>
+                      <span className="num whitespace-nowrap text-sm tabular-nums text-[#111827]">{entry.count}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <p className="mt-4 rounded-lg border border-dashed border-[#e8e8e8] px-5 py-6 text-center text-sm text-[#6b6b6b]">
+                {t('No chat questions in the last 30 days.')}
+              </p>
+            )}
+          </section>
+        )}
 
         {report.lowStock && (
           <section aria-labelledby="low-stock-title" className="rounded-lg border border-[#e8e8e8] bg-white p-4 sm:p-5">

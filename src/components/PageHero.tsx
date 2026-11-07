@@ -125,8 +125,10 @@ export function PageHero({
   // which sits inside <main>, so clipping the hero cut the results off. HeroBackground clips
   // its own layers, and the decorative figures are rounded, so nothing escapes the hero.
   return (
+    // One of the two bookends the floating widgets keep clear of, with the footer.
     <section
       className="relative isolate bg-[var(--hero-surface,#472a3b)] text-white"
+      data-floating-hide="hero"
       style={
         {
           "--hero-surface": surface,

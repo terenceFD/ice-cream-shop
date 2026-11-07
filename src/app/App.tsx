@@ -20,6 +20,7 @@ import { ScrollToTop } from "../components/ScrollToTop";
 import { WebsiteLoader } from "../components/WebsiteLoader";
 import { RouteMeta } from "../seo/RouteMeta";
 import { useLanguage } from "../language/useLanguage";
+import { useTrackFloatingWidgets } from "../lib/floatingWidgets";
 
 // Each page below downloads only when a visitor opens it, so the first visit to the shop
 // does not carry the admin dashboard, checkout and other pages' code.
@@ -359,26 +360,31 @@ function CustomerCookieConsent() {
   return hidden ? null : <CookieConsentBanner />;
 }
 
-// The currency switcher floats over the page content. It is hidden where a floating
-// control would sit on top of a payment step or the admin desk, which have their own
-// fixed actions in that corner, and on the sign-in and sign-up pages, which keep the
-// form as the only thing on screen.
+// The currency switcher floats over the page content. It appears on every page except
+// the admin desk (its own fixed actions live in that corner) and the sign-in and
+// sign-up pages, which keep the form as the only thing on screen.
 function CustomerCurrencySwitcher() {
   const { pathname } = useLocation();
   const hidden =
     pathname.startsWith("/admin") ||
-    pathname === "/payment" ||
     pathname === "/login" ||
     pathname === "/signup";
   return hidden ? null : <CurrencySwitcher />;
 }
 
-// The chat launcher would overlap the payment page's own call-to-action, and staff
-// already answer from the admin inbox instead of the storefront bubble.
+// The chat launcher appears on every page except the admin desk, where staff already
+// answer from the admin inbox instead of the storefront bubble.
 function CustomerLiveChat() {
   const { pathname } = useLocation();
-  const hidden = pathname.startsWith("/admin") || pathname === "/payment";
+  const hidden = pathname.startsWith("/admin");
   return hidden ? null : <LiveChatWidget />;
+}
+
+// Keeps the floating widgets' visibility in step with the hero and the footer. It sits
+// here, once, rather than in each widget, so there is one scroll listener for the page.
+function FloatingWidgetTracker() {
+  useTrackFloatingWidgets();
+  return null;
 }
 
 function App() {
@@ -392,6 +398,7 @@ function App() {
               <ScrollToTop />
               <ScrollProgress />
               <WebsiteLoader />
+              <FloatingWidgetTracker />
               <AuthProvider>
                 <AdminAuthProvider>
                   <Suspense fallback={<PageLoading />}>

@@ -17,6 +17,7 @@ interface ChatThread {
   customerName: string | null;
   messageCount: number;
   unreadCount: number;
+  needsAttention?: number;
   startedAt: string;
   lastAt: string;
 }
@@ -25,6 +26,8 @@ interface ChatMessage {
   id: number;
   sender: "customer" | "store";
   body: string;
+  imageUrl?: string | null;
+  needsAttention?: number;
   createdAt: string;
 }
 
@@ -45,6 +48,8 @@ export function AdminChatPage() {
   const [isSending, setIsSending] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  // Handoff flag (#10): clearing the "needs attention" banner.
+  const [isAcknowledging, setIsAcknowledging] = useState(false);
   const [error, setError] = useState("");
   const [suggestionNote, setSuggestionNote] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
@@ -105,6 +110,29 @@ export function AdminChatPage() {
     const list = listRef.current;
     if (list) list.scrollTop = list.scrollHeight;
   }, [messages]);
+
+  // Clear the AI's handoff flag (#10): staff have seen the thread and handled it.
+  async function acknowledgeFlag() {
+    if (!activeThreadId || isAcknowledging) return;
+    setIsAcknowledging(true);
+    try {
+      await request(`/admin/chat/threads/${activeThreadId}/acknowledge`, {
+        method: "POST",
+      });
+      setMessages((current) =>
+        current.map((message) => ({ ...message, needsAttention: 0 })),
+      );
+      await refreshThreads();
+    } catch (ackError) {
+      setError(
+        ackError instanceof Error
+          ? ackError.message
+          : t("The flag could not be cleared."),
+      );
+    } finally {
+      setIsAcknowledging(false);
+    }
+  }
 
   // The AI answers directly: draft a reply to the latest customer message and send it
   // with the normal reply path, with no review step. If the model fails, fall back to
@@ -249,8 +277,17 @@ export function AdminChatPage() {
                     type="button"
                   >
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold text-brand-navy">
-                        {thread.customerName || t("Unknown")}
+                      <span className="flex items-center gap-1.5">
+                        {/* Handoff flag (#10): the AI paged the team about this thread. */}
+                        {thread.needsAttention ? (
+                          <span
+                            className="size-2 shrink-0 rounded-full bg-red-500"
+                            title={t("The assistant flagged this conversation for the team")}
+                          />
+                        ) : null}
+                        <span className="block truncate text-sm font-bold text-brand-navy">
+                          {thread.customerName || t("Unknown")}
+                        </span>
                       </span>
                       <span className="mt-0.5 block text-xs text-[#65748a]">
                         {time(thread.lastAt)} ·{" "}
@@ -277,9 +314,27 @@ export function AdminChatPage() {
           ) : (
             <>
               <div className="flex items-center justify-between gap-3 border-b border-[#e5e9ee] bg-white px-4 py-2.5">
-                <p className="min-w-0 truncate text-sm font-bold text-brand-navy">
+                <p className="min-w-0 flex items-center gap-2 truncate text-sm font-bold text-brand-navy">
                   {threads.find((thread) => thread.threadId === activeThreadId)?.customerName || t("Conversation")}
+                  {/* Handoff banner marker (#10): flagged by the assistant. */}
+                  {messages.some((message) => message.needsAttention) && (
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-extrabold text-red-700 ring-1 ring-red-200">
+                      {t("Needs attention")}
+                    </span>
+                  )}
                 </p>
+                <div className="flex shrink-0 items-center gap-2">
+                  {messages.some((message) => message.needsAttention) && (
+                    <button
+                      className="inline-flex min-h-9 items-center rounded-full border border-red-200 bg-red-50 px-3 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                      disabled={isAcknowledging}
+                      onClick={acknowledgeFlag}
+                      title={t("Mark this conversation as handled")}
+                      type="button"
+                    >
+                      {t("Mark handled")}
+                    </button>
+                  )}
                 <button
                   aria-label={t("Clear this conversation")}
                   className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border border-[#dce3eb] px-3 text-xs font-bold text-[#65748a] transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
@@ -300,6 +355,7 @@ export function AdminChatPage() {
                   )}
                   {t("Clear")}
                 </button>
+                </div>
               </div>
               <div
                 className="flex-1 space-y-3 overflow-y-auto bg-[#f4f6f8] p-4"
@@ -320,6 +376,23 @@ export function AdminChatPage() {
                       <p className="whitespace-pre-wrap break-words">
                         {message.body}
                       </p>
+                      {/* Customer photo attachment (#7), visible to staff. */}
+                      {message.imageUrl && (
+                        <a
+                          className="mt-1.5 block"
+                          href={message.imageUrl}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          <img
+                            alt=""
+                            className="max-h-48 w-full rounded-xl object-cover"
+                            decoding="async"
+                            loading="lazy"
+                            src={message.imageUrl}
+                          />
+                        </a>
+                      )}
                       <p
                         className={`mt-1 text-[10px] font-semibold ${message.sender === "store" ? "text-white/60" : "text-[#8b95a2]"}`}
                       >

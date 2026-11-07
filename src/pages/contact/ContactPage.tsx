@@ -303,7 +303,7 @@ export function ContactPage() {
     <div className="min-h-svh bg-white text-brand-navy">
       <Header />
       <main id="main" tabIndex={-1}>
-        <section className="relative isolate overflow-hidden bg-brand-navy text-white">
+        <section className="relative isolate overflow-hidden bg-brand-navy text-white" data-floating-hide="hero">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-25">
             <HeroBackground animated quietOnMobile variant="navy" theme="ice-cream" />
           </div>
