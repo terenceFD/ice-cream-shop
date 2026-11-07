@@ -14,18 +14,22 @@ const ADMIN_WELCOME_KEY = 'cold-stone-admin-welcome'
 const ADMIN_CREDENTIALS_CHANGED_KEY = 'cold-stone-admin-credentials-changed'
 const ADMIN_STORE_TOWN_KEY = 'cold-stone-admin-store-town-v2'
 
-// The customer token lives in localStorage so the sign-in survives reloads, new tabs and browser restarts.
+// The customer token lives in sessionStorage so the sign-in survives reloads and new
+// tabs but dies with the tab — a shared computer keeps nobody signed in after the
+// browser closes. The server keeps no cookie session; the token is sent per request.
 export function getCustomerToken(): string {
   try {
-    const token = localStorage.getItem(CUSTOMER_TOKEN_KEY)
+    const token = sessionStorage.getItem(CUSTOMER_TOKEN_KEY)
     if (token) return token
-    // Move a token saved by older builds (sessionStorage) over to localStorage.
-    const legacyToken = sessionStorage.getItem(CUSTOMER_TOKEN_KEY)
+    // Move a token saved by older builds (localStorage) into sessionStorage and
+    // wipe it there, so the longer-lived copy is not left behind on disk.
+    const legacyToken = localStorage.getItem(CUSTOMER_TOKEN_KEY)
     if (legacyToken) {
-      localStorage.setItem(CUSTOMER_TOKEN_KEY, legacyToken)
-      sessionStorage.removeItem(CUSTOMER_TOKEN_KEY)
+      sessionStorage.setItem(CUSTOMER_TOKEN_KEY, legacyToken)
+      localStorage.removeItem(CUSTOMER_TOKEN_KEY)
+      return legacyToken
     }
-    return legacyToken || ''
+    return ''
   } catch {
     return ''
   }
@@ -33,7 +37,9 @@ export function getCustomerToken(): string {
 
 export function setCustomerToken(token: string) {
   try {
-    localStorage.setItem(CUSTOMER_TOKEN_KEY, token)
+    sessionStorage.setItem(CUSTOMER_TOKEN_KEY, token)
+    // No long-lived copy: remove any token an older build left in localStorage.
+    localStorage.removeItem(CUSTOMER_TOKEN_KEY)
   } catch {
     // Storage can be unavailable (private mode); the session then lasts only for this page.
   }
@@ -41,8 +47,8 @@ export function setCustomerToken(token: string) {
 
 export function clearCustomerToken() {
   try {
-    localStorage.removeItem(CUSTOMER_TOKEN_KEY)
     sessionStorage.removeItem(CUSTOMER_TOKEN_KEY)
+    localStorage.removeItem(CUSTOMER_TOKEN_KEY)
   } catch {
     // Nothing to clear when storage is unavailable.
   }

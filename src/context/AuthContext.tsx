@@ -92,6 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSessionError("Your session expired. Please sign in again.");
     }
     // Keep other open tabs in step when the customer signs in or out in one of them.
+    // (The token itself now lives in sessionStorage, which is per-tab, so the event
+    // fires only for the removal of legacy localStorage copies — harmless either way.)
     function syncTokenFromOtherTab(event: StorageEvent) {
       if (event.key === CUSTOMER_TOKEN_KEY || event.key === null) setToken(getCustomerToken());
     }

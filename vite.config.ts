@@ -5,6 +5,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [tailwindcss(), react()],
   build: {
+    // No source maps in production: without them, DevTools shows only minified code,
+    // so the site's logic cannot be read back comfortably from the browser inspector.
+    sourcemap: false,
     // Vite starts downloading the homepage chunk while the main bundle is still arriving instead of
     // waiting for it to finish; the other pages still download only when a visitor opens them.
     modulePreload: {

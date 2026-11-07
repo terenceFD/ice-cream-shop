@@ -310,7 +310,26 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
   }
 
   function robots(request, response) {
-    const lines = ['User-agent: *', 'Allow: /', ...PRIVATE_DISALLOW.map((path) => `Disallow: ${path}`), '', `Sitemap: ${origin(request)}/sitemap.xml`, '']
+    const lines = [
+      'User-agent: *',
+      'Allow: /',
+      ...PRIVATE_DISALLOW.map((path) => `Disallow: ${path}`),
+      '',
+      '# Aggressive scrapers and catalog mirrors are not welcome; the API also refuses their clients.',
+      'User-agent: HTTrack',
+      'Disallow: /',
+      'User-agent: wget',
+      'Disallow: /',
+      'User-agent: curl',
+      'Disallow: /',
+      'User-agent: python-requests',
+      'Disallow: /',
+      'User-agent: scrapy',
+      'Disallow: /',
+      '',
+      `Sitemap: ${origin(request)}/sitemap.xml`,
+      '',
+    ]
     response.type('text/plain').set('Cache-Control', 'public, max-age=3600').send(lines.join('\n'))
   }
 

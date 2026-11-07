@@ -364,6 +364,57 @@ const apiCors = cors({
   },
 })
 app.use('/api', apiCors)
+
+// ---- Anti-scraping gate ----
+// The catalog (menu, flavors, reviews) is public by design, but a mirror of the
+// whole catalog must not be possible at full speed. Two layers stop it: known
+// script clients are refused outright, and every API caller gets a generous but
+// firm global cap. Real browsers with real users sit far below both.
+const blockedClientAgents = [
+  'curl/', 'wget', 'python-requests', 'python-urllib', 'httpx/', 'aiohttp/',
+  'scrapy', 'java/', 'okhttp/', 'go-http-client', 'libwww-perl',
+  'httrack', 'cyotek', 'webcopier', 'webzip', 'website downloader',
+]
+const scraperBlock = (request, response, next) => {
+  const agent = (request.headers['user-agent'] || '').toLowerCase()
+  if (blockedClientAgents.some((name) => agent.includes(name)) || agent === '') {
+    response.status(403).json({ error: 'Automated access to this API is not allowed.' })
+    return
+  }
+  next()
+}
+
+// Anti-scraper rate limits. The catalog cap is 240 requests per minute per
+// address — far more than a shopper needs, far less than a scraper wants.
+// Everything else on the API shares a 600-per-minute ceiling that only a flood
+// or a scraping run can reach.
+const catalogScraperLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 240,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Slow down.' },
+})
+const globalApiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 600,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Slow down.' },
+})
+const isCatalogRoute = (request) =>
+  request.method === 'GET' &&
+  ['/api/menu', '/api/flavors', '/api/reviews'].some((base) =>
+    request.path === base || request.path.startsWith(`${base}/`)
+  )
+app.use('/api', scraperBlock, (request, response, next) => {
+  if (isCatalogRoute(request)) {
+    catalogScraperLimiter(request, response, next)
+    return
+  }
+  globalApiLimiter(request, response, next)
+})
+
 app.use('/uploads', express.static(uploadDirectory, { fallthrough: false, index: false }))
 
 function isUniqueConstraintError(error) {
@@ -3286,9 +3337,22 @@ function chatThreadIdValid(threadId) {
   return /^[0-9a-f-]{8,36}$/i.test(threadId)
 }
 
+// Chat text is stored and later shown in the browser. React escapes it today, but
+// defense in depth: strip markup and control characters at the door so stored text
+// can never become executable content, whatever renders it later.
+function sanitizeChatText(text) {
+  return text
+    .replace(/<[^>]*>?/g, ' ')      // drop any tag-like fragment
+    .replace(/javascript:/gi, '')   // drop URL-scheme injections
+    .replace(/on\w+\s*=/gi, '')     // drop event-handler fragments
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '') // control chars
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
 app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, response) => {
   const threadId = typeof request.body.threadId === 'string' ? request.body.threadId.trim() : ''
-  const body = typeof request.body.body === 'string' ? request.body.body.trim().slice(0, 1000) : ''
+  const body = typeof request.body.body === 'string' ? sanitizeChatText(request.body.body.trim()).slice(0, 1000) : ''
   if (!chatThreadIdValid(threadId) || !body) {
     response.status(400).json({ error: 'Write a message before sending.' })
     return
@@ -3480,8 +3544,11 @@ function ensureChatDeviceToken(request, response) {
   const existing = readChatDeviceToken(request)
   if (existing) return existing
   const token = randomUUID()
+  // Secure keeps the cookie off plain-HTTP connections in production; localhost
+  // is HTTP, so the flag is added only when the site itself runs on HTTPS.
+  const secureFlag = request.protocol === 'https:' || request.get('x-forwarded-proto') === 'https' ? '; Secure' : ''
   response.setHeader('Set-Cookie',
-    `${CHAT_DEVICE_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${CHAT_DEVICE_MAX_AGE}`)
+    `${CHAT_DEVICE_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax${secureFlag}; Max-Age=${CHAT_DEVICE_MAX_AGE}`)
   return token
 }
 
@@ -3651,7 +3718,7 @@ app.post('/api/admin/chat/threads/:threadId/acknowledge', requireAdmin, async (r
 
 app.post('/api/admin/chat/threads/:threadId/reply', requireAdmin, async (request, response) => {
   const threadId = request.params.threadId
-  const body = typeof request.body.body === 'string' ? request.body.body.trim().slice(0, 1000) : ''
+  const body = typeof request.body.body === 'string' ? sanitizeChatText(request.body.body.trim()).slice(0, 1000) : ''
   if (!chatThreadIdValid(threadId) || !body) {
     response.status(400).json({ error: 'Write a reply before sending.' })
     return
