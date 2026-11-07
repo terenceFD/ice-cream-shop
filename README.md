@@ -24,6 +24,7 @@ Research references:
 - **Review reminder** a day after delivery, by notification and email, linking straight to that order's review form.
 - **Parties & events** (`/events`): request a bulk order for a birthday, office event or wedding, get a quote from the store, and pay a 30% deposit online.
 - Request a custom ice cream cake from the prominent homepage cakes section or `/custom-cake`. Choose a size, flavor and toppings, pickup store and date; the store sends a quote, and paying the deposit secures the cake and pickup date. The request page uses a soft gradient blending the brand's yellow and navy.
+- An **AI chat assistant** on every customer page (the chat bubble): it answers questions from the shop's own live data — menu, prices, branches, hours, promotions and the customer's bag and orders — in English or French, accepts photos ("what flavor is this?") via its vision model, and hands complaints and money disputes to the staff inbox. See [The AI chat agent](docs/AI-AGENT.md).
 - A **WhatsApp chat button** on every customer page.
 - Installable app (web app manifest and service worker) that works offline for browsing.
 
@@ -32,6 +33,17 @@ Research references:
 - Promotions can notify every customer who turned on notifications, with an optional custom message and a phone preview; existing promotions can be re-sent.
 - Order and event details include a one-tap **WhatsApp** button with the customer's update already written.
 - Store admins see and manage only their own store's data.
+
+## AI chat assistant
+
+The storefront chat bubble is answered by an AI agent that speaks only from the shop's own data; it never invents a price or a product. Its architecture, knowledge base, model routing (text vs. vision), provider failover and testing are documented in [docs/AI-AGENT.md](docs/AI-AGENT.md). Staff-facing highlights:
+
+- **Auto-replies** appear to the customer seconds after their message when `CHAT_AUTO_REPLY=true`. Without it, the agent only drafts a reply in the admin inbox for a staff member to send.
+- Every AI reply is **fact-checked by a second model call** against the live facts before the customer sees it.
+- When the agent is unsure or the customer is complaining, the thread is flagged **needs attention** in the admin inbox instead of being answered.
+- The **Reports** page charts what customers actually ask the assistant — free product research.
+- Staff edits of AI drafts are recorded, so recurring mistakes can be added to the prompt or the retrieval index.
+- Free model tiers throttle (about 5 requests/minute on Cerebras, a daily token ceiling on Groq). The assistant retries, fails over to the backup provider, and finally answers from deterministic rules — a slow day degrades to simpler answers, never silence.
 
 ## Project folders
 
@@ -328,6 +340,10 @@ The **Customer accounts** directory lists verified accounts even when they have 
 | `REVIEW_REMINDER_DELAY_HOURS` | Hours after delivery before the review reminder (default 24) |
 | `WHATSAPP_NUMBER` | The shop's WhatsApp number for the chat button |
 | `SITE_URL` | Optional fixed public address for the sitemap and page links |
+| `AI_BASE_URL`, `AI_MODEL`, `AI_API_KEY` | The chat assistant's primary text model (OpenAI-compatible) |
+| `AI_VISION_MODEL` | Vision model for photo messages (leave empty to keep photos text-only) |
+| `AI_FAILOVER_BASE_URL`, `AI_FAILOVER_MODEL`, `AI_FAILOVER_API_KEY` | Optional backup provider when the primary is throttled |
+| `CHAT_AUTO_REPLY` | `true` lets the assistant reply to customers by itself; without it it only drafts replies for staff |
 
 ## Checks
 
