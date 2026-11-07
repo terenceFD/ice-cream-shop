@@ -59,6 +59,33 @@ export function imageStorageOrigin(environment = process.env) {
   return config && !config.invalid ? config.origin : null
 }
 
+const STORED_FILE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,180}$/
+
+/**
+ * Addresses this server is willing to treat as a chat photo.
+ * Local files must be a single name inside /uploads (no folders, no "..").
+ * Remote files must be the exact public Supabase path saveUploadedImage writes.
+ * Anything else is refused, so a message cannot point the server at another file or site.
+ */
+export function safeChatImageReference(url, environment = process.env) {
+  if (typeof url !== 'string' || url.length === 0 || url.length > 500) return ''
+  if (url.includes('..') || url.includes('\\') || url.includes('\0')) return ''
+  if (url.startsWith('/uploads/')) {
+    return STORED_FILE_NAME.test(url.slice('/uploads/'.length)) ? url : ''
+  }
+  let parsed
+  try {
+    parsed = new URL(url)
+  } catch {
+    return ''
+  }
+  if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.search || parsed.hash) return ''
+  const origin = imageStorageOrigin(environment)
+  if (!origin || parsed.origin !== origin) return ''
+  if (!/^\/storage\/v1\/object\/public\/[A-Za-z0-9._%-]+\/uploads\/[A-Za-z0-9][A-Za-z0-9._-]{0,180}$/.test(parsed.pathname)) return ''
+  return `${parsed.origin}${parsed.pathname}`
+}
+
 /** A safe summary for logs and health checks; never includes the key. */
 export function imageStorageStatus(environment = process.env) {
   const config = supabaseStorageConfig(environment)

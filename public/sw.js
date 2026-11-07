@@ -134,7 +134,7 @@ self.addEventListener('push', (event) => {
   } catch {
     data = { body: event.data ? event.data.text() : '' }
   }
-  const url = typeof data.url === 'string' && data.url.startsWith('/') ? data.url : '/'
+  const url = notificationPath(data.url)
   const suppliedTitle = typeof data.title === 'string' ? data.title.trim() : ''
   const title = suppliedTitle.toLowerCase().includes(SITE_NAME.toLowerCase())
     ? suppliedTitle
@@ -149,10 +149,25 @@ self.addEventListener('push', (event) => {
   }))
 })
 
+// Only a path on this origin may be opened. "//evil.example" starts with "/"
+// but is a different site, so it is thrown away before the tab is opened.
+function notificationPath(value) {
+  if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || value.includes('\\') || value.includes('://')) {
+    return '/'
+  }
+  try {
+    const url = new URL(value, self.location.origin)
+    if (url.origin !== self.location.origin) return '/'
+    return `${url.pathname}${url.search}${url.hash}`
+  } catch {
+    return '/'
+  }
+}
+
 // Tapping the notification opens the site, reusing a tab that is already open.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const target = new URL(event.notification.data?.url || '/', self.location.origin).href
+  const target = new URL(notificationPath(event.notification.data?.url), self.location.origin).href
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
     for (const client of windows) {

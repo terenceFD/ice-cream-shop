@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
-import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, normalizeSupabaseUrl, saveUploadedImage } from './storage.js'
+import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, normalizeSupabaseUrl, safeChatImageReference, saveUploadedImage } from './storage.js'
 
 const image = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 
@@ -84,6 +84,28 @@ test('accepts the Supabase project address in the forms people usually paste', (
   assert.equal(normalizeSupabaseUrl('postgresql://user:pass@db.abcd1234.supabase.co:5432/postgres'), null)
   assert.equal(normalizeSupabaseUrl('not a url'), null)
 })
+
+test('chat photo addresses stay inside this shop\'s own uploads', () =>
+  withEnvironment({
+    SUPABASE_URL: 'https://project.supabase.co',
+    SUPABASE_SERVICE_ROLE_KEY: 'service-key',
+  }, () => {
+    assert.equal(
+      safeChatImageReference('/uploads/chat-11111111-1111-1111-1111-111111111111.webp'),
+      '/uploads/chat-11111111-1111-1111-1111-111111111111.webp',
+    )
+    assert.equal(safeChatImageReference('/uploads/../../.env'), '')
+    assert.equal(safeChatImageReference('/uploads/foo/bar.webp'), '')
+    assert.equal(safeChatImageReference('https://evil.example/uploads/a.webp'), '')
+    assert.equal(
+      safeChatImageReference('https://project.supabase.co/storage/v1/object/public/menu-images/uploads/a.webp'),
+      'https://project.supabase.co/storage/v1/object/public/menu-images/uploads/a.webp',
+    )
+    assert.equal(
+      safeChatImageReference('https://project.supabase.co/storage/v1/object/public/menu-images/uploads/../../secret'),
+      '',
+    )
+  }))
 
 test('an invalid SUPABASE_URL disables uploads with a clear message instead of crashing', () =>
   withEnvironment({ SUPABASE_URL: 'postgresql://user:pass@host/db', SUPABASE_SERVICE_ROLE_KEY: 'key' }, async () => {

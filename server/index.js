@@ -11,6 +11,7 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 import Stripe from 'stripe'
 import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'node:crypto'
 import { existsSync } from 'node:fs'
+import { promises as dns } from 'node:dns'
 import { fileURLToPath } from 'node:url'
 import {
   addCustomerFavorite,
@@ -104,7 +105,7 @@ import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMe
 import { allergensForItem } from '../shared/allergens.js'
 import { storeAdminCanAccess } from './admin-access.js'
 import { isSpamSubmission } from './spam-guard.js'
-import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, saveUploadedImage } from './storage.js'
+import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, safeChatImageReference, saveUploadedImage } from './storage.js'
 import { optimizeUploadedImage, UnreadableImageError } from './images.js'
 import sharp from 'sharp'
 import {
@@ -316,12 +317,22 @@ async function verifyPassword(password, passwordHash) {
   }
 }
 
+// Scripts may only come from this site. Helmet's default already says this; it is
+// set here so a later edit cannot quietly allow inline or remote scripts.
+contentSecurityDirectives['script-src'] = ["'self'"]
+contentSecurityDirectives['script-src-attr'] = ["'none'"]
+contentSecurityDirectives['object-src'] = ["'none'"]
+contentSecurityDirectives['base-uri'] = ["'self'"]
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: contentSecurityDirectives,
   },
   // Matches frame-ancestors 'none' above so older browsers enforce the same rule.
   frameguard: { action: 'deny' },
+  // Payment return links carry a checkout id in the query string. no-referrer
+  // keeps that id from being sent to any other site the page loads.
+  referrerPolicy: { policy: 'no-referrer' },
 }))
 // Pages, scripts, styles and API answers are sent compressed (about a quarter of the size).
 // Render's CDN also compresses, but the site should not depend on its host doing it.
@@ -369,22 +380,87 @@ const apiCors = cors({
 app.use('/api', apiCors)
 
 // ---- Anti-scraping gate ----
-// The catalog (menu, flavors, reviews) is public by design, but a mirror of the
-// whole catalog must not be possible at full speed. Two layers stop it: known
-// script clients are refused outright, and every API caller gets a generous but
-// firm global cap. Real browsers with real users sit far below both.
+// The catalog is public by design, but a mirror of the whole site must not be
+// possible at full speed. Known copy tools are refused on every page and API
+// route. A browser that merely claims to be Googlebot or Bingbot is refused
+// unless the address reverse-resolves to that crawler and resolves back.
+// Real shoppers sit far below the rate limits that follow.
 const blockedClientAgents = [
   'curl/', 'wget', 'python-requests', 'python-urllib', 'httpx/', 'aiohttp/',
   'scrapy', 'java/', 'okhttp/', 'go-http-client', 'libwww-perl',
   'httrack', 'cyotek', 'webcopier', 'webzip', 'website downloader',
+  'semrush', 'ahrefs', 'mj12bot', 'dotbot', 'petalbot', 'bytespider',
+  'gptbot', 'claudebot', 'ccbot', 'amazonbot', 'dataforseo', 'blexbot',
+  'megaindex', 'serpstat', 'screaming frog', 'seokicks', 'phantomjs', 'mechanize', 'colly',
 ]
-const scraperBlock = (request, response, next) => {
-  const agent = (request.headers['user-agent'] || '').toLowerCase()
-  if (blockedClientAgents.some((name) => agent.includes(name)) || agent === '') {
+const CLAIMS_VERIFIED_CRAWLER = /googlebot|bingbot|adsbot-google|google-inspectiontool|storebot-google/
+const crawlerVerificationCache = new Map()
+
+function denyAutomated(request, response) {
+  if (request.path.startsWith('/api')) {
     response.status(403).json({ error: 'Automated access to this API is not allowed.' })
     return
   }
-  next()
+  response.status(403).type('text/plain').send('Automated access is not allowed.')
+}
+
+function crawlerAddress(ip) {
+  const value = typeof ip === 'string' ? ip : ''
+  return value.startsWith('::ffff:') ? value.slice('::ffff:'.length) : value
+}
+
+async function verifiedSearchCrawler(ip, agent) {
+  const address = crawlerAddress(ip)
+  const cached = crawlerVerificationCache.get(address)
+  if (cached && Date.now() - cached.at < 60 * 60 * 1000) return cached.ok
+  let ok = false
+  try {
+    const names = await dns.reverse(address)
+    const host = String(names[0] || '').toLowerCase().replace(/\.$/, '')
+    const google = /googlebot|adsbot-google|google-inspectiontool|storebot-google/.test(agent)
+      && (host.endsWith('.googlebot.com') || host.endsWith('.google.com'))
+    const bing = agent.includes('bingbot') && (host.endsWith('.search.msn.com') || host.endsWith('.bing.com'))
+    if (google || bing) {
+      const records = await dns.lookup(host, { all: true })
+      ok = records.some((record) => record.address === address)
+    }
+  } catch {
+    ok = false
+  }
+  crawlerVerificationCache.set(address, { ok, at: Date.now() })
+  if (crawlerVerificationCache.size > 2000) {
+    const now = Date.now()
+    for (const [key, value] of crawlerVerificationCache) {
+      if (now - value.at > 60 * 60 * 1000) crawlerVerificationCache.delete(key)
+    }
+  }
+  return ok
+}
+
+const scraperBlock = async (request, response, next) => {
+  // Uptime checks only learn that the process is up. They carry no catalog.
+  if (request.method === 'GET' && request.path === '/api/health') {
+    next()
+    return
+  }
+  const agent = (request.headers['user-agent'] || '').toLowerCase()
+  try {
+    if (CLAIMS_VERIFIED_CRAWLER.test(agent)) {
+      if (await verifiedSearchCrawler(request.ip, agent)) {
+        next()
+        return
+      }
+      denyAutomated(request, response)
+      return
+    }
+    if (blockedClientAgents.some((name) => agent.includes(name)) || agent === '') {
+      denyAutomated(request, response)
+      return
+    }
+    next()
+  } catch (error) {
+    next(error)
+  }
 }
 
 // Anti-scraper rate limits. The catalog cap is 240 requests per minute per
@@ -410,7 +486,8 @@ const isCatalogRoute = (request) =>
   ['/api/menu', '/api/flavors', '/api/reviews'].some((base) =>
     request.path === base || request.path.startsWith(`${base}/`)
   )
-app.use('/api', scraperBlock, (request, response, next) => {
+app.use(scraperBlock)
+app.use('/api', (request, response, next) => {
   if (isCatalogRoute(request)) {
     catalogScraperLimiter(request, response, next)
     return
@@ -418,7 +495,38 @@ app.use('/api', scraperBlock, (request, response, next) => {
   globalApiLimiter(request, response, next)
 })
 
-app.use('/uploads', express.static(uploadDirectory, { fallthrough: false, index: false }))
+// Full page loads, not photos or scripts. A person browsing stays well under this.
+// A program walking every address does not.
+const pageScraperLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 120,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  skip: (request) => {
+    if (!['GET', 'HEAD'].includes(request.method)) return true
+    if (request.path.startsWith('/api') || request.path.startsWith('/uploads')) return true
+    return /\.(?:js|css|map|webp|jpe?g|png|gif|svg|ico|avif|woff2?|json|txt|xml|webmanifest)$/i.test(request.path)
+  },
+  message: 'Too many page requests. Slow down.',
+})
+app.use(pageScraperLimiter)
+
+// Uploaded files are images only. A file that is not a photo is not served, and a
+// photo opened on its own cannot run a script (no page, no plugins, no parent).
+app.use('/uploads', (request, response, next) => {
+  if (request.path.includes('..') || request.path.includes('\\') || request.path.includes('\0')) {
+    response.status(400).end()
+    return
+  }
+  if (!/\.(?:webp|jpe?g|png|gif)$/i.test(request.path)) {
+    response.status(404).end()
+    return
+  }
+  response.set('Content-Security-Policy', "default-src 'none'; sandbox")
+  response.set('X-Content-Type-Options', 'nosniff')
+  response.set('Content-Disposition', 'inline')
+  next()
+}, express.static(uploadDirectory, { fallthrough: false, index: false }))
 
 function isUniqueConstraintError(error) {
   return error && (
@@ -631,7 +739,18 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
   }
 })
 
-app.use(express.json({ limit: '8mb' }))
+// Most requests are small. Only the two photo-upload routes accept a multi-megabyte
+// body, so a flood of large JSON cannot be aimed at sign-in, checkout, or chat text.
+const parseLargeJson = express.json({ limit: '8mb' })
+const parseJson = express.json({ limit: '2mb' })
+const largeJsonPaths = new Set(['/api/chat/uploads', '/api/admin/uploads'])
+app.use((request, response, next) => {
+  if (largeJsonPaths.has(request.path)) {
+    parseLargeJson(request, response, next)
+    return
+  }
+  parseJson(request, response, next)
+})
 
 app.get('/api/site/contact', (_request, response) => {
   const digits = (process.env.WHATSAPP_NUMBER || '').replace(/\D/g, '').replace(/^00/, '')
@@ -1725,14 +1844,38 @@ app.post('/api/checkout/session', optionalCustomer, checkoutLimiter, async (requ
   }
 })
 
-app.get('/api/payment/session/:sessionId', async (request, response) => {
+// Only a checkout this shop created may be looked up. The id format is checked
+// first so a random string never becomes a call to Stripe.
+const STRIPE_SESSION_ID = /^cs_(?:test|live)_[A-Za-z0-9]{8,}$/
+const paymentSessionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many payment checks. Wait a few minutes and try again.' },
+})
+
+app.get('/api/payment/session/:sessionId', paymentSessionLimiter, async (request, response) => {
   const stripe = getStripe()
   if (!stripe) {
     response.status(503).json({ error: 'Online payments are not configured.' })
     return
   }
+  const sessionId = request.params.sessionId
+  if (!STRIPE_SESSION_ID.test(sessionId) || sessionId.length > 255) {
+    response.status(404).json({ error: 'Stripe checkout session was not found.' })
+    return
+  }
   try {
-    const session = await stripe.checkout.sessions.retrieve(request.params.sessionId)
+    const known = await database.prepare(`
+      SELECT order_id AS "orderId" FROM payments
+      WHERE payment_provider = 'stripe' AND provider_reference = ?
+    `).get(sessionId)
+    if (!known) {
+      response.status(404).json({ error: 'Stripe checkout session was not found.' })
+      return
+    }
+    const session = await stripe.checkout.sessions.retrieve(sessionId)
     if (session.payment_status !== 'paid') {
       response.status(409).json({ error: 'Stripe has not confirmed this payment yet.' })
       return
@@ -1871,11 +2014,11 @@ app.post('/api/contact', publicFormIpLimiter, contactLimiter, async (request, re
       response.status(201).json({ messageId: null })
       return
     }
-    const name = typeof request.body.name === 'string' ? request.body.name.trim() : ''
+    const name = sanitizeChatText(typeof request.body.name === 'string' ? request.body.name.trim() : '')
     const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
     const phone = typeof request.body.phone === 'string' ? request.body.phone.trim() : ''
-    const subject = typeof request.body.subject === 'string' ? request.body.subject.trim() : ''
-    const message = typeof request.body.message === 'string' ? request.body.message.trim() : ''
+    const subject = sanitizeChatText(typeof request.body.subject === 'string' ? request.body.subject.trim() : '')
+    const message = sanitizeChatText(typeof request.body.message === 'string' ? request.body.message.trim() : '')
     const storeId = Number(request.body.storeId)
     if (!name || name.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254
       || phone.length > 40 || !subject || subject.length > 150 || !message || message.length > 5000
@@ -3025,7 +3168,7 @@ app.post('/api/customer/reviews', requireCustomer, async (request, response) => 
     : [request.body.itemId]
   const itemIds = [...new Set(requestedItemIds)]
   const rating = Number(request.body.rating)
-  const review = typeof request.body.review === 'string' ? request.body.review.trim() : ''
+  const review = sanitizeChatText(typeof request.body.review === 'string' ? request.body.review.trim() : '')
   if (!Number.isSafeInteger(orderId) || orderId < 1 || itemIds.length < 1 || itemIds.length > 50
     || itemIds.some((itemId) => typeof itemId !== 'string')
     || !Number.isSafeInteger(rating) || rating < 1 || rating > 5 || review.length > 200) {
@@ -3066,12 +3209,12 @@ app.post('/api/customer/reviews', requireCustomer, async (request, response) => 
 
 app.post('/api/cake-requests', publicFormIpLimiter, contactLimiter, async (request, response) => {
   const body = request.body
-  const customerName = typeof body.name === 'string' ? body.name.trim() : ''
+  const customerName = sanitizeChatText(typeof body.name === 'string' ? body.name.trim() : '')
   const customerEmail = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
   const customerPhone = typeof body.phone === 'string' ? body.phone.trim() : ''
   const size = body.size
-  const flavor = typeof body.flavor === 'string' ? body.flavor.trim() : ''
-  const message = typeof body.message === 'string' ? body.message.trim() : ''
+  const flavor = sanitizeChatText(typeof body.flavor === 'string' ? body.flavor.trim() : '')
+  const message = sanitizeChatText(typeof body.message === 'string' ? body.message.trim() : '')
   const toppings = Array.isArray(body.toppings) ? [...new Set(body.toppings.filter((value) => typeof value === 'string'))] : []
   const pickupDate = typeof body.pickupDate === 'string' ? body.pickupDate : ''
   const storeId = Number(body.storeId)
@@ -3412,12 +3555,7 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
   // chat-upload endpoint. Production stores uploads in Supabase Storage, so the
   // site's own storage origins are accepted alongside local /uploads/ paths; an
   // arbitrary external image is still refused.
-  const uploadOrigins = imageStorageOrigin() ? [new URL(imageStorageOrigin()).origin] : []
-  const imageUrl = typeof request.body.imageUrl === 'string'
-    && (/^\/uploads\/[\w./-]+$/.test(request.body.imageUrl)
-      || uploadOrigins.some((origin) => request.body.imageUrl.startsWith(`${origin}/uploads/`)))
-    ? request.body.imageUrl.slice(0, 400)
-    : ''
+  const imageUrl = safeChatImageReference(typeof request.body.imageUrl === 'string' ? request.body.imageUrl : '')
   const deviceToken = ensureChatDeviceToken(request, response)
   if (!(await chatThreadAllowed(threadId, request.customer, deviceToken))) {
     response.status(403).json({ error: await chatAccessError(threadId) })
@@ -3425,15 +3563,15 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
   }
   // The page the customer is on when they write. The AI uses it to explain the
   // screen they are looking at ("what page is this?") and to guide them around it.
-  const customerPage = typeof request.body.page === 'string' && request.body.page.startsWith('/')
-    ? request.body.page.slice(0, 120)
+  const customerPage = typeof request.body.page === 'string' && /^\/[A-Za-z0-9/_-]{0,119}$/.test(request.body.page)
+    ? request.body.page
     : ''
   // A text snapshot of what is actually on the customer's screen, captured by the
   // chat widget (title, headings, buttons, visible text). The AI uses it to describe
   // the real page — including detail pages such as a specific flavor — instead of
   // guessing from the URL alone.
   const pageSnapshot = typeof request.body.pageSnapshot === 'string'
-    ? request.body.pageSnapshot.slice(0, 2000)
+    ? sanitizeChatText(request.body.pageSnapshot).slice(0, 2000)
     : ''
   // A signed-in customer continues as their account even when the thread started
   // as a guest. The chat widget opens its thread as soon as the panel opens, which
@@ -3523,7 +3661,7 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
     await database.prepare(`
       INSERT INTO chat_messages (thread_id, customer_id, sender, body)
       VALUES (?, NULL, 'store', ?)
-    `).run(threadId, result.suggestion)
+    `).run(threadId, sanitizeChatText(result.suggestion).slice(0, 2000))
     // Handoff (#10): complaints, money disputes or repeated confusion page the team
     // by raising needs_attention on the thread; the inbox shows the flag.
     if (result.needsAttention) {
@@ -3551,7 +3689,7 @@ async function sendFallbackAutoReply(threadId, result, language) {
   await database.prepare(`
     INSERT INTO chat_messages (thread_id, customer_id, sender, body)
     VALUES (?, NULL, 'store', ?)
-  `).run(threadId, result.suggestion)
+  `).run(threadId, sanitizeChatText(result.suggestion).slice(0, 2000))
   if (result.needsAttention) {
     await raiseThreadNeedsAttention(threadId)
   }
@@ -3886,9 +4024,9 @@ app.post('/api/admin/chat/threads/:threadId/suggest', requireAdmin, chatSuggestL
     await database.prepare(`
       INSERT INTO chat_corrections (thread_id, draft, sent, was_edited)
       VALUES (?, ?, '', 0)
-    `).run(threadId, result.suggestion)
+    `).run(threadId, sanitizeChatText(result.suggestion).slice(0, 2000))
     response.json({
-      suggestion: result.suggestion,
+      suggestion: sanitizeChatText(result.suggestion).slice(0, 2000),
       source: result.source,
       topic: result.topic || null,
       confidence: result.confidence || null,
@@ -3902,7 +4040,7 @@ app.post('/api/admin/chat/threads/:threadId/suggest', requireAdmin, chatSuggestL
   }
 })
 
-app.post('/api/admin/login', loginLimiter, async (request, response, next) => {
+app.post('/api/admin/login', loginIpLimiter, loginLimiter, async (request, response, next) => {
   try {
     const email = typeof request.body.email === 'string' ? request.body.email.trim() : ''
     const password = typeof request.body.password === 'string' ? request.body.password : ''

@@ -27,7 +27,9 @@ import {
 import { buildChunks, retrieveChunks } from "./retrieval.js";
 import { createToolExecutor, toolDefinitions } from "./chat-tools.js";
 import { readFileSync } from "node:fs";
+import { resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { safeChatImageReference } from "./storage.js";
 
 /**
  * Inline a stored chat photo as a base64 data URI — the format vision-capable
@@ -37,14 +39,33 @@ import { fileURLToPath } from "node:url";
  * unreadable returns "" and the message simply travels as text.
  */
 function inlineImage(url) {
-  if (!url) return "";
-  if (url.startsWith("data:image/")) return url;
-  if (!url.startsWith("/uploads/")) return url;
+  // A photo already inlined by an earlier step. SVG and other types are refused:
+  // a data URL is not fetched, but it must still be a picture, not a document.
+  if (
+    typeof url === "string"
+    && url.length < 5_000_000
+    && /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/.test(url)
+  ) {
+    return url;
+  }
+  const safe = safeChatImageReference(url);
+  if (!safe) return "";
+  // Remote photos stay as an https address on this shop's storage. They are never fetched here.
+  if (!safe.startsWith("/uploads/")) return safe;
   try {
-    // Uploads live beside this file: server/uploads/<name> (same layout index.js uses).
-    const filePath = fileURLToPath(new URL(`./${url}`, import.meta.url));
+    // Read only a file whose resolved path is inside server/uploads. A name that
+    // climbs out of that folder (../) is refused before the disk is touched.
+    const uploadsDir = resolve(fileURLToPath(new URL("./uploads/", import.meta.url)));
+    const filePath = resolve(uploadsDir, safe.slice("/uploads/".length));
+    if (filePath !== uploadsDir && !filePath.startsWith(`${uploadsDir}${sep}`)) return "";
     const buffer = readFileSync(filePath);
-    const mime = url.endsWith(".png") ? "image/png" : url.endsWith(".gif") ? "image/gif" : "image/webp";
+    const mime = safe.endsWith(".png")
+      ? "image/png"
+      : safe.endsWith(".jpg") || safe.endsWith(".jpeg")
+        ? "image/jpeg"
+        : safe.endsWith(".gif")
+          ? "image/gif"
+          : "image/webp";
     return `data:${mime};base64,${buffer.toString("base64")}`;
   } catch {
     return "";
