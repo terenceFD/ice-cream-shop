@@ -221,6 +221,7 @@ export function LiveChatWidget() {
   const [showNudge, setShowNudge] = useState(false);
   const threadIdRef = useRef<string>("");
   const listRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const isOpenRef = useRef(isOpen);
   isOpenRef.current = isOpen;
 
@@ -254,6 +255,64 @@ export function LiveChatWidget() {
     } catch {
       // Ignore; the widget just starts closed next visit.
     }
+  }, [isOpen]);
+
+  // On a phone the open chat covers the screen. Lock page scroll, and shrink the
+  // panel to the visible viewport so the composer stays above the keyboard.
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const mobileQuery = window.matchMedia("(max-width: 639px)");
+    const root = document.documentElement;
+    const { body } = document;
+    const previousHtmlOverflow = root.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+    const viewport = window.visualViewport;
+
+    const lockScroll = () => {
+      if (!mobileQuery.matches) {
+        root.style.overflow = previousHtmlOverflow;
+        body.style.overflow = previousBodyOverflow;
+        return;
+      }
+      root.style.overflow = "hidden";
+      body.style.overflow = "hidden";
+    };
+
+    const fitToVisibleScreen = () => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      if (!mobileQuery.matches || !viewport) {
+        panel.style.top = "";
+        panel.style.bottom = "";
+        panel.style.height = "";
+        return;
+      }
+      panel.style.top = `${viewport.offsetTop}px`;
+      panel.style.bottom = "auto";
+      panel.style.height = `${viewport.height}px`;
+    };
+
+    lockScroll();
+    fitToVisibleScreen();
+    mobileQuery.addEventListener("change", lockScroll);
+    mobileQuery.addEventListener("change", fitToVisibleScreen);
+    viewport?.addEventListener("resize", fitToVisibleScreen);
+    viewport?.addEventListener("scroll", fitToVisibleScreen);
+
+    return () => {
+      mobileQuery.removeEventListener("change", lockScroll);
+      mobileQuery.removeEventListener("change", fitToVisibleScreen);
+      viewport?.removeEventListener("resize", fitToVisibleScreen);
+      viewport?.removeEventListener("scroll", fitToVisibleScreen);
+      root.style.overflow = previousHtmlOverflow;
+      body.style.overflow = previousBodyOverflow;
+      const panel = panelRef.current;
+      if (panel) {
+        panel.style.top = "";
+        panel.style.bottom = "";
+        panel.style.height = "";
+      }
+    };
   }, [isOpen]);
 
   // The chat panel follows the launcher: when the launcher steps aside over the
@@ -667,6 +726,11 @@ export function LiveChatWidget() {
         });
   };
 
+  // Empty composer shows the mic on the right. Typing, or a photo ready to go,
+  // swaps it for send. The mic stays while recording so it can still be stopped.
+  const showSend = Boolean(draft.trim() || attachment) && !isListening;
+  const showMic = speechSupported && !showSend;
+
   if (mobileMenuOpen) return null;
 
   return (
@@ -682,7 +746,7 @@ export function LiveChatWidget() {
           showFloating
             ? "translate-y-0 opacity-100"
             : "pointer-events-none translate-y-[220%] opacity-0"
-        }`}
+        } ${isOpen ? "max-sm:hidden" : ""}`}
       >
       <button
         aria-expanded={isOpen}
@@ -773,13 +837,13 @@ export function LiveChatWidget() {
       {isOpen && (
         <section
           aria-label={t("Chat with us")}
-          // The panel floats above the launcher: 5.25rem below (the 3.5rem launcher plus
-          // its 1.5rem bottom offset and a small gap), so the launcher stays reachable with
-          // the chat open. On phones it grows to 30rem tall as long as 10rem of the page
-          // stays visible, so it never swallows the whole screen; from sm up it takes 38rem.
-          className="site-live-chat-panel fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] left-4 z-[65] flex h-[min(30rem,calc(100dvh-10rem))] w-[min(28rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[20px] bg-white shadow-[0_28px_70px_rgba(9,42,83,0.32)] ring-1 ring-[#e2e8f0] sm:h-[min(38rem,calc(100dvh-7rem))] sm:w-[30rem]"
+          // Phones: the panel covers the screen (the header close button replaces the
+          // launcher). From sm up it floats above the launcher — 5.25rem is the 3.5rem
+          // bubble plus its 1.5rem offset and a small gap — and grows to 38rem.
+          className="site-live-chat-panel fixed inset-0 z-[95] flex h-dvh w-full flex-col overflow-hidden rounded-none bg-white sm:inset-auto sm:bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:left-4 sm:z-[65] sm:h-[min(38rem,calc(100dvh-7rem))] sm:w-[30rem] sm:rounded-[20px] sm:shadow-[0_28px_70px_rgba(9,42,83,0.32)] sm:ring-1 sm:ring-[#e2e8f0]"
+          ref={panelRef}
         >
-          <header className="relative flex items-center gap-2.5 bg-brand-navy px-3 py-3 text-white sm:gap-3 sm:px-4 sm:py-3.5">
+          <header className="relative flex items-center gap-2.5 bg-brand-navy px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] text-white sm:gap-3 sm:px-4 sm:pb-3.5 sm:pt-3.5">
             <span
               aria-hidden="true"
               className="grid size-8 shrink-0 place-items-center rounded-full bg-white/10 ring-1 ring-white/15 sm:size-9"
@@ -794,23 +858,20 @@ export function LiveChatWidget() {
               </svg>
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-display text-[15px] font-extrabold leading-tight">
+              <p className="truncate font-display text-[15px] font-extrabold leading-tight">
                 {t("Chat with us")}
               </p>
               {/* The full sentence wraps to five lines on a 280px phone and pushed the
                   header to 212px, so narrow screens get a short equivalent instead. */}
               <p className="mt-0.5 flex items-center gap-1.5 text-xs text-white/70">
                 <span aria-hidden="true" className="inline-block size-1.5 shrink-0 rounded-full bg-[#4ade80]" />
-                <span className="min-[480px]:hidden">{t("Usually replies in minutes")}</span>
-                <span className="hidden min-[480px]:inline">{t("We usually reply within a few minutes during opening hours.")}</span>
+                <span className="min-w-0 truncate min-[480px]:hidden">{t("Usually replies in minutes")}</span>
+                <span className="hidden min-w-0 truncate min-[480px]:inline">{t("We usually reply within a few minutes during opening hours.")}</span>
               </p>
             </div>
             <button
               aria-label={t("Clear chat")}
-              // Hidden on the narrowest phones: two 32px buttons plus the avatar left the
-              // title only ~90px wide there, so both labels cut off mid-word. Clearing a
-              // thread is a rare action, and it is still reachable from 400px up.
-              className="hidden size-8 shrink-0 place-items-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow min-[400px]:grid"
+              className="grid size-8 shrink-0 place-items-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
               onClick={clearChat}
               title={t("Clear chat")}
               type="button"
@@ -821,8 +882,11 @@ export function LiveChatWidget() {
                   <path className="opacity-75" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5" />
                 </svg>
               ) : (
-                <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                  <path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                <svg aria-hidden="true" className="size-[18px]" fill="none" viewBox="0 0 24 24">
+                  <path d="M5 7.5h14" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                  <path d="M10 7.5V5.2h4v2.3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                  <path d="M7.2 7.5 8.1 19h7.8l.9-11.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                  <path d="M10.2 11.2v5M13.8 11.2v5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
                 </svg>
               )}
             </button>
@@ -979,10 +1043,11 @@ export function LiveChatWidget() {
           )}
 
           <form
-            className="flex items-center gap-2 border-t border-[#eef2f6] bg-white p-2.5 sm:p-3"
+            className="flex items-center gap-2 border-t border-[#eef2f6] bg-white px-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] pt-2.5 sm:p-3"
             onSubmit={send}
           >
-            {/* Photo attach (#7) and voice input (#4) sit beside the text field. */}
+            {/* The paperclip stays on the left. The mic sits on the right until
+                there is something to send, then the send button takes its place. */}
             <input
               accept="image/jpeg,image/png,image/webp"
               aria-hidden="true"
@@ -1006,13 +1071,27 @@ export function LiveChatWidget() {
                   <path className="opacity-75" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5" />
                 </svg>
               ) : (
-                <svg aria-hidden="true" className="size-4.5" fill="none" viewBox="0 0 24 24">
-                  <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h1L9 3.5h6L16.5 5h1A2.5 2.5 0 0 1 20 7.5v10a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-10Z" stroke="currentColor" strokeWidth="1.8" />
-                  <circle cx="12" cy="12.5" r="3.25" stroke="currentColor" strokeWidth="1.8" />
+                <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                  <path
+                    d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.8"
+                  />
                 </svg>
               )}
             </button>
-            {speechSupported && (
+            <input
+              aria-label={t("Your message")}
+              autoComplete="off"
+              className="min-w-0 flex-1 rounded-full border border-transparent bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-brand-navy outline-none! transition-colors placeholder:text-[#94a3b8] focus:border-brand-yellow-deep focus:bg-white sm:px-4"
+              maxLength={1000}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder={t("Type a message…")}
+              value={draft}
+            />
+            {showMic && (
               <button
                 aria-label={isListening ? t("Stop voice input") : t("Speak your message")}
                 className={`grid size-10 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep ${
@@ -1024,46 +1103,51 @@ export function LiveChatWidget() {
                 title={isListening ? t("Stop voice input") : t("Speak your message")}
                 type="button"
               >
-                <svg aria-hidden="true" className="size-4.5" fill="none" viewBox="0 0 24 24">
-                  <rect height="11" rx="5.5" stroke="currentColor" strokeWidth="1.8" width="11" x="6.5" y="2.5" />
-                  <path d="M12 18.5V21m-3 0h6" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                  <path
+                    d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"
+                    stroke="currentColor"
+                    strokeLinejoin="round"
+                    strokeWidth="1.8"
+                  />
+                  <path
+                    d="M19 11v1a7 7 0 0 1-14 0v-1"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.8"
+                  />
+                  <path d="M12 19v2.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
                 </svg>
               </button>
             )}
-            <input
-              aria-label={t("Your message")}
-              autoComplete="off"
-              className="min-w-0 flex-1 rounded-full border border-transparent bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-brand-navy outline-none! transition-colors placeholder:text-[#94a3b8] focus:border-brand-yellow-deep focus:bg-white sm:px-4"
-              maxLength={1000}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder={t("Type a message…")}
-              value={draft}
-            />
-            <button
-              aria-label={t("Send message")}
-              className={`grid size-10 shrink-0 place-items-center rounded-full transition disabled:opacity-40 ${
-                (draft.trim() || attachment) && !isSending
-                  ? "bg-brand-yellow text-brand-navy shadow-[0_4px_12px_rgba(255,184,77,0.4)] hover:scale-105"
-                  : "bg-[#eef2f6] text-[#94a3b8]"
-              }`}
-              disabled={(!draft.trim() && !attachment) || isSending}
-              type="submit"
-            >
-              <svg
-                aria-hidden="true"
-                className="size-4"
-                fill="none"
-                viewBox="0 0 24 24"
+            {showSend && (
+              <button
+                aria-label={t("Send message")}
+                className={`grid size-10 shrink-0 place-items-center rounded-full transition disabled:opacity-40 ${
+                  !isSending
+                    ? "bg-brand-yellow text-brand-navy shadow-[0_4px_12px_rgba(255,184,77,0.4)] hover:scale-105"
+                    : "bg-[#eef2f6] text-[#94a3b8]"
+                }`}
+                disabled={isSending}
+                type="submit"
               >
-                <path
-                  d="M4 12h15m0 0-6-6m6 6-6 6"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-            </button>
+                <svg
+                  aria-hidden="true"
+                  className="size-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M4 12h15m0 0-6-6m6 6-6 6"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                  />
+                </svg>
+              </button>
+            )}
           </form>
         </section>
       )}
