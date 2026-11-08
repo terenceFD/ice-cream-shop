@@ -39,6 +39,11 @@ backups/
 # Small photo copies, made by scripts/make-thumbnails.mjs on every build
 public/thumbs/
 screenshots/
+shots/
+# Local verification scripts for the chat features — not part of the app.
+scripts/qa-chat-*.mjs
+scripts/qa-notification-*.mjs
+scripts/seed-qa-*.mjs
 
 // Agent files or the Agent skills
 .claude
