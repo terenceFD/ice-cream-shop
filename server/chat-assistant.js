@@ -1451,6 +1451,13 @@ async function fetchCompletion({ messages, tools, provider }, controller, { atte
         // Enough for a reasoning model to finish a short reply, and short enough
         // that it does not write a page.
         max_completion_tokens: 800,
+        // The vision model (qwen) is a reasoning model: without this it spends
+        // the entire completion budget thinking and returns no visible text
+        // most of the time, which the customer saw as "I can't read the name".
+        // The text model (gpt-oss-120b) ignores the parameter.
+        ...(provider?.model === process.env.AI_VISION_MODEL && process.env.AI_VISION_MODEL
+          ? { reasoning_effort: "none", max_completion_tokens: 1600 }
+          : {}),
         messages,
         ...(tools ? { tools, tool_choice: "auto" } : {}),
       }),
