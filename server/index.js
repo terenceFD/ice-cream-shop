@@ -37,6 +37,7 @@ import {
   hideDeliveredOrderFromAdmin,
   hideDeliveredOrdersFromAdmin,
   deleteFlavor,
+  databaseKind,
   cancelOrderForCustomer,
   deleteDeliveredOrderForCustomer,
   deleteMenuCategory,
@@ -3827,6 +3828,7 @@ app.get('/api/chat/messages/:threadId', optionalCustomer, async (request, respon
     response.status(400).json({ error: 'Chat thread is invalid.' })
     return
   }
+  response.setHeader('Cache-Control', 'no-store')
   const deviceToken = ensureChatDeviceToken(request, response)
   if (!(await chatThreadAllowed(threadId, request.customer, deviceToken))) {
     response.status(403).json({ error: await chatAccessError(threadId) })
@@ -3840,7 +3842,9 @@ app.get('/api/chat/messages/:threadId', optionalCustomer, async (request, respon
     `).run(request.customer.id, threadId)
   }
   const messages = await database.prepare(`
-    SELECT id, sender, body, image_url AS "imageUrl", created_at AS "createdAt"
+    SELECT id, sender, body, image_url AS "imageUrl",
+      is_human AS "isHuman", needs_attention AS "needsAttention",
+      created_at AS "createdAt"
     FROM chat_messages WHERE thread_id = ? ORDER BY id DESC LIMIT 50
   `).all(threadId)
   // Only store replies count as read by the shopper; their own messages already are.
@@ -3849,6 +3853,85 @@ app.get('/api/chat/messages/:threadId', optionalCustomer, async (request, respon
     WHERE thread_id = ? AND sender = 'store'
   `).run(threadId)
   response.json({ messages: messages.reverse() })
+})
+
+app.post('/api/chat/messages/:threadId/handoff', chatLimiter, optionalCustomer, async (request, response) => {
+  const threadId = request.params.threadId
+  if (!chatThreadIdValid(threadId)) {
+    response.status(400).json({ error: 'Chat thread is invalid.' })
+    return
+  }
+  const deviceToken = ensureChatDeviceToken(request, response)
+  if (!(await chatThreadAllowed(threadId, request.customer, deviceToken))) {
+    response.status(403).json({ error: await chatAccessError(threadId) })
+    return
+  }
+  const language = request.body?.language === 'fr' ? 'fr' : 'en'
+  const customerMessage = language === 'fr'
+    ? 'Je souhaiterais parler à une personne.'
+    : "I'd like to speak with a person."
+  const acknowledgement = language === 'fr'
+    ? "J'ai transmis votre demande à notre équipe. Elle vous répondra ici dès qu'une personne sera disponible. Vous pouvez nous laisser plus de détails dans cette discussion."
+    : "I've sent your request to our shop team. They'll reply in this chat as soon as someone is available. You can leave any details here while you wait."
+
+  const saveHandoff = async () => {
+    const pending = await database.prepare(`
+      SELECT MAX(needs_attention) AS pending FROM chat_messages WHERE thread_id = ?
+    `).get(threadId)
+    if (pending?.pending) return false
+    const linkedCustomer = await database.prepare(`
+      SELECT 1 FROM chat_messages WHERE thread_id = ? AND customer_id IS NOT NULL LIMIT 1
+    `).get(threadId)
+    if (request.customer && !linkedCustomer) {
+      await database.prepare(`
+        UPDATE chat_messages SET customer_id = ? WHERE thread_id = ? AND sender = 'customer'
+      `).run(request.customer.id, threadId)
+    }
+    await database.prepare(`
+      INSERT INTO chat_messages (thread_id, customer_id, sender, body, guest_device)
+      VALUES (?, ?, 'customer', ?, ?)
+    `).run(threadId, request.customer ? request.customer.id : null, customerMessage,
+      request.customer ? '' : deviceToken)
+    await database.prepare(`
+      INSERT INTO chat_messages (thread_id, customer_id, sender, body, needs_attention)
+      VALUES (?, NULL, 'store', ?, 1)
+    `).run(threadId, acknowledgement)
+    return true
+  }
+  let requested
+  if (databaseKind === 'sqlite') {
+    requested = database.transaction(() => {
+      const pending = database.prepare(`
+        SELECT MAX(needs_attention) AS pending FROM chat_messages WHERE thread_id = ?
+      `).get(threadId)
+      if (pending?.pending) return false
+      const linkedCustomer = database.prepare(`
+        SELECT 1 FROM chat_messages WHERE thread_id = ? AND customer_id IS NOT NULL LIMIT 1
+      `).get(threadId)
+      if (request.customer && !linkedCustomer) {
+        database.prepare(`
+          UPDATE chat_messages SET customer_id = ? WHERE thread_id = ? AND sender = 'customer'
+        `).run(request.customer.id, threadId)
+      }
+      database.prepare(`
+        INSERT INTO chat_messages (thread_id, customer_id, sender, body, guest_device)
+        VALUES (?, ?, 'customer', ?, ?)
+      `).run(threadId, request.customer ? request.customer.id : null, customerMessage,
+        request.customer ? '' : deviceToken)
+      database.prepare(`
+        INSERT INTO chat_messages (thread_id, customer_id, sender, body, needs_attention)
+        VALUES (?, NULL, 'store', ?, 1)
+      `).run(threadId, acknowledgement)
+      return true
+    })()
+  } else {
+    requested = await database.transaction(saveHandoff)
+  }
+  if (!requested) {
+    response.json({ requested: false, pending: true })
+    return
+  }
+  response.status(201).json({ requested: true, pending: true })
 })
 
 // The customer can wipe their own conversation. Only the thread's owner (same
@@ -3875,6 +3958,7 @@ app.delete('/api/chat/messages/:threadId', optionalCustomer, async (request, res
 })
 
 app.get('/api/admin/chat/threads', requireAdmin, async (request, response) => {
+  response.setHeader('Cache-Control', 'no-store')
   if (request.query.countOnly === 'true') {
     const { count } = await database.prepare(`
       SELECT COUNT(*) AS count FROM chat_messages WHERE sender = 'customer' AND is_read_by_store = 0
@@ -3897,6 +3981,22 @@ app.get('/api/admin/chat/threads', requireAdmin, async (request, response) => {
   response.json({ threads })
 })
 
+app.delete('/api/admin/chat/threads', requireAdmin, async (_request, response) => {
+  response.setHeader('Cache-Control', 'no-store')
+  if (databaseKind === 'sqlite') {
+    database.transaction(() => {
+      database.prepare('DELETE FROM chat_corrections').run()
+      database.prepare('DELETE FROM chat_messages').run()
+    })()
+  } else {
+    await database.transaction(async () => {
+      await database.prepare('DELETE FROM chat_corrections').run()
+      await database.prepare('DELETE FROM chat_messages').run()
+    })
+  }
+  response.json({ cleared: true })
+})
+
 // Admin inbox: a staff member can clear an entire conversation with a customer.
 // It deletes every message in the thread, which also removes it from the thread
 // list (threads are derived from their messages). The customer's own view simply
@@ -3912,13 +4012,16 @@ app.delete('/api/admin/chat/threads/:threadId', requireAdmin, async (request, re
 })
 
 app.get('/api/admin/chat/threads/:threadId', requireAdmin, async (request, response) => {
+  response.setHeader('Cache-Control', 'no-store')
   const threadId = request.params.threadId
   if (!chatThreadIdValid(threadId)) {
     response.status(400).json({ error: 'Chat thread is invalid.' })
     return
   }
   const messages = await database.prepare(`
-    SELECT id, sender, body, customer_id AS "customerId", needs_attention AS "needsAttention", created_at AS "createdAt"
+    SELECT id, sender, body, customer_id AS "customerId",
+      is_human AS "isHuman", needs_attention AS "needsAttention",
+      created_at AS "createdAt"
     FROM chat_messages WHERE thread_id = ? ORDER BY id
   `).all(threadId)
   await database.prepare(`
@@ -3950,9 +4053,9 @@ app.post('/api/admin/chat/threads/:threadId/reply', requireAdmin, async (request
     return
   }
   await database.prepare(`
-    INSERT INTO chat_messages (thread_id, customer_id, sender, body, needs_attention)
-    VALUES (?, NULL, 'store', ?, 0)
-  `).run(threadId, body)
+    INSERT INTO chat_messages (thread_id, customer_id, sender, body, needs_attention, is_human)
+    VALUES (?, NULL, 'store', ?, 0, ?)
+  `).run(threadId, body, request.body.isHuman === false ? 0 : 1)
   // A human has answered, so the AI's handoff flag is no longer needed.
   await database.prepare(`
     UPDATE chat_messages SET needs_attention = 0 WHERE thread_id = ?

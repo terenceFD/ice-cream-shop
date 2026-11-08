@@ -402,6 +402,7 @@ if (configuredDatabaseBackend === "postgres") {
       is_read_by_store INTEGER NOT NULL DEFAULT 0,
       is_read_by_customer INTEGER NOT NULL DEFAULT 0,
       guest_device TEXT NOT NULL DEFAULT '',
+      is_human INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     CREATE INDEX IF NOT EXISTS idx_chat_messages_thread ON chat_messages(thread_id, id);
@@ -411,6 +412,7 @@ if (configuredDatabaseBackend === "postgres") {
     "guest_device",
     "TEXT NOT NULL DEFAULT ''",
   );
+  addColumnIfMissing("chat_messages", "is_human", "INTEGER NOT NULL DEFAULT 0");
   // Human-handoff flag: the AI auto-reply raises this when the thread needs a person
   // (repeated confusion, refunds, complaints...). Staff clear it from the admin inbox.
   addColumnIfMissing(
@@ -755,6 +757,7 @@ if (configuredDatabaseBackend === "postgres") {
       is_read_by_store INTEGER NOT NULL DEFAULT 0,
       is_read_by_customer INTEGER NOT NULL DEFAULT 0,
       guest_device TEXT NOT NULL DEFAULT '',
+      is_human INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     CREATE INDEX IF NOT EXISTS idx_chat_messages_thread ON chat_messages(thread_id, id);
@@ -1346,6 +1349,13 @@ export async function verifyDatabaseSchema() {
     .prepare(
       `
     ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS guest_device TEXT NOT NULL DEFAULT ''
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
+    ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS is_human SMALLINT NOT NULL DEFAULT 0
   `,
     )
     .run();

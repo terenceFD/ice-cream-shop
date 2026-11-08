@@ -67,6 +67,7 @@ const RULES = [
   ['PUT', /^\/api\/admin\/fulfillment-zones$/, 'Updated pickup and delivery areas', 'settings'],
   ['PUT', /^\/api\/admin\/fulfillment-slots$/, 'Updated pickup and delivery times', 'settings'],
 
+  ['DELETE', /^\/api\/admin\/chat\/threads$/, 'Cleared all live-chat conversations', 'customers'],
   ['DELETE', /^\/api\/admin\/chat\/threads\/(\w+)$/, 'Cleared live-chat thread #{id}', 'customers'],
   ['POST', /^\/api\/admin\/chat\/threads\/(\w+)\/reply$/, 'Replied in live-chat thread #{id}', 'customers'],
   ['POST', /^\/api\/admin\/chat\/threads\/(\w+)\/suggest$/, 'Requested an AI suggestion for thread #{id}', 'customers'],

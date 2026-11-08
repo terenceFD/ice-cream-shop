@@ -295,10 +295,14 @@ function useCookieConsentPending() {
 // others convert prices for display only.
 export function CurrencySwitcher() {
   const { currency, setCurrency, supported } = useCurrency();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const detailsRef = useRef(null);
   useDismissableDetails(detailsRef);
   const active = supported.find((option) => option.code === currency) || supported[0];
+  const currencyNames = new Intl.DisplayNames(
+    [language],
+    { type: "currency" },
+  );
   const consentOpen = useCookieConsentPending();
   const installCardOpen = useInstallCardOpen();
   // The hamburger drawer covers the phone screen; the switcher would float on top of it.
@@ -329,46 +333,68 @@ export function CurrencySwitcher() {
     >
       <summary
         aria-label={`${t("Currency")}: ${active.code.toUpperCase()}`}
-        className="flex h-11 cursor-pointer list-none items-center gap-2 rounded-full border border-brand-border-warm bg-brand-cream pl-4 pr-3 font-display text-sm font-extrabold text-brand-navy shadow-[0_10px_28px_rgba(71,42,59,0.18)] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 group-open:border-brand-yellow group-open:bg-white [&::-webkit-details-marker]:hidden"
+        className="flex h-12 cursor-pointer list-none items-center gap-2.5 rounded-full border border-white/15 bg-brand-navy pl-2 pr-3.5 font-display text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(71,42,59,0.28)] transition hover:border-brand-yellow/70 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 group-open:border-brand-yellow [&::-webkit-details-marker]:hidden"
       >
+        <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-brand-yellow text-brand-navy">
+          <svg className="size-4" fill="none" viewBox="0 0 20 20">
+            <path d="M3 6.25h14M3 13.75h14M6 3.5 3 6.25 6 9M14 11l3 2.75L14 16.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" />
+          </svg>
+        </span>
         <span>{active.code === "xaf" ? "FCFA" : active.code.toUpperCase()}</span>
-        <svg aria-hidden="true" className="size-3.5 text-brand-navy/55 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
+        <svg aria-hidden="true" className="size-3.5 text-white/65 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
           <path d="m2.25 4.25 3.75 3.5 3.75-3.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
         </svg>
       </summary>
-      {/* Opens upward, because the trigger is pinned to the bottom of the screen. */}
-      <div className="menu-popover absolute bottom-full right-0 z-30 w-[min(16.5rem,calc(100vw-2rem))] pb-3">
-        <div className="overflow-hidden rounded-[20px] bg-brand-cream text-brand-navy shadow-[0_24px_50px_rgba(71,42,59,0.22)] ring-1 ring-brand-border-warm">
-          <div aria-hidden="true" className="h-1 bg-brand-yellow" />
-          <div className="px-3.5 pb-3.5 pt-3">
-            <p className="font-display text-base font-extrabold leading-none">{t("Select currency")}</p>
-            <p className="mt-1.5 text-[13px] leading-5 text-brand-muted">{t("Prices convert for display; payment is taken in FCFA.")}</p>
-            <div className="mt-3 grid grid-cols-3 gap-1.5" role="group" aria-label={t("Select currency")}>
-              {supported.map((option) => {
-                const selected = currency === option.code;
-                const label = option.code === "xaf" ? "FCFA" : option.code.toUpperCase();
-                return (
-                  <button
-                    aria-pressed={selected}
-                    className={`flex min-h-14 items-center justify-center rounded-2xl px-1 font-display text-sm font-extrabold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow ${
-                      selected
-                        ? "bg-brand-yellow text-brand-navy"
-                        : "bg-white text-brand-navy ring-1 ring-brand-border-warm hover:ring-brand-yellow"
-                    }`}
-                    key={option.code}
-                    onClick={(event) => {
-                      setCurrency(option.code);
-                      const details = event.currentTarget.closest("details");
-                      if (details) details.open = false;
-                    }}
-                    type="button"
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
+      <div className="menu-popover absolute bottom-full right-0 z-30 w-[min(20rem,calc(100vw-2rem))] pb-3">
+        <div className="flex max-h-[min(70dvh,32rem)] flex-col overflow-hidden rounded-[22px] bg-brand-cream text-brand-navy shadow-[0_24px_54px_rgba(71,42,59,0.3)] ring-1 ring-brand-border-warm">
+          <div className="shrink-0 bg-brand-navy px-4 py-4 text-white">
+            <p className="font-display text-base font-bold leading-tight">{t("Select currency")}</p>
+            <p className="mt-1 text-xs leading-5 text-white/75">{t("Choose how prices are displayed.")}</p>
           </div>
+          <div className="currency-options min-h-0 grid gap-1 overflow-y-auto p-2.5" role="group" aria-label={t("Select currency")}>
+            {supported.map((option) => {
+              const selected = currency === option.code;
+              const name = currencyNames.of(option.code.toUpperCase()) || option.code.toUpperCase();
+              return (
+                <button
+                  aria-pressed={selected}
+                  lang={language}
+                  className={`flex min-h-14 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-yellow ${
+                    selected
+                      ? "bg-brand-navy text-white"
+                      : "text-brand-navy hover:bg-white"
+                  }`}
+                  key={option.code}
+                  onClick={(event) => {
+                    setCurrency(option.code);
+                    const details = event.currentTarget.closest("details");
+                    if (details) details.open = false;
+                  }}
+                  type="button"
+                >
+                  <span className={`grid size-10 shrink-0 place-items-center rounded-lg font-display text-sm font-extrabold ${
+                    selected ? "bg-brand-yellow text-brand-navy" : "bg-white text-brand-navy ring-1 ring-brand-border-warm"
+                  }`}>
+                    {option.symbol}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-bold leading-snug">{name}</span>
+                    <span className={`mt-0.5 block text-xs font-semibold ${selected ? "text-white/70" : "text-brand-muted"}`}>
+                      {option.code.toUpperCase()}
+                    </span>
+                  </span>
+                  {selected && (
+                    <svg aria-hidden="true" className="size-5 shrink-0 text-brand-yellow" fill="none" viewBox="0 0 20 20">
+                      <path d="m4.5 10 3.5 3.5 7.5-7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <p className="shrink-0 border-t border-brand-border-warm px-4 py-3 text-xs leading-5 text-brand-muted">
+            {t("Prices convert for display; payment is taken in FCFA.")}
+          </p>
         </div>
       </div>
     </details>

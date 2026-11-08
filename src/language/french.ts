@@ -403,6 +403,14 @@ const french: Record<string, string> = {
   "Close chat": "Fermer la discussion",
   "Clear chat": "Effacer la discussion",
   "The conversation could not be cleared. Please try again.": "Impossible d’effacer la discussion. Réessayez.",
+  "Need more help than the assistant can give?":
+    "Besoin d’aide supplémentaire ?",
+  "Talk to a person": "Parler à une personne",
+  "Shop team": "Équipe de la boutique",
+  "Your request is with the shop team. They’ll reply here as soon as someone is available.":
+    "Votre demande a été transmise à l’équipe de la boutique. Une personne vous répondra ici dès qu’elle sera disponible.",
+  "Your request could not be sent. Please try again.":
+    "Votre demande n’a pas pu être envoyée. Veuillez réessayer.",
   "Upload a JPEG, PNG, or WebP image.": "Importez une image JPEG, PNG ou WebP.",
   "Photos must be smaller than 3 MB.": "Les photos doivent faire moins de 3 Mo.",
   "The photo could not be attached. Please try again.": "La photo n’a pas pu être jointe. Réessayez.",
@@ -417,6 +425,10 @@ const french: Record<string, string> = {
   "The reply could not be sent.": "Impossible d’envoyer la réponse.",
   "The conversation could not be cleared.": "Impossible d’effacer la conversation.",
   "Clear this conversation": "Effacer cette conversation",
+  "Clear all chats": "Effacer toutes les discussions",
+  "This permanently deletes every chat conversation and its message history. This cannot be undone.": "Cette action supprime définitivement toutes les discussions et leur historique. Elle est irréversible.",
+  "All conversations could not be cleared.": "Impossible d’effacer toutes les conversations.",
+  "Cleared all live-chat conversations": "Toutes les conversations du chat en direct ont été effacées",
   "The suggestion could not be drafted.": "Impossible de préparer une suggestion.",
   "Reply instantly with AI": "Répondre instantanément avec l’IA",
   "Send with AI": "Envoyer avec l’IA",
@@ -3907,6 +3919,7 @@ const french: Record<string, string> = {
   "Cameroon · English": "Cameroun · Anglais",
   "Prices convert for display; payment is taken in FCFA.":
     "Les prix sont convertis pour l’affichage ; le paiement se fait en FCFA.",
+  "Choose how prices are displayed.": "Choisissez la devise d’affichage des prix.",
   "Cameroun · Français": "Cameroun · Français",
   Douala: "Douala",
   Yaoundé: "Yaoundé",

@@ -48,17 +48,25 @@ export function AdminChatPage() {
   const [isSending, setIsSending] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [isConfirmingClearAll, setIsConfirmingClearAll] = useState(false);
+  const [isClearingAll, setIsClearingAll] = useState(false);
+  const [clearAllError, setClearAllError] = useState("");
   // Handoff flag (#10): clearing the "needs attention" banner.
   const [isAcknowledging, setIsAcknowledging] = useState(false);
   const [error, setError] = useState("");
   const [suggestionNote, setSuggestionNote] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  const activeThreadIdRef = useRef<string | null>(null);
+  const threadListRequestRef = useRef(0);
 
   const refreshThreads = useCallback(async () => {
+    const requestId = ++threadListRequestRef.current;
     try {
-      const result = await request("/admin/chat/threads");
+      const result = await request("/admin/chat/threads", { cache: "no-store" });
+      if (requestId !== threadListRequestRef.current) return;
       setThreads(result.threads || []);
     } catch (loadError) {
+      if (requestId !== threadListRequestRef.current) return;
       setError(
         loadError instanceof Error
           ? loadError.message
@@ -72,6 +80,7 @@ export function AdminChatPage() {
       if (!threadId) return;
       try {
         const result = await request(`/admin/chat/threads/${threadId}`);
+        if (activeThreadIdRef.current !== threadId) return;
         setMessages(result.messages || []);
         setError("");
       } catch (loadError) {
@@ -150,7 +159,7 @@ export function AdminChatPage() {
       if (result.suggestion) {
         await request(`/admin/chat/threads/${activeThreadId}/reply`, {
           method: "POST",
-          body: { body: result.suggestion },
+          body: { body: result.suggestion, isHuman: false },
         });
       }
       // The server reports why the model was not used. A template answer must never look
@@ -210,6 +219,7 @@ export function AdminChatPage() {
     setError("");
     try {
       await request(`/admin/chat/threads/${activeThreadId}`, { method: "DELETE" });
+      activeThreadIdRef.current = null;
       setMessages([]);
       setActiveThreadId(null);
       await refreshThreads();
@@ -221,6 +231,35 @@ export function AdminChatPage() {
       );
     } finally {
       setIsClearing(false);
+    }
+  }
+
+  async function clearAllThreads() {
+    if (isClearingAll || threads.length === 0) return;
+    setIsClearingAll(true);
+    setClearAllError("");
+    try {
+      const result = await request("/admin/chat/threads", { method: "DELETE" });
+      if (!result?.cleared) {
+        throw new Error(t("All conversations could not be cleared."));
+      }
+      const latestThreads = await request("/admin/chat/threads", { cache: "no-store" });
+      threadListRequestRef.current += 1;
+      activeThreadIdRef.current = null;
+      setThreads(latestThreads.threads || []);
+      setMessages([]);
+      setActiveThreadId(null);
+      setDraft("");
+      setSuggestionNote("");
+      setIsConfirmingClearAll(false);
+    } catch (clearError) {
+      setClearAllError(
+        clearError instanceof Error
+          ? clearError.message
+          : t("All conversations could not be cleared."),
+      );
+    } finally {
+      setIsClearingAll(false);
     }
   }
 
@@ -242,7 +281,20 @@ export function AdminChatPage() {
         )}
         section={t("Sales")}
         title={t("Live chat")}
-        actions={null}
+        actions={
+          <button
+            className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-bold text-[#b2433a] transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={threads.length === 0 || isClearingAll}
+            onClick={() => {
+              setClearAllError("");
+              setIsConfirmingClearAll(true);
+            }}
+            type="button"
+          >
+            <AdminIcon path={adminIcons.trash} />
+            {t("Clear all chats")}
+          </button>
+        }
         t={t}
       />
       {error && (
@@ -273,7 +325,10 @@ export function AdminChatPage() {
                 <li key={thread.threadId}>
                   <button
                     className={`flex w-full items-start justify-between gap-3 px-4 py-3 text-left transition-colors ${selected ? "bg-[#f4f6f8]" : "hover:bg-[#f4f6f8]"}`}
-                    onClick={() => setActiveThreadId(thread.threadId)}
+                    onClick={() => {
+                      activeThreadIdRef.current = thread.threadId;
+                      setActiveThreadId(thread.threadId);
+                    }}
                     type="button"
                   >
                     <span className="min-w-0">
@@ -463,6 +518,59 @@ export function AdminChatPage() {
           )}
         </div>
       </div>
+
+      {isConfirmingClearAll && (
+        <div className="fixed inset-0 z-50 grid place-items-center px-5" role="presentation">
+          <button
+            aria-label={t("Cancel")}
+            className="admin-drawer-backdrop absolute inset-0 bg-[#0b1e36]/45"
+            disabled={isClearingAll}
+            onClick={() => setIsConfirmingClearAll(false)}
+            tabIndex={-1}
+            type="button"
+          />
+          <section
+            aria-labelledby="clear-all-chats-title"
+            aria-modal="true"
+            className="admin-modal-panel relative w-full max-w-md rounded-md bg-white p-6"
+            role="dialog"
+          >
+            <span className="grid size-12 place-items-center rounded-md bg-red-50 text-red-600">
+              <AdminIcon className="size-6" path={adminIcons.trash} />
+            </span>
+            <h2 className="mt-4 text-base font-semibold text-brand-navy" id="clear-all-chats-title">
+              {t("Clear all chats")}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#65748a]">
+              {t("This permanently deletes every chat conversation and its message history. This cannot be undone.")}
+            </p>
+            {clearAllError && (
+              <p className="mt-3 rounded-md bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700" role="alert">
+                {clearAllError}
+              </p>
+            )}
+            <div className="mt-6 flex justify-end gap-2.5">
+              <button
+                className="min-h-10 rounded-md px-4 text-sm font-bold text-[#65748a] transition hover:bg-[#f4f6f8] disabled:opacity-50"
+                disabled={isClearingAll}
+                onClick={() => setIsConfirmingClearAll(false)}
+                type="button"
+              >
+                {t("Cancel")}
+              </button>
+              <button
+                className="inline-flex min-h-10 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+                disabled={isClearingAll}
+                onClick={clearAllThreads}
+                type="button"
+              >
+                <AdminIcon path={adminIcons.trash} />
+                {isClearingAll ? t("Clearing…") : t("Clear all chats")}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

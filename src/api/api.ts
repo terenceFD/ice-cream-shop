@@ -57,11 +57,11 @@ export function clearCustomerToken() {
 export async function apiRequest<T = any>(path: string, { body, token, ...options }: ApiOptions = {}): Promise<T | null> {
   const headers = new Headers(options.headers)
   if (body !== undefined) headers.set('Content-Type', 'application/json')
-  // Customer endpoints are customer-scoped: when a caller forgets to pass a token,
-  // use the signed-in customer's own, so an authenticated-looking call can never
-  // go out anonymous and fail with "Customer sign-in is required". A caller that
-  // deliberately passes another token (admin) is untouched.
-  const resolvedToken = token ?? (path.startsWith('/customer/') ? getCustomerToken() : undefined)
+  // Customer endpoints and optional-auth chat endpoints both need the customer's
+  // token when available. Without it, chat messages are stored as guest messages
+  // and the admin inbox cannot show the signed-in customer's name.
+  const usesCustomerSession = path.startsWith('/customer/') || path.startsWith('/chat/messages')
+  const resolvedToken = token ?? (usesCustomerSession ? getCustomerToken() : undefined)
   if (resolvedToken) headers.set('Authorization', `Bearer ${resolvedToken}`)
 
   let requestPath = path
@@ -105,7 +105,7 @@ export async function apiRequest<T = any>(path: string, { body, token, ...option
         sessionStorage.removeItem(ADMIN_TOKEN_KEY)
         window.dispatchEvent(new Event('admin-session-expired'))
       }
-      if (token === getCustomerToken()) {
+      if (resolvedToken === getCustomerToken()) {
         clearCustomerToken()
         window.dispatchEvent(new Event('customer-session-expired'))
       }

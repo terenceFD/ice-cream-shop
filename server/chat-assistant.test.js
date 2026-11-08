@@ -91,6 +91,13 @@ test("the prompt keeps its grounding rules (no invented prices/facts)", () => {
   assert.match(text, /Never invent prices/i);
 });
 
+test("the prompt keeps chat replies concise and complete", () => {
+  const text = prompt();
+  assert.match(text, /no more than 100 words/i);
+  assert.match(text, /at most three products/i);
+  assert.match(text, /rather than ending mid-sentence/i);
+});
+
 test("the prompt knows about the currency switcher", () => {
   const text = prompt();
   // Added when the switcher moved to the page's bottom-right corner.

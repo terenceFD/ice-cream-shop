@@ -27,6 +27,8 @@ const POLL_INTERVAL_MS = 1500;
 interface ChatMessage {
   id: number;
   imageUrl?: string | null;
+  isHuman?: number;
+  needsAttention?: number;
   sender: "customer" | "store";
   body: string;
   createdAt: string;
@@ -422,6 +424,7 @@ export function LiveChatWidget() {
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [isRequestingHuman, setIsRequestingHuman] = useState(false);
   const [error, setError] = useState("");
   // Starter chips (#2): page-aware question suggestions shown before the first message.
   const [showStarters, setShowStarters] = useState(false);
@@ -1158,6 +1161,36 @@ export function LiveChatWidget() {
     }
   }
 
+  async function requestHumanHelp() {
+    if (isRequestingHuman || isSending || isClearing || messages.some((message) => message.needsAttention)) return;
+    if (!threadIdRef.current) threadIdRef.current = readThreadId(customerId);
+    setIsRequestingHuman(true);
+    setError("");
+    try {
+      const requestHandoff = (threadId: string) =>
+        apiRequest<{ requested: boolean; pending: boolean }>(
+          `/chat/messages/${threadId}/handoff`,
+          { method: "POST", body: { language } },
+        );
+      try {
+        await requestHandoff(threadIdRef.current);
+      } catch (handoffError) {
+        if (!isForbidden(handoffError)) throw handoffError;
+        startFreshThread();
+        await requestHandoff(threadIdRef.current);
+      }
+      await loadMessages(threadIdRef.current);
+    } catch (handoffError) {
+      setError(
+        handoffError instanceof Error
+          ? handoffError.message
+          : t("Your request could not be sent. Please try again."),
+      );
+    } finally {
+      setIsRequestingHuman(false);
+    }
+  }
+
   const time = (value: string) => {
     const date = new Date(value.includes("T") ? value : `${value}Z`);
     return Number.isNaN(date.getTime())
@@ -1172,6 +1205,7 @@ export function LiveChatWidget() {
   // swaps it for send. The mic stays while recording so it can still be stopped.
   const showSend = Boolean(draft.trim() || attachment) && !isListening;
   const showMic = speechSupported && !showSend;
+  const humanHandoffPending = messages.some((message) => message.needsAttention);
 
   if (mobileMenuOpen) return null;
 
@@ -1277,6 +1311,7 @@ export function LiveChatWidget() {
             <button
               aria-label={t("Clear chat")}
               className="grid size-8 shrink-0 place-items-center rounded-full bg-white text-brand-navy ring-1 ring-brand-border-warm transition hover:bg-brand-yellow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow active:scale-95"
+              disabled={isRequestingHuman}
               onClick={clearChat}
               title={t("Clear chat")}
               type="button"
@@ -1337,7 +1372,8 @@ export function LiveChatWidget() {
             {messages.map((message, index) => {
               const isCustomer = message.sender === "customer";
               const previous = messages[index - 1];
-              const sameSender = previous?.sender === message.sender;
+              const sameSender = previous?.sender === message.sender
+                && (isCustomer || previous.isHuman === message.isHuman);
               const { text: bodyText, action, addId, fill, bag, visit, code, chips } = isCustomer
                 ? { text: message.body, action: undefined, addId: undefined, fill: undefined, bag: undefined, visit: undefined, code: undefined, chips: undefined }
                 : splitChatAction(message.body);
@@ -1366,7 +1402,9 @@ export function LiveChatWidget() {
                   )}
                   <div className={`min-w-0 ${isCustomer ? "max-w-[78%]" : "max-w-[calc(100%-2.25rem)]"}`}>
                     {!isCustomer && !sameSender && (
-                      <p className="mb-1 font-display text-[13px] font-bold leading-none text-brand-navy">Cold Stone</p>
+                      <p className="mb-1 font-display text-[13px] font-bold leading-none text-brand-navy">
+                        {message.isHuman ? t("Shop team") : t("Cold Stone")}
+                      </p>
                     )}
                     {isCustomer ? (
                       <div className="flex flex-col items-end gap-1.5">
@@ -1435,6 +1473,29 @@ export function LiveChatWidget() {
             >
               {voiceError}
             </p>
+          )}
+
+          {humanHandoffPending ? (
+            <p
+              className="mx-3 mb-2 rounded-xl bg-[#fff6e5] px-3 py-2 text-xs font-semibold leading-5 text-[#78520a]"
+              role="status"
+            >
+              {t("Your request is with the shop team. They’ll reply here as soon as someone is available.")}
+            </p>
+          ) : (
+            <div className="flex items-center justify-between gap-3 bg-brand-cream px-4 pb-2">
+              <p className="text-[11px] leading-4 text-brand-muted">
+                {t("Need more help than the assistant can give?")}
+              </p>
+              <button
+                className="shrink-0 rounded-full border border-brand-border-warm bg-white px-3 py-1.5 text-xs font-bold text-brand-navy transition hover:border-brand-yellow hover:bg-brand-yellow/15 disabled:cursor-wait disabled:opacity-60"
+                disabled={isRequestingHuman || isSending || isClearing}
+                onClick={requestHumanHelp}
+                type="button"
+              >
+                {isRequestingHuman ? t("Sending…") : t("Talk to a person")}
+              </button>
+            </div>
           )}
 
           {/* Pending photo attachment (#7): a small preview chip above the input. */}
@@ -2011,5 +2072,3 @@ function ChatAutoAdd({ addId }: { addId: string }) {
     </div>
   );
 }
-
-

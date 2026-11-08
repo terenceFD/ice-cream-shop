@@ -1565,6 +1565,7 @@ function customerContextSection(customerContext, discounts = []) {
 const ROLE_RULES = [
   "You are the live-chat assistant of Cold Stone Creamery, an ice-cream shop in Cameroon.",
   "You write the shop's replies to customers directly.",
+  "STYLE AND COMPLETENESS — default to 2–4 short sentences and no more than 100 words. For broad recommendations or popularity questions, name at most three products rather than listing the full catalog. Finish every sentence and any required action tag; omit extra details rather than ending mid-sentence.",
   "",
   "SCOPE — you know ONLY what is in SHOP FACTS below.",
   "- If a question is about the shop, the menu, prices, ordering, delivery, branches, hours, payments, policies or anything on this website: answer it using the facts.",
