@@ -1384,7 +1384,7 @@ export function LiveChatWidget() {
                         {visit && <ChatVisitButton visit={visit} />}
                         {code && <ChatCodeButton code={code} />}
                         {chips?.length ? <ChatChips chips={chips} onSend={(text) => submitVoiceRef.current?.(text)} /> : null}
-                        {autoAdd && <ChatAutoAdd addId={addId} />}
+                        {autoAdd && <ChatAutoAdd key={`${message.id}:${addId}`} addId={addId} />}
                         {(action || addId || fill?.length) && (
                           <div className="mt-2.5 max-w-[16rem]">
                             {fill?.length ? <ChatFillButton items={fill} /> : !autoAdd && addId && <ChatAddButton addId={addId} />}
@@ -1948,7 +1948,7 @@ function ChatChips({ chips, onSend }: { chips: string[]; onSend: (text: string) 
  */
 function ChatAutoAdd({ addId }: { addId: string }) {
   const { t } = useLanguage();
-  const { addToCart } = useCart();
+  const { addToCart, cartItems } = useCart();
   const { flavors } = useFlavors();
   const [state, setState] = useState<"adding" | "added" | "failed">("adding");
   // Latest-handler refs: the add fires exactly once per mount, on a fixed 400 ms
@@ -1964,22 +1964,28 @@ function ChatAutoAdd({ addId }: { addId: string }) {
     // One attempt per rendered reply. If it fails (stock gone, unknown id),
     // the customer still sees the note instead of a silent no-op.
     const timer = window.setTimeout(() => {
-      // A strict once-per-id guard: hot reloads and re-renders re-mount this
-      // component for the same reply, and each mount would otherwise add again.
-      if (autoAddsApplied.has(addId)) {
-        // A previous mount already added it (the id stayed in the set): show
-        // the done state instead of a spinner that never ends.
+      // Re-mounts of this reply (poll re-renders, tab switches) must not add a
+      // second copy. The check is against the LIVE bag, not a memory: a global
+      // "already applied" set made the note claim success after the customer
+      // had emptied the bag — the confirmation showed, the bag stayed empty.
+      const inBag = cartItems.some((item) =>
+        addId.startsWith("flavor:")
+          ? String(item.id) === addId.slice("flavor:".length) && item.itemType !== "menu"
+          : item.itemType === "menu" && findMenuItem(addId)?.id === item.id,
+      );
+      if (inBag) {
         setState("added");
         return;
       }
-      autoAddsApplied.add(addId);
       const ok = addId.startsWith("flavor:")
         ? addToCartRef.current(flavorsRef.current.find((flavor) => String(flavor.id) === addId.slice("flavor:".length)) || { id: "", name: "", image: "" })
         : addToCartRef.current(findMenuItem(addId) || { id: "", name: "", image: "" });
-      if (!ok) autoAddsApplied.delete(addId); // allow a retry on the next visit
       setState(ok ? "added" : "failed");
     }, 400);
     return () => window.clearTimeout(timer);
+    // cartItems is read through the closure on purpose: the add happens once,
+    // 400 ms after mount, against the bag as it is at that moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addId]);
 
   return (
@@ -2006,6 +2012,4 @@ function ChatAutoAdd({ addId }: { addId: string }) {
   );
 }
 
-// One addId, one automatic add per page load. Cleared on refresh, which is the
-// right scope: the cart itself also starts empty on a new visit.
-const autoAddsApplied = new Set<string>();
+
