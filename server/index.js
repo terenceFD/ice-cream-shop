@@ -3141,6 +3141,21 @@ app.delete('/api/customer/orders/:id', requireCustomer, async (request, response
   response.json({ deleted: true })
 })
 
+// Site-wide approved reviews for the homepage "Real Reviews" strip.
+app.get('/api/reviews', async (_request, response) => {
+  const reviews = await database.prepare(`
+    SELECT r.rating, r.review, r.created_at AS "createdAt",
+      r.item_id AS "itemId",
+      c.name AS "customerName", c.id AS "customerId"
+    FROM menu_reviews r JOIN customers c ON c.id = r.customer_id
+    WHERE r.is_approved = 1 ORDER BY r.id DESC LIMIT 50
+  `).all()
+  response.json({ reviews: reviews.map((review) => ({
+    ...review,
+    profilePicture: review.customerId ? `/api/avatars/${review.customerId}` : null,
+  })) })
+})
+
 app.get('/api/menu/:itemId/reviews', async (request, response) => {
   const itemId = request.params.itemId
   if (!await resolveFavoriteItem(itemId)) {
