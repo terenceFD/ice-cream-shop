@@ -18,10 +18,11 @@ export function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Wait a beat so the banner never competes with the hero photo for the first paint.
+    // Give the hero a moment to land before the banner appears, so the first
+    // impression stays on the photography and the call to action.
     const timer = window.setTimeout(
       () => setVisible(readCookieConsent() === null),
-      1200,
+      3000,
     );
     return () => window.clearTimeout(timer);
   }, []);

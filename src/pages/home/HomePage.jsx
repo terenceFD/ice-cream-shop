@@ -183,8 +183,8 @@ const homeSlides = [
     accent: "in each scoop.",
     description:
       "Signature creations, the full menu, and stores across Cameroon.",
-    image: "/ice-images/ice-9.jpg",
-    alt: "Colorful ice cream creations ready to enjoy",
+    image: "/ice-images/ice-3.webp",
+    alt: "A person enjoying a cup of signature ice cream",
     caption: "The signature experience",
   },
   {
@@ -197,13 +197,13 @@ const homeSlides = [
     caption: "Made for celebrations",
   },
   {
-    title: "Cool, creamy mint",
-    accent: "with cookie crunch.",
+    title: "Cool, creamy strawberry",
+    accent: "picked at its peak.",
     description:
-      "Mint ice cream with cookies and fudge, mixed fresh on a frozen stone.",
-    image: "/menu-official/ice-cream/signature-creations/cookie-mintster.webp",
-    alt: "Mint ice cream with chocolate cookies and fudge in a waffle cone",
-    caption: "Mixed on a frozen stone",
+      "Real strawberries folded into creamy ice cream, scooped fresh in store.",
+    image: "/menu-official/ice-cream/signature-creations/surrender-to-strawberry.webp",
+    alt: "Strawberry ice cream with fresh strawberries in a waffle cone",
+    caption: "Scooped fresh in store",
   },
 ];
 
@@ -1039,18 +1039,18 @@ export function HomePage() {
                 <div className="home-hero-copy" key={activeSlide}>
                   <h1 className="max-w-none font-display text-[clamp(2.2rem,3.4vw,3.25rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-white">
                     {t(homeSlides[activeSlide].title)}
-                    <span className="block text-white">
+                    <span className="block text-brand-yellow">
                       {t(homeSlides[activeSlide].accent)}
                     </span>
                   </h1>
-                  <p className="mt-3 hidden max-w-lg text-base leading-6 text-white/75 sm:block sm:mt-4 sm:text-lg sm:leading-7">
+                  <p className="mt-3 hidden max-w-lg text-base leading-6 text-white/85 sm:block sm:mt-4 sm:text-lg sm:leading-7">
                     {t(homeSlides[activeSlide].description)}
                   </p>
                 </div>
 
                 <div className="mt-4 flex flex-wrap items-center gap-3 sm:mt-5">
                   <Link
-                    className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand-yellow px-4 py-3 text-xs font-extrabold text-brand-navy transition-colors hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy sm:min-h-12 sm:px-6 sm:text-sm"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand-yellow px-4 py-3 text-sm font-extrabold text-brand-navy transition-colors hover:bg-brand-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy sm:min-h-12 sm:px-6 sm:text-base"
                     to="/menu?category=Ice%20Cream"
                   >
                     {t("Order ice cream")} <ArrowIcon />
@@ -1063,7 +1063,7 @@ export function HomePage() {
                   </Link>
                 </div>
 
-                <ul className="mt-5 hidden flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-white/80 sm:flex">
+                <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-white/85 sm:mt-5 sm:flex sm:gap-x-6 sm:gap-y-3 sm:text-sm">
                   {[
                     "Signature creations",
                     "A flavor for every mood",
@@ -1075,9 +1075,9 @@ export function HomePage() {
                     >
                       <span
                         aria-hidden="true"
-                        className="grid size-5 place-items-center bg-white/10 text-brand-yellow"
+                        className="grid size-4 place-items-center bg-white/10 text-brand-yellow sm:size-5"
                       >
-                        <svg className="size-3" fill="none" viewBox="0 0 24 24">
+                        <svg className="size-2.5 sm:size-3" fill="none" viewBox="0 0 24 24">
                           <path
                             d="m5 12.5 4.5 4.5L19 7.5"
                             stroke="currentColor"
@@ -1126,7 +1126,7 @@ export function HomePage() {
                   className="relative"
                   role="group"
                 >
-                  <div className="relative aspect-[2/1] overflow-hidden rounded-[20px] bg-brand-blue ring-1 ring-white/15 sm:rounded-[24px] lg:aspect-[16/9]">
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-[20px] bg-brand-blue ring-1 ring-white/15 sm:aspect-[2/1] sm:rounded-[24px] lg:aspect-[16/9]">
                     {homeSlides.map((slide, index) => {
                       if (!loadedSlides.includes(index)) return null;
                       const isActive = activeSlide === index;
