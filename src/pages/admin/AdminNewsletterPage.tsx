@@ -102,6 +102,7 @@ export function AdminNewsletterPage() {
   return (
     <div className="min-w-0 space-y-6">
       <AdminPageHeader
+        actions={null}
         description={t("Write the note. Everyone still on the list receives it, and they cannot see each other's addresses. A copy also arrives in the shop mailbox.")}
         section={t("Sales")}
         t={t}

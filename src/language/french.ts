@@ -4157,7 +4157,6 @@ const french: Record<string, string> = {
   Unsubscribe: "Se désabonner",
   "Enter the address that receives them. We will take it off the list.": "Indiquez l’adresse qui les reçoit. Nous la retirons de la liste.",
   "Take me off the list": "Retirez-moi de la liste",
-  "Removing…": "Retrait…",
   "That address will no longer receive these emails.": "Cette adresse ne recevra plus ces e-mails.",
   "Could not update that address right now.": "Impossible de mettre à jour cette adresse pour le moment.",
   Newsletter: "Infolettre",
