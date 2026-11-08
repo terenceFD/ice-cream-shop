@@ -653,6 +653,8 @@ const french: Record<string, string> = {
   "Get a notification on this device when your order is being prepared, out for delivery or delivered, and when we launch a new promotion.":
     "Recevez une notification sur cet appareil quand votre commande est en préparation, en livraison ou livrée, et à chaque nouvelle promotion.",
   "Order updates on this device": "Suivi de commande sur cet appareil",
+  "Adding to your bag…": "Ajout à votre panier…",
+  "This item could not be added. It may be sold out.": "Impossible d'ajouter cet article. Il est peut-être en rupture.",
   "Get a notification when your order is being prepared, out for delivery or delivered, and when a new promotion launches.":
     "Recevez une notification quand votre commande est en préparation, en livraison ou livrée, et à chaque nouvelle promotion.",
   "When your order is being prepared": "Quand votre commande est en préparation",

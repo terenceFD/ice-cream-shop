@@ -243,42 +243,72 @@ test("withChips appends the tag exactly once and caps at three", () => {
 const ADD_FACTS = {
   menuByCategory: {
     "Ice Cream": [
-      { name: "Chocolate Devotion", addId: "menu:ice-cream:chocolate-devotion", price: 3500, path: "/treat/ice-cream/chocolate-devotion" },
+      {
+        name: "Chocolate Devotion",
+        addId: "menu:ice-cream:chocolate-devotion",
+        price: 3500,
+        path: "/treat/ice-cream/chocolate-devotion",
+      },
     ],
   },
   flavors: [],
 };
 
-test("add the named product answers with a tag, never a false confirmation", () => {
-  const reply = addReply("add the chocolate devotion to my bag", ADD_FACTS, "en");
-  assert.match(reply.body, /tap to add it to your bag/);
-  assert.equal(reply.body.includes("[ADD:menu:ice-cream:chocolate-devotion]"), true);
-  // The wording must not claim the bag already holds the item: the tap is the act.
-  assert.doesNotMatch(reply.body, /added|is in your bag|added to your bag/i);
+test("add the named product answers with a tag and confirms the add", () => {
+  const reply = addReply(
+    "add the chocolate devotion to my bag",
+    ADD_FACTS,
+    "en",
+  );
+  // The wording matches the automatic add: the tag is applied on arrival.
+  assert.match(reply.body, /added to your bag/);
+  assert.equal(
+    reply.body.includes("[ADD:menu:ice-cream:chocolate-devotion]"),
+    true,
+  );
 });
 
 test("a counted want sets the quantity in the sentence", () => {
   const reply = addReply("I want two chocolate devotion", ADD_FACTS, "en");
-  assert.match(reply.body, /add 2 to your bag/);
-  assert.equal(reply.body.includes("[ADD:menu:ice-cream:chocolate-devotion]"), true);
+  assert.match(reply.body, /×2/);
+  assert.equal(
+    reply.body.includes("[ADD:menu:ice-cream:chocolate-devotion]"),
+    true,
+  );
 });
 
-test("the French add request answers in French with the tag", () => {
-  const reply = addReply("ajoute le chocolate devotion au panier", ADD_FACTS, "fr");
-  assert.match(reply.body, /appuyez pour l'ajouter/);
-  assert.equal(reply.body.includes("[ADD:menu:ice-cream:chocolate-devotion]"), true);
+test("the French add request answers in French and confirms the add", () => {
+  const reply = addReply(
+    "ajoute le chocolate devotion au panier",
+    ADD_FACTS,
+    "fr",
+  );
+  assert.match(reply.body, /je l'ajoute à votre panier/);
+  assert.equal(
+    reply.body.includes("[ADD:menu:ice-cream:chocolate-devotion]"),
+    true,
+  );
 });
 
 test("a want without a count goes to the model, not the rule", () => {
   // "I want the chocolate devotion" may be a question or a purchase; the model
   // handles the nuance, so the rule stays out of it.
-  assert.equal(addReply("I want the chocolate devotion", ADD_FACTS, "en"), null);
+  assert.equal(
+    addReply("I want the chocolate devotion", ADD_FACTS, "en"),
+    null,
+  );
 });
 
 test("a question about a product is not read as an add", () => {
-  assert.equal(addReply("what is the chocolate devotion?", ADD_FACTS, "en"), null);
+  assert.equal(
+    addReply("what is the chocolate devotion?", ADD_FACTS, "en"),
+    null,
+  );
 });
 
 test("a product the catalog does not know gets no add tag", () => {
-  assert.equal(addReply("add the mango tango to my bag", ADD_FACTS, "en"), null);
+  assert.equal(
+    addReply("add the mango tango to my bag", ADD_FACTS, "en"),
+    null,
+  );
 });

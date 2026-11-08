@@ -112,10 +112,10 @@ export function addReply(message, shopFacts, language = "en") {
   const quantity = askedQuantity(message) || 1;
   const name = product.name;
   const body = fr
-    ? `${name} — appuyez pour l'ajouter à votre panier.\n[ADD:${product.addId}]`
+    ? `${name}${quantity > 1 ? ` ×${quantity}` : ""} — je l'ajoute à votre panier.\n[ADD:${product.addId}]`
     : quantity > 1
-      ? `${name} — tap to add ${quantity} to your bag.\n[ADD:${product.addId}]`
-      : `${name} — tap to add it to your bag.\n[ADD:${product.addId}]`;
+      ? `${name} ×${quantity} — added to your bag.\n[ADD:${product.addId}]`
+      : `${name} — added to your bag.\n[ADD:${product.addId}]`;
   return {
     topic: "order",
     chips: productChips(language),

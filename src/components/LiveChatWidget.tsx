@@ -188,6 +188,17 @@ function parseBagTag(raw: string): BagEdit | undefined {
   return { mode: "set", addId, quantity };
 }
 
+/**
+ * True when the customer's message just before a reply asked for an add — an
+ * explicit "add it to my bag" — so the reply's [ADD:] tag is applied
+ * automatically instead of waiting for a button tap. A price question ("how
+ * much is the Chocolate Devotion?") does not qualify: there the button stays
+ * a button, because the customer asked about the product, not to buy it.
+ */
+function asksForAutoAdd(message: string): boolean {
+  return /\b(?:add(?: it| that| this| the)?(?: to (?:my |the )?(?:bag|cart))?|i(?:'ll| will| would like|'d like| want| take)|je (?:veux|prends)|ajoute|mettez?)(?:\b|(?=[\s,.!?]))/i.test(message);
+}
+
 function parseVisitTag(raw: string): ChatVisit | undefined {
   const [type, location, date, slotId] = raw.split("|").map((part) => part.trim());
   if (type !== "pickup" && type !== "delivery") return undefined;
@@ -1330,6 +1341,14 @@ export function LiveChatWidget() {
               const { text: bodyText, action, addId, fill, bag, visit, code, chips } = isCustomer
                 ? { text: message.body, action: undefined, addId: undefined, fill: undefined, bag: undefined, visit: undefined, code: undefined, chips: undefined }
                 : splitChatAction(message.body);
+              // The customer asked to add something and this reply carries its
+              // [ADD:] tag: the add happens here, once, when the reply is seen
+              // — no button tap needed. Only the immediately preceding customer
+              // message counts, so a price question never auto-adds.
+              const autoAdd = !isCustomer
+                && Boolean(addId)
+                && previous?.sender === "customer"
+                && asksForAutoAdd(previous.body);
               // A customer message only reaches this list after the server stored it, so
               // its presence IS the delivery confirmation. (The server sends no `delivery`
               // field, and an earlier version pruned its own sent-message record as soon
@@ -1365,9 +1384,10 @@ export function LiveChatWidget() {
                         {visit && <ChatVisitButton visit={visit} />}
                         {code && <ChatCodeButton code={code} />}
                         {chips?.length ? <ChatChips chips={chips} onSend={(text) => submitVoiceRef.current?.(text)} /> : null}
+                        {autoAdd && <ChatAutoAdd addId={addId} />}
                         {(action || addId || fill?.length) && (
                           <div className="mt-2.5 max-w-[16rem]">
-                            {fill?.length ? <ChatFillButton items={fill} /> : addId && <ChatAddButton addId={addId} />}
+                            {fill?.length ? <ChatFillButton items={fill} /> : !autoAdd && addId && <ChatAddButton addId={addId} />}
                             {action && <ChatActionButton action={action} quiet={Boolean(addId || fill?.length)} />}
                           </div>
                         )}
@@ -1919,3 +1939,60 @@ function ChatChips({ chips, onSend }: { chips: string[]; onSend: (text: string) 
     </div>
   );
 }
+
+/**
+ * Applies a reply's [ADD:...] tag the moment the reply renders, when the
+ * customer's message asked for the add. The confirmation appears in place of
+ * the button the customer would otherwise have to tap. Runs once per mount;
+ * the thread history re-rending does not re-add.
+ */
+function ChatAutoAdd({ addId }: { addId: string }) {
+  const { t } = useLanguage();
+  const { addToCart } = useCart();
+  const { flavors } = useFlavors();
+  const [state, setState] = useState<"adding" | "added" | "failed">("adding");
+
+  useEffect(() => {
+    // One attempt per rendered reply. If it fails (stock gone, unknown id),
+    // the customer still sees the note instead of a silent no-op.
+    const timer = window.setTimeout(() => {
+      // A strict once-per-id guard: hot reloads and re-renders re-mount this
+      // component for the same reply, and each mount would otherwise add again.
+      if (autoAddsApplied.has(addId)) return;
+      autoAddsApplied.add(addId);
+      const ok = addId.startsWith("flavor:")
+        ? addToCart(flavors.find((flavor) => String(flavor.id) === addId.slice("flavor:".length)) || { id: "", name: "", image: "" })
+        : addToCart(findMenuItem(addId) || { id: "", name: "", image: "" });
+      if (!ok) autoAddsApplied.delete(addId); // allow a retry on the next visit
+      setState(ok ? "added" : "failed");
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [addId, addToCart, flavors]);
+
+  return (
+    <div className="mt-2.5 max-w-[16rem]" aria-live="polite">
+      <div
+        className={`flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold ${
+          state === "added" ? "bg-[#3d8b40] text-white" : state === "failed" ? "bg-red-50 text-red-700" : "bg-brand-yellow/60 text-brand-navy"
+        }`}
+      >
+        {state === "added" ? (
+          <>
+            <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 16 16">
+              <path d="M3 8.4 6.2 11.6 13 4.4" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+            </svg>
+            {t("Added to your bag")}
+          </>
+        ) : state === "failed" ? (
+          t("This item could not be added. It may be sold out.")
+        ) : (
+          t("Adding to your bag…")
+        )}
+      </div>
+    </div>
+  );
+}
+
+// One addId, one automatic add per page load. Cleared on refresh, which is the
+// right scope: the cart itself also starts empty on a new visit.
+const autoAddsApplied = new Set<string>();
