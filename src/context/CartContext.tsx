@@ -34,7 +34,7 @@ export interface CartItem {
   allergies?: string[];
 }
 
-type CartProduct = Omit<CartItem, "quantity" | "price"> & {
+export type CartProduct = Omit<CartItem, "quantity" | "price"> & {
   price?: number;
   quantity?: number;
 };

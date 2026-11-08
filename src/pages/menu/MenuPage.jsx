@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowIcon, Footer, Header, InstagramSection } from "../../components/Layout";
 import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
 import { apiRequest, getCustomerToken } from "../../api/api";
@@ -9,6 +9,7 @@ import { useCurrency } from "../../context/useCurrency";
 import { normalizePhotoGallery } from "../../../shared/photoSizes.js";
 import { useAuth } from "../../context/useAuth";
 import { PageHero } from "../../components/PageHero";
+import { NotFoundPage } from "../notfound/NotFoundPage";
 import { ProductImageSlider } from "../../components/ProductImageSlider";
 import { RatingBadge } from "../../components/RatingBadge";
 import { photoErrorHandler, photoSrcSet, thumbnail } from "../../lib/thumbnails";
@@ -389,13 +390,18 @@ function SimilarProductCard({ category, item, onSelect, showCategory, t, formatP
 
 export function MenuPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { categorySlug, itemSlug } = useParams();
+  const navigate = useNavigate();
+  const treatMatch = categorySlug && itemSlug ? findMenuItemBySlug(categorySlug, itemSlug) : null;
   const { addItemsToCart } = useCart();
   const { customer } = useAuth();
   const { language, t } = useLanguage();
   const { currency: displayCurrency } = useCurrency();
   // Prices shown in the visitor's currency; charges stay in FCFA.
   const money = (amount) => formatCartMoney(amount, 'xaf', language, displayCurrency);
-  const [selectedItemState, setSelectedItemState] = useState(null);
+  const [selectedItemState, setSelectedItemState] = useState(() => (
+    treatMatch ? { categoryTitle: treatMatch.category.title, item: treatMatch.item } : null
+  ));
   const [search, setSearch] = useState("");
   const [categories, setCategories] = useState(coldStoneMenuCategories);
   const [menuError, setMenuError] = useState("");
@@ -420,11 +426,11 @@ export function MenuPage() {
     reviews: [],
   });
   const requestedCategory = searchParams.get("category");
-  const activeCategoryTitle = categories.some(
-    (category) => category.title === requestedCategory,
-  )
-    ? requestedCategory
-    : null;
+  const activeCategoryTitle = treatMatch
+    ? treatMatch.category.title
+    : categories.some((category) => category.title === requestedCategory)
+      ? requestedCategory
+      : null;
   const activeCategory =
     categories.find((category) => category.title === activeCategoryTitle) ||
     null;
@@ -466,8 +472,19 @@ export function MenuPage() {
   const formatPrice = (price) =>
     formatCartMoney(price, 'xaf', language, displayCurrency);
 
-  // Links such as /menu?category=…&item=… (from the All menu page) open that product once the
-  // live menu (with stock) has loaded; the item is then dropped from the address.
+  // A product address opens that product and keeps the address. Older
+  // /menu?category=…&item=… links still open the product, then drop the item from the query.
+  useEffect(() => {
+    if (!categorySlug || !itemSlug) return;
+    const match = findMenuItemBySlug(categorySlug, itemSlug);
+    if (!match) return;
+    const category = categories.find((entry) => entry.title === match.category.title);
+    const live = category?.items.find((entry) => entry.name === match.item.name);
+    setSelectedItemState({
+      categoryTitle: match.category.title,
+      item: live || match.item,
+    });
+  }, [categorySlug, itemSlug, categories]);
   const requestedItemName = searchParams.get("item");
   const liveMenuLoaded = categories !== coldStoneMenuCategories || Boolean(menuError);
   useEffect(() => {
@@ -781,6 +798,10 @@ export function MenuPage() {
   }, [openedProductName]);
 
   const showCategory = (category) => {
+    if (categorySlug) {
+      navigate(`/menu?${new URLSearchParams({ category: category.title })}`);
+      return;
+    }
     setSearchParams({ category: category.title });
     setSelectedItemState(null);
     // The products change under a sticky tab bar, so put the first product row back on screen
@@ -791,6 +812,10 @@ export function MenuPage() {
   };
 
   const selectItem = (category, item) => {
+    if (categorySlug) {
+      navigate(menuItemPublicPath(category.title, item.name));
+      return;
+    }
     if (category.title !== activeCategoryTitle) {
       setSearchParams({ category: category.title });
     }
@@ -917,7 +942,7 @@ export function MenuPage() {
       image: selectedItem.image,
       priceXaf: selectedItem.priceXaf,
       detail: selectedItem.detail,
-      to: `/menu?${new URLSearchParams({ category: activeCategory.title, item: selectedItem.name })}`,
+      to: menuItemPublicPath(activeCategory.title, selectedItem.name),
     });
   }, [selectedItem, activeCategory]);
 
@@ -946,11 +971,14 @@ export function MenuPage() {
     </div>
   );
 
+  if (categorySlug && !treatMatch) return <NotFoundPage />;
+  const ProductTitle = categorySlug ? "h1" : "h2";
+
   return (
     <div className="min-h-screen bg-[#fbfaf5] text-brand-navy">
       <Header />
       <main id="main" tabIndex={-1}>
-        {activeCategory ? (
+        {categorySlug ? null : activeCategory ? (
           <PageHero
             compactOnMobile
             accent={activeCategoryTheme.accent}
@@ -1027,7 +1055,7 @@ export function MenuPage() {
             </p>
           )}
 
-          <section
+          {!categorySlug && <section
             aria-label={t("Search and filter menu")}
             className="relative z-40 mb-8 rounded-[24px] bg-[#f1f2ee] p-3 sm:mb-12 sm:p-4"
           >
@@ -1187,7 +1215,7 @@ export function MenuPage() {
                 </button>
               </div>
             )}
-          </section>
+          </section>}
 
           {hasFilters ? (
             <section aria-live="polite">
@@ -1223,7 +1251,7 @@ export function MenuPage() {
               >
                 <button
                   className="rounded-full transition hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep"
-                  onClick={() => setSearchParams({})}
+                  onClick={() => (categorySlug ? navigate("/menu") : setSearchParams({}))}
                   type="button"
                 >
                   {t("Menu")}
@@ -1231,7 +1259,11 @@ export function MenuPage() {
                 <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
                 <button
                   className="rounded-full transition hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep"
-                  onClick={() => setSelectedItemState(null)}
+                  onClick={() => (
+                    categorySlug
+                      ? navigate(`/menu?${new URLSearchParams({ category: activeCategory.title })}`)
+                      : setSelectedItemState(null)
+                  )}
                   type="button"
                 >
                   {t(activeCategory.title)}
@@ -1266,12 +1298,12 @@ export function MenuPage() {
                   <p className="w-fit text-sm font-bold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4">
                     {t(activeCategory.title)}
                   </p>
-                  <h2
+                  <ProductTitle
                     className="mt-3 break-words font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-brand-navy sm:text-5xl"
                     id="menu-product-title"
                   >
                     {t(selectedItem.name)}
-                  </h2>
+                  </ProductTitle>
 
                   {reviews.reviewCount > 0 && (
                     <a
@@ -1551,7 +1583,11 @@ export function MenuPage() {
                   </h3>
                   <button
                     className="inline-flex min-h-12 shrink-0 items-center self-start bg-brand-navy px-5 py-3 text-sm font-extrabold text-white transition hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 sm:self-auto"
-                    onClick={() => setSelectedItemState(null)}
+                    onClick={() => (
+                      categorySlug
+                        ? navigate(`/menu?${new URLSearchParams({ category: activeCategory.title })}`)
+                        : setSelectedItemState(null)
+                    )}
                     type="button"
                   >
                     {t("Back to category")}: {t(activeCategory.title)}

@@ -107,6 +107,29 @@ test("honeypot flags spam; submit timing is reported but never blocks", () => {
   assert.deepEqual(isSpamSubmission({}), { spam: false, reason: "" });
 });
 
+test("broadcast keeps subscriber addresses off the To line", async () => {
+  const { buildNewsletterBroadcast, buildNewsletterWelcome } = await import("./email.js");
+  const message = buildNewsletterBroadcast({
+    from: "shop@example.com",
+    recipients: ["a@example.com", "b@example.com"],
+    subject: "Mango is back",
+    message: "Come try it.",
+    siteUrl: "https://shop.example",
+  });
+  assert.equal(message.to, "shop@example.com");
+  assert.equal(message.bcc, "a@example.com, b@example.com");
+  assert.equal(message.text.includes("a@example.com"), false);
+  assert.match(message.text, /https:\/\/shop\.example\/unsubscribe$/m);
+  assert.match(message.html, /href="https:\/\/shop\.example\/unsubscribe"/);
+
+  const welcome = buildNewsletterWelcome({
+    from: "shop@example.com",
+    to: "a@example.com",
+    siteUrl: "https://shop.example",
+  });
+  assert.match(welcome.text, /email=a%40example\.com/);
+});
+
 test("newsletter table exists with the expected columns", () => {
   const columns = new Set(
     database

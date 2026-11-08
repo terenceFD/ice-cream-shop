@@ -19,3 +19,16 @@ export function deliveryFeeSummary() {
 export function fulfillmentWindowSummary() {
   return "Choose a date and a time slot at checkout. Same-day ordering is possible when a store is open and accepting orders; otherwise the next open day. The exact windows come from the store’s own schedule.";
 }
+
+export function deliveryAreaSummaryFr() {
+  const towns = [
+    ...new Set(cameroonLocations.map((location) => location.town)),
+  ];
+  return `${towns.join(" et ")}, dans ces quartiers : ${cameroonLocations
+    .map((location) => location.area)
+    .join(", ")}.`;
+}
+
+export function fulfillmentWindowSummaryFr() {
+  return "Choisissez une date et un créneau au paiement. Une commande le jour même est possible quand une boutique est ouverte et accepte les commandes ; sinon, le prochain jour d’ouverture. Les créneaux exacts viennent de l’horaire de la boutique.";
+}

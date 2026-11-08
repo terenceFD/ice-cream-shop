@@ -10,6 +10,7 @@ import {
 } from "./retrieval.js";
 import {
   createToolExecutor,
+  ensureProductLink,
   toolDefinitions,
   toolNames,
   runToolCalls,
@@ -146,6 +147,32 @@ test("get_product refuses to invent an unknown product", async () => {
   const result = await execute("get_product", { name: "pizza" });
   assert.match(result, /No product/i);
   assert.match(result, /Do not invent/i);
+});
+
+test("get_product returns the product page, not the menu", async () => {
+  const execute = createToolExecutor(fakeDb(), shopFacts);
+  const result = await execute("get_product", { name: "chocolate devotion" });
+  assert.match(result, /Direct link: \/menu\?category=Ice\+Cream&item=Chocolate\+Devotion/);
+  assert.match(result, /\[LINK:\/menu\?category=Ice\+Cream&item=Chocolate\+Devotion\]/);
+  assert.match(result, /Do not send them to \/menu or \/menu\/all/);
+});
+
+test("an in-stock photo answer gets that product's link and drops the menu button", () => {
+  const reply = ensureProductLink(
+    "Yes, Chocolate Devotion is available, 3,200 FCFA.\n[ACTION:menu_all]",
+    { message: "is this available", imageAttached: true, facts: shopFacts },
+  );
+  assert.match(reply, /\[LINK:\/menu\?category=Ice\+Cream&item=Chocolate\+Devotion\]/);
+  assert.doesNotMatch(reply, /menu_all/);
+});
+
+test("a sold-out product does not get a buy link", () => {
+  const reply = ensureProductLink("Vanilla Bean is sold out right now.", {
+    message: "is this available",
+    imageAttached: true,
+    facts: shopFacts,
+  });
+  assert.equal(reply, "Vanilla Bean is sold out right now.");
 });
 
 test("get_delivery_info confirms a branch area and admits an unserved one", async () => {

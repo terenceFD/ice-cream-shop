@@ -5,7 +5,7 @@ import { useFlavors } from "../context/useFlavors";
 import { useLanguage } from "../language/useLanguage";
 import { useCurrency } from "../context/useCurrency";
 import { formatCartMoney } from "../lib/cartPricing";
-import { coldStoneMenuCategories, getMenuItemId } from "../../shared/data";
+import { coldStoneMenuCategories, getMenuItemId, menuItemPublicPath } from "../../shared/data";
 
 type MenuCategory = (typeof coldStoneMenuCategories)[number];
 type MenuItem = MenuCategory["items"][number] & {

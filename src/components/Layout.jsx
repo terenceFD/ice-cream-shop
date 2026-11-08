@@ -7,6 +7,7 @@ import { useCart } from "../context/useCart";
 import { useAuth } from "../context/useAuth";
 import { useFlavors } from "../context/useFlavors";
 import { useLanguage } from "../language/useLanguage";
+import { LANGUAGE_STORAGE_KEY, languageUrl } from "../language/languageLoader";
 import { useCurrency } from "../context/useCurrency";
 import { PROMOTION_DISMISSED_KEY, readInitialPromotion } from "../lib/promotion";
 import { coldStoneMenuCategories } from "../../shared/data";
@@ -328,59 +329,64 @@ export function CurrencySwitcher() {
     >
       <summary
         aria-label={`${t("Currency")}: ${active.code.toUpperCase()}`}
-        className="relative flex h-12 cursor-pointer list-none items-center gap-2 overflow-hidden rounded-full border border-white/20 bg-brand-navy pl-1.5 pr-3.5 text-xs font-bold text-white shadow-[0_14px_36px_rgba(9,42,83,0.34)] transition hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
+        className="flex h-11 cursor-pointer list-none items-center gap-2 rounded-full border border-brand-border-warm bg-brand-cream pl-4 pr-3 font-display text-sm font-extrabold text-brand-navy shadow-[0_10px_28px_rgba(71,42,59,0.18)] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 group-open:border-brand-yellow group-open:bg-white [&::-webkit-details-marker]:hidden"
       >
-        {/* A soft light sweeps across the pill on hover. */}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -translate-x-[130%] skew-x-[-18deg] bg-[linear-gradient(100deg,transparent_35%,rgba(255,255,255,0.35)_50%,transparent_65%)] transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
-        />
-        <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-yellow text-[10px] font-extrabold tracking-tight text-brand-navy">
-          {active.symbol}
-        </span>
-        <span className="tabular-nums">{active.code.toUpperCase()}</span>
-        <svg aria-hidden="true" className="size-3 text-white/70 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
-          <path d="m2 4 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+        <span>{active.code === "xaf" ? "FCFA" : active.code.toUpperCase()}</span>
+        <svg aria-hidden="true" className="size-3.5 text-brand-navy/55 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
+          <path d="m2.25 4.25 3.75 3.5 3.75-3.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
         </svg>
       </summary>
       {/* Opens upward, because the trigger is pinned to the bottom of the screen. */}
-      <div className="menu-popover absolute bottom-full right-0 z-30 w-[min(18rem,calc(100vw-2rem))] pb-3">
-        <div className="overflow-hidden rounded-xl bg-white p-2 text-sm text-brand-navy shadow-[0_18px_44px_rgba(6,29,58,0.24)] ring-1 ring-[#dce3eb]">
-          <div className="px-3 pb-3 pt-2">
-            <p className="text-sm font-bold text-brand-navy">{t("Select currency")}</p>
-            <p className="mt-0.5 text-xs text-[#65748a]">{t("Prices convert for display; payment is taken in FCFA.")}</p>
-          </div>
-          <div className="grid gap-1" role="group" aria-label={t("Select currency")}>
-            {supported.map((option) => {
-              const selected = currency === option.code;
-              return (
-                <button
-                  aria-pressed={selected}
-                  className={`group/cur flex w-full items-center gap-3 rounded-md p-2.5 pr-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-yellow-deep ${selected ? "bg-[#f4f6f8] text-brand-navy" : "hover:bg-[#f4f6f8]"}`}
-                  key={option.code}
-                  onClick={(event) => {
-                    setCurrency(option.code);
-                    const details = event.currentTarget.closest("details");
-                    if (details) details.open = false;
-                  }}
-                  type="button"
-                >
-                  <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-md font-display text-xs font-extrabold ${selected ? "bg-brand-navy text-white" : "bg-[#f4f6f8] text-[#65748a] group-hover/cur:bg-white"}`}>{option.symbol}</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-extrabold">{option.code.toUpperCase()}</span>
-                    <span className="mt-0.5 block text-xs font-semibold text-[#65748a]">{option.code === "xaf" ? t("Store currency") : t("Display only")}</span>
-                  </span>
-                  <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full ${selected ? "bg-brand-navy text-white" : "text-transparent"}`}>
-                    {selected && <svg className="size-3" fill="none" viewBox="0 0 16 16"><path d="m3 8 3.2 3.2L13 4.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>}
-                  </span>
-                </button>
-              );
-            })}
+      <div className="menu-popover absolute bottom-full right-0 z-30 w-[min(16.5rem,calc(100vw-2rem))] pb-3">
+        <div className="overflow-hidden rounded-[20px] bg-brand-cream text-brand-navy shadow-[0_24px_50px_rgba(71,42,59,0.22)] ring-1 ring-brand-border-warm">
+          <div aria-hidden="true" className="h-1 bg-brand-yellow" />
+          <div className="px-3.5 pb-3.5 pt-3">
+            <p className="font-display text-base font-extrabold leading-none">{t("Select currency")}</p>
+            <p className="mt-1.5 text-[13px] leading-5 text-brand-muted">{t("Prices convert for display; payment is taken in FCFA.")}</p>
+            <div className="mt-3 grid grid-cols-3 gap-1.5" role="group" aria-label={t("Select currency")}>
+              {supported.map((option) => {
+                const selected = currency === option.code;
+                const label = option.code === "xaf" ? "FCFA" : option.code.toUpperCase();
+                return (
+                  <button
+                    aria-pressed={selected}
+                    className={`flex min-h-14 items-center justify-center rounded-2xl px-1 font-display text-sm font-extrabold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow ${
+                      selected
+                        ? "bg-brand-yellow text-brand-navy"
+                        : "bg-white text-brand-navy ring-1 ring-brand-border-warm hover:ring-brand-yellow"
+                    }`}
+                    key={option.code}
+                    onClick={(event) => {
+                      setCurrency(option.code);
+                      const details = event.currentTarget.closest("details");
+                      if (details) details.open = false;
+                    }}
+                    type="button"
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
     </details>
   );
+}
+
+function chooseLanguage(next, setLanguage) {
+  try {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, next);
+  } catch (error) {
+    console.error("Unable to save the language preference.", error);
+  }
+  const nextUrl = languageUrl(next);
+  if (nextUrl) {
+    window.location.assign(nextUrl);
+    return;
+  }
+  setLanguage(next);
 }
 
 function LanguageDropdown({ language, setLanguage, t }) {
@@ -422,7 +428,7 @@ function LanguageDropdown({ language, setLanguage, t }) {
                   key={value}
                   lang={value}
                   onClick={(event) => {
-                    setLanguage(value);
+                    chooseLanguage(value, setLanguage);
                     const details = event.currentTarget.closest("details");
                     if (details) details.open = false;
                   }}
@@ -1275,7 +1281,7 @@ export function Header() {
                     aria-pressed={language === code}
                     className={`min-h-11 flex-1 rounded-sm text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-yellow ${language === code ? "bg-brand-yellow text-brand-navy" : "text-white/75 hover:bg-white/[0.08] hover:text-white"}`}
                     key={code}
-                    onClick={() => setLanguage(code)}
+                    onClick={() => chooseLanguage(code, setLanguage)}
                     type="button"
                   >
                     {label}
@@ -1573,6 +1579,8 @@ export function InstagramSection() {
 
 export function Footer() {
   const { t } = useLanguage();
+  const { pathname } = useLocation();
+  const newsOnPage = pathname === "/" || pathname === "/fr" || pathname === "/fr/";
   const instagramUrl = "https://www.instagram.com/coldstonecameroon/";
   const linkGroups = [
     {
@@ -1656,9 +1664,11 @@ export function Footer() {
               <FacebookGlyph className="size-4" />
               Cold Stone Creamery Cameroon
             </a>
-            <div className="mt-6 border-t border-white/10 pt-6">
-              <NewsletterSignup />
-            </div>
+            {!newsOnPage && (
+              <div className="mt-6 border-t border-white/10 pt-6">
+                <NewsletterSignup />
+              </div>
+            )}
           </div>
 
           {linkGroups.map((group) => (

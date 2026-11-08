@@ -117,8 +117,10 @@ export function buildChunks({
       source: "product",
       title: item.name,
       text: `${item.name} — ${item.category}. ${item.detail || ""} Price: ${item.price} FCFA.${
-        item.soldOut ? " Currently SOLD OUT." : ""
-      }${item.tags && item.tags !== "-" ? ` Dietary: ${item.tags}.` : ""}`,
+        item.soldOut ? " Currently SOLD OUT." : " In stock."
+      }${item.tags && item.tags !== "-" ? ` Dietary: ${item.tags}.` : ""}${
+        item.allergens ? ` Allergens: ${item.allergens}.` : ""
+      }${item.path ? ` Page: ${item.path}.` : ""}`,
       keywords: tokenize(`${item.name} ${item.category} ${item.detail || ""}`),
     });
   }
@@ -128,8 +130,8 @@ export function buildChunks({
       source: "flavor",
       title: flavor.name,
       text: `${flavor.name} — a scoop flavor.${flavor.detail ? ` ${flavor.detail}.` : ""} Price: ${flavor.price} FCFA.${
-        flavor.soldOut ? " Currently SOLD OUT." : ""
-      }`,
+        flavor.soldOut ? " Currently SOLD OUT." : " In stock."
+      }${flavor.path ? ` Page: ${flavor.path}.` : ""}`,
       keywords: tokenize(`${flavor.name} ${flavor.detail || ""}`),
     });
   }

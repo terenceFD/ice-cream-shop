@@ -25,40 +25,44 @@ import {
   localClock,
 } from "../shared/storeHours.js";
 import { buildChunks, retrieveChunks } from "./retrieval.js";
-import { createToolExecutor, toolDefinitions } from "./chat-tools.js";
+import { createToolExecutor, customerProductLine, describeCreation, ensureProductLink, flavorItemPath, menuItemPath, askedProduct, partyReply, productActionLines, reorderReply, soldOutAnswer, toolDefinitions, findProduct } from "./chat-tools.js";
+import { applyAllergyGuard, describeBagQuote, describeBranch } from "./chat-offer.js";
+import {
+  bagEditReply,
+  codeReply,
+  loyaltyReply,
+  preferenceReply,
+  productChips,
+  visitReply,
+  withChips,
+} from "./chat-actions.js";
+import { matchPhotoBuffer } from "./image-match.js";
 import { readFileSync } from "node:fs";
 import { resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 import { safeChatImageReference } from "./storage.js";
 
+const VISION_DATA_URI = /^data:(image\/[a-z0-9.+-]+);base64,([A-Za-z0-9+/]+={0,2})$/i;
+
 /**
- * Inline a stored chat photo as a base64 data URI — the format vision-capable
- * providers require (they do not fetch external URLs). Accepts an already-inline
- * data URI (returns it unchanged), a site /uploads/ path (read from disk), or a
- * safe http(s) URL (returned unchanged for providers that do fetch URLs). Anything
- * unreadable returns "" and the message simply travels as text.
+ * A picture the vision model can actually read. Chat uploads are stored as WebP,
+ * and the vision provider rejects that type, so WebP and GIF become JPEG here.
+ * PNG and JPEG pass through. Anything unreadable returns "" and the message
+ * travels as text.
  */
-function inlineImage(url) {
-  // A photo already inlined by an earlier step. SVG and other types are refused:
-  // a data URL is not fetched, but it must still be a picture, not a document.
-  if (
-    typeof url === "string"
-    && url.length < 5_000_000
-    && /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/.test(url)
-  ) {
-    return url;
+export async function visionDataUri(url) {
+  if (typeof url === "string" && url.startsWith("data:")) {
+    if (url.length >= 5_000_000) return "";
+    const match = VISION_DATA_URI.exec(url);
+    if (!match) return "";
+    return bufferToVisionUri(Buffer.from(match[2], "base64"), match[1], url);
   }
   const safe = safeChatImageReference(url);
   if (!safe) return "";
-  // Remote photos stay as an https address on this shop's storage. They are never fetched here.
-  if (!safe.startsWith("/uploads/")) return safe;
-  try {
-    // Read only a file whose resolved path is inside server/uploads. A name that
-    // climbs out of that folder (../) is refused before the disk is touched.
-    const uploadsDir = resolve(fileURLToPath(new URL("./uploads/", import.meta.url)));
-    const filePath = resolve(uploadsDir, safe.slice("/uploads/".length));
-    if (filePath !== uploadsDir && !filePath.startsWith(`${uploadsDir}${sep}`)) return "";
-    const buffer = readFileSync(filePath);
+  if (safe.startsWith("/uploads/")) {
+    const buffer = readUploadBuffer(safe);
+    if (!buffer) return "";
     const mime = safe.endsWith(".png")
       ? "image/png"
       : safe.endsWith(".jpg") || safe.endsWith(".jpeg")
@@ -66,7 +70,34 @@ function inlineImage(url) {
         : safe.endsWith(".gif")
           ? "image/gif"
           : "image/webp";
-    return `data:${mime};base64,${buffer.toString("base64")}`;
+    return bufferToVisionUri(buffer, mime);
+  }
+  // A photo already stored on this shop's own storage. Fetch only that address,
+  // then hand the model a JPEG. An outside URL never reaches this branch.
+  try {
+    const response = await fetch(safe, { signal: AbortSignal.timeout(8000) });
+    if (!response.ok) return "";
+    const bytes = Buffer.from(await response.arrayBuffer());
+    if (bytes.length === 0 || bytes.length > 4_000_000) return "";
+    const header = (response.headers.get("content-type") || "image/webp").split(";")[0].trim();
+    return bufferToVisionUri(bytes, header.startsWith("image/") ? header : "image/webp");
+  } catch {
+    return "";
+  }
+}
+
+async function bufferToVisionUri(buffer, mime, original = "") {
+  const type = String(mime || "").toLowerCase();
+  if ((type === "image/jpeg" || type === "image/jpg" || type === "image/png") && original.startsWith("data:")) {
+    return original;
+  }
+  if (type === "image/jpeg" || type === "image/jpg" || type === "image/png") {
+    const label = type === "image/jpg" ? "image/jpeg" : type;
+    return `data:${label};base64,${buffer.toString("base64")}`;
+  }
+  try {
+    const jpeg = await sharp(buffer).rotate().jpeg({ quality: 82 }).toBuffer();
+    return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
   } catch {
     return "";
   }
@@ -126,7 +157,7 @@ const GENERIC_PAGE_GUIDES = [
 ];
 
 const PAGE_GUIDES = {
-  "/": "the home page: featured flavors, quick links to the menu, cakes and events, and the shop's trust badges",
+  "/": "the home page: a short hero with the featured treat, buttons to order ice cream or explore flavors, and a How it works section (browse, add to the bag, check out)",
   "/menu":
     "the menu page: ice-cream categories with photos; each category opens its own product list",
   "/menu/all":
@@ -346,6 +377,7 @@ function sanitizeSnapshot(snapshot) {
     .replace(/ignore (all )?(the )?(previous|above|prior) (instructions|rules|prompts)/gi, "[removed]")
     .replace(/disregard (all )?(the )?(previous|above|prior)/gi, "[removed]")
     .replace(/\[ACTION:\w+\]/gi, "")
+    .replace(/\[LINK:\/[^\]]+\]/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim()
     .slice(0, 2000);
@@ -386,7 +418,7 @@ function trustedSnapshot(snapshot) {
 // rate-limit retry alone can wait 2×25s on small providers, so the outer budget must
 // span that plus a model call — otherwise the abort fires mid-retry and the customer
 // gets nothing. 45s is still a bounded, patient-customer ceiling.
-const TIMEOUT_MS = 45000;
+const TIMEOUT_MS = 12000;
 
 // Two providers: the primary, and an optional failover for when the primary is
 // throttled or down. Both speak the OpenAI chat-completions shape, so the only
@@ -459,7 +491,7 @@ const FACT_CACHE_MS = 60000;
  */
 export async function suggestReply(
   history,
-  { database, language = "en", customerPage = "", pageSnapshot = "", customerContext = {}, imageUrl = "" },
+  { database, language = "en", customerPage = "", pageSnapshot = "", customerContext = {}, imageUrl = "", bag = [] },
 ) {
   const lastCustomer = [...history]
     .reverse()
@@ -477,63 +509,280 @@ export async function suggestReply(
   const isFirstMessage = history.filter((message) => message.sender === "customer").length === 1;
   // The cached facts are shared between threads, so the per-message flag is composed
   // view here rather than written onto the cache.
-  const shopFacts = { ...context, isFirstMessage, customerContext };
+  const liveBag = bag.length ? bag : customerContext.bag || [];
+  const shopFacts = {
+    ...context,
+    isFirstMessage,
+    customerContext: { ...customerContext, ...(liveBag.length ? { bag: liveBag } : {}) },
+  };
+  const photo = imageUrl || lastCustomer.imageUrl || "";
+  let imageMatch = null;
+  if (photo) {
+    try {
+      const buffer = readUploadBuffer(photo);
+      if (buffer) imageMatch = await matchPhotoBuffer(buffer, catalogImages(shopFacts));
+    } catch (error) {
+      console.error("chat photo match failed:", error.message);
+    }
+  }
   const recent = history.slice(-12);
 
+  // Complaints and creations are answered from the shop's own facts, in this turn.
+  // Waiting on the model here only made a melted order or a mix-in question feel ignored.
+  if (isProblemReport(lastCustomer.body)) {
+    return {
+      suggestion: problemReply(lastCustomer.body, replyLanguage),
+      source: "rules",
+      topic: "problem",
+      language: replyLanguage,
+      confidence: "high",
+      answerable: true,
+      needsAttention: true,
+    };
+  }
+  const creation = describeCreation(lastCustomer.body, shopFacts, replyLanguage);
+  if (creation) {
+    return {
+      suggestion: finishReply(creation, {
+        message: lastCustomer.body,
+        imageAttached: Boolean(photo),
+        facts: shopFacts,
+        history,
+        language: replyLanguage,
+        matched: imageMatch,
+      }),
+      source: "rules",
+      topic: "creation",
+      language: replyLanguage,
+      confidence: "high",
+      answerable: true,
+      needsAttention: needsHumanHandoff(history),
+    };
+  }
+  const reorder = reorderReply(lastCustomer.body, shopFacts, replyLanguage);
+  if (reorder) {
+    return {
+      suggestion: finishReply(reorder, {
+        message: lastCustomer.body,
+        imageAttached: Boolean(photo),
+        facts: shopFacts,
+        history,
+        language: replyLanguage,
+        matched: imageMatch,
+      }),
+      source: "rules",
+      topic: "order",
+      language: replyLanguage,
+      confidence: "high",
+      answerable: true,
+      needsAttention: needsHumanHandoff(history),
+    };
+  }
+  const party = partyReply(lastCustomer.body, shopFacts, replyLanguage);
+  if (party) {
+    return {
+      suggestion: finishReply(party.body, {
+        message: lastCustomer.body,
+        imageAttached: Boolean(photo),
+        facts: shopFacts,
+        history,
+        language: replyLanguage,
+        matched: imageMatch,
+      }),
+      source: "rules",
+      topic: party.topic,
+      language: replyLanguage,
+      confidence: "high",
+      answerable: true,
+      needsAttention: needsHumanHandoff(history),
+    };
+  }
+  const direct = directShopReply(lastCustomer.body, shopFacts, replyLanguage);
+  if (direct) {
+    return {
+      suggestion: finishReply(direct.body, {
+        message: lastCustomer.body,
+        imageAttached: Boolean(photo),
+        facts: shopFacts,
+        history,
+        language: replyLanguage,
+        matched: imageMatch,
+      }),
+      source: "rules",
+      topic: direct.topic,
+      language: replyLanguage,
+      confidence: "high",
+      answerable: true,
+      needsAttention: needsHumanHandoff(history),
+    };
+  }
+  const asked = photo ? null : askedProduct(lastCustomer.body, shopFacts);
+  if (asked) {
+    const place = namedBranch(lastCustomer.body, shopFacts.branchDetails);
+    const priced = soldOutAnswer(asked, shopFacts, replyLanguage);
+    return {
+      suggestion: withChips(
+        finishReply(
+          place ? `${priced} ${describeBranch(place, replyLanguage)}` : priced,
+          {
+            message: lastCustomer.body,
+            imageAttached: false,
+            facts: shopFacts,
+            history,
+            language: replyLanguage,
+            matched: imageMatch,
+          },
+        ),
+        productChips(replyLanguage, place?.area || shopFacts.branchDetails?.[0]?.area),
+      ),
+      source: "rules",
+      topic: asked.soldOut ? "stock" : "price",
+      language: replyLanguage,
+      confidence: "high",
+      answerable: true,
+      needsAttention: needsHumanHandoff(history),
+    };
+  }
+  // A photo of a catalog image, sent with an empty box, is already identified.
+  // Answering it here skips the model. A phone photo that does not match still
+  // goes to the vision model, which can read the name on the cup.
+  const knownPhoto = photo && imageMatch?.confident
+    ? silentPhotoReply(lastCustomer.body, imageMatch, replyLanguage, shopFacts)
+    : null;
+  if (knownPhoto) {
+    return {
+      suggestion: finishReply(knownPhoto.body, {
+        message: lastCustomer.body,
+        imageAttached: true,
+        facts: shopFacts,
+        history,
+        language: replyLanguage,
+        matched: imageMatch,
+      }),
+      source: "rules",
+      topic: knownPhoto.topic,
+      language: replyLanguage,
+      confidence: knownPhoto.confidence,
+      answerable: true,
+      needsAttention: needsHumanHandoff(history),
+    };
+  }
+
   if (!aiConfigured()) {
-    return fallbackToRules({ lastCustomer, shopFacts, language: replyLanguage, customerPage }, {
-      reason: "not-configured",
-      detail: "AI_API_KEY or AI_MODEL is not set",
-    });
+  return fallbackToRules({ lastCustomer, shopFacts, language: replyLanguage, customerPage, imageUrl: photo, imageMatch, history }, {
+    reason: "not-configured",
+    detail: "AI_API_KEY or AI_MODEL is not set",
+  });
   }
 
   const ai = await generateWithModel(recent, shopFacts, replyLanguage, customerPage, pageSnapshot, {
     database,
     memorySummary: buildMemorySummary(history),
-    imageUrl,
+    imageUrl: photo,
+    imageMatch,
   });
   if (ai.text) {
-    // Verify pass (#4): a second model call checks the draft against the facts
-    // before it reaches the customer. Only runs on the reply path. The live
-    // conversation (with any tool results) travels along, so a fact the tool just
-    // reported counts as verified — the checker must not reject a price the
-    // database itself produced.
-    const verification = await verifyDraft(ai.text, shopFacts, lastCustomer.body, replyLanguage, {
-      pageSnapshot,
-      conversation: ai.conversation,
-    });
+    // One model call. A second fact-check round used to sit in front of every
+    // reply and made the customer wait again after the answer was already written.
     return {
-      suggestion: verification.text,
+      suggestion: finishReply(ai.text, {
+        message: lastCustomer.body,
+        imageAttached: Boolean(photo),
+        facts: shopFacts,
+        history,
+        language: replyLanguage,
+        matched: imageMatch,
+      }),
       source: "ai",
       topic: detectTopic(lastCustomer.body, shopFacts),
       language: replyLanguage,
-      // Structured output (#5, #9): the model's own routing fields, with the
-      // deterministic handoff detector as the backstop.
-      confidence: verification.confidence,
-      answerable: verification.answerable,
-      needsAttention: needsHumanHandoff(history) || verification.needsHuman,
+      confidence: "high",
+      answerable: true,
+      needsAttention: needsHumanHandoff(history),
     };
   }
 
   // The model was configured and asked, and did not answer. Say so instead of quietly
   // returning a template: the admin UI shows the reason, and the drafter still gives
   // staff something to send rather than an empty box.
-  return fallbackToRules({ lastCustomer, shopFacts, language: replyLanguage, customerPage }, {
+  return fallbackToRules({ lastCustomer, shopFacts, language: replyLanguage, customerPage, imageUrl: photo, imageMatch, history }, {
     reason: ai.reason,
     detail: ai.detail,
   });
 }
 
 // A template reply, clearly labelled with why the model was not used.
-function fallbackToRules({ lastCustomer, shopFacts, language, customerPage }, failure, history = [lastCustomer]) {
+function finishReply(text, { message, imageAttached, facts, history, language, matched }) {
+  const saved = (facts?.customerContext?.avoid || []).map((label) => `allergic to ${label}`).join(". ");
+  return applyAllergyGuard(
+    ensureProductLink(text, { message, imageAttached, facts, matched, language }),
+    {
+      historyText: [saved, ...(history || []).map((entry) => entry.body || "")].filter(Boolean).join("\n"),
+      facts,
+      language,
+    },
+  );
+}
+
+function directShopReply(message, shopFacts, language) {
+  const bag = shopFacts.customerContext?.bag || [];
+  const edited = bagEditReply(message, bag, language);
+  if (edited) return { ...edited, body: withChips(edited.body, edited.chips) };
+  const visit = visitReply(message, {
+    branches: shopFacts.branchDetails,
+    slots: shopFacts.slots,
+  }, language);
+  if (visit) return visit;
+  const code = codeReply(message, bag, shopFacts.discounts, language);
+  if (code) return code;
+  const points = shopFacts.customerContext?.loyaltyPoints;
+  const loyalty = loyaltyReply(message, points, language);
+  if (loyalty) return loyalty;
+  const preference = preferenceReply(message, shopFacts, language);
+  if (preference) return { ...preference, body: withChips(preference.body, preference.chips) };
+  return null;
+}
+
+function readUploadBuffer(url) {
+  const safe = safeChatImageReference(url);
+  if (!safe?.startsWith("/uploads/")) return null;
+  try {
+    const uploadsDir = resolve(fileURLToPath(new URL("./uploads/", import.meta.url)));
+    const filePath = resolve(uploadsDir, safe.slice("/uploads/".length));
+    if (filePath !== uploadsDir && !filePath.startsWith(`${uploadsDir}${sep}`)) return null;
+    return readFileSync(filePath);
+  } catch {
+    return null;
+  }
+}
+
+function catalogImages(facts) {
+  const entries = [];
+  for (const items of Object.values(facts.menuByCategory || {})) {
+    for (const item of items || []) if (item.image) entries.push(item);
+  }
+  for (const flavor of facts.flavors || []) if (flavor.image) entries.push(flavor);
+  return entries;
+}
+
+function fallbackToRules({ lastCustomer, shopFacts, language, customerPage, imageUrl = "", imageMatch = null, history = [lastCustomer] }, failure) {
   const rules = draftFromRules(
     lastCustomer.body,
     shopFacts,
     language,
     customerPage,
+    imageUrl,
+    imageMatch,
   );
   return {
-    suggestion: rules.body,
+    suggestion: finishReply(rules.body, {
+      message: lastCustomer.body,
+      imageAttached: Boolean(imageUrl),
+      facts: shopFacts,
+      history,
+      language,
+      matched: imageMatch,
+    }),
     source: "rules",
     topic: rules.topic,
     confidence: rules.confidence,
@@ -583,19 +832,35 @@ export async function gatherCustomerContext(database, customerId) {
   if (!customerId) return {};
   const context = {};
   try {
-    const bag = await database.prepare(`
-      SELECT item_name AS name, quantity, unit_price_cents AS unitPrice
-      FROM customer_carts WHERE customer_id = ? ORDER BY id
+    // The live bag lives in customer_saved_carts, the same rows the cart page
+    // saves and the account page lists. productId is the addId shape the agent
+    // already speaks (menu:category:item or flavor:12), so a bag edit can name
+    // the exact line instead of guessing from names.
+    const savedCarts = await database.prepare(`
+      SELECT items_json AS itemsJson
+      FROM customer_saved_carts
+      WHERE customer_id = ? AND source_order_id IS NULL
+      ORDER BY id DESC
     `).all(customerId);
-    if (bag.length) {
-      context.bag = bag.slice(0, 12).map((row) => ({
-        name: row.name,
-        quantity: row.quantity,
-        price: Math.round(row.unitPrice || 0),
-      }));
-    }
+    const rows = savedCarts.flatMap((cart) => {
+      try {
+        const parsed = JSON.parse(cart.itemsJson || "[]");
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    });
+    const bag = rows.flatMap((row) => {
+      const addId = typeof row?.productId === "string" ? row.productId.trim() : "";
+      const quantity = Number(row?.quantity);
+      const name = String(row?.name || "").trim();
+      const price = Number(row?.priceXaf ?? row?.price ?? 0);
+      if (!addId || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99) return [];
+      return [{ addId, quantity, ...(name ? { name } : {}), ...(price > 0 ? { price: Math.round(price) } : {}) }];
+    });
+    if (bag.length) context.bag = bag.slice(0, 12);
   } catch {
-    // No saved cart table or a schema difference: the bag stays out of the facts.
+    // No saved cart yet, or a schema difference: the bag stays out of the facts.
   }
   try {
     const order = await database.prepare(`
@@ -609,12 +874,51 @@ export async function gatherCustomerContext(database, customerId) {
         status: order.status,
         total: Math.round(order.total || 0),
         fulfillment: order.fulfillment || "",
+        items: [],
       };
+      try {
+        const rows = await database.prepare(`
+          SELECT menu_item_id AS menuItemId, flavor_id AS flavorId,
+                 flavor_name AS name, quantity
+          FROM order_items WHERE order_id = ? ORDER BY id
+        `).all(order.id);
+        context.lastOrder.items = rows.slice(0, 12).map((row) => ({
+          name: row.name,
+          quantity: Number(row.quantity) || 1,
+          menuItemId: row.menuItemId || "",
+          flavorId: row.flavorId || null,
+        }));
+      } catch {
+        // The order header is still useful for "where is my order?".
+      }
     }
   } catch {
     // No orders yet, or the query failed: the order stays out of the facts.
   }
+  try {
+    const account = await database.prepare(`
+      SELECT loyalty_points AS points, chat_avoid AS avoid
+      FROM customers WHERE id = ?
+    `).get(customerId);
+    if (account) {
+      context.loyaltyPoints = Math.max(0, Number(account.points) || 0);
+      const saved = JSON.parse(account.avoid || "[]");
+      context.avoid = Array.isArray(saved) ? saved.filter((label) => typeof label === "string") : [];
+    }
+  } catch {
+    // An older database has no saved preference yet. Points stay out of the prompt.
+  }
   return context;
+}
+
+function listFromJson(value) {
+  if (!value) return "";
+  try {
+    const parsed = typeof value === "string" ? JSON.parse(value) : value;
+    return Array.isArray(parsed) ? parsed.filter(Boolean).join(", ") : "";
+  } catch {
+    return "";
+  }
 }
 
 // Exported for tests: the exact SHOP FACTS the production prompt is built from.
@@ -626,20 +930,29 @@ export async function gatherShopFacts(database) {
     const rows = await database
       .prepare(
         `
-      SELECT m.name, m.category_title AS category, m.price_xaf AS priceXaf,
-             COALESCE(i.stock, 100) AS stock, COALESCE(i.is_available, 1) AS isAvailable
+      SELECT m.id, m.name, m.category_title AS category, m.detail, m.image,
+             m.price_xaf AS priceXaf,
+             COALESCE(i.stock, m.stock, 100) AS stock,
+             COALESCE(i.reserved_stock, 0) AS reservedStock,
+             COALESCE(i.is_available, m.is_available, 1) AS isAvailable,
+             i.allergens AS allergens
       FROM custom_menu_items m
-      LEFT JOIN menu_inventory i ON i.item_id = 'custom-' || m.id
-      WHERE m.is_available = 1
+      LEFT JOIN menu_inventory i ON i.item_id = 'menu:custom:' || m.id
       ORDER BY m.category_title, m.name
     `,
       )
       .all();
-    facts.menu = rows.slice(0, 60).map((row) => ({
+    facts.menu = rows.map((row) => ({
       name: row.name,
       category: row.category,
+      detail: row.detail || "",
       price: row.priceXaf,
-      soldOut: row.isAvailable === 0 || Number(row.stock) <= 0,
+      image: row.image || "",
+      stock: Math.max(0, Number(row.stock) - Number(row.reservedStock || 0)),
+      soldOut: row.isAvailable === 0 || Number(row.stock) - Number(row.reservedStock || 0) <= 0,
+      allergens: listFromJson(row.allergens),
+      path: menuItemPath(row.category, row.name),
+      addId: `menu:custom:${row.id}`,
     }));
   } catch {
     // A database hiccup must not break the endpoint; the static catalog below is still used.
@@ -650,7 +963,7 @@ export async function gatherShopFacts(database) {
   const stockRows = new Map();
   try {
     for (const row of await database
-      .prepare("SELECT item_id, stock, is_available FROM menu_inventory")
+      .prepare("SELECT item_id, stock, is_available, allergens, reserved_stock FROM menu_inventory")
       .all()) {
       stockRows.set(row.item_id, row);
     }
@@ -665,15 +978,23 @@ export async function gatherShopFacts(database) {
         facts.menu.push({
           name: item.name,
           category: category.title,
+          detail: item.detail || "",
           price: item.priceXaf,
           soldOut: inventory
-            ? inventory.isAvailable === 0 || Number(inventory.stock) <= 0
+            ? inventory.is_available === 0 || inventory.isAvailable === 0
+              || Number(inventory.stock) - Number(inventory.reserved_stock || 0) <= 0
             : false,
+          allergens: listFromJson(inventory?.allergens),
+          image: item.image || "",
+          stock: inventory
+            ? Math.max(0, Number(inventory.stock) - Number(inventory.reserved_stock || 0))
+            : null,
+          path: menuItemPath(category.title, item.name),
+          addId: getMenuItemId(category.title, item.name),
         });
       }
     }
   }
-  facts.menu = facts.menu.slice(0, 45);
 
   try {
     facts.stores = (
@@ -752,32 +1073,113 @@ export async function gatherShopFacts(database) {
     phone: location.phone || "",
     map: location.source || "",
   }));
+  try {
+    const zones = await database.prepare(`
+      SELECT s.town, s.area, z.location AS checkoutLocation, z.delivery_fee AS deliveryFee,
+             z.delivery_enabled AS deliveryEnabled, z.pickup_enabled AS pickupEnabled
+      FROM stores s JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
+      WHERE z.is_active = 1
+    `).all();
+    for (const zone of zones) {
+      const branch = facts.branchDetails.find((entry) =>
+        entry.area.toLowerCase() === String(zone.area || "").toLowerCase()
+        && entry.town.toLowerCase() === String(zone.town || "").toLowerCase(),
+      ) || facts.branchDetails.find((entry) => entry.area.toLowerCase() === String(zone.area || "").toLowerCase());
+      if (!branch) continue;
+      branch.checkoutLocation = zone.checkoutLocation || "";
+      branch.deliveryFee = Number(zone.deliveryFee) || 0;
+      branch.deliveryEnabled = zone.deliveryEnabled !== 0;
+      branch.pickupEnabled = zone.pickupEnabled !== 0;
+    }
+  } catch {
+    // No zone table yet: branches stay without a fee, and checkout still shows it.
+  }
   facts.menuByCategory = {};
   for (const category of coldStoneMenuCategories) {
-    facts.menuByCategory[category.title] = category.items.map((item) => ({
+    facts.menuByCategory[category.title] = category.items.map((item) => {
+      const live = facts.menu.find((entry) => entry.name === item.name);
+      return {
+        name: item.name,
+        price: item.priceXaf,
+        detail: item.detail,
+        tags: (item.dietary || []).join(","),
+        allergens: live?.allergens || "",
+        image: item.image || "",
+        stock: live?.stock ?? null,
+        soldOut: live?.soldOut || false,
+        path: menuItemPath(category.title, item.name),
+        addId: getMenuItemId(category.title, item.name),
+      };
+    });
+  }
+  // Shop-added products are not in the static catalog. They still need a page of their own.
+  for (const item of facts.menu) {
+    const list = facts.menuByCategory[item.category] || [];
+    if (list.some((entry) => entry.name.toLowerCase() === item.name.toLowerCase())) continue;
+    list.push({
       name: item.name,
-      price: item.priceXaf,
-      detail: item.detail,
-      tags: (item.dietary || []).join(","),
-      soldOut:
-        facts.menu.find((entry) => entry.name === item.name)?.soldOut || false,
+      price: item.price,
+      detail: item.detail || "",
+      tags: "-",
+      allergens: item.allergens || "",
+      image: item.image || "",
+      stock: item.stock ?? null,
+      soldOut: item.soldOut,
+      path: item.path || menuItemPath(item.category, item.name),
+      addId: item.addId || "",
+    });
+    facts.menuByCategory[item.category] = list;
+  }
+  facts.flavors = [];
+  try {
+    const flavorRows = await database
+      .prepare(
+        `
+      SELECT id, name, detail, description, price, tag, allergies, image, stock,
+             reserved_stock AS reservedStock
+      FROM flavors ORDER BY name
+    `,
+      )
+      .all();
+    facts.flavors = flavorRows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      detail: row.description || row.detail || "",
+      price: row.price,
+      tag: row.tag || "",
+      allergens: listFromJson(row.allergies),
+      image: row.image || "",
+      stock: Math.max(0, Number(row.stock) - Number(row.reservedStock || 0)),
+      soldOut: Number(row.stock) - Number(row.reservedStock || 0) <= 0,
+      path: flavorItemPath(row.id),
+      addId: `flavor:${row.id}`,
     }));
+  } catch {
+    facts.flavors = [];
   }
   facts.sitePages = [
-    "All Menu (/menu/all) — every product on one page; this is where customers add items to the cart and place orders",
+    "Home (/) — featured treat, Order ice cream, Explore flavors, and How it works",
+    "All Menu (/menu/all) — every product on one page, with search and filters; use this when the customer is browsing and has not named a product",
     "Menu (/menu) — the menu by category with photos",
-    "Flavors (/flavors) — the flavor catalog",
+    "One product (/menu?category=CATEGORY&item=PRODUCT NAME) — that product's own page: photos, description, allergens, price, quantity and Add to bag. This is the link to send when a named product is in stock",
+    "Flavors (/flavors) — the scoop catalog, with mood and tag filters",
+    "One flavor (/flavor/ID) — that scoop's own page. Send this when the customer asks about one flavor that is in stock",
+    "About (/about) — the shop's story",
     "Custom cakes (/custom-cake) — request a made-to-order cake",
     "Event orders (/events) — catering and event orders",
     "Locations (/locations) — branches, addresses and hours",
-    "Contact (/contact) — write to the shop",
-    "FAQ (/faq) — frequently asked questions",
-    "Cart (/cart) and checkout (/checkout) — ordering and payment",
-    "Track order (/track-order) — follow an order",
-    "Account (/account/orders) — order history, favorites, subscriptions",
+    "Contact (/contact) — write to one chosen store",
+    "FAQ (/faq) — ordering, delivery, discounts and payment",
+    "Cart (/cart) — quantities, saved bags, discount code and total",
+    "Checkout (/checkout) — pickup or delivery, store, time slot, note for the store, guest or account",
+    "Payment (/payment) — card or Mobile Money, then confirmation",
+    "Track order (/track-order) — order number plus the checkout email, no account required",
+    "Reorder (/reorder) — one tap puts a past order back in the bag",
+    "Sign in (/login) and sign up (/signup) — account, email verification, 8-hour session",
+    "Account (/account/orders) — orders, favorites, saved details, loyalty, subscriptions, reviews",
     "Privacy (/privacy), terms (/terms), refunds (/refunds), cookies (/cookies) — policies",
-    // The currency switcher floats in the bottom-right corner of every customer page.
-    "Currency switcher (bottom-right corner of every page) — FCFA, USD or EUR; the chosen code is shown and pressing it opens the list. Prices convert for display only; the customer is always charged in FCFA",
+    "Currency switcher (bottom-right corner of every page) — FCFA, USD or EUR; display only, the charge is always FCFA",
+    "WhatsApp button and this live chat — both sit on customer pages. This chat is the shop assistant; WhatsApp reaches a person",
   ];
   // What the site does today, written down so the assistant answers from the real
   // behaviour instead of guessing or describing an older version of the shop.
@@ -794,11 +1196,13 @@ export async function gatherShopFacts(database) {
   // Business rules that decide how ordering, payment, accounts and the other services
   // actually work. The assistant answers policy questions from here instead of guessing.
   facts.sitePolicies = [
-    "ORDERING: all orders are placed on the website, 24/7 — browse /menu/all (or /flavors), add items to the bag, then check out. Pickup or delivery is chosen at checkout, from a chosen store, with a time slot.",
+    "ORDERING: all orders are placed on the website, 24/7. A customer who has not named a product browses /menu/all or /flavors, adds items to the bag, then checks out. A customer who names one product, or sends a photo of one, is sent to that product's own page when it is in stock — never to the menu list. Pickup or delivery is chosen at checkout, from a chosen store, with a time slot. Checkout works as a guest (name, email, phone) or with an account. An optional note for the store can carry a gift message, an allergy or a landmark.",
     "PAYMENT: card payments go through Stripe, and Cameroon Mobile Money (MTN / Orange) through CamPay's hosted page. The site never sees a card number or a Mobile Money PIN. Prices are charged in FCFA. Stock is reserved while payment is open, deducted only after the provider confirms payment, and released if the payment fails or is abandoned for 20 minutes.",
     "ORDER PROGRESS: an order moves through accepted, being prepared, ready (or ready for pickup), out for delivery and delivered. The customer can receive a device notification and an email at each step; the notification replaces the previous one so only the latest status shows.",
     "OFFERS: the shop runs a Buy 2 Get 1 Free offer, and discount codes can be applied in the cart. Loyalty points are for signed-in customers: 1 point per 100 FCFA spent, and 100 points = 1,000 FCFA off. Loyalty redemption cannot be combined with another discount.",
-    "ACCOUNTS: an account is created after email verification with a 6-digit code; no order is needed. Sign-in is remembered across refreshes and browser restarts, and the session lasts 8 hours. The account holds order history, saved delivery details, favorites, one-tap reorder, loyalty points, subscriptions and reviews. Password reset and email change work by emailed code. An account can be deleted; its orders stay for the shop's records with personal details stripped.",
+    "ACCOUNTS: an account is created after email verification with a 6-digit code; no order is needed. Sign-in is remembered across refreshes and browser restarts, and the session lasts 8 hours. The account holds order history, saved delivery details, favorites, saved bags, one-tap reorder, loyalty points, subscriptions and reviews. Password reset and email change work by emailed code. An account can be deleted; its orders stay for the shop's records with personal details stripped.",
+    "SUBSCRIPTIONS: a signed-in customer can subscribe to one flavor from the Subscriptions tab of the account. Plans are weekly, every 2 weeks, or monthly, quantity 1 to 24. The same box repeats, the price is locked when they subscribe, and they can pause or cancel any time.",
+    "SAVED BAGS AND FAVORITES: the cart can be saved and restored later. Signed-in customers can also favorite a product and reopen it from the account.",
     "REVIEWS: only customers who purchased and received an item can review it, with a 1–5 star rating and up to 200 characters. Reviews appear after the shop approves them. A day after delivery, one review reminder arrives by notification and email.",
     "CUSTOM CAKES: request one at /custom-cake — size (Small, Medium or Large), flavor, toppings, pickup store and a pickup date within the next 90 days. The store sends a quote; paying the deposit secures the cake and the pickup date.",
     "PARTIES AND EVENTS: request a bulk order at /events — event type, a date 2 to 180 days ahead, time, number of guests, delivery or pickup, store, phone, and at least 10 items from the current menu. A live estimate and the suggested 30% deposit are shown; nothing is charged until the store sends a quote and the deposit is paid. Staff confirm or decline; a cancelled event's deposit is refunded through Stripe or CamPay.",
@@ -807,7 +1211,7 @@ export async function gatherShopFacts(database) {
     "CONTACT: the /contact form sends a message to one chosen store, and only that store's team receives it; replies come by email. There is also a WhatsApp chat button on customer pages.",
     "APP: the website installs as an app (from the browser's install prompt) and keeps working offline for browsing; orders need a connection.",
     "PRIVACY: card details stay on Stripe, Mobile Money PINs stay on CamPay, and the browser never talks to the database directly. The privacy (/privacy), terms (/terms), refund (/refunds) and cookie (/cookies) policies are on the site.",
-    "CHAT AND THE SHOP TEAM: this conversation is read by the shop team as well. When the assistant flags a conversation for the team (a complaint, a money dispute, or a question it cannot answer), a staff member picks it up in the shop's inbox and replies right here — so a promised follow-up genuinely arrives in this same thread. If the assistant says a colleague will follow up, that is exactly what happens.",
+    "CHAT AND THE SHOP TEAM: this conversation is read by the shop team as well. A complaint, a payment problem, or a refund is picked up in the shop's inbox and answered in this same thread. A question the assistant simply does not know is answered by the assistant, politely, in this same turn — it does not wait for a colleague.",
     "PROMOTION ANNOUNCEMENTS: when the shop launches a promotion, customers who are already chatting receive the announcement right in this thread — with the discount code and how to use it. A message from the shop about a discount is genuine; the code is also live on the Promotions the assistant can see.",
     "STAFF REPLY TIMES: the shop team usually replies within a few minutes during opening hours. Outside opening hours the website still takes orders 24/7, and messages sent at night are answered the next morning.",
   ];
@@ -818,7 +1222,7 @@ export async function gatherShopFacts(database) {
   const moodTags = new Map();
   try {
     for (const row of await database
-      .prepare("SELECT tag, COUNT(*) AS n FROM flavors WHERE is_available = 1 AND tag != '' GROUP BY tag")
+      .prepare("SELECT tag, COUNT(*) AS n FROM flavors WHERE tag != '' GROUP BY tag")
       .all()) {
       // The on-site filter only shows a tag backed by two or more flavors; mirror that.
       if (Number(row.n) >= 2) moodTags.set(row.tag, Number(row.n));
@@ -828,8 +1232,17 @@ export async function gatherShopFacts(database) {
   }
   const tagList = [...moodTags.keys()];
   facts.flavorFamilies = tagList.length ? tagList : ["Classics", "Fruity", "Chocolate", "Caramel & coffee"];
+  facts.slots = [];
+  try {
+    facts.slots = await database.prepare(`
+      SELECT id, label, start_time AS "startTime"
+      FROM fulfillment_slots WHERE is_active = 1 ORDER BY sort_order, id
+    `).all();
+  } catch {
+    facts.slots = [];
+  }
   facts.quizGuidance =
-    "FIND YOUR FLAVOR QUIZ: when a customer asks for a recommendation or seems undecided, run a SHORT quiz — at most two questions. Ask what mood they are in (comforting, fruity, chocolatey, caramel/coffee, refreshing...) or what taste they feel like, then recommend two or three flavors from the menu that match, with prices. End with a line pointing to the Flavors page (/flavors) and the matching [ACTION:menu_all] action so they can order. Never ask more than two questions before recommending something.";
+    "FIND YOUR FLAVOR QUIZ: when a customer asks for a recommendation or seems undecided, run a SHORT quiz — at most two questions. Ask what mood they are in (comforting, fruity, chocolatey, caramel/coffee, refreshing...) or what taste they feel like, then recommend two or three flavors from the catalog that match, with prices. For each in-stock recommendation, give that flavor's own page (/flavor/ID or the menu product page), not the menu list. Never ask more than two questions before recommending something.";
   factCache = facts;
   factCacheAt = Date.now();
   return facts;
@@ -845,7 +1258,7 @@ async function generateWithModel(
   language,
   customerPage = "",
   pageSnapshot = "",
-  { database, memorySummary = "", imageUrl = "" } = {},
+  { database, memorySummary = "", imageUrl = "", imageMatch = null } = {},
 ) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -857,6 +1270,7 @@ async function generateWithModel(
   const chunks = retrieveChunks(
     buildChunks({
       menu: menuChunks(context),
+      flavors: context.flavors || [],
       policies: context.sitePolicies || [],
       branches: context.branchDetails || [],
     }),
@@ -867,6 +1281,7 @@ async function generateWithModel(
       retrieved: chunks,
       memorySummary,
       imageUrl,
+      imageMatch,
     });
     return await runWithTools(systemPrompt, history, context, database, { imageUrl, controller });
   } finally {
@@ -886,6 +1301,8 @@ function menuChunks(context) {
         price: item.price,
         soldOut: item.soldOut,
         tags: item.tags,
+        allergens: item.allergens,
+        path: item.path,
       });
     }
   }
@@ -900,20 +1317,28 @@ function menuChunks(context) {
  * tools payload (smaller models, older OpenAI-compatible servers).
  */
 async function runWithTools(systemPrompt, history, context, database, { imageUrl, controller }) {
-  const messages = [
-    { role: "system", content: systemPrompt },
-    ...history.slice(-8).map((message) => ({
-      role: message.sender === "customer" ? "user" : "assistant",
-      content: message.body,
-      // The attached photo becomes an image part of THIS message only. Cerebras
-      // (and OpenAI-compatible providers) require a base64 data URI — an external
-      // URL is not fetched — so the stored /uploads/ path is inlined from disk.
-      ...(message.imageUrl ? { content: [
+  const recent = history.slice(-8);
+  const messages = [{ role: "system", content: systemPrompt }];
+  for (let index = 0; index < recent.length; index += 1) {
+    const message = recent[index];
+    const role = message.sender === "customer" ? "user" : "assistant";
+    const isLatest = index === recent.length - 1;
+    // Each photo is its own. The latest message also accepts the photo passed
+    // beside the history, which is how a just-sent upload reaches the model.
+    const photo = message.imageUrl || (isLatest ? imageUrl : "");
+    const inlined = photo ? await visionDataUri(photo) : "";
+    if (!inlined) {
+      messages.push({ role, content: message.body || (photo ? "(photo attached)" : "") });
+      continue;
+    }
+    messages.push({
+      role,
+      content: [
         { type: "text", text: message.body || "(photo attached)" },
-        { type: "image_url", image_url: { url: inlineImage(imageUrl || message.imageUrl) } },
-      ] } : {}),
-    })),
-  ];
+        { type: "image_url", image_url: { url: inlined } },
+      ],
+    });
+  }
   const executeTool = createToolExecutor(database, context);
   // Provider failover: try the primary, and if it fails (rate limit, outage, bad
   // response), try the next configured provider. Each provider gets its own short
@@ -931,7 +1356,7 @@ async function runWithTools(systemPrompt, history, context, database, { imageUrl
 }
 
 // One provider's full tool-call conversation: generate, run tools, finish. Returns
-// the final exchange in `conversation` so the verify pass can see what the model saw.
+// the final exchange in `conversation` so a later check can see what the model saw.
 async function runOneProvider(provider, { messages, executeTool, controller, imageUrl = "" }) {
   // Photo routing (#3): a message with an image goes to the provider's vision
   // model, not the text one — gpt-oss-120b ignores images entirely. The choice is
@@ -986,18 +1411,20 @@ async function fetchCompletion({ messages, tools, provider }, controller, { atte
       },
       body: JSON.stringify({
         model,
-        temperature: 0.8,
-        max_completion_tokens: 2400,
+        temperature: 0.3,
+        // Enough for a reasoning model to finish a short reply, and short enough
+        // that it does not write a page.
+        max_completion_tokens: 800,
         messages,
         ...(tools ? { tools, tool_choice: "auto" } : {}),
       }),
     });
     if (response.status === 429 && attempts > 1) {
       // Retry-After can arrive in seconds or as an HTTP-date; guard against absurd
-      // values (a provider once sent a 2107-second delay, ~35 minutes). The wait is
-      // capped at 15s: the failover chain covers longer outages.
+      // A long Retry-After used to hold the customer for many seconds. One short
+      // pause, then the other provider or the polite shop reply.
       const raw = Number(response.headers.get("retry-after"));
-      const retryAfter = Number.isFinite(raw) && raw > 0 && raw <= 30 ? raw : 12;
+      const retryAfter = Number.isFinite(raw) && raw > 0 && raw <= 2 ? raw : 1;
       console.warn(`AI provider rate-limited; retrying in ${retryAfter}s (${attempts - 1} attempt(s) left).`);
       await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
       return fetchCompletion({ messages, tools, provider }, controller, { attempts: attempts - 1 });
@@ -1015,99 +1442,6 @@ async function fetchCompletion({ messages, tools, provider }, controller, { atte
   }
 }
 
-// ------------------------------------------------------------- verify pass (#4)
-
-const VERIFY_SYSTEM = [
-  "You are a fact-checker for a shop's chat replies. You get the shop's facts and a draft reply.",
-  "Check ONLY these things:",
-  "1. Every price, product name, discount code and branch name in the draft must appear in the facts.",
-  "2. The draft must not promise anything the facts do not support (free delivery, guaranteed times, refunds).",
-  "3. The draft must be in the requested language — if a reply meant for a French customer is mostly English (or the reverse), correct the language.",
-  "4. For French replies, the French must read naturally: no literal English calques ('Je suis l'assistant de Cold Stone' is fine; 'Appuyez le bouton' is not — 'Appuyez sur le bouton' is). Fix awkward machine-style French in the corrected version.",
-  'Reply with ONLY a JSON object: {"ok": true} when the draft is grounded, or {"ok": false, "reason": "what is wrong", "corrected": "a safe corrected version of the draft"} when it is not. Never invent facts in the corrected version — restrict it to what the facts support, or make it say the shop cannot confirm that detail.',
-].join("\n");
-
-/**
- * Check the draft against the facts before it reaches the customer (#4). Returns
- * the draft unchanged when the checker is unavailable — verification must never
- * break replying — and returns the corrected text when the checker found drift.
- */
-async function verifyDraft(draft, context, customerMessage, language, { pageSnapshot = "", conversation = [] } = {}) {
-  const fallback = { text: draft, confidence: "medium", answerable: true, needsHuman: false };
-  if (!process.env.AI_API_KEY || !process.env.AI_MODEL) return fallback;
-  const factsDigest = shopFactsSection(context).join("\n");
-  // Tool results from the generation round are as authoritative as the facts: the
-  // database itself produced them. Summarise the final exchange (last 4 messages,
-  // which is where tool results live) so the checker sees what the model saw.
-  const toolEvidence = conversation
-    .slice(-4)
-    .filter((message) => message.role === "tool")
-    .map((message) => `TOOL RESULT: ${message.content}`)
-    .join("\n");
-  // The menu sits at the tail of the facts digest, so the slice must cover it: a
-  // checker that never saw "Chocolate Devotion|3500" rejects a correct price.
-  const DIGEST_CHARS = 12000;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000);
-  try {
-    const response = await fetch(completionUrl(), {
-      method: "POST",
-      signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.AI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: process.env.AI_MODEL,
-        temperature: 0,
-        max_completion_tokens: 800,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: VERIFY_SYSTEM },
-          { role: "user", content: [
-            "FACTS:",
-            factsDigest.slice(0, DIGEST_CHARS),
-            toolEvidence ? `\nLIVE LOOKUPS the assistant performed (equally authoritative):\n${toolEvidence.slice(0, 2400)}` : "",
-            pageSnapshot ? `\nPAGE SNAPSHOT (also authoritative):\n${trustedSnapshot(pageSnapshot).slice(0, 1200)}` : "",
-            `\nCUSTOMER ASKED: ${customerMessage.slice(0, 300)}`,
-            `\nDRAFT REPLY TO CHECK (${language}):\n${draft}`,
-          ].filter(Boolean).join("\n") },
-        ],
-      }),
-    });
-    if (!response.ok) return fallback;
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "";
-    let verdict;
-    try {
-      verdict = JSON.parse(content);
-    } catch {
-      return fallback;
-    }
-    if (verdict.ok === true) {
-      return {
-        text: draft,
-        confidence: verdict.confidence === "high" ? "high" : "medium",
-        answerable: true,
-        needsHuman: false,
-      };
-    }
-    // The checker found drift: send its corrected version when it produced one,
-    // otherwise refuse on the model's behalf (the honest "I cannot confirm").
-    const corrected = typeof verdict.corrected === "string" && verdict.corrected.trim()
-      ? verdict.corrected.trim()
-      : "I am not certain about that detail — let me bring in a colleague from the shop to confirm it for you.";
-    console.warn(`chat reply corrected by verify pass: ${verdict.reason || "ungrounded detail"}`);
-    return { text: corrected.slice(0, 1000), confidence: "low", answerable: true, needsHuman: verdict.needsHuman === true };
-  } catch (error) {
-    // Timeout or network: the draft ships as written, as before this pass existed.
-    if (error?.name !== "AbortError") console.error("chat verify pass failed:", error.message);
-    return fallback;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 /**
  * The model's instructions. Exported and pure so the hard rules it states can be tested
  * without calling a provider — a rule that lives only in this string is a claim with no
@@ -1118,15 +1452,15 @@ export function buildSystemPrompt(
   language,
   customerPage,
   snapshotText,
-  { retrieved = [], memorySummary = "", imageUrl = "" } = {},
+  { retrieved = [], memorySummary = "", imageUrl = "", imageMatch = null } = {},
 ) {
   return [
     ...ROLE_RULES,
-    ...customerContextSection(context.customerContext),
+    ...customerContextSection(context.customerContext, context.discounts),
     ...memorySection(memorySummary),
     ...retrievedSection(retrieved),
     ...pageSection(customerPage),
-    ...snapshotSection(snapshotText, imageUrl),
+    ...snapshotSection(snapshotText, imageUrl, imageMatch),
     ...styleSection(language),
     ...shopFactsSection(context),
   ].join("\n");
@@ -1160,7 +1494,7 @@ function retrievedSection(retrieved) {
 // The signed-in customer's live situation (#3, #5): their name for a warm greeting,
 // their bag and last order so "what's in my bag?" / "where is my order?" get real
 // answers. Absent entirely for guests — the section then disappears from the prompt.
-function customerContextSection(customerContext) {
+function customerContextSection(customerContext, discounts = []) {
   if (!customerContext) return [];
   const lines = [];
   if (customerContext.firstName) {
@@ -1171,13 +1505,14 @@ function customerContextSection(customerContext) {
   if (customerContext.bag?.length) {
     lines.push(
       `THE CUSTOMER'S BAG right now: ${customerContext.bag
-        .map((entry) => `${entry.quantity}× ${entry.name} (${entry.price} FCFA each)`)
-        .join("; ")}. Answer "what's in my bag?" and "what's my total?" from this list — do not ask them to repeat it. If they ask about a discount, compare the bag against the active codes and the Buy 2 Get 1 Free offer.`,
+        .map((entry) => `${entry.quantity}× ${entry.name} (${entry.price} FCFA each, ${entry.itemType === "menu" ? "menu item" : "scoop"})`)
+        .join("; ")}.`,
     );
+    lines.push(`BAG QUOTE — use these figures exactly for "what will this cost?": ${describeBagQuote(customerContext.bag, discounts)}`);
   }
   if (customerContext.lastOrder) {
     lines.push(
-      `THE CUSTOMER'S MOST RECENT ORDER: #${customerContext.lastOrder.id}, status "${customerContext.lastOrder.status}", ${customerContext.lastOrder.total} FCFA, ${customerContext.lastOrder.fulfillment || "fulfillment not recorded"}. Answer "where is my order?" from this — describe what the status means (accepted = received, being prepared, ready, out for delivery, delivered) instead of asking for the order number.`,
+      `THE CUSTOMER'S MOST RECENT ORDER: #${customerContext.lastOrder.id}, status "${customerContext.lastOrder.status}", ${customerContext.lastOrder.total} FCFA, ${customerContext.lastOrder.fulfillment || "fulfillment not recorded"}. Answer "where is my order?" from this — describe what the status means (accepted = received, being prepared, ready, out for delivery, delivered) instead of asking for the order number.${customerContext.lastOrder.items?.length ? ` Items: ${customerContext.lastOrder.items.map((item) => `${item.quantity}× ${item.name}`).join(", ")}.` : ""}`,
     );
   }
   if (!lines.length) return [];
@@ -1190,10 +1525,13 @@ const ROLE_RULES = [
   "",
   "SCOPE — you know ONLY what is in SHOP FACTS below.",
   "- If a question is about the shop, the menu, prices, ordering, delivery, branches, hours, payments, policies or anything on this website: answer it using the facts.",
-  "- If a question is about ANYTHING ELSE (general knowledge, news, weather, maths, other businesses, other cities, coding, health advice, jokes, the customer's personal life...): politely say you only know about Cold Stone Creamery Cameroon and its website, and invite them to ask about that. Never answer off-topic questions, not even briefly.",
+  "- If a question is about ANYTHING ELSE (general knowledge, news, weather, maths, other businesses, other cities, coding, health advice, jokes, the customer's personal life...): answer in one polite sentence that you do not have that, then offer the menu, prices, delivery, the shops, or order tracking, and ask what they would like. Never answer the off-topic question, and never stay silent.",
   "- A greeting is NOT off-topic. When the customer only says hello (hi, hey, hello, good morning, bonjour, salut...), greet them back warmly, say who you are, list briefly what you can help with (the menu and prices, branches and opening hours, delivery, tracking an order), and ask what they would like. Mirror their greeting when they use a time-specific one (\"good morning\" gets \"Good morning\").",
   "- The same politeness applies to a simple thank-you or goodbye: answer it briefly and kindly, and offer to help further if they need it. Do not reply to these with the menu or with a template.",
-  "- Use ONLY the facts given. Never invent prices, flavours, branches, discount codes, policies, opening dates or promises. If the facts do not cover something about the shop (for example a specific nutrition question or a price for a custom cake), say honestly that you do not have that information and suggest the Contact page.",
+  "- Use ONLY the facts given. Never invent prices, flavours, branches, discount codes, policies, opening dates or promises. If the facts do not cover something about the shop, say so politely in one sentence and offer what you can help with. Never answer with 'a colleague will reply'.",
+  "- If they report a problem with an order, a payment, or a refund: say you are sorry, say you have passed the message to the shop, and ask for the order number only when they have not already given one. A person at the shop still sees the thread.",
+  "- A flavor together with a mix-in (\"strawberry with cookie dough\") is a creation. If a signature product's description already contains those ingredients, sell that product. Otherwise sell Create Your Own Creation at its catalog price. Say the price, whether it is in stock, and end with that product's [LINK:] and [ADD:] when it is in stock. Never invent a price for a mix-in.",
+  "- The home page prints friendly names for real products. Mango sunshine is Mango Pineapple Smoothie. Strawberry daydream is Our Strawberry Blonde. Chocolate crush is Chocolate Devotion. Vanilla cloud is Cookie Doughn't You Want Some. Peanut butter bliss is Peanut Butter Cup Perfection. Dubai chocolate luxury is Our Dubai Chocolate Creation. Berry berry joy is Berry Berry Berry Good. Mint chip moment is Cookie Mintster. When they ask the price of one of those names, answer with the real product's price and stock. Do not say it is missing from the catalog.",
   "",
   "SERVICES AND RULES — answer questions about accounts, loyalty, reviews, cakes, events, notifications, payment and delivery from the SHOP POLICIES list in the facts:",
   "- Cakes and events work by quote: the customer submits the form, the store sends a quote, and the deposit (paid online) confirms it. Never quote a cake or event price yourself — the store sets it.",
@@ -1201,13 +1539,20 @@ const ROLE_RULES = [
   "- Loyalty points and discount codes are applied in the bag and checkout; loyalty points cannot be combined with another discount.",
   "",
   "ORDERING — the single most important rule:",
-  "- ALL orders are placed on the website. When a customer wants to order anything (a flavour, a cake, an event, delivery or pickup), ALWAYS point them to the All Menu page (/menu/all) to add items to the cart and check out. NEVER tell a customer to call a branch or visit in person to place an order — the website does that, and phone-based ordering is NOT how this shop works.",
+  "- ALL orders are placed on the website. NEVER tell a customer to call a branch or visit in person to place an order — the website does that, and phone-based ordering is NOT how this shop works.",
+  "- WHEN THE CUSTOMER NAMES ONE PRODUCT, or sends a photo of one: look it up with get_product. If it is in stock, give the price and end the reply with [LINK:its direct link] on its own line. That button opens THAT product. Do not send them to /menu, /menu/all, or [ACTION:menu_all]. If it is sold out, say so, name the closest in-stock treat with its price, and end with that stand-in's [LINK:] and [ADD:]. Use [ACTION:menu_all] only when they are browsing and have not named a product.",
+  "- SAME AS LAST TIME: rebuild the last order from LAST ORDER ITEMS at today's catalog prices. Leave out anything sold out and say so. Give the new total before delivery. End with one [FILL:addId*qty,addId*qty] line. If there is no past order, ask them to sign in or name what they want.",
+  "- A group under 40 people is a bag of real in-stock scoops: name each quantity, the ice-cream total in FCFA, and that branch's delivery fee. Pickup is free. End with [FILL:]. A wedding, catering, or 40 or more people goes to the events form with [ACTION:events]. Do not invent a catering price.",
   "- The current local time and open/closed state are given in the facts. If the customer wants to order while the shop is CLOSED, say clearly that the branches are closed right now — and immediately reassure them that they can still place the order on the website right away for next-day delivery or pickup, then point them to the All Menu page (/menu/all). Online ordering never closes.",
   "- The last order cut-off and the opening hours are for the physical branches, not for the website: the site accepts orders any time.",
   "- Point customers to the right website page when one matches their question (the pages are listed in the facts).",
   "- WHEN THE CUSTOMER ASKS WHAT PAGE THEY ARE ON ('what page is this', 'where am I', 'how do I use this page'): name the page, then explain what is on it and how to move around it — what to tap, what each section is for — in two to four sentences, from the page description given above. If a different page serves them better, say so and end with the matching [ACTION:...] line.",
   "- WHEN THE CUSTOMER IS ON A PRODUCT DETAIL PAGE (the page description says so, or the snapshot shows one product with a price and an Add to bag button) and asks about the product ('tell me about this', 'what is this one', 'is it good', 'what is in it'): answer from the SNAPSHOT — the product's name, price, description, allergens, dietary tags and review rating are all captured there. Give a brief, warm explanation of the product: what it is, what is in it, what it costs, and what others rated it. If the snapshot lacks something (for example deeper nutrition detail), say you do not have that detail and suggest the Contact page. Never invent an ingredient, allergen or price that is not in the facts or the snapshot.",
-  "- When pointing to a page, end the reply with an action line on its own: [ACTION:menu_all] for the All Menu page, [ACTION:custom_cake] for custom cakes, [ACTION:events] for event orders, [ACTION:locations] for branches, [ACTION:track_order] for order tracking, [ACTION:contact] for the contact page. The website turns this line into a button for the customer; the text before it must still mention the page naturally.",
+  "- When pointing to a general page (not one product), end the reply with an action line on its own: [ACTION:menu_all] for the All Menu page, [ACTION:custom_cake] for custom cakes, [ACTION:events] for event orders, [ACTION:locations] for branches, [ACTION:track_order] for order tracking, [ACTION:contact] for the contact page. The website turns this line into a button; the text before it must still mention the page naturally.",
+  "- WHEN THE CUSTOMER ATTACHES A PHOTO ('is this available?', 'how much is this?', 'I want this', or a photo with no words at all): if PHOTO MATCH names a product, answer about THAT product in one or two sentences: its name, its price, and whether it is in stock. Do not list the menu, do not say how many items the shop sells, and do not say 'this photo matches'. If it is in stock and it does not conflict with an allergy they stated, end with [LINK:its page] and [ADD:its id]. If it is sold out, or it conflicts with a stated allergy, say so and do not add a buy link. A photo with no words is still that question: read the name printed on the cup or carton, find that exact product in SHOP FACTS, and answer with its name, price, and stock. Do not answer a photo with 'I don't have an answer'.",
+  "- ALLERGIES: if they have said they cannot eat something, do not recommend, link, or add a product that contains it.",
+  "- BRANCH: when they name a branch, quote that branch's delivery fee and say stock is one shared count. Do not answer with only yes.",
+  "- BAG TOTAL: use the BAG QUOTE only when they ask what their bag or order will cost. Those figures already include Buy 2 Get 1 Free and the best code. Say the total. Mention a discount only when the quote actually takes money off. Never say a discount is 0, and never say that no code applies.",
   "- CURRENCY: the site has a currency switcher in the bottom-right corner of every page (FCFA, USD, EUR). If a customer asks about prices in another currency, tell them to tap it and choose the currency; every price on the site then shows in that currency. Prices always quote in FCFA, which is what is charged, so convert the shop's FCFA facts only when the customer asks and say the charge is in FCFA.",
   "",
   "HANDOFF — when a person is needed, say so honestly (a staff member is then alerted automatically):",
@@ -1222,7 +1567,7 @@ function pageSection(customerPage) {
 }
 
 // Everything between the markers is untrusted text captured from a browser.
-function snapshotSection(snapshotText, imageUrl = "") {
+function snapshotSection(snapshotText, imageUrl = "", imageMatch = null) {
   if (!snapshotText && !imageUrl) return [];
   const lines = [
     "",
@@ -1230,7 +1575,9 @@ function snapshotSection(snapshotText, imageUrl = "") {
   ];
   if (imageUrl) {
     lines.push(
-      "THE CUSTOMER ATTACHED A PHOTO to their latest message. It is included in this conversation. Describe what is relevant in it for their question (a cake they saw somewhere, a product, a problem with a delivery) and relate it to the catalog facts. If you cannot determine what the photo shows, say so honestly and ask.",
+      imageMatch?.confident
+        ? `PHOTO MATCH: the attached photo is ${imageMatch.name}${Number.isFinite(Number(imageMatch.price)) ? `, ${formatMoney(imageMatch.price)}` : ""}${imageMatch.soldOut ? ", SOLD OUT" : ", in stock"}. Answer with that name and price in one or two sentences. Do not describe the rest of the menu. If it is in stock and they can eat it, end with [LINK:${imageMatch.path}]${imageMatch.addId ? ` and [ADD:${imageMatch.addId}]` : ""}.`
+        : "THE CUSTOMER ATTACHED A PHOTO. No catalog image was close enough to name it. Read any name printed on the cup, carton, or label. If those words match one product in SHOP FACTS, answer with that product's exact name, its price, and whether it is in stock, in one sentence, and end with its [LINK:] and [ADD:] when it is in stock. If you cannot read a name that matches the facts, say you can see the photo and ask them to type the name. Do not invent a product or a price, and do not say you have no answer.",
     );
   }
   if (!snapshotText) {
@@ -1253,7 +1600,8 @@ function styleSection(language) {
   return [
     "",
     "STYLE:",
-    "- Warm, brief, two to four sentences.",
+    "- Sound like a polite person at the counter: warm, brief, and specific. One or two sentences. Please and thank you belong when they fit, not piled on.",
+    "- Lead with the answer. If you do not know, say that first, kindly, then offer the menu, prices, delivery, or the shops, and ask what they would like.",
     language === "fr" ? "- Reply in French." : "- Reply in English.",
     "- LANGUAGE RULE, and it overrides the line above: always reply in the language of the customer's LAST message. If they write in French, answer in French. If they write in English, answer in English. If they switch language mid-conversation, switch with them from that message on. Only when the message has no language at all (a single product name, 'ok', a number) keep the previous language.",
     "- A French message deserves a French answer even when the website itself is in English, and the reverse.",
@@ -1270,9 +1618,9 @@ function shopFactsSection(context) {
     `Branches: ${context.stores.map((store) => `${store.name} (${store.area})${store.phone ? ` tel ${store.phone}` : ""}`).join("; ") || "none listed"}.`,
     ...context.branchDetails.map(
       (store) =>
-        `  - ${store.town} / ${store.area}: ${store.address}${store.phone ? `, tel ${store.phone}` : ""}${store.map ? `, map: ${store.map}` : ""}`,
+        `  - ${store.town} / ${store.area}: ${store.address}${store.phone ? `, tel ${store.phone}` : ""}${store.deliveryEnabled === false ? ", delivery off" : Number.isInteger(store.deliveryFee) ? `, delivery ${formatMoney(store.deliveryFee)}` : ""}${store.map ? `, map: ${store.map}` : ""}`,
     ),
-    `Discount codes: ${context.discounts.map((code) => `${code.code} (${code.type === "percent" ? `${code.value}% off` : `${code.value} FCFA off`}${code.minimum ? `, min ${code.minimum} FCFA` : ""})`).join("; ") || "none"}.`,
+    `Discount codes: ${context.discounts.map((code) => `${code.code} (${code.type === "percent" ? `${code.value}% off` : `${code.value} FCFA off`}${code.minimum ? `, minimum ${code.minimum} items` : ""})`).join("; ") || "none"}.`,
     "Website pages the customer can be pointed to:",
     ...context.sitePages.map((page) => `  - ${page}`),
     "How the site behaves today (answers about prices, currency or the admin desk come from here):",
@@ -1281,19 +1629,24 @@ function shopFactsSection(context) {
     ...(context.sitePolicies || []).map((line) => `  - ${line}`),
     context.quizGuidance,
     `Flavor families for recommendations and the mood quiz: ${context.flavorFamilies?.join(", ") || "Classics, Fruity, Chocolate, Caramel & coffee"}.`,
-    "Menu grouped by category (name|price|detail|tags; SOLD OUT marked):",
-    ...Object.entries(context.menuByCategory).flatMap(([category, items]) => [
+    "Menu grouped by category (name|price|detail|tags|page; SOLD OUT marked). The page is the link to send when that item is in stock:",
+    ...Object.entries(context.menuByCategory || {}).flatMap(([category, items]) => [
       `  ${category}:`,
       ...items.map(
         (item) =>
-          `    ${item.name}|${item.price}|${item.detail || "-"}|${item.tags || "-"}${item.soldOut ? "|SOLD OUT" : ""}`,
+          `    ${item.name}|${item.price}|${item.detail || "-"}|${item.tags || "-"}|${item.path || "-"}${item.allergens ? `|allergens: ${item.allergens}` : ""}${item.soldOut ? "|SOLD OUT" : ""}`,
       ),
     ]),
+    ...(context.flavors || []).length
+      ? [
+          "Scoop flavors (name|price|page). Each has its own page:",
+          ...context.flavors.map(
+            (flavor) =>
+              `  ${flavor.name}|${flavor.price}|${flavor.path || "-"}${flavor.soldOut ? "|SOLD OUT" : ""}${flavor.detail ? `|${flavor.detail}` : ""}`,
+          ),
+        ]
+      : [],
   ];
-}
-
-function completionUrl() {
-  return `${(process.env.AI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`;
 }
 
 // The provider's own message is logged so a wrong AI_BASE_URL or key is visible in the
@@ -1385,14 +1738,58 @@ export function needsHumanHandoff(history) {
           .split(/[^a-zà-ÿ0-9]+/)
           .filter((word) => word.length > 3),
       );
-    const [secondLast, thirdLast] = customerMessages.slice(-3);
-    const overlapBefore = words(secondLast.body);
-    const overlapNow = words(thirdLast.body);
+    const [previous, latest] = customerMessages.slice(-2);
+    const overlapBefore = words(previous.body);
+    const overlapNow = words(latest.body);
     let shared = 0;
     for (const word of overlapNow) if (overlapBefore.has(word)) shared += 1;
     if (overlapNow.size >= 3 && shared / overlapNow.size >= 0.6) return true;
   }
   return false;
+}
+
+// Order, payment and refund problems. These page the shop and still get a reply
+// in the same turn. "Can I pay with mobile money" is a how-to, so bare "payment" stays out.
+const PROBLEM_KEYWORDS = [
+  "refund", "reimburse", "my money", "charged twice", "double charge", "double charged",
+  "overcharged", "scam", "stolen",
+  "wrong order", "order was wrong", "got the wrong", "missing item", "never arrived",
+  "not delivered", "did not arrive", "didn't arrive",
+  "damaged", "melted", "spoiled", "rotten", "food poisoning",
+  "payment failed", "payment didn't", "payment did not",
+  "remboursement", "rembourser", "mon argent", "arnaque",
+  "mauvaise commande", "order was wrong", "article manquant", "jamais recu",
+  "pas livre", "endommage", "fondu", "pourri", "intoxication",
+  "paiement a echoue", "paiement refuse",
+];
+
+export function orderNumberIn(text) {
+  const match = String(text || "").match(/#\s*(\d{1,8})|\b(?:order|commande)\s*#?\s*(\d{1,8})\b/i);
+  return match ? match[1] || match[2] || "" : "";
+}
+
+export function isProblemReport(text) {
+  const message = foldProblemText(text);
+  return PROBLEM_KEYWORDS.some((keyword) => message.includes(foldProblemText(keyword)));
+}
+
+function foldProblemText(text) {
+  return String(text || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+export function problemReply(text, language = "en") {
+  const number = orderNumberIn(text);
+  if (language === "fr") {
+    return number
+      ? `Je suis désolé pour ça. J'ai transmis la commande #${number} à la boutique, et une personne va s'en occuper.`
+      : "Je suis désolé pour ça. J'ai transmis votre message à la boutique. Pouvez-vous m'envoyer le numéro de commande ? Il commence par #.";
+  }
+  return number
+    ? `I'm sorry about that. I've passed order #${number} to the shop, and a person there will look at it.`
+    : "I'm sorry about that. I've passed your message to the shop. Could you send the order number? It starts with #.";
 }
 
 // ------------------------------------------------------------- rules engine
@@ -1504,8 +1901,66 @@ function formatMoney(amount) {
   return `${new Intl.NumberFormat("en-CM").format(Math.round(amount))} FCFA`;
 }
 
-function draftFromRules(message, context, language, customerPage = "") {
+function namedBranch(message, branches) {
+  const text = String(message || "").toLowerCase();
+  return (branches || []).find((branch) => branch.area && text.includes(String(branch.area).toLowerCase())) || null;
+}
+
+function asksAboutBag(message) {
+  return /\b(my bag|the bag|my cart|the cart|my total|panier|what will (?:this|it|my order) cost|combien (?:ça|ca) (?:va|fait))\b/i.test(message);
+}
+
+function politeUnknown(fr) {
+  return fr
+    ? "Je suis désolé, je n'ai pas la réponse à cette question. Je peux vous aider pour le menu et les prix, la livraison, nos boutiques à Douala et Yaoundé, et le suivi d'une commande. Qu'est-ce qui vous ferait plaisir ?"
+    : "I'm sorry, I don't have an answer for that one. I can help with the menu and prices, delivery, our shops in Douala and Yaoundé, and tracking an order. What would you like?";
+}
+
+/**
+ * A photo sent with an empty box. A confident catalog match becomes the product
+ * sentence. Otherwise the customer is asked for the name on the cup — never the
+ * "I don't have an answer" line, which is for a question with no picture.
+ * A caption ("how much is this?") returns null so that question keeps its own topic.
+ */
+export function silentPhotoReply(message, imageMatch, language = "en", facts = null) {
+  if (String(message || "").trim()) return null;
   const fr = language === "fr";
+  if (imageMatch?.confident && imageMatch.name) {
+    const body = imageMatch.soldOut && facts
+      ? soldOutAnswer(imageMatch, facts, fr ? "fr" : "en")
+      : customerProductLine(imageMatch, fr ? "fr" : "en") + productActionLines(imageMatch);
+    return {
+      body,
+      topic: "stock",
+      confidence: "high",
+    };
+  }
+  return {
+    body: fr
+      ? "Je vois la photo, mais je n'arrive pas à lire le nom. Dites-moi ce qui est écrit dessus et je vous donne le prix."
+      : "I can see the photo, but I can't read the name. Tell me what's written on it and I'll give you the price.",
+    topic: "stock",
+    confidence: "low",
+  };
+}
+
+function draftFromRules(message, context, language, customerPage = "", imageUrl = "", imageMatch = null) {
+  const fr = language === "fr";
+  if (isProblemReport(message)) {
+    return { body: problemReply(message, language), topic: "problem", confidence: "high" };
+  }
+  const creation = describeCreation(message, context, language);
+  if (creation) return { body: creation, topic: "creation", confidence: "high" };
+  const reorder = reorderReply(message, context, language);
+  if (reorder) return { body: reorder, topic: "order", confidence: "high" };
+  const party = partyReply(message, context, language);
+  if (party) return { body: party.body, topic: party.topic, confidence: "high" };
+  const direct = directShopReply(message, context, language);
+  if (direct) return { body: direct.body, topic: direct.topic, confidence: "high" };
+  if (imageUrl) {
+    const silent = silentPhotoReply(message, imageMatch, language, context);
+    if (silent) return silent;
+  }
   const topic = detectTopic(message, context);
   const lines = [];
   // This summary is spliced into both price and menu replies, so it has to follow the
@@ -1555,27 +2010,28 @@ function draftFromRules(message, context, language, customerPage = "") {
       );
       break;
     case "price": {
-      const named = context.menu.find((item) =>
-        message
-          .toLowerCase()
-          .split(/\s+/)
-          .some(
-            (word) => word.length > 3 && item.name.toLowerCase().includes(word),
-          ),
-      );
+      const named = findProduct(context, message) || (imageMatch?.confident ? imageMatch : null);
+      const aboutBag = asksAboutBag(message);
+      if (aboutBag && context.customerContext?.bag?.length) {
+        lines.push(describeBagQuote(context.customerContext.bag, context.discounts, fr ? "fr" : "en"));
+      }
       if (named) {
+        lines.push(soldOutAnswer(named, context, fr ? "fr" : "en"));
+      } else if (imageUrl) {
         lines.push(
           fr
-            ? `${named.name} coûte ${formatMoney(named.price)}${named.soldOut ? ", mais il est en rupture de stock pour le moment" : ""}.`
-            : `${named.name} is ${formatMoney(named.price)}${named.soldOut ? ", though it is sold out right now" : ""}.`,
+            ? "Je vois la photo, mais je n'arrive pas à lire le nom. Dites-moi ce qui est écrit dessus et je vous donne le prix."
+            : "I can see the photo, but I can't read the name. Tell me what's written on it and I'll give you the price.",
         );
-      } else {
+      } else if (!aboutBag) {
         lines.push(
           fr
             ? `${menuSummary} Dites-moi lequel vous intéresse et je vous donne le prix exact.`
             : `${menuSummary} Tell me which one you are eyeing and I will give you the exact price.`,
         );
       }
+      const place = namedBranch(message, context.branchDetails);
+      if (place) lines.push(describeBranch(place, fr ? "fr" : "en"));
       break;
     }
     case "menu":
@@ -1599,13 +2055,17 @@ function draftFromRules(message, context, language, customerPage = "") {
           : `You can find us at: ${context.stores.map((store) => `${store.name} (${store.area})`).join(", ")}. Which one suits you?`,
       );
       break;
-    case "delivery":
+    case "delivery": {
+      const place = namedBranch(message, context.branchDetails);
       lines.push(
-        fr
-          ? `Oui, nous livrons ! Commandez sur le site, choisissez la livraison et une heure ; le vérificateur de zone au checkout affiche les frais de la boutique la plus proche. Le retrait en boutique est sans frais.`
-          : `Yes, we deliver! Order on the site, choose delivery and a time slot; the delivery-area checker at checkout shows the fee for the closest branch. Pickup at a store has no fee.`,
+        place
+          ? describeBranch(place, fr ? "fr" : "en")
+          : fr
+            ? `Oui, nous livrons ! Commandez sur le site, choisissez la livraison et une heure ; le vérificateur de zone au checkout affiche les frais de la boutique la plus proche. Le retrait en boutique est sans frais.`
+            : `Yes, we deliver! Order on the site, choose delivery and a time slot; the delivery-area checker at checkout shows the fee for the closest branch. Pickup at a store has no fee.`,
       );
       break;
+    }
     case "discount":
       if (context.discounts.length) {
         lines.push(
@@ -1622,23 +2082,16 @@ function draftFromRules(message, context, language, customerPage = "") {
       }
       break;
     case "stock": {
-      const named = context.menu.find((item) =>
-        message
-          .toLowerCase()
-          .split(/\s+/)
-          .some(
-            (word) => word.length > 3 && item.name.toLowerCase().includes(word),
-          ),
-      );
+      const named = findProduct(context, message) || (imageMatch?.confident ? imageMatch : null);
       if (named) {
+        lines.push(soldOutAnswer(named, context, fr ? "fr" : "en"));
+        const place = namedBranch(message, context.branchDetails);
+        if (place) lines.push(describeBranch(place, fr ? "fr" : "en"));
+      } else if (imageUrl) {
         lines.push(
-          named.soldOut
-            ? fr
-              ? `${named.name} est en rupture pour le moment — revenez bientôt, le réapprovisionnement est régulier !`
-              : `${named.name} is sold out at the moment — check back soon, restocks are regular!`
-            : fr
-              ? `Bonne nouvelle : ${named.name} est disponible !`
-              : `Good news: ${named.name} is available!`,
+          fr
+            ? `Je vois la photo, mais je n'arrive pas à la rattacher à un produit. Dites-moi le nom écrit dessus et je vérifie le stock, puis je vous envoie la page de ce produit.`
+            : `I can see the photo, but I cannot match it to a product. Tell me the name on it and I will check the stock, then send you that product's own page.`,
         );
       } else {
         lines.push(
@@ -1740,11 +2193,7 @@ function draftFromRules(message, context, language, customerPage = "") {
       );
       break;
     default:
-      lines.push(
-        fr
-          ? `Merci pour votre message ! Un collègue va vous répondre très vite. En attendant, le menu complet et les boutiques sont sur le site.`
-          : `Thanks for your message! A colleague will reply very shortly. In the meantime, the full menu and branch list are on the site.`,
-      );
+      lines.push(politeUnknown(fr));
   }
   return {
     body: lines.join(" ").slice(0, 1000),

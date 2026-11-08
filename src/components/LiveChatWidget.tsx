@@ -1,10 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiRequest } from "../api/api";
 import { useLanguage } from "../language/useLanguage";
 import { useAuth } from "../context/useAuth";
+import { useCart } from "../context/useCart";
+import type { CartProduct } from "../context/CartContext";
+import { useFlavors } from "../context/useFlavors";
+import { findMenuItem } from "../../shared/data";
 import { useMobileMenuOpen } from "../lib/mobileMenu";
 import { useShowFloatingWidgets } from "../lib/floatingWidgets";
+import { prepareImageForUpload } from "../lib/prepareUploadImage";
 
 /**
  * Live chat bubble: a small launcher in the corner opens a thread with the store.
@@ -17,7 +22,7 @@ import { useShowFloatingWidgets } from "../lib/floatingWidgets";
  */
 
 const OPEN_STORAGE_KEY = "cold-stone-chat-open";
-const POLL_INTERVAL_MS = 5000;
+const POLL_INTERVAL_MS = 1500;
 
 interface ChatMessage {
   id: number;
@@ -33,6 +38,45 @@ interface ChatMessage {
 // the message, so it can never claim a delivery that did not happen. Two overlapping
 // checks in a 16px box: the back check sits behind and to the left, the front one is
 // nudged right, so the pair reads as a double tick rather than two separate marks.
+function ChatMark({ className = "size-6" }: { className?: string }) {
+  const maskId = useId().replace(/:/g, "");
+  return (
+    <svg aria-hidden="true" className={className} viewBox="0 0 24 24">
+      <mask id={maskId}>
+        <path
+          d="M12 2.15c5.45 0 9.85 3.72 9.85 8.3 0 4.58-4.4 8.3-9.85 8.3-.82 0-1.61-.08-2.36-.24a.7.7 0 0 0-.48.07l-3.15 1.55a.72.72 0 0 1-1.02-.8l.68-2.55a.72.72 0 0 0-.21-.7A7.78 7.78 0 0 1 2.15 10.45C2.15 5.87 6.55 2.15 12 2.15Z"
+          fill="white"
+        />
+        <circle cx="8.2" cy="10.45" fill="black" r="1.05" />
+        <circle cx="12" cy="10.45" fill="black" r="1.05" />
+        <circle cx="15.8" cy="10.45" fill="black" r="1.05" />
+      </mask>
+      <rect fill="currentColor" height="24" mask={`url(#${maskId})`} width="24" />
+    </svg>
+  );
+}
+
+function ChatTrashIcon({ className = "size-5" }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} viewBox="0 0 24 24">
+      <path
+        d="M9.1 2.5h5.8c.66 0 1.2.54 1.2 1.2V5h4.15a1.15 1.15 0 1 1 0 2.3H3.75a1.15 1.15 0 1 1 0-2.3H7.9V3.7c0-.66.54-1.2 1.2-1.2zM6.55 8.7h10.9l-.72 10.15a1.85 1.85 0 0 1-1.84 1.72H9.11a1.85 1.85 0 0 1-1.84-1.72L6.55 8.7zM10.15 11.35a.95.95 0 0 1 .95.95v4.7a.95.95 0 1 1-1.9 0v-4.7a.95.95 0 0 1 .95-.95zm3.7 0a.95.95 0 0 1 .95.95v4.7a.95.95 0 1 1-1.9 0v-4.7a.95.95 0 0 1 .95-.95z"
+        fill="currentColor"
+        fillRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function ChatCloseIcon({ className = "size-5" }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="currentColor" viewBox="0 0 24 24">
+      <rect height="16.4" rx="2.05" transform="rotate(45 12 12)" width="4.1" x="9.95" y="3.8" />
+      <rect height="16.4" rx="2.05" transform="rotate(-45 12 12)" width="4.1" x="9.95" y="3.8" />
+    </svg>
+  );
+}
+
 function DeliveryTick() {
   return (
     <svg
@@ -91,13 +135,164 @@ const PAGE_GUIDES = {
   "/flavors": "the flavors page: the full flavor catalog with descriptions",
 } as const;
 
-function splitChatAction(body: string): { text: string; action?: { path: string; label: string } } {
-  const match = body.match(/\[ACTION:(\w+)\]\s*$/);
-  if (!match) return { text: body };
-  const action = CHAT_ACTIONS[match[1] as keyof typeof CHAT_ACTIONS];
-  return action
-    ? { text: body.slice(0, match.index).trim(), action }
-    : { text: body.replace(match[0], "").trim() };
+// A product answer ends with [LINK:/menu?category=…&item=…] or [LINK:/flavor/12].
+// Only those two shapes become a button. Anything else is dropped so a reply
+// cannot turn into an off-site link.
+function safeProductPath(raw: string): string | null {
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\") || raw.includes("..")) return null;
+  let url: URL;
+  try {
+    url = new URL(raw, "https://shop.local");
+  } catch {
+    return null;
+  }
+  if (url.origin !== "https://shop.local") return null;
+  if (url.pathname === "/menu") {
+    const category = url.searchParams.get("category")?.trim() || "";
+    const item = url.searchParams.get("item")?.trim() || "";
+    if (!category || !item || category.length > 80 || item.length > 120) return null;
+    return `/menu?${new URLSearchParams({ category, item }).toString()}`;
+  }
+  if (/^\/flavor\/\d{1,8}$/.test(url.pathname) && url.search === "") return url.pathname;
+  if (/^\/treat\/[a-z0-9-]+\/[a-z0-9-]+$/.test(url.pathname) && url.search === "") return url.pathname;
+  return null;
+}
+
+function safeAddId(raw: string): string | null {
+  return /^(?:menu:[a-z0-9-]+:[a-z0-9-]+|flavor:\d{1,8})$/.test(raw) ? raw : null;
+}
+
+/** A bag edit from an agent reply: clear everything, or set one addId to a quantity. */
+interface BagEdit {
+  mode: "clear" | "set";
+  addId?: string;
+  quantity?: number;
+}
+
+/** A pickup or delivery the agent already chose, carried to checkout. */
+interface ChatVisit {
+  type: "pickup" | "delivery";
+  location?: string;
+  date?: string;
+  slotId?: string;
+}
+
+function parseBagTag(raw: string): BagEdit | undefined {
+  const value = raw.trim();
+  if (value.toLowerCase() === "clear") return { mode: "clear" };
+  const match = /^(?:set:)?(.+?)\*(\d{1,2})$/i.exec(value);
+  if (!match) return undefined;
+  const addId = safeAddId(match[1].trim());
+  const quantity = Number(match[2]);
+  if (!addId || quantity < 0 || quantity > 40) return undefined;
+  return { mode: "set", addId, quantity };
+}
+
+function parseVisitTag(raw: string): ChatVisit | undefined {
+  const [type, location, date, slotId] = raw.split("|").map((part) => part.trim());
+  if (type !== "pickup" && type !== "delivery") return undefined;
+  // The location comes from the branch list ("Douala — Bonanjo"), so any letter,
+  // digit, space or punctuation except the pipe is accepted — the checkout
+  // matches it against its own zone list, so an odd value simply stays unused.
+  return {
+    type,
+    location: location && /^[^|\[\]]{1,80}$/.test(location) ? location : undefined,
+    date: date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined,
+    slotId: slotId && /^\d{1,8}$/.test(slotId) ? slotId : undefined,
+  };
+}
+
+function splitChatAction(body: string): {
+  text: string;
+  action?: { path: string; label: string };
+  addId?: string;
+  fill?: { id: string; quantity: number }[];
+  bag?: BagEdit;
+  visit?: ChatVisit;
+  code?: string;
+  chips?: string[];
+} {
+  let text = body.trim();
+  let action: { path: string; label: string } | undefined;
+  let addId: string | undefined;
+  let fill: { id: string; quantity: number }[] | undefined;
+  let bag: BagEdit | undefined;
+  let visit: ChatVisit | undefined;
+  let code: string | undefined;
+  let chips: string[] | undefined;
+  for (let guard = 0; guard < 8; guard += 1) {
+    const linkMatch = text.match(/\[LINK:(\/[^\]]+)\]\s*$/);
+    const addMatch = text.match(/\[ADD:([^\]]+)\]\s*$/);
+    const fillMatch = text.match(/\[FILL:([^\]]+)\]\s*$/);
+    const pageMatch = text.match(/\[ACTION:(\w+)\]\s*$/);
+    const bagMatch = text.match(/\[BAG:(clear|set:[^\]]+)\]\s*$/i);
+    const visitMatch = text.match(/\[VISIT:([^\]]+)\]\s*$/i);
+    const codeMatch = text.match(/\[CODE:([^\]]+)\]\s*$/i);
+    const chipsMatch = text.match(/\[CHIPS:([^\]]+)\]\s*$/i);
+    if (linkMatch) {
+      const path = safeProductPath(linkMatch[1].trim());
+      if (path) action = { path, label: "Open this product" };
+      text = text.slice(0, linkMatch.index).trim();
+      continue;
+    }
+    if (addMatch) {
+      const id = safeAddId(addMatch[1].trim());
+      if (id) addId = id;
+      text = text.slice(0, addMatch.index).trim();
+      continue;
+    }
+    if (fillMatch) {
+      const items = fillMatch[1].split(",").flatMap((part) => {
+        const match = part.trim().match(/^(menu:[a-z0-9-]+:[a-z0-9-]+|flavor:\d{1,8})\*(\d{1,2})$/);
+        if (!match) return [];
+        const quantity = Number(match[2]);
+        if (quantity < 1 || quantity > 40) return [];
+        return [{ id: match[1], quantity }];
+      });
+      if (items.length) fill = items;
+      text = text.slice(0, fillMatch.index).trim();
+      continue;
+    }
+    if (bagMatch) {
+      bag = parseBagTag(bagMatch[1]);
+      text = text.slice(0, bagMatch.index).trim();
+      continue;
+    }
+    if (visitMatch) {
+      visit = parseVisitTag(visitMatch[1]);
+      text = text.slice(0, visitMatch.index).trim();
+      continue;
+    }
+    if (codeMatch) {
+      const candidate = codeMatch[1].trim();
+      // A code is a short token, never a sentence: anything longer or with
+      // spaces is not something the checkout field would accept.
+      if (/^[A-Z0-9_-]{2,24}$/i.test(candidate)) code = candidate.toUpperCase();
+      text = text.slice(0, codeMatch.index).trim();
+      continue;
+    }
+    if (chipsMatch) {
+      chips = chipsMatch[1]
+        .split("|")
+        .map((chip) => chip.trim())
+        .filter((chip) => chip && chip.length <= 48)
+        .slice(0, 3);
+      text = text.slice(0, chipsMatch.index).trim();
+      continue;
+    }
+    if (pageMatch && !action) {
+      const page = CHAT_ACTIONS[pageMatch[1] as keyof typeof CHAT_ACTIONS];
+      if (page) action = page;
+      text = text.slice(0, pageMatch.index).trim();
+      continue;
+    }
+    if (pageMatch) {
+      text = text.slice(0, pageMatch.index).trim();
+      continue;
+    }
+    break;
+  }
+  return { text, action, addId, fill, bag, visit, code, chips };
 }
 
 // A small text snapshot of the page the customer is looking at, sent with each
@@ -164,6 +359,15 @@ function isForbidden(error: unknown): boolean {
   );
 }
 
+/** Words the customer should hear. Buttons and markup stay on screen, not in the voice. */
+function spokenReplyText(body: string) {
+  return body
+    .replace(/\s*\[(?:LINK|ADD|ACTION|FILL|BAG|VISIT|CODE|CHIPS):[^\]]*\]/gi, " ")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function threadStorageKey(customerId: number | null): string {
   // Each signed-in customer keeps their own conversation; guests share a
   // per-browser thread. Logging in as someone else starts a fresh chat.
@@ -189,6 +393,7 @@ function readThreadId(customerId: number | null): string {
 export function LiveChatWidget() {
   const { t, language } = useLanguage();
   const { customer } = useAuth();
+  const { cartItems } = useCart();
   const customerId = customer?.id ?? null;
   // The hamburger drawer covers the phone screen; the launcher and panel would float on top.
   const mobileMenuOpen = useMobileMenuOpen();
@@ -214,8 +419,23 @@ export function LiveChatWidget() {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   // Voice input (#4): recording state and whether the browser offers speech input.
   const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceError, setVoiceError] = useState("");
-  const recognitionRef = useRef<{ stop: () => void } | null>(null);
+  const recognitionRef = useRef<{ stop: () => void; start: () => void } | null>(null);
+  // True until the customer taps the mic off. Chrome ends a session after a short
+  // pause even while someone is still talking; the session is started again until
+  // this is cleared. holdVoiceRef pauses that restart while the agent is speaking.
+  const wantVoiceRef = useRef(false);
+  const holdVoiceRef = useRef(false);
+  const voicePrefixRef = useRef("");
+  const voiceDraftRef = useRef("");
+  const voicePauseTimerRef = useRef<number | undefined>(undefined);
+  const submitVoiceRef = useRef<(text: string) => void>(() => {});
+  const voiceConversationRef = useRef(false);
+  const spokenStoreIdsRef = useRef(new Set<number>());
+  const speakTokenRef = useRef<object | null>(null);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Proactive nudge (#6): a one-time gentle bubble on slow pages.
   const [showNudge, setShowNudge] = useState(false);
@@ -229,7 +449,7 @@ export function LiveChatWidget() {
   // It gives up after a while so a failed auto-reply never leaves a stuck bubble.
   const [isAwaitingReply, setIsAwaitingReply] = useState(false);
   const typingTimeout = useRef<number | undefined>(undefined);
-  const TYPING_TIMEOUT_MS = 20000;
+  const TYPING_TIMEOUT_MS = 14000;
   // Count of store replies when the wait began. An older reply in the thread must
   // not end the wait: only a NEW one (arriving while we wait) does.
   const storeCountAtWaitStart = useRef(0);
@@ -508,8 +728,14 @@ export function LiveChatWidget() {
     [],
   );
   const toggleVoice = () => {
-    if (isListening) {
+    if (isListening || wantVoiceRef.current) {
+      wantVoiceRef.current = false;
+      holdVoiceRef.current = false;
+      voiceConversationRef.current = false;
+      window.clearTimeout(voicePauseTimerRef.current);
+      window.speechSynthesis?.cancel();
       recognitionRef.current?.stop();
+      setIsSpeaking(false);
       setIsListening(false);
       return;
     }
@@ -519,9 +745,14 @@ export function LiveChatWidget() {
     ) as
       | (new () => {
             lang: string;
+            continuous: boolean;
             interimResults: boolean;
             maxAlternatives: number;
-            onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+            onresult:
+              | ((event: {
+                  results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }>;
+                }) => void)
+              | null;
             onerror: ((event: { error?: string }) => void) | null;
             onend: (() => void) | null;
             stop: () => void;
@@ -534,30 +765,125 @@ export function LiveChatWidget() {
     }
     const recognition = new RecognitionCtor();
     recognition.lang = language === "fr" ? "fr-FR" : "en-US";
-    recognition.interimResults = false;
+    // Chrome on Windows reports "network" the moment continuous mode is turned
+    // on, before the microphone opens. Leave that off. A finished phrase still
+    // ends the session, and onend starts another one so the customer can keep
+    // talking. Interim results put the words in the box while they are speaking.
+    recognition.continuous = false;
+    recognition.interimResults = true;
     recognition.maxAlternatives = 1;
+    const prefix = draft.trim();
+    voicePrefixRef.current = prefix;
+    voiceDraftRef.current = prefix;
+    let networkFailures = 0;
     recognition.onresult = (event) => {
-      const transcript = event.results?.[0]?.[0]?.transcript || "";
-      if (transcript) setDraft((current) => (current ? `${current} ${transcript}` : transcript));
+      networkFailures = 0;
+      let heard = "";
+      let interim = "";
+      for (let index = 0; index < event.results.length; index += 1) {
+        const piece = event.results[index]?.[0]?.transcript || "";
+        if (event.results[index]?.isFinal) heard += piece;
+        else interim += piece;
+      }
+      const spoken = `${heard} ${interim}`.replace(/\s+/g, " ").trim();
+      const next = [voicePrefixRef.current, spoken].filter(Boolean).join(" ").slice(0, 1000);
+      voiceDraftRef.current = next;
+      setDraft(next);
+      // A short silence means the sentence is finished. Send it, then the agent
+      // answers out loud. More words before the pause keep the same message.
+      window.clearTimeout(voicePauseTimerRef.current);
+      voicePauseTimerRef.current = window.setTimeout(() => {
+        if (!wantVoiceRef.current || holdVoiceRef.current) return;
+        const text = voiceDraftRef.current.trim();
+        if (!text) return;
+        submitVoiceRef.current(text);
+      }, 1400);
     };
     recognition.onerror = (event) => {
+      const code = event.error || "";
+      // A pause fires "no-speech", and stop() fires "aborted". "network" is the
+      // error Chrome sends for a session it closed by itself. The onend handler
+      // opens the next session; none of these mean the recording failed to start.
+      if (code === "no-speech" || code === "aborted" || code === "network") {
+        if (code === "network") networkFailures += 1;
+        return;
+      }
+      wantVoiceRef.current = false;
       setVoiceError(
-        event.error === "not-allowed"
+        code === "not-allowed" || code === "service-not-allowed"
           ? t("Allow microphone access to use voice input.")
           : t("Voice input failed. Please try again."),
       );
       setIsListening(false);
     };
-    recognition.onend = () => setIsListening(false);
+    let startAttempts = 0;
+    const beginListening = () => {
+      if (!wantVoiceRef.current || holdVoiceRef.current) return;
+      // Chrome refuses to open the microphone while it is speaking, and it
+      // also throws if start() follows the previous session too closely.
+      try {
+        window.speechSynthesis?.cancel();
+      } catch {
+        // Playback can be missing. The microphone still opens.
+      }
+      try {
+        recognition.start();
+        startAttempts = 0;
+      } catch {
+        startAttempts += 1;
+        if (startAttempts > 4) {
+          wantVoiceRef.current = false;
+          setIsListening(false);
+          setVoiceError(t("Voice input failed. Please try again."));
+          return;
+        }
+        window.setTimeout(beginListening, 300);
+      }
+    };
+    recognition.onend = () => {
+      if (holdVoiceRef.current) return;
+      if (!wantVoiceRef.current) {
+        setIsListening(false);
+        return;
+      }
+      // Several network errors in a row, with no words, means the speech
+      // service really cannot start. One error is just Chrome ending a phrase.
+      if (networkFailures > 2) {
+        wantVoiceRef.current = false;
+        setIsListening(false);
+        setVoiceError(t("Voice input failed. Please try again."));
+        return;
+      }
+      voicePrefixRef.current = voiceDraftRef.current.trim();
+      window.setTimeout(beginListening, 300);
+    };
     recognitionRef.current = recognition;
+    wantVoiceRef.current = true;
+    // The tap is the gesture that unlocks speech later. Speaking now would
+    // close the microphone before it opens.
+    try {
+      window.speechSynthesis?.cancel();
+      window.speechSynthesis?.resume();
+      window.speechSynthesis?.getVoices();
+    } catch {
+      // Playback can be missing. The microphone still opens.
+    }
     setVoiceError("");
     setIsListening(true);
-    try {
-      recognition.start();
-    } catch {
-      setIsListening(false);
-    }
+    beginListening();
   };
+
+  useEffect(() => {
+    if (isOpen) return;
+    wantVoiceRef.current = false;
+    holdVoiceRef.current = false;
+    voiceConversationRef.current = false;
+    window.clearTimeout(voicePauseTimerRef.current);
+    window.speechSynthesis?.cancel();
+    recognitionRef.current?.stop();
+    setIsSpeaking(false);
+    setIsListening(false);
+  }, [isOpen]);
 
   // ------------------------------------------------------------ photo attach (#7)
   const pickPhoto = () => fileInputRef.current?.click();
@@ -566,28 +892,40 @@ export function LiveChatWidget() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    if (file.size > 3 * 1024 * 1024) {
-      setError(t("Photos must be smaller than 3 MB."));
+    if (file.type && !["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError(t("Upload a JPEG, PNG, or WebP image."));
       return;
     }
     setIsUploadingPhoto(true);
     setError("");
     try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = () => reject(new Error("read failed"));
-        reader.readAsDataURL(file);
-      });
-      const result = await apiRequest<{ image: { url: string } }>("/chat/uploads", {
+      // Phone photos are often several megabytes. Scale them down first so they
+      // fit the 3 MB chat limit and arrive as a JPEG or WebP the server accepts.
+      const dataUrl = await prepareImageForUpload(file);
+      const encoded = dataUrl.slice(dataUrl.indexOf(",") + 1);
+      const padding = encoded.endsWith("==") ? 2 : encoded.endsWith("=") ? 1 : 0;
+      const bytes = Math.floor((encoded.length * 3) / 4) - padding;
+      if (bytes > 3 * 1024 * 1024) {
+        setError(t("Photos must be smaller than 3 MB."));
+        return;
+      }
+      // The server answers with the stored path itself (`{ image: "/uploads/…" }`),
+      // the same shape the admin uploader reads. It is not wrapped in `{ url }`.
+      const result = await apiRequest<{ image: string }>("/chat/uploads", {
         method: "POST",
         body: { dataUrl },
       });
-      if (result.image?.url) {
-        setAttachment({ url: result.image.url, name: file.name });
+      if (typeof result?.image === "string" && result.image) {
+        setAttachment({ url: result.image, name: file.name });
+      } else {
+        setError(t("The photo could not be attached. Please try again."));
       }
-    } catch {
-      setError(t("The photo could not be attached. Please try again."));
+    } catch (uploadError) {
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : t("The photo could not be attached. Please try again."),
+      );
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -627,15 +965,42 @@ export function LiveChatWidget() {
 
   const dismissNudge = () => setShowNudge(false);
 
-  async function send(event: React.FormEvent) {
-    event.preventDefault();
-    const body = draft.trim();
+  function resumeVoice() {
+    holdVoiceRef.current = false;
+    if (!wantVoiceRef.current) {
+      setIsListening(false);
+      return;
+    }
+    voicePrefixRef.current = "";
+    voiceDraftRef.current = "";
+    setDraft("");
+    setIsListening(true);
+    try {
+      recognitionRef.current?.start();
+    } catch {
+      // The microphone is already open.
+    }
+  }
+
+  async function send(event?: React.FormEvent, spokenBody?: string) {
+    event?.preventDefault();
+    const body = (spokenBody ?? draft).trim();
     // A photo can travel on its own: text is optional when an image is attached.
     if ((!body && !attachment) || isSending) return;
     if (!threadIdRef.current) threadIdRef.current = readThreadId(customerId);
     // Sending a message re-pins the follow: the reply that lands next should be
     // scrolled into view even if the reader was scrolled up in the thread.
     stickToBottomRef.current = true;
+    const fromVoice = wantVoiceRef.current;
+    if (fromVoice) {
+      voiceConversationRef.current = true;
+      for (const message of messagesRef.current) {
+        if (message.sender === "store") spokenStoreIdsRef.current.add(message.id);
+      }
+      holdVoiceRef.current = true;
+      window.clearTimeout(voicePauseTimerRef.current);
+      recognitionRef.current?.stop();
+    }
     setIsSending(true);
     setError("");
     // No optimistic bubble: the message appears only once the server has it, so a
@@ -653,6 +1018,15 @@ export function LiveChatWidget() {
             // A snapshot of what is actually on the screen, so the assistant can
             // answer "what is this page?" from the real content, not guesses.
             pageSnapshot: capturePageSnapshot(),
+            bag: cartItems.slice(0, 20).map((item) => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: Math.round(item.price),
+              itemType: item.itemType === "menu" ? "menu" : "flavor",
+              // The id is the addId shape the agent edits by ("take off the
+              // mango" must name the exact line, not a name guess).
+              id: String(item.id),
+            })),
           },
         });
       try {
@@ -667,6 +1041,8 @@ export function LiveChatWidget() {
         await post(threadIdRef.current);
       }
       setDraft("");
+      voicePrefixRef.current = "";
+      voiceDraftRef.current = "";
       setAttachment(null);
       // The AI auto-reply takes a couple of seconds to write. Show a typing bubble
       // while the customer waits, and clear it once the reply actually arrives.
@@ -679,6 +1055,7 @@ export function LiveChatWidget() {
       // again may have moved the conversation to a new thread.
       await loadMessages(threadIdRef.current);
     } catch (sendError) {
+      if (fromVoice) resumeVoice();
       setError(
         sendError instanceof Error
           ? sendError.message
@@ -689,10 +1066,64 @@ export function LiveChatWidget() {
     }
   }
 
+  submitVoiceRef.current = (text: string) => {
+    void send(undefined, text);
+  };
+
+  useEffect(() => {
+    if (!voiceConversationRef.current) return;
+    const fresh = messages.filter(
+      (message) => message.sender === "store" && !spokenStoreIdsRef.current.has(message.id),
+    );
+    if (!fresh.length) return;
+    for (const message of fresh) spokenStoreIdsRef.current.add(message.id);
+    const text = spokenReplyText(fresh[fresh.length - 1].body);
+    if (!text || typeof window.speechSynthesis === "undefined") {
+      resumeVoice();
+      return;
+    }
+    holdVoiceRef.current = true;
+    setIsSpeaking(true);
+    const utterance = new SpeechSynthesisUtterance(text);
+    const french = language === "fr" || /[àâçéèêëîïôùûüœ]/i.test(text) || /\b(c'est|bonjour|disponible|boutique)\b/i.test(text);
+    utterance.lang = french ? "fr-FR" : "en-US";
+    const voice = window.speechSynthesis
+      .getVoices()
+      .find((item) => item.lang.toLowerCase().startsWith(french ? "fr" : "en"));
+    if (voice) utterance.voice = voice;
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      setIsSpeaking(false);
+      resumeVoice();
+    };
+    utterance.onend = finish;
+    utterance.onerror = finish;
+    // Chrome drops a speak() that follows cancel() in the same turn. The short
+    // wait lets the reply actually play.
+    const token = {};
+    speakTokenRef.current = token;
+    window.speechSynthesis.cancel();
+    window.setTimeout(() => {
+      if (speakTokenRef.current !== token || !wantVoiceRef.current) {
+        if (speakTokenRef.current === token) finish();
+        return;
+      }
+      try {
+        window.speechSynthesis.speak(utterance);
+      } catch {
+        finish();
+      }
+    }, 60);
+  }, [messages, language]);
+
   // Clear the conversation: wipe the server history and start a fresh thread in
   // this browser. Available from the header so it is never more than two taps away.
   async function clearChat() {
     if (isClearing) return;
+    window.speechSynthesis?.cancel();
+    setIsSpeaking(false);
     setIsClearing(true);
     try {
       if (threadIdRef.current) {
@@ -755,35 +1186,7 @@ export function LiveChatWidget() {
         onClick={() => setIsOpen((open) => !open)}
         type="button"
       >
-        {isOpen ? (
-          <svg
-            aria-hidden="true"
-            className="size-6"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="m6 6 12 12M18 6 6 18"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeWidth="2"
-            />
-          </svg>
-        ) : (
-          <svg
-            aria-hidden="true"
-            className="size-6"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M21 11.5c0 4.1-4 7.5-9 7.5-1 0-2-.1-2.9-.4L4 20l1.3-3.6C4 15.1 3 13.4 3 11.5 3 7.4 7 4 12 4s9 3.4 9 7.5Z"
-              stroke="currentColor"
-              strokeLinejoin="round"
-              strokeWidth="1.8"
-            />
-          </svg>
-        )}
+        {isOpen ? <ChatCloseIcon className="size-6" /> : <ChatMark className="size-7" />}
       </button>
         {!isOpen && (
           <div
@@ -840,38 +1243,29 @@ export function LiveChatWidget() {
           // Phones: the panel covers the screen (the header close button replaces the
           // launcher). From sm up it floats above the launcher — 5.25rem is the 3.5rem
           // bubble plus its 1.5rem offset and a small gap — and grows to 38rem.
-          className="site-live-chat-panel fixed inset-0 z-[95] flex h-dvh w-full flex-col overflow-hidden rounded-none bg-white sm:inset-auto sm:bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:left-4 sm:z-[65] sm:h-[min(38rem,calc(100dvh-7rem))] sm:w-[30rem] sm:rounded-[20px] sm:shadow-[0_28px_70px_rgba(9,42,83,0.32)] sm:ring-1 sm:ring-[#e2e8f0]"
+          className="site-live-chat-panel fixed inset-0 z-[95] flex h-dvh w-full flex-col overflow-hidden rounded-none bg-brand-cream sm:inset-auto sm:bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:left-4 sm:z-[65] sm:h-[min(38rem,calc(100dvh-7rem))] sm:w-[24.5rem] sm:rounded-[24px] sm:shadow-[0_24px_60px_rgba(71,42,59,0.28)] sm:ring-1 sm:ring-brand-border-warm"
           ref={panelRef}
         >
-          <header className="relative flex items-center gap-2.5 bg-brand-navy px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] text-white sm:gap-3 sm:px-4 sm:pb-3.5 sm:pt-3.5">
+          <div aria-hidden="true" className="h-1 shrink-0 bg-brand-yellow" />
+          <header className="relative flex items-center gap-2.5 bg-brand-cream px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] text-brand-navy sm:gap-3 sm:px-4 sm:pb-3 sm:pt-3.5">
             <span
               aria-hidden="true"
-              className="grid size-8 shrink-0 place-items-center rounded-full bg-white/10 ring-1 ring-white/15 sm:size-9"
+              className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-navy text-brand-yellow"
             >
-              <svg className="size-5" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M21 11.5c0 4.1-4 7.5-9 7.5-1 0-2-.1-2.9-.4L4 20l1.3-3.6C4 15.1 3 13.4 3 11.5 3 7.4 7 4 12 4s9 3.4 9 7.5Z"
-                  stroke="currentColor"
-                  strokeLinejoin="round"
-                  strokeWidth="1.6"
-                />
-              </svg>
+              <ChatMark className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-display text-[15px] font-extrabold leading-tight">
-                {t("Chat with us")}
+              <p className="truncate font-display text-lg font-extrabold leading-none">
+                Cold Stone
               </p>
-              {/* The full sentence wraps to five lines on a 280px phone and pushed the
-                  header to 212px, so narrow screens get a short equivalent instead. */}
-              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-white/70">
-                <span aria-hidden="true" className="inline-block size-1.5 shrink-0 rounded-full bg-[#4ade80]" />
-                <span className="min-w-0 truncate min-[480px]:hidden">{t("Usually replies in minutes")}</span>
-                <span className="hidden min-w-0 truncate min-[480px]:inline">{t("We usually reply within a few minutes during opening hours.")}</span>
+              <p className="mt-1 flex items-center gap-1.5 text-[13px] text-brand-muted">
+                <span aria-hidden="true" className="inline-block size-1.5 shrink-0 rounded-full bg-[#3d8b40]" />
+                <span className="min-w-0 truncate">{t("Usually replies in minutes")}</span>
               </p>
             </div>
             <button
               aria-label={t("Clear chat")}
-              className="grid size-8 shrink-0 place-items-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
+              className="grid size-8 shrink-0 place-items-center rounded-full bg-white text-brand-navy ring-1 ring-brand-border-warm transition hover:bg-brand-yellow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow active:scale-95"
               onClick={clearChat}
               title={t("Clear chat")}
               type="button"
@@ -882,72 +1276,60 @@ export function LiveChatWidget() {
                   <path className="opacity-75" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5" />
                 </svg>
               ) : (
-                <svg aria-hidden="true" className="size-[18px]" fill="none" viewBox="0 0 24 24">
-                  <path d="M5 7.5h14" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-                  <path d="M10 7.5V5.2h4v2.3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-                  <path d="M7.2 7.5 8.1 19h7.8l.9-11.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-                  <path d="M10.2 11.2v5M13.8 11.2v5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-                </svg>
+                <ChatTrashIcon />
               )}
             </button>
             <button
               aria-label={t("Close chat")}
-              className="grid size-8 shrink-0 place-items-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
+              className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-navy text-white transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow active:scale-95"
               onClick={() => setIsOpen(false)}
               type="button"
             >
-              <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-              </svg>
+              <ChatCloseIcon className="size-[18px]" />
             </button>
           </header>
 
           <div
-            className="flex-1 space-y-2.5 overflow-y-auto bg-[#f7f9fb] px-3.5 py-4"
+            className="flex flex-1 flex-col overflow-y-auto bg-brand-cream px-4 py-4"
             ref={listRef}
           >
             {messages.length === 0 && (
-              <div className="mt-4 flex flex-col items-center gap-2 text-center">
-                <span
-                  aria-hidden="true"
-                  className="grid size-12 place-items-center rounded-full bg-white text-brand-navy shadow-[0_4px_14px_rgba(9,42,83,0.08)]"
-                >
-                  <svg className="size-6" fill="none" viewBox="0 0 24 24">
-                    <path
-                      d="M21 11.5c0 4.1-4 7.5-9 7.5-1 0-2-.1-2.9-.4L4 20l1.3-3.6C4 15.1 3 13.4 3 11.5 3 7.4 7 4 12 4s9 3.4 9 7.5Z"
-                      stroke="currentColor"
-                      strokeLinejoin="round"
-                      strokeWidth="1.6"
-                    />
-                  </svg>
-                </span>
-                <p className="max-w-[15rem] text-sm leading-6 text-[#5d7186]">
-                  {t(
-                    "Ask about flavors, cakes, delivery — anything. We are happy to help.",
+              <div className="flex items-start">
+                <ShopMark />
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-lg font-extrabold leading-none text-brand-navy">Cold Stone</p>
+                  <p className="mt-2 max-w-[16rem] text-[15px] leading-6 text-brand-navy">
+                    {t(
+                      "Ask about flavors, cakes, delivery — anything. We are happy to help.",
+                    )}
+                  </p>
+                  {/* Starter questions: tappable suggestions matched to the page the
+                      customer is on. Tapping fills the input; the row disappears once the
+                      conversation starts. */}
+                  {showStarters && (
+                    <div className="mt-3 flex max-w-full flex-wrap gap-1.5">
+                      {starterQuestions.map((question) => (
+                        <button
+                          className="rounded-full border border-brand-border-warm bg-white px-3 py-1.5 text-left text-[13px] font-semibold text-brand-navy transition hover:border-brand-yellow hover:bg-brand-yellow/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-[0.98]"
+                          key={question}
+                          onClick={() => useStarter(question)}
+                          type="button"
+                        >
+                          {question}
+                        </button>
+                      ))}
+                    </div>
                   )}
-                </p>
-                {/* Starter questions (#2): tappable suggestions matched to the page the
-                    customer is on. Tapping fills the input; the row disappears once the
-                    conversation starts. */}
-                {showStarters && (
-                  <div className="mt-2 flex max-w-full flex-wrap justify-center gap-1.5">
-                    {starterQuestions.map((question) => (
-                      <button
-                        className="rounded-full border border-[#dce3eb] bg-white px-3 py-1.5 text-xs font-bold text-brand-navy transition hover:border-brand-yellow hover:bg-brand-yellow/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep"
-                        key={question}
-                        onClick={() => useStarter(question)}
-                        type="button"
-                      >
-                        {question}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                </div>
               </div>
             )}
-            {messages.map((message) => {
+            {messages.map((message, index) => {
               const isCustomer = message.sender === "customer";
-              const { text: bodyText, action } = isCustomer ? { text: message.body, action: undefined } : splitChatAction(message.body);
+              const previous = messages[index - 1];
+              const sameSender = previous?.sender === message.sender;
+              const { text: bodyText, action, addId, fill, bag, visit, code, chips } = isCustomer
+                ? { text: message.body, action: undefined, addId: undefined, fill: undefined, bag: undefined, visit: undefined, code: undefined, chips: undefined }
+                : splitChatAction(message.body);
               // A customer message only reaches this list after the server stored it, so
               // its presence IS the delivery confirmation. (The server sends no `delivery`
               // field, and an earlier version pruned its own sent-message record as soon
@@ -955,46 +1337,64 @@ export function LiveChatWidget() {
               const delivered = isCustomer;
               return (
                 <div
-                  className={`site-chat-bubble flex ${isCustomer ? "justify-end" : "justify-start"}`}
+                  className={`site-chat-bubble flex ${isCustomer ? "justify-end" : "items-start justify-start"} ${index === 0 ? "" : sameSender ? "mt-1" : "mt-5"}`}
                   key={message.id}
                 >
-                  <div
-                    className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-6 ${
-                      isCustomer
-                        ? "rounded-br-md bg-brand-navy text-white"
-                        : "rounded-bl-md bg-white text-brand-navy shadow-[0_1px_3px_rgba(9,42,83,0.08)]"
-                    }`}
-                  >
-                    <p className="whitespace-pre-wrap break-words">
-                      {bodyText}
-                    </p>
-                    {/* A photo attached to a customer message (#7), shown under its text. */}
-                    {message.imageUrl && (
-                      <img
-                        alt=""
-                        className="mt-1.5 max-h-48 w-full rounded-xl object-cover"
-                        decoding="async"
-                        loading="lazy"
-                        src={message.imageUrl}
-                      />
+                  {!isCustomer && (
+                    <span aria-hidden="true" className="mr-2 w-7 shrink-0">
+                      {!sameSender && <ShopMark />}
+                    </span>
+                  )}
+                  <div className={`min-w-0 ${isCustomer ? "max-w-[78%]" : "max-w-[calc(100%-2.25rem)]"}`}>
+                    {!isCustomer && !sameSender && (
+                      <p className="mb-1 font-display text-[13px] font-bold leading-none text-brand-navy">Cold Stone</p>
                     )}
-                    {action && <ChatActionButton action={action} />}
+                    {isCustomer ? (
+                      <div className="flex flex-col items-end gap-1.5">
+                        {message.imageUrl ? <SentPhoto src={message.imageUrl} /> : null}
+                        {bodyText ? (
+                          <div className="rounded-[18px] rounded-br-[6px] bg-brand-navy px-3.5 py-2 text-[15px] leading-6 text-white">
+                            <ChatText text={bodyText} />
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <div className="text-[15px] leading-6 text-brand-navy">
+                        {bodyText ? <ChatText text={bodyText} /> : null}
+                        {bag && <ChatBagEditButton bag={bag} />}
+                        {visit && <ChatVisitButton visit={visit} />}
+                        {code && <ChatCodeButton code={code} />}
+                        {chips?.length ? <ChatChips chips={chips} onSend={(text) => submitVoiceRef.current?.(text)} /> : null}
+                        {(action || addId || fill?.length) && (
+                          <div className="mt-2.5 max-w-[16rem]">
+                            {fill?.length ? <ChatFillButton items={fill} /> : addId && <ChatAddButton addId={addId} />}
+                            {action && <ChatActionButton action={action} quiet={Boolean(addId || fill?.length)} />}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <p
-                      className={`mt-1 flex items-center justify-end gap-1 text-[10px] font-medium ${isCustomer ? "text-white/50" : "text-[#94a3b8]"}`}
+                      className={`mt-2 flex items-center gap-1 text-[11px] font-medium text-brand-gray ${isCustomer ? "justify-end" : "justify-start"}`}
                     >
                       <span>{time(message.createdAt)}</span>
                       {delivered && <DeliveryTick />}
                     </p>
                   </div>
+                  {isCustomer && customer && (
+                    <span aria-hidden="true" className="mb-5 ml-2 flex w-7 shrink-0 items-end">
+                      <CustomerPortrait picture={customer.profilePicture} />
+                    </span>
+                  )}
                 </div>
               );
             })}
             {isAwaitingReply && (
-              <div className="site-chat-typing flex justify-start" aria-hidden="true">
-                <span className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-[0_1px_3px_rgba(9,42,83,0.08)]">
-                  <span className="size-2 rounded-full bg-[#9fb0c3] [animation:chat-typing-dot_1.2s_ease-in-out_infinite]" />
-                  <span className="size-2 rounded-full bg-[#9fb0c3] [animation:chat-typing-dot_1.2s_ease-in-out_0.2s_infinite]" />
-                  <span className="size-2 rounded-full bg-[#9fb0c3] [animation:chat-typing-dot_1.2s_ease-in-out_0.4s_infinite]" />
+              <div className="site-chat-typing mt-4 flex items-center" aria-hidden="true">
+                <ShopMark />
+                <span className="ml-2 flex items-center gap-1.5 py-2">
+                  <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_infinite]" />
+                  <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.2s_infinite]" />
+                  <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.4s_infinite]" />
                 </span>
               </div>
             )}
@@ -1019,31 +1419,29 @@ export function LiveChatWidget() {
 
           {/* Pending photo attachment (#7): a small preview chip above the input. */}
           {attachment && (
-            <div className="flex items-center gap-2 border-t border-[#eef2f6] bg-white px-3 py-2">
-              <img
-                alt=""
-                aria-hidden="true"
-                className="size-9 rounded-lg object-cover"
-                src={attachment.url}
-              />
-              <span className="min-w-0 flex-1 truncate text-xs text-[#65748a]">
-                {attachment.name}
-              </span>
-              <button
-                aria-label={t("Remove photo")}
-                className="grid size-7 place-items-center rounded-full text-[#94a3b8] transition hover:bg-[#f4f6f8] hover:text-brand-navy"
-                onClick={() => setAttachment(null)}
-                type="button"
-              >
-                <svg aria-hidden="true" className="size-3.5" fill="none" viewBox="0 0 24 24">
-                  <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-                </svg>
-              </button>
+            <div className="flex justify-end bg-brand-cream px-3 pt-3">
+              <div className="relative">
+                <img
+                  alt=""
+                  className="block max-h-28 w-auto max-w-[9rem] rounded-[16px] rounded-br-[6px] bg-white object-contain ring-1 ring-brand-border-warm shadow-[0_8px_18px_rgba(71,42,59,0.12)]"
+                  src={attachment.url}
+                />
+                <button
+                  aria-label={t("Remove photo")}
+                  className="absolute -right-1.5 -top-1.5 grid size-6 place-items-center rounded-full bg-brand-navy text-white shadow-[0_4px_10px_rgba(71,42,59,0.28)] transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
+                  onClick={() => setAttachment(null)}
+                  type="button"
+                >
+                  <svg aria-hidden="true" className="size-3" fill="none" viewBox="0 0 24 24">
+                    <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" />
+                  </svg>
+                </button>
+              </div>
             </div>
           )}
 
           <form
-            className="flex items-center gap-2 border-t border-[#eef2f6] bg-white px-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] pt-2.5 sm:p-3"
+            className="flex items-center gap-1.5 border-t border-brand-border-warm bg-brand-cream px-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] pt-2.5 sm:px-3 sm:pb-3"
             onSubmit={send}
           >
             {/* The paperclip stays on the left. The mic sits on the right until
@@ -1051,7 +1449,7 @@ export function LiveChatWidget() {
             <input
               accept="image/jpeg,image/png,image/webp"
               aria-hidden="true"
-              className="hidden"
+              className="sr-only"
               onChange={onPhotoChosen}
               ref={fileInputRef}
               tabIndex={-1}
@@ -1059,7 +1457,7 @@ export function LiveChatWidget() {
             />
             <button
               aria-label={t("Attach a photo")}
-              className="grid size-10 shrink-0 place-items-center rounded-full text-[#65748a] transition hover:bg-[#f4f6f8] hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep"
+              className="grid size-10 shrink-0 place-items-center rounded-full text-brand-muted transition hover:bg-white hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95"
               disabled={isUploadingPhoto || isSending}
               onClick={pickPhoto}
               title={t("Attach a photo")}
@@ -1082,43 +1480,75 @@ export function LiveChatWidget() {
                 </svg>
               )}
             </button>
-            <input
-              aria-label={t("Your message")}
-              autoComplete="off"
-              className="min-w-0 flex-1 rounded-full border border-transparent bg-[#f4f6f8] px-3.5 py-2.5 text-sm font-medium text-brand-navy outline-none! transition-colors placeholder:text-[#94a3b8] focus:border-brand-yellow-deep focus:bg-white sm:px-4"
-              maxLength={1000}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder={t("Type a message…")}
-              value={draft}
-            />
+            <div className="relative min-w-0 flex-1">
+              <input
+                aria-label={t("Your message")}
+                autoComplete="off"
+                className={`w-full rounded-full border border-brand-border-warm bg-white py-2.5 text-[15px] font-medium text-brand-navy outline-none! transition-colors placeholder:text-brand-gray focus:border-brand-yellow ${
+                  isListening && draft.trim() ? "pl-3.5 pr-16 sm:pl-4" : "px-3.5 sm:px-4"
+                }`}
+                maxLength={1000}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder={isListening ? "" : t("Type a message…")}
+                value={draft}
+              />
+              {isListening && !isSpeaking && (
+                <span
+                  aria-hidden="true"
+                  className={`chat-voice-wave pointer-events-none absolute inset-y-0 flex items-center text-red-600 ${
+                    draft.trim() ? "right-3 gap-[3px]" : "inset-x-0 justify-center gap-1"
+                  }`}
+                >
+                  {Array.from({ length: draft.trim() ? 5 : 14 }, (_, index) => (
+                    <span
+                      key={index}
+                      style={{
+                        height: `${9 + ((index * 5) % 11)}px`,
+                        animationDelay: `${(index % 6) * 0.09}s`,
+                        animationDuration: `${0.62 + (index % 5) * 0.11}s`,
+                      }}
+                    />
+                  ))}
+                </span>
+              )}
+            </div>
             {showMic && (
               <button
                 aria-label={isListening ? t("Stop voice input") : t("Speak your message")}
-                className={`grid size-10 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep ${
+                className={`grid size-10 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95 ${
                   isListening
                     ? "bg-red-50 text-red-600"
-                    : "text-[#65748a] hover:bg-[#f4f6f8] hover:text-brand-navy"
+                    : "text-brand-muted hover:bg-white hover:text-brand-navy"
                 }`}
                 onClick={toggleVoice}
                 title={isListening ? t("Stop voice input") : t("Speak your message")}
                 type="button"
               >
-                <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
-                  <path
-                    d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"
-                    stroke="currentColor"
-                    strokeLinejoin="round"
-                    strokeWidth="1.8"
-                  />
-                  <path
-                    d="M19 11v1a7 7 0 0 1-14 0v-1"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.8"
-                  />
-                  <path d="M12 19v2.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-                </svg>
+                {isListening ? (
+                  <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M9 6a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0V6Z" />
+                    <path d="M8 11a4 4 0 0 0 8 0" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                    <path d="M12 15v3" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                    <path d="M9.5 20h5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                  </svg>
+                ) : (
+                  <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                    <path
+                      d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"
+                      stroke="currentColor"
+                      strokeLinejoin="round"
+                      strokeWidth="1.8"
+                    />
+                    <path
+                      d="M19 11v1a7 7 0 0 1-14 0v-1"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.8"
+                    />
+                    <path d="M12 19v2.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                  </svg>
+                )}
               </button>
             )}
             {showSend && (
@@ -1126,8 +1556,8 @@ export function LiveChatWidget() {
                 aria-label={t("Send message")}
                 className={`grid size-10 shrink-0 place-items-center rounded-full transition disabled:opacity-40 ${
                   !isSending
-                    ? "bg-brand-yellow text-brand-navy shadow-[0_4px_12px_rgba(255,184,77,0.4)] hover:scale-105"
-                    : "bg-[#eef2f6] text-[#94a3b8]"
+                    ? "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light active:scale-95"
+                    : "bg-white text-brand-gray"
                 }`}
                 disabled={isSending}
                 type="submit"
@@ -1155,20 +1585,337 @@ export function LiveChatWidget() {
   );
 }
 
+function SentPhoto({ src }: { src: string }) {
+  return (
+    <img
+      alt=""
+      className="block max-h-64 w-auto max-w-[15.5rem] rounded-[18px] rounded-br-[6px] bg-white object-contain ring-1 ring-brand-border-warm shadow-[0_8px_18px_rgba(71,42,59,0.12)]"
+      decoding="async"
+      loading="lazy"
+      src={src}
+    />
+  );
+}
+
+function ShopMark() {
+  return (
+    <span className="grid size-7 place-items-center rounded-full bg-brand-navy text-brand-yellow">
+      <ChatMark className="size-4" />
+    </span>
+  );
+}
+
+function CustomerPortrait({ picture }: { picture?: string }) {
+  if (picture) {
+    return (
+      <img
+        alt=""
+        className="size-7 rounded-full object-cover"
+        decoding="async"
+        loading="lazy"
+        src={picture}
+      />
+    );
+  }
+  return <span className="block size-7 rounded-full border border-brand-border-warm bg-white" />;
+}
+
+function ChatText({ text }: { text: string }) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return (
+    <p className="whitespace-pre-wrap break-words">
+      {parts.map((part, index) =>
+        part.startsWith("**") && part.endsWith("**") && part.length > 4 ? (
+          <strong className="font-bold" key={index}>
+            {part.slice(2, -2)}
+          </strong>
+        ) : (
+          <span key={index}>{part}</span>
+        ),
+      )}
+    </p>
+  );
+}
+
 // The button an AI reply can carry (from its [ACTION:...] line): a full-width,
 // thumb-friendly jump to the page the customer needs, e.g. the All Menu page.
-function ChatActionButton({ action }: { action: { path: string; label: string } }) {
+function ChatFillButton({ items }: { items: { id: string; quantity: number }[] }) {
+  const { t } = useLanguage();
+  const { addItemsToCart } = useCart();
+  const { flavors } = useFlavors();
+  const [note, setNote] = useState("");
+  const [added, setAdded] = useState(false);
+
+  const add = () => {
+    const products: CartProduct[] = items.flatMap((entry): CartProduct[] => {
+      if (entry.id.startsWith("flavor:")) {
+        const flavor = flavors.find((item) => String(item.id) === entry.id.slice("flavor:".length));
+        return flavor ? [{ ...flavor, itemType: "flavor", quantity: entry.quantity }] : [];
+      }
+      const menu = findMenuItem(entry.id);
+      return menu ? [{ ...menu, quantity: entry.quantity }] : [];
+    });
+    const count = addItemsToCart(products);
+    if (!count) {
+      setAdded(false);
+      setNote(t("This item could not be added to your bag. Please try again."));
+      return;
+    }
+    setNote("");
+    setAdded(true);
+    window.setTimeout(() => setAdded(false), 1500);
+  };
+
+  return (
+    <>
+      <button
+        className={`flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] ${
+          added ? "bg-[#3d8b40] text-white" : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
+        }`}
+        onClick={add}
+        type="button"
+      >
+        {added ? t("Added") : t("Add these to my bag")}
+      </button>
+      {note ? (
+        <p className="mt-1.5 text-center text-xs font-semibold text-red-700" role="alert">
+          {note}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+function ChatAddButton({ addId }: { addId: string }) {
+  const { t } = useLanguage();
+  const { addToCart } = useCart();
+  const { flavors } = useFlavors();
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const resetTimer = useRef<number | null>(null);
+  const [burst, setBurst] = useState(0);
+  const [note, setNote] = useState("");
+
+  useEffect(() => () => {
+    if (resetTimer.current) window.clearTimeout(resetTimer.current);
+  }, []);
+
+  const add = () => {
+    const added = addId.startsWith("flavor:")
+      ? addToCart(flavors.find((flavor) => String(flavor.id) === addId.slice("flavor:".length)) || { id: "", name: "", image: "" })
+      : addToCart(findMenuItem(addId) || { id: "", name: "", image: "" });
+    if (!added) {
+      setBurst(0);
+      setNote(t("This item could not be added to your bag. Please try again."));
+      return;
+    }
+    setNote("");
+    setBurst((count) => count + 1);
+    const button = buttonRef.current;
+    if (button) {
+      button.classList.remove("chat-add-pop");
+      void button.offsetWidth;
+      button.classList.add("chat-add-pop");
+    }
+    if (resetTimer.current) window.clearTimeout(resetTimer.current);
+    resetTimer.current = window.setTimeout(() => setBurst(0), 1500);
+  };
+
+  const justAdded = burst > 0;
+
+  return (
+    <>
+      <button
+        aria-live="polite"
+        className={`relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-full px-4 py-2.5 text-sm font-extrabold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] ${
+          justAdded ? "bg-[#3d8b40] text-white" : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
+        }`}
+        onClick={add}
+        ref={buttonRef}
+        type="button"
+      >
+        {justAdded && (
+          <span
+            aria-hidden="true"
+            className="chat-add-ring pointer-events-none absolute left-1/2 top-1/2 size-16 rounded-full bg-white"
+            key={burst}
+          />
+        )}
+        {justAdded ? (
+          <>
+            <svg
+              aria-hidden="true"
+              className="chat-add-check relative size-4"
+              fill="none"
+              key={burst}
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M3 8.4 6.2 11.6 13 4.4"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+              />
+            </svg>
+            <span className="relative">{t("Added")}</span>
+          </>
+        ) : (
+          t("Add to bag")
+        )}
+      </button>
+      {note ? (
+        <p className="mt-1.5 text-center text-xs font-semibold text-red-700" role="alert">
+          {note}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+function ChatActionButton({
+  action,
+  quiet = false,
+}: {
+  action: { path: string; label: string };
+  quiet?: boolean;
+}) {
   const { t } = useLanguage();
   return (
     <Link
-      className="mt-2.5 flex items-center justify-center gap-2 rounded-full bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+      className={
+        quiet
+          ? "text-sm font-bold text-brand-navy underline decoration-brand-yellow decoration-2 underline-offset-2 transition-[text-decoration-color] hover:decoration-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+          : "flex w-full items-center justify-center rounded-full bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+      }
       onClick={() => window.dispatchEvent(new CustomEvent("chat:navigate"))}
       to={action.path}
     >
       {t(action.label)}
-      <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-        <path d="M4 12h15m0 0-6-6m6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-      </svg>
     </Link>
+  );
+}
+
+/** Applies a bag edit the agent confirmed ([BAG:...] in the reply). */
+function ChatBagEditButton({ bag }: { bag: BagEdit }) {
+  const { t } = useLanguage();
+  const { clearCart, removeFromCart, updateQuantity, cartItems } = useCart();
+  const { flavors } = useFlavors();
+  const [done, setDone] = useState(false);
+  const [note, setNote] = useState("");
+
+  // Applying once is enough: the tag stays in the thread history, but a second
+  // tap would clear an empty bag or re-remove an already removed line.
+  const apply = () => {
+    setDone(true);
+    if (bag.mode === "clear") {
+      clearCart();
+      return;
+    }
+    const addId = bag.addId || "";
+    const quantity = bag.quantity || 0;
+    const target = addId.startsWith("flavor:")
+      ? cartItems.find((item) => String(item.id) === addId.slice("flavor:".length) && item.itemType !== "menu")
+      : cartItems.find((item) => item.itemType === "menu" && findMenuItem(addId)?.id === item.id);
+    if (!target) {
+      setNote(t("That item is no longer in your bag."));
+      return;
+    }
+    if (quantity < 1) {
+      removeFromCart(target.id);
+      return;
+    }
+    const available = target.itemType === "menu"
+      ? target.availableQuantity
+      : flavors.find((flavor) => flavor.id === target.id)?.availableQuantity ?? target.availableQuantity;
+    if (Number.isSafeInteger(available) && available > 0 && quantity > available) {
+      updateQuantity(target.id, available);
+      setNote(t("Only {count} left, so I set {count}.", { count: available }));
+      return;
+    }
+    updateQuantity(target.id, quantity);
+  };
+
+  return (
+    <>
+      <button
+        className={`mt-2.5 flex w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-extrabold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] ${
+          done && !note ? "bg-[#3d8b40] text-white" : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
+        }`}
+        onClick={apply}
+        type="button"
+      >
+        {done && !note ? t("Done") : bag.mode === "clear" ? t("Empty my bag") : t("Update my bag")}
+      </button>
+      {note ? (
+        <p className="mt-1.5 text-center text-xs font-semibold text-red-700" role="alert">
+          {note}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+/** Saves the visit the agent chose, so checkout opens with it already set. */
+function ChatVisitButton({ visit }: { visit: ChatVisit }) {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  return (
+    <button
+      className="mt-2.5 flex w-full items-center justify-center rounded-full bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+      onClick={() => {
+        try {
+          sessionStorage.setItem("cold-stone-chat-visit", JSON.stringify(visit));
+        } catch {
+          // Storage unavailable: checkout still opens on its own choices.
+        }
+        window.dispatchEvent(new CustomEvent("chat:navigate"));
+        navigate("/checkout");
+      }}
+      type="button"
+    >
+      {t("Continue to checkout")}
+    </button>
+  );
+}
+
+/** Carries the code the agent applied, so checkout opens with it already attached. */
+function ChatCodeButton({ code }: { code: string }) {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  return (
+    <button
+      className="mt-2.5 flex w-full items-center justify-center rounded-full bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+      onClick={() => {
+        try {
+          sessionStorage.setItem("cold-stone-chat-code", code);
+        } catch {
+          // Storage unavailable: checkout still opens on its own choices.
+        }
+        window.dispatchEvent(new CustomEvent("chat:navigate"));
+        navigate("/checkout");
+      }}
+      type="button"
+    >
+      {t("Go to checkout with the code")}
+    </button>
+  );
+}
+
+/** The agent's follow-up suggestions: a tap sends them, no typing needed. */
+function ChatChips({ chips, onSend }: { chips: string[]; onSend: (text: string) => void }) {
+  const { t } = useLanguage();
+  return (
+    <div className="mt-2.5 flex max-w-full flex-wrap gap-1.5">
+      {chips.map((chip) => (
+        <button
+          className="rounded-full border border-brand-navy/25 bg-white px-3 py-1.5 text-[13px] font-bold text-brand-navy transition hover:border-brand-navy hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+          key={chip}
+          onClick={() => onSend(chip)}
+          type="button"
+        >
+          {t(chip)}
+        </button>
+      ))}
+    </div>
   );
 }

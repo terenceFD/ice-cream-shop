@@ -4,11 +4,18 @@ import {
   FLAVOR_PATH,
   PUBLIC_PAGES,
   SITE_NAME,
+  TREAT_PATH,
   metaForFlavor,
+  metaForMenuItem,
   metaForPath,
   pageTitle,
 } from '../src/seo/pageMeta.js'
+import { FALLBACK_LABELS_FR, PRERENDER_HEADINGS_FR, frenchMeta } from '../src/seo/pageMetaFr.js'
+import { localizedPath, splitLanguagePath } from '../src/seo/languagePath.js'
 import { photoSrcSet } from '../shared/photoSizes.js'
+import { coldStoneMenuCategories, findMenuItemBySlug, getMenuItemId, menuItemPublicPath } from '../shared/data.js'
+import { faqSchema } from '../shared/faqContent.js'
+import { locationGraph } from '../shared/localBusiness.js'
 // The home page's first slider photo. index.html preloads it; the '/' page head should not
 // repeat that tag, so it is not requested twice.
 const HOME_HERO_PHOTO = '/ice-images/ice-9.jpg'
@@ -33,8 +40,9 @@ function escapeXml(value) {
 }
 
 // Keeps a stray "</script>" inside data from closing the JSON-LD block.
-function jsonLd(data) {
-  return `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`
+function jsonLd(data, marker) {
+  const attr = marker ? ` data-${marker}="true"` : ''
+  return `<script type="application/ld+json"${attr}>${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`
 }
 
 function absolute(base, path) {
@@ -49,30 +57,40 @@ function preloadPhotoTag({ src, sizes, media }) {
     : `<link rel="preload" as="image" href="${escapeHtml(src)}"${mediaAttribute} fetchpriority="high" />`
 }
 
-function headTags(meta, base, structuredData) {
-  const url = absolute(base, meta.path)
-  const image = absolute(base, meta.image || DEFAULT_IMAGE)
-  const title = pageTitle(meta.title)
+function headTags(meta, base, structuredData, language) {
+  const localized = language === 'fr' ? frenchMeta(meta) : meta
+  const path = localizedPath(language, localized.path)
+  const url = absolute(base, path)
+  const englishUrl = absolute(base, localized.path)
+  const frenchUrl = absolute(base, localizedPath('fr', localized.path))
+  const image = absolute(base, localized.image || DEFAULT_IMAGE)
+  const title = pageTitle(localized.title)
   const tags = [
     `<title>${escapeHtml(title)}</title>`,
-    `<meta name="description" content="${escapeHtml(meta.description)}" />`,
-    `<meta name="robots" content="${meta.index ? 'index, follow, max-image-preview:large' : 'noindex, nofollow'}" />`,
-    meta.index && `<link rel="canonical" href="${escapeHtml(url)}" />`,
+    `<meta name="description" content="${escapeHtml(localized.description)}" />`,
+    `<meta name="robots" content="${localized.index ? 'index, follow, max-image-preview:large' : 'noindex, nofollow'}" />`,
+    localized.index && `<link rel="canonical" href="${escapeHtml(url)}" />`,
+    localized.index && `<link rel="alternate" hreflang="en" href="${escapeHtml(englishUrl)}" />`,
+    localized.index && `<link rel="alternate" hreflang="fr" href="${escapeHtml(frenchUrl)}" />`,
+    localized.index && `<link rel="alternate" hreflang="x-default" href="${escapeHtml(englishUrl)}" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="${escapeHtml(SITE_NAME)}" />`,
-    `<meta property="og:locale" content="en_US" />`,
-    `<meta property="og:locale:alternate" content="fr_FR" />`,
+    `<meta property="og:locale" content="${language === 'fr' ? 'fr_FR' : 'en_US'}" />`,
+    `<meta property="og:locale:alternate" content="${language === 'fr' ? 'en_US' : 'fr_FR'}" />`,
     `<meta property="og:title" content="${escapeHtml(title)}" />`,
-    `<meta property="og:description" content="${escapeHtml(meta.description)}" />`,
+    `<meta property="og:description" content="${escapeHtml(localized.description)}" />`,
     `<meta property="og:url" content="${escapeHtml(url)}" />`,
     `<meta property="og:image" content="${escapeHtml(image)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${escapeHtml(title)}" />`,
-    `<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`,
+    `<meta name="twitter:description" content="${escapeHtml(localized.description)}" />`,
     `<meta name="twitter:image" content="${escapeHtml(image)}" />`,
     // The page's main photo is otherwise found only after the app's code has run.
     meta.photo && meta.photo.src !== HOME_HERO_PHOTO && preloadPhotoTag(meta.photo),
-    ...structuredData.map(jsonLd),
+    ...structuredData.map((data) => {
+      const marker = data['@type'] === 'FAQPage' ? 'faq-schema' : data['@graph'] ? 'local-schema' : ''
+      return jsonLd(data, marker)
+    }),
   ]
   return tags.filter(Boolean).join('\n    ')
 }
@@ -134,12 +152,12 @@ const MAX_LISTED_FLAVORS = 24
  */
 // Real products, so the static copy is useful text rather than a placeholder: crawlers
 // see the flavour names and XAF prices the menu page also shows.
-function flavorListHtml(flavors, base) {
+function flavorListHtml(flavors, base, language = 'en') {
   if (!flavors.length) return ''
   const items = flavors
     .slice(0, MAX_LISTED_FLAVORS)
     .map((flavor) => {
-      const name = `<a href="${escapeHtml(absolute(base, `/flavor/${flavor.id}`))}">${escapeHtml(flavor.name)}</a>`
+      const name = `<a href="${escapeHtml(absolute(base, localizedPath(language, `/flavor/${flavor.id}`)))}">${escapeHtml(flavor.name)}</a>`
       const price = flavor.price
         ? ` — ${escapeHtml(`${Math.round(Number(flavor.price)).toLocaleString('en-US')} FCFA`)}`
         : ''
@@ -153,26 +171,32 @@ function flavorListHtml(flavors, base) {
   )
 }
 
-function prerenderedContent({ meta, base, flavors = [] }) {
+function prerenderedContent({ meta, base, flavors = [], language = 'en' }) {
   if (!meta.index) return ''
-  const heading = PRERENDER_HEADINGS[meta.path] || SITE_NAME
+  const localized = language === 'fr' ? frenchMeta(meta) : meta
+  const heading = (language === 'fr' ? PRERENDER_HEADINGS_FR[meta.path] : PRERENDER_HEADINGS[meta.path]) || localized.title || SITE_NAME
   const links = FALLBACK_PAGES.filter(([path]) => path !== meta.path)
-    .map(([path, label]) => `<li><a href="${escapeHtml(absolute(base, path))}">${escapeHtml(label)}</a></li>`)
+    .map(([path, label]) => {
+      const text = language === 'fr' ? (FALLBACK_LABELS_FR[path] || label) : label
+      return `<li><a href="${escapeHtml(absolute(base, localizedPath(language, path)))}">${escapeHtml(text)}</a></li>`
+    })
     .join('')
-  const productList = flavorListHtml(flavors, base)
+  const needsScript = language === 'fr'
+    ? 'Ce site a besoin de JavaScript pour prendre une commande. Les pages ci-dessous s’ouvrent sans lui.'
+    : 'This site needs JavaScript to take an order; every page below opens without it.'
+  const productList = flavorListHtml(flavors, base, language)
 
   return (
     `<noscript><div style="${FALLBACK_STYLE}">` +
     // Not the <title>: that string is built for a search result and repeats the brand.
     // The heading should say what the page is, in the words a reader would use.
     `<h1 style="font-size:1.85rem;line-height:1.2;margin:0 0 .75rem">${escapeHtml(heading)}</h1>` +
-    `<p style="margin:0 0 1rem;font-size:1.05rem">${escapeHtml(meta.description)}</p>` +
+    `<p style="margin:0 0 1rem;font-size:1.05rem">${escapeHtml(localized.description)}</p>` +
     // The meta description already ends with "order online..." on some pages, so this
     // line only adds what it does not say.
-    `<p style="margin:0 0 .5rem">This site needs JavaScript to take an order; ` +
-    `every page below opens without it.</p>` +
+    `<p style="margin:0 0 .5rem">${escapeHtml(needsScript)}</p>` +
     productList +
-    `<h2 style="font-size:1.15rem;margin:1.75rem 0 .5rem">Pages</h2>` +
+    `<h2 style="font-size:1.15rem;margin:1.75rem 0 .5rem">${language === 'fr' ? 'Pages' : 'Pages'}</h2>` +
     `<ul style="margin:0;padding-left:1.25rem">${links}</ul>` +
     `</div></noscript>`
   )
@@ -185,10 +209,11 @@ function promotionDataTag(promotion) {
   return `<script type="application/json" id="initial-promotion">${json}</script>`
 }
 
-export function createSeo({ templatePath, listFlavors, getActivePromotion, siteUrl }) {
+export function createSeo({ templatePath, listFlavors, getActivePromotion, siteUrl, listMenuInventory }) {
   let template = null
   let flavorCache = { at: 0, flavors: [] }
   let promotionCache = { at: 0, promotion: null }
+  let stockCache = { at: 0, rows: null }
 
   async function getPromotion() {
     if (!getActivePromotion) return undefined
@@ -218,6 +243,36 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
     return flavorCache.flavors
   }
 
+  // Missing inventory means the item is still for sale. A database miss must not hide the catalog.
+  async function getStock() {
+    if (!listMenuInventory) return null
+    if (stockCache.rows && Date.now() - stockCache.at < FLAVOR_CACHE_MS) return stockCache.rows
+    try {
+      const rows = await listMenuInventory()
+      stockCache = { at: Date.now(), rows: new Map(rows.map((row) => [row.itemId, row])) }
+    } catch (error) {
+      console.warn('Could not load menu stock for page metadata:', error.message)
+      return stockCache.rows
+    }
+    return stockCache.rows
+  }
+
+  function itemInStock(stock, id) {
+    if (!stock) return true
+    const row = stock.get(id)
+    if (!row) return true
+    return row.isAvailable !== false && row.availableQuantity > 0
+  }
+
+  function catalogItems() {
+    return coldStoneMenuCategories.flatMap((category) => category.items.map((item) => ({
+      category,
+      item,
+      id: getMenuItemId(category.title, item.name),
+      path: menuItemPublicPath(category.title, item.name),
+    })))
+  }
+
   // SITE_URL pins the public address; otherwise use the address the request came in on.
   function origin(request) {
     return (siteUrl || `${request.protocol}://${request.get('host')}`).replace(/\/+$/, '')
@@ -227,7 +282,24 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
     const startedAt = performance.now()
     try {
       const base = origin(request)
-      const flavorMatch = request.path.match(FLAVOR_PATH)
+      const { language, path: barePath } = splitLanguagePath(request.path)
+      const categoryName = request.query?.category
+      const itemName = request.query?.item
+      // Old product links still name the product. Send a full page load to the product's own address.
+      if (barePath === '/menu' && categoryName && itemName) {
+        const target = menuItemPublicPath(String(categoryName), String(itemName))
+        if (target.startsWith('/treat/')) {
+          response
+            .status(301)
+            .set('Location', absolute(base, localizedPath(language, target)))
+            .set('Cache-Control', 'public, max-age=3600')
+            .send('')
+          return
+        }
+      }
+
+      const flavorMatch = barePath.match(FLAVOR_PATH)
+      const treatMatch = barePath.match(TREAT_PATH)
       let meta
       const structuredData = []
 
@@ -237,26 +309,54 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
           meta = metaForFlavor(flavor)
           const available = flavor.availableQuantity > 0
           meta.index = available
+          const visible = language === 'fr' ? frenchMeta(meta) : meta
           structuredData.push({
             '@context': 'https://schema.org',
             '@type': 'Product',
             name: flavor.name,
-            description: meta.description,
+            description: visible.description,
             image: absolute(base, meta.image),
             category: 'Ice cream',
+            inLanguage: language,
             offers: {
               '@type': 'Offer',
-              url: absolute(base, meta.path),
+              url: absolute(base, localizedPath(language, meta.path)),
               price: Number(flavor.price),
               priceCurrency: 'XAF',
               availability: available ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             },
           })
         } else {
-          meta = { ...metaForPath('/__missing__'), path: request.path }
+          meta = { ...metaForPath('/__missing__'), path: barePath }
+        }
+      } else if (treatMatch) {
+        const found = findMenuItemBySlug(treatMatch[1], treatMatch[2])
+        if (found) {
+          meta = metaForMenuItem(found.category, found.item)
+          const available = itemInStock(await getStock(), getMenuItemId(found.category.title, found.item.name))
+          meta.index = available
+          const visible = language === 'fr' ? frenchMeta(meta) : meta
+          structuredData.push({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: found.item.name,
+            description: visible.description,
+            image: absolute(base, meta.image),
+            category: found.category.title,
+            inLanguage: language,
+            offers: {
+              '@type': 'Offer',
+              url: absolute(base, localizedPath(language, meta.path)),
+              price: Number(meta.price),
+              priceCurrency: 'XAF',
+              availability: available ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            },
+          })
+        } else {
+          meta = { ...metaForPath('/__missing__'), path: barePath }
         }
       } else {
-        meta = metaForPath(request.path)
+        meta = metaForPath(barePath)
       }
 
       if (meta.path === '/') {
@@ -264,22 +364,29 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
           '@context': 'https://schema.org',
           '@type': 'WebSite',
           name: SITE_NAME,
-          url: `${base}/`,
+          url: absolute(base, localizedPath(language, '/')),
           inLanguage: ['en', 'fr'],
         })
       }
+      if (meta.path === '/locations' && meta.index) {
+        structuredData.push(locationGraph(absolute(base, localizedPath(language, '/locations'))))
+      }
+      if (meta.path === '/faq' && meta.index) {
+        structuredData.push(faqSchema(language))
+      }
 
       const html = await getTemplate()
-      const tags = headTags(meta, base, structuredData)
+      const tags = headTags(meta, base, structuredData, language)
       let page = html.replace(LEGACY_SEO_BODY, '')
+      page = page.replace(/<html lang="[^"]*">/, `<html lang="${language}">`)
       // index.html preloads the home slider's photo for every page. Only the home page shows that
       // photo, so on every other page the tag is dropped instead of downloading a picture nobody shows.
-      if (request.path !== '/') page = page.replace(HOME_PHOTO_PRELOAD, '')
+      if (barePath !== '/') page = page.replace(HOME_PHOTO_PRELOAD, '')
       page = SEO_BLOCK.test(page)
         ? page.replace(SEO_BLOCK, tags)
         : page.replace(/<title>[\s\S]*?<\/title>/, '').replace('</head>', `  ${tags}\n  </head>`)
       // Admin pages have no promotion bar. When the database cannot answer, the app asks the API as before.
-      const promotion = request.path.startsWith('/admin') ? undefined : await getPromotion()
+      const promotion = barePath.startsWith('/admin') ? undefined : await getPromotion()
       if (promotion !== undefined) page = page.replace('</head>', `  ${promotionDataTag(promotion)}\n  </head>`)
       // Server-rendered content and one <h1> for readers and crawlers that do not run
       // the app. The home and flavor-list pages also list real flavours with prices, so
@@ -294,7 +401,7 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
           console.warn('Could not include flavours in the static page copy:', error.message)
         }
       }
-      const fallback = prerenderedContent({ meta, base, flavors: fallbackFlavors })
+      const fallback = prerenderedContent({ meta, base, flavors: fallbackFlavors, language })
       if (fallback) page = page.replace('<div id="root"></div>', `<div id="root"></div>${fallback}`)
 
       response
@@ -326,23 +433,9 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
       'Disallow: /',
       'User-agent: scrapy',
       'Disallow: /',
-      'User-agent: Bytespider',
-      'Disallow: /',
-      'User-agent: GPTBot',
-      'Disallow: /',
-      'User-agent: ClaudeBot',
-      'Disallow: /',
-      'User-agent: CCBot',
-      'Disallow: /',
-      'User-agent: AhrefsBot',
-      'Disallow: /',
-      'User-agent: SemrushBot',
-      'Disallow: /',
       'User-agent: MJ12bot',
       'Disallow: /',
       'User-agent: DotBot',
-      'Disallow: /',
-      'User-agent: PetalBot',
       'Disallow: /',
       '',
       `Sitemap: ${origin(request)}/sitemap.xml`,
@@ -354,15 +447,31 @@ export function createSeo({ templatePath, listFlavors, getActivePromotion, siteU
   async function sitemap(request, response, next) {
     try {
       const base = origin(request)
+      const stock = await getStock()
       const flavors = (await getFlavors()).filter((flavor) => flavor.availableQuantity > 0)
-      const urls = [
-        ...Object.keys(PUBLIC_PAGES).map((path) => ({ loc: absolute(base, path), priority: path === '/' ? '1.0' : '0.8' })),
-        ...flavors.map((flavor) => ({ loc: absolute(base, `/flavor/${flavor.id}`), priority: '0.6' })),
+      const treats = catalogItems().filter((entry) => itemInStock(stock, entry.id))
+      const paths = [
+        ...Object.keys(PUBLIC_PAGES).map((path) => ({ path, priority: path === '/' ? '1.0' : '0.8' })),
+        ...flavors.map((flavor) => ({ path: `/flavor/${flavor.id}`, priority: '0.6' })),
+        ...treats.map((entry) => ({ path: entry.path, priority: '0.7' })),
       ]
+      const urlEntry = ({ path, priority }) => {
+        const en = absolute(base, path)
+        const fr = absolute(base, localizedPath('fr', path))
+        const alternates = [
+          `<xhtml:link rel="alternate" hreflang="en" href="${escapeXml(en)}" />`,
+          `<xhtml:link rel="alternate" hreflang="fr" href="${escapeXml(fr)}" />`,
+          `<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(en)}" />`,
+        ].join('')
+        return [
+          `  <url><loc>${escapeXml(en)}</loc>${alternates}<priority>${priority}</priority></url>`,
+          `  <url><loc>${escapeXml(fr)}</loc>${alternates}<priority>${priority}</priority></url>`,
+        ].join('\n')
+      }
       const body = [
         '<?xml version="1.0" encoding="UTF-8"?>',
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-        ...urls.map(({ loc, priority }) => `  <url><loc>${escapeXml(loc)}</loc><priority>${priority}</priority></url>`),
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
+        ...paths.map(urlEntry),
         '</urlset>',
         '',
       ].join('\n')

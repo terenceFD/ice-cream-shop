@@ -13,6 +13,7 @@ import { useLanguage } from "../../language/useLanguage";
 import { trackPurchase } from "../../lib/analytics";
 import { useAuth } from "../../context/useAuth";
 import { PromotionAlertsSetting } from "../../components/PromotionAlerts";
+import { HONEYPOT_FIELD } from "../../../shared/formGuard.js";
 
 const CHECKOUT_DETAILS_KEY = "cold-stone-checkout-details";
 const PAYMENT_PENDING_MESSAGE = "Stripe has not confirmed this payment yet.";
@@ -214,6 +215,19 @@ export function PaymentPage() {
         clearCart();
         refreshFlavors({ showLoading: false });
         trackPurchase(paidOrder.id, paidOrder.totalCents);
+        if (checkoutDetails?.newsletter === "yes" && checkoutDetails.email) {
+          apiRequest("/newsletter/subscribe", {
+            method: "POST",
+            body: {
+              email: checkoutDetails.email,
+              source: "checkout",
+              [HONEYPOT_FIELD]: "",
+              formOpenedAt: Date.now() - 5000,
+            },
+          }).catch(() => {
+            // The order is already paid. A missed list signup can be retried from the site form.
+          });
+        }
       })
       .catch((verifyError) => {
         if (cancelledRequest) return;
@@ -223,7 +237,7 @@ export function PaymentPage() {
     return () => {
       cancelledRequest = true;
     };
-  }, [clearCart, camPayReference, loyaltyOrderId, refreshFlavors, sessionId]);
+  }, [checkoutDetails, clearCart, camPayReference, loyaltyOrderId, refreshFlavors, sessionId]);
 
   if (!sessionId && !loyaltyOrderId && cartItems.length === 0 && !cancelled) {
     return <Navigate to="/cart" replace />;

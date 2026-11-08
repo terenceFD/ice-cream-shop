@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../shared/data.js'
+import { coldStoneMenuCategories, findMenuItem, findMenuItemBySlug, getMenuItemId, menuItemPublicPath } from '../shared/data.js'
 
 test('renamed products keep the ID their stock, orders and favorites were saved under', () => {
   assert.equal(getMenuItemId('Milkshakes & Smoothies', 'Very Vanilla Shake'), 'menu:milkshakes-smoothies:milkshake-1')
@@ -23,4 +23,21 @@ test('every menu product has its own ID and its own photo', () => {
       photos.add(item.image)
     }
   }
+})
+
+test('every catalog product has its own public address, and unknown names keep the menu query', () => {
+  const paths = new Set()
+  for (const category of coldStoneMenuCategories) {
+    for (const item of category.items) {
+      const path = menuItemPublicPath(category.title, item.name)
+      assert.match(path, /^\/treat\/[a-z0-9-]+\/[a-z0-9-]+$/)
+      assert.equal(paths.has(path), false, path)
+      paths.add(path)
+      const [, , categorySlug, itemSlug] = path.split('/')
+      assert.equal(findMenuItemBySlug(categorySlug, itemSlug).item.name, item.name)
+    }
+  }
+  assert.equal(findMenuItemBySlug('cakes-pies', 'strawberry-passion').item.name, 'Strawberry Passion')
+  assert.equal(findMenuItemBySlug('cakes-pies', 'not-a-cake'), null)
+  assert.match(menuItemPublicPath('Cakes & Pies', 'Not A Real Cake'), /^\/menu\?/)
 })

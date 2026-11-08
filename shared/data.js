@@ -209,6 +209,29 @@ export function getMenuItemId(categoryTitle, itemName) {
   return `menu:${menuIdPart(categoryTitle)}:${menuIdPart(idNameFor(categoryTitle, itemName))}`
 }
 
+/** A stable public address for a catalog product. Unknown names keep the old menu query. */
+export function menuItemPublicPath(categoryTitle, itemName) {
+  const category = coldStoneMenuCategories.find((entry) => entry.title === categoryTitle)
+  const item = category?.items.find((entry) => entry.name === itemName)
+  if (!category || !item) {
+    return `/menu?${new URLSearchParams({
+      category: String(categoryTitle || ''),
+      item: String(itemName || ''),
+    }).toString()}`
+  }
+  return `/treat/${menuIdPart(category.title)}/${menuIdPart(item.name)}`
+}
+
+/** The catalog product behind a `/treat/:category/:item` address. */
+export function findMenuItemBySlug(categorySlug, itemSlug) {
+  for (const category of coldStoneMenuCategories) {
+    if (menuIdPart(category.title) !== categorySlug) continue
+    const item = category.items.find((entry) => menuIdPart(entry.name) === itemSlug)
+    return item ? { category, item } : null
+  }
+  return null
+}
+
 export function findMenuItem(id) {
   for (const category of coldStoneMenuCategories) {
     const item = category.items.find((entry) => getMenuItemId(category.title, entry.name) === id)

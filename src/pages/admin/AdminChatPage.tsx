@@ -374,7 +374,16 @@ export function AdminChatPage() {
                       }`}
                     >
                       <p className="whitespace-pre-wrap break-words">
-                        {message.body}
+                        {message.body
+                          .replace(/\[LINK:(\/[^\]]+)\]/g, "$1")
+                          .replace(/\[ADD:[^\]]+\]/g, "")
+                          .replace(/\[FILL:[^\]]+\]/g, "")
+                          .replace(/\[ACTION:\w+\]/g, "")
+                          .replace(/\[BAG:[^\]]+\]/g, "")
+                          .replace(/\[VISIT:[^\]]+\]/g, "")
+                          .replace(/\[CODE:[^\]]+\]/g, "")
+                          .replace(/\[CHIPS:[^\]]+\]/g, "")
+                          .trim()}
                       </p>
                       {/* Customer photo attachment (#7), visible to staff. */}
                       {message.imageUrl && (

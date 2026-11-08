@@ -4,8 +4,10 @@
 // placed on the website", "reply in French"). Those were prose with nothing checking them,
 // so a well-meaning prompt edit could remove one and no run would notice.
 // `context-architecture` principle 08: behavior is verifiable, not asserted.
+import sharp from "sharp";
 import test from "node:test";
 import assert from "node:assert/strict";
+import { getMenuItemId } from "../shared/data.js";
 import {
   AI_FAILURE_REASONS,
   buildSystemPrompt,
@@ -14,7 +16,10 @@ import {
   isLostPageQuestion,
   looksPolicyShaped,
   suggestReply,
+  silentPhotoReply,
+  visionDataUri,
 } from "./chat-assistant.js";
+import { partyReply, reorderReply, soldOutAnswer } from "./chat-tools.js";
 
 // The shape gatherShopFacts() produces, so the prompt is built exactly as in production.
 const context = {
@@ -69,6 +74,7 @@ const prompt = (overrides = {}) =>
     overrides.language || "en",
     overrides.customerPage ?? "",
     overrides.snapshotText ?? "",
+    { imageUrl: overrides.imageUrl || "", imageMatch: overrides.imageMatch || null },
   );
 
 const fakeDb = {
@@ -326,6 +332,20 @@ test("only a message that is only a greeting counts as one", async () => {
   assert.notEqual((await social("Chocolate")).topic, "greeting");
 });
 
+test("an unknown question is answered politely, without handing the customer off", async () => {
+  const english = await social("what is the capital of France");
+  assert.equal(english.topic, "general");
+  assert.match(english.suggestion, /don't have an answer/i);
+  assert.match(english.suggestion, /menu/i);
+  assert.match(english.suggestion, /\?/);
+  assert.doesNotMatch(english.suggestion, /colleague will reply/i);
+
+  const french = await social("quelle est la capitale de la France", "fr");
+  assert.equal(french.topic, "general");
+  assert.match(french.suggestion, /pas la réponse/i);
+  assert.match(french.suggestion, /\?/);
+});
+
 test("thanks and goodbye are answered politely and briefly", async () => {
   const thanks = await social("thanks");
   assert.equal(thanks.topic, "thanks");
@@ -522,6 +542,10 @@ test("the prompt covers accounts, payment, cakes, events and notifications", asy
   assert.match(text, /30% deposit/i);
   assert.match(text, /Home Screen/i); // iPhone notification requirement
   assert.match(text, /installs as an app/i);
+  assert.match(text, /guest/i);
+  assert.match(text, /SUBSCRIPTIONS/i);
+  assert.match(text, /\/flavor\/ID/);
+  assert.match(text, /\[LINK:/);
 });
 
 test("the page guides cover every customer page", () => {
@@ -552,6 +576,82 @@ test("rules-based replies answer account, cake, event, loyalty and payment quest
   }
 });
 
+test("a bad order, payment or refund is answered in the same turn and still pages the shop", async () => {
+  const melted = await suggestReply(
+    [{ sender: "customer", body: "my ice cream melted" }],
+    { database: fakeDb, language: "en" },
+  );
+  assert.equal(melted.topic, "problem");
+  assert.equal(melted.needsAttention, true);
+  assert.match(melted.suggestion, /sorry/i);
+  assert.match(melted.suggestion, /passed your message to the shop/i);
+  assert.match(melted.suggestion, /order number/i);
+  assert.doesNotMatch(melted.suggestion, /colleague/i);
+
+  const charged = await suggestReply(
+    [{ sender: "customer", body: "I was charged twice on order #54" }],
+    { database: fakeDb, language: "en" },
+  );
+  assert.equal(charged.needsAttention, true);
+  assert.match(charged.suggestion, /#54/);
+  assert.match(charged.suggestion, /person there will look/i);
+  assert.doesNotMatch(charged.suggestion, /send the order number/i);
+
+  const french = await suggestReply(
+    [{ sender: "customer", body: "je veux un remboursement" }],
+    { database: fakeDb, language: "en" },
+  );
+  assert.equal(french.topic, "problem");
+  assert.match(french.suggestion, /désolé/i);
+  assert.match(french.suggestion, /boutique/i);
+  assert.match(french.suggestion, /numéro de commande/i);
+});
+
+test("a flavor with a mix-in is priced from the menu and can be added", async () => {
+  const custom = await suggestReply(
+    [{ sender: "customer", body: "strawberry with cookie dough" }],
+    { database: fakeDb, language: "en" },
+  );
+  assert.equal(custom.topic, "creation");
+  assert.equal(custom.needsAttention, false);
+  assert.match(custom.suggestion, /Create Your Own Creation/);
+  assert.match(custom.suggestion, /Strawberry with cookie dough/);
+  assert.match(custom.suggestion, /3,000 FCFA/);
+  assert.match(custom.suggestion, /in stock/i);
+  assert.match(custom.suggestion, /\[ADD:menu:ice-cream:create-your-own-creation\]/);
+  assert.match(custom.suggestion, /\[LINK:\/menu\?category=Ice\+Cream&item=Create\+Your\+Own\+Creation\]/);
+  assert.doesNotMatch(custom.suggestion, /Strawberry Passion/);
+
+  const signature = await suggestReply(
+    [{ sender: "customer", body: "chocolate with brownie and fudge" }],
+    { database: fakeDb, language: "en" },
+  );
+  assert.equal(signature.topic, "creation");
+  assert.match(signature.suggestion, /Chocolate Devotion/);
+  assert.match(signature.suggestion, /3,500 FCFA/);
+  assert.match(signature.suggestion, /in stock/i);
+  assert.match(signature.suggestion, /\[ADD:menu:ice-cream:chocolate-devotion\]/);
+
+  const french = await suggestReply(
+    [{ sender: "customer", body: "fraise avec cookie dough" }],
+    { database: fakeDb, language: "fr" },
+  );
+  assert.equal(french.topic, "creation");
+  assert.match(french.suggestion, /Create Your Own Creation/);
+  assert.match(french.suggestion, /Fraise avec pâte à cookie/);
+  assert.match(french.suggestion, /disponible/i);
+});
+
+test("a named in-stock product is answered with its own page", async () => {
+  const { suggestion } = await suggestReply(
+    [{ sender: "customer", body: "is Chocolate Devotion available" }],
+    { database: fakeDb, language: "en" },
+  );
+  assert.match(suggestion, /Chocolate Devotion/);
+  assert.match(suggestion, /\[LINK:\/menu\?category=Ice\+Cream&item=Chocolate\+Devotion\]/);
+  assert.doesNotMatch(suggestion, /\[ACTION:menu_all\]/);
+});
+
 test("cake and event template replies never quote a price", async () => {
   // "how much is a cake" is a menu-price question and correctly checks the menu;
   // the request-style phrasing must route to the cake knowledge, without a price.
@@ -566,4 +666,158 @@ test("cake and event template replies never quote a price", async () => {
     assert.match(result.suggestion, /custom-cake page|events page/i);
     assert.doesNotMatch(result.suggestion, /\d{3,} FCFA/);
   }
+});
+
+test("a photo with no words is a product question, not an unknown question", () => {
+  const named = silentPhotoReply("", {
+    confident: true,
+    name: "The Cat in the Hat's Cotton Candy Catastrophe",
+    price: 3800,
+    soldOut: false,
+    path: "/menu?category=Limited-Time+Favorites&item=cat",
+    addId: "menu:limited-time-favorites:the-cat-in-the-hats-cotton-candy-catastrophe",
+  }, "en");
+  assert.match(named.body, /The Cat in the Hat's Cotton Candy Catastrophe is 3,800 FCFA, and it's in stock/);
+  assert.match(named.body, /\[ADD:menu:limited-time-favorites:the-cat-in-the-hats-cotton-candy-catastrophe\]/);
+  const unread = silentPhotoReply("", null, "en");
+  assert.match(unread.body, /I can see the photo/i);
+  assert.doesNotMatch(unread.body, /don't have an answer/i);
+  assert.equal(silentPhotoReply("how much is this", null, "en"), null);
+});
+
+test("a stored webp is handed to the vision model as a jpeg", async () => {
+  const webp = await sharp({
+    create: { width: 8, height: 8, channels: 3, background: "#36c" },
+  }).webp().toBuffer();
+  const uri = `data:image/webp;base64,${webp.toString("base64")}`;
+  const out = await visionDataUri(uri);
+  assert.match(out, /^data:image\/jpeg;base64,/);
+  const meta = await sharp(Buffer.from(out.slice(out.indexOf(",") + 1), "base64")).metadata();
+  assert.equal(meta.format, "jpeg");
+  const jpeg = await sharp({
+    create: { width: 8, height: 8, channels: 3, background: "#36c" },
+  }).jpeg().toBuffer();
+  const jpegUri = `data:image/jpeg;base64,${jpeg.toString("base64")}`;
+  assert.equal(await visionDataUri(jpegUri), jpegUri);
+});
+
+test("a sold-out product names the closest treat that is still in stock", () => {
+  const facts = {
+    menuByCategory: {
+      "Ice Cream": [
+        {
+          name: "Chocolate Devotion",
+          price: 3500,
+          detail: "Chocolate ice cream with brownie and fudge",
+          soldOut: true,
+          path: "/menu?category=Ice+Cream&item=Chocolate+Devotion",
+          addId: "menu:ice-cream:chocolate-devotion",
+        },
+        {
+          name: "Mint Mint Chocolate Chocolate Chip",
+          price: 3500,
+          detail: "Mint ice cream with chocolate chips and fudge",
+          soldOut: false,
+          path: "/menu?category=Ice+Cream&item=Mint",
+          addId: "menu:ice-cream:mint-mint-chocolate-chocolate-chip",
+        },
+      ],
+    },
+  };
+  const text = soldOutAnswer(facts.menuByCategory["Ice Cream"][0], facts, "en");
+  assert.match(text, /Chocolate Devotion is sold out/i);
+  assert.match(text, /Mint Mint Chocolate Chocolate Chip/);
+  assert.match(text, /3,500 FCFA/);
+  assert.match(text, /\[ADD:menu:ice-cream:mint-mint-chocolate-chocolate-chip\]/);
+});
+
+test("same as last time rebuilds the order at today's prices and leaves out what is gone", async () => {
+  const id = getMenuItemId("Ice Cream", "Chocolate Devotion");
+  const result = await suggestReply(
+    [{ sender: "customer", body: "same as last time" }],
+    {
+      database: fakeDb,
+      language: "en",
+      customerContext: {
+        lastOrder: {
+          id: 54,
+          items: [
+            { name: "Chocolate Devotion", quantity: 2, menuItemId: id },
+            { name: "Not A Real Scoop", quantity: 1, menuItemId: "menu:ice-cream:not-real" },
+          ],
+        },
+      },
+    },
+  );
+  assert.equal(result.topic, "order");
+  assert.match(result.suggestion, /2 Chocolate Devotion/);
+  assert.match(result.suggestion, /7,000 FCFA/);
+  assert.match(result.suggestion, /Not A Real Scoop/);
+  assert.match(result.suggestion, /sold out/i);
+  assert.match(result.suggestion, new RegExp(`\\[FILL:${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\*2\\]`));
+
+  const guest = reorderReply("the usual", { customerContext: {} }, "en");
+  assert.match(guest, /Sign in/i);
+});
+
+test("twenty people on Saturday in Bonanjo is a real bag, and a wedding stays on the events form", async () => {
+  const party = await suggestReply(
+    [{ sender: "customer", body: "twenty people Saturday in Bonanjo" }],
+    { database: fakeDb, language: "en" },
+  );
+  assert.equal(party.topic, "event");
+  assert.match(party.suggestion, /For 20 people on Saturday in Bonanjo/);
+  assert.match(party.suggestion, /70,000 FCFA/);
+  assert.match(party.suggestion, /Bonanjo delivery fee is shown at checkout/);
+  assert.match(party.suggestion, /Pickup is free/);
+  assert.match(party.suggestion, /\[FILL:menu:ice-cream:birthday-cake-remix\*7/);
+  assert.doesNotMatch(party.suggestion, /events form/i);
+
+  const priced = partyReply("20 personnes samedi à Bonamoussadi", {
+    menuByCategory: {
+      "Ice Cream": [
+        {
+          name: "Sorbet",
+          price: 2800,
+          soldOut: false,
+          path: "/menu?category=Ice+Cream&item=Sorbet",
+          addId: "menu:ice-cream:sorbet",
+        },
+      ],
+    },
+    branchDetails: [{ town: "Douala", area: "Bonamoussadi", deliveryFee: 1000, deliveryEnabled: true }],
+  }, "fr");
+  assert.match(priced.body, /Pour 20 personnes Samedi à Bonamoussadi/);
+  assert.match(priced.body, /20 Sorbet/);
+  assert.match(priced.body, /56,000 FCFA/);
+  assert.match(priced.body, /1,000 FCFA/);
+  assert.match(priced.body, /\[FILL:menu:ice-cream:sorbet\*20\]/);
+
+  const wedding = await suggestReply(
+    [{ sender: "customer", body: "a wedding for 80 people" }],
+    { database: fakeDb, language: "en" },
+  );
+  assert.match(wedding.suggestion, /events form/i);
+  assert.match(wedding.suggestion, /\[ACTION:events\]/);
+  assert.doesNotMatch(wedding.suggestion, /\[FILL:/);
+});
+
+test("a home-page name is priced as the product it sells", async () => {
+  const result = await suggestReply(
+    [{ sender: "customer", body: "how much is a mango Sunshine flavor" }],
+    { database: fakeDb, language: "en" },
+  );
+  assert.equal(result.topic, "price");
+  assert.match(result.suggestion, /Mango Pineapple Smoothie/);
+  assert.match(result.suggestion, /3,200 FCFA/);
+  assert.match(result.suggestion, /in stock/i);
+  assert.match(result.suggestion, new RegExp(`\\[ADD:${getMenuItemId("Milkshakes & Smoothies", "Mango Pineapple Smoothie").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\]`));
+  assert.doesNotMatch(result.suggestion, /don't have a price|not in our|current catalog/i);
+});
+
+test("a photo the catalog hash missed still tells the model to read the cup", () => {
+  const text = prompt({ imageUrl: "/uploads/chat-11111111-1111-4111-8111-111111111111.webp" });
+  assert.match(text, /photo with no words/i);
+  assert.match(text, /Read any name printed on the cup/i);
+  assert.match(text, /do not say you have no answer/i);
 });

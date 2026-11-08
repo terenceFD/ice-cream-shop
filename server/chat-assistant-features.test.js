@@ -103,8 +103,12 @@ test("the customer context is empty for guests", async () => {
 });
 
 test("the customer context carries the bag and the latest order", async () => {
+  // The bag now comes from customer_saved_carts, the rows the cart page writes,
+  // so each line carries the addId (productId) an edit can act on.
   const db = fakeDb({
-    all: async () => [{ name: "Vanilla Bean", quantity: 2, unitPrice: 2800 }],
+    all: async () => [
+      { itemsJson: JSON.stringify([{ productId: "menu:ice-cream:vanilla-bean", quantity: 2 }]) },
+    ],
     get: async () => ({
       id: 12,
       status: "out_for_delivery",
@@ -114,14 +118,12 @@ test("the customer context carries the bag and the latest order", async () => {
   });
   const context = await gatherCustomerContext(db, 7);
   assert.deepEqual(context.bag, [
-    { name: "Vanilla Bean", quantity: 2, price: 2800 },
+    { addId: "menu:ice-cream:vanilla-bean", quantity: 2 },
   ]);
-  assert.deepEqual(context.lastOrder, {
-    id: 12,
-    status: "out_for_delivery",
-    total: 5600,
-    fulfillment: "delivery",
-  });
+  assert.equal(context.lastOrder.id, 12);
+  assert.equal(context.lastOrder.status, "out_for_delivery");
+  assert.equal(context.lastOrder.total, 5600);
+  assert.equal(context.lastOrder.fulfillment, "delivery");
 });
 
 test("a failing cart query must not lose the order", async () => {

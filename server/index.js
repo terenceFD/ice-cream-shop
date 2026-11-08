@@ -29,6 +29,7 @@ import {
   listNewsletterSubscribers,
   subscribeNewsletter,
   unsubscribeNewsletter,
+  rememberChatAvoid,
   markCheckoutPaymentFailed,
   deleteDiscountCode,
   deleteFailedOrder,
@@ -131,6 +132,7 @@ import { registerEventOrderRoutes } from './event-orders.js'
 import { registerCakeQuoteRoutes } from './cake-quotes.js'
 import { isWhatsAppMessagingConfigured, sendWhatsAppText } from './whatsapp.js'
 import { aiConfigured, detectMessageLanguage, gatherCustomerContext, suggestReply } from './chat-assistant.js'
+import { statedAllergies } from './chat-offer.js'
 import {
   AdminMfaConfigurationError,
   authenticatorUri,
@@ -1460,7 +1462,7 @@ app.post('/api/admin/newsletter/broadcast', requireAdmin, ownerOnly, async (requ
   response.json({ sent, total: addresses.length, failures })
 })
 
-app.post('/api/newsletter/unsubscribe', async (request, response) => {
+app.post('/api/newsletter/unsubscribe', publicFormIpLimiter, async (request, response) => {
   const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
   if (!email) {
     response.status(400).json({ error: 'Enter the email address to unsubscribe.' })
@@ -3544,18 +3546,32 @@ function sanitizeChatText(text) {
     .trim()
 }
 
+function chatBag(value) {
+  if (!Array.isArray(value)) return []
+  return value.slice(0, 20).flatMap((item) => {
+    const name = typeof item?.name === 'string' ? item.name.trim().slice(0, 80) : ''
+    const quantity = Number(item?.quantity)
+    const price = Number(item?.price)
+    const itemType = item?.itemType === 'menu' ? 'menu' : 'flavor'
+    const addId = typeof item?.id === 'string' && /^(?:menu:[a-z0-9-]+:[a-z0-9-]+|flavor:\d{1,8})$/.test(item.id) ? item.id : ''
+    if (!name || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 100) return []
+    if (!Number.isSafeInteger(price) || price < 0 || price > 1000000) return []
+    return [{ name, quantity, price, itemType, ...(addId ? { addId } : {}) }]
+  })
+}
+
 app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, response) => {
   const threadId = typeof request.body.threadId === 'string' ? request.body.threadId.trim() : ''
   const body = typeof request.body.body === 'string' ? sanitizeChatText(request.body.body.trim()).slice(0, 1000) : ''
-  if (!chatThreadIdValid(threadId) || !body) {
-    response.status(400).json({ error: 'Write a message before sending.' })
-    return
-  }
   // Optional photo attachment (#7): a URL this server produced through the public
   // chat-upload endpoint. Production stores uploads in Supabase Storage, so the
   // site's own storage origins are accepted alongside local /uploads/ paths; an
-  // arbitrary external image is still refused.
+  // arbitrary external image is still refused. A photo can be the whole message.
   const imageUrl = safeChatImageReference(typeof request.body.imageUrl === 'string' ? request.body.imageUrl : '')
+  if (!chatThreadIdValid(threadId) || (!body && !imageUrl)) {
+    response.status(400).json({ error: 'Write a message before sending.' })
+    return
+  }
   const deviceToken = ensureChatDeviceToken(request, response)
   if (!(await chatThreadAllowed(threadId, request.customer, deviceToken))) {
     response.status(403).json({ error: await chatAccessError(threadId) })
@@ -3595,6 +3611,15 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
   `).run(threadId, request.customer ? request.customer.id : null, body,
         request.customer ? '' : deviceToken, imageUrl)
   response.status(201).json({ sent: true })
+
+  if (request.customer) {
+    const avoid = statedAllergies(body).map((allergen) => allergen.label)
+    if (avoid.length) {
+      rememberChatAvoid(request.customer.id, avoid).catch((error) => {
+        console.error('Unable to remember a chat preference:', error.message)
+      })
+    }
+  }
 
   // Automatic AI reply. Only when the shop turned it on AND a real generative model is
   // configured — the template drafter never sends by itself. One reply per customer
@@ -3636,22 +3661,30 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
       : {}
     // The photo attached to the latest customer message, if any (#3 vision).
     const imageUrl = lastCustomer.imageUrl || ''
-    const result = await suggestReply(history, { database, language, customerPage, pageSnapshot, customerContext, imageUrl })
-    if (!result.suggestion || result.source !== "ai") {
-      // The model was configured but did not answer. Log the actual cause (timeout, bad
-      // key, empty completion...) instead of a generic "no usable reply", so a broken
-      // integration is visible in the logs rather than looking like a quiet day.
+    const result = await suggestReply(history, {
+      database,
+      language,
+      customerPage,
+      pageSnapshot,
+      customerContext,
+      imageUrl,
+      bag: chatBag(request.body.bag),
+    })
+    if (!result.suggestion) {
       console.warn(
         `chat auto-reply skipped on thread ${threadId}: ${result.aiFailure?.reason || 'no reply'} — ${result.aiFailure?.detail || 'no detail'}`,
       )
-      // Even without a reply, a complaint must reach a person.
-      if (result.needsAttention) {
-        await raiseThreadNeedsAttention(threadId)
-        return
+      if (result.needsAttention) await raiseThreadNeedsAttention(threadId)
+      return
+    }
+    if (result.source !== "ai") {
+      // A rules reply is a real answer: creations, complaints, and the polite
+      // "I don't know". A complaint still raises the inbox flag after the reply is saved.
+      if (result.aiFailure) {
+        console.warn(
+          `chat auto-reply used the shop reply on thread ${threadId}: ${result.aiFailure.reason} — ${result.aiFailure.detail || 'no detail'}`,
+        )
       }
-      // The model missed (rate limit, timeout...). The rule-based drafter answers
-      // from live shop data, so those replies are safe to send automatically; the
-      // generic "a colleague will reply" template stays staff-only.
       await sendFallbackAutoReply(threadId, result, language)
       return
     }
@@ -3673,14 +3706,14 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
   }
 })
 
-// When the model is rate-limited or failed, the rule-based drafter still answers from
-// live shop data (prices, stock, branches, hours, discounts) — those facts are safe
-// to send automatically. Only the 'general' template ("a colleague will reply soon")
-// stays staff-only: it says nothing useful and a silent thread reads as broken.
+// When the model is rate-limited or failed, the drafter still answers from live shop
+// data. An unknown question is included: the customer gets a polite reply that says
+// what the assistant can help with, rather than a silent thread.
 const AUTO_REPLYABLE_TOPICS = new Set([
   'greeting', 'thanks', 'farewell', 'price', 'menu', 'hours', 'stores',
   'delivery', 'discount', 'stock', 'order', 'navigation', 'account', 'cake',
   'event', 'loyalty', 'notification', 'review', 'app', 'payment', 'refund',
+  'general', 'problem', 'creation',
 ])
 
 async function sendFallbackAutoReply(threadId, result, language) {
@@ -6172,7 +6205,7 @@ if (siteUrl) console.log(`Public site address: ${siteUrl}`)
 
 const frontendDirectory = fileURLToPath(new URL('../dist/', import.meta.url))
 const frontendEntry = fileURLToPath(new URL('../dist/index.html', import.meta.url))
-const seo = createSeo({ templatePath: frontendEntry, listFlavors, getActivePromotion, siteUrl })
+const seo = createSeo({ templatePath: frontendEntry, listFlavors, getActivePromotion, siteUrl, listMenuInventory })
 app.get('/robots.txt', seo.robots)
 app.get('/sitemap.xml', seo.sitemap)
 if (existsSync(frontendEntry)) {

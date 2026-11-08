@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { DEFAULT_IMAGE, pageTitle } from './pageMeta.js'
+import { frenchMeta } from './pageMetaFr.js'
+import { localizedPath, splitLanguagePath } from './languagePath.js'
 
 export interface DocumentMeta {
   title: string
@@ -36,11 +38,13 @@ function setCanonical(href: string | null) {
 // Keeps the page head in step with in-app navigation. The server writes the same tags into the
 // first HTML response; this updates them when the app changes page without a reload.
 export function useDocumentMeta(meta: DocumentMeta | null) {
-  const active = meta !== null
-  const { title = '', description = '', path = '', image, index = true } = meta || {}
+  const language = typeof window === 'undefined' ? 'en' : splitLanguagePath(window.location.pathname).language
+  const localized = meta && language === 'fr' ? frenchMeta(meta) : meta
+  const active = localized !== null
+  const { title = '', description = '', path = '', image, index = true } = localized || {}
   useEffect(() => {
     if (!active) return
-    const url = new URL(path, window.location.origin).href
+    const url = new URL(localizedPath(language, path), window.location.origin).href
     const fullTitle = pageTitle(title)
     const imageUrl = new URL(image || DEFAULT_IMAGE, window.location.origin).href
     document.title = fullTitle
@@ -54,5 +58,5 @@ export function useDocumentMeta(meta: DocumentMeta | null) {
     setMeta('name', 'twitter:title', fullTitle)
     setMeta('name', 'twitter:description', description)
     setMeta('name', 'twitter:image', imageUrl)
-  }, [active, title, description, path, image, index])
+  }, [active, title, description, path, image, index, language])
 }

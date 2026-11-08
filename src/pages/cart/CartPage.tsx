@@ -6,7 +6,7 @@ import { useCart } from '../../context/useCart'
 import { formatCartMoney, getCartPricing } from '../../lib/cartPricing'
 import { useLanguage } from '../../language/useLanguage'
 import { apiRequest } from '../../api/api'
-import { getMenuItemId } from '../../../shared/data'
+import { getMenuItemId, menuItemPublicPath } from '../../../shared/data'
 import { photoErrorHandler, photoSrcSet } from '../../lib/thumbnails'
 import { rankSimilar } from '../../lib/similarItems'
 import { DeliveryCoverage } from '../../components/DeliveryCoverage'
@@ -71,7 +71,11 @@ export function CartPage() {
   const scoopsTowardOffer = scoopCount % 3
   const scoopsToNextFree = 3 - scoopsTowardOffer
   const shopPath = hasMenuItems ? '/menu' : '/flavors'
-  const itemPath = (item: CartItem) => (item.itemType === 'menu' ? '/menu' : `/flavor/${item.id}`)
+  const itemPath = (item: CartItem) => (
+    item.itemType === 'menu'
+      ? (item.categoryTitle ? menuItemPublicPath(item.categoryTitle, item.name) : '/menu')
+      : `/flavor/${item.id}`
+  )
 
   const steps = [t('Shopping bag'), t('Checkout'), t('Payment')]
 

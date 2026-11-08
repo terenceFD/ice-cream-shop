@@ -1,6 +1,7 @@
 // Page titles and descriptions for search engines and link previews.
 // Shared by the browser (updates the page head while navigating) and the server
 // (writes the head into the HTML it sends, so crawlers that do not run JavaScript see it too).
+import { menuItemPublicPath } from '../../shared/data.js'
 import { COMPACT_HERO_MEDIA, FLAVOR_PHOTO_SIZES, HERO_PHOTO_SIZES, HOME_SLIDE_SIZES } from '../../shared/photoSizes.js'
 
 export const SITE_NAME = 'Cold Stone Creamery Cameroon'
@@ -94,10 +95,12 @@ const PRIVATE_PAGES = {
   '/login': 'Log in',
   '/signup': 'Create an account',
   '/account/orders': 'My account',
+  '/unsubscribe': 'Unsubscribe',
 }
 const PRIVATE_PREFIXES = ['/admin']
 
 export const FLAVOR_PATH = /^\/flavor\/(\d+)\/?$/
+export const TREAT_PATH = /^\/treat\/([a-z0-9-]+)\/([a-z0-9-]+)\/?$/
 
 export function pageTitle(title) {
   return title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`
@@ -123,7 +126,7 @@ export function metaForPath(pathname) {
 }
 
 // Search results show roughly 160 characters; cut at a word so the snippet reads cleanly.
-function clip(text, max = 160) {
+export function clip(text, max = 160) {
   if (text.length <= max) return text
   return `${text.slice(0, max - 1).replace(/\s+\S*$/, '')}…`
 }
@@ -139,5 +142,22 @@ export function metaForFlavor(flavor) {
     index: true,
     found: true,
     path: `/flavor/${flavor.id}`,
+  }
+}
+
+/** Metadata for a cake, shake, or other menu product's own page. */
+export function metaForMenuItem(category, item) {
+  const price = Math.round(Number(item.priceXaf || item.price || 0))
+  const priceLabel = price ? `${price.toLocaleString('en-US')} FCFA. ` : ''
+  const detail = item.detail || category.description || category.title
+  return {
+    title: item.name,
+    description: clip(`${item.name}: ${detail}. ${priceLabel}Order for pickup or delivery in Douala and Yaoundé.`),
+    image: item.image || DEFAULT_IMAGE,
+    index: true,
+    found: true,
+    path: menuItemPublicPath(category.title, item.name),
+    category: category.title,
+    price,
   }
 }

@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Footer, Header } from "../../components/Layout";
 import { PageHero } from "../../components/PageHero";
 import { RatingBadge } from "../../components/RatingBadge";
-import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
+import { coldStoneMenuCategories, getMenuItemId, menuItemPublicPath } from "../../../shared/data";
 import { apiRequest } from "../../api/api";
 import { useCart } from "../../context/useCart";
 import { useLanguage } from "../../language/useLanguage";

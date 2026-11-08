@@ -23,13 +23,24 @@ export function loadFrenchDictionary() {
   return frenchDictionaryRequest
 }
 
-/** The saved language, or English by default. */
+/** French pages are the addresses under /fr. Every other address stays as it was. */
+export function languageUrl(next: Language): string | null {
+  const path = window.location.pathname
+  const onFrench = path === '/fr' || path.startsWith('/fr/')
+  const bare = onFrench ? (path.slice(3) || '/') : path
+  const suffix = `${window.location.search}${window.location.hash}`
+  if (next === 'fr' && !onFrench) return `/fr${bare === '/' ? '' : bare}${suffix}`
+  if (next === 'en' && onFrench) return `${bare}${suffix}`
+  return null
+}
+
+/** English on every load. A /fr address is the French page, so that address stays French. */
 export function initialLanguage(): Language {
   try {
-    const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY)
-    if (savedLanguage === 'en' || savedLanguage === 'fr') return savedLanguage
+    const path = window.location.pathname
+    if (path === '/fr' || path.startsWith('/fr/')) return 'fr'
   } catch (error) {
-    console.error('Unable to read the saved language preference.', error)
+    console.error('Unable to read the page address for the language.', error)
   }
   return 'en'
 }

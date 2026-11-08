@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Footer, Header, ArrowIcon } from "../../components/Layout";
+import { NewsletterSignup } from "../../components/NewsletterSignup";
 import { HeroBackground } from "../../components/HeroBackground";
 import { useCart } from "../../context/useCart";
 import { useFlavors } from "../../context/useFlavors";
 import { apiRequest } from "../../api/api";
-import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
+import { coldStoneMenuCategories, getMenuItemId, menuItemPublicPath } from "../../../shared/data";
 import { ProductImageSlider } from "../../components/ProductImageSlider";
 import { RatingBadge } from "../../components/RatingBadge";
 import { RecentlyViewed } from "../../components/RecentlyViewed";
@@ -48,32 +49,32 @@ const cakeSliderFallbacks = {
 const flavorInspiration = [
   {
     id: "strawberry",
-    title: "Strawberry daydream",
+    title: "Our Strawberry Blonde",
     detail: "Berry-bright · soft & sweet",
     mood: "fruit",
     category: "Ice Cream",
     item: "Our Strawberry Blonde",
     image:
-      "/menu-official/ice-cream/signature-creations/berry-berry-berry-good.webp",
+      "/menu-official/ice-cream/signature-creations/our-strawberry-blonde.webp",
     color: "#f7c8d9",
   },
   {
     id: "mango",
-    title: "Mango sunshine",
+    title: "Mango Pineapple Smoothie",
     detail: "Tropical · golden & juicy",
     mood: "fruit",
     category: "Milkshakes & Smoothies",
     item: "Mango Pineapple Smoothie",
     image: "/flavor-inspiration/mango-sunshine.jpg",
     images: [
-      "/flavor-inspiration/mango-sunshine.jpg",
       "/menu-official/milkshakes-fruit-smoothies/smoothies/mango-pineapple.webp",
+      "/flavor-inspiration/mango-sunshine.jpg",
     ],
     color: "#ffd45d",
   },
   {
     id: "chocolate",
-    title: "Chocolate crush",
+    title: "Chocolate Devotion",
     detail: "Cocoa-rich · deep & dreamy",
     mood: "chocolate",
     category: "Ice Cream",
@@ -84,18 +85,18 @@ const flavorInspiration = [
   },
   {
     id: "vanilla",
-    title: "Vanilla cloud",
+    title: "Cookie Doughn’t You Want Some",
     detail: "Mellow · creamy & classic",
     mood: "classics",
     category: "Ice Cream",
     item: "Cookie Doughn’t You Want Some",
     image:
-      "/menu-official/milkshakes-fruit-smoothies/milkshakes/very-vanilla.webp",
+      "/menu-official/ice-cream/signature-creations/cookie-doughnt-you-want-some.webp",
     color: "#ded0ef",
   },
   {
     id: "peanut-butter",
-    title: "Peanut butter bliss",
+    title: "Peanut Butter Cup Perfection",
     detail: "Nutty · rich & crunchy",
     mood: "chocolate",
     category: "Ice Cream",
@@ -106,7 +107,7 @@ const flavorInspiration = [
   },
   {
     id: "dubai-chocolate",
-    title: "Dubai chocolate luxury",
+    title: "Our Dubai Chocolate Creation",
     detail: "Pistachio · indulgent & golden",
     mood: "chocolate",
     category: "Ice Cream",
@@ -117,7 +118,7 @@ const flavorInspiration = [
   },
   {
     id: "berry",
-    title: "Berry berry joy",
+    title: "Berry Berry Berry Good",
     detail: "Double-berry · fresh & tangy",
     mood: "fruit",
     category: "Ice Cream",
@@ -128,7 +129,7 @@ const flavorInspiration = [
   },
   {
     id: "founder",
-    title: "Founder’s favorite",
+    title: "Founder’s Favorite",
     detail: "Caramel & pecan · a house legend",
     mood: "classics",
     category: "Ice Cream",
@@ -139,7 +140,7 @@ const flavorInspiration = [
   },
   {
     id: "mint",
-    title: "Mint chip moment",
+    title: "Cookie Mintster",
     detail: "Cool mint · loaded with cookies",
     mood: "classics",
     category: "Ice Cream",
@@ -149,7 +150,7 @@ const flavorInspiration = [
   },
   {
     id: "banana-caramel",
-    title: "Banana caramel crunch",
+    title: "Banana Caramel Crunch",
     detail: "Banana & caramel · sweet & crunchy",
     mood: "fruit",
     category: "Ice Cream",
@@ -605,40 +606,18 @@ function HowItWorksSection({ t }) {
       id="how-it-works"
     >
       <div className="mx-auto max-w-[1320px]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <h2
-              className="max-w-[16ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-brand-navy sm:text-5xl"
-              id="how-it-works-heading"
-            >
-              {t("How it works")}
-            </h2>
-            <p className="mt-3 max-w-xl text-base leading-7 text-[#65748a]">
-              {t(
-                "Choose your flavor, pay online, then collect your order or have it delivered.",
-              )}
-            </p>
-          </div>
-          <Link
-            className="inline-flex min-h-11 w-fit items-center gap-2 rounded-lg bg-brand-navy px-5 text-sm font-bold text-white transition hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
-            to="/menu"
+        <div className="min-w-0">
+          <h2
+            className="max-w-[16ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-brand-navy sm:text-5xl"
+            id="how-it-works-heading"
           >
-            {t("Start an order")}
-            <svg
-              aria-hidden="true"
-              className="size-4"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M5 12h14m-6-6 6 6-6 6"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.8"
-              />
-            </svg>
-          </Link>
+            {t("How it works")}
+          </h2>
+          <p className="mt-3 max-w-xl text-base leading-7 text-[#65748a]">
+            {t(
+              "Choose your flavor, pay online, then collect your order or have it delivered.",
+            )}
+          </p>
         </div>
         <ol className="mt-8 grid gap-4 sm:mt-12 sm:grid-cols-3 sm:gap-5">
           {steps.map(({ step, title, description }) => (
@@ -1258,7 +1237,7 @@ export function HomePage() {
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
             />
-            <div className="mx-auto max-w-[1320px] px-5 pb-16 pt-4 max-sm:pb-10 sm:px-8 sm:pb-20 lg:px-12 lg:pb-24">
+            <div className="mx-auto max-w-[1320px] px-5 pb-6 pt-4 sm:px-8 sm:pb-8 lg:px-12 lg:pb-10">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="font-display text-xl font-extrabold text-white sm:text-2xl">
                   {t("Why people love us")}
@@ -1342,16 +1321,6 @@ export function HomePage() {
               </div>
             </div>
           </div>
-          {/* Same curved bottom edge as the flavors/menu page hero (PageHero). */}
-          <svg
-            aria-hidden="true"
-            className="absolute inset-x-0 -bottom-px z-10 h-10 w-full text-[#fbfaf5] sm:h-14 lg:h-20"
-            fill="currentColor"
-            preserveAspectRatio="none"
-            viewBox="0 0 1440 80"
-          >
-            <path d="M0 80V42C240 4 480 0 720 22s480 44 720 4v54H0Z" />
-          </svg>
         </section>
 
         {/* How ordering works, before the browsing starts: a first-time visitor should
@@ -1407,7 +1376,7 @@ export function HomePage() {
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div
                 aria-label={t("Filter flavor inspiration")}
-                className="flex flex-wrap gap-2.5"
+                className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-2.5"
                 role="group"
               >
                 {[
@@ -1420,7 +1389,7 @@ export function HomePage() {
                   return (
                     <button
                       aria-pressed={selected}
-                      className={`min-h-11 rounded-lg border px-4 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 ${
+                      className={`min-h-11 w-full rounded-lg border px-3 py-2.5 text-center text-[13px] font-bold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 sm:w-auto sm:px-4 sm:text-left sm:text-sm sm:leading-normal ${
                         selected
                           ? "border-brand-navy bg-brand-navy text-white"
                           : "border-[#dce3eb] bg-white text-brand-blue hover:border-brand-navy hover:bg-[#f4f6f8]"
@@ -1747,7 +1716,7 @@ export function HomePage() {
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div
                 aria-label={t("Filter cakes")}
-                className="flex flex-wrap gap-2.5"
+                className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-2.5"
                 role="group"
               >
                 {featuredCakeTypes.map(({ id, label }) => {
@@ -1755,7 +1724,7 @@ export function HomePage() {
                   return (
                     <button
                       aria-pressed={selected}
-                      className={`min-h-11 rounded-lg border px-4 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 ${
+                      className={`min-h-11 w-full rounded-lg border px-3 py-2.5 text-center text-[13px] font-bold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 last:col-span-2 sm:w-auto sm:px-4 sm:text-left sm:text-sm sm:leading-normal sm:last:col-span-1 ${
                         selected
                           ? "border-brand-navy bg-brand-navy text-white"
                           : "border-[#dce3eb] bg-white text-brand-blue hover:border-brand-navy hover:bg-[#f4f6f8]"
@@ -2049,31 +2018,7 @@ export function HomePage() {
             the row back to the first four. */}
         <RecentlyViewed paged />
 
-        {/* A short close: one call to action, then the footer. */}
-        <section aria-labelledby="home-cta-heading" className="bg-[#f4f6f8] px-5 py-12 text-center sm:px-8 sm:py-14 lg:px-10">
-          <div className="mx-auto max-w-2xl">
-            <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight text-brand-navy sm:text-4xl" id="home-cta-heading">
-              {t("Ready for a scoop?")}
-            </h2>
-            <p className="mt-3 text-base leading-7 text-[#65748a]">
-              {t("Order online for pickup or delivery, or browse the full menu and every flavor.")}
-            </p>
-            <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-brand-navy px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 sm:w-auto"
-                to="/flavors"
-              >
-                {t("Order now")}
-              </Link>
-              <Link
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-md px-6 py-3 text-sm font-extrabold text-brand-navy transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 sm:w-auto"
-                to="/menu"
-              >
-                {t("Browse the full menu")}
-              </Link>
-            </div>
-          </div>
-        </section>
+        <NewsletterSignup variant="home" />
       </main>
       <Footer />
     </div>

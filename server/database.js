@@ -31,23 +31,67 @@ export const databaseKind = configuredDatabaseBackend;
 // Built-in category covers that changed to better-matching photos: [category, old default, new].
 // Only covers still on the old default change, so covers an admin picked are kept.
 const CATEGORY_IMAGE_UPDATES = [
-  ["Ice Cream", "/menu-images/product-1.webp", "/menu-images/ice-cream-signature.webp"],
-  ["Silk & Sorbet", "/menu-images/product-5.webp", "/menu-images/silk-chocolate-shake.webp"],
+  [
+    "Ice Cream",
+    "/menu-images/product-1.webp",
+    "/menu-images/ice-cream-signature.webp",
+  ],
+  [
+    "Silk & Sorbet",
+    "/menu-images/product-5.webp",
+    "/menu-images/silk-chocolate-shake.webp",
+  ],
   ["Novelties", "/cream/cream%201.webp", "/menu-images/sorbet-cup.webp"],
-  ["Limited-Time Favorites", "/menu-images/product-3.webp", "/menu-images/limited-time-treats.webp"],
+  [
+    "Limited-Time Favorites",
+    "/menu-images/product-3.webp",
+    "/menu-images/limited-time-treats.webp",
+  ],
   // Official Cold Stone photos (rows run in order, so older defaults reach these too).
-  ["Ice Cream", "/menu-images/ice-cream-signature.webp", "/menu-official/ice-cream/signature-creations/founders-favorite.webp"],
-  ["Cakes & Pies", "/cake-images/cake-1.webp", "/menu-official/cakes/birthday-cakes.webp"],
-  ["Silk & Sorbet", "/menu-images/silk-chocolate-shake.webp", "/menu-official/dairy-free-ice-cream-sorbet/sorbet.webp"],
-  ["Milkshakes & Smoothies", "/milk/mk-1.webp", "/menu-official/milkshakes-fruit-smoothies/milkshakes/very-vanilla.webp"],
-  ["Novelties", "/menu-images/sorbet-cup.webp", "/menu-official/novelties/ice-cream-cupcakes/cake-batter-delux.webp"],
-  ["Limited-Time Favorites", "/menu-images/limited-time-treats.webp", "/menu-official/limited-time-offers/the-cat-in-the-hats-cotton-candy-catastrophe.webp"],
+  [
+    "Ice Cream",
+    "/menu-images/ice-cream-signature.webp",
+    "/menu-official/ice-cream/signature-creations/founders-favorite.webp",
+  ],
+  [
+    "Cakes & Pies",
+    "/cake-images/cake-1.webp",
+    "/menu-official/cakes/birthday-cakes.webp",
+  ],
+  [
+    "Silk & Sorbet",
+    "/menu-images/silk-chocolate-shake.webp",
+    "/menu-official/dairy-free-ice-cream-sorbet/sorbet.webp",
+  ],
+  [
+    "Milkshakes & Smoothies",
+    "/milk/mk-1.webp",
+    "/menu-official/milkshakes-fruit-smoothies/milkshakes/very-vanilla.webp",
+  ],
+  [
+    "Novelties",
+    "/menu-images/sorbet-cup.webp",
+    "/menu-official/novelties/ice-cream-cupcakes/cake-batter-delux.webp",
+  ],
+  [
+    "Limited-Time Favorites",
+    "/menu-images/limited-time-treats.webp",
+    "/menu-official/limited-time-offers/the-cat-in-the-hats-cotton-candy-catastrophe.webp",
+  ],
 ];
 // Same idea for built-in category descriptions: only rows still showing the old text change,
 // so a description an admin has edited is kept.
 const CATEGORY_DESCRIPTION_UPDATES = [
-  ["Silk & Sorbet", "Dairy-free alternatives listed on the global menu.", "Creamy dairy-free scoops and fruity sorbets."],
-  ["Novelties", "Portable frozen treats from the global menu.", "Grab-and-go frozen treats: ice cream cupcakes and cookie sandwiches."],
+  [
+    "Silk & Sorbet",
+    "Dairy-free alternatives listed on the global menu.",
+    "Creamy dairy-free scoops and fruity sorbets.",
+  ],
+  [
+    "Novelties",
+    "Portable frozen treats from the global menu.",
+    "Grab-and-go frozen treats: ice cream cupcakes and cookie sandwiches.",
+  ],
 ];
 
 // Flavor photos that showed a different product: [flavor name, old photo, matching photo].
@@ -318,7 +362,9 @@ if (configuredDatabaseBackend === "postgres") {
       .map((column) => column.name),
   );
   if (!contactMessageColumns.has("replied_at")) {
-    sqliteDatabase.exec("ALTER TABLE contact_messages ADD COLUMN replied_at TEXT");
+    sqliteDatabase.exec(
+      "ALTER TABLE contact_messages ADD COLUMN replied_at TEXT",
+    );
   }
 
   function sqliteColumnExists(tableName, columnName) {
@@ -360,10 +406,18 @@ if (configuredDatabaseBackend === "postgres") {
     );
     CREATE INDEX IF NOT EXISTS idx_chat_messages_thread ON chat_messages(thread_id, id);
   `);
-  addColumnIfMissing("chat_messages", "guest_device", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing(
+    "chat_messages",
+    "guest_device",
+    "TEXT NOT NULL DEFAULT ''",
+  );
   // Human-handoff flag: the AI auto-reply raises this when the thread needs a person
   // (repeated confusion, refunds, complaints...). Staff clear it from the admin inbox.
-  addColumnIfMissing("chat_messages", "needs_attention", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(
+    "chat_messages",
+    "needs_attention",
+    "INTEGER NOT NULL DEFAULT 0",
+  );
   // Optional photo attachment on a customer chat message: a URL in the site's own
   // image storage (uploads or Supabase), uploaded through the public upload endpoint.
   addColumnIfMissing("chat_messages", "image_url", "TEXT NOT NULL DEFAULT ''");
@@ -413,7 +467,11 @@ if (configuredDatabaseBackend === "postgres") {
   addColumnIfMissing("customers", "referral_code", "TEXT");
   addColumnIfMissing("customers", "referred_by", "INTEGER");
   // Set once the welcome bonus for being referred has been paid, so it is paid once.
-  addColumnIfMissing("customers", "referral_bonus_paid", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(
+    "customers",
+    "referral_bonus_paid",
+    "INTEGER NOT NULL DEFAULT 0",
+  );
   // The referral token the customer arrived with, kept on the order that triggers the reward.
   addColumnIfMissing("orders", "referral_token", "TEXT");
   addColumnIfMissing(
@@ -474,7 +532,11 @@ if (configuredDatabaseBackend === "postgres") {
     "TEXT NOT NULL DEFAULT '[]'",
   );
   // What could harm someone, as opposed to dietary_tags, which says what a product is for.
-  addColumnIfMissing("menu_inventory", "allergens", "TEXT NOT NULL DEFAULT '[]'");
+  addColumnIfMissing(
+    "menu_inventory",
+    "allergens",
+    "TEXT NOT NULL DEFAULT '[]'",
+  );
   addColumnIfMissing(
     "menu_inventory",
     "low_stock_threshold",
@@ -719,7 +781,11 @@ if (configuredDatabaseBackend === "postgres") {
     CREATE INDEX IF NOT EXISTS idx_subscriptions_next ON subscriptions(status, next_delivery_date);
   `);
 
-  addColumnIfMissing("event_orders", "deposit_admin_seen", "INTEGER NOT NULL DEFAULT 1");
+  addColumnIfMissing(
+    "event_orders",
+    "deposit_admin_seen",
+    "INTEGER NOT NULL DEFAULT 1",
+  );
   addColumnIfMissing("cake_requests", "quoted_total", "INTEGER");
   addColumnIfMissing("cake_requests", "deposit_amount", "INTEGER");
   addColumnIfMissing("cake_requests", "admin_note", "TEXT NOT NULL DEFAULT ''");
@@ -728,17 +794,38 @@ if (configuredDatabaseBackend === "postgres") {
   addColumnIfMissing("cake_requests", "deposit_reference", "TEXT");
   addColumnIfMissing("cake_requests", "deposit_external_reference", "TEXT");
   addColumnIfMissing("cake_requests", "deposit_paid_at", "TEXT");
-  addColumnIfMissing("cake_requests", "deposit_admin_seen", "INTEGER NOT NULL DEFAULT 1");
-  addColumnIfMissing("customers", "profile_picture", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing(
+    "cake_requests",
+    "deposit_admin_seen",
+    "INTEGER NOT NULL DEFAULT 1",
+  );
+  addColumnIfMissing(
+    "customers",
+    "profile_picture",
+    "TEXT NOT NULL DEFAULT ''",
+  );
   addColumnIfMissing("orders", "review_reminder_sent_at", "TEXT");
-  addColumnIfMissing("orders", "hidden_by_customer", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(
+    "orders",
+    "hidden_by_customer",
+    "INTEGER NOT NULL DEFAULT 0",
+  );
   // Admin soft-delete: a delivered order removed from the Orders page stays
   // visible on the Delivered page, so this only hides it from that one list.
-  addColumnIfMissing("orders", "hidden_from_admin", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(
+    "orders",
+    "hidden_from_admin",
+    "INTEGER NOT NULL DEFAULT 0",
+  );
   // In-app admin notification for a newly placed order (mirrors the deposit "notices" pattern).
-  addColumnIfMissing("orders", "order_admin_seen", "INTEGER NOT NULL DEFAULT 1");
+  addColumnIfMissing(
+    "orders",
+    "order_admin_seen",
+    "INTEGER NOT NULL DEFAULT 1",
+  );
   addColumnIfMissing("orders", "order_notified_at", "TEXT");
   addColumnIfMissing("customers", "welcome_notification_sent_at", "TEXT");
+  addColumnIfMissing("customers", "chat_avoid", "TEXT NOT NULL DEFAULT '[]'");
   // Admin devices can subscribe to "new order" push notifications.
   addColumnIfMissing(
     "push_subscriptions",
@@ -750,10 +837,22 @@ if (configuredDatabaseBackend === "postgres") {
   addColumnIfMissing("admins", "totp_secret", "TEXT");
   addColumnIfMissing("admins", "totp_pending_secret", "TEXT");
   addColumnIfMissing("admins", "totp_enabled", "INTEGER NOT NULL DEFAULT 0");
-  addColumnIfMissing("admins", "totp_last_counter", "INTEGER NOT NULL DEFAULT -1");
-  addColumnIfMissing("admins", "totp_recovery_codes", "TEXT NOT NULL DEFAULT '[]'");
+  addColumnIfMissing(
+    "admins",
+    "totp_last_counter",
+    "INTEGER NOT NULL DEFAULT -1",
+  );
+  addColumnIfMissing(
+    "admins",
+    "totp_recovery_codes",
+    "TEXT NOT NULL DEFAULT '[]'",
+  );
   // The site was renamed from "Antixor Icy"; flavors that used the old default origin follow.
-  sqliteDatabase.prepare("UPDATE flavors SET origin = 'Cold Stone Creamery' WHERE origin = 'Antixor Icy'").run();
+  sqliteDatabase
+    .prepare(
+      "UPDATE flavors SET origin = 'Cold Stone Creamery' WHERE origin = 'Antixor Icy'",
+    )
+    .run();
   addColumnIfMissing(
     "admins",
     "store_id",
@@ -800,8 +899,16 @@ if (configuredDatabaseBackend === "postgres") {
   const refreshDefaultCategoryDescription = sqliteDatabase.prepare(
     "UPDATE menu_categories SET description = ? WHERE base_title = ? AND description = ?",
   );
-  for (const [baseTitle, previousDescription, description] of CATEGORY_DESCRIPTION_UPDATES) {
-    refreshDefaultCategoryDescription.run(description, baseTitle, previousDescription);
+  for (const [
+    baseTitle,
+    previousDescription,
+    description,
+  ] of CATEGORY_DESCRIPTION_UPDATES) {
+    refreshDefaultCategoryDescription.run(
+      description,
+      baseTitle,
+      previousDescription,
+    );
   }
   sqliteDatabase.transaction(() => {
     const updateFlavorImage = sqliteDatabase.prepare(
@@ -832,7 +939,8 @@ if (configuredDatabaseBackend === "postgres") {
     INSERT OR IGNORE INTO fulfillment_zones (location, pickup_enabled)
     VALUES (?, 1)
   `);
-  for (const location of cameroonDeliveryLocations) seedZone.run(location.value);
+  for (const location of cameroonDeliveryLocations)
+    seedZone.run(location.value);
   const seedStore = sqliteDatabase.prepare(`
     INSERT OR IGNORE INTO stores (
       fulfillment_zone_id, name, town, area, address, phone, map_query
@@ -852,7 +960,9 @@ if (configuredDatabaseBackend === "postgres") {
       `${location.town} — ${location.area}`,
     );
   }
-  sqliteDatabase.prepare(`
+  sqliteDatabase
+    .prepare(
+      `
     UPDATE orders
     SET store_id = (
           SELECT s.id FROM stores s
@@ -875,10 +985,13 @@ if (configuredDatabaseBackend === "postgres") {
           WHERE z.location = orders.delivery_city COLLATE NOCASE
         ), store_phone)
     WHERE store_id IS NULL AND delivery_city != ''
-  `).run();
+  `,
+    )
+    .run();
   if (
-    sqliteDatabase.prepare("SELECT COUNT(*) AS count FROM fulfillment_slots").get()
-      .count === 0
+    sqliteDatabase
+      .prepare("SELECT COUNT(*) AS count FROM fulfillment_slots")
+      .get().count === 0
   ) {
     const seedSlot = sqliteDatabase.prepare(`
       INSERT INTO fulfillment_slots (label, start_time, end_time, sort_order)
@@ -939,9 +1052,13 @@ if (configuredDatabaseBackend === "postgres") {
     ["push_subscriptions", "customer_id", "idx_push_subscriptions_customer"],
   ]) {
     if (sqliteColumnExists(table, column)) {
-      sqliteDatabase.exec(`CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}(${column})`);
+      sqliteDatabase.exec(
+        `CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}(${column})`,
+      );
     } else {
-      console.warn(`Skipping index ${indexName}: ${table}.${column} does not exist in this database.`);
+      console.warn(
+        `Skipping index ${indexName}: ${table}.${column} does not exist in this database.`,
+      );
     }
   }
   // Fresh statistics so the planner uses the new indexes immediately instead of
@@ -954,7 +1071,9 @@ if (configuredDatabaseBackend === "postgres") {
 export async function verifyDatabaseSchema() {
   if (databaseKind !== "postgres") return;
 
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     CREATE TABLE IF NOT EXISTS pending_customer_signups (
       email TEXT PRIMARY KEY,
       verification_id TEXT NOT NULL UNIQUE,
@@ -966,11 +1085,15 @@ export async function verifyDatabaseSchema() {
       created_at TEXT NOT NULL,
       expires_at TEXT NOT NULL
     )
-  `).run();
+  `,
+    )
+    .run();
 
   // Created on the Postgres path too, so a fresh hosted database does not need a migration
   // before the first password reset works.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     CREATE TABLE IF NOT EXISTS password_resets (
       email TEXT PRIMARY KEY,
       verification_id TEXT NOT NULL UNIQUE,
@@ -979,12 +1102,16 @@ export async function verifyDatabaseSchema() {
       created_at TEXT NOT NULL,
       expires_at TEXT NOT NULL
     )
-  `).run();
+  `,
+    )
+    .run();
 
   // Newsletter subscribers were added after the production database was migrated, so the
   // startup migration creates the table the same way it does for pending signups and
   // password resets — otherwise a hosted database fails the required-table check below.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     CREATE TABLE IF NOT EXISTS newsletter_subscribers (
       id SERIAL PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
@@ -993,16 +1120,30 @@ export async function verifyDatabaseSchema() {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'footer'
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS is_subscribed SMALLINT NOT NULL DEFAULT 1
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-  `).run();
+  `,
+    )
+    .run();
 
   const requiredTables = [
     "admins",
@@ -1028,76 +1169,155 @@ export async function verifyDatabaseSchema() {
     "payments",
     "stores",
   ];
-  const result = await database.prepare(`
+  const result = await database
+    .prepare(
+      `
     SELECT table_name AS "tableName"
     FROM information_schema.tables
     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
       AND table_name = ANY(?)
-  `).all(requiredTables);
+  `,
+    )
+    .all(requiredTables);
   const presentTables = new Set(result.map(({ tableName }) => tableName));
-  const missingTables = requiredTables.filter((tableName) => !presentTables.has(tableName));
+  const missingTables = requiredTables.filter(
+    (tableName) => !presentTables.has(tableName),
+  );
   if (missingTables.length) {
     throw new Error(
       `PostgreSQL schema is incomplete. Missing tables: ${missingTables.join(", ")}. ` +
-      "Migrate the SQLite schema and data into this database before starting the app.",
+        "Migrate the SQLite schema and data into this database before starting the app.",
     );
   }
 
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'owner'
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS branch_town TEXT
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS security_pin_hash TEXT
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS totp_secret TEXT
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS totp_pending_secret TEXT
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS totp_enabled INTEGER NOT NULL DEFAULT 0
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS totp_last_counter BIGINT NOT NULL DEFAULT -1
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS totp_recovery_codes TEXT NOT NULL DEFAULT '[]'
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS review_reminder_sent_at TEXT
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS hidden_by_customer SMALLINT NOT NULL DEFAULT 0
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS hidden_from_admin SMALLINT NOT NULL DEFAULT 0
-  `).run();
+  `,
+    )
+    .run();
   // In-app admin notification for a newly placed order. Without these the
   // order-notices query (and anything else that references them) fails with
   // "column o.order_admin_seen does not exist" on a migrated production database.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_admin_seen SMALLINT NOT NULL DEFAULT 1
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_notified_at TEXT
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_note TEXT NOT NULL DEFAULT ''
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_notification_sent_at TEXT
-  `).run();
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
+    ALTER TABLE customers ADD COLUMN IF NOT EXISTS chat_avoid TEXT NOT NULL DEFAULT '[]'
+  `,
+    )
+    .run();
   // Live chat: the table itself first. A hosted database that predates the live-chat
   // feature has no chat_messages at all, and the ALTER below would fail with
   // "relation chat_messages does not exist" — crashing startup before the port binds.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     CREATE TABLE IF NOT EXISTS chat_messages (
       id SERIAL PRIMARY KEY,
       thread_id TEXT NOT NULL,
@@ -1109,34 +1329,62 @@ export async function verifyDatabaseSchema() {
       guest_device TEXT NOT NULL DEFAULT '',
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     CREATE INDEX IF NOT EXISTS idx_chat_messages_thread ON chat_messages(thread_id, id)
-  `).run();
+  `,
+    )
+    .run();
   // Live-chat privacy: guest threads are bound to a browser device token so two
   // visitors never read each other's conversation. A production database created
   // before this column existed must still start.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS guest_device TEXT NOT NULL DEFAULT ''
-  `).run();
+  `,
+    )
+    .run();
   // Human-handoff flag raised by the AI auto-reply; staff clear it in the inbox.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS needs_attention SMALLINT NOT NULL DEFAULT 0
-  `).run();
+  `,
+    )
+    .run();
   // Optional photo attachment on a customer chat message (public upload endpoint).
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS image_url TEXT NOT NULL DEFAULT ''
-  `).run();
+  `,
+    )
+    .run();
   // Promotion → chat announcement marker (the promo code already announced).
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS promo_code TEXT NOT NULL DEFAULT ''
-  `).run();
+  `,
+    )
+    .run();
   // Analytics (#9): the auto-reply stamps the detected topic on the customer message.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS topic TEXT NOT NULL DEFAULT ''
-  `).run();
+  `,
+    )
+    .run();
   // Correction learning (#8): the AI draft vs what staff actually sent.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     CREATE TABLE IF NOT EXISTS chat_corrections (
       id SERIAL PRIMARY KEY,
       thread_id TEXT NOT NULL,
@@ -1145,56 +1393,106 @@ export async function verifyDatabaseSchema() {
       was_edited SMALLINT NOT NULL DEFAULT 0,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     CREATE INDEX IF NOT EXISTS idx_chat_corrections_time ON chat_corrections(created_at)
-  `).run();
+  `,
+    )
+    .run();
   // Menu inventory: the restock note and the allergen list. Without these the public menu
   // query selects columns that do not exist, and every menu read answers 500.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE menu_inventory ADD COLUMN IF NOT EXISTS restock_eta TEXT
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE menu_inventory ADD COLUMN IF NOT EXISTS low_stock_threshold INTEGER NOT NULL DEFAULT 5
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE menu_inventory ADD COLUMN IF NOT EXISTS allergens TEXT NOT NULL DEFAULT '[]'
-  `).run();
+  `,
+    )
+    .run();
   // Columns older than this month's work. A production database created before they existed
   // was already failing every menu read without them, so they belong here too.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE menu_inventory ADD COLUMN IF NOT EXISTS dietary_tags TEXT NOT NULL DEFAULT '[]'
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE menu_inventory ADD COLUMN IF NOT EXISTS is_available SMALLINT NOT NULL DEFAULT 1
-  `).run();
+  `,
+    )
+    .run();
   // Referrals: a shareable code per customer, who introduced them, and whether the bonus paid.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS referral_code TEXT
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS referred_by INTEGER
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS referral_bonus_paid INTEGER NOT NULL DEFAULT 0
-  `).run();
+  `,
+    )
+    .run();
   // Signups: the guest order to claim, and the referral code a friend arrived with.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE pending_customer_signups ADD COLUMN IF NOT EXISTS claim_order_id INTEGER
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE pending_customer_signups ADD COLUMN IF NOT EXISTS referral_code TEXT
-  `).run();
+  `,
+    )
+    .run();
   // Built-in menu products need a stock row before they can be ordered; products added to the
   // menu in shared/data.js get theirs here (existing rows and their stock are left untouched).
   for (const category of coldStoneMenuCategories) {
     for (const item of category.items) {
       await database
-        .prepare("INSERT INTO menu_inventory (item_id) VALUES (?) ON CONFLICT (item_id) DO NOTHING")
+        .prepare(
+          "INSERT INTO menu_inventory (item_id) VALUES (?) ON CONFLICT (item_id) DO NOTHING",
+        )
         .run(getMenuItemId(category.title, item.name));
     }
   }
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     CREATE TABLE IF NOT EXISTS event_orders (
       id SERIAL PRIMARY KEY,
       customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
@@ -1223,20 +1521,40 @@ export async function verifyDatabaseSchema() {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE event_orders ADD COLUMN IF NOT EXISTS deposit_admin_seen INTEGER NOT NULL DEFAULT 1
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_admin_seen INTEGER NOT NULL DEFAULT 1
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     CREATE INDEX IF NOT EXISTS idx_event_orders_customer ON event_orders(customer_id)
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     CREATE INDEX IF NOT EXISTS idx_event_orders_store_date ON event_orders(store_id, event_date)
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     CREATE TABLE IF NOT EXISTS push_subscriptions (
       id SERIAL PRIMARY KEY,
       customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
@@ -1245,15 +1563,23 @@ export async function verifyDatabaseSchema() {
       auth TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     CREATE INDEX IF NOT EXISTS idx_push_subscriptions_customer ON push_subscriptions(customer_id)
-  `).run();
+  `,
+    )
+    .run();
   // Ice cream subscriptions: a customer pre-books a recurring order. Each cycle the
   // store prepares the box on the next delivery date until the customer pauses or
   // cancels. Prices are captured at subscribe time so menu changes never surprise a
   // subscriber mid-plan. Mirrors the SQLite table defined above.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     CREATE TABLE IF NOT EXISTS subscriptions (
       id SERIAL PRIMARY KEY,
       customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
@@ -1268,69 +1594,155 @@ export async function verifyDatabaseSchema() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     CREATE INDEX IF NOT EXISTS idx_subscriptions_customer ON subscriptions(customer_id, id)
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     CREATE INDEX IF NOT EXISTS idx_subscriptions_next ON subscriptions(status, next_delivery_date)
-  `).run();
+  `,
+    )
+    .run();
   for (const [baseTitle, previousImage, image] of CATEGORY_IMAGE_UPDATES) {
-    await database.prepare(
-      "UPDATE menu_categories SET image = ? WHERE base_title = ? AND image = ?",
-    ).run(image, baseTitle, previousImage);
+    await database
+      .prepare(
+        "UPDATE menu_categories SET image = ? WHERE base_title = ? AND image = ?",
+      )
+      .run(image, baseTitle, previousImage);
   }
-  for (const [baseTitle, previousDescription, description] of CATEGORY_DESCRIPTION_UPDATES) {
-    await database.prepare(
-      "UPDATE menu_categories SET description = ? WHERE base_title = ? AND description = ?",
-    ).run(description, baseTitle, previousDescription);
+  for (const [
+    baseTitle,
+    previousDescription,
+    description,
+  ] of CATEGORY_DESCRIPTION_UPDATES) {
+    await database
+      .prepare(
+        "UPDATE menu_categories SET description = ? WHERE base_title = ? AND description = ?",
+      )
+      .run(description, baseTitle, previousDescription);
   }
   // One transaction, so the vanilla/strawberry swap never leaves both on the same photo.
   await database.transaction(async () => {
     for (const [name, previousImage, image] of FLAVOR_IMAGE_UPDATES) {
-      await database.prepare(
-        "UPDATE flavors SET image = ? WHERE name = ? AND image = ?",
-      ).run(image, name, previousImage);
+      await database
+        .prepare("UPDATE flavors SET image = ? WHERE name = ? AND image = ?")
+        .run(image, name, previousImage);
     }
   });
   // The site was renamed from "Antixor Icy"; update the default and flavors that used it.
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     ALTER TABLE flavors ALTER COLUMN origin SET DEFAULT 'Cold Stone Creamery'
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     UPDATE flavors SET origin = 'Cold Stone Creamery' WHERE origin = 'Antixor Icy'
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
-  `).run();
-  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS quoted_total INTEGER`).run();
-  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_amount INTEGER`).run();
-  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS admin_note TEXT NOT NULL DEFAULT ''`).run();
-  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS pay_token TEXT`).run();
-  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_provider TEXT`).run();
-  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_reference TEXT`).run();
-  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_external_reference TEXT`).run();
-  await database.prepare(`ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_paid_at TEXT`).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS quoted_total INTEGER`,
+    )
+    .run();
+  await database
+    .prepare(
+      `ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_amount INTEGER`,
+    )
+    .run();
+  await database
+    .prepare(
+      `ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS admin_note TEXT NOT NULL DEFAULT ''`,
+    )
+    .run();
+  await database
+    .prepare(
+      `ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS pay_token TEXT`,
+    )
+    .run();
+  await database
+    .prepare(
+      `ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_provider TEXT`,
+    )
+    .run();
+  await database
+    .prepare(
+      `ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_reference TEXT`,
+    )
+    .run();
+  await database
+    .prepare(
+      `ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_external_reference TEXT`,
+    )
+    .run();
+  await database
+    .prepare(
+      `ALTER TABLE cake_requests ADD COLUMN IF NOT EXISTS deposit_paid_at TEXT`,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE payments ADD COLUMN IF NOT EXISTS payment_provider TEXT NOT NULL DEFAULT 'stripe'
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE payments ADD COLUMN IF NOT EXISTS provider_reference TEXT
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     ALTER TABLE payments ADD COLUMN IF NOT EXISTS provider_transaction_id TEXT
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     UPDATE payments SET provider_reference = stripe_checkout_session_id
     WHERE provider_reference IS NULL
-  `).run();
-  await database.prepare(`
+  `,
+    )
+    .run();
+  await database
+    .prepare(
+      `
     CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_provider_reference
     ON payments(provider_reference)
-  `).run();
+  `,
+    )
+    .run();
 
   // The same hot-path indexes as the SQLite path. Production runs on PostgreSQL, so
   // without these the admin dashboard scans the whole orders table on every poll.
@@ -1342,42 +1754,125 @@ export async function verifyDatabaseSchema() {
   // with 42703. Skipping is correct: an index on a column that is not there cannot
   // help any query.
   const indexDefinitions = [
-    ['orders', 'hidden_from_admin', 'idx_orders_admin_visible', 'orders(hidden_from_admin, id)'],
-    ['orders', 'status', 'idx_orders_status_id', 'orders(status, id)'],
-    ['orders', 'store_id', 'idx_orders_store_id', 'orders(store_id, id)'],
-    ['orders', 'discount_code_id', 'idx_orders_discount_code', 'orders(discount_code_id)'],
-    ['order_items', 'order_id', 'idx_order_items_order_id', 'order_items(order_id)'],
-    ['stores', 'town', 'idx_stores_town', 'stores(town)'],
-    ['customers', 'referral_code', 'idx_customers_referral_code', 'customers(UPPER(referral_code))'],
-    ['menu_reviews', 'order_id', 'idx_menu_reviews_order_id', 'menu_reviews(order_id)'],
-    ['loyalty_ledger', 'order_id', 'idx_loyalty_ledger_order_id', 'loyalty_ledger(order_id)'],
-    ['customer_saved_carts', 'source_order_id', 'idx_saved_carts_source_order', 'customer_saved_carts(source_order_id)'],
-    ['chat_messages', 'customer_id', 'idx_chat_messages_customer', 'chat_messages(customer_id)'],
-    ['cake_requests', 'store_id', 'idx_cake_requests_store', 'cake_requests(store_id)'],
-    ['cake_requests', 'customer_id', 'idx_cake_requests_customer', 'cake_requests(customer_id)'],
-    ['admin_activity', 'admin_id', 'idx_admin_activity_admin', 'admin_activity(admin_id)'],
-    ['contact_messages', 'store_id', 'idx_contact_messages_store', 'contact_messages(store_id)'],
-    ['admins', 'store_id', 'idx_admins_store', 'admins(store_id)'],
-    ['subscriptions', 'store_id', 'idx_subscriptions_store', 'subscriptions(store_id)'],
-    ['push_subscriptions', 'customer_id', 'idx_push_subscriptions_customer', 'push_subscriptions(customer_id)'],
-    ['pending_customer_email_changes', 'customer_id', 'idx_pending_email_changes_customer', 'pending_customer_email_changes(customer_id)'],
+    [
+      "orders",
+      "hidden_from_admin",
+      "idx_orders_admin_visible",
+      "orders(hidden_from_admin, id)",
+    ],
+    ["orders", "status", "idx_orders_status_id", "orders(status, id)"],
+    ["orders", "store_id", "idx_orders_store_id", "orders(store_id, id)"],
+    [
+      "orders",
+      "discount_code_id",
+      "idx_orders_discount_code",
+      "orders(discount_code_id)",
+    ],
+    [
+      "order_items",
+      "order_id",
+      "idx_order_items_order_id",
+      "order_items(order_id)",
+    ],
+    ["stores", "town", "idx_stores_town", "stores(town)"],
+    [
+      "customers",
+      "referral_code",
+      "idx_customers_referral_code",
+      "customers(UPPER(referral_code))",
+    ],
+    [
+      "menu_reviews",
+      "order_id",
+      "idx_menu_reviews_order_id",
+      "menu_reviews(order_id)",
+    ],
+    [
+      "loyalty_ledger",
+      "order_id",
+      "idx_loyalty_ledger_order_id",
+      "loyalty_ledger(order_id)",
+    ],
+    [
+      "customer_saved_carts",
+      "source_order_id",
+      "idx_saved_carts_source_order",
+      "customer_saved_carts(source_order_id)",
+    ],
+    [
+      "chat_messages",
+      "customer_id",
+      "idx_chat_messages_customer",
+      "chat_messages(customer_id)",
+    ],
+    [
+      "cake_requests",
+      "store_id",
+      "idx_cake_requests_store",
+      "cake_requests(store_id)",
+    ],
+    [
+      "cake_requests",
+      "customer_id",
+      "idx_cake_requests_customer",
+      "cake_requests(customer_id)",
+    ],
+    [
+      "admin_activity",
+      "admin_id",
+      "idx_admin_activity_admin",
+      "admin_activity(admin_id)",
+    ],
+    [
+      "contact_messages",
+      "store_id",
+      "idx_contact_messages_store",
+      "contact_messages(store_id)",
+    ],
+    ["admins", "store_id", "idx_admins_store", "admins(store_id)"],
+    [
+      "subscriptions",
+      "store_id",
+      "idx_subscriptions_store",
+      "subscriptions(store_id)",
+    ],
+    [
+      "push_subscriptions",
+      "customer_id",
+      "idx_push_subscriptions_customer",
+      "push_subscriptions(customer_id)",
+    ],
+    [
+      "pending_customer_email_changes",
+      "customer_id",
+      "idx_pending_email_changes_customer",
+      "pending_customer_email_changes(customer_id)",
+    ],
   ];
   for (const [table, column, indexName, target] of indexDefinitions) {
-    const exists = await database.prepare(`
+    const exists = await database
+      .prepare(
+        `
       SELECT 1 FROM information_schema.columns
       WHERE table_schema = 'public' AND table_name = ? AND column_name = ?
-    `).get(table, column);
+    `,
+      )
+      .get(table, column);
     if (!exists) {
-      console.warn(`Skipping index ${indexName}: ${table}.${column} does not exist in this database.`);
+      console.warn(
+        `Skipping index ${indexName}: ${table}.${column} does not exist in this database.`,
+      );
       continue;
     }
-    await database.prepare(`CREATE INDEX IF NOT EXISTS ${indexName} ON ${target}`).run();
+    await database
+      .prepare(`CREATE INDEX IF NOT EXISTS ${indexName} ON ${target}`)
+      .run();
   }
   // Refresh planner statistics so the new indexes are used straight away.
-  await database.prepare('ANALYZE orders').run();
-  await database.prepare('ANALYZE order_items').run();
-  await database.prepare('ANALYZE stores').run();
-  await database.prepare('ANALYZE customers').run();
+  await database.prepare("ANALYZE orders").run();
+  await database.prepare("ANALYZE order_items").run();
+  await database.prepare("ANALYZE stores").run();
+  await database.prepare("ANALYZE customers").run();
 }
 
 export function toFlavor(row) {
@@ -1391,14 +1886,15 @@ export function toFlavor(row) {
 }
 
 export async function listFlavors() {
-  return (await database
-    .prepare("SELECT * FROM flavors ORDER BY id")
-    .all())
-    .map(toFlavor);
+  return (
+    await database.prepare("SELECT * FROM flavors ORDER BY id").all()
+  ).map(toFlavor);
 }
 
 export async function findFlavor(id) {
-  const row = await database.prepare("SELECT * FROM flavors WHERE id = ?").get(id);
+  const row = await database
+    .prepare("SELECT * FROM flavors WHERE id = ?")
+    .get(id);
   return row ? toFlavor(row) : null;
 }
 
@@ -1449,93 +1945,127 @@ function flavorCatalogValues(flavor) {
 }
 
 export async function migrateFlavorCatalog() {
-  await database.prepare(`
+  await database
+    .prepare(
+      `
     CREATE TABLE IF NOT EXISTS app_migrations (
       name TEXT PRIMARY KEY,
       applied_at TEXT
     )
-  `).run();
+  `,
+    )
+    .run();
 
-  const existingBananaFlavor = coldStoneFlavors.find(({ name }) => name === "Banana Caramel Swirl");
-  if (!existingBananaFlavor) throw new Error("The built-in banana flavor is missing from the catalog.");
+  const existingBananaFlavor = coldStoneFlavors.find(
+    ({ name }) => name === "Banana Caramel Swirl",
+  );
+  if (!existingBananaFlavor)
+    throw new Error("The built-in banana flavor is missing from the catalog.");
 
   if (databaseKind === "postgres") {
     await database.transaction(async () => {
-      await database.prepare(`
+      await database
+        .prepare(
+          `
         INSERT INTO app_migrations (name) VALUES (?) ON CONFLICT (name) DO NOTHING
-      `).run(FLAVOR_CATALOG_MIGRATION);
-      const migration = await database.prepare(`
+      `,
+        )
+        .run(FLAVOR_CATALOG_MIGRATION);
+      const migration = await database
+        .prepare(
+          `
         SELECT applied_at AS "appliedAt" FROM app_migrations WHERE name = ? FOR UPDATE
-      `).get(FLAVOR_CATALOG_MIGRATION);
+      `,
+        )
+        .get(FLAVOR_CATALOG_MIGRATION);
       if (migration?.appliedAt) return;
 
-      const legacy = await database.prepare(
-        "SELECT id FROM flavors WHERE name = ? AND detail = ?",
-      ).get(LEGACY_BANANA_FLAVOR.name, LEGACY_BANANA_FLAVOR.detail);
-      const banana = await database.prepare(
-        "SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)",
-      ).get(existingBananaFlavor.name);
+      const legacy = await database
+        .prepare("SELECT id FROM flavors WHERE name = ? AND detail = ?")
+        .get(LEGACY_BANANA_FLAVOR.name, LEGACY_BANANA_FLAVOR.detail);
+      const banana = await database
+        .prepare("SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)")
+        .get(existingBananaFlavor.name);
       if (legacy && !banana) {
-        await database.prepare(`
+        await database
+          .prepare(
+            `
           UPDATE flavors SET name = @name, detail = @detail, description = @description,
             price = @price, image = @image, color = @color, tag = @tag,
             servings = @servings, allergies = @allergies, origin = @origin
           WHERE id = @id
-        `).run({ ...flavorCatalogValues(existingBananaFlavor), id: legacy.id });
+        `,
+          )
+          .run({ ...flavorCatalogValues(existingBananaFlavor), id: legacy.id });
       }
 
       for (const flavor of coldStoneFlavors) {
-        const existing = await database.prepare(
-          "SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)",
-        ).get(flavor.name);
+        const existing = await database
+          .prepare("SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)")
+          .get(flavor.name);
         if (existing) continue;
-        await database.prepare(`
+        await database
+          .prepare(
+            `
           INSERT INTO flavors (name, detail, description, price, image, color, tag, servings, allergies, origin, stock)
           VALUES (@name, @detail, @description, @price, @image, @color, @tag, @servings, @allergies, @origin, @stock)
-        `).run(flavorCatalogValues(flavor));
+        `,
+          )
+          .run(flavorCatalogValues(flavor));
       }
 
-      await database.prepare("UPDATE app_migrations SET applied_at = ? WHERE name = ?")
+      await database
+        .prepare("UPDATE app_migrations SET applied_at = ? WHERE name = ?")
         .run(new Date().toISOString(), FLAVOR_CATALOG_MIGRATION);
     });
     return;
   }
 
   const applyMigration = database.transaction(() => {
-    database.prepare("INSERT OR IGNORE INTO app_migrations (name) VALUES (?)")
+    database
+      .prepare("INSERT OR IGNORE INTO app_migrations (name) VALUES (?)")
       .run(FLAVOR_CATALOG_MIGRATION);
-    const migration = database.prepare(
-      "SELECT applied_at FROM app_migrations WHERE name = ?",
-    ).get(FLAVOR_CATALOG_MIGRATION);
+    const migration = database
+      .prepare("SELECT applied_at FROM app_migrations WHERE name = ?")
+      .get(FLAVOR_CATALOG_MIGRATION);
     if (migration?.applied_at) return;
 
-    const legacy = database.prepare(
-      "SELECT id FROM flavors WHERE name = ? AND detail = ?",
-    ).get(LEGACY_BANANA_FLAVOR.name, LEGACY_BANANA_FLAVOR.detail);
-    const banana = database.prepare(
-      "SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)",
-    ).get(existingBananaFlavor.name);
+    const legacy = database
+      .prepare("SELECT id FROM flavors WHERE name = ? AND detail = ?")
+      .get(LEGACY_BANANA_FLAVOR.name, LEGACY_BANANA_FLAVOR.detail);
+    const banana = database
+      .prepare("SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)")
+      .get(existingBananaFlavor.name);
     if (legacy && !banana) {
-      database.prepare(`
+      database
+        .prepare(
+          `
         UPDATE flavors SET name = @name, detail = @detail, description = @description,
           price = @price, image = @image, color = @color, tag = @tag,
           servings = @servings, allergies = @allergies, origin = @origin
         WHERE id = @id
-      `).run({ ...flavorCatalogValues(existingBananaFlavor), id: legacy.id });
+      `,
+        )
+        .run({ ...flavorCatalogValues(existingBananaFlavor), id: legacy.id });
     }
 
     for (const flavor of coldStoneFlavors) {
-      const existing = database.prepare(
-        "SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)",
-      ).get(flavor.name);
+      const existing = database
+        .prepare("SELECT id FROM flavors WHERE LOWER(name) = LOWER(?)")
+        .get(flavor.name);
       if (existing) continue;
-      database.prepare(`
+      database
+        .prepare(
+          `
         INSERT INTO flavors (name, detail, description, price, image, color, tag, servings, allergies, origin, stock)
         VALUES (@name, @detail, @description, @price, @image, @color, @tag, @servings, @allergies, @origin, @stock)
-      `).run(flavorCatalogValues(flavor));
+      `,
+        )
+        .run(flavorCatalogValues(flavor));
     }
 
-    database.prepare("UPDATE app_migrations SET applied_at = ? WHERE name = ?")
+    database
+      .prepare("UPDATE app_migrations SET applied_at = ? WHERE name = ?")
       .run(new Date().toISOString(), FLAVOR_CATALOG_MIGRATION);
   });
   applyMigration();
@@ -1543,18 +2073,27 @@ export async function migrateFlavorCatalog() {
   // Flavors seeded before this fix said a vanilla scoop had "no common allergens". Correct it
   // once, on databases that already exist; the catalog itself is authoritative afterwards.
   const allergensFix = "cold-stone-flavor-allergens-v1";
-  database.prepare("INSERT OR IGNORE INTO app_migrations (name) VALUES (?)").run(allergensFix);
-  const applied = database.prepare("SELECT applied_at FROM app_migrations WHERE name = ?").get(allergensFix);
+  database
+    .prepare("INSERT OR IGNORE INTO app_migrations (name) VALUES (?)")
+    .run(allergensFix);
+  const applied = database
+    .prepare("SELECT applied_at FROM app_migrations WHERE name = ?")
+    .get(allergensFix);
   if (!applied?.applied_at) {
     database.transaction(() => {
       for (const flavor of coldStoneFlavors) {
         const correct = JSON.stringify(flavor.allergies || []);
-        database.prepare(`
+        database
+          .prepare(
+            `
           UPDATE flavors SET allergies = ?
           WHERE LOWER(name) = LOWER(?) AND (allergies IS NULL OR allergies IN ('["None common"]', '[]'))
-        `).run(correct, flavor.name);
+        `,
+          )
+          .run(correct, flavor.name);
       }
-      database.prepare("UPDATE app_migrations SET applied_at = ? WHERE name = ?")
+      database
+        .prepare("UPDATE app_migrations SET applied_at = ? WHERE name = ?")
         .run(new Date().toISOString(), allergensFix);
     })();
   }
@@ -1586,9 +2125,10 @@ function toMenuItem(row) {
 }
 
 export async function listCustomMenuItems() {
-  return (await database
-    .prepare(
-      `
+  return (
+    await database
+      .prepare(
+        `
     SELECT c.id, c.category_title, c.name, c.detail, c.image, c.price_xaf,
       COALESCE(i.stock, c.stock) AS stock,
       COALESCE(i.is_available, c.is_available) AS is_available,
@@ -1597,9 +2137,9 @@ export async function listCustomMenuItems() {
     LEFT JOIN menu_inventory i ON i.item_id = 'menu:custom:' || c.id
     ORDER BY c.id
   `,
-    )
-    .all())
-    .map(toMenuItem);
+      )
+      .all()
+  ).map(toMenuItem);
 }
 
 export async function findCustomMenuItem(id) {
@@ -1635,7 +2175,11 @@ export async function saveCustomMenuItem(item) {
         .prepare(
           "INSERT INTO menu_inventory (item_id, stock, is_available) VALUES (?, ?, ?)",
         )
-        .run(`menu:custom:${id}`, item.stock, item.isAvailable === false ? 0 : 1);
+        .run(
+          `menu:custom:${id}`,
+          item.stock,
+          item.isAvailable === false ? 0 : 1,
+        );
       return findCustomMenuItem(id);
     });
   }
@@ -1766,14 +2310,14 @@ export async function deleteCustomMenuItem(id) {
 }
 
 export async function listMenuCategories() {
-  return (await database
+  return await database
     .prepare(
       `
     SELECT id, title, description, image, icon, base_title AS "baseTitle", sort_order AS "sortOrder"
     FROM menu_categories ORDER BY sort_order, id
   `,
     )
-    .all());
+    .all();
 }
 
 export async function saveMenuCategory(category) {
@@ -1899,18 +2443,22 @@ export async function deleteMenuCategory(id) {
         .prepare("SELECT title, base_title FROM menu_categories WHERE id = ?")
         .get(id);
       if (!category) return "not_found";
-      const customItems = (await database
-        .prepare(
-          "SELECT COUNT(*) AS count FROM custom_menu_items WHERE category_title = ?",
-        )
-        .get(category.title)).count;
+      const customItems = (
+        await database
+          .prepare(
+            "SELECT COUNT(*) AS count FROM custom_menu_items WHERE category_title = ?",
+          )
+          .get(category.title)
+      ).count;
       const staticItems = category.base_title
         ? coldStoneMenuCategories.find(
             (entry) => entry.title === category.base_title,
           )?.items.length || 0
         : 0;
       if (customItems > 0 || staticItems > 0) return "not_empty";
-      await database.prepare("DELETE FROM menu_categories WHERE id = ?").run(id);
+      await database
+        .prepare("DELETE FROM menu_categories WHERE id = ?")
+        .run(id);
       return "deleted";
     });
   }
@@ -1941,9 +2489,15 @@ export async function updateMenuInventory(
   { stock, isAvailable, dietaryTags, allergens, lowStockThreshold, restockEta },
 ) {
   // undefined leaves the stored allergens alone; an array replaces them.
-  const allergenJson = allergens === undefined ? null : JSON.stringify(allergens);
+  const allergenJson =
+    allergens === undefined ? null : JSON.stringify(allergens);
   // null clears the note, undefined leaves what is stored alone.
-  const eta = restockEta === undefined ? undefined : restockEta ? String(restockEta).slice(0, 120) : null;
+  const eta =
+    restockEta === undefined
+      ? undefined
+      : restockEta
+        ? String(restockEta).slice(0, 120)
+        : null;
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       const result = await database
@@ -2008,39 +2562,41 @@ export async function updateMenuInventory(
 }
 
 export async function listMenuInventory() {
-  return (await database
-    .prepare(
-      `
+  return (
+    await database
+      .prepare(
+        `
     SELECT item_id AS "itemId", stock, reserved_stock AS "reservedStock",
       is_available AS "isAvailable", dietary_tags AS "dietaryTags", allergens AS "allergens",
       low_stock_threshold AS "lowStockThreshold", restock_eta AS "restockEta"
     FROM menu_inventory
   `,
-    )
-    .all())
-    .map((entry) => ({
-      ...entry,
-      isAvailable: Boolean(entry.isAvailable),
-      dietaryTags: JSON.parse(entry.dietaryTags),
-      allergens: JSON.parse(entry.allergens || '[]'),
-      lowStockThreshold: entry.lowStockThreshold,
-      restockEta: entry.restockEta || null,
-      availableQuantity: Math.max(0, entry.stock - entry.reservedStock),
-    }));
+      )
+      .all()
+  ).map((entry) => ({
+    ...entry,
+    isAvailable: Boolean(entry.isAvailable),
+    dietaryTags: JSON.parse(entry.dietaryTags),
+    allergens: JSON.parse(entry.allergens || "[]"),
+    lowStockThreshold: entry.lowStockThreshold,
+    restockEta: entry.restockEta || null,
+    availableQuantity: Math.max(0, entry.stock - entry.reservedStock),
+  }));
 }
 
 export async function listDiscountCodes() {
-  return (await database
-    .prepare(
-      `
+  return (
+    await database
+      .prepare(
+        `
     SELECT id, code, discount_type AS "discountType", discount_value AS "discountValue",
       minimum_total AS "minimumTotal", max_uses AS "maxUses", uses, is_active AS "isActive",
       reserved_uses AS "reservedUses", expires_at AS "expiresAt"
     FROM discount_codes ORDER BY id DESC
   `,
-    )
-    .all())
-    .map((code) => ({ ...code, isActive: Boolean(code.isActive) }));
+      )
+      .all()
+  ).map((code) => ({ ...code, isActive: Boolean(code.isActive) }));
 }
 
 export async function saveDiscountCode(code) {
@@ -2114,172 +2670,289 @@ export async function getValidDiscountCode(code, itemCount) {
 export async function rollbackCheckoutOrder(orderId) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const result = await database.prepare(`
+      const result = await database
+        .prepare(
+          `
         UPDATE orders SET status = 'payment_failed'
         WHERE id = ? AND status = 'pending_payment'
-      `).run(orderId);
+      `,
+        )
+        .run(orderId);
       if (result.changes === 0) return false;
 
-      const items = await database.prepare(
-        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
-      ).all(orderId);
+      const items = await database
+        .prepare(
+          'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
+        )
+        .all(orderId);
       for (const item of items) {
         if (item.flavorId !== null) {
-          await database.prepare(`
+          await database
+            .prepare(
+              `
             UPDATE flavors SET reserved_stock = MAX(0, reserved_stock - ?)
             WHERE id = ?
-          `).run(item.quantity, item.flavorId);
+          `,
+            )
+            .run(item.quantity, item.flavorId);
         } else if (item.menuItemId) {
-          await database.prepare(`
+          await database
+            .prepare(
+              `
             UPDATE menu_inventory SET reserved_stock = MAX(0, reserved_stock - ?)
             WHERE item_id = ?
-          `).run(item.quantity, item.menuItemId);
+          `,
+            )
+            .run(item.quantity, item.menuItemId);
         }
       }
 
-      await database.prepare(`
+      await database
+        .prepare(
+          `
         UPDATE discount_codes SET reserved_uses = MAX(0, reserved_uses - 1)
         WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
-      `).run(orderId);
+      `,
+        )
+        .run(orderId);
 
-      const order = await database.prepare(`
+      const order = await database
+        .prepare(
+          `
         SELECT customer_id AS "customerId", loyalty_points_redeemed AS "pointsRedeemed"
         FROM orders WHERE id = ?
-      `).get(orderId);
+      `,
+        )
+        .get(orderId);
       if (order?.customerId && order.pointsRedeemed > 0) {
-        await database.prepare(
-          "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
-        ).run(order.pointsRedeemed, order.customerId);
-        await database.prepare(`
+        await database
+          .prepare(
+            "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
+          )
+          .run(order.pointsRedeemed, order.customerId);
+        await database
+          .prepare(
+            `
           INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
           VALUES (?, ?, ?, 'refunded')
-        `).run(order.customerId, orderId, order.pointsRedeemed);
+        `,
+          )
+          .run(order.customerId, orderId, order.pointsRedeemed);
       }
       return true;
     });
   }
 
   return database.transaction(() => {
-    const result = database.prepare(`
+    const result = database
+      .prepare(
+        `
       UPDATE orders SET status = 'payment_failed'
       WHERE id = ? AND status = 'pending_payment'
-    `).run(orderId)
-    if (result.changes === 0) return false
+    `,
+      )
+      .run(orderId);
+    if (result.changes === 0) return false;
 
-    const items = database.prepare(
-      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
-    ).all(orderId)
+    const items = database
+      .prepare(
+        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
+      )
+      .all(orderId);
 
     for (const item of items) {
       if (item.flavorId !== null) {
-        database.prepare(`
+        database
+          .prepare(
+            `
           UPDATE flavors SET reserved_stock = MAX(0, reserved_stock - ?)
           WHERE id = ?
-        `).run(item.quantity, item.flavorId)
+        `,
+          )
+          .run(item.quantity, item.flavorId);
       } else if (item.menuItemId) {
-        database.prepare(`
+        database
+          .prepare(
+            `
           UPDATE menu_inventory SET reserved_stock = MAX(0, reserved_stock - ?)
           WHERE item_id = ?
-        `).run(item.quantity, item.menuItemId)
+        `,
+          )
+          .run(item.quantity, item.menuItemId);
       }
     }
 
-    database.prepare(`
+    database
+      .prepare(
+        `
       UPDATE discount_codes SET reserved_uses = MAX(0, reserved_uses - 1)
       WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
-    `).run(orderId)
+    `,
+      )
+      .run(orderId);
 
-    const order = database.prepare(`
+    const order = database
+      .prepare(
+        `
       SELECT customer_id AS "customerId", loyalty_points_redeemed AS "pointsRedeemed"
       FROM orders WHERE id = ?
-    `).get(orderId)
+    `,
+      )
+      .get(orderId);
     if (order?.customerId && order.pointsRedeemed > 0) {
-      database.prepare('UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?')
-        .run(order.pointsRedeemed, order.customerId)
-      database.prepare(`
+      database
+        .prepare(
+          "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
+        )
+        .run(order.pointsRedeemed, order.customerId);
+      database
+        .prepare(
+          `
         INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
         VALUES (?, ?, ?, 'refunded')
-      `).run(order.customerId, orderId, order.pointsRedeemed)
+      `,
+        )
+        .run(order.customerId, orderId, order.pointsRedeemed);
     }
 
-    return true
-  })()
+    return true;
+  })();
 }
 
-export async function finalizePaidCheckout(orderId, session, provider = "stripe") {
+export async function finalizePaidCheckout(
+  orderId,
+  session,
+  provider = "stripe",
+) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const result = await database.prepare(`
+      const result = await database
+        .prepare(
+          `
         UPDATE payments
         SET status = 'paid',
             stripe_payment_intent_id = ?, provider_transaction_id = ?, updated_at = CURRENT_TIMESTAMP
           WHERE order_id = ? AND provider_reference = ? AND payment_provider = ? AND status = 'pending'
-        `).run(
-          provider === "stripe" && typeof session.payment_intent === "string" ? session.payment_intent : null,
+        `,
+        )
+        .run(
+          provider === "stripe" && typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : null,
           provider === "campay" ? String(session.transactionId) : null,
-        orderId,
-        session.id,
-        provider,
-      );
-      if (result.changes === 0) return { paymentRecorded: false, earnedPoints: 0 };
+          orderId,
+          session.id,
+          provider,
+        );
+      if (result.changes === 0)
+        return { paymentRecorded: false, earnedPoints: 0 };
 
-      const items = await database.prepare(
-        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
-      ).all(orderId);
+      const items = await database
+        .prepare(
+          'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
+        )
+        .all(orderId);
       for (const item of items) {
-        const stockResult = item.flavorId !== null
-          ? await database.prepare(`
+        const stockResult =
+          item.flavorId !== null
+            ? await database
+                .prepare(
+                  `
               UPDATE flavors
               SET stock = stock - ?, reserved_stock = reserved_stock - ?
               WHERE id = ? AND stock >= ? AND reserved_stock >= ?
-            `).run(item.quantity, item.quantity, item.flavorId, item.quantity, item.quantity)
-          : await database.prepare(`
+            `,
+                )
+                .run(
+                  item.quantity,
+                  item.quantity,
+                  item.flavorId,
+                  item.quantity,
+                  item.quantity,
+                )
+            : await database
+                .prepare(
+                  `
               UPDATE menu_inventory
               SET stock = stock - ?, reserved_stock = reserved_stock - ?
               WHERE item_id = ? AND stock >= ? AND reserved_stock >= ?
-            `).run(item.quantity, item.quantity, item.menuItemId, item.quantity, item.quantity);
+            `,
+                )
+                .run(
+                  item.quantity,
+                  item.quantity,
+                  item.menuItemId,
+                  item.quantity,
+                  item.quantity,
+                );
         if (stockResult.changes === 0) {
-          throw new Error(`Reserved ${item.flavorId !== null ? "flavor" : "menu"} inventory is no longer available.`);
+          throw new Error(
+            `Reserved ${item.flavorId !== null ? "flavor" : "menu"} inventory is no longer available.`,
+          );
         }
       }
 
-      await database.prepare(`
+      await database
+        .prepare(
+          `
         UPDATE discount_codes SET uses = uses + 1, reserved_uses = MAX(0, reserved_uses - 1)
         WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
-      `).run(orderId);
-      const order = await database.prepare(`
+      `,
+        )
+        .run(orderId);
+      const order = await database
+        .prepare(
+          `
         SELECT customer_id AS "customerId", subtotal_cents AS "subtotalCents",
           discount_cents AS "discountCents"
         FROM orders WHERE id = ?
-      `).get(orderId);
+      `,
+        )
+        .get(orderId);
       let earnedPoints = 0;
       if (order.customerId) {
-        earnedPoints = Math.floor(Math.max(0, order.subtotalCents - order.discountCents) / 100);
+        earnedPoints = Math.floor(
+          Math.max(0, order.subtotalCents - order.discountCents) / 100,
+        );
         if (earnedPoints > 0) {
-          await database.prepare(
-            "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
-          ).run(earnedPoints, order.customerId);
-          await database.prepare(`
+          await database
+            .prepare(
+              "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
+            )
+            .run(earnedPoints, order.customerId);
+          await database
+            .prepare(
+              `
             INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
             VALUES (?, ?, ?, 'earned')
-          `).run(order.customerId, orderId, earnedPoints);
+          `,
+            )
+            .run(order.customerId, orderId, earnedPoints);
         }
         // If this customer was invited by a friend, this is their first paid order.
-        const referrer = await database.prepare(
-          'SELECT referred_by AS "referredBy" FROM customers WHERE id = ?',
-        ).get(order.customerId);
+        const referrer = await database
+          .prepare(
+            'SELECT referred_by AS "referredBy" FROM customers WHERE id = ?',
+          )
+          .get(order.customerId);
         if (referrer?.referredBy) {
           await awardReferralPoints({
             referrerId: referrer.referredBy,
             friendId: order.customerId,
             orderId,
-          }).catch((error) => console.error('Referral points were not awarded:', error.message));
+          }).catch((error) =>
+            console.error("Referral points were not awarded:", error.message),
+          );
         }
       }
-      await database.prepare(`
+      await database
+        .prepare(
+          `
         UPDATE orders SET status = CASE WHEN status = 'pending_payment' THEN 'processing' ELSE status END
         WHERE id = ?
-      `).run(orderId);
+      `,
+        )
+        .run(orderId);
       return { paymentRecorded: true, earnedPoints };
     });
   }
@@ -2290,105 +2963,177 @@ export async function finalizePaidCheckout(orderId, session, provider = "stripe"
       SET status = 'paid',
         stripe_payment_intent_id = ?, provider_transaction_id = ?, updated_at = CURRENT_TIMESTAMP
       WHERE order_id = ? AND provider_reference = ? AND payment_provider = ? AND status = 'pending'
-    `)
+    `);
     const updateOrder = database.prepare(`
       UPDATE orders SET status = CASE WHEN status = 'pending_payment' THEN 'processing' ELSE status END
       WHERE id = ?
-    `)
+    `);
 
     const result = updatePayment.run(
-      provider === 'stripe' && typeof session.payment_intent === 'string' ? session.payment_intent : null,
-      provider === 'campay' ? String(session.transactionId) : null,
+      provider === "stripe" && typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : null,
+      provider === "campay" ? String(session.transactionId) : null,
       orderId,
       session.id,
       provider,
-    )
-    if (result.changes === 0) return { paymentRecorded: false, earnedPoints: 0 }
+    );
+    if (result.changes === 0)
+      return { paymentRecorded: false, earnedPoints: 0 };
 
-    const items = database.prepare(
-      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
-    ).all(orderId)
+    const items = database
+      .prepare(
+        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
+      )
+      .all(orderId);
 
     const decrementStock = database.prepare(`
       UPDATE flavors
       SET stock = stock - ?, reserved_stock = reserved_stock - ?
       WHERE id = ? AND stock >= ? AND reserved_stock >= ?
-    `)
+    `);
 
     for (const item of items) {
       if (item.flavorId !== null) {
-        const stockResult = decrementStock.run(item.quantity, item.quantity, item.flavorId, item.quantity, item.quantity)
-        if (stockResult.changes === 0) throw new Error('Reserved flavor inventory is no longer available.')
+        const stockResult = decrementStock.run(
+          item.quantity,
+          item.quantity,
+          item.flavorId,
+          item.quantity,
+          item.quantity,
+        );
+        if (stockResult.changes === 0)
+          throw new Error("Reserved flavor inventory is no longer available.");
       } else if (item.menuItemId) {
-        const stockResult = database.prepare(`
+        const stockResult = database
+          .prepare(
+            `
           UPDATE menu_inventory
           SET stock = stock - ?, reserved_stock = reserved_stock - ?
           WHERE item_id = ? AND stock >= ? AND reserved_stock >= ?
-        `).run(item.quantity, item.quantity, item.menuItemId, item.quantity, item.quantity)
-        if (stockResult.changes === 0) throw new Error('Reserved menu inventory is no longer available.')
+        `,
+          )
+          .run(
+            item.quantity,
+            item.quantity,
+            item.menuItemId,
+            item.quantity,
+            item.quantity,
+          );
+        if (stockResult.changes === 0)
+          throw new Error("Reserved menu inventory is no longer available.");
       }
     }
 
-    database.prepare(`
+    database
+      .prepare(
+        `
       UPDATE discount_codes SET uses = uses + 1, reserved_uses = MAX(0, reserved_uses - 1)
       WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
-    `).run(orderId)
+    `,
+      )
+      .run(orderId);
 
-    const order = database.prepare(`
+    const order = database
+      .prepare(
+        `
       SELECT customer_id AS "customerId", subtotal_cents AS "subtotalCents",
         discount_cents AS "discountCents"
       FROM orders WHERE id = ?
-    `).get(orderId)
+    `,
+      )
+      .get(orderId);
 
-    let earnedPoints = 0
+    let earnedPoints = 0;
     if (order.customerId) {
-      earnedPoints = Math.floor(Math.max(0, order.subtotalCents - order.discountCents) / 100)
+      earnedPoints = Math.floor(
+        Math.max(0, order.subtotalCents - order.discountCents) / 100,
+      );
       if (earnedPoints > 0) {
-        database.prepare('UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?')
-          .run(earnedPoints, order.customerId)
-        database.prepare(`
+        database
+          .prepare(
+            "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
+          )
+          .run(earnedPoints, order.customerId);
+        database
+          .prepare(
+            `
           INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
           VALUES (?, ?, ?, 'earned')
-        `).run(order.customerId, orderId, earnedPoints)
+        `,
+          )
+          .run(order.customerId, orderId, earnedPoints);
       }
-      const friend = database.prepare(
-        'SELECT referred_by AS "referredBy" FROM customers WHERE id = ?',
-      ).get(order.customerId)
+      const friend = database
+        .prepare(
+          'SELECT referred_by AS "referredBy" FROM customers WHERE id = ?',
+        )
+        .get(order.customerId);
       if (friend?.referredBy) {
         try {
-          awardReferralPointsSync({ referrerId: friend.referredBy, friendId: order.customerId })
+          awardReferralPointsSync({
+            referrerId: friend.referredBy,
+            friendId: order.customerId,
+          });
         } catch (error) {
-          console.error('Referral points were not awarded:', error.message)
+          console.error("Referral points were not awarded:", error.message);
         }
       }
     }
 
-    updateOrder.run(orderId)
-    return { paymentRecorded: true, earnedPoints }
-  })()
+    updateOrder.run(orderId);
+    return { paymentRecorded: true, earnedPoints };
+  })();
 }
 
 export async function finalizeZeroAmountCheckout(orderId, orderItems) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       for (const item of orderItems) {
-        const result = item.flavorId !== null
-          ? await database.prepare(`
+        const result =
+          item.flavorId !== null
+            ? await database
+                .prepare(
+                  `
               UPDATE flavors SET stock = stock - ?, reserved_stock = reserved_stock - ?
               WHERE id = ? AND stock >= ? AND reserved_stock >= ?
-            `).run(item.quantity, item.quantity, item.flavorId, item.quantity, item.quantity)
-          : await database.prepare(`
+            `,
+                )
+                .run(
+                  item.quantity,
+                  item.quantity,
+                  item.flavorId,
+                  item.quantity,
+                  item.quantity,
+                )
+            : await database
+                .prepare(
+                  `
               UPDATE menu_inventory SET stock = stock - ?, reserved_stock = reserved_stock - ?
               WHERE item_id = ? AND stock >= ? AND reserved_stock >= ?
-            `).run(item.quantity, item.quantity, item.menuItemId, item.quantity, item.quantity);
+            `,
+                )
+                .run(
+                  item.quantity,
+                  item.quantity,
+                  item.menuItemId,
+                  item.quantity,
+                  item.quantity,
+                );
         if (!result.changes) {
-          throw new Error(`Reserved ${item.flavorId !== null ? "flavor" : "menu"} inventory is no longer available.`);
+          throw new Error(
+            `Reserved ${item.flavorId !== null ? "flavor" : "menu"} inventory is no longer available.`,
+          );
         }
       }
-      const result = await database.prepare(`
+      const result = await database
+        .prepare(
+          `
         UPDATE orders SET status = 'processing', fulfillment_status = 'preparing'
         WHERE id = ?
-      `).run(orderId);
+      `,
+        )
+        .run(orderId);
       return result.changes > 0;
     });
   }
@@ -2396,30 +3141,54 @@ export async function finalizeZeroAmountCheckout(orderId, orderItems) {
   return database.transaction(() => {
     for (const item of orderItems) {
       if (item.flavorId !== null) {
-        const result = database.prepare(`
+        const result = database
+          .prepare(
+            `
           UPDATE flavors SET stock = stock - ?, reserved_stock = reserved_stock - ?
           WHERE id = ? AND stock >= ? AND reserved_stock >= ?
-        `).run(item.quantity, item.quantity, item.flavorId, item.quantity, item.quantity)
+        `,
+          )
+          .run(
+            item.quantity,
+            item.quantity,
+            item.flavorId,
+            item.quantity,
+            item.quantity,
+          );
         if (!result.changes) {
-          throw new Error('Reserved flavor inventory is no longer available.')
+          throw new Error("Reserved flavor inventory is no longer available.");
         }
       } else if (item.menuItemId) {
-        const result = database.prepare(`
+        const result = database
+          .prepare(
+            `
           UPDATE menu_inventory SET stock = stock - ?, reserved_stock = reserved_stock - ?
           WHERE item_id = ? AND stock >= ? AND reserved_stock >= ?
-        `).run(item.quantity, item.quantity, item.menuItemId, item.quantity, item.quantity)
+        `,
+          )
+          .run(
+            item.quantity,
+            item.quantity,
+            item.menuItemId,
+            item.quantity,
+            item.quantity,
+          );
         if (!result.changes) {
-          throw new Error('Reserved menu inventory is no longer available.')
+          throw new Error("Reserved menu inventory is no longer available.");
         }
       }
     }
 
-    const result = database.prepare(`
+    const result = database
+      .prepare(
+        `
       UPDATE orders SET status = 'processing', fulfillment_status = 'preparing'
       WHERE id = ?
-    `).run(orderId)
-    return result.changes > 0
-  })()
+    `,
+      )
+      .run(orderId);
+    return result.changes > 0;
+  })();
 }
 
 export async function createPaymentRecord({
@@ -2430,12 +3199,23 @@ export async function createPaymentRecord({
   amountCents,
   currency,
 }) {
-  const result = await database.prepare(`
+  const result = await database
+    .prepare(
+      `
     INSERT INTO payments (
       order_id, stripe_checkout_session_id, payment_provider, provider_reference, amount_cents, currency
     )
     VALUES (?, ?, ?, ?, ?, ?)
-  `).run(orderId, stripeCheckoutSessionId, provider, providerReference, amountCents, currency)
+  `,
+    )
+    .run(
+      orderId,
+      stripeCheckoutSessionId,
+      provider,
+      providerReference,
+      amountCents,
+      currency,
+    );
   return {
     id: Number(result.lastInsertRowid),
     orderId,
@@ -2444,11 +3224,15 @@ export async function createPaymentRecord({
     providerReference,
     amountCents,
     currency,
-  }
+  };
 }
 
-export async function markCheckoutPaymentFailed(orderId, sessionId, provider = "stripe") {
-  return failPendingCheckout(orderId, sessionId, provider)
+export async function markCheckoutPaymentFailed(
+  orderId,
+  sessionId,
+  provider = "stripe",
+) {
+  return failPendingCheckout(orderId, sessionId, provider);
 }
 
 /**
@@ -2463,105 +3247,170 @@ export async function markCheckoutPaymentFailed(orderId, sessionId, provider = "
 async function failPendingCheckout(orderId, sessionId, provider) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const result = await database.prepare(`
+      const result = await database
+        .prepare(
+          `
         UPDATE payments SET status = 'failed', updated_at = CURRENT_TIMESTAMP
         WHERE order_id = ? AND provider_reference = ? AND payment_provider = ? AND status = 'pending'
-      `).run(orderId, sessionId, provider);
+      `,
+        )
+        .run(orderId, sessionId, provider);
       if (result.changes === 0) return false;
 
-      const items = await database.prepare(
-        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
-      ).all(orderId);
+      const items = await database
+        .prepare(
+          'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
+        )
+        .all(orderId);
       for (const item of items) {
         if (item.flavorId !== null) {
-          await database.prepare(`
+          await database
+            .prepare(
+              `
             UPDATE flavors SET reserved_stock = MAX(0, reserved_stock - ?)
             WHERE id = ?
-          `).run(item.quantity, item.flavorId);
+          `,
+            )
+            .run(item.quantity, item.flavorId);
         } else if (item.menuItemId) {
-          await database.prepare(`
+          await database
+            .prepare(
+              `
             UPDATE menu_inventory SET reserved_stock = MAX(0, reserved_stock - ?)
             WHERE item_id = ?
-          `).run(item.quantity, item.menuItemId);
+          `,
+            )
+            .run(item.quantity, item.menuItemId);
         }
       }
-      await database.prepare(`
+      await database
+        .prepare(
+          `
         UPDATE discount_codes SET reserved_uses = MAX(0, reserved_uses - 1)
         WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
-      `).run(orderId);
-      await database.prepare(`
+      `,
+        )
+        .run(orderId);
+      await database
+        .prepare(
+          `
         UPDATE orders SET status = 'payment_failed'
         WHERE id = ? AND status = 'pending_payment'
-      `).run(orderId);
+      `,
+        )
+        .run(orderId);
 
-      const order = await database.prepare(`
+      const order = await database
+        .prepare(
+          `
         SELECT customer_id AS "customerId", loyalty_points_redeemed AS "pointsRedeemed"
         FROM orders WHERE id = ?
-      `).get(orderId);
+      `,
+        )
+        .get(orderId);
       if (order?.customerId && order.pointsRedeemed > 0) {
-        await database.prepare(
-          "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
-        ).run(order.pointsRedeemed, order.customerId);
-        await database.prepare(`
+        await database
+          .prepare(
+            "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
+          )
+          .run(order.pointsRedeemed, order.customerId);
+        await database
+          .prepare(
+            `
           INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
           VALUES (?, ?, ?, 'refunded')
-        `).run(order.customerId, orderId, order.pointsRedeemed);
+        `,
+          )
+          .run(order.customerId, orderId, order.pointsRedeemed);
       }
       return true;
     });
   }
 
   return database.transaction(() => {
-    const result = database.prepare(`
+    const result = database
+      .prepare(
+        `
       UPDATE payments SET status = 'failed', updated_at = CURRENT_TIMESTAMP
       WHERE order_id = ? AND provider_reference = ? AND payment_provider = ? AND status = 'pending'
-    `).run(orderId, sessionId, provider)
-    if (result.changes === 0) return false
+    `,
+      )
+      .run(orderId, sessionId, provider);
+    if (result.changes === 0) return false;
 
-    const items = database.prepare(
-      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
-    ).all(orderId)
+    const items = database
+      .prepare(
+        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
+      )
+      .all(orderId);
 
     for (const item of items) {
       if (item.flavorId !== null) {
-        database.prepare(`
+        database
+          .prepare(
+            `
           UPDATE flavors SET reserved_stock = MAX(0, reserved_stock - ?)
           WHERE id = ?
-        `).run(item.quantity, item.flavorId)
+        `,
+          )
+          .run(item.quantity, item.flavorId);
       } else if (item.menuItemId) {
-        database.prepare(`
+        database
+          .prepare(
+            `
           UPDATE menu_inventory SET reserved_stock = MAX(0, reserved_stock - ?)
           WHERE item_id = ?
-        `).run(item.quantity, item.menuItemId)
+        `,
+          )
+          .run(item.quantity, item.menuItemId);
       }
     }
 
-    database.prepare(`
+    database
+      .prepare(
+        `
       UPDATE discount_codes SET reserved_uses = MAX(0, reserved_uses - 1)
       WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
-    `).run(orderId)
+    `,
+      )
+      .run(orderId);
 
-    database.prepare(`
+    database
+      .prepare(
+        `
       UPDATE orders SET status = 'payment_failed'
       WHERE id = ? AND status = 'pending_payment'
-    `).run(orderId)
+    `,
+      )
+      .run(orderId);
 
-    const order = database.prepare(`
+    const order = database
+      .prepare(
+        `
       SELECT customer_id AS "customerId", loyalty_points_redeemed AS "pointsRedeemed"
       FROM orders WHERE id = ?
-    `).get(orderId)
+    `,
+      )
+      .get(orderId);
 
     if (order?.customerId && order.pointsRedeemed > 0) {
-      database.prepare('UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?')
-        .run(order.pointsRedeemed, order.customerId)
-      database.prepare(`
+      database
+        .prepare(
+          "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
+        )
+        .run(order.pointsRedeemed, order.customerId);
+      database
+        .prepare(
+          `
         INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
         VALUES (?, ?, ?, 'refunded')
-      `).run(order.customerId, orderId, order.pointsRedeemed)
+      `,
+        )
+        .run(order.customerId, orderId, order.pointsRedeemed);
     }
 
-    return true
-  })()
+    return true;
+  })();
 }
 
 /**
@@ -2571,8 +3420,10 @@ async function failPendingCheckout(orderId, sessionId, provider) {
  * Stripe is off). Returns the number of orders released.
  */
 export async function expireAbandonedCheckouts(minutes = 20) {
-  const cutoff = `datetime('now', '-${Number(minutes) || 20} minutes')`
-  const stale = await database.prepare(`
+  const cutoff = `datetime('now', '-${Number(minutes) || 20} minutes')`;
+  const stale = await database
+    .prepare(
+      `
     SELECT o.id AS "orderId", p.provider_reference AS "sessionId", p.payment_provider AS "provider",
       o.customer_email AS "customerEmail", o.customer_name AS "customerName"
     FROM orders o
@@ -2581,53 +3432,80 @@ export async function expireAbandonedCheckouts(minutes = 20) {
       AND o.created_at <= ${cutoff}
     ORDER BY o.id
     LIMIT 100
-  `).all()
-  const abandoned = []
-  let released = 0
+  `,
+    )
+    .all();
+  const abandoned = [];
+  let released = 0;
   for (const order of stale) {
     // Handed to the caller before the order is failed, so a recovery email can
     // reach the shopper while the items are still in their bag.
-    abandoned.push({ orderId: order.orderId, customerEmail: order.customerEmail, customerName: order.customerName })
+    abandoned.push({
+      orderId: order.orderId,
+      customerEmail: order.customerEmail,
+      customerName: order.customerName,
+    });
     try {
-      if (await failPendingCheckout(order.orderId, order.sessionId, order.provider || 'stripe')) {
-        released += 1
+      if (
+        await failPendingCheckout(
+          order.orderId,
+          order.sessionId,
+          order.provider || "stripe",
+        )
+      ) {
+        released += 1;
       }
     } catch (error) {
-      console.error(`Unable to release abandoned checkout for order #${order.orderId}:`, error.message)
+      console.error(
+        `Unable to release abandoned checkout for order #${order.orderId}:`,
+        error.message,
+      );
     }
   }
-  return { released, abandoned }
+  return { released, abandoned };
 }
 
 export async function updateAdminProfilePicture(adminId, profilePicture) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      await database.prepare("UPDATE admins SET profile_picture = ? WHERE id = ?")
+      await database
+        .prepare("UPDATE admins SET profile_picture = ? WHERE id = ?")
         .run(profilePicture, adminId);
-      return database.prepare(`
+      return database
+        .prepare(
+          `
         SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
           a.role, a.store_id AS "storeId", s.name AS "storeName",
           s.town AS "storeTown", a.branch_town AS "branchTown"
         FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
-      `).get(adminId);
+      `,
+        )
+        .get(adminId);
     });
   }
 
   return database.transaction(() => {
-    database.prepare('UPDATE admins SET profile_picture = ? WHERE id = ?').run(profilePicture, adminId)
-    return database.prepare(`
+    database
+      .prepare("UPDATE admins SET profile_picture = ? WHERE id = ?")
+      .run(profilePicture, adminId);
+    return database
+      .prepare(
+        `
       SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
         a.role, a.store_id AS "storeId", s.name AS "storeName",
         s.town AS "storeTown", a.branch_town AS "branchTown"
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
-    `).get(adminId)
-  })()
+    `,
+      )
+      .get(adminId);
+  })();
 }
 
 export async function setCustomerBanStatus(id, isBanned) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const result = await database.prepare("UPDATE customers SET is_banned = ? WHERE id = ?")
+      const result = await database
+        .prepare("UPDATE customers SET is_banned = ? WHERE id = ?")
         .run(isBanned ? 1 : 0, id);
       if (!result.changes) return null;
       return { id, isBanned };
@@ -2635,40 +3513,56 @@ export async function setCustomerBanStatus(id, isBanned) {
   }
 
   return database.transaction(() => {
-    const result = database.prepare('UPDATE customers SET is_banned = ? WHERE id = ?')
-      .run(isBanned ? 1 : 0, id)
-    if (!result.changes) return null
-    return { id, isBanned }
-  })()
+    const result = database
+      .prepare("UPDATE customers SET is_banned = ? WHERE id = ?")
+      .run(isBanned ? 1 : 0, id);
+    if (!result.changes) return null;
+    return { id, isBanned };
+  })();
 }
 
 export async function clearDeliveredOrders(storeId = null, storeTown = null) {
-  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}`
-  const parameters = [...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
+  const storeFilter = `${storeTown === null ? "" : " AND store_id IN (SELECT id FROM stores WHERE town = ?)"}${storeId === null ? "" : " AND store_id = ?"}`;
+  const parameters = [
+    ...(storeTown === null ? [] : [storeTown]),
+    ...(storeId === null ? [] : [storeId]),
+  ];
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const count = Number((await database.prepare(
-        `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
-      ).get(...parameters)).count);
+      const count = Number(
+        (
+          await database
+            .prepare(
+              `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
+            )
+            .get(...parameters)
+        ).count,
+      );
       if (count <= 3) return { count, deleted: false };
-      const deletedCount = (await database.prepare(
-        `DELETE FROM orders WHERE status = 'delivered'${storeFilter}`,
-      ).run(...parameters)).changes;
+      const deletedCount = (
+        await database
+          .prepare(
+            `DELETE FROM orders WHERE status = 'delivered'${storeFilter}`,
+          )
+          .run(...parameters)
+      ).changes;
       return { count: deletedCount, deleted: true };
     });
   }
 
   return database.transaction(() => {
-    const { count } = database.prepare(
-      `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
-    ).get(...parameters)
-    if (count <= 3) return { count, deleted: false }
+    const { count } = database
+      .prepare(
+        `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
+      )
+      .get(...parameters);
+    if (count <= 3) return { count, deleted: false };
 
-    const deletedCount = database.prepare(
-      `DELETE FROM orders WHERE status = 'delivered'${storeFilter}`,
-    ).run(...parameters).changes
-    return { count: deletedCount, deleted: true }
-  })()
+    const deletedCount = database
+      .prepare(`DELETE FROM orders WHERE status = 'delivered'${storeFilter}`)
+      .run(...parameters).changes;
+    return { count: deletedCount, deleted: true };
+  })();
 }
 
 /**
@@ -2676,106 +3570,186 @@ export async function clearDeliveredOrders(storeId = null, storeTown = null) {
  * keeping them visible on the Delivered page. Requires more than three
  * delivered orders to run, mirroring clearDeliveredOrders' safeguard.
  */
-export async function hideDeliveredOrdersFromAdmin(storeId = null, storeTown = null) {
-  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}`
-  const parameters = [...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
+export async function hideDeliveredOrdersFromAdmin(
+  storeId = null,
+  storeTown = null,
+) {
+  const storeFilter = `${storeTown === null ? "" : " AND store_id IN (SELECT id FROM stores WHERE town = ?)"}${storeId === null ? "" : " AND store_id = ?"}`;
+  const parameters = [
+    ...(storeTown === null ? [] : [storeTown]),
+    ...(storeId === null ? [] : [storeId]),
+  ];
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const count = Number((await database.prepare(
-        `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
-      ).get(...parameters)).count);
+      const count = Number(
+        (
+          await database
+            .prepare(
+              `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
+            )
+            .get(...parameters)
+        ).count,
+      );
       if (count <= 3) return { count, deleted: false };
-      const hiddenCount = (await database.prepare(
-        `UPDATE orders SET hidden_from_admin = 1 WHERE status = 'delivered'${storeFilter}`,
-      ).run(...parameters)).changes;
+      const hiddenCount = (
+        await database
+          .prepare(
+            `UPDATE orders SET hidden_from_admin = 1 WHERE status = 'delivered'${storeFilter}`,
+          )
+          .run(...parameters)
+      ).changes;
       return { count: hiddenCount, deleted: true };
     });
   }
 
   return database.transaction(() => {
-    const { count } = database.prepare(
-      `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
-    ).get(...parameters)
-    if (count <= 3) return { count, deleted: false }
+    const { count } = database
+      .prepare(
+        `SELECT COUNT(*) AS count FROM orders WHERE status = 'delivered'${storeFilter}`,
+      )
+      .get(...parameters);
+    if (count <= 3) return { count, deleted: false };
 
-    const hiddenCount = database.prepare(
-      `UPDATE orders SET hidden_from_admin = 1 WHERE status = 'delivered'${storeFilter}`,
-    ).run(...parameters).changes
-    return { count: hiddenCount, deleted: true }
-  })()
+    const hiddenCount = database
+      .prepare(
+        `UPDATE orders SET hidden_from_admin = 1 WHERE status = 'delivered'${storeFilter}`,
+      )
+      .run(...parameters).changes;
+    return { count: hiddenCount, deleted: true };
+  })();
 }
 
-export async function createAdminAccount({ name, email, passwordHash, profilePicture = '', storeId = null, branchTown = null, role: requestedRole }) {
-  const role = requestedRole || (branchTown === null ? 'store_admin' : 'branch_admin')
+export async function createAdminAccount({
+  name,
+  email,
+  passwordHash,
+  profilePicture = "",
+  storeId = null,
+  branchTown = null,
+  role: requestedRole,
+}) {
+  const role =
+    requestedRole || (branchTown === null ? "store_admin" : "branch_admin");
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const result = await database.prepare(`
+      const result = await database
+        .prepare(
+          `
         INSERT INTO admins (name, email, password_hash, profile_picture, role, store_id, branch_town)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(name, email, passwordHash, profilePicture, role, storeId, branchTown);
-      return database.prepare(`
+      `,
+        )
+        .run(
+          name,
+          email,
+          passwordHash,
+          profilePicture,
+          role,
+          storeId,
+          branchTown,
+        );
+      return database
+        .prepare(
+          `
         SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
           a.role, a.store_id AS "storeId", s.name AS "storeName",
           s.town AS "storeTown", a.branch_town AS "branchTown"
         FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
-      `).get(Number(result.lastInsertRowid));
+      `,
+        )
+        .get(Number(result.lastInsertRowid));
     });
   }
 
   return database.transaction(() => {
-    const result = database.prepare(`
+    const result = database
+      .prepare(
+        `
       INSERT INTO admins (name, email, password_hash, profile_picture, role, store_id, branch_town)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(name, email, passwordHash, profilePicture, role, storeId, branchTown)
-    return database.prepare(`
+    `,
+      )
+      .run(
+        name,
+        email,
+        passwordHash,
+        profilePicture,
+        role,
+        storeId,
+        branchTown,
+      );
+    return database
+      .prepare(
+        `
       SELECT a.id, a.name, a.email, a.profile_picture AS "profilePicture",
         a.role, a.store_id AS "storeId", s.name AS "storeName",
         s.town AS "storeTown", a.branch_town AS "branchTown"
       FROM admins a LEFT JOIN stores s ON s.id = a.store_id WHERE a.id = ?
-    `).get(Number(result.lastInsertRowid))
-  })()
+    `,
+      )
+      .get(Number(result.lastInsertRowid));
+  })();
 }
 
 export async function removeAdminAccount(adminId) {
-  if (databaseKind === 'postgres') {
+  if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const owners = await database.prepare("SELECT id FROM admins WHERE role = 'owner' ORDER BY id FOR UPDATE").all()
-      const admin = await database.prepare('SELECT role FROM admins WHERE id = ?').get(adminId)
-      if (!admin) return 'not-found'
-      if (!['owner', 'store_admin', 'branch_admin'].includes(admin.role)) return 'not-removable'
-      if (admin.role === 'owner' && owners.length <= 1) return 'last-owner'
-      const result = await database.prepare('DELETE FROM admins WHERE id = ?').run(adminId)
-      return result.changes ? 'deleted' : 'not-found'
-    })
+      const owners = await database
+        .prepare(
+          "SELECT id FROM admins WHERE role = 'owner' ORDER BY id FOR UPDATE",
+        )
+        .all();
+      const admin = await database
+        .prepare("SELECT role FROM admins WHERE id = ?")
+        .get(adminId);
+      if (!admin) return "not-found";
+      if (!["owner", "store_admin", "branch_admin"].includes(admin.role))
+        return "not-removable";
+      if (admin.role === "owner" && owners.length <= 1) return "last-owner";
+      const result = await database
+        .prepare("DELETE FROM admins WHERE id = ?")
+        .run(adminId);
+      return result.changes ? "deleted" : "not-found";
+    });
   }
 
-  const result = database.prepare(`
+  const result = database
+    .prepare(
+      `
     DELETE FROM admins
     WHERE id = ?
       AND role IN ('owner', 'store_admin', 'branch_admin')
       AND (role != 'owner' OR (SELECT COUNT(*) FROM admins WHERE role = 'owner') > 1)
-  `).run(adminId)
-  if (result.changes) return 'deleted'
-  const admin = database.prepare('SELECT role FROM admins WHERE id = ?').get(adminId)
-  if (!admin) return 'not-found'
-  if (admin.role === 'owner') return 'last-owner'
-  return 'not-removable'
+  `,
+    )
+    .run(adminId);
+  if (result.changes) return "deleted";
+  const admin = database
+    .prepare("SELECT role FROM admins WHERE id = ?")
+    .get(adminId);
+  if (!admin) return "not-found";
+  if (admin.role === "owner") return "last-owner";
+  return "not-removable";
 }
 
 export async function updateFulfillmentZones(zones) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       for (const zone of zones) {
-        await database.prepare(`
+        await database
+          .prepare(
+            `
           UPDATE fulfillment_zones SET pickup_enabled = ?, delivery_enabled = ?,
             delivery_fee = ?, is_active = ? WHERE id = ?
-        `).run(
-          zone.pickupEnabled ? 1 : 0,
-          zone.deliveryEnabled ? 1 : 0,
-          Number(zone.deliveryFee),
-          zone.isActive ? 1 : 0,
-          Number(zone.id),
-        );
+        `,
+          )
+          .run(
+            zone.pickupEnabled ? 1 : 0,
+            zone.deliveryEnabled ? 1 : 0,
+            Number(zone.deliveryFee),
+            zone.isActive ? 1 : 0,
+            Number(zone.id),
+          );
       }
       return zones.length;
     });
@@ -2785,7 +3759,7 @@ export async function updateFulfillmentZones(zones) {
     const update = database.prepare(`
       UPDATE fulfillment_zones SET pickup_enabled = ?, delivery_enabled = ?,
         delivery_fee = ?, is_active = ? WHERE id = ?
-    `)
+    `);
     for (const zone of zones) {
       update.run(
         zone.pickupEnabled ? 1 : 0,
@@ -2793,10 +3767,10 @@ export async function updateFulfillmentZones(zones) {
         Number(zone.deliveryFee),
         zone.isActive ? 1 : 0,
         Number(zone.id),
-      )
+      );
     }
-    return zones.length
-  })()
+    return zones.length;
+  })();
 }
 
 export async function updateFulfillmentSlots(slots) {
@@ -2804,52 +3778,58 @@ export async function updateFulfillmentSlots(slots) {
     return database.transaction(async () => {
       await database.prepare("DELETE FROM fulfillment_slots").run();
       for (const [index, slot] of slots.entries()) {
-        await database.prepare(`
+        await database
+          .prepare(
+            `
           INSERT INTO fulfillment_slots (label, start_time, end_time, is_active, sort_order)
           VALUES (?, ?, ?, ?, ?)
-        `).run(
-          slot.label.trim(),
-          slot.startTime,
-          slot.endTime,
-          slot.isActive ? 1 : 0,
-          index,
-        );
+        `,
+          )
+          .run(
+            slot.label.trim(),
+            slot.startTime,
+            slot.endTime,
+            slot.isActive ? 1 : 0,
+            index,
+          );
       }
       return slots.length;
     });
   }
 
   return database.transaction(() => {
-    database.prepare('DELETE FROM fulfillment_slots').run()
+    database.prepare("DELETE FROM fulfillment_slots").run();
     const insert = database.prepare(`
       INSERT INTO fulfillment_slots (label, start_time, end_time, is_active, sort_order)
       VALUES (?, ?, ?, ?, ?)
-    `)
-    slots.forEach((slot, index) => insert.run(
-      slot.label.trim(),
-      slot.startTime,
-      slot.endTime,
-      slot.isActive ? 1 : 0,
-      index,
-    ))
-    return slots.length
-  })()
+    `);
+    slots.forEach((slot, index) =>
+      insert.run(
+        slot.label.trim(),
+        slot.startTime,
+        slot.endTime,
+        slot.isActive ? 1 : 0,
+        index,
+      ),
+    );
+    return slots.length;
+  })();
 }
 
 // The store/town scope shared by every cake-request query, so the list and the count
 // can never drift apart.
 function cakeRequestScope(storeId, storeTown) {
-  const conditions = []
-  const parameters = []
+  const conditions = [];
+  const parameters = [];
   if (storeTown !== null) {
-    conditions.push('s.town = ?')
-    parameters.push(storeTown)
+    conditions.push("s.town = ?");
+    parameters.push(storeTown);
   }
   if (storeId !== null) {
-    conditions.push('r.store_id = ?')
-    parameters.push(storeId)
+    conditions.push("r.store_id = ?");
+    parameters.push(storeId);
   }
-  return { conditions, parameters }
+  return { conditions, parameters };
 }
 
 /**
@@ -2859,18 +3839,26 @@ function cakeRequestScope(storeId, storeTown) {
  * 15 seconds.
  */
 export async function countNewCakeRequests(storeId = null, storeTown = null) {
-  const { conditions, parameters } = cakeRequestScope(storeId, storeTown)
-  const result = await database.prepare(`
+  const { conditions, parameters } = cakeRequestScope(storeId, storeTown);
+  const result = await database
+    .prepare(
+      `
     SELECT COUNT(*) AS count FROM cake_requests r LEFT JOIN stores s ON s.id = r.store_id
-    WHERE ${["r.status = 'new'", ...conditions].join(' AND ')}
-  `).get(...parameters)
-  return Number(result?.count || 0)
+    WHERE ${["r.status = 'new'", ...conditions].join(" AND ")}
+  `,
+    )
+    .get(...parameters);
+  return Number(result?.count || 0);
 }
 
 export async function listCakeRequests(storeId = null, storeTown = null) {
-  const { conditions, parameters } = cakeRequestScope(storeId, storeTown)
-  const storeFilter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
-  const requests = await database.prepare(`
+  const { conditions, parameters } = cakeRequestScope(storeId, storeTown);
+  const storeFilter = conditions.length
+    ? `WHERE ${conditions.join(" AND ")}`
+    : "";
+  const requests = await database
+    .prepare(
+      `
     SELECT r.id, r.customer_id AS "customerId", r.customer_name AS "customerName", r.customer_email AS "customerEmail",
       r.customer_phone AS "customerPhone", r.size, r.flavor, r.message, r.toppings,
       r.pickup_date AS "pickupDate", r.status, r.store_id AS "storeId",
@@ -2879,49 +3867,74 @@ export async function listCakeRequests(storeId = null, storeTown = null) {
       r.admin_note AS "adminNote", r.deposit_paid_at AS "depositPaidAt"
     FROM cake_requests r LEFT JOIN stores s ON s.id = r.store_id
     ${storeFilter} ORDER BY r.id DESC LIMIT 200
-  `).all(...parameters)
+  `,
+    )
+    .all(...parameters);
   return requests.map((request) => ({
     ...request,
     toppings: JSON.parse(request.toppings),
-    quotedTotal: request.quotedTotal == null ? null : Number(request.quotedTotal),
-    depositAmount: request.depositAmount == null ? null : Number(request.depositAmount),
-    suggestedTotal: ({ Small: 18000, Medium: 22000, Large: 25000 })[request.size] || 22000,
-  }))
+    quotedTotal:
+      request.quotedTotal == null ? null : Number(request.quotedTotal),
+    depositAmount:
+      request.depositAmount == null ? null : Number(request.depositAmount),
+    suggestedTotal:
+      { Small: 18000, Medium: 22000, Large: 25000 }[request.size] || 22000,
+  }));
 }
 
-export async function setCakeRequestStatus(id, status, storeId = null, storeTown = null) {
-  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}`
-  const parameters = [status, id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
+export async function setCakeRequestStatus(
+  id,
+  status,
+  storeId = null,
+  storeTown = null,
+) {
+  const storeFilter = `${storeTown === null ? "" : " AND store_id IN (SELECT id FROM stores WHERE town = ?)"}${storeId === null ? "" : " AND store_id = ?"}`;
+  const parameters = [
+    status,
+    id,
+    ...(storeTown === null ? [] : [storeTown]),
+    ...(storeId === null ? [] : [storeId]),
+  ];
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const result = await database.prepare(
-        `UPDATE cake_requests SET status = ? WHERE id = ?${storeFilter}`,
-      ).run(...parameters);
+      const result = await database
+        .prepare(
+          `UPDATE cake_requests SET status = ? WHERE id = ?${storeFilter}`,
+        )
+        .run(...parameters);
       if (!result.changes) return null;
       return { id, status };
     });
   }
 
   return database.transaction(() => {
-    const result = database.prepare(
-      `UPDATE cake_requests SET status = ? WHERE id = ?${storeFilter}`,
-    ).run(...parameters)
-    if (!result.changes) return null
-    return { id, status }
-  })()
+    const result = database
+      .prepare(`UPDATE cake_requests SET status = ? WHERE id = ?${storeFilter}`)
+      .run(...parameters);
+    if (!result.changes) return null;
+    return { id, status };
+  })();
 }
 
-export async function setReviewApproval(id, isApproved, storeId = null, storeTown = null) {
-  const storeFilter = `${storeTown === null ? '' : ' AND EXISTS (SELECT 1 FROM orders JOIN stores ON stores.id = orders.store_id WHERE orders.id = menu_reviews.order_id AND stores.town = ?)'}${storeId === null ? '' : ' AND EXISTS (SELECT 1 FROM orders WHERE orders.id = menu_reviews.order_id AND orders.store_id = ?)'}`
+export async function setReviewApproval(
+  id,
+  isApproved,
+  storeId = null,
+  storeTown = null,
+) {
+  const storeFilter = `${storeTown === null ? "" : " AND EXISTS (SELECT 1 FROM orders JOIN stores ON stores.id = orders.store_id WHERE orders.id = menu_reviews.order_id AND stores.town = ?)"}${storeId === null ? "" : " AND EXISTS (SELECT 1 FROM orders WHERE orders.id = menu_reviews.order_id AND orders.store_id = ?)"}`;
   const parameters = [
     isApproved ? 1 : 0,
     id,
     ...(storeTown === null ? [] : [storeTown]),
     ...(storeId === null ? [] : [storeId]),
-  ]
+  ];
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const result = await database.prepare(`UPDATE menu_reviews SET is_approved = ? WHERE id = ?${storeFilter}`)
+      const result = await database
+        .prepare(
+          `UPDATE menu_reviews SET is_approved = ? WHERE id = ?${storeFilter}`,
+        )
         .run(...parameters);
       if (!result.changes) return null;
       return { id, isApproved };
@@ -2929,62 +3942,109 @@ export async function setReviewApproval(id, isApproved, storeId = null, storeTow
   }
 
   return database.transaction(() => {
-    const result = database.prepare(`UPDATE menu_reviews SET is_approved = ? WHERE id = ?${storeFilter}`)
-      .run(...parameters)
-    if (!result.changes) return null
-    return { id, isApproved }
-  })()
+    const result = database
+      .prepare(
+        `UPDATE menu_reviews SET is_approved = ? WHERE id = ?${storeFilter}`,
+      )
+      .run(...parameters);
+    if (!result.changes) return null;
+    return { id, isApproved };
+  })();
 }
 
 export async function deleteMenuReview(id, storeId = null, storeTown = null) {
-  const storeFilter = `${storeTown === null ? '' : ' AND EXISTS (SELECT 1 FROM orders JOIN stores ON stores.id = orders.store_id WHERE orders.id = menu_reviews.order_id AND stores.town = ?)'}${storeId === null ? '' : ' AND EXISTS (SELECT 1 FROM orders WHERE orders.id = menu_reviews.order_id AND orders.store_id = ?)'}`
-  const parameters = [id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
-  const result = await database.prepare(`DELETE FROM menu_reviews WHERE id = ?${storeFilter}`)
-    .run(...parameters)
-  if (!result.changes) return null
-  return { id }
+  const storeFilter = `${storeTown === null ? "" : " AND EXISTS (SELECT 1 FROM orders JOIN stores ON stores.id = orders.store_id WHERE orders.id = menu_reviews.order_id AND stores.town = ?)"}${storeId === null ? "" : " AND EXISTS (SELECT 1 FROM orders WHERE orders.id = menu_reviews.order_id AND orders.store_id = ?)"}`;
+  const parameters = [
+    id,
+    ...(storeTown === null ? [] : [storeTown]),
+    ...(storeId === null ? [] : [storeId]),
+  ];
+  const result = await database
+    .prepare(`DELETE FROM menu_reviews WHERE id = ?${storeFilter}`)
+    .run(...parameters);
+  if (!result.changes) return null;
+  return { id };
 }
 
 export async function addCustomerFavorite(customerId, itemId) {
-  const result = await database.prepare(
-    'INSERT OR IGNORE INTO customer_favorites (customer_id, item_id) VALUES (?, ?)',
-  ).run(customerId, itemId)
-  return { itemId, created: result.changes > 0 }
+  const result = await database
+    .prepare(
+      "INSERT OR IGNORE INTO customer_favorites (customer_id, item_id) VALUES (?, ?)",
+    )
+    .run(customerId, itemId);
+  return { itemId, created: result.changes > 0 };
 }
 
 export async function removeCustomerFavorite(customerId, itemId) {
-  const result = await database.prepare(
-    'DELETE FROM customer_favorites WHERE customer_id = ? AND item_id = ?',
-  ).run(customerId, itemId)
-  return result.changes > 0
+  const result = await database
+    .prepare(
+      "DELETE FROM customer_favorites WHERE customer_id = ? AND item_id = ?",
+    )
+    .run(customerId, itemId);
+  return result.changes > 0;
 }
 
-export async function registerCustomer({ name, email, passwordHash, profilePicture = '' }) {
-  const result = await database.prepare(`
+export async function registerCustomer({
+  name,
+  email,
+  passwordHash,
+  profilePicture = "",
+}) {
+  const result = await database
+    .prepare(
+      `
     INSERT INTO customers (name, email, password_hash, profile_picture)
     VALUES (?, ?, ?, ?)
-  `).run(name, email, passwordHash, profilePicture)
-  const customer = await database.prepare(`
+  `,
+    )
+    .run(name, email, passwordHash, profilePicture);
+  const customer = await database
+    .prepare(
+      `
     SELECT id, name, email, phone, delivery_city AS "deliveryCity",
       delivery_residence AS "deliveryResidence", profile_picture AS "profilePicture"
     FROM customers WHERE id = ?
-  `).get(Number(result.lastInsertRowid))
-  return customer
+  `,
+    )
+    .get(Number(result.lastInsertRowid));
+  return customer;
 }
 
-export async function updateCustomerProfile({ customerId, name, phone, deliveryCity, deliveryResidence, profilePicture }) {
-  const result = await database.prepare(`
+export async function updateCustomerProfile({
+  customerId,
+  name,
+  phone,
+  deliveryCity,
+  deliveryResidence,
+  profilePicture,
+}) {
+  const result = await database
+    .prepare(
+      `
     UPDATE customers
     SET name = ?, phone = ?, delivery_city = ?, delivery_residence = ?, profile_picture = ?
     WHERE id = ?
-  `).run(name, phone, deliveryCity, deliveryResidence, profilePicture, customerId)
-  if (!result.changes) return null
-  return database.prepare(`
+  `,
+    )
+    .run(
+      name,
+      phone,
+      deliveryCity,
+      deliveryResidence,
+      profilePicture,
+      customerId,
+    );
+  if (!result.changes) return null;
+  return database
+    .prepare(
+      `
     SELECT id, name, email, phone, delivery_city AS "deliveryCity",
       delivery_residence AS "deliveryResidence", profile_picture AS "profilePicture",
       loyalty_points AS "loyaltyPoints", is_banned AS "isBanned"
     FROM customers WHERE id = ?
-  `).get(customerId)
+  `,
+    )
+    .get(customerId);
 }
 
 // How many points a referrer earns when the friend they invited places a first order. One
@@ -2993,9 +4053,9 @@ export const REFERRAL_POINTS = 50;
 
 function makeReferralCode(customerId) {
   // Short, unambiguous (no O/0 or I/1), and derived from the id so it is stable.
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let number = customerId;
-  let code = '';
+  let code = "";
   do {
     code = alphabet[number % alphabet.length] + code;
     number = Math.floor(number / alphabet.length);
@@ -3004,143 +4064,230 @@ function makeReferralCode(customerId) {
 }
 
 export async function ensureReferralCode(customerId) {
-  const existing = await database.prepare('SELECT referral_code AS "referralCode" FROM customers WHERE id = ?').get(customerId);
+  const existing = await database
+    .prepare(
+      'SELECT referral_code AS "referralCode" FROM customers WHERE id = ?',
+    )
+    .get(customerId);
   if (!existing) return null;
   if (existing.referralCode) return existing.referralCode;
   const code = makeReferralCode(customerId);
-  await database.prepare('UPDATE customers SET referral_code = ? WHERE id = ? AND referral_code IS NULL').run(code, customerId);
+  await database
+    .prepare(
+      "UPDATE customers SET referral_code = ? WHERE id = ? AND referral_code IS NULL",
+    )
+    .run(code, customerId);
   return code;
 }
 
 /** The customer who owns a referral code, or null. */
 export async function findCustomerByReferralCode(code) {
-  const normalized = String(code || '').trim().toUpperCase();
+  const normalized = String(code || "")
+    .trim()
+    .toUpperCase();
   if (!normalized) return null;
-  return ((await database.prepare(
-    'SELECT id, name FROM customers WHERE UPPER(referral_code) = ?',
-  ).get(normalized)) || null);
+  return (
+    (await database
+      .prepare("SELECT id, name FROM customers WHERE UPPER(referral_code) = ?")
+      .get(normalized)) || null
+  );
 }
 
 /**
  * Pay the referrer once, when their invited friend places a first paid order.
  * Returns the points awarded (0 when nothing was due).
  */
-export async function awardReferralPoints({ referrerId, friendId, orderId: _orderId }) {
-  if (!referrerId || !friendId || Number(referrerId) === Number(friendId)) return 0;
-  const friend = await database.prepare(
-    'SELECT referred_by AS "referredBy", referral_bonus_paid AS "paid" FROM customers WHERE id = ?',
-  ).get(friendId);
-  if (!friend || Number(friend.referredBy) !== Number(referrerId) || friend.paid) return 0;
-  const claimed = await database.prepare(
-    'UPDATE customers SET referral_bonus_paid = 1 WHERE id = ? AND referral_bonus_paid = 0',
-  ).run(friendId);
+export async function awardReferralPoints({
+  referrerId,
+  friendId,
+  orderId: _orderId,
+}) {
+  if (!referrerId || !friendId || Number(referrerId) === Number(friendId))
+    return 0;
+  const friend = await database
+    .prepare(
+      'SELECT referred_by AS "referredBy", referral_bonus_paid AS "paid" FROM customers WHERE id = ?',
+    )
+    .get(friendId);
+  if (
+    !friend ||
+    Number(friend.referredBy) !== Number(referrerId) ||
+    friend.paid
+  )
+    return 0;
+  const claimed = await database
+    .prepare(
+      "UPDATE customers SET referral_bonus_paid = 1 WHERE id = ? AND referral_bonus_paid = 0",
+    )
+    .run(friendId);
   if (!claimed.changes) return 0;
-  await database.prepare(
-    'UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?',
-  ).run(REFERRAL_POINTS, referrerId);
+  await database
+    .prepare(
+      "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
+    )
+    .run(REFERRAL_POINTS, referrerId);
   return REFERRAL_POINTS;
 }
 
 // The SQLite payment path is one synchronous transaction, so the same rule is applied inline.
 function awardReferralPointsSync({ referrerId, friendId }) {
   if (!referrerId || Number(referrerId) === Number(friendId)) return 0;
-  const friend = database.prepare(
-    'SELECT referred_by AS "referredBy", referral_bonus_paid AS "paid" FROM customers WHERE id = ?',
-  ).get(friendId);
-  if (!friend || Number(friend.referredBy) !== Number(referrerId) || friend.paid) return 0;
-  const claimed = database.prepare(
-    'UPDATE customers SET referral_bonus_paid = 1 WHERE id = ? AND referral_bonus_paid = 0',
-  ).run(friendId);
+  const friend = database
+    .prepare(
+      'SELECT referred_by AS "referredBy", referral_bonus_paid AS "paid" FROM customers WHERE id = ?',
+    )
+    .get(friendId);
+  if (
+    !friend ||
+    Number(friend.referredBy) !== Number(referrerId) ||
+    friend.paid
+  )
+    return 0;
+  const claimed = database
+    .prepare(
+      "UPDATE customers SET referral_bonus_paid = 1 WHERE id = ? AND referral_bonus_paid = 0",
+    )
+    .run(friendId);
   if (!claimed.changes) return 0;
-  database.prepare(
-    'UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?',
-  ).run(REFERRAL_POINTS, referrerId);
-  database.prepare(`
+  database
+    .prepare(
+      "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
+    )
+    .run(REFERRAL_POINTS, referrerId);
+  database
+    .prepare(
+      `
     INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
     VALUES (?, NULL, ?, 'earned')
-  `).run(referrerId, REFERRAL_POINTS);
+  `,
+    )
+    .run(referrerId, REFERRAL_POINTS);
   return REFERRAL_POINTS;
 }
 
 export async function saveCustomerCart({ customerId, orderId, label, items }) {
   // A bag saved from the cart page has no order, so NULL never collides in the unique key.
-  const sourceOrderId = Number.isSafeInteger(orderId) ? orderId : null
-  const result = await database.prepare(`
+  const sourceOrderId = Number.isSafeInteger(orderId) ? orderId : null;
+  const result = await database
+    .prepare(
+      `
     INSERT OR IGNORE INTO customer_saved_carts (customer_id, source_order_id, label, items_json)
     VALUES (?, ?, ?, ?)
-  `).run(customerId, sourceOrderId, label, JSON.stringify(items))
+  `,
+    )
+    .run(customerId, sourceOrderId, label, JSON.stringify(items));
   if (result.changes === 0) {
-    return null
+    return null;
   }
   // Read back what was just written. Matching on the order catches the order case; a bag
   // saved from the cart page is found by its label and contents.
-  const savedCart = sourceOrderId === null
-    ? await database.prepare(`
+  const savedCart =
+    sourceOrderId === null
+      ? await database
+          .prepare(
+            `
         SELECT id, source_order_id AS "sourceOrderId", label,
           items_json AS "itemsJson", created_at AS "createdAt"
         FROM customer_saved_carts
         WHERE customer_id = ? AND source_order_id IS NULL AND items_json = ?
         ORDER BY id DESC
-      `).get(customerId, JSON.stringify(items))
-    : await database.prepare(`
+      `,
+          )
+          .get(customerId, JSON.stringify(items))
+      : await database
+          .prepare(
+            `
         SELECT id, source_order_id AS "sourceOrderId", label,
           items_json AS "itemsJson", created_at AS "createdAt"
         FROM customer_saved_carts WHERE customer_id = ? AND source_order_id = ?
-      `).get(customerId, sourceOrderId)
-  if (!savedCart) return null
+      `,
+          )
+          .get(customerId, sourceOrderId);
+  if (!savedCart) return null;
   return {
     id: savedCart.id,
     sourceOrderId: savedCart.sourceOrderId,
     label: savedCart.label,
     items: JSON.parse(savedCart.itemsJson),
     createdAt: savedCart.createdAt,
-  }
+  };
 }
 
 export async function deleteSavedCart({ customerId, id }) {
-  const result = await database.prepare(
-    'DELETE FROM customer_saved_carts WHERE id = ? AND customer_id = ?',
-  ).run(id, customerId)
-  return result.changes > 0
+  const result = await database
+    .prepare(
+      "DELETE FROM customer_saved_carts WHERE id = ? AND customer_id = ?",
+    )
+    .run(id, customerId);
+  return result.changes > 0;
 }
 
 export async function deleteFlavor(id) {
-  const result = await database.prepare('DELETE FROM flavors WHERE id = ?').run(id)
-  return result.changes > 0
+  const result = await database
+    .prepare("DELETE FROM flavors WHERE id = ?")
+    .run(id);
+  return result.changes > 0;
 }
 
-export async function createMenuReview({ customerId, orderId, itemId, rating, review }) {
-  const result = await database.prepare(`
+export async function createMenuReview({
+  customerId,
+  orderId,
+  itemId,
+  rating,
+  review,
+}) {
+  const result = await database
+    .prepare(
+      `
     INSERT INTO menu_reviews (customer_id, order_id, item_id, rating, review)
     VALUES (?, ?, ?, ?, ?)
-  `).run(customerId, orderId, itemId, rating, review)
-  return { reviewId: Number(result.lastInsertRowid), pendingApproval: true }
+  `,
+    )
+    .run(customerId, orderId, itemId, rating, review);
+  return { reviewId: Number(result.lastInsertRowid), pendingApproval: true };
 }
 
-export async function createMenuReviews({ customerId, orderId, itemIds, rating, review }) {
+export async function createMenuReviews({
+  customerId,
+  orderId,
+  itemIds,
+  rating,
+  review,
+}) {
   if (databaseKind === "sqlite") {
-    return database.transaction(() => itemIds.map((itemId) => {
-      const result = database.prepare(`
+    return database.transaction(() =>
+      itemIds.map((itemId) => {
+        const result = database
+          .prepare(
+            `
         INSERT INTO menu_reviews (customer_id, order_id, item_id, rating, review)
         VALUES (?, ?, ?, ?, ?)
-      `).run(customerId, orderId, itemId, rating, review)
-      return { reviewId: Number(result.lastInsertRowid), pendingApproval: true }
-    }))()
+      `,
+          )
+          .run(customerId, orderId, itemId, rating, review);
+        return {
+          reviewId: Number(result.lastInsertRowid),
+          pendingApproval: true,
+        };
+      }),
+    )();
   }
 
   return database.transaction(async () => {
-    const results = []
+    const results = [];
     for (const itemId of itemIds) {
-      results.push(await createMenuReview({
-        customerId,
-        orderId,
-        itemId,
-        rating,
-        review,
-      }))
+      results.push(
+        await createMenuReview({
+          customerId,
+          orderId,
+          itemId,
+          rating,
+          review,
+        }),
+      );
     }
-    return results
-  })
+    return results;
+  });
 }
 
 export async function createCakeRequest({
@@ -3155,137 +4302,256 @@ export async function createCakeRequest({
   toppings,
   pickupDate,
 }) {
-  const result = await database.prepare(`
+  const result = await database
+    .prepare(
+      `
     INSERT INTO cake_requests (
       customer_id, store_id, customer_name, customer_email, customer_phone,
       size, flavor, message, toppings, pickup_date
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    customerId,
-    storeId,
-    customerName,
-    customerEmail,
-    customerPhone,
-    size,
-    flavor,
-    message,
-    JSON.stringify(toppings || []),
-    pickupDate,
-  )
-  return { id: Number(result.lastInsertRowid) }
+  `,
+    )
+    .run(
+      customerId,
+      storeId,
+      customerName,
+      customerEmail,
+      customerPhone,
+      size,
+      flavor,
+      message,
+      JSON.stringify(toppings || []),
+      pickupDate,
+    );
+  return { id: Number(result.lastInsertRowid) };
 }
 
-export async function createContactMessage({ name, email, phone, subject, message, storeId }) {
-  const result = await database.prepare(`
+export async function createContactMessage({
+  name,
+  email,
+  phone,
+  subject,
+  message,
+  storeId,
+}) {
+  const result = await database
+    .prepare(
+      `
     INSERT INTO contact_messages (store_id, name, email, phone, subject, message)
     VALUES (?, ?, ?, ?, ?, ?)
-  `).run(storeId, name, email, phone, subject, message)
-  return { messageId: Number(result.lastInsertRowid) }
+  `,
+    )
+    .run(storeId, name, email, phone, subject, message);
+  return { messageId: Number(result.lastInsertRowid) };
 }
 
 // Newsletter. Upsert by email so a repeat signup refreshes an existing row
 // instead of failing on the UNIQUE constraint. The source must already be one
 // of the allowed values; the API route normalizes it before calling.
-const NEWSLETTER_SOURCES = new Set(['footer', 'checkout', 'admin'])
+const NEWSLETTER_SOURCES = new Set(["footer", "checkout", "admin"]);
 
-export async function subscribeNewsletter(email, source = 'footer') {
-  const safeSource = NEWSLETTER_SOURCES.has(source) ? source : 'footer'
-  const existing = await database.prepare(`
+export async function subscribeNewsletter(email, source = "footer") {
+  const safeSource = NEWSLETTER_SOURCES.has(source) ? source : "footer";
+  const existing = await database
+    .prepare(
+      `
     SELECT id FROM newsletter_subscribers WHERE email = ?
-  `).get(email)
-  await database.prepare(`
+  `,
+    )
+    .get(email);
+  await database
+    .prepare(
+      `
     INSERT INTO newsletter_subscribers (email, source, is_subscribed)
     VALUES (?, ?, 1)
     ON CONFLICT (email) DO UPDATE
       SET source = excluded.source, is_subscribed = 1, updated_at = CURRENT_TIMESTAMP
-  `).run(email, safeSource)
-  const subscriber = await database.prepare(`
+  `,
+    )
+    .run(email, safeSource);
+  const subscriber = await database
+    .prepare(
+      `
     SELECT id, email, source, is_subscribed AS "isSubscribed", created_at AS "createdAt"
     FROM newsletter_subscribers WHERE email = ?
-  `).get(email)
-  return { created: !existing, subscriber }
+  `,
+    )
+    .get(email);
+  return { created: !existing, subscriber };
+}
+
+export async function rememberChatAvoid(customerId, labels) {
+  const incoming = [...new Set((labels || []).map((label) => String(label || "").trim().toLowerCase()).filter(Boolean))].slice(0, 6);
+  if (!customerId || !incoming.length) return [];
+  const row = await database.prepare(`SELECT chat_avoid AS avoid FROM customers WHERE id = ?`).get(customerId);
+  let saved = [];
+  try {
+    const parsed = JSON.parse(row?.avoid || "[]");
+    saved = Array.isArray(parsed) ? parsed : [];
+  } catch {
+    saved = [];
+  }
+  const next = [...new Set([...saved, ...incoming])].slice(0, 8);
+  await database.prepare(`UPDATE customers SET chat_avoid = ? WHERE id = ?`).run(JSON.stringify(next), customerId);
+  return next;
 }
 
 export async function unsubscribeNewsletter(email) {
-  const result = await database.prepare(`
+  const result = await database
+    .prepare(
+      `
     UPDATE newsletter_subscribers SET is_subscribed = 0, updated_at = CURRENT_TIMESTAMP WHERE email = ?
-  `).run(email)
-  return result.changes > 0
+  `,
+    )
+    .run(email);
+  return result.changes > 0;
 }
 
-export async function listNewsletterSubscribers({ subscribedOnly = true } = {}) {
-  return database.prepare(`
+export async function listNewsletterSubscribers({
+  subscribedOnly = true,
+} = {}) {
+  return database
+    .prepare(
+      `
     SELECT id, email, source, is_subscribed AS "isSubscribed", created_at AS "createdAt", updated_at AS "updatedAt"
     FROM newsletter_subscribers
-    ${subscribedOnly ? 'WHERE is_subscribed = 1' : ''}
+    ${subscribedOnly ? "WHERE is_subscribed = 1" : ""}
     ORDER BY id DESC LIMIT 500
-  `).all()
+  `,
+    )
+    .all();
 }
 
-export async function markContactMessageRead(id, storeId = null, unassignedOnly = false, storeTown = null) {
-  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}${storeTown === null && storeId === null && unassignedOnly ? ' AND store_id IS NULL' : ''}`
-  const parameters = [id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
-  const result = await database.prepare(`UPDATE contact_messages SET is_read = 1 WHERE id = ?${storeFilter}`).run(...parameters)
-  return result.changes > 0
+export async function markContactMessageRead(
+  id,
+  storeId = null,
+  unassignedOnly = false,
+  storeTown = null,
+) {
+  const storeFilter = `${storeTown === null ? "" : " AND store_id IN (SELECT id FROM stores WHERE town = ?)"}${storeId === null ? "" : " AND store_id = ?"}${storeTown === null && storeId === null && unassignedOnly ? " AND store_id IS NULL" : ""}`;
+  const parameters = [
+    id,
+    ...(storeTown === null ? [] : [storeTown]),
+    ...(storeId === null ? [] : [storeId]),
+  ];
+  const result = await database
+    .prepare(
+      `UPDATE contact_messages SET is_read = 1 WHERE id = ?${storeFilter}`,
+    )
+    .run(...parameters);
+  return result.changes > 0;
 }
 
-export async function deleteContactMessage(id, storeId = null, unassignedOnly = false, storeTown = null) {
-  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}${storeTown === null && storeId === null && unassignedOnly ? ' AND store_id IS NULL' : ''}`
-  const parameters = [id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
-  const result = await database.prepare(`
+export async function deleteContactMessage(
+  id,
+  storeId = null,
+  unassignedOnly = false,
+  storeTown = null,
+) {
+  const storeFilter = `${storeTown === null ? "" : " AND store_id IN (SELECT id FROM stores WHERE town = ?)"}${storeId === null ? "" : " AND store_id = ?"}${storeTown === null && storeId === null && unassignedOnly ? " AND store_id IS NULL" : ""}`;
+  const parameters = [
+    id,
+    ...(storeTown === null ? [] : [storeTown]),
+    ...(storeId === null ? [] : [storeId]),
+  ];
+  const result = await database
+    .prepare(
+      `
     DELETE FROM contact_messages WHERE id = ?
     ${storeFilter}
-  `).run(...parameters)
-  return result.changes > 0
+  `,
+    )
+    .run(...parameters);
+  return result.changes > 0;
 }
 
-export async function deleteContactMessages(storeId = null, unassignedOnly = false, storeTown = null) {
-  const hasScope = storeTown !== null || storeId !== null
-  const storeFilter = `${hasScope ? ' WHERE' : unassignedOnly ? ' WHERE store_id IS NULL' : ''}${storeTown === null ? '' : ' store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeTown !== null && storeId !== null ? ' AND' : ''}${storeId === null ? '' : ' store_id = ?'}`
-  const parameters = [...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
-  const result = await database.prepare(`DELETE FROM contact_messages${storeFilter}`).run(...parameters)
-  return result.changes
+export async function deleteContactMessages(
+  storeId = null,
+  unassignedOnly = false,
+  storeTown = null,
+) {
+  const hasScope = storeTown !== null || storeId !== null;
+  const storeFilter = `${hasScope ? " WHERE" : unassignedOnly ? " WHERE store_id IS NULL" : ""}${storeTown === null ? "" : " store_id IN (SELECT id FROM stores WHERE town = ?)"}${storeTown !== null && storeId !== null ? " AND" : ""}${storeId === null ? "" : " store_id = ?"}`;
+  const parameters = [
+    ...(storeTown === null ? [] : [storeTown]),
+    ...(storeId === null ? [] : [storeId]),
+  ];
+  const result = await database
+    .prepare(`DELETE FROM contact_messages${storeFilter}`)
+    .run(...parameters);
+  return result.changes;
 }
 
-export async function markContactMessageReplied(id, storeId = null, unassignedOnly = false, storeTown = null) {
-  const storeFilter = `${storeTown === null ? '' : ' AND store_id IN (SELECT id FROM stores WHERE town = ?)'}${storeId === null ? '' : ' AND store_id = ?'}${storeTown === null && storeId === null && unassignedOnly ? ' AND store_id IS NULL' : ''}`
-  const parameters = [id, ...(storeTown === null ? [] : [storeTown]), ...(storeId === null ? [] : [storeId])]
-  const result = await database.prepare(
-    `UPDATE contact_messages SET is_read = 1, replied_at = CURRENT_TIMESTAMP WHERE id = ?${storeFilter}`,
-  ).run(...parameters)
-  if (!result.changes) return null
-  const { repliedAt } = await database.prepare(
-    `SELECT replied_at AS "repliedAt" FROM contact_messages WHERE id = ?${storeFilter}`,
-  ).get(...parameters)
-  return { repliedAt }
+export async function markContactMessageReplied(
+  id,
+  storeId = null,
+  unassignedOnly = false,
+  storeTown = null,
+) {
+  const storeFilter = `${storeTown === null ? "" : " AND store_id IN (SELECT id FROM stores WHERE town = ?)"}${storeId === null ? "" : " AND store_id = ?"}${storeTown === null && storeId === null && unassignedOnly ? " AND store_id IS NULL" : ""}`;
+  const parameters = [
+    id,
+    ...(storeTown === null ? [] : [storeTown]),
+    ...(storeId === null ? [] : [storeId]),
+  ];
+  const result = await database
+    .prepare(
+      `UPDATE contact_messages SET is_read = 1, replied_at = CURRENT_TIMESTAMP WHERE id = ?${storeFilter}`,
+    )
+    .run(...parameters);
+  if (!result.changes) return null;
+  const { repliedAt } = await database
+    .prepare(
+      `SELECT replied_at AS "repliedAt" FROM contact_messages WHERE id = ?${storeFilter}`,
+    )
+    .get(...parameters);
+  return { repliedAt };
 }
 
-export async function createAdminActivity({ adminId, adminName, action, method, path }) {
-  const result = await database.prepare(`
+export async function createAdminActivity({
+  adminId,
+  adminName,
+  action,
+  method,
+  path,
+}) {
+  const result = await database
+    .prepare(
+      `
     INSERT INTO admin_activity (admin_id, admin_name, action, method, path)
     VALUES (?, ?, ?, ?, ?)
-  `).run(adminId, adminName, action, method, path)
-  return { id: Number(result.lastInsertRowid) }
+  `,
+    )
+    .run(adminId, adminName, action, method, path);
+  return { id: Number(result.lastInsertRowid) };
 }
 
 export async function updateOrderFulfillmentStatus(id, fulfillmentStatus) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const status = fulfillmentStatus === "delivered" ? "delivered" : "processing";
-      const legacyStatus = fulfillmentStatus === "delivered"
-        ? "delivered"
-        : fulfillmentStatus === "ready"
-          ? "ready"
-          : "preparing";
-      const result = await database.prepare(`
+      const status =
+        fulfillmentStatus === "delivered" ? "delivered" : "processing";
+      const legacyStatus =
+        fulfillmentStatus === "delivered"
+          ? "delivered"
+          : fulfillmentStatus === "ready"
+            ? "ready"
+            : "preparing";
+      const result = await database
+        .prepare(
+          `
         UPDATE orders
         SET fulfillment_status = ?, delivery_stage = ?, status = ?,
           delivered_at = CASE WHEN ? = 'delivered' THEN CURRENT_TIMESTAMP ELSE delivered_at END
         WHERE id = ? AND status = 'processing'
-      `).run(legacyStatus, fulfillmentStatus, status, fulfillmentStatus, id);
+      `,
+        )
+        .run(legacyStatus, fulfillmentStatus, status, fulfillmentStatus, id);
 
       if (result.changes === 0) {
-        const order = await database.prepare("SELECT status FROM orders WHERE id = ?").get(id);
+        const order = await database
+          .prepare("SELECT status FROM orders WHERE id = ?")
+          .get(id);
         if (!order) return { changed: false, notFound: true };
         return { changed: false, notFound: false };
       }
@@ -3299,24 +4565,32 @@ export async function updateOrderFulfillmentStatus(id, fulfillmentStatus) {
   }
 
   return database.transaction(() => {
-    const status = fulfillmentStatus === 'delivered' ? 'delivered' : 'processing'
-    const legacyStatus = fulfillmentStatus === 'delivered'
-      ? 'delivered'
-      : fulfillmentStatus === 'ready'
-        ? 'ready'
-        : 'preparing'
+    const status =
+      fulfillmentStatus === "delivered" ? "delivered" : "processing";
+    const legacyStatus =
+      fulfillmentStatus === "delivered"
+        ? "delivered"
+        : fulfillmentStatus === "ready"
+          ? "ready"
+          : "preparing";
 
-    const result = database.prepare(`
+    const result = database
+      .prepare(
+        `
       UPDATE orders
       SET fulfillment_status = ?, delivery_stage = ?, status = ?,
         delivered_at = CASE WHEN ? = 'delivered' THEN CURRENT_TIMESTAMP ELSE delivered_at END
       WHERE id = ? AND status = 'processing'
-    `).run(legacyStatus, fulfillmentStatus, status, fulfillmentStatus, id)
+    `,
+      )
+      .run(legacyStatus, fulfillmentStatus, status, fulfillmentStatus, id);
 
     if (result.changes === 0) {
-      const order = database.prepare('SELECT status FROM orders WHERE id = ?').get(id)
-      if (!order) return { changed: false, notFound: true }
-      return { changed: false, notFound: false }
+      const order = database
+        .prepare("SELECT status FROM orders WHERE id = ?")
+        .get(id);
+      if (!order) return { changed: false, notFound: true };
+      return { changed: false, notFound: false };
     }
 
     return {
@@ -3324,20 +4598,27 @@ export async function updateOrderFulfillmentStatus(id, fulfillmentStatus) {
       notFound: false,
       fulfillmentStatus: legacyStatus,
       deliveryStage: fulfillmentStatus,
-    }
-  })()
+    };
+  })();
 }
 
 export async function deleteFailedOrder(id) {
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
-      const order = await database.prepare(`
+      const order = await database
+        .prepare(
+          `
         SELECT o.status AS "orderStatus", p.status AS "paymentStatus"
         FROM orders o LEFT JOIN payments p ON p.order_id = o.id
         WHERE o.id = ?
-      `).get(id);
+      `,
+        )
+        .get(id);
       if (!order) return "not_found";
-      if (order.orderStatus !== "payment_failed" || (order.paymentStatus && order.paymentStatus !== "failed")) {
+      if (
+        order.orderStatus !== "payment_failed" ||
+        (order.paymentStatus && order.paymentStatus !== "failed")
+      ) {
         return "not_failed";
       }
       await database.prepare("DELETE FROM orders WHERE id = ?").run(id);
@@ -3346,19 +4627,26 @@ export async function deleteFailedOrder(id) {
   }
 
   return database.transaction(() => {
-    const order = database.prepare(`
+    const order = database
+      .prepare(
+        `
       SELECT o.status AS "orderStatus", p.status AS "paymentStatus"
       FROM orders o LEFT JOIN payments p ON p.order_id = o.id
       WHERE o.id = ?
-    `).get(id)
-    if (!order) return 'not_found'
-    if (order.orderStatus !== 'payment_failed' || (order.paymentStatus && order.paymentStatus !== 'failed')) {
-      return 'not_failed'
+    `,
+      )
+      .get(id);
+    if (!order) return "not_found";
+    if (
+      order.orderStatus !== "payment_failed" ||
+      (order.paymentStatus && order.paymentStatus !== "failed")
+    ) {
+      return "not_failed";
     }
 
-    database.prepare('DELETE FROM orders WHERE id = ?').run(id)
-    return 'deleted'
-  })()
+    database.prepare("DELETE FROM orders WHERE id = ?").run(id);
+    return "deleted";
+  })();
 }
 
 /**
@@ -3368,18 +4656,26 @@ export async function deleteFailedOrder(id) {
  */
 export async function hideDeliveredOrderFromAdmin(id) {
   if (databaseKind === "postgres") {
-    const result = await database.prepare(`
+    const result = await database
+      .prepare(
+        `
       UPDATE orders SET hidden_from_admin = 1
       WHERE id = ? AND status = 'delivered'
-    `).run(id);
+    `,
+      )
+      .run(id);
     return result.changes ? "deleted" : "not_found";
   }
 
-  const result = database.prepare(`
+  const result = database
+    .prepare(
+      `
     UPDATE orders SET hidden_from_admin = 1
     WHERE id = ? AND status = 'delivered'
-  `).run(id)
-  return result.changes ? 'deleted' : 'not_found'
+  `,
+    )
+    .run(id);
+  return result.changes ? "deleted" : "not_found";
 }
 
 /**
@@ -3388,106 +4684,164 @@ export async function hideDeliveredOrderFromAdmin(id) {
  * redeemed loyalty points return, and the order is marked cancelled for the admin.
  */
 export async function cancelOrderForCustomer(id, customerId) {
-  const order = await database.prepare(`
+  const order = await database
+    .prepare(
+      `
     SELECT id, customer_id AS "customerId", status, loyalty_points_redeemed AS "pointsRedeemed"
     FROM orders WHERE id = ? AND customer_id = ?
-  `).get(id, customerId)
-  if (!order) return 'not_found'
+  `,
+    )
+    .get(id, customerId);
+  if (!order) return "not_found";
   // Once the shop starts preparing or finishes the order it can no longer be cancelled.
-  if (!['pending_payment', 'new', 'paid', 'accepted'].includes(order.status)) return 'not_cancellable'
+  if (!["pending_payment", "new", "paid", "accepted"].includes(order.status))
+    return "not_cancellable";
 
   const releaseItems = async () => {
-    const items = await database.prepare(
-      'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
-    ).all(id)
+    const items = await database
+      .prepare(
+        'SELECT flavor_id AS "flavorId", menu_item_id AS "menuItemId", quantity FROM order_items WHERE order_id = ? ORDER BY id',
+      )
+      .all(id);
     for (const item of items) {
       if (item.flavorId !== null) {
-        await database.prepare(`
+        await database
+          .prepare(
+            `
           UPDATE flavors SET reserved_stock = MAX(0, reserved_stock - ?)
           WHERE id = ?
-        `).run(item.quantity, item.flavorId);
+        `,
+          )
+          .run(item.quantity, item.flavorId);
       } else if (item.menuItemId) {
-        await database.prepare(`
+        await database
+          .prepare(
+            `
           UPDATE menu_inventory SET reserved_stock = MAX(0, reserved_stock - ?)
           WHERE item_id = ?
-        `).run(item.quantity, item.menuItemId);
+        `,
+          )
+          .run(item.quantity, item.menuItemId);
       }
     }
-    await database.prepare(`
+    await database
+      .prepare(
+        `
       UPDATE discount_codes SET reserved_uses = MAX(0, reserved_uses - 1)
       WHERE id = (SELECT discount_code_id FROM orders WHERE id = ?)
-    `).run(id);
-    await database.prepare(`
+    `,
+      )
+      .run(id);
+    await database
+      .prepare(
+        `
       UPDATE payments SET status = 'failed', updated_at = CURRENT_TIMESTAMP
       WHERE order_id = ? AND status = 'pending'
-    `).run(id);
-    await database.prepare(`
+    `,
+      )
+      .run(id);
+    await database
+      .prepare(
+        `
       UPDATE orders SET status = 'cancelled_by_customer', fulfilled_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).run(id);
-  }
+    `,
+      )
+      .run(id);
+  };
 
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       await releaseItems();
       if (order.pointsRedeemed > 0) {
-        await database.prepare(
-          "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
-        ).run(order.pointsRedeemed, order.customerId);
-        await database.prepare(`
+        await database
+          .prepare(
+            "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
+          )
+          .run(order.pointsRedeemed, order.customerId);
+        await database
+          .prepare(
+            `
           INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
           VALUES (?, ?, ?, 'refunded')
-        `).run(order.customerId, id, order.pointsRedeemed);
+        `,
+          )
+          .run(order.customerId, id, order.pointsRedeemed);
       }
       return "cancelled";
     });
   }
 
   return database.transaction(() => {
-    releaseItems()
+    releaseItems();
     if (order.pointsRedeemed > 0) {
-      database.prepare('UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?')
-        .run(order.pointsRedeemed, order.customerId)
-      database.prepare(`
+      database
+        .prepare(
+          "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?",
+        )
+        .run(order.pointsRedeemed, order.customerId);
+      database
+        .prepare(
+          `
         INSERT OR IGNORE INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
         VALUES (?, ?, ?, 'refunded')
-      `).run(order.customerId, id, order.pointsRedeemed)
+      `,
+        )
+        .run(order.customerId, id, order.pointsRedeemed);
     }
-    return 'cancelled'
-  })()
+    return "cancelled";
+  })();
 }
 
 export async function deleteDeliveredOrderForCustomer(id, customerId) {
   // Soft delete: the order stays in the database so admins still see it;
   // only the customer's own account view hides it.
   if (databaseKind === "postgres") {
-    const result = await database.prepare(`
+    const result = await database
+      .prepare(
+        `
       UPDATE orders SET hidden_by_customer = 1
       WHERE id = ? AND customer_id = ? AND status = 'delivered'
-    `).run(id, customerId);
+    `,
+      )
+      .run(id, customerId);
     return result.changes ? "deleted" : "not_found";
   }
 
-  const result = database.prepare(`
+  const result = database
+    .prepare(
+      `
     UPDATE orders SET hidden_by_customer = 1
     WHERE id = ? AND customer_id = ? AND status = 'delivered'
-  `).run(id, customerId)
-  return result.changes ? 'deleted' : 'not_found'
+  `,
+    )
+    .run(id, customerId);
+  return result.changes ? "deleted" : "not_found";
 }
 
 // ---- Customer subscriptions (subscribe & save) ----------------------------
 
 export async function listOrderNotificationRecipients(storeId) {
-  const admins = await database.prepare(`
+  const admins = await database
+    .prepare(
+      `
     SELECT email FROM admins
     WHERE role = 'owner'
       OR (role = 'store_admin' AND store_id = ?)
       OR (role = 'branch_admin' AND branch_town = (SELECT town FROM stores WHERE id = ?))
     ORDER BY id
-  `).all(storeId, storeId)
-  return [...new Set(admins
-    .map(({ email }) => typeof email === 'string' ? email.trim().toLowerCase() : '')
-    .filter(Boolean))]
+  `,
+    )
+    .all(storeId, storeId);
+  return [
+    ...new Set(
+      admins
+        .map(({ email }) =>
+          typeof email === "string" ? email.trim().toLowerCase() : "",
+        )
+        .filter(Boolean),
+    ),
+  ];
 }
 
 export async function createCheckoutOrder({
@@ -3513,49 +4867,74 @@ export async function createCheckoutOrder({
   if (databaseKind === "postgres") {
     return database.transaction(async () => {
       for (const item of orderItems) {
-        const result = item.flavorId !== null
-          ? await database.prepare(`
+        const result =
+          item.flavorId !== null
+            ? await database
+                .prepare(
+                  `
               UPDATE flavors SET reserved_stock = reserved_stock + ?
               WHERE id = ? AND stock - reserved_stock >= ?
-            `).run(item.quantity, item.flavorId, item.quantity)
-          : await database.prepare(`
+            `,
+                )
+                .run(item.quantity, item.flavorId, item.quantity)
+            : await database
+                .prepare(
+                  `
               UPDATE menu_inventory SET reserved_stock = reserved_stock + ?
               WHERE item_id = ? AND is_available = 1 AND stock - reserved_stock >= ?
-            `).run(item.quantity, item.menuItemId, item.quantity);
+            `,
+                )
+                .run(item.quantity, item.menuItemId, item.quantity);
         if (result.changes === 0) {
-          const error = new Error(`Not enough ${item.flavorName} in stock. Refresh your bag and try again.`);
+          const error = new Error(
+            `Not enough ${item.flavorName} in stock. Refresh your bag and try again.`,
+          );
           error.code = "INSUFFICIENT_STOCK";
           throw error;
         }
       }
 
       if (discountCode) {
-        const reservation = await database.prepare(`
+        const reservation = await database
+          .prepare(
+            `
           UPDATE discount_codes SET reserved_uses = reserved_uses + 1
           WHERE id = ? AND is_active = 1
             AND (expires_at IS NULL OR datetime(expires_at) > CURRENT_TIMESTAMP)
             AND (max_uses IS NULL OR uses + reserved_uses < max_uses)
-        `).run(discountCode.id);
+        `,
+          )
+          .run(discountCode.id);
         if (!reservation.changes) {
-          const error = new Error("That discount code has just reached its usage limit. Try another code.");
+          const error = new Error(
+            "That discount code has just reached its usage limit. Try another code.",
+          );
           error.code = "DISCOUNT_CODE_UNAVAILABLE";
           throw error;
         }
       }
 
       if (pointsRedeemed > 0) {
-        const points = await database.prepare(`
+        const points = await database
+          .prepare(
+            `
           UPDATE customers SET loyalty_points = loyalty_points - ?
           WHERE id = ? AND loyalty_points >= ?
-        `).run(pointsRedeemed, customer.id, pointsRedeemed);
+        `,
+          )
+          .run(pointsRedeemed, customer.id, pointsRedeemed);
         if (!points.changes) {
-          const error = new Error("Your loyalty balance changed. Refresh checkout and try again.");
+          const error = new Error(
+            "Your loyalty balance changed. Refresh checkout and try again.",
+          );
           error.code = "LOYALTY_BALANCE_CHANGED";
           throw error;
         }
       }
 
-      const result = await database.prepare(`
+      const result = await database
+        .prepare(
+          `
         INSERT INTO orders (
           customer_id, customer_name, customer_email, customer_phone, delivery_address, delivery_city,
           store_id, store_name, store_address, store_phone,
@@ -3563,7 +4942,154 @@ export async function createCheckoutOrder({
           currency, discount_code, discount_code_id, fulfillment_type, scheduled_for,
           delivery_fee, loyalty_points_redeemed, customer_note
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
+      `,
+        )
+        .run(
+          customer?.id ?? null,
+          name,
+          email,
+          phone,
+          "",
+          city,
+          store.id,
+          store.name,
+          store.address,
+          store.phone,
+          "",
+          residence,
+          subtotalCents,
+          discountCents,
+          totalCents,
+          currency,
+          discountCode?.code || "",
+          discountCode?.id || null,
+          fulfillmentType,
+          scheduledFor,
+          deliveryFee,
+          pointsRedeemed,
+          customerNote,
+        );
+
+      const newOrderId = Number(result.lastInsertRowid);
+      if (pointsRedeemed > 0) {
+        await database
+          .prepare(
+            `
+          INSERT INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
+          VALUES (?, ?, ?, 'redeemed')
+        `,
+          )
+          .run(customer.id, newOrderId, -pointsRedeemed);
+      }
+
+      for (const item of orderItems) {
+        await database
+          .prepare(
+            `
+          INSERT INTO order_items (
+            order_id, flavor_id, menu_item_id, flavor_name, unit_price_cents, quantity, line_total_cents
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        `,
+          )
+          .run(
+            newOrderId,
+            item.flavorId,
+            item.menuItemId,
+            item.flavorName,
+            item.unitPriceCents,
+            item.quantity,
+            item.lineTotalCents,
+          );
+      }
+
+      if (customer) {
+        await database
+          .prepare(
+            `
+          UPDATE customers SET name = ?, phone = ?, delivery_city = ?, delivery_residence = ? WHERE id = ?
+        `,
+          )
+          .run(name, phone, city, residence, customer.id);
+      }
+      return newOrderId;
+    });
+  }
+
+  return database.transaction(() => {
+    const reserveStock = database.prepare(`
+      UPDATE flavors SET reserved_stock = reserved_stock + ?
+      WHERE id = ? AND stock - reserved_stock >= ?
+    `);
+    const reserveMenuStock = database.prepare(`
+      UPDATE menu_inventory SET reserved_stock = reserved_stock + ?
+      WHERE item_id = ? AND is_available = 1 AND stock - reserved_stock >= ?
+    `);
+
+    for (const item of orderItems) {
+      const result =
+        item.flavorId !== null
+          ? reserveStock.run(item.quantity, item.flavorId, item.quantity)
+          : reserveMenuStock.run(item.quantity, item.menuItemId, item.quantity);
+      if (result.changes === 0) {
+        const error = new Error(
+          `Not enough ${item.flavorName} in stock. Refresh your bag and try again.`,
+        );
+        error.code = "INSUFFICIENT_STOCK";
+        throw error;
+      }
+    }
+
+    if (discountCode) {
+      const reservation = database
+        .prepare(
+          `
+        UPDATE discount_codes SET reserved_uses = reserved_uses + 1
+        WHERE id = ? AND is_active = 1
+          AND (expires_at IS NULL OR datetime(expires_at) > CURRENT_TIMESTAMP)
+          AND (max_uses IS NULL OR uses + reserved_uses < max_uses)
+      `,
+        )
+        .run(discountCode.id);
+      if (!reservation.changes) {
+        const error = new Error(
+          "That discount code has just reached its usage limit. Try another code.",
+        );
+        error.code = "DISCOUNT_CODE_UNAVAILABLE";
+        throw error;
+      }
+    }
+
+    if (pointsRedeemed > 0) {
+      const points = database
+        .prepare(
+          `
+        UPDATE customers SET loyalty_points = loyalty_points - ?
+        WHERE id = ? AND loyalty_points >= ?
+      `,
+        )
+        .run(pointsRedeemed, customer.id, pointsRedeemed);
+      if (!points.changes) {
+        const error = new Error(
+          "Your loyalty balance changed. Refresh checkout and try again.",
+        );
+        error.code = "LOYALTY_BALANCE_CHANGED";
+        throw error;
+      }
+    }
+
+    const result = database
+      .prepare(
+        `
+      INSERT INTO orders (
+        customer_id, customer_name, customer_email, customer_phone, delivery_address, delivery_city,
+        store_id, store_name, store_address, store_phone,
+        delivery_postal_code, delivery_residence, subtotal_cents, discount_cents, total_cents,
+        currency, discount_code, discount_code_id, fulfillment_type, scheduled_for,
+        delivery_fee, loyalty_points_redeemed, customer_note, order_admin_seen, order_notified_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+    `,
+      )
+      .run(
         customer?.id ?? null,
         name,
         email,
@@ -3589,133 +5115,23 @@ export async function createCheckoutOrder({
         customerNote,
       );
 
-      const newOrderId = Number(result.lastInsertRowid);
-      if (pointsRedeemed > 0) {
-        await database.prepare(`
-          INSERT INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
-          VALUES (?, ?, ?, 'redeemed')
-        `).run(customer.id, newOrderId, -pointsRedeemed);
-      }
-
-      for (const item of orderItems) {
-        await database.prepare(`
-          INSERT INTO order_items (
-            order_id, flavor_id, menu_item_id, flavor_name, unit_price_cents, quantity, line_total_cents
-          ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        `).run(
-          newOrderId,
-          item.flavorId,
-          item.menuItemId,
-          item.flavorName,
-          item.unitPriceCents,
-          item.quantity,
-          item.lineTotalCents,
-        );
-      }
-
-      if (customer) {
-        await database.prepare(`
-          UPDATE customers SET name = ?, phone = ?, delivery_city = ?, delivery_residence = ? WHERE id = ?
-        `).run(name, phone, city, residence, customer.id);
-      }
-      return newOrderId;
-    });
-  }
-
-  return database.transaction(() => {
-    const reserveStock = database.prepare(`
-      UPDATE flavors SET reserved_stock = reserved_stock + ?
-      WHERE id = ? AND stock - reserved_stock >= ?
-    `)
-    const reserveMenuStock = database.prepare(`
-      UPDATE menu_inventory SET reserved_stock = reserved_stock + ?
-      WHERE item_id = ? AND is_available = 1 AND stock - reserved_stock >= ?
-    `)
-
-    for (const item of orderItems) {
-      const result = item.flavorId !== null
-        ? reserveStock.run(item.quantity, item.flavorId, item.quantity)
-        : reserveMenuStock.run(item.quantity, item.menuItemId, item.quantity)
-      if (result.changes === 0) {
-        const error = new Error(`Not enough ${item.flavorName} in stock. Refresh your bag and try again.`)
-        error.code = 'INSUFFICIENT_STOCK'
-        throw error
-      }
-    }
-
-    if (discountCode) {
-      const reservation = database.prepare(`
-        UPDATE discount_codes SET reserved_uses = reserved_uses + 1
-        WHERE id = ? AND is_active = 1
-          AND (expires_at IS NULL OR datetime(expires_at) > CURRENT_TIMESTAMP)
-          AND (max_uses IS NULL OR uses + reserved_uses < max_uses)
-      `).run(discountCode.id)
-      if (!reservation.changes) {
-        const error = new Error('That discount code has just reached its usage limit. Try another code.')
-        error.code = 'DISCOUNT_CODE_UNAVAILABLE'
-        throw error
-      }
-    }
-
+    const newOrderId = Number(result.lastInsertRowid);
     if (pointsRedeemed > 0) {
-      const points = database.prepare(`
-        UPDATE customers SET loyalty_points = loyalty_points - ?
-        WHERE id = ? AND loyalty_points >= ?
-      `).run(pointsRedeemed, customer.id, pointsRedeemed)
-      if (!points.changes) {
-        const error = new Error('Your loyalty balance changed. Refresh checkout and try again.')
-        error.code = 'LOYALTY_BALANCE_CHANGED'
-        throw error
-      }
-    }
-
-    const result = database.prepare(`
-      INSERT INTO orders (
-        customer_id, customer_name, customer_email, customer_phone, delivery_address, delivery_city,
-        store_id, store_name, store_address, store_phone,
-        delivery_postal_code, delivery_residence, subtotal_cents, discount_cents, total_cents,
-        currency, discount_code, discount_code_id, fulfillment_type, scheduled_for,
-        delivery_fee, loyalty_points_redeemed, customer_note, order_admin_seen, order_notified_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
-    `).run(
-      customer?.id ?? null,
-      name,
-      email,
-      phone,
-      '',
-      city,
-      store.id,
-      store.name,
-      store.address,
-      store.phone,
-      '',
-      residence,
-      subtotalCents,
-      discountCents,
-      totalCents,
-      currency,
-      discountCode?.code || '',
-      discountCode?.id || null,
-      fulfillmentType,
-      scheduledFor,
-      deliveryFee,
-      pointsRedeemed,
-      customerNote,
-    )
-
-    const newOrderId = Number(result.lastInsertRowid)
-    if (pointsRedeemed > 0) {
-      database.prepare(`
+      database
+        .prepare(
+          `
         INSERT INTO loyalty_ledger (customer_id, order_id, points_delta, entry_type)
         VALUES (?, ?, ?, 'redeemed')
-      `).run(customer.id, newOrderId, -pointsRedeemed)
+      `,
+        )
+        .run(customer.id, newOrderId, -pointsRedeemed);
     }
 
     const insertItem = database.prepare(`
       INSERT INTO order_items (
         order_id, flavor_id, menu_item_id, flavor_name, unit_price_cents, quantity, line_total_cents
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    `)
+    `);
     for (const item of orderItems) {
       insertItem.run(
         newOrderId,
@@ -3725,15 +5141,19 @@ export async function createCheckoutOrder({
         item.unitPriceCents,
         item.quantity,
         item.lineTotalCents,
-      )
+      );
     }
 
     if (customer) {
-      database.prepare(`
+      database
+        .prepare(
+          `
         UPDATE customers SET name = ?, phone = ?, delivery_city = ?, delivery_residence = ? WHERE id = ?
-      `).run(name, phone, city, residence, customer.id)
+      `,
+        )
+        .run(name, phone, city, residence, customer.id);
     }
 
-    return newOrderId
-  })()
+    return newOrderId;
+  })();
 }

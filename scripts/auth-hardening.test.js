@@ -66,9 +66,11 @@ test("the address limit is generous enough for a shared carrier address", () => 
 });
 
 test("the admin login keeps its own, tighter limit", () => {
+  // A comma-separated limiter list is fine; what matters is that loginLimiter
+  // stays wired in directly on the login route.
   assert.match(
     source,
-    /app\.post\('\/api\/admin\/login',\s*loginLimiter,/,
+    /app\.post\('\/api\/admin\/login',[^\n]*loginLimiter/,
     "the admin login must stay rate limited",
   );
 });

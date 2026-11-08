@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Footer, Header } from "../../components/Layout";
 import { useCart } from "../../context/useCart";
@@ -147,6 +147,7 @@ export function CheckoutPage() {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [discountMessage, setDiscountMessage] = useState("");
   const [isCheckingCode, setIsCheckingCode] = useState(false);
+  const chatCodeApplied = useRef(false);
   const compatibleZones = fulfillment.zones.filter((zone) =>
     fulfillmentType === "pickup" ? zone.pickupEnabled : zone.deliveryEnabled,
   );
@@ -261,6 +262,18 @@ export function CheckoutPage() {
           );
         if (preferredZone) setSelectedCity(preferredZone.location);
         if (options.slots[0]) setSelectedSlot(String(options.slots[0].id));
+        try {
+          const visit = JSON.parse(sessionStorage.getItem("cold-stone-chat-visit") || "null");
+          if (visit && (visit.type === "pickup" || visit.type === "delivery")) {
+            setFulfillmentType(visit.type);
+            if (visit.location) setSelectedCity(visit.location);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(visit.date || "")) setScheduledDate(visit.date);
+            if (visit.slotId) setSelectedSlot(String(visit.slotId));
+            sessionStorage.removeItem("cold-stone-chat-visit");
+          }
+        } catch {
+          // A bad saved visit leaves checkout on its own choices.
+        }
       })
       .catch((error) => {
         if (!cancelled) setFulfillmentError(error.message);
@@ -269,6 +282,38 @@ export function CheckoutPage() {
       cancelled = true;
     };
   }, [customer?.deliveryCity]);
+
+  useEffect(() => {
+    if (chatCodeApplied.current || cartCount < 1) return undefined;
+    let pending = "";
+    try {
+      pending = sessionStorage.getItem("cold-stone-chat-code") || "";
+    } catch {
+      return undefined;
+    }
+    if (!pending) return undefined;
+    chatCodeApplied.current = true;
+    sessionStorage.removeItem("cold-stone-chat-code");
+    setDiscountInput(pending);
+    setIsCheckingCode(true);
+    apiRequest("/discount-codes/validate", {
+      method: "POST",
+      body: { code: pending, subtotal, itemCount: cartCount },
+    })
+      .then((result) => {
+        setDiscountCode(result.code);
+        setDiscountAmount(result.discountCents);
+        setRedeemLoyalty(false);
+        setDiscountMessage(t("Discount code applied. The final discount is confirmed at checkout."));
+      })
+      .catch((error) => {
+        setDiscountCode("");
+        setDiscountAmount(0);
+        setDiscountMessage(error.message);
+      })
+      .finally(() => setIsCheckingCode(false));
+    return undefined;
+  }, [cartCount, subtotal, t]);
 
   useEffect(() => {
     if (
@@ -596,6 +641,18 @@ export function CheckoutPage() {
                       required
                       type="tel"
                     />
+                  </label>
+                  <label className="flex items-start gap-3 text-sm leading-6 text-[#44526a] sm:col-span-2">
+                    <input
+                      className="mt-1 size-5 shrink-0 accent-[#472a3b]"
+                      defaultChecked={savedDetails?.newsletter === "yes"}
+                      name="newsletter"
+                      type="checkbox"
+                      value="yes"
+                    />
+                    <span>
+                      {t("Email me when a new flavor or a members-only offer is ready.")}
+                    </span>
                   </label>
                 </div>
               </StepCard>

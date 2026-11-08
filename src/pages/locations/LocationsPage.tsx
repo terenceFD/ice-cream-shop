@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { locationGraph } from '../../../shared/localBusiness.js'
 import { Link } from 'react-router-dom'
 import { ArrowIcon, Footer, Header } from '../../components/Layout'
 import { HeroBackground } from '../../components/HeroBackground'
@@ -106,6 +107,15 @@ function extraLink(location: CameroonLocation) {
 export function LocationsPage() {
   const { t } = useLanguage()
   const now = useNow()
+  useEffect(() => {
+    if (document.querySelector('script[data-local-schema]')) return undefined
+    const script = document.createElement('script')
+    script.type = 'application/ld+json'
+    script.dataset.localSchema = 'true'
+    script.text = JSON.stringify(locationGraph(window.location.href.split('#')[0])).replace(/</g, '\\u003c')
+    document.head.appendChild(script)
+    return () => script.remove()
+  }, [])
   const [city, setCity] = useState('')
   const towns = [...new Set(cameroonLocations.map((location: CameroonLocation) => location.town))]
   const countIn = (town: string) => cameroonLocations.filter((location: CameroonLocation) => location.town === town).length

@@ -553,15 +553,30 @@ export async function sendCakeRequestNotification({
 }
 
 // Newsletter emails. Subscribers get one branded welcome note; the owner can
-// broadcast a message to everyone still subscribed. Unsubscribe links point at
-// the public endpoint so a broadcast stays compliant without extra state.
-const unsubscribeFooter = (siteUrl) =>
-  `Unsubscribe: ${siteUrl ? `${siteUrl}/unsubscribe` : 'reply to this email and ask to be removed'}`
+// broadcast a message to everyone still subscribed. The shop address is the
+// visible recipient. Everyone else is blind-copied, so one person never sees
+// the rest of the list.
+function unsubscribeHref(siteUrl, email = '') {
+  if (!siteUrl) return ''
+  const address = typeof email === 'string' ? email.trim() : ''
+  return `${siteUrl}/unsubscribe${address ? `?email=${encodeURIComponent(address)}` : ''}`
+}
 
-export async function sendNewsletterWelcome({ to, siteUrl }) {
-  const { from } = mailFrom()
+function unsubscribeText(siteUrl, email = '') {
+  const href = unsubscribeHref(siteUrl, email)
+  return href ? `Unsubscribe: ${href}` : 'To stop these emails, reply and ask to be removed.'
+}
+
+function unsubscribeHtml(siteUrl, email = '') {
+  const href = unsubscribeHref(siteUrl, email)
+  if (!href) return 'To stop these emails, reply and ask to be removed.'
+  const safe = href.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+  return `<a href="${safe}" style="color:#65748a">Unsubscribe</a>`
+}
+
+export function buildNewsletterWelcome({ from, to, siteUrl }) {
   const url = siteUrl || ''
-  return deliver( {
+  return {
     from: `Cold Stone Creamery <${from}>`,
     to,
     subject: 'You are on the list — Cold Stone Creamery',
@@ -571,30 +586,39 @@ export async function sendNewsletterWelcome({ to, siteUrl }) {
       'You will hear from us when a new flavor lands or a members-only offer goes live — never more than a few emails a month.',
       '',
       `Start browsing: ${url}/menu`,
-      unsubscribeFooter(url),
+      unsubscribeText(url, to),
     ].join('\n'),
-    html: `<div style="font-family:Arial,sans-serif;color:#102c50;max-width:480px;margin:auto;padding:24px"><h1 style="font-size:21px;color:#092a53">Welcome to the list</h1><p>You will hear from us when a new flavor lands or a members-only offer goes live — never more than a few emails a month.</p>${url ? `<p><a href="${url}/menu" style="color:#092a53">Start browsing the menu</a></p>` : ''}<p style="color:#65748a;font-size:13px">${unsubscribeFooter(url)}</p></div>`,
-  })
+    html: `<div style="font-family:Arial,sans-serif;color:#102c50;max-width:480px;margin:auto;padding:24px"><h1 style="font-size:21px;color:#092a53">Welcome to the list</h1><p>You will hear from us when a new flavor lands or a members-only offer goes live — never more than a few emails a month.</p>${url ? `<p><a href="${url}/menu" style="color:#092a53">Start browsing the menu</a></p>` : ''}<p style="color:#65748a;font-size:13px">${unsubscribeHtml(url, to)}</p></div>`,
+  }
 }
 
-export async function sendNewsletterBroadcast({ recipients, subject, message, siteUrl }) {
-  const { from } = mailFrom()
+export function buildNewsletterBroadcast({ from, recipients, subject, message, siteUrl }) {
   const url = siteUrl || ''
-  // One connection, many recipients: nodemailer accepts an address list for to.
-  return deliver( {
+  return {
     from: `Cold Stone Creamery <${from}>`,
-    to: recipients.join(', '),
+    to: from,
+    bcc: recipients.join(', '),
     subject: `${subject} — Cold Stone Creamery`,
     text: [
       message,
       '',
-      unsubscribeFooter(url),
+      unsubscribeText(url),
     ].join('\n'),
     html: `<div style="font-family:Arial,sans-serif;color:#102c50;max-width:480px;margin:auto;padding:24px">${message
       .split(/\n{2,}/)
       .map((paragraph) => `<p>${paragraph.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</p>`)
-      .join('')}<p style="color:#65748a;font-size:13px">${unsubscribeFooter(url)}</p></div>`,
-  })
+      .join('')}<p style="color:#65748a;font-size:13px">${unsubscribeHtml(url)}</p></div>`,
+  }
+}
+
+export async function sendNewsletterWelcome({ to, siteUrl }) {
+  const { from } = mailFrom()
+  return deliver(buildNewsletterWelcome({ from, to, siteUrl }))
+}
+
+export async function sendNewsletterBroadcast({ recipients, subject, message, siteUrl }) {
+  const { from } = mailFrom()
+  return deliver(buildNewsletterBroadcast({ from, recipients, subject, message, siteUrl }))
 }
 
 export async function sendAbandonedCartReminder({ to, recipientName, orderId, bagUrl }) {

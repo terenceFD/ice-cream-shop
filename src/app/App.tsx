@@ -199,6 +199,14 @@ const AdminChatPage = lazyPage(
   () => import("../pages/admin/AdminChatPage"),
   "AdminChatPage",
 );
+const AdminNewsletterPage = lazyPage(
+  () => import("../pages/admin/AdminNewsletterPage"),
+  "AdminNewsletterPage",
+);
+const UnsubscribePage = lazyPage(
+  () => import("../pages/newsletter/UnsubscribePage"),
+  "UnsubscribePage",
+);
 const AdminSubscriptionsPage = lazyPage(
   () => import("../pages/admin/AdminSubscriptionsPage"),
   "AdminSubscriptionsPage",
@@ -387,13 +395,21 @@ function FloatingWidgetTracker() {
   return null;
 }
 
+// French search addresses live under /fr. The router keeps every existing link and
+// only adds that prefix when the visitor opened a French address.
+const routerBasename =
+  typeof window !== "undefined" &&
+  (window.location.pathname === "/fr" || window.location.pathname.startsWith("/fr/"))
+    ? "/fr"
+    : undefined;
+
 function App() {
   return (
     <LanguageProvider>
       <CurrencyProvider>
         <FlavorProvider>
           <CartProvider>
-            <BrowserRouter>
+            <BrowserRouter basename={routerBasename}>
               <AccountCreatedNotice />
               <ScrollToTop />
               <ScrollProgress />
@@ -407,6 +423,7 @@ function App() {
                       <Route path="/flavors" element={<FlavorsPage />} />
                       <Route path="/menu" element={<MenuPage />} />
                       <Route path="/menu/all" element={<AllMenuPage />} />
+                      <Route path="/treat/:categorySlug/:itemSlug" element={<MenuPage />} />
                       <Route
                         path="/custom-cake"
                         element={<CustomCakeRequestPage />}
@@ -420,6 +437,7 @@ function App() {
                       <Route path="/refunds" element={<RefundPolicyPage />} />
                       <Route path="/faq" element={<FaqPage />} />
                       <Route path="/cookies" element={<CookiePolicyPage />} />
+                      <Route path="/unsubscribe" element={<UnsubscribePage />} />
                       <Route
                         path="/flavor/:id"
                         element={<FlavorDetailPage />}
@@ -482,6 +500,10 @@ function App() {
                         <Route
                           path="/admin/promotions"
                           element={<AdminPromotionsPage />}
+                        />
+                        <Route
+                          path="/admin/newsletter"
+                          element={<AdminNewsletterPage />}
                         />
                         <Route
                           path="/admin/reports"
