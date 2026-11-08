@@ -7,7 +7,7 @@ import {
 } from "react";
 import { SUPPORTED_CURRENCIES } from "../../shared/currency.js";
 
-export type CurrencyCode = "xaf" | "usd" | "eur";
+export type CurrencyCode = "xaf" | "usd" | "eur" | "gbp" | "cad" | "inr" | "aud" | "ngn";
 
 const CURRENCY_STORAGE_KEY = "cold-stone-currency";
 
@@ -21,10 +21,14 @@ export interface CurrencyContextValue {
 
 export const CurrencyContext = createContext<CurrencyContextValue | null>(null);
 
+function isCurrencyCode(value: string | null): value is CurrencyCode {
+  return SUPPORTED_CURRENCIES.some((option) => option.code === value);
+}
+
 function readInitialCurrency(): CurrencyCode {
   try {
     const saved = localStorage.getItem(CURRENCY_STORAGE_KEY);
-    if (saved === "xaf" || saved === "usd" || saved === "eur") return saved;
+    if (isCurrencyCode(saved)) return saved;
   } catch {
     // Storage unavailable; fall back to the shop currency.
   }

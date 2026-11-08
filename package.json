@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && node scripts/make-thumbnails.mjs && vite build",
     "lint": "oxlint",
-    "test": "node --test \"server/*.test.js\" \"scripts/*.test.js\"",
+    "test": "node --test \"server/*.test.js\" \"scripts/*.test.js\" \"shared/*.test.js\"",
     "test:migration": "node --test scripts/sqlite-postgres-schema.test.js server/postgres.test.js",
     "preview": "vite preview",
     "seed:admin": "node server/seedAdmin.js",

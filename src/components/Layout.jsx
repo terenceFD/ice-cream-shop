@@ -293,16 +293,120 @@ function useCookieConsentPending() {
 // Only the chosen currency is shown until the picker is opened: the trigger names one
 // code, and the other options stay hidden. XAF is the shop's charge currency; the
 // others convert prices for display only.
+function CurrencyFlag({ code }) {
+  const className = "h-4 w-6 shrink-0 rounded-[2px] shadow-[0_0_0_1px_rgba(71,42,59,0.12)]";
+  if (code === "xaf") {
+    return (
+      <svg aria-hidden="true" className={className} viewBox="0 0 24 16">
+        <path d="M0 0h8v16H0z" fill="#007a5e" />
+        <path d="M8 0h8v16H8z" fill="#ce1126" />
+        <path d="M16 0h8v16h-8z" fill="#fcd116" />
+        <path d="m12 5 .78 2.4h2.52l-2.04 1.48.78 2.4L12 9.8l-2.04 1.48.78-2.4L8.7 7.4h2.52L12 5Z" fill="#fcd116" />
+      </svg>
+    );
+  }
+  if (code === "usd") {
+    return (
+      <svg aria-hidden="true" className={className} viewBox="0 0 24 16">
+        <path d="M0 0h24v16H0z" fill="#fff" />
+        <path d="M0 0h24v1.23H0zm0 2.46h24v1.23H0zm0 2.46h24v1.23H0zm0 2.46h24v1.23H0zm0 2.47h24v1.23H0zm0 2.46h24V16H0z" fill="#b22234" />
+        <path d="M0 0h10.5v8.62H0z" fill="#3c3b6e" />
+        <g fill="#fff">
+          <circle cx="1.5" cy="1.4" r=".45" /><circle cx="4" cy="1.4" r=".45" /><circle cx="6.5" cy="1.4" r=".45" /><circle cx="9" cy="1.4" r=".45" />
+          <circle cx="2.75" cy="3.1" r=".45" /><circle cx="5.25" cy="3.1" r=".45" /><circle cx="7.75" cy="3.1" r=".45" />
+          <circle cx="1.5" cy="4.8" r=".45" /><circle cx="4" cy="4.8" r=".45" /><circle cx="6.5" cy="4.8" r=".45" /><circle cx="9" cy="4.8" r=".45" />
+          <circle cx="2.75" cy="6.5" r=".45" /><circle cx="5.25" cy="6.5" r=".45" /><circle cx="7.75" cy="6.5" r=".45" />
+        </g>
+      </svg>
+    );
+  }
+  if (code === "eur") {
+    return (
+      <svg aria-hidden="true" className={className} viewBox="0 0 24 16">
+        <path d="M0 0h24v16H0z" fill="#003399" />
+        <g fill="#ffcc00">
+          <circle cx="12" cy="3" r=".7" /><circle cx="15.5" cy="4" r=".7" />
+          <circle cx="17.5" cy="6.5" r=".7" /><circle cx="17.5" cy="9.5" r=".7" />
+          <circle cx="15.5" cy="12" r=".7" /><circle cx="12" cy="13" r=".7" />
+          <circle cx="8.5" cy="12" r=".7" /><circle cx="6.5" cy="9.5" r=".7" />
+          <circle cx="6.5" cy="6.5" r=".7" /><circle cx="8.5" cy="4" r=".7" />
+        </g>
+      </svg>
+    );
+  }
+  if (code === "gbp") {
+    return (
+      <svg aria-hidden="true" className={className} viewBox="0 0 24 16">
+        <path d="M0 0h24v16H0z" fill="#012169" />
+        <path d="m0 0 24 16m0-16L0 16" stroke="#fff" strokeWidth="4" />
+        <path d="m0 0 24 16m0-16L0 16" stroke="#c8102e" strokeWidth="1.5" />
+        <path d="M12 0v16M0 8h24" stroke="#fff" strokeWidth="6" />
+        <path d="M12 0v16M0 8h24" stroke="#c8102e" strokeWidth="2.5" />
+      </svg>
+    );
+  }
+  if (code === "cad") {
+    return (
+      <svg aria-hidden="true" className={className} viewBox="0 0 24 16">
+        <path d="M0 0h6v16H0zm18 0h6v16h-6z" fill="#d80621" />
+        <path d="M6 0h12v16H6z" fill="#fff" />
+        <path d="m12 3.2 1.05 2.25 1.6-.7-.65 2.1 1.35.45-2.05 1.45.65 2.75L12 10.1l-1.95 1.4.65-2.75-2.05-1.45L10 6.85l-.65-2.1 1.6.7L12 3.2Z" fill="#d80621" />
+        <path d="M11.5 10.2h1v2.2h-1z" fill="#d80621" />
+      </svg>
+    );
+  }
+  if (code === "inr") {
+    return (
+      <svg aria-hidden="true" className={className} viewBox="0 0 24 16">
+        <path d="M0 0h24v5.33H0z" fill="#ff9933" />
+        <path d="M0 5.33h24v5.34H0z" fill="#fff" />
+        <path d="M0 10.67h24V16H0z" fill="#138808" />
+        <circle cx="12" cy="8" r="1.55" fill="none" stroke="#000080" strokeWidth=".55" />
+        <circle cx="12" cy="8" r=".3" fill="#000080" />
+        <path d="M12 6.45v3.1m-1.53-1.55h3.06m-2.62-1.1 2.18 2.2m0-2.2-2.18 2.2" stroke="#000080" strokeWidth=".22" />
+      </svg>
+    );
+  }
+  if (code === "aud") {
+    return (
+      <svg aria-hidden="true" className={className} viewBox="0 0 24 16">
+        <path d="M0 0h24v16H0z" fill="#00008b" />
+        <path d="M0 0h10v7H0z" fill="#012169" />
+        <path d="m0 0 10 7m0-7L0 7" stroke="#fff" strokeWidth="1.8" />
+        <path d="m0 0 10 7m0-7L0 7" stroke="#c8102e" strokeWidth=".7" />
+        <path d="M5 0v7M0 3.5h10" stroke="#fff" strokeWidth="2.5" />
+        <path d="M5 0v7M0 3.5h10" stroke="#c8102e" strokeWidth="1" />
+        <g fill="#fff">
+          <path d="m16 2 .55 1.1 1.2.15-.9.8.25 1.2L16 4.65l-1.1.6.25-1.2-.9-.8 1.2-.15L16 2Z" />
+          <path d="m20.5 6 .38.75.82.1-.6.55.17.82-.77-.42-.76.42.17-.82-.62-.55.83-.1.38-.75Z" />
+          <path d="m16.5 9 .38.75.82.1-.6.55.17.82-.77-.42-.76.42.17-.82-.62-.55.83-.1.38-.75Z" />
+          <path d="m21 12 .38.75.82.1-.6.55.17.82-.77-.42-.76.42.17-.82-.62-.55.83-.1L21 12Z" />
+          <circle cx="12.8" cy="11.5" r=".7" />
+        </g>
+      </svg>
+    );
+  }
+  if (code === "ngn") {
+    return (
+      <svg aria-hidden="true" className={className} viewBox="0 0 24 16">
+        <path d="M0 0h8v16H0zM16 0h8v16h-8z" fill="#008751" />
+        <path d="M8 0h8v16H8z" fill="#fff" />
+      </svg>
+    );
+  }
+  return (
+    <span aria-hidden="true" className="grid h-4 w-6 shrink-0 place-items-center rounded-[2px] bg-brand-surface text-[8px] font-bold text-brand-navy">
+      {code.slice(0, 2).toUpperCase()}
+    </span>
+  );
+}
+
 export function CurrencySwitcher() {
   const { currency, setCurrency, supported } = useCurrency();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const detailsRef = useRef(null);
   useDismissableDetails(detailsRef);
   const active = supported.find((option) => option.code === currency) || supported[0];
-  const currencyNames = new Intl.DisplayNames(
-    [language],
-    { type: "currency" },
-  );
   const consentOpen = useCookieConsentPending();
   const installCardOpen = useInstallCardOpen();
   // The hamburger drawer covers the phone screen; the switcher would float on top of it.
@@ -315,86 +419,48 @@ export function CurrencySwitcher() {
 
   return (
     <details
-      // Above the cookie banner (z-70): the banner is full-width across the bottom, so a
-      // lower layer would hide the switcher completely on a phone. While the banner is
-      // showing, the switcher sits above it instead of on top of it.
-      // The switcher keeps the same bottom-right corner on every screen size. When the
-      // install card is up it lifts above the card instead of disappearing, so the price
-      // control is never missing from the page.
-      // The install card is about 170px tall on a phone (title and button only), so the
-      // switcher clears it at 12rem (192px) — measured, not guessed. On wider screens the
-      // card sits to the left of the corner, so the switcher stays put.
-      // The consent banner stacks its text above the buttons below the sm breakpoint (640px),
-      // which makes it up to 342px tall at 320px wide — taller than the old flat 11rem lift,
-      // so the switcher used to sit on top of the banner's text. Each range now clears the
-      // measured banner (which ends 12px above the viewport bottom) plus a 16px gap.
       className={`currency-switcher group fixed right-4 z-[85] transition-[bottom,translate,opacity] duration-300 motion-reduce:transition-none ${showFloating ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-[220%] opacity-0"} ${installCardOpen ? "bottom-[calc(12rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]" : consentOpen ? "bottom-[calc(22.75rem+env(safe-area-inset-bottom,0px))] min-[360px]:bottom-[calc(21.25rem+env(safe-area-inset-bottom,0px))] min-[390px]:bottom-[calc(19.75rem+env(safe-area-inset-bottom,0px))] min-[414px]:bottom-[calc(18.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-[calc(14.25rem+env(safe-area-inset-bottom,0px))] min-[700px]:bottom-[calc(12.25rem+env(safe-area-inset-bottom,0px))] min-[768px]:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]" : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"}`}
       ref={detailsRef}
     >
       <summary
         aria-label={`${t("Currency")}: ${active.code.toUpperCase()}`}
-        className="flex h-12 cursor-pointer list-none items-center gap-2.5 rounded-full border border-white/15 bg-brand-navy pl-2 pr-3.5 font-display text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(71,42,59,0.28)] transition hover:border-brand-yellow/70 hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 group-open:border-brand-yellow [&::-webkit-details-marker]:hidden"
+        className="flex h-10 min-w-32 cursor-pointer list-none items-center gap-2 rounded-md border border-brand-border-warm bg-brand-cream px-2.5 font-sans text-xs font-bold text-brand-navy shadow-[0_5px_16px_rgba(71,42,59,0.16)] transition hover:border-brand-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep focus-visible:ring-offset-2 group-open:border-brand-muted [&::-webkit-details-marker]:hidden"
+        onClick={closeOtherDropdowns}
       >
-        <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-brand-yellow text-brand-navy">
-          <svg className="size-4" fill="none" viewBox="0 0 20 20">
-            <path d="M3 6.25h14M3 13.75h14M6 3.5 3 6.25 6 9M14 11l3 2.75L14 16.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" />
-          </svg>
-        </span>
-        <span>{active.code === "xaf" ? "FCFA" : active.code.toUpperCase()}</span>
-        <svg aria-hidden="true" className="size-3.5 text-white/65 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
-          <path d="m2.25 4.25 3.75 3.5 3.75-3.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+        <CurrencyFlag code={active.code} />
+        <span className="min-w-0 flex-1 text-left">{active.code.toUpperCase()}</span>
+        <svg aria-hidden="true" className="size-3 shrink-0 text-brand-muted transition-transform duration-150 group-open:rotate-180" fill="none" viewBox="0 0 12 12">
+          <path d="m2 4 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
         </svg>
       </summary>
-      <div className="menu-popover absolute bottom-full right-0 z-30 w-[min(20rem,calc(100vw-2rem))] pb-3">
-        <div className="flex max-h-[min(70dvh,32rem)] flex-col overflow-hidden rounded-[22px] bg-brand-cream text-brand-navy shadow-[0_24px_54px_rgba(71,42,59,0.3)] ring-1 ring-brand-border-warm">
-          <div className="shrink-0 bg-brand-navy px-4 py-4 text-white">
-            <p className="font-display text-base font-bold leading-tight">{t("Select currency")}</p>
-            <p className="mt-1 text-xs leading-5 text-white/75">{t("Choose how prices are displayed.")}</p>
-          </div>
-          <div className="currency-options min-h-0 grid gap-1 overflow-y-auto p-2.5" role="group" aria-label={t("Select currency")}>
-            {supported.map((option) => {
-              const selected = currency === option.code;
-              const name = currencyNames.of(option.code.toUpperCase()) || option.code.toUpperCase();
-              return (
-                <button
-                  aria-pressed={selected}
-                  lang={language}
-                  className={`flex min-h-14 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-yellow ${
-                    selected
-                      ? "bg-brand-navy text-white"
-                      : "text-brand-navy hover:bg-white"
-                  }`}
-                  key={option.code}
-                  onClick={(event) => {
-                    setCurrency(option.code);
-                    const details = event.currentTarget.closest("details");
-                    if (details) details.open = false;
-                  }}
-                  type="button"
-                >
-                  <span className={`grid size-10 shrink-0 place-items-center rounded-lg font-display text-sm font-extrabold ${
-                    selected ? "bg-brand-yellow text-brand-navy" : "bg-white text-brand-navy ring-1 ring-brand-border-warm"
-                  }`}>
-                    {option.symbol}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-bold leading-snug">{name}</span>
-                    <span className={`mt-0.5 block text-xs font-semibold ${selected ? "text-white/70" : "text-brand-muted"}`}>
-                      {option.code.toUpperCase()}
-                    </span>
-                  </span>
-                  {selected && (
-                    <svg aria-hidden="true" className="size-5 shrink-0 text-brand-yellow" fill="none" viewBox="0 0 20 20">
-                      <path d="m4.5 10 3.5 3.5 7.5-7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                    </svg>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-          <p className="shrink-0 border-t border-brand-border-warm px-4 py-3 text-xs leading-5 text-brand-muted">
-            {t("Prices convert for display; payment is taken in FCFA.")}
-          </p>
+      <div className="menu-popover absolute bottom-full right-0 z-30 w-[min(11rem,calc(100vw-2rem))] pb-1.5">
+        <div className="currency-switcher__options max-h-[min(18rem,calc(100dvh-8rem))] overflow-y-auto rounded-md border border-brand-border bg-white p-1 shadow-[0_10px_28px_rgba(71,42,59,0.2)]" role="group" aria-label={t("Select currency")}>
+          {supported.map((option) => {
+            const selected = currency === option.code;
+            return (
+              <button
+                aria-pressed={selected}
+                className={`flex min-h-10 w-full items-center gap-3 rounded px-2.5 text-left text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-yellow-deep ${
+                  selected ? "bg-brand-surface text-brand-navy" : "text-brand-navy hover:bg-brand-surface"
+                }`}
+                key={option.code}
+                onClick={(event) => {
+                  setCurrency(option.code);
+                  const details = event.currentTarget.closest("details");
+                  if (details) details.open = false;
+                }}
+                type="button"
+              >
+                <CurrencyFlag code={option.code} />
+                <span className="flex-1">{option.code.toUpperCase()}</span>
+                {selected && (
+                  <svg aria-hidden="true" className="size-3.5 shrink-0 text-brand-navy" fill="none" viewBox="0 0 16 16">
+                    <path d="m3 8 3.2 3.2L13 4.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </details>

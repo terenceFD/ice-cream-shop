@@ -1247,44 +1247,37 @@ body:has(.whatsapp-fab) .locations-hero-actions {
  * while it is not visible, so it is not announced before it can be used.
  */
 /*
- * Currency switcher (bottom-right of the page).
- *
- * The fixed trigger and upward-opening panel stay independent of page-card sizing.
- * Currency choices scroll inside the panel as the supported list grows.
+ * The small currency list stays anchored to the viewport rather than affecting
+ * product-card sizing. Additional choices scroll within the dropdown.
  */
 .currency-switcher summary {
   transition:
-    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 220ms ease,
-    background-color 220ms ease;
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
 }
 
-.currency-switcher summary,
-.currency-switcher [role="group"] button {
-  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), background-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+.currency-switcher__options button {
+  transition: background-color 160ms ease, border-color 160ms ease;
 }
 
-.currency-switcher summary:hover,
-.currency-switcher [role="group"] button:hover {
+.currency-switcher summary:hover {
   transform: translateY(-1px);
-}
-
-.currency-switcher summary:active,
-.currency-switcher [role="group"] button:active {
-  transform: translateY(1px) scale(0.985);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .currency-switcher summary,
-  .currency-switcher [role="group"] button {
+  .currency-switcher__options button {
     transition: none;
   }
-  .currency-switcher summary:hover,
-  .currency-switcher summary:active,
-  .currency-switcher [role="group"] button:hover,
-  .currency-switcher [role="group"] button:active {
+  .currency-switcher summary:hover {
     transform: none;
   }
+}
+
+.currency-switcher__options {
+  overscroll-behavior: contain;
 }
 
 /* The currency switcher owns the bottom-right corner, so the back-to-top button

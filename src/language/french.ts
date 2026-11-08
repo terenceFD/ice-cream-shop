@@ -3919,7 +3919,6 @@ const french: Record<string, string> = {
   "Cameroon · English": "Cameroun · Anglais",
   "Prices convert for display; payment is taken in FCFA.":
     "Les prix sont convertis pour l’affichage ; le paiement se fait en FCFA.",
-  "Choose how prices are displayed.": "Choisissez la devise d’affichage des prix.",
   "Cameroun · Français": "Cameroun · Français",
   Douala: "Douala",
   Yaoundé: "Yaoundé",
