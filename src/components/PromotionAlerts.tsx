@@ -68,6 +68,21 @@ function BellIcon({ className = "size-5" }: { className?: string }) {
   );
 }
 
+/** The three moments an alert arrives, as short plain labels with their icons. */
+const ALERT_MOMENTS = [
+  { label: "When your order is being prepared", path: "M4 6h16M4 12h10M4 18h7" },
+  { label: "When it is out for delivery", path: "M3 7h11v8H3zM14 10h4l3 3v2h-7zM6.5 18a1.5 1.5 0 1 0 0-.01M17.5 18a1.5 1.5 0 1 0 0-.01" },
+  { label: "When a new promotion launches", path: "M4 9h3l8-4v14l-8-4H4zM17 9.5a3.5 3.5 0 0 1 0 5" },
+] as const;
+
+function MomentIcon({ path }: { path: string }) {
+  return (
+    <svg aria-hidden="true" className="size-3.5 shrink-0" fill="none" viewBox="0 0 24 24">
+      <path d={path} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
 /** Invites signed-in customers to get order updates and promotions on this device. Shown once per month at most. */
 export function PromotionAlertsPrompt() {
   const { customer } = useAuth();
@@ -129,50 +144,63 @@ export function PromotionAlertsPrompt() {
   return (
     <section
       aria-labelledby="promotion-alerts-title"
-      className="fixed inset-x-3 bottom-3 z-[54] sm:inset-x-auto sm:bottom-6 sm:left-6 sm:w-[23rem]"
+      className="fixed inset-x-3 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-[54] sm:inset-x-auto sm:left-6 sm:w-[24rem]"
       role="dialog"
     >
-      <div className="relative overflow-hidden rounded-[24px] bg-[#0d3566] text-white shadow-[0_24px_60px_rgba(0,0,0,0.45)] ring-1 ring-white/25">
-        <div aria-hidden="true" className="h-1 bg-gradient-to-r from-[#ffb84d] via-[#ffe98a] to-[#ffb84d]" />
-        <button
-          aria-label={t("Close")}
-          className="absolute right-3 top-4 z-10 grid size-8 place-items-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-brand-yellow"
-          onClick={snooze}
-          type="button"
-        >
-          <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-            <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-          </svg>
-        </button>
-        <div className="relative p-5 sm:p-6">
-          <div className="flex items-center gap-3.5 pr-8">
-            <span className="relative shrink-0">
-              <img decoding="async" loading="lazy" alt="" className="size-12 rounded-2xl ring-1 ring-white/15" height={48} src="/icons/icon-192.png" width={48} />
-              <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full bg-brand-yellow text-brand-navy ring-2 ring-[#0d3566]">
-                <BellIcon className="size-3.5" />
-              </span>
+      <div className="relative overflow-hidden rounded-[20px] bg-brand-cream text-brand-navy shadow-[0_16px_40px_-12px_rgba(71,42,59,0.35)] ring-1 ring-brand-border-warm">
+        {/* Header: the shop's app icon with a small alert badge, the one claim,
+            and the close control in the corner where a card expects it. */}
+        <div className="flex items-start gap-3.5 border-b border-brand-border-warm bg-white px-4 pb-4 pt-4 sm:px-5">
+          <span className="relative shrink-0">
+            <img decoding="async" loading="lazy" alt="" className="size-11 rounded-[14px] ring-1 ring-black/5" height={44} src="/icons/icon-192.png" width={44} />
+            <span aria-hidden="true" className="absolute -bottom-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-brand-yellow text-brand-navy ring-2 ring-white">
+              <BellIcon className="size-3" />
             </span>
-            <div className="min-w-0">
-              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-yellow">{t("Stay in the loop")}</p>
-              <h2 className="mt-0.5 font-display text-lg font-extrabold leading-tight" id="promotion-alerts-title">
-                {t("Order updates and sweet deals")}
-              </h2>
-            </div>
+          </span>
+          <div className="min-w-0 pr-6">
+            <h2 className="font-display text-[15px] font-extrabold leading-snug" id="promotion-alerts-title">
+              {t("Order updates on this device")}
+            </h2>
+            <p className="mt-0.5 text-[13px] leading-5 text-brand-gray">
+              {t("Get a notification when your order is being prepared, out for delivery or delivered, and when a new promotion launches.")}
+            </p>
           </div>
-          <p className="mt-3 text-[13px] leading-5 text-white/75">
-            {t("Get a notification on this device when your order is being prepared, out for delivery or delivered, and when we launch a new promotion.")}
-          </p>
-          {error && <p className="mt-3 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-[#ffd4d4]" role="alert">{error}</p>}
-          <div className="mt-5 grid grid-cols-[auto_1fr] gap-2.5">
+          <button
+            aria-label={t("Close")}
+            className="absolute right-2.5 top-2.5 grid size-8 place-items-center rounded-lg text-brand-gray transition hover:bg-brand-surface hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep"
+            onClick={snooze}
+            type="button"
+          >
+            <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+              <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+            </svg>
+          </button>
+        </div>
+        <div className="px-4 py-4 sm:px-5">
+          <ul className="grid gap-1.5">
+            {ALERT_MOMENTS.map((moment) => (
+              <li
+                className="flex items-center gap-2.5 rounded-lg px-1.5 py-1 text-[13px] font-medium text-brand-navy"
+                key={moment.label}
+              >
+                <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-md bg-brand-yellow/25 text-brand-navy">
+                  <MomentIcon path={moment.path} />
+                </span>
+                {t(moment.label)}
+              </li>
+            ))}
+          </ul>
+          {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700" role="alert">{error}</p>}
+          <div className="mt-4 grid grid-cols-[auto_1fr] gap-2.5">
             <button
-              className="min-h-11 rounded-xl px-4 text-sm font-bold text-white/80 ring-1 ring-white/20 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
+              className="min-h-11 whitespace-nowrap rounded-xl border border-brand-border-warm bg-white px-3.5 text-sm font-bold text-brand-navy transition hover:bg-brand-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep active:scale-[0.98]"
               onClick={snooze}
               type="button"
             >
               {t("Not now")}
             </button>
             <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-yellow px-4 text-sm font-extrabold text-brand-navy shadow-[0_8px_20px_rgba(255,220,50,0.25)] transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-wait disabled:opacity-70"
+              className="inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-brand-navy px-3 text-[13px] font-extrabold text-white transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow-deep active:scale-[0.98] disabled:cursor-wait disabled:opacity-70"
               disabled={isWorking}
               onClick={turnOn}
               type="button"

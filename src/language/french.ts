@@ -652,6 +652,12 @@ const french: Record<string, string> = {
   "Order updates and sweet deals": "Suivi de commande et bonnes affaires",
   "Get a notification on this device when your order is being prepared, out for delivery or delivered, and when we launch a new promotion.":
     "Recevez une notification sur cet appareil quand votre commande est en préparation, en livraison ou livrée, et à chaque nouvelle promotion.",
+  "Order updates on this device": "Suivi de commande sur cet appareil",
+  "Get a notification when your order is being prepared, out for delivery or delivered, and when a new promotion launches.":
+    "Recevez une notification quand votre commande est en préparation, en livraison ou livrée, et à chaque nouvelle promotion.",
+  "When your order is being prepared": "Quand votre commande est en préparation",
+  "When it is out for delivery": "Quand elle est en livraison",
+  "When a new promotion launches": "À chaque nouvelle promotion",
   "Turn on notifications": "Activer les notifications",
   "Order alerts on": "Alertes commandes activées",
   "Turn on order alerts": "Activer les alertes commandes",
