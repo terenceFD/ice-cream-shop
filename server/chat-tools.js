@@ -604,7 +604,7 @@ export function partyReply(message, shopFacts, language = "en") {
   };
 }
 
-function canAdd(item) {
+export function canAdd(item) {
   return Boolean(item && !item.soldOut && item.path && ADDABLE_ID.test(item.addId || "") && Number.isFinite(Number(item.price)));
 }
 

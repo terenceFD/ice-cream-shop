@@ -3,6 +3,7 @@
 // food the customer cannot eat. The sentences stay short. The tags at the end
 // are buttons, not text the customer should read.
 
+import { askedProduct, canAdd } from "./chat-tools.js";
 import { describeBagQuote, productConflicts, quoteBag, statedAllergies } from "./chat-offer.js";
 
 const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
@@ -62,6 +63,15 @@ function asksToClearBag(message) {
   return /\b(empty|clear|vide|vider)\b/i.test(message) && /\b(bag|cart|panier)\b/i.test(message);
 }
 
+/** "Add the mango", "I want two of the vanilla", "mettez le chocolate dans le panier". */
+function asksToAdd(message) {
+  const wantsBag = /\b(bag|cart|panier)\b/i.test(message);
+  const wantsIt = /\b(add|put|drop)\b/i.test(message) && /\b(it|this|that|one|them|some|bag|cart)\b/i.test(message);
+  const saysTake = /\b(i(?:'ll| will| would like|'d like| want| take)|je (?:veux|prends)|mettez?|ajoutez?|ajouter)\b/i.test(message);
+  const withCount = /\b(two|three|four|five|deux|trois|quatre|cinq|\d{1,2})\b/i.test(message);
+  return wantsIt || (saysTake && wantsBag) || (saysTake && withCount);
+}
+
 function asksToChangeBag(message) {
   return /\b(remove|take off|take out|drop|enl[eè]ve|retire|make (?:it|the|them)|change it to|seulement)\b/i.test(message)
     || (new RegExp(`\\b(?:make|mettre)\\b.*\\b(?:${Object.keys(QUANTITY_WORDS).join("|")}|\\d{1,2})\\b`, "i")).test(message);
@@ -83,6 +93,34 @@ function askedQuantity(message) {
   if (digit) return Number(digit[1]);
   const word = String(message).toLowerCase().match(new RegExp(`\\b(${Object.keys(QUANTITY_WORDS).join("|")})\\b`));
   return word ? QUANTITY_WORDS[word[1]] : 0;
+}
+
+/**
+ * An explicit "add X to my bag" is answered here, not by the model, so the
+ * confirmation always matches the tag: the reply ends with [ADD:…] and the
+ * widget's button does the adding when the customer taps it. The wording says
+ * "here is the button" rather than "it is in your bag" — the tap is the act.
+ */
+export function addReply(message, shopFacts, language = "en") {
+  if (!asksToAdd(message)) return null;
+  // Allergy conflicts fall to the model, which carries the guard rails.
+  const allergies = statedAllergies(message);
+  if (allergies.length) return null;
+  const fr = language === "fr";
+  const product = askedProduct(message, shopFacts);
+  if (!product || product.soldOut || !canAdd(product)) return null;
+  const quantity = askedQuantity(message) || 1;
+  const name = product.name;
+  const body = fr
+    ? `${name} — appuyez pour l'ajouter à votre panier.\n[ADD:${product.addId}]`
+    : quantity > 1
+      ? `${name} — tap to add ${quantity} to your bag.\n[ADD:${product.addId}]`
+      : `${name} — tap to add it to your bag.\n[ADD:${product.addId}]`;
+  return {
+    topic: "order",
+    chips: productChips(language),
+    body,
+  };
 }
 
 export function bagEditReply(message, bag, language = "en") {

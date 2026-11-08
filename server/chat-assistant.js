@@ -31,6 +31,7 @@ import {
   bagEditReply,
   codeReply,
   loyaltyReply,
+  addReply,
   preferenceReply,
   productChips,
   visitReply,
@@ -726,6 +727,8 @@ function finishReply(text, { message, imageAttached, facts, history, language, m
 
 function directShopReply(message, shopFacts, language) {
   const bag = shopFacts.customerContext?.bag || [];
+  const added = addReply(message, shopFacts, language);
+  if (added) return { ...added, body: withChips(added.body, added.chips) };
   const edited = bagEditReply(message, bag, language);
   if (edited) return { ...edited, body: withChips(edited.body, edited.chips) };
   const visit = visitReply(message, {
