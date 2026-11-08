@@ -1101,9 +1101,21 @@ export function LiveChatWidget() {
     const utterance = new SpeechSynthesisUtterance(text);
     const french = language === "fr" || /[àâçéèêëîïôùûüœ]/i.test(text) || /\b(c'est|bonjour|disponible|boutique)\b/i.test(text);
     utterance.lang = french ? "fr-FR" : "en-US";
-    const voice = window.speechSynthesis
-      .getVoices()
-      .find((item) => item.lang.toLowerCase().startsWith(french ? "fr" : "en"));
+    // Prefer the modern neural voices the OS ships for free (Windows "Natural",
+    // Edge "Online (Natural)"), then any local voice, then any matching voice.
+    const langCode = french ? "fr" : "en";
+    const voices = window.speechSynthesis.getVoices().filter((item) =>
+      item.lang.toLowerCase().startsWith(langCode),
+    );
+    const scored = (item: SpeechSynthesisVoice) => {
+      const name = item.name.toLowerCase();
+      if (/(natural|neural|online)/.test(name)) return 3;
+      if (item.localService && /premium|enhanced|siri/.test(name)) return 2;
+      if (item.localService) return 1;
+      return 0;
+    };
+    const voice =
+      voices.sort((a, b) => scored(b) - scored(a))[0] ?? null;
     if (voice) utterance.voice = voice;
     let settled = false;
     const finish = () => {
