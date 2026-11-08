@@ -1951,6 +1951,14 @@ function ChatAutoAdd({ addId }: { addId: string }) {
   const { addToCart } = useCart();
   const { flavors } = useFlavors();
   const [state, setState] = useState<"adding" | "added" | "failed">("adding");
+  // Latest-handler refs: the add fires exactly once per mount, on a fixed 400 ms
+  // timer. depending on addToCart or flavors directly re-arms the timer on every
+  // re-render — and the flavor context value is a fresh object each render, so
+  // the timer was repeatedly cleared and the note stuck on "Adding to your bag…".
+  const addToCartRef = useRef(addToCart);
+  addToCartRef.current = addToCart;
+  const flavorsRef = useRef(flavors);
+  flavorsRef.current = flavors;
 
   useEffect(() => {
     // One attempt per rendered reply. If it fails (stock gone, unknown id),
@@ -1958,16 +1966,21 @@ function ChatAutoAdd({ addId }: { addId: string }) {
     const timer = window.setTimeout(() => {
       // A strict once-per-id guard: hot reloads and re-renders re-mount this
       // component for the same reply, and each mount would otherwise add again.
-      if (autoAddsApplied.has(addId)) return;
+      if (autoAddsApplied.has(addId)) {
+        // A previous mount already added it (the id stayed in the set): show
+        // the done state instead of a spinner that never ends.
+        setState("added");
+        return;
+      }
       autoAddsApplied.add(addId);
       const ok = addId.startsWith("flavor:")
-        ? addToCart(flavors.find((flavor) => String(flavor.id) === addId.slice("flavor:".length)) || { id: "", name: "", image: "" })
-        : addToCart(findMenuItem(addId) || { id: "", name: "", image: "" });
+        ? addToCartRef.current(flavorsRef.current.find((flavor) => String(flavor.id) === addId.slice("flavor:".length)) || { id: "", name: "", image: "" })
+        : addToCartRef.current(findMenuItem(addId) || { id: "", name: "", image: "" });
       if (!ok) autoAddsApplied.delete(addId); // allow a retry on the next visit
       setState(ok ? "added" : "failed");
     }, 400);
     return () => window.clearTimeout(timer);
-  }, [addId, addToCart, flavors]);
+  }, [addId]);
 
   return (
     <div className="mt-2.5 max-w-[16rem]" aria-live="polite">
