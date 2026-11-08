@@ -598,7 +598,12 @@ export async function suggestReply(
       needsAttention: needsHumanHandoff(history),
     };
   }
-  const direct = directShopReply(lastCustomer.body, shopFacts, replyLanguage);
+  // The [ADD:] product the immediately previous store reply carried, when the
+  // customer has not yet added it. A follow-up like "Add it to my bag" or "yes,
+  // add it" confirms it; the model otherwise answers "added" with no tag and
+  // nothing reaches the bag.
+  const pendingAdd = pendingAddProduct(history, shopFacts);
+  const direct = directShopReply(lastCustomer.body, shopFacts, replyLanguage, pendingAdd);
   if (direct) {
     return {
       suggestion: finishReply(direct.body, {
@@ -725,9 +730,36 @@ function finishReply(text, { message, imageAttached, facts, history, language, m
   );
 }
 
-function directShopReply(message, shopFacts, language) {
+/**
+ * The product the last store reply offered with an [ADD:] tag, if the customer
+ * has not added it since. "Add it to my bag" after such a reply confirms that
+ * product instead of naming one. The reply's own wording matters: a price line
+ * also carries [ADD:], and confirming "add it" is still a purchase intent.
+ */
+function pendingAddProduct(history, shopFacts) {
+  const messages = [...(history || [])].reverse();
+  const lastCustomerIndex = messages.findIndex((message) => message.sender === "customer");
+  if (lastCustomerIndex < 0) return null;
+  const lastStore = messages.slice(lastCustomerIndex + 1).find((message) => message.sender === "store");
+  if (!lastStore) return null;
+  // The chips tag is appended after the add tag, so the add is not at the end.
+  const match = String(lastStore.body || "").replace(/\[CHIPS:[^\]]*\]/gi, "").match(/\[ADD:([^\]]+)\]/);
+  if (!match) return null;
+  const addId = match[1].trim();
+  for (const group of Object.values(shopFacts?.menuByCategory || {})) {
+    for (const item of group || []) {
+      if (item?.addId === addId) return item;
+    }
+  }
+  for (const flavor of shopFacts?.flavors || []) {
+    if (flavor?.addId === addId) return flavor;
+  }
+  return null;
+}
+
+function directShopReply(message, shopFacts, language, pendingAdd = null) {
   const bag = shopFacts.customerContext?.bag || [];
-  const added = addReply(message, shopFacts, language);
+  const added = addReply(message, shopFacts, language, pendingAdd);
   if (added) return { ...added, body: withChips(added.body, added.chips) };
   const edited = bagEditReply(message, bag, language);
   if (edited) return { ...edited, body: withChips(edited.body, edited.chips) };
@@ -776,6 +808,7 @@ function fallbackToRules({ lastCustomer, shopFacts, language, customerPage, imag
     customerPage,
     imageUrl,
     imageMatch,
+    pendingAddProduct(history, shopFacts),
   );
   return {
     suggestion: finishReply(rules.body, {
@@ -1554,6 +1587,7 @@ const ROLE_RULES = [
   "- When pointing to a general page (not one product), end the reply with an action line on its own: [ACTION:menu_all] for the All Menu page, [ACTION:custom_cake] for custom cakes, [ACTION:events] for event orders, [ACTION:locations] for branches, [ACTION:track_order] for order tracking, [ACTION:contact] for the contact page. The website turns this line into a button; the text before it must still mention the page naturally.",
   "- WHEN THE CUSTOMER ATTACHES A PHOTO ('is this available?', 'how much is this?', 'I want this', or a photo with no words at all): if PHOTO MATCH names a product, answer about THAT product in one or two sentences: its name, its price, and whether it is in stock. Do not list the menu, do not say how many items the shop sells, and do not say 'this photo matches'. If it is in stock and it does not conflict with an allergy they stated, end with [LINK:its page] and [ADD:its id]. If it is sold out, or it conflicts with a stated allergy, say so and do not add a buy link. A photo with no words is still that question: read the name printed on the cup or carton, find that exact product in SHOP FACTS, and answer with its name, price, and stock. Do not answer a photo with 'I don't have an answer'.",
   "- ALLERGIES: if they have said they cannot eat something, do not recommend, link, or add a product that contains it.",
+  "- NEVER claim you put something in the bag. You cannot edit the customer's bag yourself: only an [ADD:] or [FILL:] tag on its own line at the very end of your reply does that, when the website applies it. If the customer asks you to add an item, say the item is ready and end with its [ADD:id] line — the site turns that into the add. A reply that says 'added to your bag' without an [ADD:] or [FILL:] line has added nothing.",
   "- BRANCH: when they name a branch, quote that branch's delivery fee and say stock is one shared count. Do not answer with only yes.",
   "- BAG TOTAL: use the BAG QUOTE only when they ask what their bag or order will cost. Those figures already include Buy 2 Get 1 Free and the best code. Say the total. Mention a discount only when the quote actually takes money off. Never say a discount is 0, and never say that no code applies.",
   "- CURRENCY: the site has a currency switcher in the bottom-right corner of every page (FCFA, USD, EUR). If a customer asks about prices in another currency, tell them to tap it and choose the currency; every price on the site then shows in that currency. Prices always quote in FCFA, which is what is charged, so convert the shop's FCFA facts only when the customer asks and say the charge is in FCFA.",
@@ -1947,7 +1981,7 @@ export function silentPhotoReply(message, imageMatch, language = "en", facts = n
   };
 }
 
-function draftFromRules(message, context, language, customerPage = "", imageUrl = "", imageMatch = null) {
+function draftFromRules(message, context, language, customerPage = "", imageUrl = "", imageMatch = null, pendingAdd = null) {
   const fr = language === "fr";
   if (isProblemReport(message)) {
     return { body: problemReply(message, language), topic: "problem", confidence: "high" };
@@ -1958,7 +1992,7 @@ function draftFromRules(message, context, language, customerPage = "", imageUrl 
   if (reorder) return { body: reorder, topic: "order", confidence: "high" };
   const party = partyReply(message, context, language);
   if (party) return { body: party.body, topic: party.topic, confidence: "high" };
-  const direct = directShopReply(message, context, language);
+  const direct = directShopReply(message, context, language, pendingAdd);
   if (direct) return { body: direct.body, topic: direct.topic, confidence: "high" };
   if (imageUrl) {
     const silent = silentPhotoReply(message, imageMatch, language, context);

@@ -101,13 +101,16 @@ function askedQuantity(message) {
  * widget's button does the adding when the customer taps it. The wording says
  * "here is the button" rather than "it is in your bag" — the tap is the act.
  */
-export function addReply(message, shopFacts, language = "en") {
+export function addReply(message, shopFacts, language = "en", pendingAdd = null) {
   if (!asksToAdd(message)) return null;
   // Allergy conflicts fall to the model, which carries the guard rails.
   const allergies = statedAllergies(message);
   if (allergies.length) return null;
   const fr = language === "fr";
-  const product = askedProduct(message, shopFacts);
+  // "Add it to my bag" names no product: the one the last reply offered is the
+  // one being confirmed. Without this the message falls to the model, which
+  // answers "has been added" without an [ADD:] tag and nothing reaches the bag.
+  const product = askedProduct(message, shopFacts) || pendingAdd;
   if (!product || product.soldOut || !canAdd(product)) return null;
   const quantity = askedQuantity(message) || 1;
   const name = product.name;

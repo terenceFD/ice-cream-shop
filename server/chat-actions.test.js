@@ -312,3 +312,50 @@ test("a product the catalog does not know gets no add tag", () => {
     null,
   );
 });
+
+test("'Add it to my bag' after a price line confirms the offered product", () => {
+  // The exact failure from the live thread: the customer asks the price, then
+  // answers the 'Add it to my bag' chip. No product name in the second message,
+  // so the pending add from the previous reply must fill in.
+  const reply = addReply(
+    "Add it to my bag",
+    ADD_FACTS,
+    "en",
+    ADD_FACTS.menuByCategory["Ice Cream"][0],
+  );
+  assert.match(reply.body, /added to your bag/);
+  assert.equal(
+    reply.body.includes("[ADD:menu:ice-cream:chocolate-devotion]"),
+    true,
+  );
+});
+
+test("'yes add it' confirms the pending product too", () => {
+  const reply = addReply(
+    "yes add it",
+    ADD_FACTS,
+    "en",
+    ADD_FACTS.menuByCategory["Ice Cream"][0],
+  );
+  assert.equal(
+    reply.body.includes("[ADD:menu:ice-cream:chocolate-devotion]"),
+    true,
+  );
+});
+
+test("an add with no product named and none pending answers nothing", () => {
+  assert.equal(addReply("Add it to my bag", ADD_FACTS, "en"), null);
+});
+
+test("a named product wins over the pending one", () => {
+  const reply = addReply(
+    "add the chocolate devotion to my bag",
+    ADD_FACTS,
+    "en",
+    { name: "Vanilla Bean", addId: "menu:ice-cream:vanilla-bean", price: 2500 },
+  );
+  assert.equal(
+    reply.body.includes("[ADD:menu:ice-cream:chocolate-devotion]"),
+    true,
+  );
+});
