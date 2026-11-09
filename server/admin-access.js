@@ -27,7 +27,6 @@ export function storeAdminCanAccess(method, path) {
   if (normalizedMethod === 'DELETE' && /^\/reviews\/\d+$/.test(normalizedPath)) return true
   if (normalizedMethod === 'PATCH' && /^\/cake-requests\/\d+\/status$/.test(normalizedPath)) return true
   if (normalizedMethod === 'PATCH' && /^\/cake-requests\/\d+$/.test(normalizedPath)) return true
-  if (normalizedMethod === 'PATCH' && /^\/cake-requests\/\d+$/.test(normalizedPath)) return true
   if (normalizedMethod === 'GET' && normalizedPath === '/event-orders') return true
   if (normalizedMethod === 'GET' && normalizedPath === '/event-orders/deposit-notices') return true
   if (normalizedMethod === 'GET' && normalizedPath === '/order-notices') return true

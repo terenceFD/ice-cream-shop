@@ -4444,7 +4444,6 @@ const french: Record<string, string> = {
   // Cash on delivery
   "Cash on delivery": "Paiement à la livraison",
   "Confirm cash collected": "Confirmer l'encaissement",
-  "Confirming…": "Confirmation…",
   "Cash collected": "Espèces encaissées",
   "Waiting for cash at handover": "Dans l'attente du paiement à la remise",
   "COD · paid": "Paiement à la livraison · payé",

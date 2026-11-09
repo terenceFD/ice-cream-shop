@@ -1152,7 +1152,7 @@ function CustomerSecurityCard({ customer, onChangePassword, onDeleteAccount, onE
         </button>
       </form>
 
-      <form className="space-y-5" onSubmit={handleRequestEmailChange}>
+      <form className="space-y-5" onSubmit={emailVerificationId ? handleConfirmEmailChange : handleRequestEmailChange}>
         <div>
           <p className="text-sm font-extrabold text-brand-navy">{t("Change email")}</p>
           <p className="mt-1 text-xs leading-5 text-[#65748a]">

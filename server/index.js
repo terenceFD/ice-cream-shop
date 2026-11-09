@@ -1129,25 +1129,26 @@ function normalizeFlavor(body, existing = {}) {
 async function listOrders({ deliveredOnly = false, storeId = null, storeTown = null } = {}) {
   // Delivered orders that an admin removed from the Orders page stay visible on
   // the Delivered page, so only the non-delivered list applies the soft-delete filter.
-  const conditions = deliveredOnly ? ["status = 'delivered'"] : ["hidden_from_admin = 0"]
+  const conditions = deliveredOnly ? ["orders.status = 'delivered'"] : ["orders.hidden_from_admin = 0"]
   const parameters = []
   if (storeTown !== null) {
-    conditions.push('store_id IN (SELECT id FROM stores WHERE town = ?)')
+    conditions.push('orders.store_id IN (SELECT id FROM stores WHERE town = ?)')
     parameters.push(storeTown)
   }
   if (storeId !== null) {
-    conditions.push("store_id = ?")
+    conditions.push("orders.store_id = ?")
     parameters.push(storeId)
   }
   const orders = await database.prepare(`
-    SELECT id, customer_name AS "customerName", customer_email AS "customerEmail",
+    SELECT orders.id, customer_name AS "customerName", customer_email AS "customerEmail",
       customer_phone AS "customerPhone",
       delivery_address AS "deliveryAddress", delivery_city AS "deliveryCity",
       delivery_postal_code AS "deliveryPostalCode", delivery_residence AS "deliveryResidence",
       store_id AS "storeId", store_name AS "storeName",
       store_address AS "storeAddress", store_phone AS "storePhone",
       subtotal_cents AS "subtotalCents", discount_cents AS "discountCents",
-      total_cents AS "totalCents", currency, status, created_at AS "createdAt",
+      total_cents AS "totalCents", orders.currency AS currency, orders.status AS status,
+      orders.created_at AS "createdAt",
       delivered_at AS "deliveredAt", fulfillment_status AS "fulfillmentStatus",
       delivery_stage AS "deliveryStage", fulfillment_type AS "fulfillmentType",
       scheduled_for AS "scheduledFor", delivery_fee AS "deliveryFee",
@@ -1159,7 +1160,7 @@ async function listOrders({ deliveredOnly = false, storeId = null, storeTown = n
     FROM orders
       LEFT JOIN payments p ON p.order_id = orders.id
     ${conditions.length ? `WHERE ${conditions.join(" AND ")}` : ''}
-    ORDER BY id DESC
+    ORDER BY orders.id DESC
     LIMIT 500
   `).all(...parameters)
   if (orders.length === 0) return []
