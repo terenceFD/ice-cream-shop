@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowIcon, Footer, Header, InstagramSection } from "../../components/Layout";
-import { coldStoneMenuCategories, getMenuItemId } from "../../../shared/data";
+import { coldStoneMenuCategories, getMenuItemId, menuItemPublicPath } from "../../../shared/data";
 import { apiRequest, getCustomerToken } from "../../api/api";
 import { useCart } from "../../context/useCart";
 import { useLanguage } from "../../language/useLanguage";
