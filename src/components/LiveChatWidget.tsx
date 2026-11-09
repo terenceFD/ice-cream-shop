@@ -11,15 +11,10 @@ import { useMobileMenuOpen } from "../lib/mobileMenu";
 import { useShowFloatingWidgets } from "../lib/floatingWidgets";
 import { prepareImageForUpload } from "../lib/prepareUploadImage";
 
-/**
- * Live chat bubble: a small launcher in the corner opens a thread with the store.
- * Messages are stored server-side and polled every few seconds while open — no
- * websocket infrastructure needed for a shop-scale conversation flow.
- *
- * The thread id lives in localStorage, so an anonymous visitor keeps their
- * conversation across page loads, and a signed-in customer's messages are
- * linked to their account for the admin inbox.
- */
+// Live chat bubble: a corner launcher opens a thread with the store. Messages
+// live server-side and the widget polls while open; the thread id stays in
+// localStorage so a guest keeps their conversation, and a signed-in customer's
+// messages link to their account for the admin inbox.
 
 const OPEN_STORAGE_KEY = "cold-stone-chat-open";
 const POLL_INTERVAL_MS = 1500;
