@@ -763,11 +763,13 @@ app.get('/api/site/contact', (_request, response) => {
 })
 
 app.get('/api/payment/methods', async (_request, response) => {
+  const cod = await getCashOnDeliveryConfig()
   response.json({
-    cashOnDelivery: await getCashOnDeliveryConfig(),
+    cashOnDelivery: cod,
     methods: {
       card: Boolean(getStripe()),
       campayMobileMoney: isCamPayMobileMoneyEnabled(),
+      cashOnDelivery: cod.enabled,
     },
   })
 })
