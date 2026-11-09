@@ -38,7 +38,14 @@ export function registerCommerceRoutes(
   },
 ) {
   // Owner-only routes chain both guards: a signed-in admin whose role is owner.
-  const requireOwnerAdmin = [requireAdmin, requireOwner];
+  // requireOwner(request, response) answers a boolean instead of calling next(),
+  // so it is wrapped: Express would otherwise stop the chain after it.
+  const requireOwnerAdmin = [
+    requireAdmin,
+    (request, response, next) => {
+      if (requireOwner(request, response)) next();
+    },
+  ];
   const router = express.Router();
 
   const wishlistLimiter = rateLimit({
@@ -238,10 +245,14 @@ export function registerCommerceRoutes(
           response.status(400).json({ error: "Order id is invalid." });
           return;
         }
+        // The COD marker lives on the payment row, not the order.
         const order = await database
-          .prepare("SELECT id, payment_method FROM orders WHERE id = ?")
+          .prepare(
+            `SELECT o.id FROM orders o JOIN payments p ON p.order_id = o.id
+           WHERE o.id = ? AND p.payment_provider = 'cod'`,
+          )
           .get(id);
-        if (!order || order.payment_method !== "cod") {
+        if (!order) {
           response
             .status(404)
             .json({ error: "No cash-on-delivery order with that id." });

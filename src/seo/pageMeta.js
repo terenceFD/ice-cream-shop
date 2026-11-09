@@ -12,6 +12,11 @@ export const DEFAULT_IMAGE = '/images/og-image.jpg'
 
 /** Pages search engines should list. */
 export const PUBLIC_PAGES = {
+  '/wishlist': {
+    title: 'Your wishlist',
+    description:
+      'Save the treats you love and share the list with family or friends, so they can order your favourites straight from it.',
+  },
   '/': {
     title: HOME_TITLE,
     description: DEFAULT_DESCRIPTION,
@@ -116,6 +121,17 @@ function normalize(pathname) {
  */
 export function metaForPath(pathname) {
   const path = normalize(pathname)
+  // A shared wishlist link is a real page for whoever receives it, though it is
+  // someone else's list: indexable, with the wishlist copy rather than a 404.
+  if (/^\/wishlist\/shared\/[a-z0-9_-]+$/i.test(path)) {
+    return {
+      ...PUBLIC_PAGES['/wishlist'],
+      title: 'A shared wishlist',
+      index: true,
+      found: true,
+      path,
+    }
+  }
   const page = PUBLIC_PAGES[path]
   if (page) return { ...page, index: true, found: true, path }
   if (PRIVATE_PAGES[path]) return { title: PRIVATE_PAGES[path], description: DEFAULT_DESCRIPTION, index: false, found: true, path }

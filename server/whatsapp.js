@@ -5,6 +5,11 @@ function destinationNumber(phone) {
   return /^\d{8,15}$/.test(digits) ? digits : ''
 }
 
+// A request that can hang (a blocked egress route, a silent proxy) must not hold a
+// caller forever: fulfilment updates answer in-process and the abandoned-cart sweep
+// awaits this function inside an admin request. Ten seconds is generous for the API.
+const WHATSAPP_SEND_TIMEOUT_MS = 10_000
+
 export function isWhatsAppMessagingConfigured() {
   return Boolean(process.env.WHATSAPP_ACCESS_TOKEN?.trim() && process.env.WHATSAPP_PHONE_NUMBER_ID?.trim())
 }
@@ -28,6 +33,7 @@ export async function sendWhatsAppText({ to, text }) {
       type: 'text',
       text: { body: text.slice(0, 1000), preview_url: false },
     }),
+    signal: AbortSignal.timeout(WHATSAPP_SEND_TIMEOUT_MS),
   })
   if (!response.ok) {
     const detail = await response.text()
