@@ -1,7 +1,22 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { ArrowIcon, Footer, Header, InstagramSection } from "../../components/Layout";
-import { coldStoneMenuCategories, getMenuItemId, menuItemPublicPath } from "../../../shared/data";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import {
+  ArrowIcon,
+  Footer,
+  Header,
+  InstagramSection,
+} from "../../components/Layout";
+import {
+  coldStoneMenuCategories,
+  findMenuItemBySlug,
+  getMenuItemId,
+  menuItemPublicPath,
+} from "../../../shared/data";
 import { apiRequest, getCustomerToken } from "../../api/api";
 import { useCart } from "../../context/useCart";
 import { useLanguage } from "../../language/useLanguage";
@@ -12,7 +27,11 @@ import { PageHero } from "../../components/PageHero";
 import { NotFoundPage } from "../notfound/NotFoundPage";
 import { ProductImageSlider } from "../../components/ProductImageSlider";
 import { RatingBadge } from "../../components/RatingBadge";
-import { photoErrorHandler, photoSrcSet, thumbnail } from "../../lib/thumbnails";
+import {
+  photoErrorHandler,
+  photoSrcSet,
+  thumbnail,
+} from "../../lib/thumbnails";
 import { rankSimilar } from "../../lib/similarItems";
 import { numberFormatter, formatCartMoney } from "../../lib/cartPricing";
 import { RecentlyViewed } from "../../components/RecentlyViewed";
@@ -33,10 +52,22 @@ const CAKE_SPECIMEN_FIELDS = [
 const CATEGORY_HERO_THEMES = {
   "Ice Cream": { surface: "#472a3b", accent: "#ffb84d", imageSide: "right" },
   "Cakes & Pies": { surface: "#472a3b", accent: "#ffd0bd", imageSide: "left" },
-  "Silk & Sorbet": { surface: "#472a3b", accent: "#f0c5db", imageSide: "right" },
-  "Milkshakes & Smoothies": { surface: "#472a3b", accent: "#d9ed9a", imageSide: "left" },
+  "Silk & Sorbet": {
+    surface: "#472a3b",
+    accent: "#f0c5db",
+    imageSide: "right",
+  },
+  "Milkshakes & Smoothies": {
+    surface: "#472a3b",
+    accent: "#d9ed9a",
+    imageSide: "left",
+  },
   Novelties: { surface: "#472a3b", accent: "#ffd19a", imageSide: "right" },
-  "Limited-Time Favorites": { surface: "#472a3b", accent: "#ffd37d", imageSide: "left" },
+  "Limited-Time Favorites": {
+    surface: "#472a3b",
+    accent: "#ffd37d",
+    imageSide: "left",
+  },
 };
 const DEFAULT_CATEGORY_HERO_THEME = {
   surface: "#472a3b",
@@ -47,8 +78,18 @@ const DEFAULT_CATEGORY_HERO_THEME = {
 function BagIcon() {
   return (
     <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-      <path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
-      <path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+      <path
+        d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M9 8V6.5a3 3 0 0 1 6 0V8"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.8"
+      />
     </svg>
   );
 }
@@ -56,7 +97,13 @@ function BagIcon() {
 function CheckIcon() {
   return (
     <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-      <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+      <path
+        d="m5 12.5 4.5 4.5L19 7.5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2.5"
+      />
     </svg>
   );
 }
@@ -65,7 +112,8 @@ function CheckIcon() {
 // or the full photo for the space the picture fills.
 function MenuImage({ alt, className = "", sizes, small = false, src }) {
   return (
-    <img decoding="async"
+    <img
+      decoding="async"
       alt={alt}
       className={className}
       loading="lazy"
@@ -96,7 +144,8 @@ function FilterSelect({ label, onChange, options, value }) {
       if (!rootRef.current?.contains(event.target)) setOpen(false);
     };
     document.addEventListener("pointerdown", closeOnOutsideClick);
-    return () => document.removeEventListener("pointerdown", closeOnOutsideClick);
+    return () =>
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
   }, [open]);
 
   useEffect(() => {
@@ -190,7 +239,13 @@ function FilterSelect({ label, onChange, options, value }) {
           fill="none"
           viewBox="0 0 24 24"
         >
-          <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+          <path
+            d="m6 9 6 6 6-6"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
         </svg>
       </button>
 
@@ -215,7 +270,7 @@ function FilterSelect({ label, onChange, options, value }) {
             <li
               aria-selected={isSelected}
               className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm capitalize transition-colors ${
-                isActive                 ? "bg-[#f1f2ee]" : ""
+                isActive ? "bg-[#f1f2ee]" : ""
               } ${isSelected ? "font-extrabold text-brand-navy" : "font-semibold text-[#65748a]"}`}
               data-index={index}
               id={`${id}-option-${index}`}
@@ -232,7 +287,13 @@ function FilterSelect({ label, onChange, options, value }) {
                 }`}
               >
                 <svg className="size-3" fill="none" viewBox="0 0 24 24">
-                  <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+                  <path
+                    d="m5 12.5 4.5 4.5L19 7.5"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="3"
+                  />
                 </svg>
               </span>
             </li>
@@ -245,7 +306,16 @@ function FilterSelect({ label, onChange, options, value }) {
 
 // onQuickAdd: adds one to the bag straight from the card, so ordering no longer needs the detail
 // sheet. The card is a container with two separate buttons, because a button cannot hold a button.
-function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, added, t, formatPrice }) {
+function MenuProductCard({
+  category,
+  item,
+  itemIndex,
+  onSelect,
+  onQuickAdd,
+  added,
+  t,
+  formatPrice,
+}) {
   const soldOut = item.isAvailable === false || item.availableQuantity < 1;
   const isCakeCategory = category.title === "Cakes & Pies";
   return (
@@ -255,55 +325,56 @@ function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, adde
         onClick={() => onSelect(category, item)}
         type="button"
       >
-      <div
-        className={`relative flex items-center justify-center overflow-hidden ${
-          isCakeCategory
-            ? `aspect-square ${CAKE_SPECIMEN_FIELDS[itemIndex % CAKE_SPECIMEN_FIELDS.length]}`
-            : "aspect-square rounded-[20px] bg-[#f4f6f8]"
-        }`}
-      >
-        <MenuImage
-          alt={t(item.name)}
-          className={`transition duration-700 ease-out motion-reduce:transition-none ${
+        <div
+          className={`relative flex items-center justify-center overflow-hidden ${
             isCakeCategory
-              ? "size-[90%] object-contain group-hover:scale-[1.04] group-focus-within:scale-[1.04]"
-              : "size-full object-cover group-hover:scale-[1.04] group-focus-within:scale-[1.04]"
-          } ${soldOut ? "opacity-70 grayscale-[70%]" : ""}`}
-          sizes="(min-width: 1024px) 25vw, 50vw"
-          src={item.image}
-        />
-        <span
-          aria-hidden="true"
-          className="menu-card-shine"
-        />
-        {soldOut && (
-          <span className="absolute inset-x-0 bottom-0 z-10 bg-brand-navy px-3 py-2 text-center text-xs font-bold text-white">
-            {t("Sold out")}
-          </span>
-        )}
-      </div>
+              ? `aspect-square ${CAKE_SPECIMEN_FIELDS[itemIndex % CAKE_SPECIMEN_FIELDS.length]}`
+              : "aspect-square rounded-[20px] bg-[#f4f6f8]"
+          }`}
+        >
+          <MenuImage
+            alt={t(item.name)}
+            className={`transition duration-700 ease-out motion-reduce:transition-none ${
+              isCakeCategory
+                ? "size-[90%] object-contain group-hover:scale-[1.04] group-focus-within:scale-[1.04]"
+                : "size-full object-cover group-hover:scale-[1.04] group-focus-within:scale-[1.04]"
+            } ${soldOut ? "opacity-70 grayscale-[70%]" : ""}`}
+            sizes="(min-width: 1024px) 25vw, 50vw"
+            src={item.image}
+          />
+          <span aria-hidden="true" className="menu-card-shine" />
+          {soldOut && (
+            <span className="absolute inset-x-0 bottom-0 z-10 bg-brand-navy px-3 py-2 text-center text-xs font-bold text-white">
+              {t("Sold out")}
+            </span>
+          )}
+        </div>
 
-      <div className={`flex flex-1 flex-col ${isCakeCategory ? "pt-4 sm:pt-5" : "pt-4"}`}>
-        <h3 className="line-clamp-2 font-display text-base font-extrabold leading-snug text-brand-navy sm:text-lg">
-          {t(item.name)}
-        </h3>
-        {item.reviewCount > 0 && item.averageRating != null && (
-          <div className="mt-1.5">
-            <RatingBadge
-              averageRating={item.averageRating}
-              reviewCount={item.reviewCount}
-            />
-          </div>
-        )}
-        <p className={`mt-1.5 line-clamp-2 text-sm leading-6 text-[#65748a] ${
-          isCakeCategory ? "min-h-[3.25rem]" : ""
-        }`}>
-          {t(item.detail)}
-        </p>
-        <span className="mt-auto pt-3 font-display text-base font-extrabold tabular-nums text-brand-navy sm:text-lg">
-          {formatPrice(item.priceXaf)}
-        </span>
-      </div>
+        <div
+          className={`flex flex-1 flex-col ${isCakeCategory ? "pt-4 sm:pt-5" : "pt-4"}`}
+        >
+          <h3 className="line-clamp-2 font-display text-base font-extrabold leading-snug text-brand-navy sm:text-lg">
+            {t(item.name)}
+          </h3>
+          {item.reviewCount > 0 && item.averageRating != null && (
+            <div className="mt-1.5">
+              <RatingBadge
+                averageRating={item.averageRating}
+                reviewCount={item.reviewCount}
+              />
+            </div>
+          )}
+          <p
+            className={`mt-1.5 line-clamp-2 text-sm leading-6 text-[#65748a] ${
+              isCakeCategory ? "min-h-[3.25rem]" : ""
+            }`}
+          >
+            {t(item.detail)}
+          </p>
+          <span className="mt-auto pt-3 font-display text-base font-extrabold tabular-nums text-brand-navy sm:text-lg">
+            {formatPrice(item.priceXaf)}
+          </span>
+        </div>
       </button>
       <button
         aria-label={
@@ -323,8 +394,19 @@ function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, adde
         type="button"
       >
         {added ? (
-          <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-            <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+          <svg
+            aria-hidden="true"
+            className="size-4"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="m5 12.5 4.5 4.5L19 7.5"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+            />
           </svg>
         ) : null}
         {soldOut ? t("Sold out") : added ? t("Added") : t("Add to cart")}
@@ -334,7 +416,14 @@ function MenuProductCard({ category, item, itemIndex, onSelect, onQuickAdd, adde
 }
 
 // showCategory: only when the suggestion comes from another category than the product shown.
-function SimilarProductCard({ category, item, onSelect, showCategory, t, formatPrice }) {
+function SimilarProductCard({
+  category,
+  item,
+  onSelect,
+  showCategory,
+  t,
+  formatPrice,
+}) {
   const soldOut = item.isAvailable === false || item.availableQuantity < 1;
   return (
     <button
@@ -392,16 +481,22 @@ export function MenuPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { categorySlug, itemSlug } = useParams();
   const navigate = useNavigate();
-  const treatMatch = categorySlug && itemSlug ? findMenuItemBySlug(categorySlug, itemSlug) : null;
+  const treatMatch =
+    categorySlug && itemSlug
+      ? findMenuItemBySlug(categorySlug, itemSlug)
+      : null;
   const { addItemsToCart } = useCart();
   const { customer } = useAuth();
   const { language, t } = useLanguage();
   const { currency: displayCurrency } = useCurrency();
   // Prices shown in the visitor's currency; charges stay in FCFA.
-  const money = (amount) => formatCartMoney(amount, 'xaf', language, displayCurrency);
-  const [selectedItemState, setSelectedItemState] = useState(() => (
-    treatMatch ? { categoryTitle: treatMatch.category.title, item: treatMatch.item } : null
-  ));
+  const money = (amount) =>
+    formatCartMoney(amount, "xaf", language, displayCurrency);
+  const [selectedItemState, setSelectedItemState] = useState(() =>
+    treatMatch
+      ? { categoryTitle: treatMatch.category.title, item: treatMatch.item }
+      : null,
+  );
   const [search, setSearch] = useState("");
   const [categories, setCategories] = useState(coldStoneMenuCategories);
   const [menuError, setMenuError] = useState("");
@@ -470,7 +565,7 @@ export function MenuPage() {
       ? selectedItemState.item
       : null;
   const formatPrice = (price) =>
-    formatCartMoney(price, 'xaf', language, displayCurrency);
+    formatCartMoney(price, "xaf", language, displayCurrency);
 
   // A product address opens that product and keeps the address. Older
   // /menu?category=…&item=… links still open the product, then drop the item from the query.
@@ -478,19 +573,27 @@ export function MenuPage() {
     if (!categorySlug || !itemSlug) return;
     const match = findMenuItemBySlug(categorySlug, itemSlug);
     if (!match) return;
-    const category = categories.find((entry) => entry.title === match.category.title);
-    const live = category?.items.find((entry) => entry.name === match.item.name);
+    const category = categories.find(
+      (entry) => entry.title === match.category.title,
+    );
+    const live = category?.items.find(
+      (entry) => entry.name === match.item.name,
+    );
     setSelectedItemState({
       categoryTitle: match.category.title,
       item: live || match.item,
     });
   }, [categorySlug, itemSlug, categories]);
   const requestedItemName = searchParams.get("item");
-  const liveMenuLoaded = categories !== coldStoneMenuCategories || Boolean(menuError);
+  const liveMenuLoaded =
+    categories !== coldStoneMenuCategories || Boolean(menuError);
   useEffect(() => {
     if (!requestedItemName || !activeCategory || !liveMenuLoaded) return;
-    const item = activeCategory.items.find((entry) => entry.name === requestedItemName);
-    if (item) setSelectedItemState({ categoryTitle: activeCategory.title, item });
+    const item = activeCategory.items.find(
+      (entry) => entry.name === requestedItemName,
+    );
+    if (item)
+      setSelectedItemState({ categoryTitle: activeCategory.title, item });
     setSearchParams({ category: activeCategory.title }, { replace: true });
   }, [requestedItemName, activeCategory, liveMenuLoaded, setSearchParams]);
   const hasFilters = Boolean(
@@ -533,160 +636,206 @@ export function MenuPage() {
   const heroItemPhotos = (heroCategory?.items ?? [])
     .filter((item) => item.image && item.image !== heroCategory?.image)
     .map((item) => item.image);
-  const heroCategoryVisual = heroCategory && (() => {
-    const title = heroCategory.title;
-    const variant = {
-      "Ice Cream": "stair",
-      "Cakes & Pies": "stack",
-      "Silk & Sorbet": "trio",
-      "Milkshakes & Smoothies": "diagonal",
-      Novelties: "ring",
-      "Limited-Time Favorites": "banner",
-    }[title] || "stair";
-    const [photoA, photoB, photoC] = [
-      heroCategory.image,
-      ...heroItemPhotos,
-      heroCategory.image,
-    ].slice(0, 3);
+  const heroCategoryVisual =
+    heroCategory &&
+    (() => {
+      const title = heroCategory.title;
+      const variant =
+        {
+          "Ice Cream": "stair",
+          "Cakes & Pies": "stack",
+          "Silk & Sorbet": "trio",
+          "Milkshakes & Smoothies": "diagonal",
+          Novelties: "ring",
+          "Limited-Time Favorites": "banner",
+        }[title] || "stair";
+      const [photoA, photoB, photoC] = [
+        heroCategory.image,
+        ...heroItemPhotos,
+        heroCategory.image,
+      ].slice(0, 3);
 
-    if (variant === "stack") {
-      // Cakes & Pies: one wide cake on top, two squares beneath — a layer cake.
-      return (
-        <div className="flex size-full flex-col gap-3">
-          <div className="relative min-h-0 flex-1 overflow-hidden rounded-[28px] bg-white/10">
-            <MenuImage
-              alt={t(title)}
-              className="size-full object-cover"
-              sizes="(min-width: 1024px) 30vw, 60vw"
-              src={photoA}
-            />
-            <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-extrabold text-brand-navy">
-              {t("Slice or whole")}
-            </span>
+      if (variant === "stack") {
+        // Cakes & Pies: one wide cake on top, two squares beneath — a layer cake.
+        return (
+          <div className="flex size-full flex-col gap-3">
+            <div className="relative min-h-0 flex-1 overflow-hidden rounded-[28px] bg-white/10">
+              <MenuImage
+                alt={t(title)}
+                className="size-full object-cover"
+                sizes="(min-width: 1024px) 30vw, 60vw"
+                src={photoA}
+              />
+              <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-extrabold text-brand-navy">
+                {t("Slice or whole")}
+              </span>
+            </div>
+            <div className="grid min-h-0 flex-1 grid-cols-2 gap-3">
+              {[photoB, photoC].map((photo, index) => (
+                <div
+                  className="overflow-hidden rounded-[24px] bg-white/10"
+                  key={index}
+                >
+                  <MenuImage
+                    alt=""
+                    className="size-full object-cover"
+                    small
+                    src={photo}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="grid min-h-0 flex-1 grid-cols-2 gap-3">
-            {[photoB, photoC].map((photo, index) => (
-              <div className="overflow-hidden rounded-[24px] bg-white/10" key={index}>
-                <MenuImage alt="" className="size-full object-cover" small src={photo} />
+        );
+      }
+
+      if (variant === "trio") {
+        // Silk & Sorbet: three round scoops in a row, the middle one bigger.
+        return (
+          <div className="flex size-full flex-row items-center justify-center gap-4">
+            {[photoA, photoB, photoC].map((photo, index) => (
+              <div
+                className={`aspect-square shrink overflow-hidden rounded-full ring-4 ring-white/15 ${index === 1 ? "h-[62%]" : "h-[42%]"}`}
+                key={index}
+              >
+                <MenuImage
+                  alt={index === 0 ? t(title) : ""}
+                  className="size-full object-cover"
+                  small={index !== 0}
+                  src={photo}
+                />
               </div>
             ))}
           </div>
-        </div>
-      );
-    }
+        );
+      }
 
-    if (variant === "trio") {
-      // Silk & Sorbet: three round scoops in a row, the middle one bigger.
-      return (
-        <div className="flex size-full flex-row items-center justify-center gap-4">
-          {[photoA, photoB, photoC].map((photo, index) => (
-            <div
-              className={`aspect-square shrink overflow-hidden rounded-full ring-4 ring-white/15 ${index === 1 ? "h-[62%]" : "h-[42%]"}`}
-              key={index}
-            >
+      if (variant === "diagonal") {
+        // Milkshakes & Smoothies: three cups stepping up like a drinks board.
+        return (
+          <div className="flex size-full items-end justify-center gap-4 px-4">
+            {[photoC, photoA, photoB].map((photo, index) => (
+              <div
+                className={`overflow-hidden rounded-[24px] bg-white/10 ${index === 1 ? "h-[88%] w-[38%]" : "h-[60%] w-[29%]"} ${index === 0 ? "mb-[8%]" : ""}`}
+                key={index}
+              >
+                <MenuImage
+                  alt={index === 1 ? t(title) : ""}
+                  className="size-full object-cover"
+                  small={index !== 1}
+                  src={photo}
+                />
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      if (variant === "ring") {
+        // Novelties: one big centred treat with four small squares — a sweet-shop window.
+        return (
+          <div className="relative size-full">
+            <div className="absolute left-[3%] top-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
               <MenuImage
-                alt={index === 0 ? t(title) : ""}
+                alt=""
                 className="size-full object-cover"
-                small={index !== 0}
-                src={photo}
+                small
+                src={photoB}
               />
             </div>
-          ))}
-        </div>
-      );
-    }
-
-    if (variant === "diagonal") {
-      // Milkshakes & Smoothies: three cups stepping up like a drinks board.
-      return (
-        <div className="flex size-full items-end justify-center gap-4 px-4">
-          {[photoC, photoA, photoB].map((photo, index) => (
-            <div
-              className={`overflow-hidden rounded-[24px] bg-white/10 ${index === 1 ? "h-[88%] w-[38%]" : "h-[60%] w-[29%]"} ${index === 0 ? "mb-[8%]" : ""}`}
-              key={index}
-            >
+            <div className="absolute right-[3%] top-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
               <MenuImage
-                alt={index === 1 ? t(title) : ""}
+                alt=""
                 className="size-full object-cover"
-                small={index !== 1}
-                src={photo}
+                small
+                src={photoC}
               />
             </div>
-          ))}
-        </div>
-      );
-    }
+            <div className="absolute left-1/2 top-1/2 size-[54%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full ring-4 ring-white/15">
+              <MenuImage
+                alt={t(title)}
+                className="size-full object-cover"
+                src={photoA}
+                sizes="(min-width: 1024px) 30vw, 60vw"
+              />
+            </div>
+            <div className="absolute bottom-[3%] left-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
+              <MenuImage
+                alt=""
+                className="size-full object-cover"
+                small
+                src={heroItemPhotos[1] || photoB}
+              />
+            </div>
+            <div className="absolute bottom-[3%] right-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
+              <MenuImage
+                alt=""
+                className="size-full object-cover"
+                small
+                src={heroItemPhotos[2] || photoC}
+              />
+            </div>
+          </div>
+        );
+      }
 
-    if (variant === "ring") {
-      // Novelties: one big centred treat with four small squares — a sweet-shop window.
+      if (variant === "banner") {
+        // Limited-Time: full-bleed photo with a thick accent band under it — a poster.
+        return (
+          <div className="flex size-full flex-col overflow-hidden rounded-[28px]">
+            <div className="min-h-0 flex-1 overflow-hidden">
+              <MenuImage
+                alt={t(title)}
+                className="size-full object-cover"
+                sizes="(min-width: 1024px) 30vw, 60vw"
+                src={photoA}
+              />
+            </div>
+            <div
+              className="flex items-center justify-between px-6 py-5"
+              style={{ backgroundColor: "var(--hero-accent)" }}
+            >
+              <span className="font-display text-xl font-extrabold text-brand-navy">
+                {t("This month only")}
+              </span>
+              <span className="text-sm font-bold text-brand-navy/80">
+                {t("{count} items", { count: heroCategory.items.length })}
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      // "stair" — Ice Cream (and the fallback): three tiles climbing like steps.
       return (
-        <div className="relative size-full">
-          <div className="absolute left-[3%] top-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
-            <MenuImage alt="" className="size-full object-cover" small src={photoB} />
-          </div>
-          <div className="absolute right-[3%] top-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
-            <MenuImage alt="" className="size-full object-cover" small src={photoC} />
-          </div>
-          <div className="absolute left-1/2 top-1/2 size-[54%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full ring-4 ring-white/15">
+        <div className="grid size-full grid-cols-[2fr_3fr] grid-rows-2 gap-3">
+          <div className="overflow-hidden rounded-[24px] bg-white/10">
             <MenuImage
               alt={t(title)}
               className="size-full object-cover"
+              small
               src={photoA}
-              sizes="(min-width: 1024px) 30vw, 60vw"
             />
           </div>
-          <div className="absolute bottom-[3%] left-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
-            <MenuImage alt="" className="size-full object-cover" small src={heroItemPhotos[1] || photoB} />
-          </div>
-          <div className="absolute bottom-[3%] right-[3%] size-[29%] overflow-hidden rounded-[22px] bg-white/10">
-            <MenuImage alt="" className="size-full object-cover" small src={heroItemPhotos[2] || photoC} />
-          </div>
-        </div>
-      );
-    }
-
-    if (variant === "banner") {
-      // Limited-Time: full-bleed photo with a thick accent band under it — a poster.
-      return (
-        <div className="flex size-full flex-col overflow-hidden rounded-[28px]">
-          <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="row-span-2 overflow-hidden rounded-[24px] bg-white/10">
             <MenuImage
-              alt={t(title)}
+              alt=""
               className="size-full object-cover"
-              sizes="(min-width: 1024px) 30vw, 60vw"
-              src={photoA}
+              sizes="(min-width: 1024px) 360px, 60vw"
+              src={photoB}
             />
           </div>
-          <div
-            className="flex items-center justify-between px-6 py-5"
-            style={{ backgroundColor: "var(--hero-accent)" }}
-          >
-            <span className="font-display text-xl font-extrabold text-brand-navy">
-              {t("This month only")}
-            </span>
-            <span className="text-sm font-bold text-brand-navy/80">
-              {t("{count} items", { count: heroCategory.items.length })}
-            </span>
+          <div className="overflow-hidden rounded-[24px] bg-white/10">
+            <MenuImage
+              alt=""
+              className="size-full object-cover"
+              small
+              src={photoC}
+            />
           </div>
         </div>
       );
-    }
-
-    // "stair" — Ice Cream (and the fallback): three tiles climbing like steps.
-    return (
-      <div className="grid size-full grid-cols-[2fr_3fr] grid-rows-2 gap-3">
-        <div className="overflow-hidden rounded-[24px] bg-white/10">
-          <MenuImage alt={t(title)} className="size-full object-cover" small src={photoA} />
-        </div>
-        <div className="row-span-2 overflow-hidden rounded-[24px] bg-white/10">
-          <MenuImage alt="" className="size-full object-cover" sizes="(min-width: 1024px) 360px, 60vw" src={photoB} />
-        </div>
-        <div className="overflow-hidden rounded-[24px] bg-white/10">
-          <MenuImage alt="" className="size-full object-cover" small src={photoC} />
-        </div>
-      </div>
-    );
-  })();
+    })();
 
   const supportingCategories = categories.filter(
     (category) => category !== featuredCategory,
@@ -793,7 +942,9 @@ export function MenuPage() {
     setQuantity(1);
     setJustAdded(false);
     if (!openedProductName) return undefined;
-    const frame = window.requestAnimationFrame(() => productRef.current?.scrollIntoView({ block: "start" }));
+    const frame = window.requestAnimationFrame(() =>
+      productRef.current?.scrollIntoView({ block: "start" }),
+    );
     return () => window.cancelAnimationFrame(frame);
   }, [openedProductName]);
 
@@ -807,7 +958,9 @@ export function MenuPage() {
     // The products change under a sticky tab bar, so put the first product row back on screen
     // instead of leaving the visitor part-way down the previous list.
     window.requestAnimationFrame(() =>
-      document.getElementById("menu-category-items")?.scrollIntoView({ block: "start" }),
+      document
+        .getElementById("menu-category-items")
+        ?.scrollIntoView({ block: "start" }),
     );
   };
 
@@ -833,15 +986,17 @@ export function MenuPage() {
   // Adds the chosen quantity and stays on the page, so customers can keep shopping.
   const addSelectedItem = () => {
     setCartNotice("");
-    const added = addItemsToCart([{
-      ...selectedItem,
-      id:
-        selectedItem.id ||
-        getMenuItemId(activeCategory.title, selectedItem.name),
-      itemType: "menu",
-      categoryTitle: activeCategory.title,
-      quantity,
-    }]);
+    const added = addItemsToCart([
+      {
+        ...selectedItem,
+        id:
+          selectedItem.id ||
+          getMenuItemId(activeCategory.title, selectedItem.name),
+        itemType: "menu",
+        categoryTitle: activeCategory.title,
+        quantity,
+      },
+    ]);
     if (added > 0) {
       setQuantity(1);
       setJustAdded(true);
@@ -857,17 +1012,22 @@ export function MenuPage() {
   // Adds one to the bag from the product card, and ticks that card for a moment afterwards.
   const quickAddItem = (category, item) => {
     const id = item.id || getMenuItemId(category.title, item.name);
-    const added = addItemsToCart([{
-      ...item,
-      id,
-      itemType: "menu",
-      categoryTitle: category.title,
-      quantity: 1,
-    }]);
+    const added = addItemsToCart([
+      {
+        ...item,
+        id,
+        itemType: "menu",
+        categoryTitle: category.title,
+        quantity: 1,
+      },
+    ]);
     if (added > 0) {
       setQuickAddedId(id);
       window.clearTimeout(quickAddedTimer.current);
-      quickAddedTimer.current = window.setTimeout(() => setQuickAddedId(null), 1800);
+      quickAddedTimer.current = window.setTimeout(
+        () => setQuickAddedId(null),
+        1800,
+      );
     } else {
       setCartNotice(
         t("This item could not be added to your bag. Please try again."),
@@ -906,34 +1066,48 @@ export function MenuPage() {
   const similarItems =
     selectedItem && activeCategory
       ? rankSimilar(
-          { key: `${activeCategory.title}:${selectedItem.name}`, group: activeCategory.title, text: `${selectedItem.name} ${selectedItem.detail || ""}` },
+          {
+            key: `${activeCategory.title}:${selectedItem.name}`,
+            group: activeCategory.title,
+            text: `${selectedItem.name} ${selectedItem.detail || ""}`,
+          },
           categories.flatMap((category) =>
-            category.items.map((item) => ({ key: `${category.title}:${item.name}`, group: category.title, text: `${item.name} ${item.detail || ""}`, category, item })),
+            category.items.map((item) => ({
+              key: `${category.title}:${item.name}`,
+              group: category.title,
+              text: `${item.name} ${item.detail || ""}`,
+              category,
+              item,
+            })),
           ),
           8,
         )
       : [];
   const selectedSoldOut = Boolean(
     selectedItem &&
-      (selectedItem.isAvailable === false || selectedItem.availableQuantity < 1),
+    (selectedItem.isAvailable === false || selectedItem.availableQuantity < 1),
   );
-  const maxQuantity = Math.max(1, Math.min(MAX_QUANTITY, selectedItem?.availableQuantity ?? MAX_QUANTITY));
+  const maxQuantity = Math.max(
+    1,
+    Math.min(MAX_QUANTITY, selectedItem?.availableQuantity ?? MAX_QUANTITY),
+  );
   const selectedStockSignal = stockSignal(selectedItem?.availableQuantity, {
     lowStockThreshold: selectedItem?.lowStockThreshold,
     soldOut: selectedSoldOut,
   });
   const selectedIsFavorite = Boolean(
     selectedItem &&
-      activeCategory &&
-      favoriteIds.has(
-        selectedItem.id || getMenuItemId(activeCategory.title, selectedItem.name),
-      ),
+    activeCategory &&
+    favoriteIds.has(
+      selectedItem.id || getMenuItemId(activeCategory.title, selectedItem.name),
+    ),
   );
 
   // Remember the product as soon as it is opened, for the recently viewed row.
   useEffect(() => {
     if (!selectedItem || !activeCategory) return;
-    const id = selectedItem.id || getMenuItemId(activeCategory.title, selectedItem.name);
+    const id =
+      selectedItem.id || getMenuItemId(activeCategory.title, selectedItem.name);
     recordRecentlyViewed({
       // The id already carries its "menu:" prefix; adding another broke the exclusion on
       // this page, so the row never appeared.
@@ -985,7 +1159,8 @@ export function MenuPage() {
             actions={
               <>
                 <a className={PageHero.primary} href="#menu-category-items">
-                  {t("Browse {title}", { title: t(activeCategory.title) })} <span aria-hidden="true">↓</span>
+                  {t("Browse {title}", { title: t(activeCategory.title) })}{" "}
+                  <span aria-hidden="true">↓</span>
                 </a>
                 <Link className={PageHero.secondary} to="/custom-cake">
                   {t("Request a custom cake")}
@@ -1001,10 +1176,16 @@ export function MenuPage() {
                   : t("A treat made your way"),
             }}
             description={t(activeCategory.description)}
-            eyebrow={t("{count} items on the menu", { count: activeCategory.items.length })}
+            eyebrow={t("{count} items on the menu", {
+              count: activeCategory.items.length,
+            })}
             stats={[
               { label: t("Menu items"), value: activeCategory.items.length },
-              { label: t("Available"), value: heroCategoryStats.available, accent: true },
+              {
+                label: t("Available"),
+                value: heroCategoryStats.available,
+                accent: true,
+              },
             ]}
             surface={activeCategoryTheme.surface}
             title={t(activeCategory.title)}
@@ -1055,167 +1236,220 @@ export function MenuPage() {
             </p>
           )}
 
-          {!categorySlug && <section
-            aria-label={t("Search and filter menu")}
-            className="relative z-40 mb-8 rounded-[24px] bg-[#f1f2ee] p-3 sm:mb-12 sm:p-4"
-          >
-            <div className="flex flex-col gap-3 xl:flex-row xl:items-stretch">
-              <div className="flex flex-1 gap-2">
-              <label className="group relative flex min-w-0 flex-1 items-center rounded-2xl bg-white ring-1 ring-transparent transition focus-within:ring-brand-navy">
-                <span className="sr-only">{t("Search menu")}</span>
-                <svg
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-5 size-5 text-[#65748a] transition group-focus-within:text-brand-navy"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-                  <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-                </svg>
-                <input
-                  className="w-full bg-transparent py-4 pl-14 pr-12 text-base font-semibold text-brand-navy outline-none! placeholder:font-medium placeholder:text-[#65748a]"
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder={t("Search menu")}
-                  type="search"
-                  value={search}
-                />
-                {search && (
+          {!categorySlug && (
+            <section
+              aria-label={t("Search and filter menu")}
+              className="relative z-40 mb-8 rounded-[24px] bg-[#f1f2ee] p-3 sm:mb-12 sm:p-4"
+            >
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-stretch">
+                <div className="flex flex-1 gap-2">
+                  <label className="group relative flex min-w-0 flex-1 items-center rounded-2xl bg-white ring-1 ring-transparent transition focus-within:ring-brand-navy">
+                    <span className="sr-only">{t("Search menu")}</span>
+                    <svg
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-5 size-5 text-[#65748a] transition group-focus-within:text-brand-navy"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        cx="11"
+                        cy="11"
+                        r="7"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                      <path
+                        d="m20 20-3.5-3.5"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                    <input
+                      className="w-full bg-transparent py-4 pl-14 pr-12 text-base font-semibold text-brand-navy outline-none! placeholder:font-medium placeholder:text-[#65748a]"
+                      onChange={(event) => setSearch(event.target.value)}
+                      placeholder={t("Search menu")}
+                      type="search"
+                      value={search}
+                    />
+                    {search && (
+                      <button
+                        aria-label={t("Clear search")}
+                        className="absolute right-3 grid size-8 place-items-center rounded-full text-[#65748a] transition hover:bg-[#fbfaf5] hover:text-brand-navy"
+                        onClick={() => setSearch("")}
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          className="size-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M6 6l12 12M18 6 6 18"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeWidth="2"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </label>
+                  {/* Phones: the filters fold away behind this button so food shows sooner. */}
                   <button
-                    aria-label={t("Clear search")}
-                    className="absolute right-3 grid size-8 place-items-center rounded-full text-[#65748a] transition hover:bg-[#fbfaf5] hover:text-brand-navy"
-                    onClick={() => setSearch("")}
+                    aria-controls="menu-filter-options"
+                    aria-expanded={filtersOpen}
+                    className={`relative inline-flex shrink-0 items-center gap-2 rounded-2xl px-4 py-3 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep sm:hidden ${
+                      filtersOpen
+                        ? "bg-brand-navy text-white"
+                        : "bg-white text-brand-navy ring-1 ring-[#e4e7e3]"
+                    }`}
+                    onClick={() => setFiltersOpen((open) => !open)}
                     type="button"
                   >
-                    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+                    <svg
+                      aria-hidden="true"
+                      className="size-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M4 6h16M7 12h10M10 18h4"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeWidth="2"
+                      />
                     </svg>
+                    {t("Filters")}
+                    {optionFilterCount > 0 && (
+                      <span className="grid size-5 place-items-center rounded-md bg-brand-yellow text-xs tabular-nums text-brand-navy">
+                        {optionFilterCount}
+                      </span>
+                    )}
                   </button>
-                )}
-              </label>
-              {/* Phones: the filters fold away behind this button so food shows sooner. */}
-              <button
-                aria-controls="menu-filter-options"
-                aria-expanded={filtersOpen}
-                className={`relative inline-flex shrink-0 items-center gap-2 rounded-2xl px-4 py-3 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep sm:hidden ${
-                  filtersOpen ? "bg-brand-navy text-white" : "bg-white text-brand-navy ring-1 ring-[#e4e7e3]"
-                }`}
-                onClick={() => setFiltersOpen((open) => !open)}
-                type="button"
-              >
-                <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-                  <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-                </svg>
-                {t("Filters")}
-                {optionFilterCount > 0 && (
-                  <span className="grid size-5 place-items-center rounded-md bg-brand-yellow text-xs tabular-nums text-brand-navy">
-                    {optionFilterCount}
-                  </span>
-                )}
-              </button>
-              </div>
+                </div>
 
-              <div
-                className={`grid-cols-2 gap-3 sm:grid sm:grid-cols-3 xl:flex xl:flex-none ${filtersOpen ? "grid" : "hidden"}`}
-                id="menu-filter-options"
-              >
-                {[
-                  {
-                    label: "Category",
-                    value: categoryFilter,
-                    onChange: setCategoryFilter,
-                    options: [
-                      ["", "All categories"],
-                      ...categories.map((category) => [category.title, category.title]),
-                    ],
-                  },
-                  {
-                    label: "Dietary needs",
-                    value: dietaryFilter,
-                    onChange: setDietaryFilter,
-                    options: [
-                      ["", "Any"],
-                      ...["vegetarian", "vegan", "dairy-free", "gluten-free", "nut-free"].map((tag) => [tag, tag]),
-                    ],
-                  },
-                  {
-                    label: "Availability",
-                    value: availabilityFilter,
-                    onChange: setAvailabilityFilter,
-                    options: [
-                      ["", "Any"],
-                      ["available", "In stock only"],
-                      ["sold-out", "Sold out"],
-                    ],
-                  },
-                  {
-                    label: "Sort by",
-                    value: sortBy,
-                    onChange: setSortBy,
-                    options: [
-                      ["", "Recommended"],
-                      ["price-asc", "Price: low to high"],
-                      ["price-desc", "Price: high to low"],
-                      ["name", "Name: A to Z"],
-                    ],
-                  },
-                ].map((filter) => (
-                  <FilterSelect
-                    key={filter.label}
-                    label={t(filter.label)}
-                    onChange={filter.onChange}
-                    options={filter.options.map(([value, label]) => ({
-                      value,
-                      label: t(label),
-                    }))}
-                    value={filter.value}
-                  />
-                ))}
-
-                <label
-                  className={`relative flex flex-col justify-center rounded-2xl px-4 py-3 ring-1 transition xl:w-[170px] ${
-                    maxPrice ? "bg-[#fff3b8] ring-[#e7d98b]" : "bg-white ring-transparent hover:ring-[#9ca9b6]"
-                  }`}
+                <div
+                  className={`grid-cols-2 gap-3 sm:grid sm:grid-cols-3 xl:flex xl:flex-none ${filtersOpen ? "grid" : "hidden"}`}
+                  id="menu-filter-options"
                 >
-                  <span className="truncate text-xs font-semibold text-[#65748a]">
-                    {t("Maximum price")}
-                  </span>
-                  <span className="mt-0.5 flex items-baseline gap-1.5">
-                    <input
-                      className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-brand-navy outline-none! placeholder:font-medium placeholder:text-[#65748a]"
-                      inputMode="numeric"
-                      min="0"
-                      onChange={(event) => setMaxPrice(event.target.value)}
-                      placeholder={t("Any")}
-                      step="500"
-                      type="number"
-                      value={maxPrice}
+                  {[
+                    {
+                      label: "Category",
+                      value: categoryFilter,
+                      onChange: setCategoryFilter,
+                      options: [
+                        ["", "All categories"],
+                        ...categories.map((category) => [
+                          category.title,
+                          category.title,
+                        ]),
+                      ],
+                    },
+                    {
+                      label: "Dietary needs",
+                      value: dietaryFilter,
+                      onChange: setDietaryFilter,
+                      options: [
+                        ["", "Any"],
+                        ...[
+                          "vegetarian",
+                          "vegan",
+                          "dairy-free",
+                          "gluten-free",
+                          "nut-free",
+                        ].map((tag) => [tag, tag]),
+                      ],
+                    },
+                    {
+                      label: "Availability",
+                      value: availabilityFilter,
+                      onChange: setAvailabilityFilter,
+                      options: [
+                        ["", "Any"],
+                        ["available", "In stock only"],
+                        ["sold-out", "Sold out"],
+                      ],
+                    },
+                    {
+                      label: "Sort by",
+                      value: sortBy,
+                      onChange: setSortBy,
+                      options: [
+                        ["", "Recommended"],
+                        ["price-asc", "Price: low to high"],
+                        ["price-desc", "Price: high to low"],
+                        ["name", "Name: A to Z"],
+                      ],
+                    },
+                  ].map((filter) => (
+                    <FilterSelect
+                      key={filter.label}
+                      label={t(filter.label)}
+                      onChange={filter.onChange}
+                      options={filter.options.map(([value, label]) => ({
+                        value,
+                        label: t(label),
+                      }))}
+                      value={filter.value}
                     />
-                    <span className="shrink-0 text-xs font-bold text-[#65748a]">FCFA</span>
-                  </span>
-                </label>
-              </div>
-            </div>
+                  ))}
 
-            {hasFilters && (
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[#fbfaf5] px-2 pt-3">
-                <p aria-live="polite" className="text-xs font-bold text-[#65748a]">
-                  <span className="mr-2 inline-grid size-5 place-items-center rounded-full bg-brand-navy text-xs font-extrabold tabular-nums text-white">
-                    {activeFilterCount}
-                  </span>
-                  {t("Filters")}
-                  <span aria-hidden="true" className="mx-2 text-[#c9c3b4]">·</span>
-                  {t("Matching menu items")}: {filteredItems.length}
-                </p>
-                <button
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition hover:bg-[#fbfaf5]"
-                  onClick={clearFilters}
-                  type="button"
-                >
-                  {t("Clear filters")}
-                </button>
+                  <label
+                    className={`relative flex flex-col justify-center rounded-2xl px-4 py-3 ring-1 transition xl:w-[170px] ${
+                      maxPrice
+                        ? "bg-[#fff3b8] ring-[#e7d98b]"
+                        : "bg-white ring-transparent hover:ring-[#9ca9b6]"
+                    }`}
+                  >
+                    <span className="truncate text-xs font-semibold text-[#65748a]">
+                      {t("Maximum price")}
+                    </span>
+                    <span className="mt-0.5 flex items-baseline gap-1.5">
+                      <input
+                        className="w-full min-w-0 bg-transparent text-sm font-bold tabular-nums text-brand-navy outline-none! placeholder:font-medium placeholder:text-[#65748a]"
+                        inputMode="numeric"
+                        min="0"
+                        onChange={(event) => setMaxPrice(event.target.value)}
+                        placeholder={t("Any")}
+                        step="500"
+                        type="number"
+                        value={maxPrice}
+                      />
+                      <span className="shrink-0 text-xs font-bold text-[#65748a]">
+                        FCFA
+                      </span>
+                    </span>
+                  </label>
+                </div>
               </div>
-            )}
-          </section>}
+
+              {hasFilters && (
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[#fbfaf5] px-2 pt-3">
+                  <p
+                    aria-live="polite"
+                    className="text-xs font-bold text-[#65748a]"
+                  >
+                    <span className="mr-2 inline-grid size-5 place-items-center rounded-full bg-brand-navy text-xs font-extrabold tabular-nums text-white">
+                      {activeFilterCount}
+                    </span>
+                    {t("Filters")}
+                    <span aria-hidden="true" className="mx-2 text-[#c9c3b4]">
+                      ·
+                    </span>
+                    {t("Matching menu items")}: {filteredItems.length}
+                  </p>
+                  <button
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold text-brand-navy underline decoration-[#ffb84d] decoration-2 underline-offset-4 transition hover:bg-[#fbfaf5]"
+                    onClick={clearFilters}
+                    type="button"
+                  >
+                    {t("Clear filters")}
+                  </button>
+                </div>
+              )}
+            </section>
+          )}
 
           {hasFilters ? (
             <section aria-live="polite">
@@ -1225,7 +1459,10 @@ export function MenuPage() {
                 </h2>
               </div>
               {filteredItems.length ? (
-                <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4" ref={gridRef}>
+                <div
+                  className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4"
+                  ref={gridRef}
+                >
                   {filteredItems.map(({ category, item }) => (
                     <MenuProductCard
                       category={category}
@@ -1244,32 +1481,47 @@ export function MenuPage() {
               )}
             </section>
           ) : selectedItem && activeCategory ? (
-            <section aria-labelledby="menu-product-title" className="scroll-mt-24" ref={productRef}>
+            <section
+              aria-labelledby="menu-product-title"
+              className="scroll-mt-24"
+              ref={productRef}
+            >
               <nav
                 aria-label={t("Breadcrumb")}
                 className="mb-8 flex flex-wrap items-center gap-2 text-xs font-bold text-[#65748a]"
               >
                 <button
                   className="rounded-full transition hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep"
-                  onClick={() => (categorySlug ? navigate("/menu") : setSearchParams({}))}
+                  onClick={() =>
+                    categorySlug ? navigate("/menu") : setSearchParams({})
+                  }
                   type="button"
                 >
                   {t("Menu")}
                 </button>
-                <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
+                <span aria-hidden="true" className="text-[#c9c3b4]">
+                  /
+                </span>
                 <button
                   className="rounded-full transition hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep"
-                  onClick={() => (
+                  onClick={() =>
                     categorySlug
-                      ? navigate(`/menu?${new URLSearchParams({ category: activeCategory.title })}`)
+                      ? navigate(
+                          `/menu?${new URLSearchParams({ category: activeCategory.title })}`,
+                        )
                       : setSelectedItemState(null)
-                  )}
+                  }
                   type="button"
                 >
                   {t(activeCategory.title)}
                 </button>
-                <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
-                <span aria-current="page" className="max-w-[16rem] truncate text-brand-navy">
+                <span aria-hidden="true" className="text-[#c9c3b4]">
+                  /
+                </span>
+                <span
+                  aria-current="page"
+                  className="max-w-[16rem] truncate text-brand-navy"
+                >
                   {t(selectedItem.name)}
                 </span>
               </nav>
@@ -1279,7 +1531,10 @@ export function MenuPage() {
                   <ProductImageSlider
                     frameClassName="rounded-[20px]! bg-[#f4f6f8] shadow-none!"
                     imageClassName={`aspect-[4/3] lg:aspect-[5/4] ${selectedSoldOut ? "grayscale-[60%]" : ""}`}
-                    images={[selectedItem.image, ...normalizePhotoGallery(selectedItem.gallery)]}
+                    images={[
+                      selectedItem.image,
+                      ...normalizePhotoGallery(selectedItem.gallery),
+                    ]}
                     name={t(selectedItem.name)}
                     priority
                     overlay={
@@ -1322,7 +1577,9 @@ export function MenuPage() {
                           {"★".repeat(5 - Math.round(reviews.averageRating))}
                         </span>
                       </span>
-                      <span className="text-brand-navy">{reviews.averageRating}</span>
+                      <span className="text-brand-navy">
+                        {reviews.averageRating}
+                      </span>
                       <span className="underline decoration-[#ffb84d] decoration-2 underline-offset-4">
                         {reviews.reviewCount} {t("reviews")}
                       </span>
@@ -1376,13 +1633,12 @@ export function MenuPage() {
                           }`}
                         />
                       )}
-                      {selectedSoldOut ? (
-                        t("Sold out")
-                      ) : selectedStockSignal.kind === "last-few" || selectedStockSignal.kind === "low" ? (
-                        stockSignalLabel(selectedStockSignal, t)
-                      ) : (
-                        t("In stock")
-                      )}
+                      {selectedSoldOut
+                        ? t("Sold out")
+                        : selectedStockSignal.kind === "last-few" ||
+                            selectedStockSignal.kind === "low"
+                          ? stockSignalLabel(selectedStockSignal, t)
+                          : t("In stock")}
                     </span>
                   </div>
 
@@ -1394,24 +1650,37 @@ export function MenuPage() {
 
                   <div className="mt-6 flex gap-3">
                     {!selectedSoldOut && (
-                      <div aria-label={t("Quantity")} className="flex shrink-0 items-center rounded-lg bg-[#f4f6f8] p-1" role="group">
+                      <div
+                        aria-label={t("Quantity")}
+                        className="flex shrink-0 items-center rounded-lg bg-[#f4f6f8] p-1"
+                        role="group"
+                      >
                         <button
                           aria-label={t("Decrease quantity")}
                           className="grid size-11 place-items-center rounded-md text-lg font-bold text-brand-navy transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#65748a] disabled:hover:bg-transparent"
                           disabled={quantity <= 1}
-                          onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+                          onClick={() =>
+                            setQuantity((current) => Math.max(1, current - 1))
+                          }
                           type="button"
                         >
                           −
                         </button>
-                        <output aria-live="polite" className="w-8 text-center font-display text-lg font-extrabold tabular-nums text-brand-navy">
+                        <output
+                          aria-live="polite"
+                          className="w-8 text-center font-display text-lg font-extrabold tabular-nums text-brand-navy"
+                        >
                           {quantity}
                         </output>
                         <button
                           aria-label={t("Increase quantity")}
                           className="grid size-11 place-items-center rounded-md text-lg font-bold text-brand-navy transition hover:bg-white disabled:cursor-not-allowed disabled:text-[#65748a] disabled:hover:bg-transparent"
                           disabled={quantity >= maxQuantity}
-                          onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
+                          onClick={() =>
+                            setQuantity((current) =>
+                              Math.min(maxQuantity, current + 1),
+                            )
+                          }
                           type="button"
                         >
                           +
@@ -1420,19 +1689,32 @@ export function MenuPage() {
                     )}
                     <button
                       className={`inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-extrabold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#dce3eb] disabled:text-[#65748a] sm:px-6 ${
-                        justAdded ? "bg-[#3d8b40]" : "bg-brand-navy hover:bg-brand-blue"
+                        justAdded
+                          ? "bg-[#3d8b40]"
+                          : "bg-brand-navy hover:bg-brand-blue"
                       }`}
                       disabled={selectedSoldOut}
                       onClick={addSelectedItem}
                       type="button"
                     >
-                      {selectedSoldOut ? t("Sold out") : justAdded ? <CheckIcon /> : <BagIcon />}
+                      {selectedSoldOut ? (
+                        t("Sold out")
+                      ) : justAdded ? (
+                        <CheckIcon />
+                      ) : (
+                        <BagIcon />
+                      )}
                       {!selectedSoldOut && (
                         <span aria-live="polite">
-                          {justAdded ? t("Added") : (
+                          {justAdded ? (
+                            t("Added")
+                          ) : (
                             <>
                               {t("Add to bag")}
-                              <span className="max-sm:hidden"> {formatPrice(selectedItem.priceXaf * quantity)}</span>
+                              <span className="max-sm:hidden">
+                                {" "}
+                                {formatPrice(selectedItem.priceXaf * quantity)}
+                              </span>
                             </>
                           )}
                         </span>
@@ -1459,17 +1741,25 @@ export function MenuPage() {
                         }
                         type="button"
                       >
-                        <span aria-hidden="true">{selectedIsFavorite ? "♥" : "♡"}</span>
+                        <span aria-hidden="true">
+                          {selectedIsFavorite ? "♥" : "♡"}
+                        </span>
                       </button>
                     )}
                   </div>
                   {cartNotice && (
-                    <p className="mt-3 text-sm leading-5 text-red-700" role="alert">
+                    <p
+                      className="mt-3 text-sm leading-5 text-red-700"
+                      role="alert"
+                    >
                       {cartNotice}
                     </p>
                   )}
                   {favoriteError && (
-                    <p className="mt-3 text-sm leading-5 text-red-700" role="alert">
+                    <p
+                      className="mt-3 text-sm leading-5 text-red-700"
+                      role="alert"
+                    >
                       {favoriteError}
                     </p>
                   )}
@@ -1481,9 +1771,19 @@ export function MenuPage() {
                   </Link>
 
                   <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2">
-                    {["Mixed to order", "Made to your taste", "Freshly made"].map((label) => (
-                      <li className="inline-flex items-center gap-2 text-sm font-semibold text-brand-navy" key={label}>
-                        <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-brand-yellow" />
+                    {[
+                      "Mixed to order",
+                      "Made to your taste",
+                      "Freshly made",
+                    ].map((label) => (
+                      <li
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-brand-navy"
+                        key={label}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="size-1.5 shrink-0 rounded-full bg-brand-yellow"
+                        />
                         {t(label)}
                       </li>
                     ))}
@@ -1510,10 +1810,15 @@ export function MenuPage() {
                           {reviews.averageRating}
                         </span>
                         <div className="pb-1">
-                          <p aria-hidden="true" className="text-lg tracking-[0.1em] text-[#d4ad00]">
+                          <p
+                            aria-hidden="true"
+                            className="text-lg tracking-[0.1em] text-[#d4ad00]"
+                          >
                             {"★".repeat(Math.round(reviews.averageRating))}
                             <span className="text-[#e2ddd0]">
-                              {"★".repeat(5 - Math.round(reviews.averageRating))}
+                              {"★".repeat(
+                                5 - Math.round(reviews.averageRating),
+                              )}
                             </span>
                           </p>
                           <p className="text-xs font-bold text-[#65748a]">
@@ -1546,7 +1851,9 @@ export function MenuPage() {
                           )}
                           <div className="mt-auto flex items-center gap-3 pt-5">
                             {review.profilePicture ? (
-                              <img decoding="async" loading="lazy"
+                              <img
+                                decoding="async"
+                                loading="lazy"
                                 alt=""
                                 className="size-9 rounded-full object-cover"
                                 src={review.profilePicture}
@@ -1556,7 +1863,9 @@ export function MenuPage() {
                                 aria-hidden="true"
                                 className="grid size-9 place-items-center rounded-full bg-[#ffeb9c] text-xs font-extrabold text-brand-navy"
                               >
-                                {review.customerName?.charAt(0)?.toUpperCase() || "A"}
+                                {review.customerName
+                                  ?.charAt(0)
+                                  ?.toUpperCase() || "A"}
                               </span>
                             )}
                             <p className="text-sm font-extrabold text-brand-navy">
@@ -1583,17 +1892,22 @@ export function MenuPage() {
                   </h3>
                   <button
                     className="inline-flex min-h-12 shrink-0 items-center self-start bg-brand-navy px-5 py-3 text-sm font-extrabold text-white transition hover:bg-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 sm:self-auto"
-                    onClick={() => (
+                    onClick={() =>
                       categorySlug
-                        ? navigate(`/menu?${new URLSearchParams({ category: activeCategory.title })}`)
+                        ? navigate(
+                            `/menu?${new URLSearchParams({ category: activeCategory.title })}`,
+                          )
                         : setSelectedItemState(null)
-                    )}
+                    }
                     type="button"
                   >
                     {t("Back to category")}: {t(activeCategory.title)}
                   </button>
                 </div>
-                <div className="similar-grid mt-10 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4" ref={gridRef}>
+                <div
+                  className="similar-grid mt-10 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4"
+                  ref={gridRef}
+                >
                   {similarItems.map(({ category, item }) => (
                     <SimilarProductCard
                       category={category}
@@ -1610,14 +1924,23 @@ export function MenuPage() {
 
               <section id="product-recently-viewed" className="mt-16">
                 <RecentlyViewed
-                  excludeKey={String(selectedItem.id || getMenuItemId(activeCategory.title, selectedItem.name)).replace("menu:", "menu:")}
+                  excludeKey={String(
+                    selectedItem.id ||
+                      getMenuItemId(activeCategory.title, selectedItem.name),
+                  ).replace("menu:", "menu:")}
                   onSelect={(entry) => {
                     // Open the remembered product in the same detail view instead of reloading.
                     const remembered = categories
-                      .flatMap((category) => category.items.map((item) => ({ category, item })))
-                      .find(({ category, item }) =>
-                        String(item.id || getMenuItemId(category.title, item.name)).replace(/^(menu:)+/, "menu:") ===
-                        entry.key.replace(/^(menu:)+/, "menu:"));
+                      .flatMap((category) =>
+                        category.items.map((item) => ({ category, item })),
+                      )
+                      .find(
+                        ({ category, item }) =>
+                          String(
+                            item.id || getMenuItemId(category.title, item.name),
+                          ).replace(/^(menu:)+/, "menu:") ===
+                          entry.key.replace(/^(menu:)+/, "menu:"),
+                      );
                     if (!remembered) return false;
                     selectItem(remembered.category, remembered.item);
                     return true;
@@ -1639,7 +1962,9 @@ export function MenuPage() {
                 >
                   <span aria-hidden="true">←</span> {t("Back to categories")}
                 </button>
-                <span aria-hidden="true" className="text-[#c9c3b4]">/</span>
+                <span aria-hidden="true" className="text-[#c9c3b4]">
+                  /
+                </span>
                 <span aria-current="page" className="text-brand-navy">
                   {t(activeCategory.title)}
                 </span>
@@ -1655,7 +1980,9 @@ export function MenuPage() {
                 }}
               >
                 <div className="grid md:grid-cols-2">
-                  <div className={`menu-category-hero-gallery order-first flex flex-col bg-white/[0.06] ${activeCategoryTheme.imageSide === "left" ? "md:order-first" : "md:order-last"}`}>
+                  <div
+                    className={`menu-category-hero-gallery order-first flex flex-col bg-white/[0.06] ${activeCategoryTheme.imageSide === "left" ? "md:order-first" : "md:order-last"}`}
+                  >
                     <MenuImage
                       alt={t(activeCategory.title)}
                       className="menu-category-hero-image aspect-[4/3] w-full bg-[#f4f6f8] object-cover md:min-h-[360px] md:flex-1"
@@ -1663,9 +1990,15 @@ export function MenuPage() {
                       src={activeCategory.image}
                     />
                     {categoryHeroPreviews.length > 0 && (
-                      <ul aria-label={t("Menu items")} className="grid grid-cols-2 divide-x divide-white/15 px-3 py-3 sm:px-4 sm:py-4">
+                      <ul
+                        aria-label={t("Menu items")}
+                        className="grid grid-cols-2 divide-x divide-white/15 px-3 py-3 sm:px-4 sm:py-4"
+                      >
                         {categoryHeroPreviews.map((item) => (
-                          <li className="flex min-w-0 items-center gap-3" key={item.id || item.name}>
+                          <li
+                            className="flex min-w-0 items-center gap-3"
+                            key={item.id || item.name}
+                          >
                             <MenuImage
                               alt=""
                               className="size-14 shrink-0 object-cover sm:size-16"
@@ -1685,7 +2018,9 @@ export function MenuPage() {
                       </ul>
                     )}
                   </div>
-                  <div className={`menu-category-hero-copy flex flex-col justify-between gap-8 p-6 sm:p-10 lg:p-12 ${activeCategoryTheme.imageSide === "left" ? "md:order-last" : "md:order-first"}`}>
+                  <div
+                    className={`menu-category-hero-copy flex flex-col justify-between gap-8 p-6 sm:p-10 lg:p-12 ${activeCategoryTheme.imageSide === "left" ? "md:order-last" : "md:order-first"}`}
+                  >
                     <div>
                       <h2
                         className="font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl"
@@ -1759,7 +2094,9 @@ export function MenuPage() {
                           {t(category.title)}
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs tabular-nums ${
-                              active ? "bg-white/15 text-white" : "bg-white text-[#65748a]"
+                              active
+                                ? "bg-white/15 text-white"
+                                : "bg-white text-[#65748a]"
                             }`}
                           >
                             {category.items.length}
@@ -1784,12 +2121,16 @@ export function MenuPage() {
                   </p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4" ref={gridRef}>
+              <div
+                className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4"
+                ref={gridRef}
+              >
                 {activeCategory.items.map((item, itemIndex) => (
                   <MenuProductCard
                     added={
                       quickAddedId ===
-                      (item.id || getMenuItemId(activeCategory.title, item.name))
+                      (item.id ||
+                        getMenuItemId(activeCategory.title, item.name))
                     }
                     category={activeCategory}
                     formatPrice={formatPrice}
@@ -1845,7 +2186,9 @@ export function MenuPage() {
                           {t(featuredCategory.title)}
                         </span>
                         <span className="text-sm font-semibold text-[#65748a]">
-                          {t("{count} items", { count: featuredCategory.items.length })}
+                          {t("{count} items", {
+                            count: featuredCategory.items.length,
+                          })}
                         </span>
                       </span>
                       <span className="mt-2 max-w-lg text-base leading-7 text-brand-navy">
@@ -1859,7 +2202,11 @@ export function MenuPage() {
                           <span className="mt-1 block font-display text-xl font-extrabold tabular-nums text-brand-yellow-deep">
                             {featuredCategory.items.length
                               ? formatPrice(
-                                  Math.min(...featuredCategory.items.map((item) => item.priceXaf)),
+                                  Math.min(
+                                    ...featuredCategory.items.map(
+                                      (item) => item.priceXaf,
+                                    ),
+                                  ),
                                 )
                               : t("Unavailable")}
                           </span>
@@ -1873,7 +2220,9 @@ export function MenuPage() {
                     <ul className="space-y-2 sm:space-y-3">
                       {supportingCategories.map((category) => {
                         const lowestPrice = category.items.length
-                          ? Math.min(...category.items.map((item) => item.priceXaf))
+                          ? Math.min(
+                              ...category.items.map((item) => item.priceXaf),
+                            )
                           : null;
 
                         return (
@@ -1890,7 +2239,10 @@ export function MenuPage() {
                                   sizes="96px"
                                   src={category.image}
                                 />
-                                <span aria-hidden="true" className="menu-card-shine" />
+                                <span
+                                  aria-hidden="true"
+                                  className="menu-card-shine"
+                                />
                               </span>
                               <span className="min-w-0 flex-1">
                                 <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
@@ -1898,7 +2250,9 @@ export function MenuPage() {
                                     {t(category.title)}
                                   </span>
                                   <span className="text-sm font-semibold text-[#65748a]">
-                                    {t("{count} items", { count: category.items.length })}
+                                    {t("{count} items", {
+                                      count: category.items.length,
+                                    })}
                                   </span>
                                 </span>
                                 <span className="mt-1 block text-sm leading-5 text-brand-navy">
