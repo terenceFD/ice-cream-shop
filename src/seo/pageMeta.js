@@ -16,7 +16,7 @@ export const PUBLIC_PAGES = {
     title: HOME_TITLE,
     description: DEFAULT_DESCRIPTION,
     // First slide of the home page slider (HomePage.jsx).
-    photo: { src: '/ice-images/ice-9.jpg', sizes: HOME_SLIDE_SIZES },
+    photo: { src: '/ice-images/ice-3.webp', sizes: HOME_SLIDE_SIZES },
   },
   '/menu': {
     title: 'Menu & treats',

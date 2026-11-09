@@ -1071,7 +1071,7 @@ async function optionalCustomer(request, response, next) {
     next()
     return
   }
-  const customer = await database.prepare(`
+  let customer = await database.prepare(`
     SELECT id, name, email, profile_picture AS "profilePicture", phone, password_hash,
       delivery_city AS "deliveryCity", delivery_residence AS "deliveryResidence",
       loyalty_points AS "loyaltyPoints", is_banned AS "isBanned"

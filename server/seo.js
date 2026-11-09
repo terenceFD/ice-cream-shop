@@ -18,8 +18,8 @@ import { faqSchema } from '../shared/faqContent.js'
 import { locationGraph } from '../shared/localBusiness.js'
 // The home page's first slider photo. index.html preloads it; the '/' page head should not
 // repeat that tag, so it is not requested twice.
-const HOME_HERO_PHOTO = '/ice-images/ice-9.jpg'
-const HOME_PHOTO_PRELOAD = /[ \t]*<link rel="preload" as="image"[^>]*\/ice-images\/ice-9\.[^>]*>\s*\n?/g
+const HOME_HERO_PHOTO = '/ice-images/ice-3.webp'
+const HOME_PHOTO_PRELOAD = /[ \t]*<link rel="preload" as="image"[^>]*\/ice-images\/ice-3\.[^>]*>\s*\n?/g
 
 // index.html marks the default head tags with <!--seo--> … <!--/seo--> so each page can swap in its own.
 const SEO_BLOCK = /<!--seo-->[\s\S]*?<!--\/seo-->/

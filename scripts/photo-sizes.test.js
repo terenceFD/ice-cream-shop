@@ -9,7 +9,7 @@ import { thumbnailPathFor } from './make-thumbnails.mjs'
 const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url))
 
 test('pages ask for the same files the thumbnail script makes', () => {
-  for (const photo of ['/ice-images/ice-9.jpg', '/cream/cream 4.webp', '/menu-official/cakes/birthday-cakes.webp']) {
+  for (const photo of ['/ice-images/ice-9.jpg', '/ice-images/ice-3.webp', '/cream/cream 4.webp', '/menu-official/cakes/birthday-cakes.webp']) {
     for (const width of PHOTO_WIDTHS) {
       const url = photoAt(photo, width)
       const file = thumbnailPathFor(join(publicDirectory, photo.slice(1)), width)
@@ -48,6 +48,6 @@ test('normalizes photo galleries returned as JSON strings or arrays', () => {
 
 test('homepage hero preload uses the same responsive image candidates and slot size as the hero', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
-  assert.ok(html.includes(`imagesrcset="${photoSrcSet('/ice-images/ice-9.jpg')}"`))
+  assert.ok(html.includes(`imagesrcset="${photoSrcSet('/ice-images/ice-3.webp')}"`))
   assert.ok(html.includes(`imagesizes="${HOME_SLIDE_SIZES}"`))
 })

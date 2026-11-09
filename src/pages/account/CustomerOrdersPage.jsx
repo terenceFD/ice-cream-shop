@@ -1360,6 +1360,7 @@ export function CustomerOrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { addItemsToCart } = useCart();
   const { flavors } = useFlavors();
+  const { currency: displayCurrency } = useCurrency();
   const [orders, setOrders] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [savedCarts, setSavedCarts] = useState([]);
@@ -1504,7 +1505,6 @@ export function CustomerOrdersPage() {
       />
     );
 
-  const { currency: displayCurrency } = useCurrency();
   const formatPrice = (amount) =>
     formatOrderMoney(amount, language, displayCurrency);
   const points = loyalty?.points ?? customer.loyaltyPoints ?? 0;

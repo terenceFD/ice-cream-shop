@@ -718,7 +718,7 @@ export function LiveChatWidget() {
     }
   }, [isOpen, messages.length]);
 
-  const useStarter = (question: string) => {
+  const applyStarter = (question: string) => {
     setDraft(question);
     try {
       sessionStorage.setItem("chat-used", "1");
@@ -1370,7 +1370,7 @@ export function LiveChatWidget() {
                         <button
                           className="rounded-full border border-brand-border-warm bg-white px-3 py-1.5 text-left text-[13px] font-semibold text-brand-navy transition hover:border-brand-yellow hover:bg-brand-yellow/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-[0.98]"
                           key={question}
-                          onClick={() => useStarter(question)}
+                          onClick={() => applyStarter(question)}
                           type="button"
                         >
                           {question}
