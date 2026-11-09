@@ -131,6 +131,8 @@ import {
 } from './push.js'
 import { registerEventOrderRoutes } from './event-orders.js'
 import { registerCakeQuoteRoutes } from './cake-quotes.js'
+import { registerCommerceRoutes } from './commerce-routes.js'
+import { getCashOnDeliveryConfig } from './commerce.js'
 import { isWhatsAppMessagingConfigured, sendWhatsAppText } from './whatsapp.js'
 import { aiConfigured, detectMessageLanguage, gatherCustomerContext, suggestReply } from './chat-assistant.js'
 import { statedAllergies } from './chat-offer.js'
@@ -760,8 +762,9 @@ app.get('/api/site/contact', (_request, response) => {
   response.json({ whatsappNumber: /^\d{8,15}$/.test(digits) ? digits : null })
 })
 
-app.get('/api/payment/methods', (_request, response) => {
+app.get('/api/payment/methods', async (_request, response) => {
   response.json({
+    cashOnDelivery: await getCashOnDeliveryConfig(),
     methods: {
       card: Boolean(getStripe()),
       campayMobileMoney: isCamPayMobileMoneyEnabled(),
@@ -1480,7 +1483,10 @@ app.get('/api/admin/newsletter', requireAdmin, ownerOnly, async (_request, respo
 app.post('/api/checkout/session', optionalCustomer, checkoutLimiter, async (request, response) => {
   const stripe = getStripe()
   const paymentMethod = request.body.paymentMethod || 'card'
-  if (!['card', 'campay'].includes(paymentMethod)) {
+  const cashOnDelivery = paymentMethod === 'cod'
+    ? await getCashOnDeliveryConfig()
+    : null
+  if (!['card', 'campay', ...(cashOnDelivery ? ['cod'] : [])].includes(paymentMethod)) {
     response.status(400).json({ error: 'Choose a supported payment method.' })
     return
   }
@@ -1652,6 +1658,11 @@ app.post('/api/checkout/session', optionalCustomer, checkoutLimiter, async (requ
     response.status(400).json({ error: 'The order total is invalid.' })
     return
   }
+  // Cash on delivery has a per-order ceiling: riders do not carry large sums.
+  if (cashOnDelivery && totalCents > cashOnDelivery.maxTotalXaf) {
+    response.status(400).json({ error: `Cash on delivery is limited to ${cashOnDelivery.maxTotalXaf.toLocaleString('en-US')} FCFA. Pay online for a larger order.` })
+    return
+  }
   if (totalCents > 0 && paymentMethod === 'card' && !stripe) {
     response.status(503).json({ error: 'Online payments are not configured. Set STRIPE_SECRET_KEY on the server.' })
     return
@@ -1714,6 +1725,22 @@ app.post('/api/checkout/session', optionalCustomer, checkoutLimiter, async (requ
       } catch (emailError) {
         console.error(`Unable to email branch admins about order #${orderId}:`, describeEmailError(emailError))
       }
+    }
+    if (cashOnDelivery) {
+      // No gateway session: the order enters the branch queue marked for cash on
+      // handover, and a payment row records which provider to reconcile.
+      await createPaymentRecord({
+        orderId,
+        stripeCheckoutSessionId: `cod-${orderId}`,
+        providerReference: `cod:${orderId}`,
+        provider: 'cod',
+        amountCents: totalCents,
+        currency,
+      })
+      await notifyAdmins('Cash on delivery')
+      notifyCustomerOfOrderStatus(orderId, 'reserved')
+      response.status(201).json({ url: `${frontendUrl.origin}/payment?cod_order_id=${orderId}` })
+      return
     }
     if (totalCents === 0) {
       await finalizeZeroAmountCheckout(orderId, orderItems)
@@ -5495,6 +5522,16 @@ const eventOrderRoutes = registerEventOrderRoutes(app, {
     sendEventQuote,
     sendEventDepositReceived,
   },
+})
+
+// Bundles, wishlist, cash on delivery and abandoned-cart WhatsApp recovery
+// (see server/commerce.js and server/commerce-routes.js).
+registerCommerceRoutes(app, {
+  requireAdmin,
+  requireCustomer,
+  requireOwner,
+  notifyCustomerOfOrderStatus,
+  notifyAdminsOfNewOrder,
 })
 
 const cakeQuoteRoutes = registerCakeQuoteRoutes(app, {

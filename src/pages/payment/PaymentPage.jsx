@@ -60,6 +60,13 @@ const paymentMethods = [
     available: false,
     icon: icons.phone,
   },
+  {
+    id: "cod",
+    label: "Cash on delivery",
+    detail: "Pay cash when the rider hands over your order. Available up to the store's COD limit.",
+    available: false,
+    icon: icons.truck,
+  },
 ];
 
 function formatMoney(cents, currency = "xaf", language = "en") {
@@ -126,6 +133,7 @@ export function PaymentPage() {
   const camPayReference = searchParams.get("reference");
   const camPayReturn = searchParams.get("provider") === "campay";
   const loyaltyOrderId = searchParams.get("loyalty_order_id");
+  const codOrderId = searchParams.get("cod_order_id");
   const cancelled = searchParams.get("cancelled") === "1"
     || (camPayReturn && ["failed", "cancelled"].includes(searchParams.get("status")));
   const [checkoutDetails] = useState(() => {
@@ -147,30 +155,44 @@ export function PaymentPage() {
   const [availableMethods, setAvailableMethods] = useState({
     card: false,
     campayMobileMoney: false,
+    cashOnDelivery: false,
   });
+  const [codLimit, setCodLimit] = useState(0);
   const [paymentStatus, setPaymentStatus] = useState(
-    sessionId || camPayReference ? "checking" : "ready",
+    sessionId || camPayReference ? "checking" : codOrderId ? "cod-placed" : "ready",
   );
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
+  const codAvailable = availableMethods.cashOnDelivery
+    && (codLimit === 0 || finalTotal <= codLimit);
   const displayedPaymentMethods = paymentMethods.map((method) => ({
     ...method,
     available: method.id === "card"
       ? availableMethods.card || finalTotal === 0
       : method.id === "campay"
         ? availableMethods.campayMobileMoney
-        : false,
+        : method.id === "cod"
+          ? codAvailable
+          : false,
+    ...(method.id === "cod" && codLimit > 0
+      ? { detail: `Pay cash on handover. Up to ${codLimit.toLocaleString("en-US")} FCFA.` }
+      : {}),
   }));
   const selectedMethodAvailable = selectedPaymentMethod === "card"
     ? availableMethods.card || finalTotal === 0
-    : selectedPaymentMethod === "campay" && availableMethods.campayMobileMoney;
+    : selectedPaymentMethod === "campay"
+      ? availableMethods.campayMobileMoney
+      : selectedPaymentMethod === "cod" && codAvailable;
 
   useEffect(() => {
     let cancelledRequest = false;
     apiRequest("/payment/methods")
-      .then(({ methods }) => {
+      .then(({ methods, cashOnDelivery }) => {
         if (cancelledRequest) return;
         setAvailableMethods(methods);
+        if (cashOnDelivery?.enabled) {
+          setCodLimit(cashOnDelivery.maxTotalXaf || 0);
+        }
         if (!methods.card && methods.campayMobileMoney) {
           setSelectedPaymentMethod("campay");
         }
@@ -239,11 +261,11 @@ export function PaymentPage() {
     };
   }, [checkoutDetails, clearCart, camPayReference, loyaltyOrderId, refreshFlavors, sessionId]);
 
-  if (!sessionId && !loyaltyOrderId && cartItems.length === 0 && !cancelled) {
+  if (!sessionId && !loyaltyOrderId && !codOrderId && cartItems.length === 0 && !cancelled) {
     return <Navigate to="/cart" replace />;
   }
   // Guests can pay too, so no sign-in is required here; the account links live on the checkout page.
-  if (!sessionId && !loyaltyOrderId && !checkoutDetails && !cancelled) {
+  if (!sessionId && !loyaltyOrderId && !codOrderId && !checkoutDetails && !cancelled) {
     return <Navigate to="/checkout" replace />;
   }
 
@@ -320,7 +342,56 @@ export function PaymentPage() {
       <Header />
 
       <main id="main" tabIndex={-1}>
-        {paymentStatus === "paid" ? (
+        {paymentStatus === "cod-placed" ? (
+          <div className="px-5 py-10 sm:px-8 sm:py-16">
+            {statusShell(
+              <>
+                <div className="relative isolate overflow-hidden bg-brand-navy px-6 pb-10 pt-12 text-white sm:px-10">
+                  <div aria-hidden="true" className="absolute -right-20 -top-28 -z-10 size-72 rounded-full border-[48px] border-white/[0.05]" />
+                  <span className="relative mx-auto grid size-20 place-items-center">
+                    <span className="relative grid size-20 place-items-center rounded-full bg-[#ffb84d] text-brand-navy shadow-[0_0_0_8px_rgba(255,184,77,0.2)]">
+                      <Icon className="size-10" path={icons.truck} />
+                    </span>
+                  </span>
+                  <p className="mt-6 text-xs font-extrabold uppercase tracking-[0.2em] text-brand-yellow">
+                    {t("Order placed")}
+                  </p>
+                  <h1 className="mt-2 font-display text-3xl font-extrabold leading-tight sm:text-[2.6rem]">
+                    {t("Thank you, {name}!", { name: checkoutDetails?.name })}
+                  </h1>
+                  <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/70">
+                    {t(
+                      "Order #{id} is confirmed. Have {amount} ready to pay your rider on handover.",
+                      { id: codOrderId, amount: money(finalTotal) },
+                    )}
+                  </p>
+                </div>
+                <div className="p-6 text-left sm:p-10">
+                  <p className="text-sm leading-6 text-[#65748a]">
+                    {t(
+                      "Keep your phone nearby: the branch may call to confirm before dispatch. You can track the order any time with your order number.",
+                    )}
+                  </p>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Link
+                      className="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-navy px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-blue"
+                      to={`/track-order?order=${codOrderId}`}
+                    >
+                      {t("Track your order")}
+                    </Link>
+                    <Link
+                      className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#d5dce5] px-5 py-3 text-sm font-bold text-[#65748a] transition-colors hover:border-brand-navy hover:text-brand-navy"
+                      to="/"
+                    >
+                      {t("Back to the shop")}
+                    </Link>
+                  </div>
+                </div>
+              </>,
+              "success",
+            )}
+          </div>
+        ) : paymentStatus === "paid" ? (
           <div className="px-5 py-10 sm:px-8 sm:py-16">
             {statusShell(
               <>

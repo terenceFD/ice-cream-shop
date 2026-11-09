@@ -40,6 +40,7 @@ import { stockSignal, stockSignalLabel } from "../../lib/stockSignal";
 import { RestockNotice } from "../../components/RestockNotice";
 import { AllergenInfo } from "../../components/AllergenInfo";
 import { ShareProduct } from "../../components/ShareProduct";
+import { WishlistHeart } from "../../components/WishlistHeart";
 import { useScrollReveal } from "../../lib/useScrollReveal";
 
 const MAX_QUANTITY = 10;

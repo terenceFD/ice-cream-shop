@@ -41,6 +41,10 @@ const FlavorDetailPage = lazyPage(
   "FlavorDetailPage",
 );
 const CartPage = lazyPage(() => import("../pages/cart/CartPage"), "CartPage");
+const WishlistPage = lazyPage(
+  () => import("../pages/wishlist/WishlistPage"),
+  "WishlistPage",
+);
 const AuthPage = lazyPage(
   () => import("../pages/authorization/AuthPage"),
   "AuthPage",
@@ -443,6 +447,8 @@ function App() {
                         element={<FlavorDetailPage />}
                       />
                       <Route path="/cart" element={<CartPage />} />
+                      <Route path="/wishlist" element={<WishlistPage />} />
+                      <Route path="/wishlist/shared/:slug" element={<WishlistPage />} />
                       <Route path="/checkout" element={<CheckoutPage />} />
                       <Route path="/payment" element={<PaymentPage />} />
                       <Route
