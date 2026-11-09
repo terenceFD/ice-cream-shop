@@ -1213,6 +1213,7 @@ export async function gatherShopFacts(database) {
     "Reorder (/reorder) — one tap puts a past order back in the bag",
     "Sign in (/login) and sign up (/signup) — account, email verification, 8-hour session",
     "Account (/account/orders) — orders, favorites, saved details, loyalty, subscriptions, reviews",
+    "Wishlist (/wishlist) — the customer's saved treats with a share link; a shared link (/wishlist/shared/…) shows someone else's list read-only",
     "Privacy (/privacy), terms (/terms), refunds (/refunds), cookies (/cookies) — policies",
     "Currency switcher (bottom-right corner of every page) — FCFA, USD or EUR; display only, the charge is always FCFA",
     "WhatsApp button and this live chat — both sit on customer pages. This chat is the shop assistant; WhatsApp reaches a person",
@@ -1227,6 +1228,8 @@ export async function gatherShopFacts(database) {
     "SEARCH: the header search finds products by name or flavour and shows their prices in the chosen currency.",
     "DELIVERY FEE: the delivery-area checker shows the fee for the matched branch, converted to the chosen currency like every other price.",
     "PAYING IN ANOTHER CURRENCY: customers can read prices in USD or EUR, but payment is collected in FCFA only. A card or mobile-money payment of a USD price is not possible.",
+    "WISHLIST: signed-in customers can save treats to a wishlist by tapping the heart on any product page. The wishlist lives at /wishlist and each customer gets their own share link, so they can send it to family or friends — whoever opens the link can browse the saved treats and add any of them straight to their own bag. Shared wishlists are read-only; the owner's list is editable.",
+    "BUNDLES: some treats are sold as bundles — a fixed set of two or more products at one bundle price, lower than buying the items separately. The saving is shown as a percentage on the bundle card, and adding a bundle puts all its items in the bag at once. Bundles appear on the menu pages.",
   ];
 
   // Business rules that decide how ordering, payment, accounts and the other services
@@ -1234,6 +1237,7 @@ export async function gatherShopFacts(database) {
   facts.sitePolicies = [
     "ORDERING: all orders are placed on the website, 24/7. A customer who has not named a product browses /menu/all or /flavors, adds items to the bag, then checks out. A customer who names one product, or sends a photo of one, is sent to that product's own page when it is in stock — never to the menu list. Pickup or delivery is chosen at checkout, from a chosen store, with a time slot. Checkout works as a guest (name, email, phone) or with an account. An optional note for the store can carry a gift message, an allergy or a landmark.",
     "PAYMENT: card payments go through Stripe, and Cameroon Mobile Money (MTN / Orange) through CamPay's hosted page. The site never sees a card number or a Mobile Money PIN. Prices are charged in FCFA. Stock is reserved while payment is open, deducted only after the provider confirms payment, and released if the payment fails or is abandoned for 20 minutes.",
+    "CASH ON DELIVERY: customers in the delivery areas can also choose to pay cash when the rider hands over the order. The shop can turn this on or off, and when it is on there is a per-order cash cap (shown at checkout) — a larger order needs an online payment. A cash order is confirmed like any other and the rider collects the money on handover; the customer should keep their phone nearby in case the branch calls to confirm before dispatch.",
     "ORDER PROGRESS: an order moves through accepted, being prepared, ready (or ready for pickup), out for delivery and delivered. The customer can receive a device notification and an email at each step; the notification replaces the previous one so only the latest status shows.",
     "OFFERS: the shop runs a Buy 2 Get 1 Free offer, and discount codes can be applied in the cart. Loyalty points are for signed-in customers: 1 point per 100 FCFA spent, and 100 points = 1,000 FCFA off. Loyalty redemption cannot be combined with another discount.",
     "ACCOUNTS: an account is created after email verification with a 6-digit code; no order is needed. Sign-in is remembered across refreshes and browser restarts, and the session lasts 8 hours. The account holds order history, saved delivery details, favorites, saved bags, one-tap reorder, loyalty points, subscriptions and reviews. Password reset and email change work by emailed code. An account can be deleted; its orders stay for the shop's records with personal details stripped.",
