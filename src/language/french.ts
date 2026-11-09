@@ -1,4 +1,4 @@
-// French translations, keyed by the English text. Loaded on demand (see languageLoader.ts),
+﻿// French translations, keyed by the English text. Loaded on demand (see languageLoader.ts),
 // so visitors reading in English never download it.
 const french: Record<string, string> = {
   "Ice cream flavors": "Parfums de glace",
@@ -4255,6 +4255,22 @@ const french: Record<string, string> = {
   "What personal information we collect when you order or contact us, why we collect it, and how we protect it.": "Les données personnelles que nous collectons lorsque vous commandez ou nous contactez, pourquoi, et comment nous les protégeons.",
   "When and how we refund or replace orders, including custom cakes and event orders.": "Quand et comment nous remboursons ou remplaçons les commandes, y compris les gâteaux personnalisés et les commandes d’événements.",
   // === Strings found untranslated during the November 2026 i18n audit ===
+  "Your wishlist": "Votre liste d’envies",
+  "A shared wishlist": "Une liste d’envies partagée",
+  "Browse {name}'s saved treats and add any of them to your own bag.":
+    "Parcourez les gourmandises enregistrées par {name} et ajoutez celles que vous voulez à votre panier.",
+  "Save treats you love, then share the list with family or friends. They can order straight from it.":
+    "Enregistrez vos gourmandises préférées, puis partagez la liste avec vos proches. Ils peuvent commander directement depuis celle-ci.",
+  "Sign in to keep a wishlist that follows you across devices.":
+    "Connectez-vous pour garder une liste d’envies qui vous suit sur tous vos appareils.",
+  "Nothing saved here yet.": "Rien n’est encore enregistré ici.",
+  "Nothing saved yet. Tap the heart on any treat to keep it here.":
+    "Rien d’enregistré pour l’instant. Touchez le cœur sur une gourmandise pour la garder ici.",
+  "Sold out right now": "Épuisé pour le moment",
+  "Remove from wishlist": "Retirer de la liste d’envies",
+  "Save to wishlist": "Enregistrer dans la liste d’envies",
+  "Sign in to save this": "Connectez-vous pour l’enregistrer",
+  "Copy link": "Copier le lien",
   // Legal: privacy policy
   "Information we collect": "Informations que nous recueillons",
   "Why we collect it": "Pourquoi nous les recueillons",
@@ -4420,6 +4436,18 @@ const french: Record<string, string> = {
   "conversations": "conversations",
   "flagged for the team": "signalées à l’équipe",
   "messages": "messages",
+  // Cash on delivery
+  "Cash on delivery": "Paiement à la livraison",
+  "Pay cash when the rider hands over your order. Available up to the store's COD limit.":
+    "Payez en espèces à la remise de votre commande par le livreur. Disponible dans la limite du plafond du magasin.",
+  "Pay cash on handover. Up to {limit} FCFA.": "Payez en espèces à la remise. Jusqu’à {limit} FCFA.",
+  "Order #{id} is confirmed. Have {amount} ready to pay your rider on handover.":
+    "La commande n° {id} est confirmée. Préparez {amount} pour régler le livreur à la remise.",
+  "Keep your phone nearby: the branch may call to confirm before dispatch. You can track the order any time with your order number.":
+    "Gardez votre téléphone à portée : le magasin peut appeler pour confirmer avant l’envoi. Vous pouvez suivre la commande à tout moment avec son numéro.",
+  "Back to the shop": "Retour à la boutique",
+  "Cash on delivery is limited to {limit} FCFA. Pay online for a larger order.":
+    "Le paiement à la livraison est limité à {limit} FCFA. Payez en ligne pour une commande plus importante.",
 };
 
 export default french;

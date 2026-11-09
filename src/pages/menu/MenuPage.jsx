@@ -1604,6 +1604,10 @@ export function MenuPage() {
                     title={selectedItem.name}
                   />
 
+                  <div className="mt-4">
+                    <WishlistHeart itemKey={selectedItem.id} />
+                  </div>
+
                   <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
                     <p className="font-display text-4xl font-extrabold tabular-nums leading-none text-brand-navy">
                       {formatPrice(selectedItem.priceXaf)}
