@@ -416,6 +416,11 @@ export function LiveChatWidget() {
     }
   });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // Panel mount/visibility split: `panelVisible` keeps the panel in the DOM for the
+  // 200 ms zoom-out after close; `panelShown` flips one frame after mount so the
+  // browser paints the small scale first and transitions to full size on open.
+  const [panelVisible, setPanelVisible] = useState(false);
+  const [panelShown, setPanelShown] = useState(false);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -484,6 +489,20 @@ export function LiveChatWidget() {
     } catch {
       // Ignore; the widget just starts closed next visit.
     }
+  }, [isOpen]);
+
+  // Open: mount (panelVisible) then show on the next frame (panelShown), so the
+  // browser paints the small scale and transitions to full size. Close: drop
+  // panelShown so the zoom-out plays, then remove after the 200 ms duration.
+  useEffect(() => {
+    if (isOpen) {
+      setPanelVisible(true);
+      const frame = requestAnimationFrame(() => setPanelShown(true));
+      return () => cancelAnimationFrame(frame);
+    }
+    setPanelShown(false);
+    const timer = setTimeout(() => setPanelVisible(false), 200);
+    return () => clearTimeout(timer);
   }, [isOpen]);
 
   // On a phone the open chat covers the screen. Lock page scroll, and shrink the
@@ -1289,13 +1308,14 @@ export function LiveChatWidget() {
         )}
       </div>
 
-      {isOpen && (
+      {(isOpen || panelVisible) && (
         <section
           aria-label={t("Chat with us")}
           // Phones: the panel covers the screen (the header close button replaces the
           // launcher). From sm up it floats above the launcher — 5.25rem is the 3.5rem
           // bubble plus its 1.5rem offset and a small gap — and grows to 38rem.
-          className="site-live-chat-panel fixed inset-0 z-[95] flex h-dvh w-full flex-col overflow-hidden rounded-none bg-brand-cream sm:inset-auto sm:bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:left-4 sm:z-[65] sm:h-[min(38rem,calc(100dvh-7rem))] sm:w-[24.5rem] sm:rounded-[24px] sm:shadow-[0_24px_60px_rgba(71,42,59,0.28)] sm:ring-1 sm:ring-brand-border-warm"
+          // It scales from the launcher corner: zooms in on open, out on close.
+          className={`site-live-chat-panel fixed inset-0 z-[95] flex h-dvh w-full flex-col overflow-hidden rounded-none bg-brand-cream transition-all duration-200 ease-out motion-reduce:transition-none sm:inset-auto sm:bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:left-4 sm:z-[65] sm:h-[min(38rem,calc(100dvh-7rem))] sm:w-[24.5rem] sm:rounded-[24px] sm:shadow-[0_24px_60px_rgba(71,42,59,0.28)] sm:ring-1 sm:ring-brand-border-warm sm:origin-bottom-left ${panelShown ? "sm:scale-100 sm:opacity-100" : "sm:scale-75 sm:opacity-0"}`}
           ref={panelRef}
         >
           <div aria-hidden="true" className="h-1 shrink-0 bg-brand-yellow" />
