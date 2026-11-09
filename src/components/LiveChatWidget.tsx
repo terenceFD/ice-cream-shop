@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiRequest } from "../api/api";
 import { useLanguage } from "../language/useLanguage";
@@ -48,7 +55,12 @@ function ChatMark({ className = "size-6" }: { className?: string }) {
         <circle cx="12" cy="10.45" fill="black" r="1.05" />
         <circle cx="15.8" cy="10.45" fill="black" r="1.05" />
       </mask>
-      <rect fill="currentColor" height="24" mask={`url(#${maskId})`} width="24" />
+      <rect
+        fill="currentColor"
+        height="24"
+        mask={`url(#${maskId})`}
+        width="24"
+      />
     </svg>
   );
 }
@@ -67,9 +79,28 @@ function ChatTrashIcon({ className = "size-5" }: { className?: string }) {
 
 function ChatCloseIcon({ className = "size-5" }: { className?: string }) {
   return (
-    <svg aria-hidden="true" className={className} fill="currentColor" viewBox="0 0 24 24">
-      <rect height="16.4" rx="2.05" transform="rotate(45 12 12)" width="4.1" x="9.95" y="3.8" />
-      <rect height="16.4" rx="2.05" transform="rotate(-45 12 12)" width="4.1" x="9.95" y="3.8" />
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <rect
+        height="16.4"
+        rx="2.05"
+        transform="rotate(45 12 12)"
+        width="4.1"
+        x="9.95"
+        y="3.8"
+      />
+      <rect
+        height="16.4"
+        rx="2.05"
+        transform="rotate(-45 12 12)"
+        width="4.1"
+        x="9.95"
+        y="3.8"
+      />
     </svg>
   );
 }
@@ -118,17 +149,28 @@ const CHAT_ACTIONS = {
 // so it can explain the screen and guide them around it.
 const PAGE_GUIDES = {
   "/": "the home page: featured flavors, quick links to the menu, cakes and events, and the shop's trust badges",
-  "/menu": "the menu page: ice-cream categories with photos; each category opens its own product list",
-  "/menu/all": "the all-menu page: every product on one page with photos and prices; use the search box and the filters (category, price, diet, availability) at the top, then tap a product to see details or tap the cart icon to add it to the cart",
-  "/custom-cake": "the custom-cake page: a form to request a made-to-order cake — pick size, message and date, then submit; the shop confirms by email or chat",
-  "/events": "the event-orders page: catering for birthdays, offices and weddings — describe the event and get a quote",
-  "/locations": "the locations page: every branch with address, hours and a map link",
-  "/contact": "the contact page: a form to write to the shop; replies come by email",
-  "/faq": "the FAQ page: answers to common questions about ordering, delivery and payment",
-  "/cart": "the cart page: items you added, quantities, the discount-code field and the total; continue to checkout from here",
-  "/checkout": "the checkout page: delivery details, pickup or delivery choice, time slot, and payment — after payment the order appears in your account and can be tracked",
-  "/track-order": "the track-order page: enter your order number (or open it from your account) to see its status, from preparing to delivered",
-  "/account/orders": "your account page: order history, favorites, subscriptions and your details",
+  "/menu":
+    "the menu page: ice-cream categories with photos; each category opens its own product list",
+  "/menu/all":
+    "the all-menu page: every product on one page with photos and prices; use the search box and the filters (category, price, diet, availability) at the top, then tap a product to see details or tap the cart icon to add it to the cart",
+  "/custom-cake":
+    "the custom-cake page: a form to request a made-to-order cake — pick size, message and date, then submit; the shop confirms by email or chat",
+  "/events":
+    "the event-orders page: catering for birthdays, offices and weddings — describe the event and get a quote",
+  "/locations":
+    "the locations page: every branch with address, hours and a map link",
+  "/contact":
+    "the contact page: a form to write to the shop; replies come by email",
+  "/faq":
+    "the FAQ page: answers to common questions about ordering, delivery and payment",
+  "/cart":
+    "the cart page: items you added, quantities, the discount-code field and the total; continue to checkout from here",
+  "/checkout":
+    "the checkout page: delivery details, pickup or delivery choice, time slot, and payment — after payment the order appears in your account and can be tracked",
+  "/track-order":
+    "the track-order page: enter your order number (or open it from your account) to see its status, from preparing to delivered",
+  "/account/orders":
+    "your account page: order history, favorites, subscriptions and your details",
   "/flavors": "the flavors page: the full flavor catalog with descriptions",
 } as const;
 
@@ -136,7 +178,13 @@ const PAGE_GUIDES = {
 // Only those two shapes become a button. Anything else is dropped so a reply
 // cannot turn into an off-site link.
 function safeProductPath(raw: string): string | null {
-  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\") || raw.includes("..")) return null;
+  if (
+    !raw.startsWith("/") ||
+    raw.startsWith("//") ||
+    raw.includes("\\") ||
+    raw.includes("..")
+  )
+    return null;
   let url: URL;
   try {
     url = new URL(raw, "https://shop.local");
@@ -147,16 +195,24 @@ function safeProductPath(raw: string): string | null {
   if (url.pathname === "/menu") {
     const category = url.searchParams.get("category")?.trim() || "";
     const item = url.searchParams.get("item")?.trim() || "";
-    if (!category || !item || category.length > 80 || item.length > 120) return null;
+    if (!category || !item || category.length > 80 || item.length > 120)
+      return null;
     return `/menu?${new URLSearchParams({ category, item }).toString()}`;
   }
-  if (/^\/flavor\/\d{1,8}$/.test(url.pathname) && url.search === "") return url.pathname;
-  if (/^\/treat\/[a-z0-9-]+\/[a-z0-9-]+$/.test(url.pathname) && url.search === "") return url.pathname;
+  if (/^\/flavor\/\d{1,8}$/.test(url.pathname) && url.search === "")
+    return url.pathname;
+  if (
+    /^\/treat\/[a-z0-9-]+\/[a-z0-9-]+$/.test(url.pathname) &&
+    url.search === ""
+  )
+    return url.pathname;
   return null;
 }
 
 function safeAddId(raw: string): string | null {
-  return /^(?:menu:[a-z0-9-]+:[a-z0-9-]+|flavor:\d{1,8})$/.test(raw) ? raw : null;
+  return /^(?:menu:[a-z0-9-]+:[a-z0-9-]+|flavor:\d{1,8})$/.test(raw)
+    ? raw
+    : null;
 }
 
 /** A bag edit from an agent reply: clear everything, or set one addId to a quantity. */
@@ -193,18 +249,23 @@ function parseBagTag(raw: string): BagEdit | undefined {
  * a button, because the customer asked about the product, not to buy it.
  */
 function asksForAutoAdd(message: string): boolean {
-  return /\b(?:add(?: it| that| this| the)?(?: to (?:my |the )?(?:bag|cart))?|i(?:'ll| will| would like|'d like| want| take)|je (?:veux|prends)|ajoute|mettez?)(?:\b|(?=[\s,.!?]))/i.test(message);
+  return /\b(?:add(?: it| that| this| the)?(?: to (?:my |the )?(?:bag|cart))?|i(?:'ll| will| would like|'d like| want| take)|je (?:veux|prends)|ajoute|mettez?)(?:\b|(?=[\s,.!?]))/i.test(
+    message,
+  );
 }
 
 function parseVisitTag(raw: string): ChatVisit | undefined {
-  const [type, location, date, slotId] = raw.split("|").map((part) => part.trim());
+  const [type, location, date, slotId] = raw
+    .split("|")
+    .map((part) => part.trim());
   if (type !== "pickup" && type !== "delivery") return undefined;
   // The location comes from the branch list ("Douala — Bonanjo"), so any letter,
   // digit, space or punctuation except the pipe is accepted — the checkout
   // matches it against its own zone list, so an odd value simply stays unused.
   return {
     type,
-    location: location && /^[^|\[\]]{1,80}$/.test(location) ? location : undefined,
+    location:
+      location && /^[^|\[\]]{1,80}$/.test(location) ? location : undefined,
     date: date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined,
     slotId: slotId && /^\d{1,8}$/.test(slotId) ? slotId : undefined,
   };
@@ -251,7 +312,9 @@ function splitChatAction(body: string): {
     }
     if (fillMatch) {
       const items = fillMatch[1].split(",").flatMap((part) => {
-        const match = part.trim().match(/^(menu:[a-z0-9-]+:[a-z0-9-]+|flavor:\d{1,8})\*(\d{1,2})$/);
+        const match = part
+          .trim()
+          .match(/^(menu:[a-z0-9-]+:[a-z0-9-]+|flavor:\d{1,8})\*(\d{1,2})$/);
         if (!match) return [];
         const quantity = Number(match[2]);
         if (quantity < 1 || quantity > 40) return [];
@@ -321,11 +384,17 @@ function capturePageSnapshot(): string {
       .slice(0, 12);
     const buttons = Array.from(document.querySelectorAll("button, a"))
       .map((node) => node.textContent?.trim())
-      .filter((text): text is string => Boolean(text) && text.length > 0 && text.length < 60)
+      .filter(
+        (text): text is string =>
+          Boolean(text) && text.length > 0 && text.length < 60,
+      )
       .slice(0, 25);
-    const inputs = Array.from(document.querySelectorAll("input, textarea, select"))
+    const inputs = Array.from(
+      document.querySelectorAll("input, textarea, select"),
+    )
       .map((node) => {
-        const field = node as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+        const field = node as
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
         const label =
           field.getAttribute("placeholder") ||
           field.getAttribute("aria-label") ||
@@ -370,7 +439,10 @@ function isForbidden(error: unknown): boolean {
 /** Words the customer should hear. Buttons and markup stay on screen, not in the voice. */
 function spokenReplyText(body: string) {
   return body
-    .replace(/\s*\[(?:LINK|ADD|ACTION|FILL|BAG|VISIT|CODE|CHIPS):[^\]]*\]/gi, " ")
+    .replace(
+      /\s*\[(?:LINK|ADD|ACTION|FILL|BAG|VISIT|CODE|CHIPS):[^\]]*\]/gi,
+      " ",
+    )
     .replace(/\*\*([^*]+)\*\*/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
@@ -429,13 +501,18 @@ export function LiveChatWidget() {
   // Starter chips (#2): page-aware question suggestions shown before the first message.
   const [showStarters, setShowStarters] = useState(false);
   // Photo attachment (#7): a chosen file and the site path it was uploaded to.
-  const [attachment, setAttachment] = useState<{ url: string; name: string } | null>(null);
+  const [attachment, setAttachment] = useState<{
+    url: string;
+    name: string;
+  } | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   // Voice input (#4): recording state and whether the browser offers speech input.
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceError, setVoiceError] = useState("");
-  const recognitionRef = useRef<{ stop: () => void; start: () => void } | null>(null);
+  const recognitionRef = useRef<{ stop: () => void; start: () => void } | null>(
+    null,
+  );
   // True until the customer taps the mic off. Chrome ends a session after a short
   // pause even while someone is still talking; the session is started again until
   // this is cleared. holdVoiceRef pauses that restart while the agent is speaking.
@@ -470,12 +547,12 @@ export function LiveChatWidget() {
 
   useEffect(() => () => window.clearTimeout(typingTimeout.current), []);
 
-
-
   // A new store message ends the wait; polling picks it up within a few seconds.
   useEffect(() => {
     if (!isAwaitingReply) return;
-    const storeCount = messages.filter((message) => message.sender === "store").length;
+    const storeCount = messages.filter(
+      (message) => message.sender === "store",
+    ).length;
     if (storeCount <= storeCountAtWaitStart.current) return;
     setIsAwaitingReply(false);
     window.clearTimeout(typingTimeout.current);
@@ -594,29 +671,32 @@ export function LiveChatWidget() {
     setError("");
   }, [customerId]);
 
-  const loadMessages = useCallback(async (threadId = threadIdRef.current) => {
-    if (!threadId) return;
-    try {
-      const result = await apiRequest<{ messages: ChatMessage[] }>(
-        `/chat/messages/${threadId}`,
-      );
-      // A fresh thread may have been started while this answer was in flight.
-      if (threadId !== threadIdRef.current) return;
-      setMessages(result.messages || []);
-      setError("");
-    } catch (loadError) {
-      // The thread id in this browser no longer belongs to it — the device cookie was
-      // cleared, or the browser blocked it. Retrying can never succeed, so start a
-      // fresh conversation instead of leaving the visitor with a dead, empty chat.
-      // Only the current thread may trigger that: a late answer about an abandoned
-      // thread must not throw away the new one.
-      if (isForbidden(loadError) && threadId === threadIdRef.current) {
-        startFreshThread();
-        return;
+  const loadMessages = useCallback(
+    async (threadId = threadIdRef.current) => {
+      if (!threadId) return;
+      try {
+        const result = await apiRequest<{ messages: ChatMessage[] }>(
+          `/chat/messages/${threadId}`,
+        );
+        // A fresh thread may have been started while this answer was in flight.
+        if (threadId !== threadIdRef.current) return;
+        setMessages(result.messages || []);
+        setError("");
+      } catch (loadError) {
+        // The thread id in this browser no longer belongs to it — the device cookie was
+        // cleared, or the browser blocked it. Retrying can never succeed, so start a
+        // fresh conversation instead of leaving the visitor with a dead, empty chat.
+        // Only the current thread may trigger that: a late answer about an abandoned
+        // thread must not throw away the new one.
+        if (isForbidden(loadError) && threadId === threadIdRef.current) {
+          startFreshThread();
+          return;
+        }
+        // A network hiccup should not empty the visible thread; keep what is shown.
       }
-      // A network hiccup should not empty the visible thread; keep what is shown.
-    }
-  }, [startFreshThread]);
+    },
+    [startFreshThread],
+  );
 
   // A different signed-in person gets a different storage key, so switching
   // accounts (or signing out) starts an empty chat instead of inheriting the
@@ -633,7 +713,8 @@ export function LiveChatWidget() {
     const interval = window.setInterval(() => {
       // A shopper who switched tabs is not reading the chat: skip the request and
       // catch up on the next tick once the tab is visible again.
-      if (isOpenRef.current && document.visibilityState !== "hidden") loadMessages();
+      if (isOpenRef.current && document.visibilityState !== "hidden")
+        loadMessages();
     }, POLL_INTERVAL_MS);
     return () => window.clearInterval(interval);
   }, [isOpen, loadMessages, customerId]);
@@ -661,7 +742,9 @@ export function LiveChatWidget() {
   }, [isOpen]);
   useEffect(() => {
     const list = listRef.current;
-    if (list && stickToBottomRef.current) list.scrollTop = list.scrollHeight;
+    // Smooth so each new bubble slides up with its entrance animation instead of snapping.
+    if (list && stickToBottomRef.current)
+      list.scrollTo({ top: list.scrollHeight, behavior: "smooth" });
   }, [messages, isAwaitingReply]);
 
   // Clicking an AI action button navigates; close the panel so the page is visible.
@@ -751,7 +834,7 @@ export function LiveChatWidget() {
       typeof window !== "undefined" &&
       Boolean(
         (window as unknown as Record<string, unknown>).SpeechRecognition ||
-          (window as unknown as Record<string, unknown>).webkitSpeechRecognition,
+        (window as unknown as Record<string, unknown>).webkitSpeechRecognition,
       ),
     [],
   );
@@ -767,25 +850,27 @@ export function LiveChatWidget() {
       setIsListening(false);
       return;
     }
-    const RecognitionCtor = (
-      (window as unknown as Record<string, unknown>).SpeechRecognition ||
-      (window as unknown as Record<string, unknown>).webkitSpeechRecognition
-    ) as
+    const RecognitionCtor = ((window as unknown as Record<string, unknown>)
+      .SpeechRecognition ||
+      (window as unknown as Record<string, unknown>)
+        .webkitSpeechRecognition) as
       | (new () => {
-            lang: string;
-            continuous: boolean;
-            interimResults: boolean;
-            maxAlternatives: number;
-            onresult:
-              | ((event: {
-                  results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }>;
-                }) => void)
-              | null;
-            onerror: ((event: { error?: string }) => void) | null;
-            onend: (() => void) | null;
-            stop: () => void;
-            start: () => void;
-          })
+          lang: string;
+          continuous: boolean;
+          interimResults: boolean;
+          maxAlternatives: number;
+          onresult:
+            | ((event: {
+                results: ArrayLike<
+                  ArrayLike<{ transcript: string }> & { isFinal: boolean }
+                >;
+              }) => void)
+            | null;
+          onerror: ((event: { error?: string }) => void) | null;
+          onend: (() => void) | null;
+          stop: () => void;
+          start: () => void;
+        })
       | null;
     if (!RecognitionCtor) {
       setVoiceError(t("Voice input is not supported in this browser."));
@@ -814,7 +899,10 @@ export function LiveChatWidget() {
         else interim += piece;
       }
       const spoken = `${heard} ${interim}`.replace(/\s+/g, " ").trim();
-      const next = [voicePrefixRef.current, spoken].filter(Boolean).join(" ").slice(0, 1000);
+      const next = [voicePrefixRef.current, spoken]
+        .filter(Boolean)
+        .join(" ")
+        .slice(0, 1000);
       voiceDraftRef.current = next;
       setDraft(next);
       // A short silence means the sentence is finished. Send it, then the agent
@@ -920,7 +1008,10 @@ export function LiveChatWidget() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    if (file.type && !["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    if (
+      file.type &&
+      !["image/jpeg", "image/png", "image/webp"].includes(file.type)
+    ) {
       setError(t("Upload a JPEG, PNG, or WebP image."));
       return;
     }
@@ -931,7 +1022,11 @@ export function LiveChatWidget() {
       // fit the 3 MB chat limit and arrive as a JPEG or WebP the server accepts.
       const dataUrl = await prepareImageForUpload(file);
       const encoded = dataUrl.slice(dataUrl.indexOf(",") + 1);
-      const padding = encoded.endsWith("==") ? 2 : encoded.endsWith("=") ? 1 : 0;
+      const padding = encoded.endsWith("==")
+        ? 2
+        : encoded.endsWith("=")
+          ? 1
+          : 0;
       const bytes = Math.floor((encoded.length * 3) / 4) - padding;
       if (bytes > 3 * 1024 * 1024) {
         setError(t("Photos must be smaller than 3 MB."));
@@ -972,7 +1067,8 @@ export function LiveChatWidget() {
         return false;
       }
     })();
-    const applies = location.pathname === "/checkout" || location.pathname === "/custom-cake";
+    const applies =
+      location.pathname === "/checkout" || location.pathname === "/custom-cake";
     if (!applies || nudged || isOpen) return undefined;
     const timer = window.setTimeout(() => {
       try {
@@ -1023,7 +1119,8 @@ export function LiveChatWidget() {
     if (fromVoice) {
       voiceConversationRef.current = true;
       for (const message of messagesRef.current) {
-        if (message.sender === "store") spokenStoreIdsRef.current.add(message.id);
+        if (message.sender === "store")
+          spokenStoreIdsRef.current.add(message.id);
       }
       holdVoiceRef.current = true;
       window.clearTimeout(voicePauseTimerRef.current);
@@ -1078,7 +1175,10 @@ export function LiveChatWidget() {
         (message) => message.sender === "store",
       ).length;
       setIsAwaitingReply(true);
-      typingTimeout.current = window.setTimeout(() => setIsAwaitingReply(false), TYPING_TIMEOUT_MS);
+      typingTimeout.current = window.setTimeout(
+        () => setIsAwaitingReply(false),
+        TYPING_TIMEOUT_MS,
+      );
       // Only show the messages of the thread the post actually landed in; sending
       // again may have moved the conversation to a new thread.
       await loadMessages(threadIdRef.current);
@@ -1101,7 +1201,9 @@ export function LiveChatWidget() {
   useEffect(() => {
     if (!voiceConversationRef.current) return;
     const fresh = messages.filter(
-      (message) => message.sender === "store" && !spokenStoreIdsRef.current.has(message.id),
+      (message) =>
+        message.sender === "store" &&
+        !spokenStoreIdsRef.current.has(message.id),
     );
     if (!fresh.length) return;
     for (const message of fresh) spokenStoreIdsRef.current.add(message.id);
@@ -1113,14 +1215,17 @@ export function LiveChatWidget() {
     holdVoiceRef.current = true;
     setIsSpeaking(true);
     const utterance = new SpeechSynthesisUtterance(text);
-    const french = language === "fr" || /[àâçéèêëîïôùûüœ]/i.test(text) || /\b(c'est|bonjour|disponible|boutique)\b/i.test(text);
+    const french =
+      language === "fr" ||
+      /[àâçéèêëîïôùûüœ]/i.test(text) ||
+      /\b(c'est|bonjour|disponible|boutique)\b/i.test(text);
     utterance.lang = french ? "fr-FR" : "en-US";
     // Prefer the modern neural voices the OS ships for free (Windows "Natural",
     // Edge "Online (Natural)"), then any local voice, then any matching voice.
     const langCode = french ? "fr" : "en";
-    const voices = window.speechSynthesis.getVoices().filter((item) =>
-      item.lang.toLowerCase().startsWith(langCode),
-    );
+    const voices = window.speechSynthesis
+      .getVoices()
+      .filter((item) => item.lang.toLowerCase().startsWith(langCode));
     const scored = (item: SpeechSynthesisVoice) => {
       const name = item.name.toLowerCase();
       if (/(natural|neural|online)/.test(name)) return 3;
@@ -1128,8 +1233,7 @@ export function LiveChatWidget() {
       if (item.localService) return 1;
       return 0;
     };
-    const voice =
-      voices.sort((a, b) => scored(b) - scored(a))[0] ?? null;
+    const voice = voices.sort((a, b) => scored(b) - scored(a))[0] ?? null;
     if (voice) utterance.voice = voice;
     let settled = false;
     const finish = () => {
@@ -1167,7 +1271,9 @@ export function LiveChatWidget() {
     setIsClearing(true);
     try {
       if (threadIdRef.current) {
-        await apiRequest(`/chat/messages/${threadIdRef.current}`, { method: "DELETE" });
+        await apiRequest(`/chat/messages/${threadIdRef.current}`, {
+          method: "DELETE",
+        });
       }
       try {
         localStorage.removeItem(threadStorageKey(customerId));
@@ -1188,7 +1294,13 @@ export function LiveChatWidget() {
   }
 
   async function requestHumanHelp() {
-    if (isRequestingHuman || isSending || isClearing || messages.some((message) => message.needsAttention)) return;
+    if (
+      isRequestingHuman ||
+      isSending ||
+      isClearing ||
+      messages.some((message) => message.needsAttention)
+    )
+      return;
     if (!threadIdRef.current) threadIdRef.current = readThreadId(customerId);
     setIsRequestingHuman(true);
     setError("");
@@ -1231,7 +1343,9 @@ export function LiveChatWidget() {
   // swaps it for send. The mic stays while recording so it can still be stopped.
   const showSend = Boolean(draft.trim() || attachment) && !isListening;
   const showMic = speechSupported && !showSend;
-  const humanHandoffPending = messages.some((message) => message.needsAttention);
+  const humanHandoffPending = messages.some(
+    (message) => message.needsAttention,
+  );
 
   if (mobileMenuOpen) return null;
 
@@ -1250,15 +1364,19 @@ export function LiveChatWidget() {
             : "pointer-events-none translate-y-[220%] opacity-0"
         } ${isOpen ? "max-sm:hidden" : ""}`}
       >
-      <button
-        aria-expanded={isOpen}
-        aria-label={isOpen ? t("Close chat") : t("Chat with us")}
-        className="grid size-14 place-items-center rounded-full bg-brand-navy text-brand-yellow shadow-[0_14px_36px_rgba(9,42,83,0.4)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
-        onClick={() => setIsOpen((open) => !open)}
-        type="button"
-      >
-        {isOpen ? <ChatCloseIcon className="size-6" /> : <ChatMark className="size-7" />}
-      </button>
+        <button
+          aria-expanded={isOpen}
+          aria-label={isOpen ? t("Close chat") : t("Chat with us")}
+          className="grid size-14 place-items-center rounded-full bg-brand-navy text-brand-yellow shadow-[0_14px_36px_rgba(9,42,83,0.4)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
+          onClick={() => setIsOpen((open) => !open)}
+          type="button"
+        >
+          {isOpen ? (
+            <ChatCloseIcon className="size-6" />
+          ) : (
+            <ChatMark className="size-7" />
+          )}
+        </button>
         {!isOpen && (
           <div
             aria-hidden="true"
@@ -1272,7 +1390,9 @@ export function LiveChatWidget() {
               {t("Hi")} 👋
             </p>
             <p className="mt-1 text-[13px] leading-5 text-white/85">
-              {t("I am your Cold Stone assistant. I can help you with anything concerning this platform.")}
+              {t(
+                "I am your Cold Stone assistant. I can help you with anything concerning this platform.",
+              )}
             </p>
           </div>
         )}
@@ -1331,8 +1451,13 @@ export function LiveChatWidget() {
                 Cold Stone
               </p>
               <p className="mt-1 flex items-center gap-1.5 text-[13px] text-brand-muted">
-                <span aria-hidden="true" className="inline-block size-1.5 shrink-0 rounded-full bg-[#3d8b40]" />
-                <span className="min-w-0 truncate">{t("Usually replies in minutes")}</span>
+                <span
+                  aria-hidden="true"
+                  className="inline-block size-1.5 shrink-0 rounded-full bg-[#3d8b40]"
+                />
+                <span className="min-w-0 truncate">
+                  {t("Usually replies in minutes")}
+                </span>
               </p>
             </div>
             <button
@@ -1344,9 +1469,27 @@ export function LiveChatWidget() {
               type="button"
             >
               {isClearing ? (
-                <svg aria-hidden="true" className="size-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" />
-                  <path className="opacity-75" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5" />
+                <svg
+                  aria-hidden="true"
+                  className="size-4 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="9"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  />
+                  <path
+                    className="opacity-75"
+                    d="M21 12a9 9 0 0 0-9-9"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeWidth="2.5"
+                  />
                 </svg>
               ) : (
                 <ChatTrashIcon />
@@ -1370,7 +1513,9 @@ export function LiveChatWidget() {
               <div className="flex items-start">
                 <ShopMark />
                 <div className="min-w-0 flex-1">
-                  <p className="font-display text-lg font-extrabold leading-none text-brand-navy">Cold Stone</p>
+                  <p className="font-display text-lg font-extrabold leading-none text-brand-navy">
+                    Cold Stone
+                  </p>
                   <p className="mt-2 max-w-[16rem] text-[15px] leading-6 text-brand-navy">
                     {t(
                       "Ask about flavors, cakes, delivery — anything. We are happy to help.",
@@ -1399,19 +1544,39 @@ export function LiveChatWidget() {
             {messages.map((message, index) => {
               const isCustomer = message.sender === "customer";
               const previous = messages[index - 1];
-              const sameSender = previous?.sender === message.sender
-                && (isCustomer || previous.isHuman === message.isHuman);
-              const { text: bodyText, action, addId, fill, bag, visit, code, chips } = isCustomer
-                ? { text: message.body, action: undefined, addId: undefined, fill: undefined, bag: undefined, visit: undefined, code: undefined, chips: undefined }
+              const sameSender =
+                previous?.sender === message.sender &&
+                (isCustomer || previous.isHuman === message.isHuman);
+              const {
+                text: bodyText,
+                action,
+                addId,
+                fill,
+                bag,
+                visit,
+                code,
+                chips,
+              } = isCustomer
+                ? {
+                    text: message.body,
+                    action: undefined,
+                    addId: undefined,
+                    fill: undefined,
+                    bag: undefined,
+                    visit: undefined,
+                    code: undefined,
+                    chips: undefined,
+                  }
                 : splitChatAction(message.body);
               // The customer asked to add something and this reply carries its
               // [ADD:] tag: the add happens here, once, when the reply is seen
               // — no button tap needed. Only the immediately preceding customer
               // message counts, so a price question never auto-adds.
-              const autoAdd = !isCustomer
-                && Boolean(addId)
-                && previous?.sender === "customer"
-                && asksForAutoAdd(previous.body);
+              const autoAdd =
+                !isCustomer &&
+                Boolean(addId) &&
+                previous?.sender === "customer" &&
+                asksForAutoAdd(previous.body);
               // A customer message only reaches this list after the server stored it, so
               // its presence IS the delivery confirmation. (The server sends no `delivery`
               // field, and an earlier version pruned its own sent-message record as soon
@@ -1419,7 +1584,7 @@ export function LiveChatWidget() {
               const delivered = isCustomer;
               return (
                 <div
-                  className={`site-chat-bubble flex ${isCustomer ? "justify-end" : "items-start justify-start"} ${index === 0 ? "" : sameSender ? "mt-1" : "mt-5"}`}
+                  className={`site-chat-bubble flex ${isCustomer ? "site-chat-bubble--customer justify-end" : "items-start justify-start"} ${index === 0 ? "" : sameSender ? "mt-1" : "mt-5"}`}
                   key={message.id}
                 >
                   {!isCustomer && (
@@ -1427,7 +1592,9 @@ export function LiveChatWidget() {
                       {!sameSender && <ShopMark />}
                     </span>
                   )}
-                  <div className={`min-w-0 ${isCustomer ? "max-w-[78%]" : "max-w-[calc(100%-2.25rem)]"}`}>
+                  <div
+                    className={`min-w-0 ${isCustomer ? "max-w-[78%]" : "max-w-[calc(100%-2.25rem)]"}`}
+                  >
                     {!isCustomer && !sameSender && (
                       <p className="mb-1 font-display text-[13px] font-bold leading-none text-brand-navy">
                         {message.isHuman ? t("Shop team") : t("Cold Stone")}
@@ -1435,7 +1602,9 @@ export function LiveChatWidget() {
                     )}
                     {isCustomer ? (
                       <div className="flex flex-col items-end gap-1.5">
-                        {message.imageUrl ? <SentPhoto src={message.imageUrl} /> : null}
+                        {message.imageUrl ? (
+                          <SentPhoto src={message.imageUrl} />
+                        ) : null}
                         {bodyText ? (
                           <div className="rounded-[18px] rounded-br-[6px] bg-brand-navy px-3.5 py-2 text-[15px] leading-6 text-white">
                             <ChatText text={bodyText} />
@@ -1448,12 +1617,32 @@ export function LiveChatWidget() {
                         {bag && <ChatBagEditButton bag={bag} />}
                         {visit && <ChatVisitButton visit={visit} />}
                         {code && <ChatCodeButton code={code} />}
-                        {chips?.length ? <ChatChips chips={chips} onSend={(text) => submitVoiceRef.current?.(text)} /> : null}
-                        {autoAdd && <ChatAutoAdd key={`${message.id}:${addId}`} addId={addId} />}
+                        {chips?.length ? (
+                          <ChatChips
+                            chips={chips}
+                            onSend={(text) => submitVoiceRef.current?.(text)}
+                          />
+                        ) : null}
+                        {autoAdd && (
+                          <ChatAutoAdd
+                            key={`${message.id}:${addId}`}
+                            addId={addId}
+                          />
+                        )}
                         {(action || addId || fill?.length) && (
                           <div className="mt-2.5 max-w-[16rem]">
-                            {fill?.length ? <ChatFillButton items={fill} /> : !autoAdd && addId && <ChatAddButton addId={addId} />}
-                            {action && <ChatActionButton action={action} quiet={Boolean(addId || fill?.length)} />}
+                            {fill?.length ? (
+                              <ChatFillButton items={fill} />
+                            ) : (
+                              !autoAdd &&
+                              addId && <ChatAddButton addId={addId} />
+                            )}
+                            {action && (
+                              <ChatActionButton
+                                action={action}
+                                quiet={Boolean(addId || fill?.length)}
+                              />
+                            )}
                           </div>
                         )}
                       </div>
@@ -1466,7 +1655,10 @@ export function LiveChatWidget() {
                     </p>
                   </div>
                   {isCustomer && customer && (
-                    <span aria-hidden="true" className="mb-5 ml-2 flex w-7 shrink-0 items-end">
+                    <span
+                      aria-hidden="true"
+                      className="mb-5 ml-2 flex w-7 shrink-0 items-end"
+                    >
                       <CustomerPortrait picture={customer.profilePicture} />
                     </span>
                   )}
@@ -1474,7 +1666,10 @@ export function LiveChatWidget() {
               );
             })}
             {isAwaitingReply && (
-              <div className="site-chat-typing mt-4 flex items-center" aria-hidden="true">
+              <div
+                className="site-chat-typing mt-4 flex items-center"
+                aria-hidden="true"
+              >
                 <ShopMark />
                 <span className="ml-2 flex items-center gap-1.5 py-2">
                   <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_infinite]" />
@@ -1507,7 +1702,9 @@ export function LiveChatWidget() {
               className="mx-3 mb-2 rounded-xl bg-[#fff6e5] px-3 py-2 text-xs font-semibold leading-5 text-[#78520a]"
               role="status"
             >
-              {t("Your request is with the shop team. They’ll reply here as soon as someone is available.")}
+              {t(
+                "Your request is with the shop team. They’ll reply here as soon as someone is available.",
+              )}
             </p>
           ) : (
             <div className="flex items-center justify-between gap-3 bg-brand-cream px-4 pb-2">
@@ -1540,8 +1737,18 @@ export function LiveChatWidget() {
                   onClick={() => setAttachment(null)}
                   type="button"
                 >
-                  <svg aria-hidden="true" className="size-3" fill="none" viewBox="0 0 24 24">
-                    <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" />
+                  <svg
+                    aria-hidden="true"
+                    className="size-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="m6 6 12 12M18 6 6 18"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeWidth="2.4"
+                    />
                   </svg>
                 </button>
               </div>
@@ -1572,12 +1779,35 @@ export function LiveChatWidget() {
               type="button"
             >
               {isUploadingPhoto ? (
-                <svg aria-hidden="true" className="size-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" />
-                  <path className="opacity-75" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5" />
+                <svg
+                  aria-hidden="true"
+                  className="size-4 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="9"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  />
+                  <path
+                    className="opacity-75"
+                    d="M21 12a9 9 0 0 0-9-9"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeWidth="2.5"
+                  />
                 </svg>
               ) : (
-                <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                <svg
+                  aria-hidden="true"
+                  className="size-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"
                     stroke="currentColor"
@@ -1593,7 +1823,9 @@ export function LiveChatWidget() {
                 aria-label={t("Your message")}
                 autoComplete="off"
                 className={`w-full rounded-full border border-brand-border-warm bg-white py-2.5 text-[15px] font-medium text-brand-navy outline-none! transition-colors placeholder:text-brand-gray focus:border-brand-yellow ${
-                  isListening && draft.trim() ? "pl-3.5 pr-16 sm:pl-4" : "px-3.5 sm:px-4"
+                  isListening && draft.trim()
+                    ? "pl-3.5 pr-16 sm:pl-4"
+                    : "px-3.5 sm:px-4"
                 }`}
                 maxLength={1000}
                 onChange={(event) => setDraft(event.target.value)}
@@ -1604,7 +1836,9 @@ export function LiveChatWidget() {
                 <span
                   aria-hidden="true"
                   className={`chat-voice-wave pointer-events-none absolute inset-y-0 flex items-center text-red-600 ${
-                    draft.trim() ? "right-3 gap-[3px]" : "inset-x-0 justify-center gap-1"
+                    draft.trim()
+                      ? "right-3 gap-[3px]"
+                      : "inset-x-0 justify-center gap-1"
                   }`}
                 >
                   {Array.from({ length: draft.trim() ? 5 : 14 }, (_, index) => (
@@ -1622,25 +1856,57 @@ export function LiveChatWidget() {
             </div>
             {showMic && (
               <button
-                aria-label={isListening ? t("Stop voice input") : t("Speak your message")}
+                aria-label={
+                  isListening ? t("Stop voice input") : t("Speak your message")
+                }
                 className={`grid size-10 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95 ${
                   isListening
                     ? "bg-red-50 text-red-600"
                     : "text-brand-muted hover:bg-white hover:text-brand-navy"
                 }`}
                 onClick={toggleVoice}
-                title={isListening ? t("Stop voice input") : t("Speak your message")}
+                title={
+                  isListening ? t("Stop voice input") : t("Speak your message")
+                }
                 type="button"
               >
                 {isListening ? (
-                  <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M9 6a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0V6Z" />
-                    <path d="M8 11a4 4 0 0 0 8 0" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-                    <path d="M12 15v3" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-                    <path d="M9.5 20h5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                  <svg
+                    aria-hidden="true"
+                    className="size-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M9 6a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0V6Z"
+                    />
+                    <path
+                      d="M8 11a4 4 0 0 0 8 0"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeWidth="1.8"
+                    />
+                    <path
+                      d="M12 15v3"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeWidth="1.8"
+                    />
+                    <path
+                      d="M9.5 20h5"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeWidth="1.8"
+                    />
                   </svg>
                 ) : (
-                  <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                  <svg
+                    aria-hidden="true"
+                    className="size-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"
                       stroke="currentColor"
@@ -1654,7 +1920,12 @@ export function LiveChatWidget() {
                       strokeLinejoin="round"
                       strokeWidth="1.8"
                     />
-                    <path d="M12 19v2.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                    <path
+                      d="M12 19v2.5"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeWidth="1.8"
+                    />
                   </svg>
                 )}
               </button>
@@ -1725,7 +1996,9 @@ function CustomerPortrait({ picture }: { picture?: string }) {
       />
     );
   }
-  return <span className="block size-7 rounded-full border border-brand-border-warm bg-white" />;
+  return (
+    <span className="block size-7 rounded-full border border-brand-border-warm bg-white" />
+  );
 }
 
 function ChatText({ text }: { text: string }) {
@@ -1747,7 +2020,11 @@ function ChatText({ text }: { text: string }) {
 
 // The button an AI reply can carry (from its [ACTION:...] line): a full-width,
 // thumb-friendly jump to the page the customer needs, e.g. the All Menu page.
-function ChatFillButton({ items }: { items: { id: string; quantity: number }[] }) {
+function ChatFillButton({
+  items,
+}: {
+  items: { id: string; quantity: number }[];
+}) {
   const { t } = useLanguage();
   const { addItemsToCart } = useCart();
   const { flavors } = useFlavors();
@@ -1757,8 +2034,12 @@ function ChatFillButton({ items }: { items: { id: string; quantity: number }[] }
   const add = () => {
     const products: CartProduct[] = items.flatMap((entry): CartProduct[] => {
       if (entry.id.startsWith("flavor:")) {
-        const flavor = flavors.find((item) => String(item.id) === entry.id.slice("flavor:".length));
-        return flavor ? [{ ...flavor, itemType: "flavor", quantity: entry.quantity }] : [];
+        const flavor = flavors.find(
+          (item) => String(item.id) === entry.id.slice("flavor:".length),
+        );
+        return flavor
+          ? [{ ...flavor, itemType: "flavor", quantity: entry.quantity }]
+          : [];
       }
       const menu = findMenuItem(entry.id);
       return menu ? [{ ...menu, quantity: entry.quantity }] : [];
@@ -1778,7 +2059,9 @@ function ChatFillButton({ items }: { items: { id: string; quantity: number }[] }
     <>
       <button
         className={`flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] ${
-          added ? "bg-[#3d8b40] text-white" : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
+          added
+            ? "bg-[#3d8b40] text-white"
+            : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
         }`}
         onClick={add}
         type="button"
@@ -1786,7 +2069,10 @@ function ChatFillButton({ items }: { items: { id: string; quantity: number }[] }
         {added ? t("Added") : t("Add these to my bag")}
       </button>
       {note ? (
-        <p className="mt-1.5 text-center text-xs font-semibold text-red-700" role="alert">
+        <p
+          className="mt-1.5 text-center text-xs font-semibold text-red-700"
+          role="alert"
+        >
           {note}
         </p>
       ) : null}
@@ -1803,13 +2089,20 @@ function ChatAddButton({ addId }: { addId: string }) {
   const [burst, setBurst] = useState(0);
   const [note, setNote] = useState("");
 
-  useEffect(() => () => {
-    if (resetTimer.current) window.clearTimeout(resetTimer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (resetTimer.current) window.clearTimeout(resetTimer.current);
+    },
+    [],
+  );
 
   const add = () => {
     const added = addId.startsWith("flavor:")
-      ? addToCart(flavors.find((flavor) => String(flavor.id) === addId.slice("flavor:".length)) || { id: "", name: "", image: "" })
+      ? addToCart(
+          flavors.find(
+            (flavor) => String(flavor.id) === addId.slice("flavor:".length),
+          ) || { id: "", name: "", image: "" },
+        )
       : addToCart(findMenuItem(addId) || { id: "", name: "", image: "" });
     if (!added) {
       setBurst(0);
@@ -1835,7 +2128,9 @@ function ChatAddButton({ addId }: { addId: string }) {
       <button
         aria-live="polite"
         className={`relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-full px-4 py-2.5 text-sm font-extrabold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] ${
-          justAdded ? "bg-[#3d8b40] text-white" : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
+          justAdded
+            ? "bg-[#3d8b40] text-white"
+            : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
         }`}
         onClick={add}
         ref={buttonRef}
@@ -1872,7 +2167,10 @@ function ChatAddButton({ addId }: { addId: string }) {
         )}
       </button>
       {note ? (
-        <p className="mt-1.5 text-center text-xs font-semibold text-red-700" role="alert">
+        <p
+          className="mt-1.5 text-center text-xs font-semibold text-red-700"
+          role="alert"
+        >
           {note}
         </p>
       ) : null}
@@ -1922,8 +2220,15 @@ function ChatBagEditButton({ bag }: { bag: BagEdit }) {
     const addId = bag.addId || "";
     const quantity = bag.quantity || 0;
     const target = addId.startsWith("flavor:")
-      ? cartItems.find((item) => String(item.id) === addId.slice("flavor:".length) && item.itemType !== "menu")
-      : cartItems.find((item) => item.itemType === "menu" && findMenuItem(addId)?.id === item.id);
+      ? cartItems.find(
+          (item) =>
+            String(item.id) === addId.slice("flavor:".length) &&
+            item.itemType !== "menu",
+        )
+      : cartItems.find(
+          (item) =>
+            item.itemType === "menu" && findMenuItem(addId)?.id === item.id,
+        );
     if (!target) {
       setNote(t("That item is no longer in your bag."));
       return;
@@ -1932,10 +2237,16 @@ function ChatBagEditButton({ bag }: { bag: BagEdit }) {
       removeFromCart(target.id);
       return;
     }
-    const available = target.itemType === "menu"
-      ? target.availableQuantity
-      : flavors.find((flavor) => flavor.id === target.id)?.availableQuantity ?? target.availableQuantity;
-    if (Number.isSafeInteger(available) && available > 0 && quantity > available) {
+    const available =
+      target.itemType === "menu"
+        ? target.availableQuantity
+        : (flavors.find((flavor) => flavor.id === target.id)
+            ?.availableQuantity ?? target.availableQuantity);
+    if (
+      Number.isSafeInteger(available) &&
+      available > 0 &&
+      quantity > available
+    ) {
       updateQuantity(target.id, available);
       setNote(t("Only {count} left, so I set {count}.", { count: available }));
       return;
@@ -1947,15 +2258,24 @@ function ChatBagEditButton({ bag }: { bag: BagEdit }) {
     <>
       <button
         className={`mt-2.5 flex w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-extrabold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] ${
-          done && !note ? "bg-[#3d8b40] text-white" : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
+          done && !note
+            ? "bg-[#3d8b40] text-white"
+            : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
         }`}
         onClick={apply}
         type="button"
       >
-        {done && !note ? t("Done") : bag.mode === "clear" ? t("Empty my bag") : t("Update my bag")}
+        {done && !note
+          ? t("Done")
+          : bag.mode === "clear"
+            ? t("Empty my bag")
+            : t("Update my bag")}
       </button>
       {note ? (
-        <p className="mt-1.5 text-center text-xs font-semibold text-red-700" role="alert">
+        <p
+          className="mt-1.5 text-center text-xs font-semibold text-red-700"
+          role="alert"
+        >
           {note}
         </p>
       ) : null}
@@ -1972,7 +2292,10 @@ function ChatVisitButton({ visit }: { visit: ChatVisit }) {
       className="mt-2.5 flex w-full items-center justify-center rounded-full bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
       onClick={() => {
         try {
-          sessionStorage.setItem("cold-stone-chat-visit", JSON.stringify(visit));
+          sessionStorage.setItem(
+            "cold-stone-chat-visit",
+            JSON.stringify(visit),
+          );
         } catch {
           // Storage unavailable: checkout still opens on its own choices.
         }
@@ -2010,7 +2333,13 @@ function ChatCodeButton({ code }: { code: string }) {
 }
 
 /** The agent's follow-up suggestions: a tap sends them, no typing needed. */
-function ChatChips({ chips, onSend }: { chips: string[]; onSend: (text: string) => void }) {
+function ChatChips({
+  chips,
+  onSend,
+}: {
+  chips: string[];
+  onSend: (text: string) => void;
+}) {
   const { t } = useLanguage();
   return (
     <div className="mt-2.5 flex max-w-full flex-wrap gap-1.5">
@@ -2058,7 +2387,8 @@ function ChatAutoAdd({ addId }: { addId: string }) {
       // had emptied the bag — the confirmation showed, the bag stayed empty.
       const inBag = cartItems.some((item) =>
         addId.startsWith("flavor:")
-          ? String(item.id) === addId.slice("flavor:".length) && item.itemType !== "menu"
+          ? String(item.id) === addId.slice("flavor:".length) &&
+            item.itemType !== "menu"
           : item.itemType === "menu" && findMenuItem(addId)?.id === item.id,
       );
       if (inBag) {
@@ -2066,8 +2396,14 @@ function ChatAutoAdd({ addId }: { addId: string }) {
         return;
       }
       const ok = addId.startsWith("flavor:")
-        ? addToCartRef.current(flavorsRef.current.find((flavor) => String(flavor.id) === addId.slice("flavor:".length)) || { id: "", name: "", image: "" })
-        : addToCartRef.current(findMenuItem(addId) || { id: "", name: "", image: "" });
+        ? addToCartRef.current(
+            flavorsRef.current.find(
+              (flavor) => String(flavor.id) === addId.slice("flavor:".length),
+            ) || { id: "", name: "", image: "" },
+          )
+        : addToCartRef.current(
+            findMenuItem(addId) || { id: "", name: "", image: "" },
+          );
       setState(ok ? "added" : "failed");
     }, 400);
     return () => window.clearTimeout(timer);
@@ -2080,13 +2416,27 @@ function ChatAutoAdd({ addId }: { addId: string }) {
     <div className="mt-2.5 max-w-[16rem]" aria-live="polite">
       <div
         className={`flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold ${
-          state === "added" ? "bg-[#3d8b40] text-white" : state === "failed" ? "bg-red-50 text-red-700" : "bg-brand-yellow/60 text-brand-navy"
+          state === "added"
+            ? "bg-[#3d8b40] text-white"
+            : state === "failed"
+              ? "bg-red-50 text-red-700"
+              : "bg-brand-yellow/60 text-brand-navy"
         }`}
       >
         {state === "added" ? (
           <>
-            <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 16 16">
-              <path d="M3 8.4 6.2 11.6 13 4.4" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+            <svg
+              aria-hidden="true"
+              className="size-4"
+              fill="none"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M3 8.4 6.2 11.6 13 4.4"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeWidth="2"
+              />
             </svg>
             {t("Added to your bag")}
           </>

@@ -1435,19 +1435,59 @@ body.site-search-open .site-back-to-top {
 }
 
 /* Live chat: entering bubbles, and the three-dot "typing" bubble shown while the
-   AI writes its reply. Motion is skipped for visitors who prefer reduced motion. */
+   AI writes its reply. Motion is skipped for visitors who prefer reduced motion.
+   The customer's bubble rises from their side, the agent's from theirs, so the
+   exchange reads as two speakers rather than one list. */
 .site-chat-bubble {
-  animation: chat-bubble-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: chat-bubble-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.site-chat-bubble--customer {
+  animation-name: chat-bubble-in-customer;
 }
 
 @keyframes chat-bubble-in {
   from {
     opacity: 0;
-    transform: translateY(6px) scale(0.97);
+    transform: translateX(-8px) translateY(6px) scale(0.97);
+  }
+  60% {
+    opacity: 1;
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0) translateY(0) scale(1);
+  }
+}
+
+@keyframes chat-bubble-in-customer {
+  from {
+    opacity: 0;
+    transform: translateX(8px) translateY(6px) scale(0.97);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1);
+  }
+}
+
+/* The typing dots sit where the agent's reply will land, so their bubble appears
+   to grow out of the dots rather than replace them. */
+.site-chat-typing {
+  animation: chat-typing-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes chat-typing-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
   }
 }
 
@@ -1544,8 +1584,37 @@ body.site-search-open .site-back-to-top {
   .site-chat-bubble,
   .chat-add-pop,
   .chat-add-ring,
-  .chat-add-check {
+  .chat-add-check,
+  .site-chat-image {
     animation: none;
+  }
+}
+
+/* A photo inside a message lands with a slightly longer, springier rise than its
+   bubble, so the picture feels attached to the text rather than glued on. */
+.site-chat-image {
+  animation: chat-image-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes chat-image-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* When the panel opens on a history, the bubbles cascade in top-down over a
+   short stagger instead of snapping in as one block. Each message waits its
+   turn; the delay is capped so a long thread never feels slow to read. */
+.site-chat-cascade > .site-chat-bubble {
+  animation-delay: calc(var(--cascade-index, 0) * 40ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-chat-cascade > .site-chat-bubble {
+    animation-delay: 0ms;
   }
 }
 
