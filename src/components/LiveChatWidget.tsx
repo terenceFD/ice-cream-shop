@@ -493,6 +493,8 @@ export function LiveChatWidget() {
   // browser paints the small scale first and transitions to full size on open.
   const [panelVisible, setPanelVisible] = useState(false);
   const [panelShown, setPanelShown] = useState(false);
+  // True for the first cascade after open; new poll messages never re-cascade.
+  const [panelJustOpened, setPanelJustOpened] = useState(false);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -574,10 +576,12 @@ export function LiveChatWidget() {
   useEffect(() => {
     if (isOpen) {
       setPanelVisible(true);
+      setPanelJustOpened(true);
       const frame = requestAnimationFrame(() => setPanelShown(true));
       return () => cancelAnimationFrame(frame);
     }
     setPanelShown(false);
+    setPanelJustOpened(false);
     const timer = setTimeout(() => setPanelVisible(false), 200);
     return () => clearTimeout(timer);
   }, [isOpen]);
@@ -1509,175 +1513,188 @@ export function LiveChatWidget() {
             className="flex flex-1 flex-col overflow-y-auto bg-brand-cream px-4 py-4"
             ref={listRef}
           >
-            {messages.length === 0 && (
-              <div className="flex items-start">
-                <ShopMark />
-                <div className="min-w-0 flex-1">
-                  <p className="font-display text-lg font-extrabold leading-none text-brand-navy">
-                    Cold Stone
-                  </p>
-                  <p className="mt-2 max-w-[16rem] text-[15px] leading-6 text-brand-navy">
-                    {t(
-                      "Ask about flavors, cakes, delivery — anything. We are happy to help.",
-                    )}
-                  </p>
-                  {/* Starter questions: tappable suggestions matched to the page the
+            {/* Opening on a history cascades the bubbles in top-down; the stagger
+                lives in CSS (.site-chat-cascade). Applied only on mount, never on
+                new-message polls, so a reply appears with the standard single pop. */}
+            <div
+              className={
+                panelJustOpened && messages.length > 0
+                  ? "site-chat-cascade contents"
+                  : "contents"
+              }
+              data-cascade-root=""
+            >
+              {messages.length === 0 && (
+                <div className="flex items-start">
+                  <ShopMark />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-display text-lg font-extrabold leading-none text-brand-navy">
+                      Cold Stone
+                    </p>
+                    <p className="mt-2 max-w-[16rem] text-[15px] leading-6 text-brand-navy">
+                      {t(
+                        "Ask about flavors, cakes, delivery — anything. We are happy to help.",
+                      )}
+                    </p>
+                    {/* Starter questions: tappable suggestions matched to the page the
                       customer is on. Tapping fills the input; the row disappears once the
                       conversation starts. */}
-                  {showStarters && (
-                    <div className="mt-3 flex max-w-full flex-wrap gap-1.5">
-                      {starterQuestions.map((question) => (
-                        <button
-                          className="rounded-full border border-brand-border-warm bg-white px-3 py-1.5 text-left text-[13px] font-semibold text-brand-navy transition hover:border-brand-yellow hover:bg-brand-yellow/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-[0.98]"
-                          key={question}
-                          onClick={() => applyStarter(question)}
-                          type="button"
-                        >
-                          {question}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            {messages.map((message, index) => {
-              const isCustomer = message.sender === "customer";
-              const previous = messages[index - 1];
-              const sameSender =
-                previous?.sender === message.sender &&
-                (isCustomer || previous.isHuman === message.isHuman);
-              const {
-                text: bodyText,
-                action,
-                addId,
-                fill,
-                bag,
-                visit,
-                code,
-                chips,
-              } = isCustomer
-                ? {
-                    text: message.body,
-                    action: undefined,
-                    addId: undefined,
-                    fill: undefined,
-                    bag: undefined,
-                    visit: undefined,
-                    code: undefined,
-                    chips: undefined,
-                  }
-                : splitChatAction(message.body);
-              // The customer asked to add something and this reply carries its
-              // [ADD:] tag: the add happens here, once, when the reply is seen
-              // — no button tap needed. Only the immediately preceding customer
-              // message counts, so a price question never auto-adds.
-              const autoAdd =
-                !isCustomer &&
-                Boolean(addId) &&
-                previous?.sender === "customer" &&
-                asksForAutoAdd(previous.body);
-              // A customer message only reaches this list after the server stored it, so
-              // its presence IS the delivery confirmation. (The server sends no `delivery`
-              // field, and an earlier version pruned its own sent-message record as soon
-              // as the poll returned the message — which removed the tick it was drawing.)
-              const delivered = isCustomer;
-              return (
-                <div
-                  className={`site-chat-bubble flex ${isCustomer ? "site-chat-bubble--customer justify-end" : "items-start justify-start"} ${index === 0 ? "" : sameSender ? "mt-1" : "mt-5"}`}
-                  key={message.id}
-                >
-                  {!isCustomer && (
-                    <span aria-hidden="true" className="mr-2 w-7 shrink-0">
-                      {!sameSender && <ShopMark />}
-                    </span>
-                  )}
-                  <div
-                    className={`min-w-0 ${isCustomer ? "max-w-[78%]" : "max-w-[calc(100%-2.25rem)]"}`}
-                  >
-                    {!isCustomer && !sameSender && (
-                      <p className="mb-1 font-display text-[13px] font-bold leading-none text-brand-navy">
-                        {message.isHuman ? t("Shop team") : t("Cold Stone")}
-                      </p>
-                    )}
-                    {isCustomer ? (
-                      <div className="flex flex-col items-end gap-1.5">
-                        {message.imageUrl ? (
-                          <SentPhoto src={message.imageUrl} />
-                        ) : null}
-                        {bodyText ? (
-                          <div className="rounded-[18px] rounded-br-[6px] bg-brand-navy px-3.5 py-2 text-[15px] leading-6 text-white">
-                            <ChatText text={bodyText} />
-                          </div>
-                        ) : null}
-                      </div>
-                    ) : (
-                      <div className="text-[15px] leading-6 text-brand-navy">
-                        {bodyText ? <ChatText text={bodyText} /> : null}
-                        {bag && <ChatBagEditButton bag={bag} />}
-                        {visit && <ChatVisitButton visit={visit} />}
-                        {code && <ChatCodeButton code={code} />}
-                        {chips?.length ? (
-                          <ChatChips
-                            chips={chips}
-                            onSend={(text) => submitVoiceRef.current?.(text)}
-                          />
-                        ) : null}
-                        {autoAdd && (
-                          <ChatAutoAdd
-                            key={`${message.id}:${addId}`}
-                            addId={addId}
-                          />
-                        )}
-                        {(action || addId || fill?.length) && (
-                          <div className="mt-2.5 max-w-[16rem]">
-                            {fill?.length ? (
-                              <ChatFillButton items={fill} />
-                            ) : (
-                              !autoAdd &&
-                              addId && <ChatAddButton addId={addId} />
-                            )}
-                            {action && (
-                              <ChatActionButton
-                                action={action}
-                                quiet={Boolean(addId || fill?.length)}
-                              />
-                            )}
-                          </div>
-                        )}
+                    {showStarters && (
+                      <div className="mt-3 flex max-w-full flex-wrap gap-1.5">
+                        {starterQuestions.map((question) => (
+                          <button
+                            className="rounded-full border border-brand-border-warm bg-white px-3 py-1.5 text-left text-[13px] font-semibold text-brand-navy transition hover:border-brand-yellow hover:bg-brand-yellow/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-[0.98]"
+                            key={question}
+                            onClick={() => applyStarter(question)}
+                            type="button"
+                          >
+                            {question}
+                          </button>
+                        ))}
                       </div>
                     )}
-                    <p
-                      className={`mt-2 flex items-center gap-1 text-[11px] font-medium text-brand-gray ${isCustomer ? "justify-end" : "justify-start"}`}
-                    >
-                      <span>{time(message.createdAt)}</span>
-                      {delivered && <DeliveryTick />}
-                    </p>
                   </div>
-                  {isCustomer && customer && (
-                    <span
-                      aria-hidden="true"
-                      className="mb-5 ml-2 flex w-7 shrink-0 items-end"
-                    >
-                      <CustomerPortrait picture={customer.profilePicture} />
-                    </span>
-                  )}
                 </div>
-              );
-            })}
-            {isAwaitingReply && (
-              <div
-                className="site-chat-typing mt-4 flex items-center"
-                aria-hidden="true"
-              >
-                <ShopMark />
-                <span className="ml-2 flex items-center gap-1.5 py-2">
-                  <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_infinite]" />
-                  <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.2s_infinite]" />
-                  <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.4s_infinite]" />
-                </span>
-              </div>
-            )}
+              )}
+              {messages.map((message, index) => {
+                const isCustomer = message.sender === "customer";
+                const previous = messages[index - 1];
+                const sameSender =
+                  previous?.sender === message.sender &&
+                  (isCustomer || previous.isHuman === message.isHuman);
+                const {
+                  text: bodyText,
+                  action,
+                  addId,
+                  fill,
+                  bag,
+                  visit,
+                  code,
+                  chips,
+                } = isCustomer
+                  ? {
+                      text: message.body,
+                      action: undefined,
+                      addId: undefined,
+                      fill: undefined,
+                      bag: undefined,
+                      visit: undefined,
+                      code: undefined,
+                      chips: undefined,
+                    }
+                  : splitChatAction(message.body);
+                // The customer asked to add something and this reply carries its
+                // [ADD:] tag: the add happens here, once, when the reply is seen
+                // — no button tap needed. Only the immediately preceding customer
+                // message counts, so a price question never auto-adds.
+                const autoAdd =
+                  !isCustomer &&
+                  Boolean(addId) &&
+                  previous?.sender === "customer" &&
+                  asksForAutoAdd(previous.body);
+                // A customer message only reaches this list after the server stored it, so
+                // its presence IS the delivery confirmation. (The server sends no `delivery`
+                // field, and an earlier version pruned its own sent-message record as soon
+                // as the poll returned the message — which removed the tick it was drawing.)
+                const delivered = isCustomer;
+                return (
+                  <div
+                    className={`site-chat-bubble flex ${isCustomer ? "site-chat-bubble--customer justify-end" : "items-start justify-start"} ${index === 0 ? "" : sameSender ? "mt-1" : "mt-5"}`}
+                    key={message.id}
+                    style={{ "--cascade-index": index } as React.CSSProperties}
+                  >
+                    {!isCustomer && (
+                      <span aria-hidden="true" className="mr-2 w-7 shrink-0">
+                        {!sameSender && <ShopMark />}
+                      </span>
+                    )}
+                    <div
+                      className={`min-w-0 ${isCustomer ? "max-w-[78%]" : "max-w-[calc(100%-2.25rem)]"}`}
+                    >
+                      {!isCustomer && !sameSender && (
+                        <p className="mb-1 font-display text-[13px] font-bold leading-none text-brand-navy">
+                          {message.isHuman ? t("Shop team") : t("Cold Stone")}
+                        </p>
+                      )}
+                      {isCustomer ? (
+                        <div className="flex flex-col items-end gap-1.5">
+                          {message.imageUrl ? (
+                            <SentPhoto src={message.imageUrl} />
+                          ) : null}
+                          {bodyText ? (
+                            <div className="rounded-[18px] rounded-br-[6px] bg-brand-navy px-3.5 py-2 text-[15px] leading-6 text-white">
+                              <ChatText text={bodyText} />
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <div className="text-[15px] leading-6 text-brand-navy">
+                          {bodyText ? <ChatText text={bodyText} /> : null}
+                          {bag && <ChatBagEditButton bag={bag} />}
+                          {visit && <ChatVisitButton visit={visit} />}
+                          {code && <ChatCodeButton code={code} />}
+                          {chips?.length ? (
+                            <ChatChips
+                              chips={chips}
+                              onSend={(text) => submitVoiceRef.current?.(text)}
+                            />
+                          ) : null}
+                          {autoAdd && (
+                            <ChatAutoAdd
+                              key={`${message.id}:${addId}`}
+                              addId={addId}
+                            />
+                          )}
+                          {(action || addId || fill?.length) && (
+                            <div className="mt-2.5 max-w-[16rem]">
+                              {fill?.length ? (
+                                <ChatFillButton items={fill} />
+                              ) : (
+                                !autoAdd &&
+                                addId && <ChatAddButton addId={addId} />
+                              )}
+                              {action && (
+                                <ChatActionButton
+                                  action={action}
+                                  quiet={Boolean(addId || fill?.length)}
+                                />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <p
+                        className={`mt-2 flex items-center gap-1 text-[11px] font-medium text-brand-gray ${isCustomer ? "justify-end" : "justify-start"}`}
+                      >
+                        <span>{time(message.createdAt)}</span>
+                        {delivered && <DeliveryTick />}
+                      </p>
+                    </div>
+                    {isCustomer && customer && (
+                      <span
+                        aria-hidden="true"
+                        className="mb-5 ml-2 flex w-7 shrink-0 items-end"
+                      >
+                        <CustomerPortrait picture={customer.profilePicture} />
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+              {isAwaitingReply && (
+                <div
+                  className="site-chat-typing mt-4 flex items-center"
+                  aria-hidden="true"
+                >
+                  <ShopMark />
+                  <span className="ml-2 flex items-center gap-1.5 py-2">
+                    <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_infinite]" />
+                    <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.2s_infinite]" />
+                    <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.4s_infinite]" />
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {error && (
