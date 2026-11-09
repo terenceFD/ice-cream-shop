@@ -1658,7 +1658,6 @@ app.post('/api/checkout/session', optionalCustomer, checkoutLimiter, async (requ
     response.status(400).json({ error: 'The order total is invalid.' })
     return
   }
-  // Cash on delivery has a per-order ceiling: riders do not carry large sums.
   if (cashOnDelivery && totalCents > cashOnDelivery.maxTotalXaf) {
     response.status(400).json({ error: `Cash on delivery is limited to ${cashOnDelivery.maxTotalXaf.toLocaleString('en-US')} FCFA. Pay online for a larger order.` })
     return
@@ -1727,8 +1726,7 @@ app.post('/api/checkout/session', optionalCustomer, checkoutLimiter, async (requ
       }
     }
     if (cashOnDelivery) {
-      // No gateway session: the order enters the branch queue marked for cash on
-      // handover, and a payment row records which provider to reconcile.
+      // No gateway session: the branch collects the cash at handover.
       await createPaymentRecord({
         orderId,
         stripeCheckoutSessionId: `cod-${orderId}`,
@@ -5524,9 +5522,7 @@ const eventOrderRoutes = registerEventOrderRoutes(app, {
   },
 })
 
-// Bundles, wishlist, cash on delivery and abandoned-cart WhatsApp recovery
-// (see server/commerce.js and server/commerce-routes.js).
-registerCommerceRoutes(app, {
+registerCommerceRoutes(app, { // see server/commerce.js
   requireAdmin,
   requireCustomer,
   requireOwner,

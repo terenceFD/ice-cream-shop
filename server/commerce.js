@@ -1,11 +1,6 @@
-// Commerce growth features: bundles, wishlist, photo reviews, cash-on-delivery,
-// WhatsApp ordering and abandoned-cart WhatsApp recovery.
-//
-// Tables live beside the core schema in server/database.js style, but are kept in
-// this module so the core file does not grow with every marketing experiment.
-// Every helper follows the same contract as database.js: an exported async function
-// that prepares its own statements, because the underlying driver differs between
-// SQLite and Postgres.
+// Bundles, wishlist, cash on delivery and abandoned-cart WhatsApp recovery.
+// Kept out of database.js so marketing features do not grow the core file; the
+// helper contract matches that module because the driver differs by deployment.
 
 import { database } from "./database.js";
 
@@ -71,10 +66,6 @@ async function ensureSchema() {
   schemaReady = true;
 }
 
-/* ------------------------------------------------------------------ */
-/* Bundles                                                             */
-/* ------------------------------------------------------------------ */
-
 function toBundle(row) {
   if (!row) return null;
   return {
@@ -90,7 +81,6 @@ function toBundle(row) {
   };
 }
 
-/** Lists active bundles with their items, cheapest savings first. */
 export async function listActiveBundles() {
   await ensureSchema();
   const rows = await database
@@ -109,7 +99,6 @@ export async function listActiveBundles() {
   return rows.map(toBundle);
 }
 
-/** Admin: every bundle regardless of state. */
 export async function listAllBundles() {
   await ensureSchema();
   const rows = await database
@@ -127,7 +116,6 @@ export async function listAllBundles() {
   return rows.map(toBundle);
 }
 
-/** Admin: create or update a bundle; items replaced wholesale. */
 export async function saveBundle(bundle) {
   await ensureSchema();
   const items = Array.isArray(bundle.items) ? bundle.items.slice(0, 12) : [];
@@ -201,7 +189,6 @@ export async function deleteBundle(id) {
   await database.prepare("DELETE FROM bundles WHERE id = ?").run(Number(id));
 }
 
-/** Adds a bundle's items to a validated cart-shaped list, priced as the bundle total. */
 export function bundleSavingsPercent(bundle) {
   if (!bundle?.originalPriceXaf) return 0;
   return Math.max(
@@ -210,16 +197,10 @@ export function bundleSavingsPercent(bundle) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Wishlist                                                            */
-/* ------------------------------------------------------------------ */
-
 function slugForCustomerId(customerId) {
-  // Short, URL-safe, stable per customer: derived, not secret.
   return `w${Buffer.from(`cstone-wish-${customerId}`).toString("base64url").slice(0, 18)}`;
 }
 
-/** The customer's wishlist row, creating it on first use. */
 export async function getOrCreateWishlist(customerId) {
   await ensureSchema();
   const id = Number(customerId);
@@ -281,7 +262,6 @@ export async function removeWishlistItem(customerId, itemKey) {
   return listWishlistItems(customerId);
 }
 
-/** Shared wishlists are read-only: anyone with the slug can see the items. */
 export async function listSharedWishlist(slug) {
   await ensureSchema();
   const wishlist = await database
@@ -308,11 +288,7 @@ export async function listSharedWishlist(slug) {
   };
 }
 
-/* ------------------------------------------------------------------ */
-/* Cash on delivery                                                    */
-/* ------------------------------------------------------------------ */
-
-/** Storewide COD switch and cap. Disabled by default until the owner turns it on. */
+// Disabled by default until the owner turns COD on.
 export async function getCashOnDeliveryConfig() {
   await ensureSchema();
   const row = await database
@@ -354,7 +330,6 @@ export async function markCodOrderCollected(orderId, collectedByAdminId) {
   `,
     )
     .run(String(orderId), Number(orderId));
-  // The order row moves to processing so it appears in the branch queue.
   await database
     .prepare(
       `
@@ -368,14 +343,7 @@ export async function markCodOrderCollected(orderId, collectedByAdminId) {
   };
 }
 
-/* ------------------------------------------------------------------ */
-/* Abandoned cart WhatsApp recovery                                    */
-/* ------------------------------------------------------------------ */
-
-/**
- * The recovery queue: one row per reminder so a customer is nudged at most
- * once per cart, no matter how often the sweep runs.
- */
+// One reminder row per checkout, so the sweep never nudges the same cart twice.
 const RECOVERY_TABLE = `
   CREATE TABLE IF NOT EXISTS abandoned_cart_reminders (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -395,12 +363,8 @@ async function ensureRecoverySchema() {
   recoverySchemaReady = true;
 }
 
-/**
- * Finds checkouts abandoned long enough to deserve one reminder, claims them by
- * inserting reminder rows inside a transaction, and returns the claimed rows.
- * The UNIQUE constraint on checkout_id makes double-sends impossible even if
- * two sweeps race.
- */
+// Claims abandoned checkouts for one reminder each; the UNIQUE constraint on
+// checkout_id makes double-sends impossible when two sweeps race.
 export async function claimAbandonedCartsForRecovery({
   afterMinutes = 60,
   limit = 20,
@@ -440,13 +404,12 @@ export async function claimAbandonedCartsForRecovery({
         .run(row.checkoutId, row.phone, Number(row.totalCents) || 0, "");
       claimed.push(row);
     } catch {
-      // Another sweep claimed it first; the UNIQUE index makes that safe.
+      // Lost the race to another sweep; the UNIQUE index keeps this safe.
     }
   }
   return claimed;
 }
 
-/** Records that a reminder text went out, for the admin dashboard. */
 export async function countAbandonedCartReminders(hours = 24) {
   await ensureRecoverySchema();
   const row = await database
@@ -459,7 +422,6 @@ export async function countAbandonedCartReminders(hours = 24) {
   return Number(row?.count) || 0;
 }
 
-/** Marks an abandoned cart recovered: the customer came back and paid. */
 export async function markAbandonedCartRecovered(orderId) {
   await ensureRecoverySchema();
   await database

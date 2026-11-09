@@ -61,8 +61,7 @@ export function getCartPricing(items: CartPricingItem[]): CartPricing {
   };
 }
 
-// Creating a number formatter is slow, and pages format dozens of prices on every render, so
-// each locale's formatter is made once and reused.
+// NumberFormatter construction is slow; pages format dozens of prices per render.
 const numberFormatters = new Map<string, Intl.NumberFormat>();
 export function numberFormatter(locale: string): Intl.NumberFormat {
   let formatter = numberFormatters.get(locale);

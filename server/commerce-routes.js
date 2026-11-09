@@ -1,6 +1,5 @@
-// Express routes for the commerce growth features: bundles, wishlist,
-// cash-on-delivery collection and the abandoned-cart WhatsApp sweep.
-// Mounted from server/index.js; keeps the main router file focused on core flows.
+// REST endpoints for bundles, wishlist, cash on delivery and the WhatsApp
+// recovery sweep. Registered from server/index.js.
 
 import express from "express";
 import rateLimit from "express-rate-limit";
@@ -22,11 +21,8 @@ import {
   countAbandonedCartReminders,
 } from "./commerce.js";
 
-/**
- * The guards are closures inside server/index.js (they capture the JWT secret and
- * the session machinery), so the caller passes them in rather than this module
- * importing them.
- */
+// The auth guards close over the JWT secret in server/index.js, so the caller
+// passes them in rather than this module importing them.
 export function registerCommerceRoutes(
   app,
   {
@@ -37,7 +33,6 @@ export function registerCommerceRoutes(
     notifyAdminsOfNewOrder,
   },
 ) {
-  // Owner-only routes chain both guards: a signed-in admin whose role is owner.
   // requireOwner(request, response) answers a boolean instead of calling next(),
   // so it is wrapped: Express would otherwise stop the chain after it.
   const requireOwnerAdmin = [
@@ -55,8 +50,6 @@ export function registerCommerceRoutes(
     legacyHeaders: false,
     message: { error: "Too many wishlist updates. Wait a few minutes." },
   });
-
-  /* ------------------------- Bundles ------------------------- */
 
   router.get("/bundles", async (_request, response, next) => {
     try {
@@ -151,8 +144,6 @@ export function registerCommerceRoutes(
     },
   );
 
-  /* ------------------------- Wishlist ------------------------- */
-
   router.get(
     "/wishlist",
     requireCustomer,
@@ -202,7 +193,7 @@ export function registerCommerceRoutes(
     },
   );
 
-  // Shared read-only view; no auth so a recipient link works for anyone.
+  // Shared, read-only, and open: a recipient link works without an account.
   const sharedWishlistLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 60,
@@ -227,14 +218,14 @@ export function registerCommerceRoutes(
     },
   );
 
-  /* --------------------- Cash on delivery --------------------- */
+
 
   router.get("/payment-methods", async (_request, response) => {
     const cod = await getCashOnDeliveryConfig();
     response.json({ cashOnDelivery: cod });
   });
 
-  // Rider/branch admin marks a COD order as paid on handover.
+
   router.post(
     "/admin/orders/:id/collect-cod",
     requireAdmin,
@@ -296,7 +287,7 @@ export function registerCommerceRoutes(
     },
   );
 
-  /* --------------- Abandoned-cart WhatsApp recovery --------------- */
+
 
   // Owner-triggered sweep; a cron can call it with the admin token too.
   router.post(

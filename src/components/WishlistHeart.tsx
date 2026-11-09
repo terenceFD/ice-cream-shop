@@ -4,11 +4,8 @@ import { apiRequest, getCustomerToken } from "../api/api";
 import { useAuth } from "../context/useAuth";
 import { useLanguage } from "../language/useLanguage";
 
-/**
- * A heart toggle on a product: signed-in shoppers tap it to save or remove the
- * item on their wishlist. Guests see a link to sign in instead, so the button
- * never pretends to work while discarding the tap.
- */
+// Heart toggle for the wishlist. Guests get a sign-in link instead of a button
+// that would silently drop their tap.
 export function WishlistHeart({
   itemKey,
   className = "",
@@ -34,9 +31,7 @@ export function WishlistHeart({
           );
         }
       })
-      .catch(() => {
-        /* the heart is decorative when the list cannot load */
-      });
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -73,7 +68,7 @@ export function WishlistHeart({
         setSaved(true);
       }
     } catch {
-      // A failed save leaves the heart as it was; the shopper can retry.
+      // The heart keeps its previous state; the shopper can retry.
     } finally {
       setBusy(false);
     }

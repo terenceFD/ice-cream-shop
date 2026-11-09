@@ -5,9 +5,7 @@ function destinationNumber(phone) {
   return /^\d{8,15}$/.test(digits) ? digits : ''
 }
 
-// A request that can hang (a blocked egress route, a silent proxy) must not hold a
-// caller forever: fulfilment updates answer in-process and the abandoned-cart sweep
-// awaits this function inside an admin request. Ten seconds is generous for the API.
+// Bounded so a silent network path cannot hold a caller forever.
 const WHATSAPP_SEND_TIMEOUT_MS = 10_000
 
 export function isWhatsAppMessagingConfigured() {

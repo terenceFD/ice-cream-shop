@@ -26,11 +26,7 @@ type MenuItemLike = {
   availableQuantity?: number;
 };
 
-/**
- * The wishlist page has two modes:
- *  - signed in: the customer's own list, editable, with a share link to send to friends
- *  - a shared slug: a read-only view anyone with the link can browse
- */
+// The owner's editable list, or a read-only view when opened through a share link.
 export function WishlistPage() {
   const params = useParams();
   const sharedSlug = typeof params.slug === "string" ? params.slug : "";
