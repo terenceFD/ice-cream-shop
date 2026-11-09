@@ -1153,8 +1153,11 @@ async function listOrders({ deliveredOnly = false, storeId = null, storeTown = n
       scheduled_for AS "scheduledFor", delivery_fee AS "deliveryFee",
       loyalty_points_redeemed AS "loyaltyPointsRedeemed",
       discount_code AS "discountCode",
-      customer_note AS "customerNote"
+      customer_note AS "customerNote",
+      p.payment_provider AS "paymentProvider",
+      p.status AS "paymentStatus"
     FROM orders
+      LEFT JOIN payments p ON p.order_id = orders.id
     ${conditions.length ? `WHERE ${conditions.join(" AND ")}` : ''}
     ORDER BY id DESC
     LIMIT 500

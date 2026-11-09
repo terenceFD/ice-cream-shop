@@ -113,6 +113,17 @@ function StatusBadge({ status, t }) {
   );
 }
 
+// Marks a cash-on-delivery order in the list: amber while the cash is still
+// outstanding, green once the rider confirmed it.
+function CodBadge({ paymentStatus, t }) {
+  const collected = paymentStatus === "paid";
+  return (
+    <span className={`inline-flex h-5 shrink-0 items-center whitespace-nowrap px-2 text-[12px] font-medium ${collected ? "bg-[#e6f4ec] text-[#247b50]" : "bg-[#fff8d6] text-[#7a4e00]"}`}>
+      {t(collected ? "COD · paid" : "COD · awaiting cash")}
+    </span>
+  );
+}
+
 export function AdminOrdersBoard() {
   const { sessionToken, currentAdmin } = useAdminAuth();
   const isOwner = currentAdmin?.role === "owner";
@@ -244,6 +255,14 @@ export function AdminOrdersBoard() {
   function markDelivered(orderId) {
     return runOrderUpdate(orderId, () =>
       apiRequest(`/admin/orders/${orderId}/delivered`, { method: "PATCH", token: sessionToken }),
+    );
+  }
+
+  // Cash on delivery: the rider confirms the money arrived, which marks the
+  // payment paid and moves the order into the preparation queue.
+  function confirmCodCollected(orderId) {
+    return runOrderUpdate(orderId, () =>
+      apiRequest(`/admin/orders/${orderId}/collect-cod`, { method: "POST", token: sessionToken }),
     );
   }
 
@@ -614,7 +633,10 @@ export function AdminOrdersBoard() {
                           {" · "}
                           {relativeTime(order.createdAt, now, language)}
                         </span>
-                        <span className="mt-2 inline-flex"><StatusBadge status={order.status} t={t} /></span>
+                        <span className="mt-2 inline-flex flex-wrap items-center gap-1.5">
+                          {order.paymentProvider === "cod" && <CodBadge paymentStatus={order.paymentStatus} t={t} />}
+                          <StatusBadge status={order.status} t={t} />
+                        </span>
                       </span>
                       <span className="shrink-0 text-right text-sm font-semibold tabular-nums text-[#111]">
                         {formatMoney(order.totalCents, order.currency, language, displayCurrency)}
@@ -694,6 +716,9 @@ export function AdminOrdersBoard() {
                           {formatMoney(order.totalCents, order.currency, language, displayCurrency)}
                         </td>
                         <td className="px-3 py-3">
+                          {order.paymentProvider === "cod" && (
+                            <div className="mb-1"><CodBadge paymentStatus={order.paymentStatus} t={t} /></div>
+                          )}
                           <StatusBadge status={order.status} t={t} />
                           {order.status === "processing" && (
                             <p className="mt-1 text-xs text-[#5f6368]">{t(stageLabels[currentStage(order)] || currentStage(order))}</p>
@@ -761,6 +786,9 @@ export function AdminOrdersBoard() {
                       {t("Order #{id}", { id: selectedOrder.id })}
                     </h2>
                     <StatusBadge status={selectedOrder.status} t={t} />
+                    {selectedOrder.paymentProvider === "cod" && (
+                      <CodBadge paymentStatus={selectedOrder.paymentStatus} t={t} />
+                    )}
                   </div>
                   <p className="mt-1 text-xs text-[#5f6368]">
                     {t("Placed {date}", { date: formatDateTime(selectedOrder.createdAt, language) })} · {relativeTime(selectedOrder.createdAt, now, language)}
@@ -778,6 +806,36 @@ export function AdminOrdersBoard() {
                   <Icon className="mt-0.5 size-4 shrink-0" path={icons.alert} />
                   {error}
                 </p>
+              )}
+
+              {selectedOrder.paymentProvider === "cod" && (
+                <section className="border border-[#e8e8e8] p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-xs font-medium text-[#5f6368]">{t("Payment")}</h3>
+                      {selectedOrder.paymentStatus === "paid" ? (
+                        <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-[#247b50]">
+                          <Icon className="size-4" path={icons.check} />
+                          {t("Cash collected")}
+                        </p>
+                      ) : (
+                        <p className="mt-2 text-sm font-medium text-[#7a4e00]">
+                          {t("Waiting for cash at handover")}
+                        </p>
+                      )}
+                    </div>
+                    {selectedOrder.paymentStatus !== "paid" && (
+                      <button
+                        className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md bg-[#247b50] px-4 text-sm font-semibold text-white transition hover:bg-[#1e6440] disabled:cursor-wait disabled:opacity-60"
+                        disabled={updatingOrderId === selectedOrder.id}
+                        onClick={() => confirmCodCollected(selectedOrder.id)}
+                        type="button"
+                      >
+                        {updatingOrderId === selectedOrder.id ? t("Confirming…") : t("Confirm cash collected")}
+                      </button>
+                    )}
+                  </div>
+                </section>
               )}
 
               {selectedOrder.status === "processing" && (

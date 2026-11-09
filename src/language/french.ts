@@ -4443,6 +4443,12 @@ const french: Record<string, string> = {
   "messages": "messages",
   // Cash on delivery
   "Cash on delivery": "Paiement à la livraison",
+  "Confirm cash collected": "Confirmer l'encaissement",
+  "Confirming…": "Confirmation…",
+  "Cash collected": "Espèces encaissées",
+  "Waiting for cash at handover": "Dans l'attente du paiement à la remise",
+  "COD · paid": "Paiement à la livraison · payé",
+  "COD · awaiting cash": "Paiement à la livraison · en attente",
   "Pay cash when the rider hands over your order. Available up to the store's COD limit.":
     "Payez en espèces à la remise de votre commande par le livreur. Disponible dans la limite du plafond du magasin.",
   "Pay cash on handover. Up to {limit} FCFA.": "Payez en espèces à la remise. Jusqu’à {limit} FCFA.",
