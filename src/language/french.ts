@@ -1129,6 +1129,11 @@ const french: Record<string, string> = {
   "Remove time slot": "Supprimer le créneau",
   "Add time slot": "Ajouter un créneau",
   "Save time slots": "Enregistrer les créneaux",
+  "Cash on delivery settings saved.": "Paramètres de paiement à la livraison enregistrés.",
+  "Save cash on delivery": "Enregistrer le paiement à la livraison",
+  "Maximum order total": "Total maximum de la commande",
+  "Let customers pay cash when the rider hands over the order. The cap protects riders from carrying large sums.":
+    "Permettez aux clients de payer en espèces à la remise de la commande par le livreur. Ce plafond évite que les livreurs portent de grosses sommes.",
   "Fulfillment zones saved.": "Zones de service enregistrées.",
   "Time slots saved.": "Créneaux horaires enregistrés.",
   "No locations enabled for this fulfillment type":

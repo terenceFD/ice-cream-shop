@@ -39,15 +39,21 @@ export function AdminFulfillmentPage() {
   const { t } = useLanguage()
   const [zones, setZones] = useState([])
   const [slots, setSlots] = useState([])
+  const [cod, setCod] = useState(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [isSavingBranches, setIsSavingBranches] = useState(false)
+  const [isSavingCod, setIsSavingCod] = useState(false)
 
   const refresh = useCallback(async () => {
     try {
-      const result = await request('/admin/fulfillment-settings')
-      setZones(result.zones)
-      setSlots(result.slots)
+      const [fulfillment, codSettings] = await Promise.all([
+        request('/admin/fulfillment-settings'),
+        request('/admin/settings/cash-on-delivery'),
+      ])
+      setZones(fulfillment.zones)
+      setSlots(fulfillment.slots)
+      setCod(codSettings)
     } catch (loadError) {
       setError(loadError.message)
     }
@@ -89,6 +95,25 @@ export function AdminFulfillmentPage() {
   const updateZone = (id, changes) => setZones((current) => current.map((entry) => entry.id === id ? { ...entry, ...changes } : entry))
   const updateSlot = (index, changes) => setSlots((current) => current.map((entry, slotIndex) => slotIndex === index ? { ...entry, ...changes } : entry))
   const activeZones = zones.filter((zone) => zone.isActive)
+
+  async function saveCashOnDelivery(event) {
+    event.preventDefault()
+    if (isSavingCod) return
+    setError('')
+    setIsSavingCod(true)
+    try {
+      const saved = await request('/admin/settings/cash-on-delivery', {
+        method: 'PUT',
+        body: { enabled: cod.enabled, maxTotalXaf: Number(cod.maxTotalXaf) },
+      })
+      setCod(saved)
+      setMessage(t('Cash on delivery settings saved.'))
+    } catch (saveError) {
+      setError(saveError.message)
+    } finally {
+      setIsSavingCod(false)
+    }
+  }
 
   return (
     <div className="min-w-0 space-y-6">
@@ -152,6 +177,37 @@ export function AdminFulfillmentPage() {
           </button>
         </div>
       </form>
+
+      {cod && (
+        <form className="rounded-md border border-[#dce3eb] bg-white" onSubmit={saveCashOnDelivery}>
+          <div className="border-b border-[#f4f6f8] p-4 sm:p-5">
+            <h2 className="text-base font-semibold text-brand-navy">{t('Cash on delivery')}</h2>
+            <p className="mt-0.5 text-xs text-[#65748a]">{t('Let customers pay cash when the rider hands over the order. The cap protects riders from carrying large sums.')}</p>
+          </div>
+          <div className="grid items-end gap-4 p-4 sm:grid-cols-[auto_minmax(0,240px)] sm:p-5">
+            <AdminToggle checked={cod.enabled} disabled={isSavingCod} label={t('Enabled')} onChange={(enabled) => setCod((current) => ({ ...current, enabled }))} />
+            <label className="text-xs font-bold text-[#65748a]">
+              {t('Maximum order total')}
+              <span className="mt-1.5 flex items-center rounded-md border border-[#dce3eb] bg-[#f4f6f8] pr-3 focus-within:border-brand-yellow-deep focus-within:bg-white">
+                <input
+                  className="w-32 bg-transparent px-3.5 py-2.5 text-sm font-medium tabular-nums text-brand-navy outline-none!"
+                  disabled={isSavingCod || !cod.enabled}
+                  min="1"
+                  onChange={(event) => setCod((current) => ({ ...current, maxTotalXaf: event.target.value }))}
+                  type="number"
+                  value={cod.maxTotalXaf}
+                />
+                <span className="text-xs font-extrabold text-[#65748a]">FCFA</span>
+              </span>
+            </label>
+          </div>
+          <div className="flex justify-end border-t border-[#f4f6f8] p-4 sm:p-5">
+            <button className="inline-flex min-h-10 items-center gap-2 rounded-md bg-brand-navy px-5 text-sm font-bold text-white transition hover:bg-brand-blue disabled:opacity-70" disabled={isSavingCod} type="submit">
+              {isSavingCod ? t('Saving…') : t('Save cash on delivery')}
+            </button>
+          </div>
+        </form>
+      )}
 
       <form className="rounded-md border border-[#dce3eb] bg-white" onSubmit={saveSlots}>
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#f4f6f8] p-4 sm:p-5">

@@ -5,6 +5,9 @@ export function storeAdminCanAccess(method, path) {
     .replace(/^\/api\/admin(?=\/|$)/, '')
     .replace(/\/+$/, '') || '/'
 
+  // Settings are shared operational knobs: every role reads the COD config so the
+  // dashboard can show it, but writes stay owner-only (enforced in the route).
+  if (normalizedMethod === 'GET' && normalizedPath === '/settings/cash-on-delivery') return true
   if (normalizedMethod === 'GET' && ['/me', '/orders', '/payments', '/customers', '/reviews', '/cake-requests', '/reports', '/stores', '/notifications'].includes(normalizedPath)) return true
   // Push notifications: every role needs to subscribe to new-order alerts, and the
   // client checks subscription state on load. These are per-account, not business-wide.

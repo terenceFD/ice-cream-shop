@@ -259,6 +259,19 @@ export function registerCommerceRoutes(
     },
   );
 
+  // Every role reads the config so the dashboard can show it; writes stay owner-only.
+  router.get(
+    "/admin/settings/cash-on-delivery",
+    requireAdmin,
+    async (_request, response, next) => {
+      try {
+        response.json(await getCashOnDeliveryConfig());
+      } catch (error) {
+        next(error);
+      }
+    },
+  );
+
   router.put(
     "/admin/settings/cash-on-delivery",
     requireOwnerAdmin,
