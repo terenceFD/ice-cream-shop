@@ -158,13 +158,17 @@ export function PaymentPage() {
     cashOnDelivery: false,
   });
   const [codLimit, setCodLimit] = useState(0);
+  const [codEnabled, setCodEnabled] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(
     sessionId || camPayReference ? "checking" : codOrderId ? "cod-placed" : "ready",
   );
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
-  const codAvailable = availableMethods.cashOnDelivery
-    && (codLimit === 0 || finalTotal <= codLimit);
+  // COD has three states the customer needs to tell apart: the shop turned it
+  // off ("Coming soon"), it is on but this bag is over the cash cap (shown with
+  // the reason), and it is genuinely available.
+  const overCodCap = codLimit > 0 && finalTotal > codLimit;
+  const codAvailable = availableMethods.cashOnDelivery && !overCodCap;
   const displayedPaymentMethods = paymentMethods.map((method) => ({
     ...method,
     available: method.id === "card"
@@ -174,8 +178,13 @@ export function PaymentPage() {
         : method.id === "cod"
           ? codAvailable
           : false,
-    ...(method.id === "cod" && codLimit > 0
-      ? { detail: `Pay cash on handover. Up to ${codLimit.toLocaleString("en-US")} FCFA.` }
+    ...(method.id === "cod"
+      ? {
+        detail: overCodCap
+          ? `Pay cash on handover. Up to ${codLimit.toLocaleString("en-US")} FCFA — this bag is over the cap, so pay online.`
+          : `Pay cash on handover. Up to ${codLimit.toLocaleString("en-US")} FCFA.`,
+        badge: overCodCap ? "Over the cash cap" : undefined,
+      }
       : {}),
   }));
   const selectedMethodAvailable = selectedPaymentMethod === "card"
@@ -190,7 +199,8 @@ export function PaymentPage() {
       .then(({ methods, cashOnDelivery }) => {
         if (cancelledRequest) return;
         setAvailableMethods(methods);
-        if (cashOnDelivery?.enabled) {
+        if (cashOnDelivery) {
+          setCodEnabled(Boolean(cashOnDelivery.enabled));
           setCodLimit(cashOnDelivery.maxTotalXaf || 0);
         }
         if (!methods.card && methods.campayMobileMoney) {
@@ -835,7 +845,7 @@ export function PaymentPage() {
                                       method.available ? "bg-[#eef6e8] text-[#3f6b22]" : "bg-[#ecebe5] text-[#8b95a2]"
                                     }`}
                                   >
-                                    {t(method.available ? "Available" : method.id === "campay" ? "Setup required" : "Coming soon")}
+                                    {t(method.available ? "Available" : method.badge || (method.id === "campay" ? "Setup required" : "Coming soon"))}
                                   </span>
                                 </span>
                                 <span className="mt-1 block text-xs leading-5 text-[#65748a]">{t(method.detail)}</span>
