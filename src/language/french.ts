@@ -4254,6 +4254,172 @@ const french: Record<string, string> = {
   "This website does not use advertising or tracking cookies. What we store on your device and why.": "Ce site n’utilise pas de cookies publicitaires ni de suivi. Ce que nous stockons sur votre appareil et pourquoi.",
   "What personal information we collect when you order or contact us, why we collect it, and how we protect it.": "Les données personnelles que nous collectons lorsque vous commandez ou nous contactez, pourquoi, et comment nous les protégeons.",
   "When and how we refund or replace orders, including custom cakes and event orders.": "Quand et comment nous remboursons ou remplaçons les commandes, y compris les gâteaux personnalisés et les commandes d’événements.",
+  // === Strings found untranslated during the November 2026 i18n audit ===
+  // Legal: privacy policy
+  "Information we collect": "Informations que nous recueillons",
+  "Why we collect it": "Pourquoi nous les recueillons",
+  "How long we keep it": "Combien de temps nous les conservons",
+  "Your choices": "Vos choix",
+  "What we do not do": "Ce que nous ne faisons pas",
+  "This policy explains what personal information we collect when you order from us or contact us, why we collect it, and how we protect it.":
+    "Cette politique explique quelles données personnelles nous recueillons lorsque vous commandez chez nous ou nous contactez, pourquoi, et comment nous les protégeons.",
+  "Contact details you give us: name, email address and, if you choose, phone number.":
+    "Les coordonnées que vous nous donnez : nom, adresse e-mail et, si vous le souhaitez, numéro de téléphone.",
+  "Delivery addresses you enter at checkout.": "Les adresses de livraison que vous saisissez à la caisse.",
+  "Payment is handled by our payment partners. Your card or Mobile Money details are entered on their secure pages and never reach or stay on our website.":
+    "Le paiement est géré par nos partenaires de paiement. Les détails de votre carte ou de votre Mobile Money sont saisis sur leurs pages sécurisées et ne transitent jamais par notre site.",
+  "Order details: the items you order, the branch, pickup or delivery choice, and the time.":
+    "Les détails de commande : les articles commandés, la boutique, le choix entre retrait et livraison, et l’heure.",
+  "To take, prepare and deliver your order.": "Pour prendre, préparer et livrer votre commande.",
+  "To contact you about that order (confirmations, delays, questions).":
+    "Pour vous contacter à propos de cette commande (confirmations, retards, questions).",
+  "To keep accounts you create working, such as your order history.":
+    "Pour faire fonctionner les comptes que vous créez, par exemple votre historique de commandes.",
+  "To answer questions you send us through the contact form.":
+    "Pour répondre aux questions que vous nous envoyez via le formulaire de contact.",
+  "Order and contact records are kept only as long as needed to serve you, handle any questions about an order, and meet accounting rules. You can ask us to delete your account and its data at any time.":
+    "Les commandes et contacts ne sont conservés que le temps nécessaire pour vous servir, traiter toute question sur une commande et respecter les règles comptables. Vous pouvez nous demander de supprimer votre compte et ses données à tout moment.",
+  "We do not collect more information than the forms ask for.":
+    "Nous ne recueillons pas plus d’informations que ce que les formulaires demandent.",
+  "We do not run advertising or tracking cookies, and we do not follow you across other websites.":
+    "Nous n’utilisons ni cookies publicitaires ni cookies de suivi, et nous ne vous suivons pas sur les autres sites.",
+  "We do not sell or rent your personal information to anyone.":
+    "Nous ne vendons ni ne louons vos données personnelles à personne.",
+  "Ask us what we hold about you, correct it, or delete it: send a message through the contact form.":
+    "Demandez-nous ce que nous détenons sur vous, corrigez-le ou supprimez-le : envoyez un message via le formulaire de contact.",
+  "Remove the website from your device any time: it works fine without storing anything beyond your cart and language choice.":
+    "Retirez le site de votre appareil à tout moment : il fonctionne très bien sans rien stocker au-delà de votre panier et du choix de langue.",
+  // Legal: cookie policy
+  "What we store and why": "Ce que nous stockons et pourquoi",
+  "What we do not use": "Ce que nous n’utilisons pas",
+  "Clearing what we store": "Effacer ce que nous stockons",
+  "Last updated: 29 October 2026": "Dernière mise à jour : 29 octobre 2026",
+  "Shopping cart: so your bag survives a page refresh or a dropped connection. Stored on your device only.":
+    "Panier : pour que votre sac survit à un rafraîchissement de page ou à une connexion interrompue. Stocké uniquement sur votre appareil.",
+  "Language choice: so the site opens in the language you picked.":
+    "Choix de langue : pour que le site s’ouvre dans la langue que vous avez choisie.",
+  "Login session: an encrypted token so you stay signed in until you log out.":
+    "Session de connexion : un jeton chiffré pour que vous restiez connecté jusqu’à votre déconnexion.",
+  "No cookies are shared with third parties.": "Aucun cookie n’est partagé avec des tiers.",
+  "No cookies that follow you to other websites or build a profile of you.":
+    "Aucun cookie qui vous suit sur d’autres sites ou établit un profil de vous.",
+  "No Google Analytics, Meta pixel, or any other analytics or advertising service.":
+    "Pas de Google Analytics, de pixel Meta ni d’autre service d’analyse ou de publicité.",
+  "Short version: this website does not use advertising or tracking cookies, so there is no cookie banner. Everything stored on your device is there to make the site work, and you can clear it whenever you like.":
+    "En bref : ce site n’utilise pas de cookies publicitaires ni de suivi, donc aucune bannière de cookies. Tout ce qui est stocké sur votre appareil sert au fonctionnement du site, et vous pouvez l’effacer quand vous voulez.",
+  "Clearing your browser storage for this website removes your cart, your saved language and your login. Nothing else depends on it. If we ever add optional cookies in future, we will ask for your consent with a banner before they load and update this page.":
+    "Effacer le stockage du navigateur pour ce site supprime votre panier, votre langue enregistrée et votre connexion. Rien d’autre n’en dépend. Si nous ajoutons un jour des cookies facultatifs, nous demanderons votre accord avec une bannière avant leur chargement et mettrons cette page à jour.",
+  // Legal: refund policy
+  "Custom cakes and event orders": "Gâteaux personnalisés et commandes d’événements",
+  "When we cannot refund": "Quand nous ne pouvons pas rembourser",
+  "How to ask for one": "Comment en demander un",
+  "When you get a refund or replacement": "Quand vous recevez un remboursement ou un remplacement",
+  "Ice cream and cakes are fresh food, so most orders cannot be returned once delivered. When something goes wrong on our side, we make it right. Here is exactly when and how.":
+    "La glace et les gâteaux sont des produits frais : la plupart des commandes ne peuvent pas être retournées après livraison. Quand quelque chose ne va pas de notre côté, nous le réparons. Voici exactement quand et comment.",
+  "Your order arrives damaged, melted or unusable because of how we packed or delivered it.":
+    "Votre commande arrive endommagée, fondue ou inutilisable à cause de notre emballage ou de notre livraison.",
+  "Your order arrives wrong: different items, missing items, or the wrong cake design.":
+    "Votre commande arrive incorrecte : autres articles, articles manquants ou mauvais design de gâteau.",
+  "You paid twice for the same order, or you were charged an amount you did not order.":
+    "Vous avez payé deux fois la même commande, ou un montant que vous n’avez pas commandé vous a été facturé.",
+  "We cancel your order (for example an item runs out), and you prefer money back instead of a swap.":
+    "Nous annulons votre commande (par exemple un article est épuisé) et vous préférez être remboursé plutôt qu’un échange.",
+  "You changed your mind after preparation started — fresh items cannot be restocked.":
+    "Vous avez changé d’avis après le début de la préparation — les produits frais ne peuvent pas être remis en stock.",
+  "You chose the wrong pickup time or address and we made the order as requested.":
+    "Vous avez choisi une mauvaise heure de retrait ou une mauvaise adresse et nous avons préparé la commande comme demandé.",
+  "The order was collected or received in good condition; storage afterwards is up to you.":
+    "La commande a été retirée ou reçue en bon état ; la conservation ensuite dépend de vous.",
+  "Contact us within 24 hours of receiving the order, through the contact form or the WhatsApp chat, with your order number and a photo if the problem is visible. We reply and, when approved, refund through the same payment method you used. Card refunds usually reach your account within 5 working days; Mobile Money refunds within 48 hours.":
+    "Contactez-nous dans les 24 heures suivant la réception de la commande, via le formulaire de contact ou la discussion WhatsApp, avec votre numéro de commande et une photo si le problème est visible. Nous répondons et, après validation, remboursons par le même moyen de paiement que celui utilisé. Les remboursements par carte arrivent généralement sur votre compte sous 5 jours ouvrés ; ceux par Mobile Money sous 48 heures.",
+  "Custom cakes are made to your design and confirmed with you before we bake, so design changes after confirmation cannot be refunded. If we make the cake different from the confirmed design, or it arrives damaged, we remake it or refund it in full — your choice.":
+    "Les gâteaux personnalisés sont réalisés selon votre design et confirmés avec vous avant la préparation : les changements de design après confirmation ne peuvent pas être remboursés. Si nous réalisons le gâteau différemment du design confirmé, ou s’il arrive endommagé, nous le refaisons ou le remboursons intégralement — à vous de choisir.",
+  // Legal: terms
+  "Using this website": "Utilisation de ce site",
+  "Liability": "Responsabilité",
+  "Accounts": "Comptes",
+  "These terms cover ordering, pickup, delivery and use of this website. By placing an order you accept them.":
+    "Ces conditions couvrent la commande, le retrait, la livraison et l’utilisation de ce site. En passant commande, vous les acceptez.",
+  "An order becomes confirmed once payment succeeds. We then prepare it for the branch and time you chose.":
+    "Une commande devient confirmée dès que le paiement réussit. Nous la préparons ensuite pour la boutique et l’heure que vous avez choisies.",
+  "Delivery times are estimates, not promises. Traffic and weather in Douala and Yaoundé can slow us down.":
+    "Les délais de livraison sont des estimations, pas des promesses. Le trafic et la météo à Douala et Yaoundé peuvent nous ralentir.",
+  "Delivery: we deliver to the address you enter. If nobody is there, we contact you to rearrange; a second trip may carry a new fee.":
+    "Livraison : nous livrons à l’adresse que vous saisissez. Si personne n’y est, nous vous contactons pour replanifier ; un deuxième trajet peut entraîner de nouveaux frais.",
+  "Pickup: collect at the branch you chose during the time window shown. After the window we cannot guarantee the items stay fresh.":
+    "Retrait : récupérez à la boutique choisie pendant la plage horaire indiquée. Après cette plage, nous ne pouvons pas garantir que les articles restent frais.",
+  "Prices are shown in CFA francs and include the taxes shown at checkout.":
+    "Les prix sont affichés en francs CFA et comprennent les taxes indiquées à la caisse.",
+  "If an item runs out after you order, we contact you to agree a swap or a refund.":
+    "Si un article est épuisé après votre commande, nous vous contactons pour convenir d’un échange ou d’un remboursement.",
+  "Keep your login details private. Orders placed through your account are treated as yours.":
+    "Gardez vos identifiants confidentiels. Les commandes passées via votre compte sont considérées comme les vôtres.",
+  "We can suspend accounts used for fraud or abuse of our team.":
+    "Nous pouvons suspendre les comptes utilisés pour la fraude ou pour maltraiter notre équipe.",
+  "Do not try to break, overload or scrape the website.":
+    "N’essayez pas de casser, de surcharger ou d’extraire automatiquement le contenu du site.",
+  "The website, its photos and its text belong to us or are used with permission. Do not copy them for your own business.":
+    "Le site, ses photos et ses textes nous appartiennent ou sont utilisés avec autorisation. Ne les copiez pas pour votre propre commerce.",
+  "We prepare and handle every order with care, and we keep cold items cold to the moment of handover. Once you collect or receive an order, keeping it cool is up to you. Nothing in these terms removes rights that Cameroonian law gives you as a consumer.":
+    "Nous préparons et manipulons chaque commande avec soin, et nous gardons les produits froids au froid jusqu’à la remise. Une fois la commande retirée ou reçue, sa conservation au frais vous appartient. Rien dans ces conditions ne supprime les droits que le droit camerounais vous accorde en tant que consommateur.",
+  // Legal: common
+  "Questions about this page? Contact us and we will help.":
+    "Des questions sur cette page ? Contactez-nous et nous vous aiderons.",
+  "Questions? Contact us and mention order #{id}.":
+    "Des questions ? Contactez-nous et mentionnez la commande n° {id}.",
+  // Live chat widget
+  "Need a hand?": "Besoin d’aide ?",
+  "I can walk you through this. Ask me anything.": "Je peux vous guider. Posez-moi vos questions.",
+  "Tell me about this product": "Parlez-moi de ce produit",
+  "What is in it?": "Qu’y a-t-il dedans ?",
+  "How do I order it?": "Comment le commander ?",
+  "How do I pay?": "Comment payer ?",
+  "When will my order arrive?": "Quand ma commande arrivera-t-elle ?",
+  "Can I change my order?": "Puis-je modifier ma commande ?",
+  "Can you deliver to a venue?": "Pouvez-vous livrer sur un lieu de réception ?",
+  "Do you deliver to me?": "Livrez-vous chez moi ?",
+  "How does pickup work?": "Comment fonctionne le retrait ?",
+  "How does the custom cake work?": "Comment fonctionne le gâteau personnalisé ?",
+  "How do event orders work?": "Comment fonctionnent les commandes d’événements ?",
+  "How far ahead should I order?": "Combien de temps à l’avance faut-il commander ?",
+  "How much is the deposit?": "Quel est le montant de l’acompte ?",
+  "What is the minimum order?": "Quel est le montant minimum de commande ?",
+  "What sizes do you offer?": "Quelles tailles proposez-vous ?",
+  "Do you have something similar?": "Avez-vous quelque chose de similaire ?",
+  "Any promos today?": "Des promotions aujourd’hui ?",
+  "Empty my bag": "Vider mon panier",
+  "Go to checkout with the code": "Passer à la caisse avec le code",
+  "That item is no longer in your bag.": "Cet article n’est plus dans votre panier.",
+  "Only {count} left, so I set {count}.": "Il ne reste que {count}, j’ai donc mis {count}.",
+  "Attach a photo": "Joindre une photo",
+  "Remove photo": "Retirer la photo",
+  "Speak your message": "Dictez votre message",
+  "Stop voice input": "Arrêter la dictée",
+  "Voice input is not supported in this browser.": "La dictée n’est pas prise en charge dans ce navigateur.",
+  "Voice input failed. Please try again.": "La dictée a échoué. Réessayez.",
+  "Allow microphone access to use voice input.": "Autorisez le micro pour utiliser la dictée.",
+  // Recently viewed row
+  "{count} min ago": "il y a {count} min",
+  "{count} h ago": "il y a {count} h",
+  "{count} d ago": "il y a {count} j",
+  // Locations page
+  "Closed · opens {time}": "Fermé · ouvre à {time}",
+  // Install prompt
+  "Free · No download": "Gratuit · Sans téléchargement",
+  "Installing…": "Installation…",
+  // Admin: chat
+  "Mark handled": "Marquer comme traitée",
+  "Mark this conversation as handled": "Marquer cette conversation comme traitée",
+  "The assistant flagged this conversation for the team": "L’assistant a signalé cette conversation à l’équipe",
+  "The flag could not be cleared.": "Le signalement n’a pas pu être retiré.",
+  "The AI could not be reached ({reason}), so a standard reply was sent. Check it before the customer reads it.":
+    "L’IA n’a pas pu être jointe ({reason}), une réponse standard a donc été envoyée. Vérifiez-la avant que le client ne la lise.",
+  // Admin: reports
+  "What customers ask the assistant": "Ce que les clients demandent à l’assistant",
+  "No chat questions in the last 30 days.": "Aucune question de discussion ces 30 derniers jours.",
+  "conversations": "conversations",
+  "flagged for the team": "signalées à l’équipe",
+  "messages": "messages",
 };
 
 export default french;

@@ -167,7 +167,7 @@ export function AdminChatPage() {
       const failure = result.aiFailure as { reason?: string; detail?: string } | null;
       if (failure?.reason && failure.reason !== "not-configured") {
         setSuggestionNote(
-          t("The AI could not be reached ({{reason}}), so a standard reply was sent. Check it before the customer reads it.", {
+          t("The AI could not be reached ({reason}), so a standard reply was sent. Check it before the customer reads it.", {
             reason: failure.reason,
           }),
         );
