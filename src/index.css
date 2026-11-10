@@ -1247,37 +1247,184 @@ body:has(.whatsapp-fab) .locations-hero-actions {
  * while it is not visible, so it is not announced before it can be used.
  */
 /*
+ * The currency switcher, polished.
+ *
+ * The pill invites with a gentle lift, shadow bloom and warm border on hover; opening
+ * springs it awake (the flag pops, the chevron turns) and the list rises out of it
+ * with a soft overshoot. Choosing a currency answers with a sweep of the gold accent
+ * and a brief press. One orchestrated moment, not scattered effects.
+ *
  * The small currency list stays anchored to the viewport rather than affecting
  * product-card sizing. Additional choices scroll within the dropdown.
  */
 .currency-switcher summary {
   transition:
-    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease;
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    background-color 220ms ease,
+    border-color 220ms ease;
+  transform-origin: bottom right;
+  will-change: transform;
 }
 
-.currency-switcher__options button {
-  transition: background-color 160ms ease, border-color 160ms ease;
-}
-
+/* Rest: quiet. Hover: lifted, warmer, casting a deeper shadow. */
 .currency-switcher summary:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  background: #fff;
+  border-color: var(--brand-yellow-deep, #b8721e);
+  box-shadow:
+    0 8px 22px rgba(71, 42, 59, 0.18),
+    0 2px 6px rgba(71, 42, 59, 0.1);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .currency-switcher summary,
-  .currency-switcher__options button {
-    transition: none;
+/* Pressing sinks it back to the page, so the click lands visibly. */
+.currency-switcher summary:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 3px 10px rgba(71, 42, 59, 0.14);
+  transition-duration: 90ms;
+}
+
+/* Open: the pill settles and glows softly while the list is out. */
+.currency-switcher[open] > summary {
+  background: #fff;
+  border-color: var(--brand-yellow-deep, #b8721e);
+  box-shadow:
+    0 10px 26px rgba(71, 42, 59, 0.2),
+    0 0 0 3px rgba(255, 184, 77, 0.18);
+  transform: translateY(-2px);
+}
+
+/* The flag tilts towards the visitor on hover — a small live detail. */
+.currency-switcher .currency-flag {
+  transition: transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.currency-switcher summary:hover .currency-flag,
+.currency-switcher[open] > summary .currency-flag {
+  transform: rotate(-6deg) scale(1.08);
+}
+
+/* The chevron turns as the list opens, with a touch of spring. */
+.currency-switcher summary svg {
+  transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.currency-switcher summary:hover svg {
+  transform: translateY(1px);
+}
+
+/* The list itself: rises from the pill with a soft overshoot. The shared
+   .menu-popover fade still applies; this adds the movement and depth. */
+.currency-switcher .menu-popover {
+  transform-origin: bottom right;
+}
+
+.currency-switcher[open] > .menu-popover {
+  animation: currency-pop 260ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes currency-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
   }
-  .currency-switcher summary:hover {
-    transform: none;
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
+}
+
+/* Each choice: the hover sweep slides a warm tint across from the left, and the
+   row shifts a step right so the eye follows the motion. */
+.currency-switcher__options button {
+  position: relative;
+  isolation: isolate;
+  transition:
+    background-color 170ms ease,
+    color 170ms ease,
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    padding-left 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.currency-switcher__options button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 184, 77, 0.16),
+    rgba(255, 184, 77, 0)
+  );
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: left center;
+  transition:
+    opacity 190ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.currency-switcher__options button:hover::before,
+.currency-switcher__options button:focus-visible::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.currency-switcher__options button:hover {
+  background-color: var(--brand-surface, #f4f6f8);
+  transform: translateX(2px);
+  padding-left: 0.75rem;
+}
+
+.currency-switcher__options button:active {
+  transform: translateX(2px) scale(0.98);
+  transition-duration: 90ms;
+}
+
+/* The chosen currency keeps its check; on hover the check tilts upright for a beat
+   of life. Selected rows skip the slide so the resting state stays calm. */
+.currency-switcher__options button[aria-pressed="true"]::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.currency-switcher__options button[aria-pressed="true"]:hover {
+  transform: none;
+  padding-left: 0.625rem;
+}
+
+.currency-switcher__options button svg {
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.currency-switcher__options button:hover svg {
+  transform: rotate(-8deg) scale(1.12);
 }
 
 .currency-switcher__options {
   overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .currency-switcher summary,
+  .currency-switcher summary svg,
+  .currency-switcher .currency-flag,
+  .currency-switcher__options button,
+  .currency-switcher__options button::before,
+  .currency-switcher__options button svg {
+    transition: none;
+    animation: none;
+  }
+  .currency-switcher summary:hover,
+  .currency-switcher summary:active,
+  .currency-switcher__options button:hover,
+  .currency-switcher__options button:active {
+    transform: none;
+  }
+  .currency-switcher[open] > .menu-popover {
+    animation: none;
+  }
 }
 
 /* The currency switcher owns the bottom-right corner, so the back-to-top button

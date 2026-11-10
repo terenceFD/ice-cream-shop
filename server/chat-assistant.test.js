@@ -659,6 +659,38 @@ test("a named in-stock product is answered with its own page", async () => {
   assert.doesNotMatch(suggestion, /\[ACTION:menu_all\]/);
 });
 
+test("'which store is closer to me' names the nearest branch from the shared location", async () => {
+  const { suggestion } = await suggestReply(
+    [{ sender: "customer", body: "which store is closer to me?" }],
+    { database: fakeDb, language: "en", location: { lat: 4.05, lng: 9.69 } },
+  );
+  assert.match(suggestion, /Douala \/ Bonanjo/);
+  assert.match(suggestion, /Centre Commercial L’Atrium/);
+  assert.match(suggestion, /\[ACTION:locations\]/);
+  assert.doesNotMatch(suggestion, /Bastos/);
+});
+
+test("without a location the nearest-shop question asks for one instead of guessing", async () => {
+  const { suggestion } = await suggestReply(
+    [{ sender: "customer", body: "which store is closer to me?" }],
+    { database: fakeDb, language: "en" },
+  );
+  assert.match(suggestion, /allow location access/i);
+  assert.doesNotMatch(suggestion, /Bonanjo|Bastos/);
+});
+
+test("the prompt carries the shared location and the nearest-shop rule", () => {
+  const text = buildSystemPrompt(
+    { ...context, customerLocation: { lat: 4.05, lng: 9.69 } },
+    "en",
+    "",
+    "",
+  );
+  assert.match(text, /THE CUSTOMER'S LOCATION: 4\.05000, 9\.69000/);
+  assert.match(text, /get_nearest_store/);
+  assert.doesNotMatch(buildSystemPrompt(context, "en", "", ""), /THE CUSTOMER'S LOCATION/);
+});
+
 test("cake and event template replies never quote a price", async () => {
   // "how much is a cake" is a menu-price question and correctly checks the menu;
   // the request-style phrasing must route to the cake knowledge, without a price.

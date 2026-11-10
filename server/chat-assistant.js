@@ -25,7 +25,9 @@ import {
   localClock,
 } from "../shared/storeHours.js";
 import { buildChunks, retrieveChunks } from "./retrieval.js";
-import { createToolExecutor, customerProductLine, describeCreation, ensureProductLink, flavorItemPath, menuItemPath, askedProduct, partyReply, productActionLines, reorderReply, soldOutAnswer, toolDefinitions, findProduct } from "./chat-tools.js";
+import { createToolExecutor, customerProductLine, describeCreation, ensureProductLink, flavorItemPath, menuItemPath, askedProduct, nearestStoreReply, partyReply, productActionLines, reorderReply, soldOutAnswer, toolDefinitions, findProduct } from "./chat-tools.js";
+import { parseCoordinates } from "../shared/nearestStore.js";
+import { dailySpecial } from "../shared/dailySpecial.js";
 import { applyAllergyGuard, describeBagQuote, describeBranch } from "./chat-offer.js";
 import {
   bagEditReply,
@@ -487,12 +489,14 @@ const FACT_CACHE_MS = 60000;
  * history: oldest-first [{ sender: 'customer'|'store', body }]
  * options.customerContext: { firstName?, bag?, lastOrder? } — the signed-in
  *   customer's live data, so the agent can see their situation (#3, #5).
+ * options.location: { lat, lng } — the position the customer allowed the browser to
+ *   share, so "which store is closer to me?" names the real nearest branch.
  * Returns { suggestion, source: 'ai'|'rules', topic } or { suggestion: null } when
  * there is nothing to answer yet.
  */
 export async function suggestReply(
   history,
-  { database, language = "en", customerPage = "", pageSnapshot = "", customerContext = {}, imageUrl = "", bag = [] },
+  { database, language = "en", customerPage = "", pageSnapshot = "", customerContext = {}, imageUrl = "", bag = [], location = null },
 ) {
   const lastCustomer = [...history]
     .reverse()
@@ -515,6 +519,7 @@ export async function suggestReply(
     ...context,
     isFirstMessage,
     customerContext: { ...customerContext, ...(liveBag.length ? { bag: liveBag } : {}) },
+    customerLocation: parseCoordinates(location?.lat, location?.lng),
   };
   const photo = imageUrl || lastCustomer.imageUrl || "";
   let imageMatch = null;
@@ -554,6 +559,25 @@ export async function suggestReply(
       }),
       source: "rules",
       topic: "creation",
+      language: replyLanguage,
+      confidence: "high",
+      answerable: true,
+      needsAttention: needsHumanHandoff(history),
+    };
+  }
+  const nearest = nearestStoreReply(lastCustomer.body, shopFacts, replyLanguage);
+  if (nearest) {
+    return {
+      suggestion: finishReply(nearest.body, {
+        message: lastCustomer.body,
+        imageAttached: Boolean(photo),
+        facts: shopFacts,
+        history,
+        language: replyLanguage,
+        matched: imageMatch,
+      }),
+      source: "rules",
+      topic: nearest.topic,
       language: replyLanguage,
       confidence: "high",
       answerable: true,
@@ -1141,6 +1165,8 @@ export async function gatherShopFacts(database) {
         tags: (item.dietary || []).join(","),
         allergens: live?.allergens || "",
         image: item.image || "",
+        gallery: Array.isArray(item.gallery) ? item.gallery.filter((shot) => typeof shot === "string" && shot.startsWith("/")) : [],
+        photo: item.image || "",
         stock: live?.stock ?? null,
         soldOut: live?.soldOut || false,
         path: menuItemPath(category.title, item.name),
@@ -1159,6 +1185,8 @@ export async function gatherShopFacts(database) {
       tags: "-",
       allergens: item.allergens || "",
       image: item.image || "",
+      gallery: Array.isArray(item.gallery) ? item.gallery.filter((shot) => typeof shot === "string" && shot.startsWith("/")) : [],
+      photo: item.image || "",
       stock: item.stock ?? null,
       soldOut: item.soldOut,
       path: item.path || menuItemPath(item.category, item.name),
@@ -1185,6 +1213,7 @@ export async function gatherShopFacts(database) {
       tag: row.tag || "",
       allergens: listFromJson(row.allergies),
       image: row.image || "",
+      photo: row.image || "",
       stock: Math.max(0, Number(row.stock) - Number(row.reservedStock || 0)),
       soldOut: Number(row.stock) - Number(row.reservedStock || 0) <= 0,
       path: flavorItemPath(row.id),
@@ -1283,6 +1312,9 @@ export async function gatherShopFacts(database) {
   }
   facts.quizGuidance =
     "FIND YOUR FLAVOR QUIZ: when a customer asks for a recommendation or seems undecided, run a SHORT quiz — at most two questions. Ask what mood they are in (comforting, fruity, chocolatey, caramel/coffee, refreshing...) or what taste they feel like, then recommend two or three flavors from the catalog that match, with prices. For each in-stock recommendation, give that flavor's own page (/flavor/ID or the menu product page), not the menu list. Never ask more than two questions before recommending something.";
+  // One rotating pick per day, so an undecided customer gets a concrete offer
+  // instead of a question — and tomorrow's chat has a fresh reason to open.
+  facts.dailySpecial = dailySpecial(facts.menuByCategory) || null;
   factCache = facts;
   factCacheAt = Date.now();
   return facts;
@@ -1509,6 +1541,7 @@ export function buildSystemPrompt(
     ...pageSection(customerPage),
     ...snapshotSection(snapshotText, imageUrl, imageMatch),
     ...styleSection(language),
+    ...locationSection(context.customerLocation),
     ...shopFactsSection(context),
   ].join("\n");
 }
@@ -1589,6 +1622,9 @@ const ROLE_RULES = [
   "ORDERING — the single most important rule:",
   "- ALL orders are placed on the website. NEVER tell a customer to call a branch or visit in person to place an order — the website does that, and phone-based ordering is NOT how this shop works.",
   "- WHEN THE CUSTOMER NAMES ONE PRODUCT, or sends a photo of one: look it up with get_product. If it is in stock, give the price and end the reply with [LINK:its direct link] on its own line. That button opens THAT product. Do not send them to /menu, /menu/all, or [ACTION:menu_all]. If it is sold out, say so, name the closest in-stock treat with its price, and end with that stand-in's [LINK:] and [ADD:]. Use [ACTION:menu_all] only when they are browsing and have not named a product.",
+  "- ACTION TAG FORMAT — the strictest rule: [IMG:], [LINK:], [ADD:], [FILL:], [ACTION:] and [CHIPS:] tags go ONLY on their own line at the VERY END of the reply, after the last sentence — never inside a sentence, never two links mid-paragraph. When recommending several products, pick the single best one for the [LINK:]/[ADD:] tags; do not append a [LINK:] for every product. Tags written in the wrong place are silently deleted and the customer never sees them, so an answer that dangles a link mid-sentence shows nothing. You CAN show a product photo: end the reply with [IMG:/menu-official/…], [IMG:/flavors/…], [IMG:/ice-images/…], [IMG:/cake-images/…] or a multi-photo gallery [IMGS:/path1|/path2|…] on its own final line when the product's image paths are in the facts. Never say you cannot show photos.",
+  "- WHEN THE CUSTOMER ASKS FOR A PHOTO (\"show me\", \"send a picture\", \"what does it look like\"): call get_product for that product, then END the reply with its real [IMG:] path on its own line — the exact path the tool returned (Real photo path(s)), never an invented one. After the photo card, ask in one short sentence whether they want more details about it or would like it added to their bag. If the product has no photo in the facts, say so honestly instead of inventing a path.",
+  "- WHEN THE CUSTOMER ASKS FOR MORE PHOTOS (\"more photos\", \"other angles\", \"show me all the pictures\"): call get_product and look at its 'Photos available (N)' line. If N is 2 or more, END the reply with [IMGS:path1|path2|…] — every path the tool gave, separated by pipes, on its own last line. That renders as a swipeable gallery. If N is 1, there is no gallery: show that single photo with [IMG:the one path] and say honestly that it is the only photo the shop has for that product. If N is 0, say the product has no photos yet. Never invent a path to fill a gallery.",
   "- SAME AS LAST TIME: rebuild the last order from LAST ORDER ITEMS at today's catalog prices. Leave out anything sold out and say so. Give the new total before delivery. End with one [FILL:addId*qty,addId*qty] line. If there is no past order, ask them to sign in or name what they want.",
   "- A group under 40 people is a bag of real in-stock scoops: name each quantity, the ice-cream total in FCFA, and that branch's delivery fee. Pickup is free. End with [FILL:]. A wedding, catering, or 40 or more people goes to the events form with [ACTION:events]. Do not invent a catering price.",
   "- The current local time and open/closed state are given in the facts. If the customer wants to order while the shop is CLOSED, say clearly that the branches are closed right now — and immediately reassure them that they can still place the order on the website right away for next-day delivery or pickup, then point them to the All Menu page (/menu/all). Online ordering never closes.",
@@ -1599,8 +1635,9 @@ const ROLE_RULES = [
   "- When pointing to a general page (not one product), end the reply with an action line on its own: [ACTION:menu_all] for the All Menu page, [ACTION:custom_cake] for custom cakes, [ACTION:events] for event orders, [ACTION:locations] for branches, [ACTION:track_order] for order tracking, [ACTION:contact] for the contact page. The website turns this line into a button; the text before it must still mention the page naturally.",
   "- WHEN THE CUSTOMER ATTACHES A PHOTO ('is this available?', 'how much is this?', 'I want this', or a photo with no words at all): if PHOTO MATCH names a product, answer about THAT product in one or two sentences: its name, its price, and whether it is in stock. Do not list the menu, do not say how many items the shop sells, and do not say 'this photo matches'. If it is in stock and it does not conflict with an allergy they stated, end with [LINK:its page] and [ADD:its id]. If it is sold out, or it conflicts with a stated allergy, say so and do not add a buy link. A photo with no words is still that question: read the name printed on the cup or carton, find that exact product in SHOP FACTS, and answer with its name, price, and stock. Do not answer a photo with 'I don't have an answer'.",
   "- ALLERGIES: if they have said they cannot eat something, do not recommend, link, or add a product that contains it.",
-  "- NEVER claim you put something in the bag. You cannot edit the customer's bag yourself: only an [ADD:] or [FILL:] tag on its own line at the very end of your reply does that, when the website applies it. If the customer asks you to add an item, say the item is ready and end with its [ADD:id] line — the site turns that into the add. A reply that says 'added to your bag' without an [ADD:] or [FILL:] line has added nothing.",
+  "- NEVER claim you put something in the bag. You cannot edit the customer's bag yourself: only an [ADD:] or [FILL:] tag on its own line at the very end of your reply does that, when the website applies it. If the customer asks to add an item — or answers 'yes, add it' to your follow-up question — END the reply with that item's [ADD:id] line again (look it up with get_product if you do not have it). Say the item is ready, not 'added': the site itself shows the green 'Added' confirmation only when the tag actually runs. A reply that says 'added to your bag' without an [ADD:] or [FILL:] line has added nothing, and the customer is left staring at an empty bag.",
   "- BRANCH: when they name a branch, quote that branch's delivery fee and say stock is one shared count. Do not answer with only yes.",
+  "- NEAREST SHOP: when they ask which store is closer to them, use get_nearest_store and name that one branch, its distance and its address. If the facts say the location is not available, ask them to allow location access in the chat or to name their neighborhood — never guess a branch.",
   "- BAG TOTAL: use the BAG QUOTE only when they ask what their bag or order will cost. Those figures already include Buy 2 Get 1 Free and the best code. Say the total. Mention a discount only when the quote actually takes money off. Never say a discount is 0, and never say that no code applies.",
   "- CURRENCY: the site has a currency switcher in the bottom-right corner of every page (FCFA, USD, EUR). If a customer asks about prices in another currency, tell them to tap it and choose the currency; every price on the site then shows in that currency. Prices always quote in FCFA, which is what is charged, so convert the shop's FCFA facts only when the customer asks and say the charge is in FCFA.",
   "",
@@ -1609,6 +1646,18 @@ const ROLE_RULES = [
   "- Money disputes, legal questions, media requests and anything you cannot answer from the facts are handoff cases too: never improvise an answer to them.",
   "- Do NOT say you are bringing in a colleague for questions you can answer yourself — that wastes the team's time.",
 ];
+
+// The position the customer allowed the browser to share. It is a fact like the
+// branches, so the model may use it — and only it — to name the nearest shop.
+function locationSection(location) {
+  if (!location) return [];
+  return [
+    "",
+    `THE CUSTOMER'S LOCATION: ${location.lat.toFixed(5)}, ${location.lng.toFixed(5)} (shared by the customer's browser with their permission).`,
+    "- For 'which store is closer to me', 'nearest shop' or 'closest branch', call get_nearest_store and name that one branch with its distance and address. Do not list every branch.",
+    "- Never state the customer's coordinates back to them.",
+  ];
+}
 
 function pageSection(customerPage) {
   if (!customerPage) return [];
@@ -1678,12 +1727,15 @@ function shopFactsSection(context) {
     ...(context.sitePolicies || []).map((line) => `  - ${line}`),
     context.quizGuidance,
     `Flavor families for recommendations and the mood quiz: ${context.flavorFamilies?.join(", ") || "Classics, Fruity, Chocolate, Caramel & coffee"}.`,
+    context.dailySpecial
+      ? `TODAY'S SPECIAL (deterministic, already decided): ${context.dailySpecial.name}, ${context.dailySpecial.price} FCFA, in stock, photo ${context.dailySpecial.image}, page ${context.dailySpecial.path}, add id ${context.dailySpecial.addId}. When the customer is browsing, undecided, or greets you on a first message, you may offer it: one warm sentence, then [IMG:${context.dailySpecial.image}], [LINK:${context.dailySpecial.path}] and [ADD:${context.dailySpecial.addId}] at the very end. Do not offer it twice in one thread.`
+      : "",
     "Menu grouped by category (name|price|detail|tags|page; SOLD OUT marked). The page is the link to send when that item is in stock:",
     ...Object.entries(context.menuByCategory || {}).flatMap(([category, items]) => [
       `  ${category}:`,
       ...items.map(
         (item) =>
-          `    ${item.name}|${item.price}|${item.detail || "-"}|${item.tags || "-"}|${item.path || "-"}${item.allergens ? `|allergens: ${item.allergens}` : ""}${item.soldOut ? "|SOLD OUT" : ""}`,
+          `    ${item.name}|${item.price}|${item.detail || "-"}|${item.tags || "-"}|${item.path || "-"}${item.photo ? `|photo: ${item.photo}` : ""}${item.allergens ? `|allergens: ${item.allergens}` : ""}${item.soldOut ? "|SOLD OUT" : ""}`,
       ),
     ]),
     ...(context.flavors || []).length
@@ -1691,7 +1743,7 @@ function shopFactsSection(context) {
           "Scoop flavors (name|price|page). Each has its own page:",
           ...context.flavors.map(
             (flavor) =>
-              `  ${flavor.name}|${flavor.price}|${flavor.path || "-"}${flavor.soldOut ? "|SOLD OUT" : ""}${flavor.detail ? `|${flavor.detail}` : ""}`,
+              `  ${flavor.name}|${flavor.price}|${flavor.path || "-"}${flavor.photo ? `|photo: ${flavor.photo}` : ""}${flavor.soldOut ? "|SOLD OUT" : ""}${flavor.detail ? `|${flavor.detail}` : ""}`,
           ),
         ]
       : [],
@@ -2000,6 +2052,8 @@ function draftFromRules(message, context, language, customerPage = "", imageUrl 
   }
   const creation = describeCreation(message, context, language);
   if (creation) return { body: creation, topic: "creation", confidence: "high" };
+  const nearest = nearestStoreReply(message, context, language);
+  if (nearest) return { body: nearest.body, topic: nearest.topic, confidence: "high" };
   const reorder = reorderReply(message, context, language);
   if (reorder) return { body: reorder, topic: "order", confidence: "high" };
   const party = partyReply(message, context, language);

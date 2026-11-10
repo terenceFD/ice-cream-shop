@@ -294,7 +294,8 @@ function useCookieConsentPending() {
 // code, and the other options stay hidden. XAF is the shop's charge currency; the
 // others convert prices for display only.
 function CurrencyFlag({ code }) {
-  const className = "h-4 w-6 shrink-0 rounded-[2px] shadow-[0_0_0_1px_rgba(71,42,59,0.12)]";
+  // `currency-flag` lets the switcher's CSS add its hover tilt and transition.
+  const className = "currency-flag h-4 w-6 shrink-0 rounded-[2px] shadow-[0_0_0_1px_rgba(71,42,59,0.12)]";
   if (code === "xaf") {
     return (
       <svg aria-hidden="true" className={className} viewBox="0 0 24 16">

@@ -1,4 +1,5 @@
 import { describeBranch } from "./chat-offer.js";
+import { formatDistance, nearestBranch } from "../shared/nearestStore.js";
 
 // Tool calling for the chat assistant (#2: answers from the live database).
 //
@@ -73,6 +74,15 @@ export function toolDefinitions() {
     {
       type: "function",
       function: {
+        name: "get_nearest_store",
+        description:
+          "Find the branch closest to the customer's current location. Use this for 'which store is closer to me', 'nearest shop', 'closest branch', 'où est la boutique la plus proche'. The customer's coordinates are already known to the shop; this tool needs no arguments.",
+        parameters: { type: "object", properties: {} },
+      },
+    },
+    {
+      type: "function",
+      function: {
         name: "get_order_status",
         description:
           "Look up a customer's order status by order number. Use this when they give a number starting with # or ask where their order is.",
@@ -113,6 +123,8 @@ export function createToolExecutor(database, shopFacts) {
           return await getActivePromos(database);
         case "get_delivery_info":
           return getDeliveryInfo(shopFacts, args?.area);
+        case "get_nearest_store":
+          return getNearestStore(shopFacts);
         case "get_order_status":
           return await getOrderStatus(database, args?.orderNumber);
         default:
@@ -168,13 +180,23 @@ function aliasTarget(query) {
   return hit ? hit[1] : "";
 }
 
+// Words too generic to identify a product. "Ice cream" is what the whole shop
+// sells: matching on it turned "pizza flavored ice cream" (a product that does
+// not exist) into "Pre-Packed Ice Cream" and quoted a price for a fantasy item.
+const GENERIC_NAME_WORDS = new Set([
+  "ice", "cream", "icecream", "flavor", "flavour", "flavored", "flavoured",
+  "treat", "scoop", "glace", "parfum",
+]);
+
 function scoreName(name, wanted, wantedWords) {
   if (name === wanted) return 100;
   if (name.includes(wanted) || wanted.includes(name)) return 60 + name.length;
   const nameWords = name.split(/\s+/);
   return (
-    wantedWords.filter((word) =>
-      nameWords.some((candidate) => candidate.startsWith(word) && word.length > 2),
+    wantedWords.filter(
+      (word) =>
+        !GENERIC_NAME_WORDS.has(word)
+        && nameWords.some((candidate) => candidate.startsWith(word) && word.length > 2),
     ).length * 12
   );
 }
@@ -411,14 +433,27 @@ export function customerProductLine(product, language = "en") {
   return fr ? `${name} est disponible.` : `${name} is in stock.`;
 }
 
+/** Image card for a product the reply is selling, when the catalog has a photo. */
+export function customerProductCard(product) {
+  return customerProductLine(product) + productImageLine(product);
+}
+
 const ADDABLE_ID = /^(?:menu:(?!custom:)[a-z0-9-]+:[a-z0-9-]+|flavor:\d{1,8})$/;
 
 export function productActionLines(item) {
-  if (!item?.path || item.soldOut) return "";
+  const image = typeof item?.image === "string" && item.image.startsWith("/")
+    ? `\n[IMG:${item.image}]`
+    : "";
+  if (!item?.path || item.soldOut) return image;
   const addId = typeof item.addId === "string" ? item.addId : "";
   // Shop-added cakes need name, photo and price together; the id alone cannot be added.
   const add = ADDABLE_ID.test(addId) ? `\n[ADD:${addId}]` : "";
-  return `\n[LINK:${item.path}]${add}`;
+  return `${image}\n[LINK:${item.path}]${add}`;
+}
+
+export function productImageLine(item) {
+  const image = typeof item?.image === "string" && item.image.startsWith("/") ? item.image : "";
+  return image ? `\n[IMG:${image}]` : "";
 }
 
 /**
@@ -674,6 +709,12 @@ function getProduct(shopFacts, name, branch) {
     return `No product or flavor matching "${name}" was found in the catalog. Do not invent one — tell the customer you could not find it and ask them to describe it again.`;
   }
   const place = branchNamed(shopFacts, branch);
+  // The real photo from the catalog: menu items carry `image` (and often a
+  // `gallery` with a second angle), flavors carry theirs from the flavor table.
+  // Giving the model the exact path removes the guesswork — it copies this line
+  // into its [IMG:] tag and the chat renders the actual product photo.
+  const gallery = Array.isArray(match.gallery) ? match.gallery.filter((shot) => typeof shot === "string" && shot.startsWith("/")) : [];
+  const photos = [...new Set([match.image, ...gallery].filter((shot) => typeof shot === "string" && shot.startsWith("/")))];
   return [
     `Product: ${match.name}`,
     `Category: ${match.category}`,
@@ -684,10 +725,13 @@ function getProduct(shopFacts, name, branch) {
     stockLine(match),
     place ? describeBranch(place) : "",
     match.path ? `Direct link: ${match.path}` : "",
+    photos.length
+      ? `Photos available (${photos.length}): ${photos.join(" | ")} — for ONE photo end with [IMG:${photos[0]}]; for a gallery of every angle end with [IMGS:${photos.join("|")}]. If the customer asks for more photos and there is only one (${photos.length === 1 ? "true for this product" : "not the case here — there are " + photos.length}), say that honestly: that photo is the only one the shop has.`
+      : "Photos available: none. Do not invent an image path; tell the customer there is no photo for this product yet.",
     match.addId && !match.soldOut ? `Add to bag id: ${match.addId}` : "",
     match.soldOut || !match.path
       ? ""
-      : `When it is in stock and it does not conflict with an allergy they stated, end with [LINK:${match.path}]${match.addId ? ` and [ADD:${match.addId}]` : ""}. That opens and adds THIS product. Do not send them to /menu or /menu/all.`,
+      : `When it is in stock and it does not conflict with an allergy they stated, END the reply with the tags on their own last line(s): ${photos.length ? `[IMG:${photos[0]}]` : "a [IMG:] tag only if the facts give a photo path"} then [LINK:${match.path}]${match.addId ? ` then [ADD:${match.addId}]` : ""}. Never put a tag inside a sentence. That opens and adds THIS product. Then ask the customer in one short question whether they want more details about it or want it added to their bag. Do not send them to /menu or /menu/all.`,
     match.detail ? `Description: ${match.detail}` : "",
     match.tags && match.tags !== "-" ? `Dietary tags: ${match.tags}` : "",
     match.allergens ? `Allergens: ${match.allergens}` : "",
@@ -800,8 +844,11 @@ export function ensureProductLink(reply, { message = "", imageAttached = false, 
     if (!asking) return text;
   }
   let cleaned = text.replace(/\s*\[ACTION:menu_all\]\s*$/i, "").replace(/\s*\[LINK:\/[^\]]+\]\s*$/i, "").replace(/\s*\[ADD:[^\]]+\]\s*$/i, "").trim();
+  // When the confident photo match replaces the reply wholesale, keep any photo
+  // tag the model had already placed — a lost photo is a lost sale.
+  const keptImg = /\[IMG:\/[^\]]+\]/.exec(cleaned);
   if (forced && product.name && !cleaned.toLowerCase().includes(String(product.name).toLowerCase())) {
-    cleaned = customerProductLine(product, language);
+    cleaned = `${customerProductLine(product, language)}${keptImg ? `\n${keptImg[0]}` : ""}`;
   }
   if (cleaned.includes(product.path)) {
     if (product.soldOut || !product.addId || cleaned.includes(`[ADD:${product.addId}]`)) return cleaned;
@@ -835,6 +882,61 @@ async function getActivePromos(database) {
       return `${row.code}: ${amount}${row.minimum ? `, minimum ${row.minimum} items` : ""}`;
     })
     .join(" | ");
+}
+
+/**
+ * The one branch nearest the customer's shared position. Without a position the model
+ * is told to ask for it — never to guess a branch from the neighborhood they typed.
+ */
+function getNearestStore(shopFacts) {
+  const nearest = nearestBranch(shopFacts.branchDetails, shopFacts.customerLocation);
+  if (!nearest) {
+    return "The customer's location is not available. Ask them to allow location access in the chat, or to name their neighborhood, and do not guess a branch.";
+  }
+  return [
+    `Nearest branch: ${nearest.town} / ${nearest.area}`,
+    `Distance: ${formatDistance(nearest.km)} from the customer`,
+    `Address: ${nearest.address}`,
+    nearest.phone ? `Phone: ${nearest.phone}` : "",
+    describeBranch(nearest),
+    nearest.map ? `Map: ${nearest.map}` : "",
+    "Name this branch as the closest one, with the distance and the address. Do not list the other branches.",
+  ]
+    .filter(Boolean)
+    .join(" | ");
+}
+
+/**
+ * "Which store is closer to me?" answered from the shared position, without the model.
+ * Returns null when the message is not about the nearest shop, so the normal routing
+ * keeps the question.
+ */
+export function nearestStoreReply(message, shopFacts, language = "en") {
+  if (!asksForNearestStore(message)) return null;
+  const fr = language === "fr";
+  const nearest = nearestBranch(shopFacts.branchDetails, shopFacts.customerLocation);
+  if (!nearest) {
+    return {
+      topic: "stores",
+      body: fr
+        ? "Je peux vous dire la boutique la plus proche si vous autorisez la localisation dans ce chat (icône de localisation), ou dites-moi simplement votre quartier."
+        : "I can tell you the closest shop if you allow location access in this chat (the location button), or just tell me your neighborhood.",
+    };
+  }
+  const distance = formatDistance(nearest.km);
+  return {
+    topic: "stores",
+    body: fr
+      ? `La boutique la plus proche de vous est ${nearest.town} / ${nearest.area}, à environ ${distance} : ${nearest.address}.${nearest.phone ? ` Téléphone : ${nearest.phone}.` : ""} ${describeBranch(nearest, "fr")}\n[ACTION:locations]`
+      : `The closest shop to you is ${nearest.town} / ${nearest.area}, about ${distance} away: ${nearest.address}.${nearest.phone ? ` Phone ${nearest.phone}.` : ""} ${describeBranch(nearest)}\n[ACTION:locations]`,
+  };
+}
+
+function asksForNearestStore(message) {
+  const text = String(message || "").toLowerCase();
+  const place = /\b(store|shop|branch|boutique|magasin|agence)\b/.test(text);
+  const near = /\b(nearest|closest|near me|nearby|closer|proche|proches|plus proche)\b/.test(text);
+  return place && near;
 }
 
 function getDeliveryInfo(shopFacts, area) {

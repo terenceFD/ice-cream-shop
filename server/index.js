@@ -105,6 +105,7 @@ import {
 } from './email.js'
 import { cameroonDeliveryLocations, coldStoneMenuCategories, findMenuItem, getMenuItemId } from '../shared/data.js'
 import { allergensForItem } from '../shared/allergens.js'
+import { parseCoordinates } from '../shared/nearestStore.js'
 import { storeAdminCanAccess } from './admin-access.js'
 import { isSpamSubmission } from './spam-guard.js'
 import { ImageStorageConfigurationError, imageStorageOrigin, imageStorageStatus, safeChatImageReference, saveUploadedImage } from './storage.js'
@@ -346,7 +347,7 @@ app.use(compression())
 // injected content cannot ask for them. The chat's voice input is a first-party use
 // of the microphone, so the site's own origin keeps it; everything else stays off.
 app.use((_request, response, next) => {
-  response.set('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), usb=(), payment=(), interest-cohort=()')
+  response.set('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(self), usb=(), payment=(), interest-cohort=()')
   next()
 })
 const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER)
@@ -3636,6 +3637,10 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
   const pageSnapshot = typeof request.body.pageSnapshot === 'string'
     ? sanitizeChatText(request.body.pageSnapshot).slice(0, 2000)
     : ''
+  // The position the customer allowed the browser to share, so "which store is closer
+  // to me?" names the real nearest branch. Only a plausible coordinate pair is kept;
+  // anything else is treated as no location at all.
+  const location = parseCoordinates(request.body.location?.lat, request.body.location?.lng)
   // A signed-in customer continues as their account even when the thread started
   // as a guest. The chat widget opens its thread as soon as the panel opens, which
   // can be a moment before the session resolves; without this the new message would
@@ -3716,6 +3721,7 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
       customerContext,
       imageUrl,
       bag: chatBag(request.body.bag),
+      location,
     })
     if (!result.suggestion) {
       console.warn(

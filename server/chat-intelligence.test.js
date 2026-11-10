@@ -11,6 +11,7 @@ import {
 import {
   createToolExecutor,
   ensureProductLink,
+  findProduct,
   toolDefinitions,
   toolNames,
   runToolCalls,
@@ -89,11 +90,12 @@ test("scoreChunk weighs a title hit far above a body mention", () => {
 
 // ---------------------------------------------------------------------- tools (#2)
 
-test("the tool catalogue exposes the four live-data tools", () => {
+test("the tool catalogue exposes the live-data tools", () => {
   assert.deepEqual(toolNames(), [
     "get_product",
     "get_active_promos",
     "get_delivery_info",
+    "get_nearest_store",
     "get_order_status",
   ]);
   for (const tool of toolDefinitions()) {
@@ -126,6 +128,15 @@ const shopFacts = {
     { town: "Yaoundé", area: "Bastos", address: "Rue", phone: "" },
   ],
 };
+
+test("generic words like 'ice cream' never fabricate a product match", () => {
+  // "pizza flavored ice cream" names a product that does not exist. Matching on
+  // the generic words quoted a real product's price for the fantasy item.
+  assert.equal(findProduct(shopFacts, "pizza flavored ice cream"), null);
+  assert.equal(findProduct(shopFacts, "burger ice cream"), null);
+  // The real product is still found by its own words.
+  assert.equal(findProduct(shopFacts, "chocolate devotion")?.name, "Chocolate Devotion");
+});
 
 test("get_product answers price and stock from the facts, with a fuzzy name", async () => {
   const execute = createToolExecutor(fakeDb(), shopFacts);
@@ -173,6 +184,26 @@ test("a sold-out product does not get a buy link", () => {
     facts: shopFacts,
   });
   assert.equal(reply, "Vanilla Bean is sold out right now.");
+});
+
+test("get_nearest_store names the branch closest to the shared position", async () => {
+  const execute = createToolExecutor(fakeDb(), {
+    ...shopFacts,
+    branchDetails: [
+      { town: "Douala", area: "Bonanjo", address: "Centre Commercial L’Atrium" },
+      { town: "Yaoundé", area: "Bastos", address: "STAR MALL" },
+    ],
+    customerLocation: { lat: 3.89, lng: 11.51 },
+  });
+  const result = await execute("get_nearest_store", {});
+  assert.match(result, /Yaoundé \/ Bastos/);
+  assert.match(result, /STAR MALL/);
+  assert.doesNotMatch(result, /Bonanjo/);
+});
+
+test("get_nearest_store asks for a location instead of guessing a branch", async () => {
+  const execute = createToolExecutor(fakeDb(), shopFacts);
+  assert.match(await execute("get_nearest_store", {}), /location is not available/i);
 });
 
 test("get_delivery_info confirms a branch area and admits an unserved one", async () => {

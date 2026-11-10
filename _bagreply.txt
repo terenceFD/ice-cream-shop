@@ -1,0 +1,95 @@
+export function bagEditReply(message, bag, language = "en") {
+  const fr = language === "fr";
+  const lines = bagLines(bag);
+  if (!asksToClearBag(message) && !asksToChangeBag(message)) return null;
+  if (!lines.length) {
+    return {
+      topic: "order",
+      body: fr ? "Votre panier est déjà vide." : "Your bag is already empty.",
+    };
+  }
+  if (asksToClearBag(message)) {
+    return {
+      topic: "order",
+      chips: fr ? ["Voir le menu"] : ["Show me the menu"],
+      body: fr
+        ? "J'ai retiré tout le panier.\n[BAG:clear]"
+        : "I cleared the bag.\n[BAG:clear]",
+    };
+  }
+  const target = matchBagLine(message, lines) || (lines.length === 1 ? lines[0] : null);
+  if (!target) {
+    const names = lines.map((item) => item.name).join(", ");
+    return {
+      topic: "order",
+      body: fr
+        ? `Lequel voulez-vous changer ? Le panier a ${names}.`
+        : `Which one should I change? The bag has ${names}.`,
+    };
+  }
+  const askedForNumber = /\b(\d{1,2})\b/.test(message) || /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|un|une|deux|trois|quatre|cinq|sept|huit|neuf|dix|onze|douze)\b/i.test(message);
+  if (/\b(remove|take off|take out|drop|enl[eè]ve|retire)\b/i.test(message) && !askedForNumber) {
+    return {
+      topic: "order",
+      chips: fr ? ["Vider le panier"] : ["Empty the bag"],
+      body: fr
+        ? `${target.name} sort du panier.\n[BAG:set:${target.addId}*0]`
+        : `${target.name} is out of the bag.\n[BAG:set:${target.addId}*0]`,
+    };
+  }
+  const quantity = askedQuantity(message);
+  if (quantity < 1 || quantity > 40) {
+    return {
+      topic: "order",
+      body: fr
+        ? "Dites-moi une quantité entre 1 et 40."
+        : "Tell me a quantity from 1 to 40.",
+    };
+  }
+  const next = lines.map((item) => item.addId === target.addId ? { ...item, quantity } : item);
+  const quote = describeBagQuote(next, [], fr ? "fr" : "en");
+  return {
+    topic: "order",
+    chips: fr ? ["Appliquer un code"] : ["Apply a discount code"],
+    body: fr
+      ? `${target.name}, quantité ${quantity}. ${quote}\n[BAG:set:${target.addId}*${quantity}]`
+      : `${target.name}, quantity ${quantity}. ${quote}\n[BAG:set:${target.addId}*${quantity}]`,
+  };
+}
+
+function askedHour(message) {
+  const clock = String(message).match(/\b(?:at|à|a)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i)
+    || String(message).match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i);
+  if (!clock) return null;
+  let hour = Number(clock[1]);
+  const suffix = (clock[3] || "").toLowerCase();
+  if (suffix === "pm" && hour < 12) hour += 12;
+  if (suffix === "am" && hour === 12) hour = 0;
+  if (!suffix && hour >= 1 && hour <= 7) hour += 12;
+  if (hour < 0 || hour > 23) return null;
+  return hour;
+}
+
+function askedDate(message, today) {
+  const text = String(message || "").toLowerCase();
+  if (/\b(today|aujourd'hui|aujourdhui)\b/.test(text)) return today;
+  if (/\b(tomorrow|demain)\b/.test(text)) return addDays(today, 1);
+  const english = WEEKDAYS.findIndex((day) => text.includes(day));
+  const french = WEEKDAYS_FR.findIndex((day) => text.includes(day));
+  const index = english >= 0 ? english : french;
+  if (index < 0) return "";
+  const todayIndex = weekdayIndex(today);
+  const delta = (index - todayIndex + 7) % 7 || 7;
+  return addDays(today, delta);
+}
+
+function fulfillmentType(message) {
+  if (/\b(pick\s?up|collect|retrait|à emporter|a emporter)\b/i.test(message)) return "pickup";
+  if (/\b(deliver|delivery|livraison|livrez)\b/i.test(message)) return "delivery";
+  return "";
+}
+
+export function visitReply(message, { branches = [], slots = [], today = cameroonToday() } = {}, language = "en") {
+  const fr = language === "fr";
+  const type = fulfillmentType(message);
+  if (!type) return null;

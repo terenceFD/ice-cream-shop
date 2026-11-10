@@ -254,6 +254,18 @@ function asksForAutoAdd(message: string): boolean {
   );
 }
 
+/**
+ * True when the customer explicitly asked for the bag to change — remove an
+ * item, set its quantity, or empty the bag. Such a reply carries a [BAG:]
+ * tag that is applied automatically instead of waiting for a button tap: the
+ * agent's words say "removed", so the bag must actually change.
+ */
+function asksForBagEdit(message: string): boolean {
+  return /\b(?:remove|removed|take (?:off|out)|drop(?: (?:it|the|that))?|delete|empty|clear|vide|vider|enl[eè]ve|retire|supprime|make (?:it|the|them)|change it to|seulement)(?:\b|(?=[\s,.!?]))/i.test(
+    message,
+  );
+}
+
 function parseVisitTag(raw: string): ChatVisit | undefined {
   const [type, location, date, slotId] = raw
     .split("|")
@@ -280,6 +292,9 @@ function splitChatAction(body: string): {
   visit?: ChatVisit;
   code?: string;
   chips?: string[];
+  image?: string;
+  /** Extra angles when the agent answered a "more photos" ask. */
+  gallery?: string[];
 } {
   let text = body.trim();
   let action: { path: string; label: string } | undefined;
@@ -289,6 +304,8 @@ function splitChatAction(body: string): {
   let visit: ChatVisit | undefined;
   let code: string | undefined;
   let chips: string[] | undefined;
+  let image: string | undefined;
+  let gallery: string[] | undefined;
   for (let guard = 0; guard < 8; guard += 1) {
     const linkMatch = text.match(/\[LINK:(\/[^\]]+)\]\s*$/);
     const addMatch = text.match(/\[ADD:([^\]]+)\]\s*$/);
@@ -298,6 +315,22 @@ function splitChatAction(body: string): {
     const visitMatch = text.match(/\[VISIT:([^\]]+)\]\s*$/i);
     const codeMatch = text.match(/\[CODE:([^\]]+)\]\s*$/i);
     const chipsMatch = text.match(/\[CHIPS:([^\]]+)\]\s*$/i);
+    const imgMatch = text.match(/\[IMGS?:((?:\/[^\]|]+)(?:\|\/[^\]|]+)*)\]\s*$/i);
+    if (imgMatch) {
+      // Product photo(s). Only first-party site paths render: an attacker reply
+      // cannot embed an outside image into the conversation. One path is the
+      // single photo card; several paths become the gallery card.
+      const paths = imgMatch[1]
+        .split("|")
+        .map((shot) => shot.trim())
+        .filter((shot) =>
+          /^\/(?:menu-official|flavors|ice-images|cake-images)\/[\w\-/]+\.(?:webp|jpe?g|png)$/i.test(shot),
+        );
+      if (paths.length === 1) image = paths[0];
+      else if (paths.length > 1) gallery = paths.slice(0, 4);
+      text = text.slice(0, imgMatch.index).trim();
+      continue;
+    }
     if (linkMatch) {
       const path = safeProductPath(linkMatch[1].trim());
       if (path) action = { path, label: "Open this product" };
@@ -363,7 +396,45 @@ function splitChatAction(body: string): {
     }
     break;
   }
-  return { text, action, addId, fill, bag, visit, code, chips };
+  // The agent sometimes buries tags mid-sentence instead of on their own last
+  // line ("…on each product page: [LINK:/menu?…] [LINK:/menu?…]"). The loop
+  // above only parses end-of-text tags, so whatever survived must still be
+  // scrubbed from the visible text — and the first buried product link is
+  // honoured as the button rather than leaking as raw markup.
+  const buriedLink = text.match(/\[LINK:(\/[^\]]+)\]/);
+  if (buriedLink && !action) {
+    const path = safeProductPath(buriedLink[1].trim());
+    if (path) action = { path, label: "Open this product" };
+  }
+  // A photo tag the model put mid-sentence would otherwise be scrubbed with
+  // everything else — recover it as the photo card when the end-of-text loop
+  // did not already capture one.
+  if (!addId) {
+    // A buried [ADD:] must fire, not vanish: when the model put the add tag in
+    // the middle of its sentence, the customer still tapped "add it to my bag"
+    // and expects the item to land in the bag.
+    const buriedAdd = text.match(/\[ADD:([^\]]+)\]/);
+    const id = buriedAdd ? safeAddId(buriedAdd[1].trim()) : null;
+    if (id) addId = id;
+  }
+  if (!image && !gallery) {
+    const buriedImg = text.match(/\[IMGS?:((?:\/[^\]|]+)(?:\|\/[^\]|]+)*)\]/i);
+    const paths = buriedImg
+      ? buriedImg[1]
+          .split("|")
+          .map((shot) => shot.trim())
+          .filter((shot) =>
+            /^\/(?:menu-official|flavors|ice-images|cake-images)\/[\w\-/]+\.(?:webp|jpe?g|png)$/i.test(shot),
+          )
+      : [];
+    if (paths.length === 1) image = paths[0];
+    else if (paths.length > 1) gallery = paths.slice(0, 4);
+  }
+  text = text
+    .replace(/\[(?:LINK|IMGS?|ADD|FILL|BAG|VISIT|CODE|CHIPS|ACTION):[^\]]*\]/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  return { text, action, addId, fill, bag, visit, code, chips, image, gallery };
 }
 
 // A small text snapshot of the page the customer is looking at, sent with each
@@ -508,6 +579,13 @@ export function LiveChatWidget() {
     name: string;
   } | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  // The position the customer allowed the browser to share, so "which store is closer
+  // to me?" names the real nearest branch. Kept for the session; never shown back.
+  const [sharedLocation, setSharedLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
   // Voice input (#4): recording state and whether the browser offers speech input.
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -1058,6 +1136,33 @@ export function LiveChatWidget() {
     }
   };
 
+  // ------------------------------------------------------------ location
+  // The browser asks the customer once; the answer is kept for the session and sent
+  // with every message. A refusal is not an error — the assistant then asks for the
+  // neighborhood instead.
+  const shareLocation = () => {
+    if (!navigator.geolocation) {
+      setError(t("This browser cannot share your location. Tell us your neighborhood instead."));
+      return;
+    }
+    setIsLocating(true);
+    setError("");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setSharedLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+        setIsLocating(false);
+      },
+      () => {
+        setIsLocating(false);
+        setError(t("Location was not shared. Tell us your neighborhood instead."));
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+    );
+  };
+
   // ------------------------------------------------------------ proactive nudge (#6)
   //
   // Checkout and the custom-cake form are the two spots where a silent struggle is
@@ -1147,6 +1252,7 @@ export function LiveChatWidget() {
             // A snapshot of what is actually on the screen, so the assistant can
             // answer "what is this page?" from the real content, not guesses.
             pageSnapshot: capturePageSnapshot(),
+            location: sharedLocation,
             bag: cartItems.slice(0, 20).map((item) => ({
               name: item.name,
               quantity: item.quantity,
@@ -1571,6 +1677,8 @@ export function LiveChatWidget() {
                   visit,
                   code,
                   chips,
+                  image,
+                  gallery,
                 } = isCustomer
                   ? {
                       text: message.body,
@@ -1581,6 +1689,8 @@ export function LiveChatWidget() {
                       visit: undefined,
                       code: undefined,
                       chips: undefined,
+                      image: undefined,
+                      gallery: undefined,
                     }
                   : splitChatAction(message.body);
                 // The customer asked to add something and this reply carries its
@@ -1592,6 +1702,11 @@ export function LiveChatWidget() {
                   Boolean(addId) &&
                   previous?.sender === "customer" &&
                   asksForAutoAdd(previous.body);
+                const autoBag =
+                  !isCustomer &&
+                  Boolean(bag) &&
+                  previous?.sender === "customer" &&
+                  asksForBagEdit(previous.body);
                 // A customer message only reaches this list after the server stored it, so
                 // its presence IS the delivery confirmation. (The server sends no `delivery`
                 // field, and an earlier version pruned its own sent-message record as soon
@@ -1629,8 +1744,14 @@ export function LiveChatWidget() {
                         </div>
                       ) : (
                         <div className="text-[15px] leading-6 text-brand-navy">
+                          {gallery?.length ? (
+                            <ChatGallery shots={gallery} path={action?.path} />
+                          ) : image ? (
+                            <ChatProductImage src={image} path={action?.path} />
+                          ) : null}
                           {bodyText ? <ChatText text={bodyText} /> : null}
-                          {bag && <ChatBagEditButton bag={bag} />}
+                          {bag &&
+                            (autoBag ? <ChatAutoBag bag={bag} /> : <ChatBagEditButton bag={bag} />)}
                           {visit && <ChatVisitButton visit={visit} />}
                           {code && <ChatCodeButton code={code} />}
                           {chips?.length ? (
@@ -1830,6 +1951,65 @@ export function LiveChatWidget() {
                     stroke="currentColor"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    strokeWidth="1.8"
+                  />
+                </svg>
+              )}
+            </button>
+            <button
+              aria-label={t("Share my location")}
+              aria-pressed={Boolean(sharedLocation)}
+              className={`grid size-10 shrink-0 place-items-center rounded-full transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95 ${
+                sharedLocation
+                  ? "text-brand-navy"
+                  : "text-brand-muted hover:text-brand-navy"
+              }`}
+              disabled={isLocating || isSending}
+              onClick={shareLocation}
+              title={t("Share my location")}
+              type="button"
+            >
+              {isLocating ? (
+                <svg
+                  aria-hidden="true"
+                  className="size-4 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="9"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  />
+                  <path
+                    className="opacity-75"
+                    d="M21 12a9 9 0 0 0-9-9"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeWidth="2.5"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  aria-hidden="true"
+                  className="size-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"
+                    stroke="currentColor"
+                    strokeLinejoin="round"
+                    strokeWidth="1.8"
+                  />
+                  <circle
+                    cx="12"
+                    cy="10"
+                    r="2.5"
+                    stroke="currentColor"
                     strokeWidth="1.8"
                   />
                 </svg>
@@ -2097,6 +2277,130 @@ function ChatFillButton({
   );
 }
 
+/**
+ * A product photo the agent's reply carries ([IMG:/menu-official/…]). The whole
+ * card is the product's own link when one travelled with the reply, so a tap on
+ * the treat opens it. Broken or blocked images disappear instead of a broken icon.
+ */
+/**
+ * Several angles of one product, asked for with "show me more photos": the
+ * agent packs them into one [IMGS:a|b|c] tag. A large photo with thumbnails
+ * under it; arrows when there is room, and dots too small to tap stay as
+ * decoration only. A broken shot is skipped, so a deleted file never blanks
+ * the gallery.
+ */
+function ChatGallery({ shots, path }: { shots: string[]; path?: string }) {
+  const [failed, setFailed] = useState<Record<string, boolean>>({});
+  const [active, setActive] = useState(0);
+  const alive = shots.filter((shot) => !failed[shot]);
+  if (!alive.length) return null;
+  const current = Math.min(active, alive.length - 1);
+  const photo = (
+    <img
+      alt=""
+      className="block aspect-square w-full cursor-pointer rounded-[14px] object-cover"
+      decoding="async"
+      loading="lazy"
+      onClick={() => {
+        if (alive[current + 1]) setActive(current + 1);
+        else if (current > 0) setActive(0);
+      }}
+      onError={() => setFailed((prev) => ({ ...prev, [shots[current]]: true }))}
+      src={alive[current]}
+    />
+  );
+  return (
+    <div className="mb-2 max-w-[13rem] overflow-hidden rounded-[14px] ring-1 ring-brand-border-warm">
+      <div
+        className="relative"
+        role="group"
+        aria-label={`Photo ${current + 1} of ${alive.length}`}
+      >
+        {path ? (
+          <Link aria-label="Open this product" to={path}>
+            {photo}
+          </Link>
+        ) : (
+          photo
+        )}
+        {alive.length > 1 ? (
+          <>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute right-2 top-2 rounded-full bg-black/45 px-2 py-0.5 text-[11px] font-bold text-white"
+            >
+              {current + 1}/{alive.length}
+            </span>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-1.5 flex justify-center gap-1"
+            >
+              {alive.map((shot, index) => (
+                <span
+                  className={`size-1.5 rounded-full ${index === current ? "bg-white" : "bg-white/50"}`}
+                  key={shot}
+                />
+              ))}
+            </div>
+          </>
+        ) : null}
+      </div>
+      {alive.length > 1 ? (
+        <div className="flex gap-1.5 p-1.5">
+          {alive.map((shot, index) => (
+            <button
+              aria-label={`Show photo ${index + 1}`}
+              aria-pressed={index === current}
+              className={`h-11 w-11 shrink-0 overflow-hidden rounded-lg ring-1 transition ${
+                index === current
+                  ? "ring-2 ring-brand-yellow"
+                  : "ring-brand-border-warm opacity-70 hover:opacity-100"
+              }`}
+              key={shot}
+              onClick={() => setActive(index)}
+              type="button"
+            >
+              <img
+                alt=""
+                className="size-full object-cover"
+                decoding="async"
+                loading="lazy"
+                onError={() => setFailed((prev) => ({ ...prev, [shot]: true }))}
+                src={shot}
+              />
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ChatProductImage({ src, path }: { src: string; path?: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  const photo = (
+    <img
+      alt=""
+      className="block aspect-square w-full rounded-[14px] object-cover"
+      loading="lazy"
+      onError={() => setFailed(true)}
+      src={src}
+    />
+  );
+  return (
+    <div className="mb-2 max-w-[11rem] overflow-hidden rounded-[14px] ring-1 ring-brand-border-warm">
+      {path ? (
+        <Link aria-label="Open this product" to={path}>
+          {photo}
+        </Link>
+      ) : (
+        photo
+      )}
+    </div>
+  );
+}
+
 function ChatAddButton({ addId }: { addId: string }) {
   const { t } = useLanguage();
   const { addToCart } = useCart();
@@ -2297,6 +2601,86 @@ function ChatBagEditButton({ bag }: { bag: BagEdit }) {
         </p>
       ) : null}
     </>
+  );
+}
+
+/**
+ * Applies a reply's [BAG:…] tag the moment the reply renders, when the customer's
+ * message asked for the change — "remove the mango", "make it two", "empty my
+ * bag". The agent's wording claims the edit already happened, so waiting for a
+ * button tap makes that a lie; this runs the edit and shows the outcome in
+ * place. Runs once per mount; thread re-renders do not re-apply.
+ */
+function ChatAutoBag({ bag }: { bag: BagEdit }) {
+  const { t } = useLanguage();
+  const { clearCart, removeFromCart, updateQuantity, cartItems } = useCart();
+  const { flavors } = useFlavors();
+  const [state, setState] = useState<"applying" | "applied" | "gone">("applying");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (bag.mode === "clear") {
+        clearCart();
+        setState("applied");
+        return;
+      }
+      const addId = bag.addId || "";
+      const quantity = bag.quantity || 0;
+      const target = addId.startsWith("flavor:")
+        ? cartItems.find(
+            (item) =>
+              String(item.id) === addId.slice("flavor:".length) &&
+              item.itemType !== "menu",
+          )
+        : cartItems.find(
+            (item) =>
+              item.itemType === "menu" && findMenuItem(addId)?.id === item.id,
+          );
+      if (!target) {
+        // The item was already removed (or never added): the requested end
+        // state holds, so report success rather than a scare.
+        setState(quantity < 1 ? "applied" : "gone");
+        return;
+      }
+      if (quantity < 1) {
+        removeFromCart(target.id);
+      } else {
+        const available =
+          target.itemType === "menu"
+            ? target.availableQuantity
+            : (flavors.find((flavor) => flavor.id === target.id)
+                ?.availableQuantity ?? target.availableQuantity);
+        updateQuantity(
+          target.id,
+          Number.isSafeInteger(available) && available > 0 && quantity > available
+            ? available
+            : quantity,
+        );
+      }
+      setState("applied");
+    }, 400);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bag]);
+
+  return (
+    <div className="mt-2.5 max-w-[16rem]" aria-live="polite">
+      <div
+        className={`flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold ${
+          state === "applied"
+            ? "bg-[#3d8b40] text-white"
+            : state === "gone"
+              ? "bg-brand-yellow/60 text-brand-navy"
+              : "bg-brand-yellow/60 text-brand-navy"
+        }`}
+      >
+        {state === "applied"
+          ? t("Done")
+          : state === "gone"
+            ? t("That item is no longer in your bag.")
+            : t("Updating your bag…")}
+      </div>
+    </div>
   );
 }
 

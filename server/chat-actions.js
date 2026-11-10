@@ -39,7 +39,17 @@ export function withChips(text, chips) {
 }
 
 function bagLines(bag) {
-  return (bag || []).filter((item) => item?.name && item.quantity > 0 && item.addId);
+  // The widget sends each line's id in the addId shape ("menu:…:…" / "flavor:…");
+  // older payloads may still carry addId. Either key must count, or every bag
+  // edit is refused because no line passes the filter.
+  return (bag || []).filter(
+    (item) => item?.name && item.quantity > 0 && (item.addId || item.id),
+  );
+}
+
+/** The addId-shaped key of one bag line: the widget's id, or a legacy addId. */
+function lineAddId(item) {
+  return String(item?.addId || item?.id || "");
 }
 
 function matchBagLine(message, bag) {
@@ -161,8 +171,8 @@ export function bagEditReply(message, bag, language = "en") {
       topic: "order",
       chips: fr ? ["Vider le panier"] : ["Empty the bag"],
       body: fr
-        ? `${target.name} sort du panier.\n[BAG:set:${target.addId}*0]`
-        : `${target.name} is out of the bag.\n[BAG:set:${target.addId}*0]`,
+        ? `${target.name} sort du panier.\n[BAG:set:${lineAddId(target)}*0]`
+        : `${target.name} is out of the bag.\n[BAG:set:${lineAddId(target)}*0]`,
     };
   }
   const quantity = askedQuantity(message);
@@ -174,14 +184,14 @@ export function bagEditReply(message, bag, language = "en") {
         : "Tell me a quantity from 1 to 40.",
     };
   }
-  const next = lines.map((item) => item.addId === target.addId ? { ...item, quantity } : item);
+  const next = lines.map((item) => lineAddId(item) === lineAddId(target) ? { ...item, quantity } : item);
   const quote = describeBagQuote(next, [], fr ? "fr" : "en");
   return {
     topic: "order",
     chips: fr ? ["Appliquer un code"] : ["Apply a discount code"],
     body: fr
-      ? `${target.name}, quantité ${quantity}. ${quote}\n[BAG:set:${target.addId}*${quantity}]`
-      : `${target.name}, quantity ${quantity}. ${quote}\n[BAG:set:${target.addId}*${quantity}]`,
+      ? `${target.name}, quantité ${quantity}. ${quote}\n[BAG:set:${lineAddId(target)}*${quantity}]`
+      : `${target.name}, quantity ${quantity}. ${quote}\n[BAG:set:${lineAddId(target)}*${quantity}]`,
   };
 }
 

@@ -69,6 +69,21 @@ test("an edit on an empty bag answers without a tag", () => {
   assert.equal(/\[BAG:/.test(reply.body), false);
 });
 
+test("the widget's id key works like addId for removals", () => {
+  // The widget sends bag lines with id ("menu:…:…"), never addId. Removal must
+  // still name the exact line: regression for the "item stays in the bag" bug.
+  const widgetBag = [
+    { name: "Mango Pineapple Smoothie", quantity: 2, price: 3000, id: MANGO, itemType: "menu" },
+    { name: "Cookie Mintster", quantity: 1, price: 2500, id: "menu:ice-cream:cookie-mintster", itemType: "menu" },
+  ];
+  const reply = bagEditReply("remove the Cookie Mintster", widgetBag, "en");
+  assert.match(reply.body, /Cookie Mintster is out of the bag/);
+  assert.equal(reply.body.includes("[BAG:set:menu:ice-cream:cookie-mintster*0]"), true);
+  // And the other line stays untouched.
+  const kept = bagEditReply("remove the Cookie Mintster", widgetBag, "en");
+  assert.equal(kept.body.includes(`[BAG:set:${MANGO}`), false);
+});
+
 test("an ambiguous edit on two lines asks which one", () => {
   const reply = bagEditReply("make it two", bag, "en");
   assert.match(reply.body, /Which one should I change/);
