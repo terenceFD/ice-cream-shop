@@ -208,6 +208,11 @@ function insertIdentity(sql) {
 }
 
 export const database = {
+  // Schema bootstrap (commerce.js ensureSchema) sends multi-statement DDL. Parameterless
+  // queries go through the simple query protocol, which pg runs as one batch.
+  async exec(sql) {
+    await runQuery(sql, undefined)
+  },
   prepare(sql) {
     return {
       async all(...parameters) {
