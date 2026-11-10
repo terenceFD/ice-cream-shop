@@ -1894,7 +1894,7 @@ export function LiveChatWidget() {
           )}
 
           <form
-            className="flex items-center gap-1.5 border-t border-brand-border-warm bg-brand-cream px-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] pt-2.5 sm:px-3 sm:pb-3"
+            className="flex items-end gap-1.5 border-t border-brand-border-warm bg-brand-cream px-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] pt-2.5 sm:px-3 sm:pb-3"
             onSubmit={send}
           >
             {/* The paperclip stays on the left. The mic sits on the right until
@@ -1910,7 +1910,7 @@ export function LiveChatWidget() {
             />
             <button
               aria-label={t("Attach a photo")}
-              className="grid size-10 shrink-0 place-items-center rounded-full text-brand-muted transition hover:bg-white hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95"
+              className="grid size-10 shrink-0 place-items-center rounded-lg text-brand-muted transition hover:bg-white hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95"
               disabled={isUploadingPhoto || isSending}
               onClick={pickPhoto}
               title={t("Attach a photo")}
@@ -1959,7 +1959,7 @@ export function LiveChatWidget() {
             <button
               aria-label={t("Share my location")}
               aria-pressed={Boolean(sharedLocation)}
-              className={`grid size-10 shrink-0 place-items-center rounded-full transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95 ${
+              className={`grid size-10 shrink-0 place-items-center rounded-lg transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95 ${
                 sharedLocation
                   ? "text-brand-navy"
                   : "text-brand-muted hover:text-brand-navy"
@@ -2019,7 +2019,7 @@ export function LiveChatWidget() {
               <input
                 aria-label={t("Your message")}
                 autoComplete="off"
-                className={`w-full rounded-full border border-brand-border-warm bg-white py-2.5 text-[15px] font-medium text-brand-navy outline-none! transition-colors placeholder:text-brand-gray focus:border-brand-yellow ${
+                className={`w-full rounded-lg border border-brand-border-warm bg-white py-2.5 text-[15px] font-medium text-brand-navy shadow-[0_1px_2px_rgba(9,42,83,0.06)] outline-none! transition-all placeholder:text-brand-gray/80 focus:border-brand-yellow focus:bg-white focus:shadow-[0_0_0_3px_rgba(250,204,21,0.25)] ${
                   isListening && draft.trim()
                     ? "pl-3.5 pr-16 sm:pl-4"
                     : "px-3.5 sm:px-4"
@@ -2056,7 +2056,7 @@ export function LiveChatWidget() {
                 aria-label={
                   isListening ? t("Stop voice input") : t("Speak your message")
                 }
-                className={`grid size-10 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95 ${
+                className={`grid size-10 shrink-0 place-items-center rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95 ${
                   isListening
                     ? "bg-red-50 text-red-600"
                     : "text-brand-muted hover:bg-white hover:text-brand-navy"
@@ -2130,9 +2130,9 @@ export function LiveChatWidget() {
             {showSend && (
               <button
                 aria-label={t("Send message")}
-                className={`grid size-10 shrink-0 place-items-center rounded-full transition disabled:opacity-40 ${
+                className={`grid size-10 shrink-0 place-items-center rounded-lg transition disabled:opacity-40 ${
                   !isSending
-                    ? "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light active:scale-95"
+                    ? "bg-brand-yellow text-brand-navy shadow-[0_2px_8px_rgba(250,204,21,0.45)] hover:bg-brand-gold-light active:scale-95"
                     : "bg-white text-brand-gray"
                 }`}
                 disabled={isSending}
