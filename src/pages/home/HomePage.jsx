@@ -18,6 +18,7 @@ import {
   normalizePhotoGallery,
 } from "../../../shared/photoSizes.js";
 import { formatCartMoney } from "../../lib/cartPricing";
+import { useScrollReveal } from "../../lib/useScrollReveal";
 
 
 const cakeSliderFallbacks = {
@@ -622,7 +623,7 @@ function HowItWorksSection({ t }) {
         <ol className="mt-8 grid gap-4 sm:mt-12 sm:grid-cols-3 sm:gap-5">
           {steps.map(({ step, title, description }) => (
             <li
-              className="group relative flex gap-4 rounded-2xl border border-[#dce3eb] bg-white p-5 transition duration-300 hover:-translate-y-0.5 hover:border-[#e2d39a] hover:shadow-[0_18px_36px_rgba(9,42,83,0.10)] motion-reduce:transform-none motion-reduce:transition-none sm:flex-col sm:gap-5 sm:p-6"
+              className="scroll-reveal group relative flex gap-4 rounded-2xl border border-[#dce3eb] bg-white p-5 transition duration-300 hover:-translate-y-0.5 hover:border-[#e2d39a] hover:shadow-[0_18px_36px_rgba(9,42,83,0.10)] motion-reduce:transform-none motion-reduce:transition-none sm:flex-col sm:gap-5 sm:p-6"
               key={step}
             >
               {/* The number sits on its own line on a phone, so the title and the
@@ -683,6 +684,16 @@ export function HomePage() {
   const [heroPaused, setHeroPaused] = useState(false);
   const reviewsSentinel = useRef(null);
   const flavorSection = useRef(null);
+  // Scroll reveals: how-it-works, flavor grid, cake grid — re-run when the
+  // grids change ("Show more", filters) so newly rendered cards are observed.
+  const pageRevealRef = useScrollReveal([
+    visibleFlavorCount,
+    selectedFlavorMood,
+    flavorSearch,
+    selectedCakeType,
+    cakeSearch,
+    cakeVisibleCount,
+  ]);
 
   // The photo on screen, plus the next one, so the crossfade has a picture ready.
   useEffect(() => {
@@ -1021,7 +1032,10 @@ export function HomePage() {
     return [...new Set([...own, ...related, ...fallbacks])].slice(0, 4);
   };
   return (
-    <div className="min-h-screen overflow-clip bg-[#fbfaf5] text-brand-navy">
+    <div
+      className="min-h-screen overflow-clip bg-[#fbfaf5] text-brand-navy"
+      ref={pageRevealRef}
+    >
       <Header />
       <main id="main" tabIndex={-1}>
         {/* The floating widgets (chat, currency) step aside over the hero and the footer,
@@ -1509,7 +1523,7 @@ export function HomePage() {
 
                 return (
                   <li
-                    className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-brand-yellow/70 motion-reduce:transform-none motion-reduce:transition-none"
+                    className="scroll-reveal group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-brand-yellow/70 motion-reduce:transform-none motion-reduce:transition-none"
                     key={flavor.id}
                   >
                     {/* The whole card opens the flavor details. The Add to cart controls are
@@ -1799,7 +1813,7 @@ export function HomePage() {
 
                   return (
                     <li
-                      className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[color:var(--card-accent)]/40 motion-reduce:transform-none motion-reduce:transition-none"
+                      className="scroll-reveal group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-transparent transition duration-500 ease-out hover:-translate-y-2 hover:rotate-[0.4deg] hover:shadow-[0_24px_48px_rgba(9,42,83,0.18)] hover:ring-[color:var(--card-accent)]/40 motion-reduce:transform-none motion-reduce:transition-none"
                       key={cake.name}
                       style={{ "--card-accent": accent }}
                     >
