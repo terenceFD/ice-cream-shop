@@ -45,6 +45,8 @@ scripts/qa-chat-*.mjs
 scripts/qa-notification-*.mjs
 scripts/seed-qa-*.mjs
 
-// Agent files or the Agent skills
-.claude
-.agents
+# Agent files and skills
+.claude/
+.agents/
+AGENTS.md
+CLAUDE.md
