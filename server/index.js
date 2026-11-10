@@ -6462,10 +6462,9 @@ app.use((error, _request, response, _next) => {
     return
   }
   console.error(error)
-  const debugMessage = error instanceof Error && error.message && (
-    error.message.startsWith('Email delivery is not configured')
-    || error.message.startsWith('Email delivery requires')
-  )
+  // Temporary diagnostics: return the real message so a live 500 can be read from
+  // the browser console. Narrow back once the payment-methods failure is fixed.
+  const debugMessage = error instanceof Error && error.message
     ? error.message
     : 'An unexpected server error occurred.'
   if (!response.headersSent) response.status(500).json({ error: debugMessage })
