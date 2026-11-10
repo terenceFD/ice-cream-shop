@@ -2,11 +2,31 @@
 // Kept out of database.js so marketing features do not grow the core file; the
 // helper contract matches that module because the driver differs by deployment.
 
-import { database } from "./database.js";
+import { database, databaseKind } from "./database.js";
+
+// SQLite uses AUTOINCREMENT; Postgres (the hosted backend) rejects that syntax and
+// needs GENERATED ALWAYS AS IDENTITY. Everything else in the DDL is valid on both.
+const autoId =
+  databaseKind === "postgres"
+    ? "id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
+    : "id INTEGER PRIMARY KEY AUTOINCREMENT";
+
+// Bundle line items are serialized into one column. SQLite ships
+// json_group_array/json_object; Postgres has json_agg/json_build_object instead.
+const itemsJsonSelect =
+  databaseKind === "postgres"
+    ? `COALESCE((
+      SELECT json_agg(json_build_object('itemKey', bi.item_key, 'quantity', bi.quantity))
+      FROM bundle_items bi WHERE bi.bundle_id = b.id
+    ), '[]')::text AS items_json`
+    : `COALESCE((
+      SELECT json_group_array(json_object('itemKey', bi.item_key, 'quantity', bi.quantity))
+      FROM bundle_items bi WHERE bi.bundle_id = b.id
+    ), '[]') AS items_json`;
 
 const TABLE_SQL = `
   CREATE TABLE IF NOT EXISTS bundles (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ${autoId},
     title TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
     image TEXT NOT NULL DEFAULT '',
@@ -18,7 +38,7 @@ const TABLE_SQL = `
   );
 
   CREATE TABLE IF NOT EXISTS bundle_items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ${autoId},
     bundle_id INTEGER NOT NULL REFERENCES bundles(id) ON DELETE CASCADE,
     item_key TEXT NOT NULL,
     quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0)
@@ -26,7 +46,7 @@ const TABLE_SQL = `
   CREATE INDEX IF NOT EXISTS idx_bundle_items_bundle ON bundle_items(bundle_id);
 
   CREATE TABLE IF NOT EXISTS wishlists (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ${autoId},
     customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
     share_slug TEXT NOT NULL UNIQUE,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -34,7 +54,7 @@ const TABLE_SQL = `
   CREATE UNIQUE INDEX IF NOT EXISTS idx_wishlists_customer ON wishlists(customer_id);
 
   CREATE TABLE IF NOT EXISTS wishlist_items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ${autoId},
     wishlist_id INTEGER NOT NULL REFERENCES wishlists(id) ON DELETE CASCADE,
     item_key TEXT NOT NULL,
     added_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -86,10 +106,7 @@ export async function listActiveBundles() {
   const rows = await database
     .prepare(
       `
-    SELECT b.*, COALESCE((
-      SELECT json_group_array(json_object('itemKey', bi.item_key, 'quantity', bi.quantity))
-      FROM bundle_items bi WHERE bi.bundle_id = b.id
-    ), '[]') AS items_json
+    SELECT b.*, ${itemsJsonSelect}
     FROM bundles b
     WHERE b.is_active = 1
     ORDER BY b.sort_order ASC, b.id ASC
@@ -104,10 +121,7 @@ export async function listAllBundles() {
   const rows = await database
     .prepare(
       `
-    SELECT b.*, COALESCE((
-      SELECT json_group_array(json_object('itemKey', bi.item_key, 'quantity', bi.quantity))
-      FROM bundle_items bi WHERE bi.bundle_id = b.id
-    ), '[]') AS items_json
+    SELECT b.*, ${itemsJsonSelect}
     FROM bundles b
     ORDER BY b.sort_order ASC, b.id ASC
   `,
@@ -173,10 +187,7 @@ export async function saveBundle(bundle) {
   const rows = await database
     .prepare(
       `
-    SELECT b.*, COALESCE((
-      SELECT json_group_array(json_object('itemKey', bi.item_key, 'quantity', bi.quantity))
-      FROM bundle_items bi WHERE bi.bundle_id = b.id
-    ), '[]') AS items_json
+    SELECT b.*, ${itemsJsonSelect}
     FROM bundles b WHERE b.id = ?
   `,
     )
@@ -346,7 +357,7 @@ export async function markCodOrderCollected(orderId, collectedByAdminId) {
 // One reminder row per checkout, so the sweep never nudges the same cart twice.
 const RECOVERY_TABLE = `
   CREATE TABLE IF NOT EXISTS abandoned_cart_reminders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ${autoId},
     checkout_id INTEGER NOT NULL UNIQUE,
     phone TEXT NOT NULL,
     order_total_cents INTEGER NOT NULL,

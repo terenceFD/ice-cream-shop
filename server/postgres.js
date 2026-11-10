@@ -8,6 +8,7 @@ const transactionContext = new AsyncLocalStorage()
 const identityTables = new Set([
   'admins',
   'admin_activity',
+  'bundles',
   'cake_requests',
   'contact_messages',
   'custom_menu_items',
@@ -199,6 +200,16 @@ async function runQuery(sql, values) {
   }
 }
 
+// Runtime schema creation (CREATE TABLE IF NOT EXISTS) must produce valid PostgreSQL.
+// Mirrors scripts/sqlite-postgres-schema.js postgresTableDefinition for the constructs
+// that appear in runtime DDL.
+export function translateDdl(sql) {
+  return sql
+    .replace(/\bINTEGER\s+PRIMARY\s+KEY\s+AUTOINCREMENT\b/gi, 'SERIAL PRIMARY KEY')
+    .replace(/\s+COLLATE\s+NOCASE\b/gi, '')
+    .replace(/\bcreated_at\s+TEXT\b/gi, 'created_at TIMESTAMP')
+}
+
 function insertIdentity(sql) {
   const match = /\bINSERT\s+(?:OR\s+IGNORE\s+)?INTO\s+([a-z_][a-z0-9_]*)/i.exec(sql)
   if (!match || !identityTables.has(match[1].toLowerCase()) || /\bRETURNING\b/i.test(sql)) {
@@ -208,10 +219,11 @@ function insertIdentity(sql) {
 }
 
 export const database = {
-  // Schema bootstrap (commerce.js ensureSchema) sends multi-statement DDL. Parameterless
-  // queries go through the simple query protocol, which pg runs as one batch.
+  // Schema bootstrap (commerce.js ensureSchema) sends multi-statement SQLite DDL.
+  // Translate it to PostgreSQL the same way the migration script does, then run it
+  // through the simple query protocol, which executes multi-statement batches.
   async exec(sql) {
-    await runQuery(sql, undefined)
+    await runQuery(translateDdl(sql), undefined)
   },
   prepare(sql) {
     return {
