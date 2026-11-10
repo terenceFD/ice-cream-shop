@@ -1477,7 +1477,7 @@ export function LiveChatWidget() {
         <button
           aria-expanded={isOpen}
           aria-label={isOpen ? t("Close chat") : t("Chat with us")}
-          className="grid size-14 place-items-center rounded-full bg-brand-navy text-brand-yellow shadow-[0_14px_36px_rgba(9,42,83,0.4)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
+          className="grid size-14 place-items-center rounded-full bg-gradient-to-br from-brand-navy to-brand-blue text-brand-yellow shadow-[0_10px_24px_rgba(15,35,60,0.28),0_20px_48px_rgba(15,35,60,0.22),0_0_0_1px_rgba(255,255,255,0.12)_inset] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
           onClick={() => setIsOpen((open) => !open)}
           type="button"
         >
@@ -1545,25 +1545,30 @@ export function LiveChatWidget() {
           // launcher). From sm up it floats above the launcher — 5.25rem is the 3.5rem
           // bubble plus its 1.5rem offset and a small gap — and grows to 38rem.
           // It scales from the launcher corner: zooms in on open, out on close.
-          className={`site-live-chat-panel fixed inset-0 z-[95] flex h-dvh w-full flex-col overflow-hidden rounded-none bg-brand-cream transition-all duration-200 ease-out motion-reduce:transition-none sm:inset-auto sm:bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:left-4 sm:z-[65] sm:h-[min(38rem,calc(100dvh-7rem))] sm:w-[24.5rem] sm:rounded-[24px] sm:shadow-[0_24px_60px_rgba(71,42,59,0.28)] sm:ring-1 sm:ring-brand-border-warm sm:origin-bottom-left ${panelShown ? "sm:scale-100 sm:opacity-100" : "sm:scale-75 sm:opacity-0"}`}
+          className={`site-live-chat-panel fixed inset-0 z-[95] flex h-dvh w-full flex-col overflow-hidden rounded-none bg-white transition-all duration-200 ease-out motion-reduce:transition-none sm:inset-auto sm:bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:left-4 sm:z-[65] sm:h-[min(38rem,calc(100dvh-7rem))] sm:w-[24.5rem] sm:rounded-2xl sm:shadow-[0_4px_12px_rgba(15,35,60,0.08),0_24px_64px_rgba(15,35,60,0.24)] sm:ring-1 sm:ring-brand-navy/10 sm:origin-bottom-left ${panelShown ? "sm:scale-100 sm:opacity-100" : "sm:scale-75 sm:opacity-0"}`}
           ref={panelRef}
         >
-          <div aria-hidden="true" className="h-1 shrink-0 bg-brand-yellow" />
-          <header className="relative flex items-center gap-2.5 bg-brand-cream px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] text-brand-navy sm:gap-3 sm:px-4 sm:pb-3 sm:pt-3.5">
-            <span
-              aria-hidden="true"
-              className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-navy text-brand-yellow"
-            >
-              <ChatMark className="size-5" />
+          <header className="relative flex items-center gap-2.5 bg-gradient-to-br from-brand-navy via-brand-navy to-brand-blue px-3 pb-3.5 pt-[max(0.75rem,env(safe-area-inset-top))] text-white shadow-[0_1px_0_rgba(255,255,255,0.08)_inset] sm:gap-3 sm:px-4 sm:pb-3.5 sm:pt-4">
+            <span className="relative shrink-0">
+              <span
+                aria-hidden="true"
+                className="grid size-10 place-items-center rounded-full bg-white/10 text-brand-yellow ring-1 ring-white/20"
+              >
+                <ChatMark className="size-5" />
+              </span>
+              <span
+                aria-hidden="true"
+                className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-brand-navy bg-[#3d8b40]"
+              />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-display text-lg font-extrabold leading-none">
+              <p className="truncate font-display text-lg font-extrabold leading-none tracking-tight">
                 Cold Stone
               </p>
-              <p className="mt-1 flex items-center gap-1.5 text-[13px] text-brand-muted">
+              <p className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-medium text-white/70">
                 <span
                   aria-hidden="true"
-                  className="inline-block size-1.5 shrink-0 rounded-full bg-[#3d8b40]"
+                  className="inline-block size-1.5 shrink-0 rounded-full bg-[#4caf50] shadow-[0_0_6px_rgba(76,175,80,0.9)]"
                 />
                 <span className="min-w-0 truncate">
                   {t("Usually replies in minutes")}
@@ -1572,7 +1577,7 @@ export function LiveChatWidget() {
             </div>
             <button
               aria-label={t("Clear chat")}
-              className="grid size-8 shrink-0 place-items-center rounded-full bg-white text-brand-navy ring-1 ring-brand-border-warm transition hover:bg-brand-yellow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow active:scale-95"
+              className="grid size-8 shrink-0 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow active:scale-95"
               disabled={isRequestingHuman}
               onClick={clearChat}
               title={t("Clear chat")}
@@ -1607,7 +1612,7 @@ export function LiveChatWidget() {
             </button>
             <button
               aria-label={t("Close chat")}
-              className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-navy text-white transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow active:scale-95"
+              className="grid size-8 shrink-0 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow active:scale-95"
               onClick={() => setIsOpen(false)}
               type="button"
             >
@@ -1616,7 +1621,7 @@ export function LiveChatWidget() {
           </header>
 
           <div
-            className="flex flex-1 flex-col overflow-y-auto bg-brand-cream px-4 py-4"
+            className="flex flex-1 flex-col overflow-y-auto bg-brand-cream/60 px-4 py-4"
             ref={listRef}
           >
             {/* Opening on a history cascades the bubbles in top-down; the stagger
@@ -1649,7 +1654,7 @@ export function LiveChatWidget() {
                       <div className="mt-3 flex max-w-full flex-wrap gap-1.5">
                         {starterQuestions.map((question) => (
                           <button
-                            className="rounded-full border border-brand-border-warm bg-white px-3 py-1.5 text-left text-[13px] font-semibold text-brand-navy transition hover:border-brand-yellow hover:bg-brand-yellow/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-[0.98]"
+                            className="rounded-full border border-brand-border-warm bg-white px-3 py-1.5 text-left text-[13px] font-semibold text-brand-navy shadow-[0_1px_2px_rgba(15,35,60,0.05)] transition hover:-translate-y-px hover:border-brand-yellow hover:bg-brand-yellow/15 hover:shadow-[0_3px_8px_rgba(15,35,60,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-[0.98]"
                             key={question}
                             onClick={() => applyStarter(question)}
                             type="button"
@@ -1743,7 +1748,7 @@ export function LiveChatWidget() {
                           ) : null}
                         </div>
                       ) : (
-                        <div className="text-[15px] leading-6 text-brand-navy">
+                        <div className="max-w-[16.5rem] rounded-[18px] rounded-bl-[6px] bg-white px-3.5 py-2 text-[15px] leading-6 text-brand-navy shadow-[0_1px_2px_rgba(15,35,60,0.06),0_2px_8px_rgba(15,35,60,0.04)] ring-1 ring-brand-border-warm/70">
                           {gallery?.length ? (
                             <ChatGallery shots={gallery} path={action?.path} />
                           ) : image ? (
@@ -1785,7 +1790,7 @@ export function LiveChatWidget() {
                         </div>
                       )}
                       <p
-                        className={`mt-2 flex items-center gap-1 text-[11px] font-medium text-brand-gray ${isCustomer ? "justify-end" : "justify-start"}`}
+                        className={`mt-1.5 flex items-center gap-1 text-[11px] font-medium text-brand-gray ${isCustomer ? "justify-end" : "justify-start"}`}
                       >
                         <span>{time(message.createdAt)}</span>
                         {delivered && <DeliveryTick />}
@@ -1808,7 +1813,7 @@ export function LiveChatWidget() {
                   aria-hidden="true"
                 >
                   <ShopMark />
-                  <span className="ml-2 flex items-center gap-1.5 py-2">
+                  <span className="ml-2 flex items-center gap-1.5 rounded-[18px] rounded-bl-[6px] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(15,35,60,0.06)] ring-1 ring-brand-border-warm/70">
                     <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_infinite]" />
                     <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.2s_infinite]" />
                     <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.4s_infinite]" />
@@ -1845,12 +1850,12 @@ export function LiveChatWidget() {
               )}
             </p>
           ) : (
-            <div className="flex items-center justify-between gap-3 bg-brand-cream px-4 pb-2">
+            <div className="flex items-center justify-between gap-3 border-t border-brand-border-warm/60 bg-brand-cream/60 px-4 pb-2 pt-2.5">
               <p className="text-[11px] leading-4 text-brand-muted">
                 {t("Need more help than the assistant can give?")}
               </p>
               <button
-                className="shrink-0 rounded-full border border-brand-border-warm bg-white px-3 py-1.5 text-xs font-bold text-brand-navy transition hover:border-brand-yellow hover:bg-brand-yellow/15 disabled:cursor-wait disabled:opacity-60"
+                className="shrink-0 rounded-lg border border-brand-border-warm bg-white px-3 py-1.5 text-xs font-bold text-brand-navy shadow-[0_1px_2px_rgba(15,35,60,0.05)] transition hover:border-brand-yellow hover:bg-brand-yellow/15 disabled:cursor-wait disabled:opacity-60"
                 disabled={isRequestingHuman || isSending || isClearing}
                 onClick={requestHumanHelp}
                 type="button"
@@ -2255,7 +2260,7 @@ function ChatFillButton({
   return (
     <>
       <button
-        className={`flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] ${
+        className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-extrabold shadow-[0_2px_10px_rgba(250,204,21,0.4)] transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy hover:shadow-[0_4px_14px_rgba(250,204,21,0.5)] active:scale-[0.98] ${
           added
             ? "bg-[#3d8b40] text-white"
             : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
@@ -2448,7 +2453,7 @@ function ChatAddButton({ addId }: { addId: string }) {
     <>
       <button
         aria-live="polite"
-        className={`relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-full px-4 py-2.5 text-sm font-extrabold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] ${
+        className={`relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl px-4 py-2.5 text-sm font-extrabold shadow-[0_2px_10px_rgba(250,204,21,0.4)] transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy hover:shadow-[0_4px_14px_rgba(250,204,21,0.5)] active:scale-[0.98] ${
           justAdded
             ? "bg-[#3d8b40] text-white"
             : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
@@ -2512,12 +2517,26 @@ function ChatActionButton({
       className={
         quiet
           ? "text-sm font-bold text-brand-navy underline decoration-brand-yellow decoration-2 underline-offset-2 transition-[text-decoration-color] hover:decoration-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
-          : "flex w-full items-center justify-center rounded-full bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+        : "group flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.4)] transition-all hover:bg-brand-gold-light hover:shadow-[0_4px_14px_rgba(250,204,21,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
       }
       onClick={() => window.dispatchEvent(new CustomEvent("chat:navigate"))}
       to={action.path}
     >
       {t(action.label)}
+      <svg
+        aria-hidden="true"
+        className="size-3.5 transition-transform group-hover:translate-x-0.5"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M4 12h15m0 0-6-6m6 6-6 6"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2.5"
+        />
+      </svg>
     </Link>
   );
 }
@@ -2578,7 +2597,7 @@ function ChatBagEditButton({ bag }: { bag: BagEdit }) {
   return (
     <>
       <button
-        className={`mt-2.5 flex w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-extrabold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] ${
+        className={`mt-2.5 flex w-full items-center justify-center rounded-xl px-4 py-2.5 text-sm font-extrabold shadow-[0_2px_10px_rgba(250,204,21,0.4)] transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy hover:shadow-[0_4px_14px_rgba(250,204,21,0.5)] active:scale-[0.98] ${
           done && !note
             ? "bg-[#3d8b40] text-white"
             : "bg-brand-yellow text-brand-navy hover:bg-brand-gold-light"
@@ -2666,12 +2685,10 @@ function ChatAutoBag({ bag }: { bag: BagEdit }) {
   return (
     <div className="mt-2.5 max-w-[16rem]" aria-live="polite">
       <div
-        className={`flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold ${
+        className={`flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-extrabold ${
           state === "applied"
-            ? "bg-[#3d8b40] text-white"
-            : state === "gone"
-              ? "bg-brand-yellow/60 text-brand-navy"
-              : "bg-brand-yellow/60 text-brand-navy"
+            ? "bg-[#3d8b40] text-white shadow-[0_2px_10px_rgba(61,139,64,0.35)]"
+            : "bg-brand-navy/5 text-brand-navy ring-1 ring-brand-navy/10"
         }`}
       >
         {state === "applied"
@@ -2690,7 +2707,7 @@ function ChatVisitButton({ visit }: { visit: ChatVisit }) {
   const navigate = useNavigate();
   return (
     <button
-      className="mt-2.5 flex w-full items-center justify-center rounded-full bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+      className="mt-2.5 flex w-full items-center justify-center rounded-xl bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.4)] transition-all hover:bg-brand-gold-light hover:shadow-[0_4px_14px_rgba(250,204,21,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
       onClick={() => {
         try {
           sessionStorage.setItem(
@@ -2716,7 +2733,7 @@ function ChatCodeButton({ code }: { code: string }) {
   const navigate = useNavigate();
   return (
     <button
-      className="mt-2.5 flex w-full items-center justify-center rounded-full bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+      className="mt-2.5 flex w-full items-center justify-center rounded-xl bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.4)] transition-all hover:bg-brand-gold-light hover:shadow-[0_4px_14px_rgba(250,204,21,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
       onClick={() => {
         try {
           sessionStorage.setItem("cold-stone-chat-code", code);
@@ -2743,15 +2760,35 @@ function ChatChips({
 }) {
   const { t } = useLanguage();
   return (
-    <div className="mt-2.5 flex max-w-full flex-wrap gap-1.5">
+    <div className="mt-3 flex max-w-full flex-wrap items-center gap-1.5">
+      <span
+        aria-hidden="true"
+        className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-brand-muted"
+      >
+        {t("Suggestions")}
+      </span>
       {chips.map((chip) => (
         <button
-          className="rounded-full border border-brand-navy/25 bg-white px-3 py-1.5 text-[13px] font-bold text-brand-navy transition hover:border-brand-navy hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+          className="group flex items-center gap-1 rounded-full border border-brand-border-warm bg-white py-1.5 pl-3 pr-2.5 text-[13px] font-bold text-brand-navy shadow-[0_1px_2px_rgba(15,35,60,0.05)] transition-all hover:-translate-y-px hover:border-brand-yellow hover:bg-brand-yellow/15 hover:shadow-[0_3px_8px_rgba(15,35,60,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-[0.98]"
           key={chip}
           onClick={() => onSend(chip)}
           type="button"
         >
           {t(chip)}
+          <svg
+            aria-hidden="true"
+            className="size-3 text-brand-muted transition-all group-hover:translate-x-0.5 group-hover:text-brand-navy"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M4 12h15m0 0-6-6m6 6-6 6"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+            />
+          </svg>
         </button>
       ))}
     </div>
@@ -2816,12 +2853,12 @@ function ChatAutoAdd({ addId }: { addId: string }) {
   return (
     <div className="mt-2.5 max-w-[16rem]" aria-live="polite">
       <div
-        className={`flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold ${
+        className={`flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-extrabold ${
           state === "added"
-            ? "bg-[#3d8b40] text-white"
+            ? "bg-[#3d8b40] text-white shadow-[0_2px_10px_rgba(61,139,64,0.35)]"
             : state === "failed"
-              ? "bg-red-50 text-red-700"
-              : "bg-brand-yellow/60 text-brand-navy"
+              ? "bg-red-50 text-red-700 ring-1 ring-red-200"
+              : "bg-brand-navy/5 text-brand-navy ring-1 ring-brand-navy/10"
         }`}
       >
         {state === "added" ? (
