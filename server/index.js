@@ -13,6 +13,8 @@ import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { promises as dns } from 'node:dns'
 import { fileURLToPath } from 'node:url'
+import { z } from 'zod'
+import { lowerTrimmedEmail, parseBody, trimmedString } from './validation.js'
 import {
   addCustomerFavorite,
   createAdminAccount,
@@ -1412,12 +1414,15 @@ app.post('/api/newsletter/subscribe', publicFormIpLimiter, async (request, respo
     response.status(201).json({ subscribed: true })
     return
   }
-  const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
-  if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  const parsed = parseBody(z.object({
+    email: lowerTrimmedEmail,
+    source: z.enum(['footer', 'checkout']).default('footer'),
+  }), request.body)
+  if (!parsed.success) {
     response.status(400).json({ error: 'Enter a valid email address to subscribe.' })
     return
   }
-  const source = ['footer', 'checkout'].includes(request.body.source) ? request.body.source : 'footer'
+  const { email, source } = parsed.data
   const subscription = await subscribeNewsletter(email, source)
   // A warm hello while the shopper is still on the page. Only first-time
   // subscribers get one, so a repeat signup never receives a duplicate.
@@ -1473,12 +1478,12 @@ app.post('/api/admin/newsletter/broadcast', requireAdmin, ownerOnly, async (requ
 })
 
 app.post('/api/newsletter/unsubscribe', publicFormIpLimiter, async (request, response) => {
-  const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
-  if (!email) {
+  const parsed = parseBody(z.object({ email: z.string().trim().min(1).max(254) }), request.body)
+  if (!parsed.success) {
     response.status(400).json({ error: 'Enter the email address to unsubscribe.' })
     return
   }
-  await unsubscribeNewsletter(email)
+  await unsubscribeNewsletter(parsed.data.email)
   response.json({ unsubscribed: true })
 })
 
@@ -2048,18 +2053,24 @@ app.post('/api/contact', publicFormIpLimiter, contactLimiter, async (request, re
       response.status(201).json({ messageId: null })
       return
     }
-    const name = sanitizeChatText(typeof request.body.name === 'string' ? request.body.name.trim() : '')
-    const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : ''
-    const phone = typeof request.body.phone === 'string' ? request.body.phone.trim() : ''
-    const subject = sanitizeChatText(typeof request.body.subject === 'string' ? request.body.subject.trim() : '')
-    const message = sanitizeChatText(typeof request.body.message === 'string' ? request.body.message.trim() : '')
-    const storeId = Number(request.body.storeId)
-    if (!name || name.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254
-      || phone.length > 40 || !subject || subject.length > 150 || !message || message.length > 5000
-      || !Number.isSafeInteger(storeId) || storeId < 1) {
+    const parsed = parseBody(z.object({
+      name: trimmedString(100).refine((value) => value.length > 0),
+      email: lowerTrimmedEmail,
+      phone: trimmedString(40),
+      subject: trimmedString(150).refine((value) => value.length > 0),
+      message: trimmedString(5000).refine((value) => value.length > 0),
+      storeId: z.coerce.number().int().min(1),
+    }), request.body)
+    if (!parsed.success) {
       response.status(400).json({ error: 'Provide a name, valid email, subject, message, and store. Please check the field lengths.' })
       return
     }
+    const name = sanitizeChatText(parsed.data.name)
+    const email = parsed.data.email
+    const phone = parsed.data.phone
+    const subject = sanitizeChatText(parsed.data.subject)
+    const message = sanitizeChatText(parsed.data.message)
+    const storeId = parsed.data.storeId
     const store = await database.prepare(`
       SELECT s.id FROM stores s
       JOIN fulfillment_zones z ON z.id = s.fulfillment_zone_id
