@@ -25,7 +25,7 @@ import {
   localClock,
 } from "../shared/storeHours.js";
 import { buildChunks, retrieveChunks } from "./retrieval.js";
-import { createToolExecutor, customerProductLine, describeCreation, ensureProductLink, flavorItemPath, menuItemPath, askedProduct, partyReply, productActionLines, reorderReply, soldOutAnswer, toolDefinitions, findProduct } from "./chat-tools.js";
+import { createToolExecutor, customerProductLine, describeCreation, ensureProductLink, flavorItemPath, menuItemPath, askedProduct, partyReply, productActionLines, productPhotoLine, reorderReply, soldOutAnswer, toolDefinitions, findProduct } from "./chat-tools.js";
 import { applyAllergyGuard, describeBagQuote, describeBranch } from "./chat-offer.js";
 import {
   bagEditReply,
@@ -42,7 +42,7 @@ import { readFileSync } from "node:fs";
 import { resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
-import { safeChatImageReference } from "./storage.js";
+
 
 const VISION_DATA_URI = /^data:(image\/[a-z0-9.+-]+);base64,([A-Za-z0-9+/]+={0,2})$/i;
 
@@ -492,7 +492,7 @@ const FACT_CACHE_MS = 60000;
  */
 export async function suggestReply(
   history,
-  { database, language = "en", customerPage = "", pageSnapshot = "", customerContext = {}, imageUrl = "", bag = [] },
+  { database, language = "en", customerPage = "", pageSnapshot = "", customerContext = {}, imageUrl = "", bag = [], onTool = null },
 ) {
   const lastCustomer = [...history]
     .reverse()
@@ -681,11 +681,15 @@ export async function suggestReply(
   });
   }
 
+  // Card tags shown to the model for its tool lookups (product card, order timeline).
+  const collected = [];
   const ai = await generateWithModel(recent, shopFacts, replyLanguage, customerPage, pageSnapshot, {
     database,
     memorySummary: buildMemorySummary(history),
     imageUrl: photo,
     imageMatch,
+    onTool,
+    collected,
   });
   if (ai.text) {
     // One model call. A second fact-check round used to sit in front of every
@@ -698,6 +702,7 @@ export async function suggestReply(
         history,
         language: replyLanguage,
         matched: imageMatch,
+        cards: collected,
       }),
       source: "ai",
       topic: detectTopic(lastCustomer.body, shopFacts),
@@ -718,9 +723,9 @@ export async function suggestReply(
 }
 
 // A template reply, clearly labelled with why the model was not used.
-function finishReply(text, { message, imageAttached, facts, history, language, matched }) {
+function finishReply(text, { message, imageAttached, facts, history, language, matched, cards = [] }) {
   const saved = (facts?.customerContext?.avoid || []).map((label) => `allergic to ${label}`).join(". ");
-  return applyAllergyGuard(
+  const guarded = applyAllergyGuard(
     ensureProductLink(text, { message, imageAttached, facts, matched, language }),
     {
       historyText: [saved, ...(history || []).map((entry) => entry.body || "")].filter(Boolean).join("\n"),
@@ -728,6 +733,58 @@ function finishReply(text, { message, imageAttached, facts, history, language, m
       language,
     },
   );
+  // "Show me the Chocolate Devotion" answered from the catalog, photo first (#photo).
+  return photoRequestReply(message, facts, guarded, language) || attachCards(guarded, cards);
+}
+
+// The customer asks to SEE something. A picture request is a catalogue lookup, not
+// a question for the model: the item is already named in their own words.
+const PHOTO_REQUEST = /\b(?:show|see|photo|picture|pic|image|look like|montre|voir|photo\s+de|image\s+de)\b/i;
+
+function wantsPhoto(message) {
+  return PHOTO_REQUEST.test(String(message || ""));
+}
+
+/**
+ * When this message asks for a picture of a product that is named in it (or that
+ * the reply is about), answer with the photo itself. Without a catalog photo, say
+ * so honestly and point at the product page — never a made-up description.
+ * Returns "" when the request is not about one product the catalog knows.
+ */
+function photoRequestReply(message, facts, reply, language) {
+  if (!wantsPhoto(message)) return "";
+  const named = findProduct(facts, message);
+  if (!named) return "";
+  const fr = language === "fr";
+  const photo = productPhotoLine(named);
+  const link = named.path ? `\n[LINK:${named.path}]` : "";
+  if (named.image) {
+    return `${fr ? `Voici ${named.name} 👇` : `Here's ${named.name} 👇`}${photo}${link}`;
+  }
+  // No photo in the catalogue: say so once, and point at the page where the
+  // product is shown. The photo tag still rides along, so the widget draws the
+  // shop mark in place of an empty box.
+  const text = fr
+    ? `Je n'ai pas encore de photo de ${named.name}. La fiche du produit le montre en détail.`
+    : `I don't have a photo of ${named.name} yet. Its product page shows it in detail.`;
+  const parts = [text, link.trim(), photo.trim()].filter(Boolean);
+  return parts.join("\n");
+}
+
+/**
+ * One card per reply, placed before the action tags so every tag stays last on
+ * its line. The model was told to copy the card tag itself; this covers the
+ * times it does not, and never adds a second card on top of one it did write.
+ */
+export function attachCards(text, cards) {
+  const body = String(text || "");
+  if (!body || !cards?.length || /\[(?:PRODUCT|ORDER|PHOTO):/i.test(body)) return body;
+  const card = cards[cards.length - 1];
+  if (!/^\[(?:PRODUCT|ORDER|PHOTO):/.test(card)) return body;
+  const tags = body.match(/(\s*\[[A-Z]+:[^\]]*\]\s*)+$/);
+  if (!tags || tags.index === undefined) return `${body}\n${card}`;
+  const head = body.slice(0, tags.index).trimEnd();
+  return `${head}\n${card}${tags[0].trimEnd()}`;
 }
 
 /**
@@ -1298,7 +1355,7 @@ async function generateWithModel(
   language,
   customerPage = "",
   pageSnapshot = "",
-  { database, memorySummary = "", imageUrl = "", imageMatch = null } = {},
+  { database, memorySummary = "", imageUrl = "", imageMatch = null, onTool = null, collected = null } = {},
 ) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -1323,7 +1380,7 @@ async function generateWithModel(
       imageUrl,
       imageMatch,
     });
-    return await runWithTools(systemPrompt, history, context, database, { imageUrl, controller });
+    return await runWithTools(systemPrompt, history, context, database, { imageUrl, controller, onTool, collected });
   } finally {
     clearTimeout(timer);
   }
@@ -1356,7 +1413,7 @@ function menuChunks(context) {
  * chain forever. Falls back to a plain completion when the provider rejects the
  * tools payload (smaller models, older OpenAI-compatible servers).
  */
-async function runWithTools(systemPrompt, history, context, database, { imageUrl, controller }) {
+async function runWithTools(systemPrompt, history, context, database, { imageUrl, controller, onTool = null, collected = null }) {
   const recent = history.slice(-8);
   const messages = [{ role: "system", content: systemPrompt }];
   for (let index = 0; index < recent.length; index += 1) {
@@ -1379,7 +1436,26 @@ async function runWithTools(systemPrompt, history, context, database, { imageUrl
       ],
     });
   }
-  const executeTool = createToolExecutor(database, context);
+  const runTool = createToolExecutor(database, context);
+  // Every card tag the model is shown for a tool result is remembered here, so the
+  // final reply can carry it even when the model forgets to copy it. The tag is
+  // built from the same database read the model saw, so it cannot invent a price.
+  const executeTool = async (name, args) => {
+    // Progress (#1): the widget shows "Looking up <what>…" instead of bare dots.
+    if (onTool) {
+      try {
+        onTool(name, args);
+      } catch {
+        // Progress is cosmetic; a listener must never break the reply.
+      }
+    }
+    const output = await runTool(name, args);
+    if (collected) {
+      const text = String(output || "");
+      for (const match of text.matchAll(/\[(PRODUCT|ORDER|PHOTO):[^\]]*\]/g)) collected.push(match[0]);
+    }
+    return output;
+  };
   // Provider failover: try the primary, and if it fails (rate limit, outage, bad
   // response), try the next configured provider. Each provider gets its own short
   // retry run; the chain keeps the customer answerable through a quota wall. The
@@ -1510,7 +1586,25 @@ export function buildSystemPrompt(
     ...snapshotSection(snapshotText, imageUrl, imageMatch),
     ...styleSection(language),
     ...shopFactsSection(context),
+    ...cardTagSection(),
   ].join("\n");
+}
+
+// Cards (#3, #6): the reply may carry one product card or one order timeline.
+// The tags come from a tool lookup, so the prompt teaches the model to copy the
+// one it was given — word for word, on its own line, before the action tags.
+function cardTagSection() {
+  return [
+    "",
+    "CARD TAGS — a tool result may include a line starting with [PRODUCT:{...}] or [ORDER:{...}].",
+    "- When the tool result carries a card tag, copy that line EXACTLY as it was given, on its own line, just BEFORE the [LINK:]/[ADD:]/[ACTION:] line (or as the last line when there is none).",
+    "- Copy it character for character: do not reformat it, rename its keys, round a price differently, or write a card for a product you did not look up.",
+    "- At most one card per reply. The website draws it as the product photo, price and stock, or as the order's progress steps.",
+    "",
+    "SEEING A PRODUCT — when the customer asks to SEE something ('show me', 'picture', 'photo', 'what does it look like', 'montre-moi', 'une photo'): look the product up with get_product and copy its [PHOTO:{...}] line exactly, on its own line, as the last line of the reply. The website draws the picture under your sentence.",
+    "- Only offer a picture the tool gave you a tag for. Never say you are showing a photo when there is no [PHOTO:] line, and never invent or describe a picture you were not given.",
+    "- When the tool says the catalog has no photo of that product, say so kindly in one sentence and end with its [LINK:] instead. Do not apologise more than once, and do not offer to 'look for one'.",
+  ];
 }
 
 // Thread memory (#6): a rolling summary of the conversation so far, carried into
@@ -1610,6 +1704,19 @@ const ROLE_RULES = [
   "- Do NOT say you are bringing in a colleague for questions you can answer yourself — that wastes the team's time.",
 ];
 
+// Emojis (style): the shop's assistant may use them, but only where a person at
+// the counter would actually smile. The model chooses; this states when an emoji
+// is welcome and, just as importantly, when one would be inappropriate.
+function emojiRules() {
+  return [
+    "- EMOJIS: use an emoji only when the moment asks for one — a greeting, a thank-you, a goodbye, a recommendation, a birthday or party, a celebration, or a picture of a treat. One emoji per reply, at the end of the sentence it belongs to. Most replies need none.",
+    "- An emoji is not punctuation. Never put one in a price, a stock answer, a delivery time, a branch address, an opening hour, a discount code, or a link. Never use two in one reply and never open a reply with one.",
+    "- Never use an emoji when the customer reports a problem, a missing or wrong order, a late delivery, a refund or a payment issue, or when they are upset or confused. A sorry there is words only — a smiling face next to a complaint is insulting.",
+    "- Match the customer: if they write with emojis, one is welcome back; if they write plainly, stay plain. The emoji must fit the mood and the product — 🍦 🍨 🍓 🎂 🎉 😊 👋 👍 🙏 are safe; never use one that promises something (💸, 🥇) or reads as laughter at a problem.",
+    "- Never use an emoji in place of a word the customer needs (a price, an item, a time); it decorates a sentence, it does not carry it.",
+  ];
+}
+
 function pageSection(customerPage) {
   if (!customerPage) return [];
   return [`\nTHE CUSTOMER IS CURRENTLY ON: ${customerPage}${PAGE_GUIDE_HINT(customerPage)}`];
@@ -1653,6 +1760,7 @@ function styleSection(language) {
     "- Lead with the answer. If you do not know, say that first, kindly, then offer the menu, prices, delivery, or the shops, and ask what they would like.",
     language === "fr" ? "- Reply in French." : "- Reply in English.",
     "- LANGUAGE RULE, and it overrides the line above: always reply in the language of the customer's LAST message. If they write in French, answer in French. If they write in English, answer in English. If they switch language mid-conversation, switch with them from that message on. Only when the message has no language at all (a single product name, 'ok', a number) keep the previous language.",
+    ...emojiRules(),
     "- A French message deserves a French answer even when the website itself is in English, and the reverse.",
     "- Do not sign the message and do not mention being an AI.",
   ];
@@ -1831,14 +1939,16 @@ function foldProblemText(text) {
 
 export function problemReply(text, language = "en") {
   const number = orderNumberIn(text);
+  // A sorry gets one gentle emoji, not two. The rules assistant has no other
+  // warmth to offer on a complaint, and a bare apology reads colder than it is.
   if (language === "fr") {
     return number
-      ? `Je suis désolé pour ça. J'ai transmis la commande #${number} à la boutique, et une personne va s'en occuper.`
-      : "Je suis désolé pour ça. J'ai transmis votre message à la boutique. Pouvez-vous m'envoyer le numéro de commande ? Il commence par #.";
+      ? `Je suis désolé pour ça 🙏 J'ai transmis la commande #${number} à la boutique, et une personne va s'en occuper.`
+      : "Je suis désolé pour ça 🙏 J'ai transmis votre message à la boutique. Pouvez-vous m'envoyer le numéro de commande ? Il commence par #.";
   }
   return number
-    ? `I'm sorry about that. I've passed order #${number} to the shop, and a person there will look at it.`
-    : "I'm sorry about that. I've passed your message to the shop. Could you send the order number? It starts with #.";
+    ? `I'm sorry about that 🙏 I've passed order #${number} to the shop, and a person there will look at it.`
+    : "I'm sorry about that 🙏 I've passed your message to the shop. Could you send the order number? It starts with #.";
 }
 
 // ------------------------------------------------------------- rules engine
@@ -2040,22 +2150,22 @@ function draftFromRules(message, context, language, customerPage = "", imageUrl 
       // so they never have to invent what to type next.
       lines.push(
         fr
-          ? `${opener || plainGreeting} ! Je suis l'assistant Cold Stone. Comment puis-je vous aider ? Je connais le menu et les prix, les boutiques et leurs horaires, la livraison et le suivi de commande — dites-moi ce qui vous ferait plaisir.`
-          : `${opener || plainGreeting}! I am the Cold Stone assistant. How can I help you today? I know the menu and prices, our branches and opening hours, delivery, and how to track an order — just tell me what you need.`,
+          ? `${opener || plainGreeting} ! 👋 Je suis l'assistant Cold Stone. Comment puis-je vous aider ? Je connais le menu et les prix, les boutiques et leurs horaires, la livraison et le suivi de commande — dites-moi ce qui vous ferait plaisir.`
+          : `${opener || plainGreeting}! 👋 I am the Cold Stone assistant. How can I help you today? I know the menu and prices, our branches and opening hours, delivery, and how to track an order — just tell me what you need.`,
       );
       break;
     case "thanks":
       lines.push(
         fr
-          ? "Avec plaisir ! Si vous avez une autre question sur le menu, la livraison ou votre commande, je suis là."
-          : "You're very welcome! If anything else comes up about the menu, delivery or your order, I am right here.",
+          ? "Avec plaisir ! 😊 Si vous avez une autre question sur le menu, la livraison ou votre commande, je suis là."
+          : "You're very welcome! 😊 If anything else comes up about the menu, delivery or your order, I am right here.",
       );
       break;
     case "farewell":
       lines.push(
         fr
-          ? "Merci de votre visite et à bientôt ! Le site reste ouvert 24h/24 pour vos commandes."
-          : "Thank you for stopping by — see you soon! The website stays open around the clock for orders.",
+          ? "Merci de votre visite et à bientôt ! 👋 Le site reste ouvert 24h/24 pour vos commandes."
+          : "Thank you for stopping by — see you soon! 👋 The website stays open around the clock for orders.",
       );
       break;
     case "price": {

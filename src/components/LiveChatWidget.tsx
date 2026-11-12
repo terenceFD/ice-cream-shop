@@ -38,6 +38,51 @@ interface ChatMessage {
   delivery?: "sent";
 }
 
+/** What the assistant is doing right now, polled with the thread (#1). */
+interface ChatProgress {
+  stage: "thinking" | "lookup" | "writing";
+  /** For `lookup`: the product name, area or order number being looked up. */
+  label: string;
+}
+
+/** A product card a reply carries, built by the server from live menu data (#3). */
+interface ChatProductCard {
+  name: string;
+  price: number;
+  soldOut: boolean;
+  path: string;
+  image?: string;
+  addId?: string;
+}
+
+/** An order timeline card, carried with the live status the database returned (#6). */
+interface ChatOrderCard {
+  id: number;
+  status:
+    | "processing"
+    | "ready"
+    | "out_for_delivery"
+    | "delivered"
+    | "payment_failed"
+    | "cancelled";
+  fulfillment: "pickup" | "delivery" | "";
+  total: number;
+}
+
+/** A photo of a product: the catalog image, or the shop mark when none exists. */
+interface ChatPhotoCard {
+  name: string;
+  image?: string;
+  fallback?: boolean;
+  path?: string;
+}
+
+type OrderStatus = ChatOrderCard["status"];
+
+// The steps a shopper cares about, in order. A cancelled or failed payment is not a
+// step: it replaces the timeline with one plain line.
+const ORDER_STEPS: OrderStatus[] = ["processing", "ready", "out_for_delivery", "delivered"];
+
 // The tick on a message the customer sent. It appears only after the server has stored
 // the message, so it can never claim a delivery that did not happen. Two overlapping
 // checks in a 16px box: the back check sits behind and to the left, the front one is
@@ -254,6 +299,86 @@ function asksForAutoAdd(message: string): boolean {
   );
 }
 
+function parseProductCard(raw: string): ChatProductCard | undefined {
+  try {
+    const card = JSON.parse(raw) as Record<string, unknown>;
+    const name = typeof card.name === "string" ? card.name.trim().slice(0, 80) : "";
+    const path = typeof card.path === "string" ? safeProductPath(card.path) : null;
+    if (!name || !path) return undefined;
+    const price = Number(card.price);
+    const image = typeof card.image === "string" ? card.image : "";
+    const addId = typeof card.addId === "string" ? safeAddId(card.addId) : null;
+    return {
+      name,
+      path,
+      price: Number.isFinite(price) && price > 0 ? price : 0,
+      soldOut: card.soldOut === true,
+      ...(image.startsWith("/") && !image.startsWith("//") && !image.includes("..")
+        ? { image }
+        : {}),
+      ...(addId ? { addId } : {}),
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+const ORDER_STATUSES_SET = new Set<OrderStatus>([
+  "processing",
+  "ready",
+  "out_for_delivery",
+  "delivered",
+  "payment_failed",
+  "cancelled",
+]);
+
+function parseOrderCard(raw: string): ChatOrderCard | undefined {
+  try {
+    const card = JSON.parse(raw) as Record<string, unknown>;
+    const id = Number(card.id);
+    const status = String(card.status) as OrderStatus;
+    if (!Number.isSafeInteger(id) || id < 1 || !ORDER_STATUSES_SET.has(status))
+      return undefined;
+    const fulfillment =
+      card.fulfillment === "pickup" || card.fulfillment === "delivery"
+        ? card.fulfillment
+        : "";
+    const total = Number(card.total);
+    return {
+      id,
+      status,
+      fulfillment,
+      total: Number.isFinite(total) && total > 0 ? total : 0,
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function parsePhotoCard(raw: string): ChatPhotoCard | undefined {
+  try {
+    const card = JSON.parse(raw) as Record<string, unknown>;
+    const name = typeof card.name === "string" ? card.name.trim().slice(0, 80) : "";
+    if (!name) return undefined;
+    const image = typeof card.image === "string" ? card.image.trim() : "";
+    // A same-site path or an absolute https URL only: never data: or javascript:.
+    const safeImage =
+      /^\/(?!\/)/.test(image) && !image.includes("..")
+        ? image
+        : /^https:\/\//.test(image)
+          ? image
+          : "";
+    const path = typeof card.path === "string" ? safeProductPath(card.path) : null;
+    return {
+      name,
+      ...(safeImage ? { image: safeImage } : { fallback: true }),
+      ...(path ? { path } : {}),
+    };
+  } catch {
+    return undefined;
+  }
+}
+
 function parseVisitTag(raw: string): ChatVisit | undefined {
   const [type, location, date, slotId] = raw
     .split("|")
@@ -280,6 +405,9 @@ function splitChatAction(body: string): {
   visit?: ChatVisit;
   code?: string;
   chips?: string[];
+  product?: ChatProductCard;
+  order?: ChatOrderCard;
+  photo?: ChatPhotoCard;
 } {
   let text = body.trim();
   let action: { path: string; label: string } | undefined;
@@ -289,7 +417,13 @@ function splitChatAction(body: string): {
   let visit: ChatVisit | undefined;
   let code: string | undefined;
   let chips: string[] | undefined;
-  for (let guard = 0; guard < 8; guard += 1) {
+  let product: ChatProductCard | undefined;
+  let order: ChatOrderCard | undefined;
+  let photo: ChatPhotoCard | undefined;
+  for (let guard = 0; guard < 10; guard += 1) {
+    const photoMatch = text.match(/\[PHOTO:([^\]]+)\]\s*$/i);
+    const productMatch = text.match(/\[PRODUCT:([^\]]+)\]\s*$/i);
+    const orderMatch = text.match(/\[ORDER:([^\]]+)\]\s*$/i);
     const linkMatch = text.match(/\[LINK:(\/[^\]]+)\]\s*$/);
     const addMatch = text.match(/\[ADD:([^\]]+)\]\s*$/);
     const fillMatch = text.match(/\[FILL:([^\]]+)\]\s*$/);
@@ -298,6 +432,25 @@ function splitChatAction(body: string): {
     const visitMatch = text.match(/\[VISIT:([^\]]+)\]\s*$/i);
     const codeMatch = text.match(/\[CODE:([^\]]+)\]\s*$/i);
     const chipsMatch = text.match(/\[CHIPS:([^\]]+)\]\s*$/i);
+    // A card is drawn once per reply; a second tag is dropped rather than stacked.
+    if (photoMatch && !product) {
+      const card = parsePhotoCard(photoMatch[1].trim());
+      if (card && !photo) photo = card;
+      text = text.slice(0, photoMatch.index).trim();
+      continue;
+    }
+    if (productMatch) {
+      const card = parseProductCard(productMatch[1].trim());
+      if (card && !product) product = card;
+      text = text.slice(0, productMatch.index).trim();
+      continue;
+    }
+    if (orderMatch) {
+      const card = parseOrderCard(orderMatch[1].trim());
+      if (card && !order && !product) order = card;
+      text = text.slice(0, orderMatch.index).trim();
+      continue;
+    }
     if (linkMatch) {
       const path = safeProductPath(linkMatch[1].trim());
       if (path) action = { path, label: "Open this product" };
@@ -363,7 +516,7 @@ function splitChatAction(body: string): {
     }
     break;
   }
-  return { text, action, addId, fill, bag, visit, code, chips };
+  return { text, action, addId, fill, bag, visit, code, chips, product, order, photo };
 }
 
 // A small text snapshot of the page the customer is looking at, sent with each
@@ -440,12 +593,96 @@ function isForbidden(error: unknown): boolean {
 function spokenReplyText(body: string) {
   return body
     .replace(
-      /\s*\[(?:LINK|ADD|ACTION|FILL|BAG|VISIT|CODE|CHIPS):[^\]]*\]/gi,
+      /\s*\[(?:LINK|ADD|ACTION|FILL|BAG|VISIT|CODE|CHIPS|PRODUCT|ORDER|PHOTO):[^\]]*\]/gi,
       " ",
     )
     .replace(/\*\*([^*]+)\*\*/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+// Last time this browser talked in the chat, so the launcher can offer to
+// continue a conversation a reloaded tab forgot to open (#5).
+const RESUME_KEY = "cold-stone-chat-resume";
+const RESUME_MIN_IDLE_MS = 10 * 60 * 1000;
+const RESUME_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
+
+// Voice review (#4): phones mishear, so a spoken sentence waits for a send tap
+// by default. A saved choice overrides on every chat after that.
+function voiceReviewDefault(): boolean {
+  try {
+    const saved = localStorage.getItem("cold-stone-chat-voice-review");
+    if (saved === "0") return false;
+    if (saved === "1") return true;
+  } catch {
+    // No storage: fall through to the touch-screen default.
+  }
+  return typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+}
+
+/**
+ * A stable set of ids for the messages this browser has already shown. Declared
+ * outside the component so a reply that arrives while the chat is closed does not
+ * type itself out the moment it is opened — only a live arrival does (#6).
+ */
+const SEEN_MESSAGE_IDS = new Set<number>();
+const SEEN_MAX = 400;
+
+function rememberSeen(id: number) {
+  if (SEEN_MESSAGE_IDS.has(id)) return false;
+  SEEN_MESSAGE_IDS.add(id);
+  // Bounded: a long-lived tab must not keep every id for ever.
+  if (SEEN_MESSAGE_IDS.size > SEEN_MAX) {
+    const oldest = SEEN_MESSAGE_IDS.values().next().value;
+    if (oldest !== undefined) SEEN_MESSAGE_IDS.delete(oldest);
+  }
+  return true;
+}
+
+/** The chat's own words for what it is doing, from the server stage (#1). */
+function progressText(
+  progress: ChatProgress,
+  t: (text: string, vars?: Record<string, string | number>) => string,
+): string {
+  if (progress.stage === "writing") return t("Writing your answer…");
+  if (progress.stage === "lookup" && progress.label) {
+    const lookup = String(progress.label).slice(0, 40);
+    return /^#\d+$/.test(lookup)
+      ? t("Checking order {number}…", { number: lookup })
+      : t("Looking up {name}…", { name: lookup });
+  }
+  return t("Looking this up…");
+}
+
+/**
+ * The first `length` characters of a store reply for the typewriter (#6). Tags the
+ * tag parser removes are cut from wherever they start, so a half-typed tag ("[LIN")
+ * never flashes on screen, and the text appears as a whole word up to a tag.
+ */
+function steerAt(text: string, steering: { id: number; length: number }): string {
+  const full = text.trim();
+  if (steering.length >= full.length) return full;
+  let visible = full.slice(0, Math.max(0, steering.length));
+  const tagStart = visible.search(/\[(?:LINK|ADD|ACTION|FILL|BAG|VISIT|CODE|CHIPS|PRODUCT|ORDER|PHOTO):/i);
+  if (tagStart >= 0) visible = visible.slice(0, tagStart);
+  return visible.trimEnd();
+}
+
+function readStorage(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    // Private windows and blocked storage: nothing to remember.
+    return null;
+  }
+}
+
+function writeStorage(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Ignore: the chat still works, it just forgets.
+  }
 }
 
 function threadStorageKey(customerId: number | null): string {
@@ -488,6 +725,20 @@ export function LiveChatWidget() {
     }
   });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // Language pin (#6): the language the assistant answers in. It follows the
+  // site until the customer pins one, and is sent with every message.
+  const [pinnedLanguage, setPinnedLanguage] = useState<"en" | "fr" | null>(null);
+  const replyLanguage: "en" | "fr" = pinnedLanguage || (language === "fr" ? "fr" : "en");
+  const setReplyLanguage = (next: "en" | "fr") => setPinnedLanguage(next);
+  // What the assistant is doing (#1): polled with the thread, null when idle.
+  const [progress, setProgress] = useState<ChatProgress | null>(null);
+  // Typewriter (#6): the reply that arrived while this was open, and how much of
+  // it is shown. Opening an old thread cascades history; it never types.
+  const [steering, setSteering] = useState<{
+    id: number;
+    body: string;
+    length: number;
+  } | null>(null);
   // Panel mount/visibility split: `panelVisible` keeps the panel in the DOM for the
   // 200 ms zoom-out after close; `panelShown` flips one frame after mount so the
   // browser paints the small scale first and transitions to full size on open.
@@ -512,6 +763,15 @@ export function LiveChatWidget() {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceError, setVoiceError] = useState("");
+  // The spoken sentence waiting for a send tap when voice review is on (#4).
+  const [voiceReview, setVoiceReview] = useState("");
+  const [voiceReviewUntil, setVoiceReviewUntil] = useState(0);
+  // Evaluated by a timer, not on render: otherwise the bar would vanish only
+  // when some unrelated update happened to re-render the widget.
+  const [voiceReviewLive, setVoiceReviewLive] = useState(false);
+  // "Voice" step on the mic button: speaks replies and sends on a pause, or not.
+  const [autoSpeak, setAutoSpeak] = useState(false);
+  const [voiceReviewMode] = useState(() => voiceReviewDefault());
   const recognitionRef = useRef<{ stop: () => void; start: () => void } | null>(
     null,
   );
@@ -522,6 +782,11 @@ export function LiveChatWidget() {
   const holdVoiceRef = useRef(false);
   const voicePrefixRef = useRef("");
   const voiceDraftRef = useRef("");
+  // Mirrors the "Voice" setting for handlers created once per recording.
+  const voiceLanguageRef = useRef(language);
+  const autoSpeakRef = useRef(false);
+  const voiceReviewModeRef = useRef(true);
+  const voiceReviewTimerRef = useRef<number | undefined>(undefined);
   const voicePauseTimerRef = useRef<number | undefined>(undefined);
   const submitVoiceRef = useRef<(text: string) => void>(() => {});
   const voiceConversationRef = useRef(false);
@@ -532,6 +797,13 @@ export function LiveChatWidget() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Proactive nudge (#6): a one-time gentle bubble on slow pages.
   const [showNudge, setShowNudge] = useState(false);
+  // Resume (#5): the last thread this browser talked in, for the "Continue" chip.
+  const [resume, setResume] = useState<{ text: string } | null>(null);
+  // Bumps when a leave-a-message form was sent, so its open/closed memo re-reads.
+  const [, setHandoffTick] = useState(0);
+  // The clock, read once at mount (#2): opening hours and "left a number recently"
+  // are computed from this instead of calling Date.now() during every render.
+  const [mountTime] = useState(() => Date.now());
   const threadIdRef = useRef<string>("");
   const listRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -559,6 +831,61 @@ export function LiveChatWidget() {
     setIsAwaitingReply(false);
     window.clearTimeout(typingTimeout.current);
   }, [messages, isAwaitingReply]);
+
+  // A reply that lands while the panel is open types itself out (about a second),
+  // which reads faster than a bubble that appears whole. Anything already on
+  // screen, or arriving while the panel is closed, is shown at full length.
+  // The server always stores the complete text; this only plays it.
+  useEffect(() => {
+    if (!isOpen || !messages.length) return undefined;
+    const last = messages[messages.length - 1];
+    if (last.sender !== "store" || !last.body.trim()) return undefined;
+    if (!rememberSeen(last.id)) return undefined;
+    setSteering({ id: last.id, body: last.body, length: 0 });
+    return undefined;
+  }, [messages, isOpen]);
+
+  useEffect(() => {
+    if (!steering) return undefined;
+    if (steering.length >= steering.body.length) {
+      const done = window.setTimeout(() => setSteering(null), 0);
+      return () => window.clearTimeout(done);
+    }
+    const step = Math.max(2, Math.ceil(steering.body.length / 70));
+    const timer = window.setTimeout(() => {
+      setSteering((current) =>
+        current && current.id === steering.id
+          ? { ...current, length: Math.min(current.body.length, current.length + step) }
+          : current,
+      );
+    }, 14);
+    return () => window.clearTimeout(timer);
+  }, [steering]);
+
+  // A spoken sentence stays in the review bar for eight minutes, then goes away
+  // on its own: a forgotten bar must not sit over a conversation all evening.
+  useEffect(() => {
+    if (!voiceReview) {
+      setVoiceReviewLive(false);
+      return undefined;
+    }
+    const check = () => setVoiceReviewLive(Date.now() < voiceReviewUntil);
+    check();
+    const timer = window.setTimeout(check, Math.max(0, voiceReviewUntil - Date.now()));
+    return () => window.clearTimeout(timer);
+  }, [voiceReview, voiceReviewUntil]);
+
+  // The server's own stage outranks the local wait: when the reply lands the
+  // server clears it, so a stage never outlives its reply.
+  useEffect(() => {
+    if (!progress) return;
+    setIsAwaitingReply(true);
+    window.clearTimeout(typingTimeout.current);
+    typingTimeout.current = window.setTimeout(
+      () => setIsAwaitingReply(false),
+      TYPING_TIMEOUT_MS,
+    );
+  }, [progress]);
 
   // Opening the widget for the first time on a page re-opens it after navigation,
   // so a conversation in progress is not hidden by a route change.
@@ -679,12 +1006,14 @@ export function LiveChatWidget() {
     async (threadId = threadIdRef.current) => {
       if (!threadId) return;
       try {
-        const result = await apiRequest<{ messages: ChatMessage[] }>(
-          `/chat/messages/${threadId}`,
-        );
+        const result = await apiRequest<{
+          messages: ChatMessage[];
+          progress?: ChatProgress | null;
+        }>(`/chat/messages/${threadId}`);
         // A fresh thread may have been started while this answer was in flight.
         if (threadId !== threadIdRef.current) return;
         setMessages(result.messages || []);
+        setProgress(result.progress || null);
         setError("");
       } catch (loadError) {
         // The thread id in this browser no longer belongs to it — the device cookie was
@@ -709,6 +1038,42 @@ export function LiveChatWidget() {
     threadIdRef.current = "";
     setMessages([]);
   }, [customerId]);
+
+  // A closed chat that has a conversation, with a reply the customer has not
+  // opened since, is worth resuming — and the launcher says so (#5). The chip is
+  // only a pointer: the thread id is read from storage when it is tapped.
+  useEffect(() => {
+    if (isOpen) return undefined;
+    if (!threadIdRef.current) threadIdRef.current = readThreadId(customerId);
+    const threadId = threadIdRef.current;
+    let cancelled = false;
+    const check = async () => {
+      const lastSeen = Number(readStorage(RESUME_KEY) || 0);
+      if (Date.now() - lastSeen < RESUME_MIN_IDLE_MS) return;
+      if (Date.now() - lastSeen > RESUME_MAX_AGE_MS) return;
+      try {
+        const result = await apiRequest<{ messages: ChatMessage[] }>(
+          `/chat/messages/${threadId}`,
+        );
+        if (cancelled || threadId !== threadIdRef.current) return;
+        const list = result.messages || [];
+        const lastCustomer = [...list].reverse().find((m) => m.sender === "customer");
+        const openedSince = list.some(
+          (m) => m.sender === "store" && Date.parse(m.createdAt) > lastSeen,
+        );
+        const text = lastCustomer?.body.trim() || "";
+        if (text && lastCustomer && openedSince) {
+          setResume({ text: text.slice(0, 80) });
+        }
+      } catch {
+        // A thread this browser can no longer read simply has no chip.
+      }
+    };
+    void check();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, customerId]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -842,6 +1207,26 @@ export function LiveChatWidget() {
       ),
     [],
   );
+  // "Listen" and "Speak" are one setting: speaking a reply out loud and sending on
+  // a pause only make sense together, so both are a deliberate choice.
+  voiceLanguageRef.current = language;
+  autoSpeakRef.current = autoSpeak;
+  voiceReviewModeRef.current = voiceReviewMode;
+
+  const setVoiceMode = (speak: boolean) => {
+    setAutoSpeak(speak);
+    autoSpeakRef.current = speak;
+    try {
+      localStorage.setItem("cold-stone-chat-voice-review", speak ? "0" : "1");
+    } catch {
+      // Ignore: the choice lasts this visit.
+    }
+    if (!speak) {
+      window.speechSynthesis?.cancel();
+      setIsSpeaking(false);
+    }
+  };
+
   const toggleVoice = () => {
     if (isListening || wantVoiceRef.current) {
       wantVoiceRef.current = false;
@@ -852,6 +1237,8 @@ export function LiveChatWidget() {
       recognitionRef.current?.stop();
       setIsSpeaking(false);
       setIsListening(false);
+      // Stopping the mic keeps whatever was dictated, ready to edit or send.
+      if (voiceDraftRef.current.trim()) setVoiceReview(voiceDraftRef.current.trim());
       return;
     }
     const RecognitionCtor = ((window as unknown as Record<string, unknown>)
@@ -881,7 +1268,10 @@ export function LiveChatWidget() {
       return;
     }
     const recognition = new RecognitionCtor();
-    recognition.lang = language === "fr" ? "fr-FR" : "en-US";
+    // A new recording starts a new message; an open review is replaced by it.
+    setVoiceReview("");
+    setVoiceReviewUntil(0);
+    recognition.lang = voiceLanguageRef.current === "fr" ? "fr-FR" : "en-US";
     // Chrome on Windows reports "network" the moment continuous mode is turned
     // on, before the microphone opens. Leave that off. A finished phrase still
     // ends the session, and onend starts another one so the customer can keep
@@ -909,13 +1299,25 @@ export function LiveChatWidget() {
         .slice(0, 1000);
       voiceDraftRef.current = next;
       setDraft(next);
-      // A short silence means the sentence is finished. Send it, then the agent
-      // answers out loud. More words before the pause keep the same message.
+      // A short silence means the sentence is finished. What happens next depends
+      // on the "Voice" setting (#4): with review on, the words stay in the box for
+      // a send tap (a phone mishearing "one scoop" for "two" is never sent as-is);
+      // with speak on, the sentence is sent and the reply is read aloud. Either way
+      // more words before the pause keep the same message.
       window.clearTimeout(voicePauseTimerRef.current);
       voicePauseTimerRef.current = window.setTimeout(() => {
         if (!wantVoiceRef.current || holdVoiceRef.current) return;
         const text = voiceDraftRef.current.trim();
         if (!text) return;
+        if (voiceReviewModeRef.current && !autoSpeakRef.current) {
+          holdVoiceRef.current = true;
+          recognitionRef.current?.stop();
+          setVoiceReview(text);
+          setVoiceReviewUntil(Date.now() + 8 * 60 * 1000);
+          setDraft(text);
+          return;
+        }
+        voiceConversationRef.current = true;
         submitVoiceRef.current(text);
       }, 1400);
     };
@@ -1147,6 +1549,7 @@ export function LiveChatWidget() {
             // A snapshot of what is actually on the screen, so the assistant can
             // answer "what is this page?" from the real content, not guesses.
             pageSnapshot: capturePageSnapshot(),
+            language: replyLanguage,
             bag: cartItems.slice(0, 20).map((item) => ({
               name: item.name,
               quantity: item.quantity,
@@ -1172,7 +1575,13 @@ export function LiveChatWidget() {
       setDraft("");
       voicePrefixRef.current = "";
       voiceDraftRef.current = "";
+      window.clearTimeout(voiceReviewTimerRef.current);
+      setVoiceReview("");
+      setVoiceReviewUntil(0);
       setAttachment(null);
+      // Resume (#5): a stored conversation is worth offering again after a pause.
+      writeStorage(RESUME_KEY, String(Date.now()));
+      setResume(null);
       // The AI auto-reply takes a couple of seconds to write. Show a typing bubble
       // while the customer waits, and clear it once the reply actually arrives.
       storeCountAtWaitStart.current = messages.filter(
@@ -1203,7 +1612,9 @@ export function LiveChatWidget() {
   };
 
   useEffect(() => {
-    if (!voiceConversationRef.current) return;
+    // Only when the customer asked to hear replies (#4). Without this the agent
+    // starts talking on the first voice use, which is startling on a bus.
+    if (!autoSpeak || !voiceConversationRef.current) return;
     const fresh = messages.filter(
       (message) =>
         message.sender === "store" &&
@@ -1264,7 +1675,7 @@ export function LiveChatWidget() {
         finish();
       }
     }, 60);
-  }, [messages, language]);
+  }, [messages, language, autoSpeak]);
 
   // Clear the conversation: wipe the server history and start a fresh thread in
   // this browser. Available from the header so it is never more than two taps away.
@@ -1333,6 +1744,42 @@ export function LiveChatWidget() {
     }
   }
 
+  // ------------------------------------------------------------ handoff (#2)
+  //
+  // Once the thread is with the team, the customer should not stare at one line
+  // for hours: the strip says when to expect an answer (opening hours, Cameroon
+  // time), takes a phone number so the shop can follow up outside the chat, and
+  // sends a queued quick question straight into the same thread.
+  const shopHours = useMemo(() => {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Africa/Douala",
+      hour: "2-digit",
+      hour12: false,
+    }).formatToParts(mountTime);
+    const hour = Number(parts.find((p) => p.type === "hour")?.value || 0);
+    // The branches answer from 09:00 to 21:00; outside that the team reads the
+    // inbox the next morning. Sales are online 24/7, replies are not.
+    return { open: hour >= 9 && hour < 21 };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mountTime]);
+
+  const leaveMessageOpen = useMemo(() => {
+    const value = Number(readStorage("cold-stone-chat-leave-message") || 0);
+    return mountTime - value > 12 * 60 * 60 * 1000;
+  }, [mountTime]);
+
+  const queueReplies = useMemo(
+    () => [
+      { label: t("Just checking in"), body: t("Hello, just checking in on my request.") },
+      { label: t("This is urgent"), body: t("This is urgent — could someone look at it soon?") },
+      {
+        label: t("Leave my phone number"),
+        body: t("Here is my phone number so you can reach me:"),
+      },
+    ],
+    [t],
+  );
+
   const time = (value: string) => {
     const date = new Date(value.includes("T") ? value : `${value}Z`);
     return Number.isNaN(date.getTime())
@@ -1345,11 +1792,30 @@ export function LiveChatWidget() {
 
   // Empty composer shows the mic on the right. Typing, or a photo ready to go,
   // swaps it for send. The mic stays while recording so it can still be stopped.
+  // A spoken reply being read aloud keeps it too, as a stop control (#4).
   const showSend = Boolean(draft.trim() || attachment) && !isListening;
   const showMic = speechSupported && !showSend;
   const humanHandoffPending = messages.some(
     (message) => message.needsAttention,
   );
+  // The assistant's stage (#1), else the plain wait: the typing row says what is
+  // happening rather than showing three dots with no explanation.
+  const progressMessage = progress ? progressText(progress, t) : "";
+  const streamedText = steering
+    ? { id: steering.id, length: steering.length }
+    : null;
+  const waitingLabel = isAwaitingReply
+    ? progressMessage || t("Thinking…")
+    : "";
+
+  const openResume = () => {
+    setResume(null);
+    setIsOpen(true);
+  };
+  const dismissResume = () => {
+    setResume(null);
+    writeStorage(RESUME_KEY, String(Date.now()));
+  };
 
   if (mobileMenuOpen) return null;
 
@@ -1398,6 +1864,36 @@ export function LiveChatWidget() {
                 "I am your Cold Stone assistant. I can help you with anything concerning this platform.",
               )}
             </p>
+          </div>
+        )}
+        {!isOpen && !showNudge && resume && (
+          <div
+            className="absolute bottom-[calc(100%+0.6rem)] left-0 w-64 rounded-2xl rounded-bl-md bg-white p-3 shadow-[0_16px_40px_rgba(9,42,83,0.25)] ring-1 ring-[#e2e8f0]"
+            role="status"
+          >
+            <p className="text-[13px] font-bold text-brand-navy">
+              {t("Pick up where you left off?")}
+            </p>
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#5d7186]">
+              “{resume.text}”
+            </p>
+            <div className="mt-2 flex gap-2">
+              <button
+                className="min-h-8 flex-1 rounded-full bg-brand-navy px-3 text-xs font-bold text-white transition hover:bg-brand-blue"
+                onClick={openResume}
+                type="button"
+              >
+                {t("Continue chat")}
+              </button>
+              <button
+                aria-label={t("Dismiss")}
+                className="min-h-8 rounded-full px-3 text-xs font-bold text-[#65748a] transition hover:bg-[#f4f6f8]"
+                onClick={dismissResume}
+                type="button"
+              >
+                {t("No thanks")}
+              </button>
+            </div>
           </div>
         )}
         {!isOpen && showNudge && (
@@ -1457,13 +1953,33 @@ export function LiveChatWidget() {
               <p className="mt-1 flex items-center gap-1.5 text-[13px] text-brand-muted">
                 <span
                   aria-hidden="true"
-                  className="inline-block size-1.5 shrink-0 rounded-full bg-[#3d8b40]"
+                  className={`inline-block size-1.5 shrink-0 rounded-full ${isAwaitingReply ? "animate-pulse bg-brand-yellow-deep" : "bg-[#3d8b40]"}`}
                 />
-                <span className="min-w-0 truncate">
-                  {t("Usually replies in minutes")}
+                <span className="min-w-0 truncate" aria-live="off">
+                  {waitingLabel || t("Usually replies in minutes")}
                 </span>
               </p>
             </div>
+            {/* Language pin (#6): the assistant answers in the language of the last
+                message by default; the pin lets a bilingual customer decide, without
+                switching the whole site. */}
+            <button
+              aria-label={t("Reply language: {language}", {
+                language: replyLanguage === "fr" ? t("French") : t("English"),
+              })}
+              className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-extrabold ring-1 transition ${
+                replyLanguage === language
+                  ? "bg-white text-brand-navy ring-brand-border-warm hover:bg-brand-yellow/20"
+                  : "bg-brand-navy text-brand-yellow ring-brand-navy"
+              }`}
+              onClick={() =>
+                setReplyLanguage(replyLanguage === "fr" ? "en" : "fr")
+              }
+              title={t("Reply language")}
+              type="button"
+            >
+              {replyLanguage === "fr" ? "FR" : "EN"}
+            </button>
             <button
               aria-label={t("Clear chat")}
               className="grid size-8 shrink-0 place-items-center rounded-full bg-white text-brand-navy ring-1 ring-brand-border-warm transition hover:bg-brand-yellow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow active:scale-95"
@@ -1510,8 +2026,11 @@ export function LiveChatWidget() {
           </header>
 
           <div
+            aria-label={t("Messages")}
+            aria-live="polite"
             className="flex flex-1 flex-col overflow-y-auto bg-brand-cream px-4 py-4"
             ref={listRef}
+            role="log"
           >
             {/* Opening on a history cascades the bubbles in top-down; the stagger
                 lives in CSS (.site-chat-cascade). Applied only on mount, never on
@@ -1571,6 +2090,9 @@ export function LiveChatWidget() {
                   visit,
                   code,
                   chips,
+                  product: productCard,
+                  order: orderCard,
+                  photo: photoCard,
                 } = isCustomer
                   ? {
                       text: message.body,
@@ -1581,8 +2103,15 @@ export function LiveChatWidget() {
                       visit: undefined,
                       code: undefined,
                       chips: undefined,
+                      product: undefined,
+                      order: undefined,
+                      photo: undefined,
                     }
-                  : splitChatAction(message.body);
+                  : splitChatAction(
+                      steering && steering.id === message.id
+                        ? steerAt(message.body, steering)
+                        : message.body,
+                    );
                 // The customer asked to add something and this reply carries its
                 // [ADD:] tag: the add happens here, once, when the reply is seen
                 // — no button tap needed. Only the immediately preceding customer
@@ -1629,7 +2158,17 @@ export function LiveChatWidget() {
                         </div>
                       ) : (
                         <div className="text-[15px] leading-6 text-brand-navy">
-                          {bodyText ? <ChatText text={bodyText} /> : null}
+                          {bodyText ? (
+                            <ChatText
+                              text={bodyText}
+                              typing={steering ? null : streamedText}
+                            />
+                          ) : null}
+                          {productCard && (
+                            <ChatProductCardView card={productCard} messageId={message.id} />
+                          )}
+                          {orderCard && <ChatOrderCardView card={orderCard} />}
+                          {photoCard && <ChatPhotoView card={photoCard} />}
                           {bag && <ChatBagEditButton bag={bag} />}
                           {visit && <ChatVisitButton visit={visit} />}
                           {code && <ChatCodeButton code={code} />}
@@ -1682,16 +2221,27 @@ export function LiveChatWidget() {
                 );
               })}
               {isAwaitingReply && (
-                <div
-                  className="site-chat-typing mt-4 flex items-center"
-                  aria-hidden="true"
-                >
+                <div className="site-chat-typing mt-4 flex items-center">
                   <ShopMark />
-                  <span className="ml-2 flex items-center gap-1.5 py-2">
+                  <span
+                    aria-hidden="true"
+                    className="ml-2 flex items-center gap-1.5 py-2"
+                  >
                     <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_infinite]" />
                     <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.2s_infinite]" />
                     <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.4s_infinite]" />
                   </span>
+                  {/* What the assistant is doing (#1): its own polite line, changed
+                      at most a few times per reply, never read out by a screen reader
+                      on every poll — the live region above already announces replies. */}
+                  {waitingLabel ? (
+                    <span
+                      aria-live="off"
+                      className="ml-2 truncate text-xs font-semibold text-brand-muted"
+                    >
+                      {waitingLabel}
+                    </span>
+                  ) : null}
                 </div>
               )}
             </div>
@@ -1715,14 +2265,36 @@ export function LiveChatWidget() {
           )}
 
           {humanHandoffPending ? (
-            <p
-              className="mx-3 mb-2 rounded-xl bg-[#fff6e5] px-3 py-2 text-xs font-semibold leading-5 text-[#78520a]"
-              role="status"
-            >
-              {t(
-                "Your request is with the shop team. They’ll reply here as soon as someone is available.",
+            <div className="mx-3 mb-2 rounded-xl bg-[#fff6e5] px-3 py-2" role="status">
+              <p className="text-xs font-semibold leading-5 text-[#78520a]">
+                {shopHours.open
+                  ? t("A team member is on now — expect a reply within about 15 minutes.")
+                  : t("Our team is offline. They read this thread from 09:00 and will reply then — you can also leave a number below.")}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {queueReplies.map((reply) => (
+                  <button
+                    className="rounded-full border border-[#e0c078] bg-white/80 px-2.5 py-1 text-[12px] font-bold text-[#78520a] transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy disabled:opacity-50"
+                    disabled={isSending}
+                    key={reply.label}
+                    onClick={() => void send(undefined, reply.body)}
+                    type="button"
+                  >
+                    {reply.label}
+                  </button>
+                ))}
+              </div>
+              {leaveMessageOpen && (
+                <LeaveMessageForm
+                  onSend={(text) => {
+                    // The widget's own send path: the thread id, the tick, the
+                    // progress stage and the reload all behave as for any message.
+                    setHandoffTick((tick) => tick + 1);
+                    void send(undefined, text);
+                  }}
+                />
               )}
-            </p>
+            </div>
           ) : (
             <div className="flex items-center justify-between gap-3 bg-brand-cream px-4 pb-2">
               <p className="text-[11px] leading-4 text-brand-muted">
@@ -1736,6 +2308,65 @@ export function LiveChatWidget() {
               >
                 {isRequestingHuman ? t("Sending…") : t("Talk to a person")}
               </button>
+            </div>
+          )}
+
+          {/* Voice review (#4): the spoken sentence waits here for a checked send,
+              with a live edit box, instead of firing on a 1.4 s silence. */}
+          {voiceReview && voiceReviewLive && !isListening && (
+            <div className="mx-3 mb-1.5 rounded-xl bg-white px-3 py-2 ring-1 ring-brand-border-warm">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-brand-muted">
+                {t("Did I hear this right?")}
+              </p>
+              <input
+                aria-label={t("Edit what you said")}
+                className="mt-1 w-full bg-transparent text-[14px] font-medium text-brand-navy outline-none"
+                maxLength={1000}
+                onChange={(event) => {
+                  setVoiceReview(event.target.value);
+                  setDraft(event.target.value);
+                  voiceDraftRef.current = event.target.value;
+                }}
+                value={voiceReview}
+              />
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <button
+                  className="rounded-full bg-brand-navy px-3 py-1 text-xs font-bold text-white transition hover:bg-brand-blue disabled:opacity-50"
+                  disabled={!voiceReview.trim() || isSending}
+                  onClick={() => {
+                    setVoiceReview("");
+                    setVoiceReviewUntil(0);
+                    void send(undefined, voiceReview.trim());
+                  }}
+                  type="button"
+                >
+                  {t("Send")}
+                </button>
+                <button
+                  className="rounded-full px-2.5 py-1 text-xs font-bold text-brand-muted transition hover:bg-brand-cream"
+                  onClick={() => {
+                    setVoiceReview("");
+                    setVoiceReviewUntil(0);
+                    setDraft("");
+                    voiceDraftRef.current = "";
+                    resumeVoice();
+                  }}
+                  type="button"
+                >
+                  {t("Say it again")}
+                </button>
+                <button
+                  aria-label={t("Dismiss")}
+                  className="ml-auto rounded-full px-2 py-1 text-xs font-bold text-brand-muted transition hover:bg-brand-cream"
+                  onClick={() => {
+                    setVoiceReview("");
+                    setVoiceReviewUntil(0);
+                  }}
+                  type="button"
+                >
+                  {t("Dismiss")}
+                </button>
+              </div>
             </div>
           )}
 
@@ -1849,6 +2480,28 @@ export function LiveChatWidget() {
                 placeholder={isListening ? "" : t("Type a message…")}
                 value={draft}
               />
+              {/* Voice (#4): a switch-step beside the mic. "Listen" dictates and
+                  waits for a send tap; "Voice" also reads replies and sends on a
+                  pause. Nothing speaks unless this is chosen. */}
+              {speechSupported && showMic && !isListening && (
+                <button
+                  aria-pressed={autoSpeak}
+                  className={`absolute -top-2 right-1.5 rounded-full px-2 py-0.5 text-[10px] font-extrabold ring-1 transition ${
+                    autoSpeak
+                      ? "bg-brand-navy text-brand-yellow ring-brand-navy"
+                      : "bg-white text-brand-muted ring-brand-border-warm hover:text-brand-navy"
+                  }`}
+                  onClick={() => setVoiceMode(!autoSpeak)}
+                  title={
+                    autoSpeak
+                      ? t("Voice replies are on")
+                      : t("Turn on voice replies")
+                  }
+                  type="button"
+                >
+                  {autoSpeak ? t("Voice on") : t("Voice")}
+                </button>
+              )}
               {isListening && !isSpeaking && (
                 <span
                   aria-hidden="true"
@@ -1871,23 +2524,54 @@ export function LiveChatWidget() {
                 </span>
               )}
             </div>
-            {showMic && (
+            {(showMic || isSpeaking) && !showSend && (
               <button
                 aria-label={
-                  isListening ? t("Stop voice input") : t("Speak your message")
+                  isSpeaking
+                    ? t("Stop speaking")
+                    : isListening
+                      ? t("Stop voice input")
+                      : t("Speak your message")
                 }
                 className={`grid size-10 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95 ${
-                  isListening
-                    ? "bg-red-50 text-red-600"
-                    : "text-brand-muted hover:bg-white hover:text-brand-navy"
+                  isSpeaking
+                    ? "bg-brand-navy text-brand-yellow"
+                    : isListening
+                      ? "bg-red-50 text-red-600"
+                      : "text-brand-muted hover:bg-white hover:text-brand-navy"
                 }`}
-                onClick={toggleVoice}
+                onClick={() => {
+                  if (isSpeaking) {
+                    // Stop the reply being read, but keep listening (#4).
+                    window.speechSynthesis?.cancel();
+                    setIsSpeaking(false);
+                    resumeVoice();
+                    return;
+                  }
+                  toggleVoice();
+                }}
                 title={
-                  isListening ? t("Stop voice input") : t("Speak your message")
+                  isSpeaking
+                    ? t("Stop speaking")
+                    : isListening
+                      ? t("Stop voice input")
+                      : t("Speak your message")
                 }
                 type="button"
               >
-                {isListening ? (
+                {isSpeaking ? (
+                  <svg
+                    aria-hidden="true"
+                    className="size-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M8 8v8h8V8H8Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                ) : isListening ? (
                   <svg
                     aria-hidden="true"
                     className="size-5"
@@ -2018,8 +2702,16 @@ function CustomerPortrait({ picture }: { picture?: string }) {
   );
 }
 
-function ChatText({ text }: { text: string }) {
+function ChatText({
+  text,
+  typing = null,
+}: {
+  text: string;
+  /** Only on the reply that is being typed out (#6): its id and shown length. */
+  typing?: { id: number; length: number } | null;
+}) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  const typingNow = Boolean(typing && typing.length < text.length);
   return (
     <p className="whitespace-pre-wrap break-words">
       {parts.map((part, index) =>
@@ -2031,9 +2723,316 @@ function ChatText({ text }: { text: string }) {
           <span key={index}>{part}</span>
         ),
       )}
+      {typingNow ? (
+        <span
+          aria-hidden="true"
+          className="ml-0.5 inline-block h-4 w-0.5 animate-pulse rounded-full bg-brand-navy align-middle"
+        />
+      ) : null}
     </p>
   );
 }
+
+const LOCAL_VERSION = { en: "en-CM", fr: "fr-CM" } as const;
+
+/** A price in the shop's own currency, always FCFA — the agent quotes the charge. */
+function chatPrice(value: number, language: string): string {
+  return new Intl.NumberFormat(LOCAL_VERSION[language === "fr" ? "fr" : "en"], {
+    style: "currency",
+    currency: "XAF",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+/**
+ * The product card (#3): the photo, price and stock the assistant just quoted,
+ * drawn as a card instead of a paragraph. It carries add-to-bag when the product
+ * can be added, and its page button opens the real product.
+ */
+function ChatProductCardView({
+  card,
+  messageId,
+}: {
+  card: ChatProductCard;
+  messageId: number;
+}) {
+  const { t, language } = useLanguage();
+  const [added, setAdded] = useState(false);
+  return (
+    <div className="mt-2.5 overflow-hidden rounded-2xl border border-brand-border-warm bg-white shadow-[0_8px_20px_rgba(71,42,59,0.08)]">
+      <Link
+        className="flex items-center gap-3 p-2.5 transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-navy"
+        onClick={() => window.dispatchEvent(new CustomEvent("chat:navigate"))}
+        to={card.path}
+      >
+        {card.image ? (
+          <img
+            alt=""
+            className="size-16 shrink-0 rounded-xl object-cover"
+            decoding="async"
+            loading="lazy"
+            src={card.image}
+          />
+        ) : (
+          <span className="grid size-16 shrink-0 place-items-center rounded-xl bg-brand-cream text-brand-muted">
+            <ChatMark className="size-6" />
+          </span>
+        )}
+        <span className="min-w-0 flex-1">
+          <span className="line-clamp-2 text-sm font-extrabold leading-5 text-brand-navy">
+            {card.name}
+          </span>
+          <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+            {card.price > 0 && (
+              <span className="font-bold text-brand-navy">
+                {chatPrice(card.price, language)}
+              </span>
+            )}
+            {card.soldOut ? (
+              <span className="rounded-full bg-[#fdecec] px-2 py-0.5 font-bold text-[#9c2a2a]">
+                {t("Sold out")}
+              </span>
+            ) : (
+              <span className="rounded-full bg-[#e8f5e9] px-2 py-0.5 font-bold text-[#2c6a2f]">
+                {t("In stock")}
+              </span>
+            )}
+          </span>
+        </span>
+      </Link>
+      {!card.soldOut && card.addId && !/^(menu:custom:|menu:[a-z0-9-]+:custom-)/.test(card.addId) ? (
+        <div className="px-2.5 pb-2.5" key={`${messageId}:${card.addId}`}>
+          {added ? (
+            <p className="rounded-full bg-[#e8f5e9] px-3 py-2 text-center text-xs font-bold text-[#2c6a2f]" role="status">
+              {t("Added to your bag")}
+            </p>
+          ) : (
+            <ChatAutoAdd addId={card.addId} onAdded={() => setAdded(true)} />
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * A product photo in the conversation. The picture is the catalog's own (or a
+ * public storage URL); a product with no photo gets the shop mark and a caption,
+ * never an empty frame. When a page exists, the whole picture opens it.
+ */
+function ChatPhotoView({ card }: { card: ChatPhotoCard }) {
+  const { t } = useLanguage();
+  const frame = (
+    <span className="relative block aspect-[4/3] w-full overflow-hidden bg-brand-cream">
+      {card.image ? (
+        <img
+          alt={card.name}
+          className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          decoding="async"
+          loading="lazy"
+          src={card.image}
+          // A broken image must not leave a torn frame: the shop mark takes over.
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+        />
+      ) : (
+        <span className="grid size-full place-items-center text-brand-muted">
+          <ChatMark className="size-9" />
+        </span>
+      )}
+    </span>
+  );
+  return (
+    <figure className="mt-2.5 w-full max-w-[16.5rem] overflow-hidden rounded-2xl border border-brand-border-warm bg-white shadow-[0_8px_20px_rgba(71,42,59,0.1)]">
+      {card.path ? (
+        <Link
+          aria-label={t("Open {name}", { name: card.name })}
+          className="group block focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-navy"
+          onClick={() => window.dispatchEvent(new CustomEvent("chat:navigate"))}
+          to={card.path}
+        >
+          {frame}
+        </Link>
+      ) : (
+        frame
+      )}
+      <figcaption className="flex items-center justify-between gap-2 px-2.5 py-1.5">
+        <span className="truncate text-[12px] font-bold text-brand-navy">
+          {card.name}
+        </span>
+        <span className="shrink-0 text-[11px] font-semibold text-brand-muted">
+          {card.image ? t("Photo") : t("No photo yet")}
+        </span>
+      </figcaption>
+    </figure>
+  );
+}
+
+/**
+ * The order timeline (#6): the live status from the database as steps, so
+ * "where is my order?" is one glance. A cancelled or failed payment replaces
+ * the steps with a single line — those are not steps on the way.
+ */
+function ChatOrderCardView({ card }: { card: ChatOrderCard }) {
+  const { t, language } = useLanguage();
+  const interrupted = card.status === "cancelled" || card.status === "payment_failed";
+  const current = Math.max(0, ORDER_STEPS.indexOf(card.status));
+  const stepLabels: Record<string, string> = {
+    processing: t("Confirmed"),
+    ready: card.fulfillment === "delivery" ? t("Packed") : t("Ready for pickup"),
+    out_for_delivery: t("On the way"),
+    delivered: t("Delivered"),
+  };
+  return (
+    <div className="mt-2.5 rounded-2xl border border-brand-border-warm bg-white p-3 shadow-[0_8px_20px_rgba(71,42,59,0.08)]">
+      <p className="flex items-center justify-between gap-2 text-[13px] font-extrabold text-brand-navy">
+        <span>{t("Order #{id}", { id: card.id })}</span>
+        {card.total > 0 && (
+          <span className="text-xs font-bold text-brand-muted">
+            {chatPrice(card.total, language)}
+          </span>
+        )}
+      </p>
+      {interrupted ? (
+        <p
+          className={`mt-2 rounded-xl px-2.5 py-2 text-xs font-bold ${
+            card.status === "cancelled"
+              ? "bg-[#f4f6f8] text-[#5d7186]"
+              : "bg-[#fdecec] text-[#9c2a2a]"
+          }`}
+        >
+          {card.status === "cancelled"
+            ? t("This order was cancelled.")
+            : t("The payment did not go through — you can retry checkout.")}
+        </p>
+      ) : (
+        <ol className="mt-2 flex items-start gap-1">
+          {ORDER_STEPS.map((step, index) => {
+            const done = index <= current;
+            return (
+              <li className="flex min-w-0 flex-1 flex-col items-center gap-1" key={step}>
+                <span className="flex w-full items-center">
+                  <span
+                    aria-hidden="true"
+                    className={`h-0.5 flex-1 ${index === 0 ? "bg-transparent" : done ? "bg-[#3d8b40]" : "bg-brand-border-warm"}`}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className={`grid size-4 shrink-0 place-items-center rounded-full text-[9px] font-bold ${
+                      done
+                        ? "bg-[#3d8b40] text-white"
+                        : "bg-brand-border-warm text-transparent"
+                    } ${index === current ? "ring-2 ring-[#3d8b40]/30" : ""}`}
+                  >
+                    ✓
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={`h-0.5 flex-1 ${index === ORDER_STEPS.length - 1 ? "bg-transparent" : index < current ? "bg-[#3d8b40]" : "bg-brand-border-warm"}`}
+                  />
+                </span>
+                <span
+                  className={`text-center text-[10px] leading-3 ${done ? "font-bold text-brand-navy" : "text-brand-muted"} ${index === current ? "text-[#2c6a2f]" : ""}`}
+                >
+                  {stepLabels[step] || step}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Leave a number for the team while the thread waits for a person (#2). The
+ * number travels as an ordinary customer message in the same thread, so it is
+ * already where staff look — no second inbox, no new endpoint.
+ */
+function LeaveMessageForm({ onSend }: { onSend: (text: string) => void }) {
+  const { t } = useLanguage();
+  const [phone, setPhone] = useState("");
+  const [note, setNote] = useState("");
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    // Keep a leading + and the digits; anything else a phone keyboard offers
+    // (spaces, dashes, brackets) is formatting, not part of the number.
+    const digits = phone.replace(/[^\d+]/g, "");
+    if (digits.replace(/\D/g, "").length < 8) {
+      setError(t("Enter a phone number with at least 8 digits."));
+      return;
+    }
+    setError("");
+    onSend(
+      [
+        t("Please call or message me about my request."),
+        `${t("Phone")}: ${digits}`,
+        note.trim() ? `${t("Details")}: ${note.trim().slice(0, 300)}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    );
+    writeStorage("cold-stone-chat-leave-message", String(Date.now()));
+    setNote("");
+    setSent(true);
+  };
+
+  if (sent) {
+    return (
+      <p className="mt-2 text-[12px] font-bold text-[#2c6a2f]" role="status">
+        {t("Thank you — the team has it.")}
+      </p>
+    );
+  }
+
+  return (
+    <form className="mt-2 space-y-1.5" onSubmit={submit}>
+      <label className="block text-[12px] font-bold text-[#78520a]" htmlFor="chat-leave-phone">
+        {t("Leave a phone number")}
+      </label>
+      <div className="flex gap-1.5">
+        <input
+          autoComplete="tel"
+          className="min-w-0 flex-1 rounded-full border border-[#e0c078] bg-white px-3 py-1.5 text-[13px] font-medium text-brand-navy outline-none focus:border-brand-navy"
+          id="chat-leave-phone"
+          inputMode="tel"
+          maxLength={20}
+          onChange={(event) => setPhone(event.target.value)}
+          placeholder="+237 6 99 00 00 00"
+          type="tel"
+          value={phone}
+        />
+        <button
+          className="shrink-0 rounded-full bg-brand-navy px-3 text-xs font-bold text-white transition hover:bg-brand-blue disabled:opacity-60"
+          disabled={!phone.trim()}
+          type="submit"
+        >
+          {t("Send")}
+        </button>
+      </div>
+      <input
+        aria-label={t("Anything else the team should know?")}
+        className="w-full rounded-full border border-[#e0c078] bg-white px-3 py-1.5 text-[13px] font-medium text-brand-navy outline-none focus:border-brand-navy"
+        maxLength={300}
+        onChange={(event) => setNote(event.target.value)}
+        placeholder={t("Anything else the team should know?")}
+        value={note}
+      />
+      {error ? (
+        <p className="text-[12px] font-semibold text-red-700" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </form>
+  );
+}
+
+
 
 // The button an AI reply can carry (from its [ACTION:...] line): a full-width,
 // thumb-friendly jump to the page the customer needs, e.g. the All Menu page.
@@ -2380,11 +3379,21 @@ function ChatChips({
  * the button the customer would otherwise have to tap. Runs once per mount;
  * the thread history re-rending does not re-add.
  */
-function ChatAutoAdd({ addId }: { addId: string }) {
+function ChatAutoAdd({
+  addId,
+  onAdded,
+}: {
+  addId: string;
+  /** Called once the add succeeded, so a parent card can swap in its own note. */
+  onAdded?: () => void;
+}) {
   const { t } = useLanguage();
   const { addToCart, cartItems } = useCart();
   const { flavors } = useFlavors();
   const [state, setState] = useState<"adding" | "added" | "failed">("adding");
+  // `added` is state; a parent is told after the add actually happened, not before.
+  const onAddedRef = useRef(onAdded);
+  onAddedRef.current = onAdded;
   // Latest-handler refs: the add fires exactly once per mount, on a fixed 400 ms
   // timer. depending on addToCart or flavors directly re-arms the timer on every
   // re-render — and the flavor context value is a fresh object each render, so
@@ -2410,6 +3419,7 @@ function ChatAutoAdd({ addId }: { addId: string }) {
       );
       if (inBag) {
         setState("added");
+        onAddedRef.current?.();
         return;
       }
       const ok = addId.startsWith("flavor:")
@@ -2422,6 +3432,7 @@ function ChatAutoAdd({ addId }: { addId: string }) {
             findMenuItem(addId) || { id: "", name: "", image: "" },
           );
       setState(ok ? "added" : "failed");
+      if (ok) onAddedRef.current?.();
     }, 400);
     return () => window.clearTimeout(timer);
     // cartItems is read through the closure on purpose: the add happens once,

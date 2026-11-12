@@ -137,6 +137,7 @@ import { registerCommerceRoutes } from './commerce-routes.js'
 import { getCashOnDeliveryConfig } from './commerce.js'
 import { isWhatsAppMessagingConfigured, sendWhatsAppText } from './whatsapp.js'
 import { aiConfigured, detectMessageLanguage, gatherCustomerContext, suggestReply } from './chat-assistant.js'
+import { clearChatProgress, progressLabelForTool, readChatProgress, setChatProgress } from './chat-progress.js'
 import { statedAllergies } from './chat-offer.js'
 import {
   AdminMfaConfigurationError,
@@ -3635,6 +3636,8 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
     response.status(403).json({ error: await chatAccessError(threadId) })
     return
   }
+  // A no-show from a previous message must not keep the typing bubble alive.
+  clearChatProgress(threadId)
   // The page the customer is on when they write. The AI uses it to explain the
   // screen they are looking at ("what page is this?") and to guide them around it.
   const customerPage = typeof request.body.page === 'string' && /^\/[A-Za-z0-9/_-]{0,119}$/.test(request.body.page)
@@ -3688,6 +3691,9 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
     console.warn(`chat auto-reply skipped on thread ${threadId}: automatic reply budget reached`)
     return
   }
+  // Progress (#1): the widget polls this with the messages and shows the stage
+  // under its typing dots instead of an unexplained wait. Cosmetic, in memory.
+  setChatProgress(threadId, 'thinking')
   try {
     const history = await database.prepare(`
       SELECT sender, body, image_url AS "imageUrl" FROM chat_messages WHERE thread_id = ? ORDER BY id
@@ -3702,7 +3708,10 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
     if (alreadyAnswered) return
     // Reply in the language the customer just wrote in, so French and English
     // switch naturally inside one conversation instead of sticking to the page language.
-    const language = detectMessageLanguage(lastCustomer.body, 'en')
+    // Their own words win; when the message carries no language at all (a product
+    // name, a number) the widget's language pin decides, and only then English.
+    const pinnedLanguage = request.body.language === 'fr' ? 'fr' : request.body.language === 'en' ? 'en' : ''
+    const language = detectMessageLanguage(lastCustomer.body, pinnedLanguage || 'en')
     // The signed-in customer's live bag and latest order travel into the prompt, so
     // "what's in my bag?" and "where is my order?" get real answers without staff.
     const threadCustomer = await database.prepare(`
@@ -3727,7 +3736,11 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
       customerContext,
       imageUrl,
       bag: chatBag(request.body.bag),
+      // Each tool lookup becomes a named stage ("Looking up Chocolate Devotion…").
+      onTool: (name, args) => setChatProgress(threadId, 'lookup', progressLabelForTool(name, args)),
     })
+    // The reply exists (or will not): from here the stage is writing it.
+    setChatProgress(threadId, 'writing')
     if (!result.suggestion) {
       console.warn(
         `chat auto-reply skipped on thread ${threadId}: ${result.aiFailure?.reason || 'no reply'} — ${result.aiFailure?.detail || 'no detail'}`,
@@ -3761,6 +3774,10 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
     console.log(`chat auto-reply sent on thread ${threadId} (topic: ${result.topic || 'general'}${result.needsAttention ? ', NEEDS ATTENTION' : ''})`)
   } catch (autoReplyError) {
     console.error('chat auto-reply failed:', autoReplyError)
+  } finally {
+    // The stored reply is what ends the wait; a leftover stage would show on top
+    // of it for up to its TTL, so it is dropped the moment the reply is saved.
+    clearChatProgress(threadId)
   }
 })
 
@@ -3904,12 +3921,15 @@ app.get('/api/chat/messages/:threadId', optionalCustomer, async (request, respon
       created_at AS "createdAt"
     FROM chat_messages WHERE thread_id = ? ORDER BY id DESC LIMIT 50
   `).all(threadId)
+  // What the assistant is doing right now (#1), null when idle. Read only by the
+  // thread's owner (checked above), and never stored.
+  const progress = readChatProgress(threadId)
   // Only store replies count as read by the shopper; their own messages already are.
   await database.prepare(`
     UPDATE chat_messages SET is_read_by_customer = 1
     WHERE thread_id = ? AND sender = 'store'
   `).run(threadId)
-  response.json({ messages: messages.reverse() })
+  response.json({ messages: messages.reverse(), progress })
 })
 
 app.post('/api/chat/messages/:threadId/handoff', chatLimiter, optionalCustomer, async (request, response) => {
