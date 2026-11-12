@@ -25,13 +25,9 @@ import {
   localClock,
 } from "../shared/storeHours.js";
 import { buildChunks, retrieveChunks } from "./retrieval.js";
-<<<<<<< HEAD
-import { createToolExecutor, customerProductLine, describeCreation, ensureProductLink, flavorItemPath, menuItemPath, askedProduct, nearestStoreReply, partyReply, productActionLines, reorderReply, soldOutAnswer, toolDefinitions, findProduct } from "./chat-tools.js";
+import { createToolExecutor, customerProductLine, describeCreation, ensureProductLink, flavorItemPath, menuItemPath, askedProduct, nearestStoreReply, partyReply, productActionLines, productPhotoLine, reorderReply, soldOutAnswer, toolDefinitions, findProduct } from "./chat-tools.js";
 import { parseCoordinates } from "../shared/nearestStore.js";
 import { dailySpecial } from "../shared/dailySpecial.js";
-=======
-import { createToolExecutor, customerProductLine, describeCreation, ensureProductLink, flavorItemPath, menuItemPath, askedProduct, partyReply, productActionLines, productPhotoLine, reorderReply, soldOutAnswer, toolDefinitions, findProduct } from "./chat-tools.js";
->>>>>>> check
 import { applyAllergyGuard, describeBagQuote, describeBranch } from "./chat-offer.js";
 import {
   bagEditReply,
@@ -500,11 +496,7 @@ const FACT_CACHE_MS = 60000;
  */
 export async function suggestReply(
   history,
-<<<<<<< HEAD
-  { database, language = "en", customerPage = "", pageSnapshot = "", customerContext = {}, imageUrl = "", bag = [], location = null },
-=======
-  { database, language = "en", customerPage = "", pageSnapshot = "", customerContext = {}, imageUrl = "", bag = [], onTool = null },
->>>>>>> check
+  { database, language = "en", customerPage = "", pageSnapshot = "", customerContext = {}, imageUrl = "", bag = [], location = null, onTool = null },
 ) {
   const lastCustomer = [...history]
     .reverse()
@@ -1626,6 +1618,7 @@ export function buildSystemPrompt(
     ...snapshotSection(snapshotText, imageUrl, imageMatch),
     ...styleSection(language),
     ...locationSection(context.customerLocation),
+    ...emojiRules(),
     ...shopFactsSection(context),
     ...cardTagSection(),
   ].join("\n");
@@ -1749,7 +1742,6 @@ const ROLE_RULES = [
   "- Do NOT say you are bringing in a colleague for questions you can answer yourself — that wastes the team's time.",
 ];
 
-<<<<<<< HEAD
 // The position the customer allowed the browser to share. It is a fact like the
 // branches, so the model may use it — and only it — to name the nearest shop.
 function locationSection(location) {
@@ -1759,7 +1751,9 @@ function locationSection(location) {
     `THE CUSTOMER'S LOCATION: ${location.lat.toFixed(5)}, ${location.lng.toFixed(5)} (shared by the customer's browser with their permission).`,
     "- For 'which store is closer to me', 'nearest shop' or 'closest branch', call get_nearest_store and name that one branch with its distance and address. Do not list every branch.",
     "- Never state the customer's coordinates back to them.",
-=======
+  ];
+}
+
 // Emojis (style): the shop's assistant may use them, but only where a person at
 // the counter would actually smile. The model chooses; this states when an emoji
 // is welcome and, just as importantly, when one would be inappropriate.
@@ -1770,7 +1764,6 @@ function emojiRules() {
     "- Never use an emoji when the customer reports a problem, a missing or wrong order, a late delivery, a refund or a payment issue, or when they are upset or confused. A sorry there is words only — a smiling face next to a complaint is insulting.",
     "- Match the customer: if they write with emojis, one is welcome back; if they write plainly, stay plain. The emoji must fit the mood and the product — 🍦 🍨 🍓 🎂 🎉 😊 👋 👍 🙏 are safe; never use one that promises something (💸, 🥇) or reads as laughter at a problem.",
     "- Never use an emoji in place of a word the customer needs (a price, an item, a time); it decorates a sentence, it does not carry it.",
->>>>>>> check
   ];
 }
 

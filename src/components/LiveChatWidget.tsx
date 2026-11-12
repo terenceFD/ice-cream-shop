@@ -81,7 +81,12 @@ type OrderStatus = ChatOrderCard["status"];
 
 // The steps a shopper cares about, in order. A cancelled or failed payment is not a
 // step: it replaces the timeline with one plain line.
-const ORDER_STEPS: OrderStatus[] = ["processing", "ready", "out_for_delivery", "delivered"];
+const ORDER_STEPS: OrderStatus[] = [
+  "processing",
+  "ready",
+  "out_for_delivery",
+  "delivered",
+];
 
 // The tick on a message the customer sent. It appears only after the server has stored
 // the message, so it can never claim a delivery that did not happen. Two overlapping
@@ -299,7 +304,6 @@ function asksForAutoAdd(message: string): boolean {
   );
 }
 
-<<<<<<< HEAD
 /**
  * True when the customer explicitly asked for the bag to change — remove an
  * item, set its quantity, or empty the bag. Such a reply carries a [BAG:]
@@ -310,12 +314,15 @@ function asksForBagEdit(message: string): boolean {
   return /\b(?:remove|removed|take (?:off|out)|drop(?: (?:it|the|that))?|delete|empty|clear|vide|vider|enl[eè]ve|retire|supprime|make (?:it|the|them)|change it to|seulement)(?:\b|(?=[\s,.!?]))/i.test(
     message,
   );
-=======
+}
+
 function parseProductCard(raw: string): ChatProductCard | undefined {
   try {
     const card = JSON.parse(raw) as Record<string, unknown>;
-    const name = typeof card.name === "string" ? card.name.trim().slice(0, 80) : "";
-    const path = typeof card.path === "string" ? safeProductPath(card.path) : null;
+    const name =
+      typeof card.name === "string" ? card.name.trim().slice(0, 80) : "";
+    const path =
+      typeof card.path === "string" ? safeProductPath(card.path) : null;
     if (!name || !path) return undefined;
     const price = Number(card.price);
     const image = typeof card.image === "string" ? card.image : "";
@@ -325,7 +332,9 @@ function parseProductCard(raw: string): ChatProductCard | undefined {
       path,
       price: Number.isFinite(price) && price > 0 ? price : 0,
       soldOut: card.soldOut === true,
-      ...(image.startsWith("/") && !image.startsWith("//") && !image.includes("..")
+      ...(image.startsWith("/") &&
+      !image.startsWith("//") &&
+      !image.includes("..")
         ? { image }
         : {}),
       ...(addId ? { addId } : {}),
@@ -370,7 +379,8 @@ function parseOrderCard(raw: string): ChatOrderCard | undefined {
 function parsePhotoCard(raw: string): ChatPhotoCard | undefined {
   try {
     const card = JSON.parse(raw) as Record<string, unknown>;
-    const name = typeof card.name === "string" ? card.name.trim().slice(0, 80) : "";
+    const name =
+      typeof card.name === "string" ? card.name.trim().slice(0, 80) : "";
     if (!name) return undefined;
     const image = typeof card.image === "string" ? card.image.trim() : "";
     // A same-site path or an absolute https URL only: never data: or javascript:.
@@ -380,7 +390,8 @@ function parsePhotoCard(raw: string): ChatPhotoCard | undefined {
         : /^https:\/\//.test(image)
           ? image
           : "";
-    const path = typeof card.path === "string" ? safeProductPath(card.path) : null;
+    const path =
+      typeof card.path === "string" ? safeProductPath(card.path) : null;
     return {
       name,
       ...(safeImage ? { image: safeImage } : { fallback: true }),
@@ -389,7 +400,6 @@ function parsePhotoCard(raw: string): ChatPhotoCard | undefined {
   } catch {
     return undefined;
   }
->>>>>>> check
 }
 
 function parseVisitTag(raw: string): ChatVisit | undefined {
@@ -418,15 +428,13 @@ function splitChatAction(body: string): {
   visit?: ChatVisit;
   code?: string;
   chips?: string[];
-<<<<<<< HEAD
+  /** A product photo the agent sent with its sentence (the reference's tag). */
   image?: string;
   /** Extra angles when the agent answered a "more photos" ask. */
   gallery?: string[];
-=======
   product?: ChatProductCard;
   order?: ChatOrderCard;
   photo?: ChatPhotoCard;
->>>>>>> check
 } {
   let text = body.trim();
   let action: { path: string; label: string } | undefined;
@@ -436,19 +444,17 @@ function splitChatAction(body: string): {
   let visit: ChatVisit | undefined;
   let code: string | undefined;
   let chips: string[] | undefined;
-<<<<<<< HEAD
   let image: string | undefined;
   let gallery: string[] | undefined;
-  for (let guard = 0; guard < 8; guard += 1) {
-=======
   let product: ChatProductCard | undefined;
   let order: ChatOrderCard | undefined;
   let photo: ChatPhotoCard | undefined;
-  for (let guard = 0; guard < 10; guard += 1) {
+  // 12 steps: a reply can carry a photo, a product card, an order card, a
+  // link, an add, a code, chips and an action, all at once.
+  for (let guard = 0; guard < 12; guard += 1) {
     const photoMatch = text.match(/\[PHOTO:([^\]]+)\]\s*$/i);
     const productMatch = text.match(/\[PRODUCT:([^\]]+)\]\s*$/i);
     const orderMatch = text.match(/\[ORDER:([^\]]+)\]\s*$/i);
->>>>>>> check
     const linkMatch = text.match(/\[LINK:(\/[^\]]+)\]\s*$/);
     const addMatch = text.match(/\[ADD:([^\]]+)\]\s*$/);
     const fillMatch = text.match(/\[FILL:([^\]]+)\]\s*$/);
@@ -457,8 +463,9 @@ function splitChatAction(body: string): {
     const visitMatch = text.match(/\[VISIT:([^\]]+)\]\s*$/i);
     const codeMatch = text.match(/\[CODE:([^\]]+)\]\s*$/i);
     const chipsMatch = text.match(/\[CHIPS:([^\]]+)\]\s*$/i);
-<<<<<<< HEAD
-    const imgMatch = text.match(/\[IMGS?:((?:\/[^\]|]+)(?:\|\/[^\]|]+)*)\]\s*$/i);
+    const imgMatch = text.match(
+      /\[IMGS?:((?:\/[^\]|]+)(?:\|\/[^\]|]+)*)\]\s*$/i,
+    );
     if (imgMatch) {
       // Product photo(s). Only first-party site paths render: an attacker reply
       // cannot embed an outside image into the conversation. One path is the
@@ -467,12 +474,15 @@ function splitChatAction(body: string): {
         .split("|")
         .map((shot) => shot.trim())
         .filter((shot) =>
-          /^\/(?:menu-official|flavors|ice-images|cake-images)\/[\w\-/]+\.(?:webp|jpe?g|png)$/i.test(shot),
+          /^\/(?:menu-official|flavors|ice-images|cake-images)\/[\w\-/]+\.(?:webp|jpe?g|png)$/i.test(
+            shot,
+          ),
         );
       if (paths.length === 1) image = paths[0];
       else if (paths.length > 1) gallery = paths.slice(0, 4);
       text = text.slice(0, imgMatch.index).trim();
-=======
+      continue;
+    }
     // A card is drawn once per reply; a second tag is dropped rather than stacked.
     if (photoMatch && !product) {
       const card = parsePhotoCard(photoMatch[1].trim());
@@ -490,7 +500,6 @@ function splitChatAction(body: string): {
       const card = parseOrderCard(orderMatch[1].trim());
       if (card && !order && !product) order = card;
       text = text.slice(0, orderMatch.index).trim();
->>>>>>> check
       continue;
     }
     if (linkMatch) {
@@ -558,7 +567,6 @@ function splitChatAction(body: string): {
     }
     break;
   }
-<<<<<<< HEAD
   // The agent sometimes buries tags mid-sentence instead of on their own last
   // line ("…on each product page: [LINK:/menu?…] [LINK:/menu?…]"). The loop
   // above only parses end-of-text tags, so whatever survived must still be
@@ -587,20 +595,59 @@ function splitChatAction(body: string): {
           .split("|")
           .map((shot) => shot.trim())
           .filter((shot) =>
-            /^\/(?:menu-official|flavors|ice-images|cake-images)\/[\w\-/]+\.(?:webp|jpe?g|png)$/i.test(shot),
+            /^\/(?:menu-official|flavors|ice-images|cake-images)\/[\w\-/]+\.(?:webp|jpe?g|png)$/i.test(
+              shot,
+            ),
           )
       : [];
     if (paths.length === 1) image = paths[0];
     else if (paths.length > 1) gallery = paths.slice(0, 4);
   }
+  // A card or photo tag the model put mid-sentence must not leak as raw markup
+  // either, and a card it wrote is still honoured.
+  if (!product && !photo) {
+    const buriedProduct = text.match(/\[PRODUCT:([^\]]+)\]/i);
+    const card = buriedProduct
+      ? parseProductCard(buriedProduct[1].trim())
+      : undefined;
+    if (card) product = card;
+  }
+  if (!photo && !product) {
+    const buriedPhoto = text.match(/\[PHOTO:([^\]]+)\]/i);
+    const card = buriedPhoto
+      ? parsePhotoCard(buriedPhoto[1].trim())
+      : undefined;
+    if (card) photo = card;
+  }
+  if (!order && !product) {
+    const buriedOrder = text.match(/\[ORDER:([^\]]+)\]/i);
+    const card = buriedOrder
+      ? parseOrderCard(buriedOrder[1].trim())
+      : undefined;
+    if (card) order = card;
+  }
   text = text
-    .replace(/\[(?:LINK|IMGS?|ADD|FILL|BAG|VISIT|CODE|CHIPS|ACTION):[^\]]*\]/gi, "")
+    .replace(
+      /\[(?:LINK|IMGS?|ADD|FILL|BAG|VISIT|CODE|CHIPS|ACTION|PRODUCT|ORDER|PHOTO):[^\]]*\]/gi,
+      "",
+    )
     .replace(/\s{2,}/g, " ")
     .trim();
-  return { text, action, addId, fill, bag, visit, code, chips, image, gallery };
-=======
-  return { text, action, addId, fill, bag, visit, code, chips, product, order, photo };
->>>>>>> check
+  return {
+    text,
+    action,
+    addId,
+    fill,
+    bag,
+    visit,
+    code,
+    chips,
+    image,
+    gallery,
+    product,
+    order,
+    photo,
+  };
 }
 
 // A small text snapshot of the page the customer is looking at, sent with each
@@ -701,7 +748,10 @@ function voiceReviewDefault(): boolean {
   } catch {
     // No storage: fall through to the touch-screen default.
   }
-  return typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia("(pointer: coarse)").matches
+  );
 }
 
 /**
@@ -743,11 +793,16 @@ function progressText(
  * tag parser removes are cut from wherever they start, so a half-typed tag ("[LIN")
  * never flashes on screen, and the text appears as a whole word up to a tag.
  */
-function steerAt(text: string, steering: { id: number; length: number }): string {
+function steerAt(
+  text: string,
+  steering: { id: number; length: number },
+): string {
   const full = text.trim();
   if (steering.length >= full.length) return full;
   let visible = full.slice(0, Math.max(0, steering.length));
-  const tagStart = visible.search(/\[(?:LINK|ADD|ACTION|FILL|BAG|VISIT|CODE|CHIPS|PRODUCT|ORDER|PHOTO):/i);
+  const tagStart = visible.search(
+    /\[(?:LINK|ADD|ACTION|FILL|BAG|VISIT|CODE|CHIPS|PRODUCT|ORDER|PHOTO):/i,
+  );
   if (tagStart >= 0) visible = visible.slice(0, tagStart);
   return visible.trimEnd();
 }
@@ -811,8 +866,11 @@ export function LiveChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   // Language pin (#6): the language the assistant answers in. It follows the
   // site until the customer pins one, and is sent with every message.
-  const [pinnedLanguage, setPinnedLanguage] = useState<"en" | "fr" | null>(null);
-  const replyLanguage: "en" | "fr" = pinnedLanguage || (language === "fr" ? "fr" : "en");
+  const [pinnedLanguage, setPinnedLanguage] = useState<"en" | "fr" | null>(
+    null,
+  );
+  const replyLanguage: "en" | "fr" =
+    pinnedLanguage || (language === "fr" ? "fr" : "en");
   const setReplyLanguage = (next: "en" | "fr") => setPinnedLanguage(next);
   // What the assistant is doing (#1): polled with the thread, null when idle.
   const [progress, setProgress] = useState<ChatProgress | null>(null);
@@ -946,7 +1004,10 @@ export function LiveChatWidget() {
     const timer = window.setTimeout(() => {
       setSteering((current) =>
         current && current.id === steering.id
-          ? { ...current, length: Math.min(current.body.length, current.length + step) }
+          ? {
+              ...current,
+              length: Math.min(current.body.length, current.length + step),
+            }
           : current,
       );
     }, 14);
@@ -962,7 +1023,10 @@ export function LiveChatWidget() {
     }
     const check = () => setVoiceReviewLive(Date.now() < voiceReviewUntil);
     check();
-    const timer = window.setTimeout(check, Math.max(0, voiceReviewUntil - Date.now()));
+    const timer = window.setTimeout(
+      check,
+      Math.max(0, voiceReviewUntil - Date.now()),
+    );
     return () => window.clearTimeout(timer);
   }, [voiceReview, voiceReviewUntil]);
 
@@ -1148,7 +1212,9 @@ export function LiveChatWidget() {
         );
         if (cancelled || threadId !== threadIdRef.current) return;
         const list = result.messages || [];
-        const lastCustomer = [...list].reverse().find((m) => m.sender === "customer");
+        const lastCustomer = [...list]
+          .reverse()
+          .find((m) => m.sender === "customer");
         const openedSince = list.some(
           (m) => m.sender === "store" && Date.parse(m.createdAt) > lastSeen,
         );
@@ -1329,7 +1395,8 @@ export function LiveChatWidget() {
       setIsSpeaking(false);
       setIsListening(false);
       // Stopping the mic keeps whatever was dictated, ready to edit or send.
-      if (voiceDraftRef.current.trim()) setVoiceReview(voiceDraftRef.current.trim());
+      if (voiceDraftRef.current.trim())
+        setVoiceReview(voiceDraftRef.current.trim());
       return;
     }
     const RecognitionCtor = ((window as unknown as Record<string, unknown>)
@@ -1557,7 +1624,11 @@ export function LiveChatWidget() {
   // neighborhood instead.
   const shareLocation = () => {
     if (!navigator.geolocation) {
-      setError(t("This browser cannot share your location. Tell us your neighborhood instead."));
+      setError(
+        t(
+          "This browser cannot share your location. Tell us your neighborhood instead.",
+        ),
+      );
       return;
     }
     setIsLocating(true);
@@ -1572,7 +1643,9 @@ export function LiveChatWidget() {
       },
       () => {
         setIsLocating(false);
-        setError(t("Location was not shared. Tell us your neighborhood instead."));
+        setError(
+          t("Location was not shared. Tell us your neighborhood instead."),
+        );
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
     );
@@ -1667,11 +1740,8 @@ export function LiveChatWidget() {
             // A snapshot of what is actually on the screen, so the assistant can
             // answer "what is this page?" from the real content, not guesses.
             pageSnapshot: capturePageSnapshot(),
-<<<<<<< HEAD
             location: sharedLocation,
-=======
             language: replyLanguage,
->>>>>>> check
             bag: cartItems.slice(0, 20).map((item) => ({
               name: item.name,
               quantity: item.quantity,
@@ -1892,8 +1962,14 @@ export function LiveChatWidget() {
 
   const queueReplies = useMemo(
     () => [
-      { label: t("Just checking in"), body: t("Hello, just checking in on my request.") },
-      { label: t("This is urgent"), body: t("This is urgent — could someone look at it soon?") },
+      {
+        label: t("Just checking in"),
+        body: t("Hello, just checking in on my request."),
+      },
+      {
+        label: t("This is urgent"),
+        body: t("This is urgent — could someone look at it soon?"),
+      },
       {
         label: t("Leave my phone number"),
         body: t("Here is my phone number so you can reach me:"),
@@ -1926,9 +2002,7 @@ export function LiveChatWidget() {
   const streamedText = steering
     ? { id: steering.id, length: steering.length }
     : null;
-  const waitingLabel = isAwaitingReply
-    ? progressMessage || t("Thinking…")
-    : "";
+  const waitingLabel = isAwaitingReply ? progressMessage || t("Thinking…") : "";
 
   const openResume = () => {
     setResume(null);
@@ -2080,11 +2154,7 @@ export function LiveChatWidget() {
               <p className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-medium text-white/70">
                 <span
                   aria-hidden="true"
-<<<<<<< HEAD
-                  className="inline-block size-1.5 shrink-0 rounded-full bg-[#4caf50] shadow-[0_0_6px_rgba(76,175,80,0.9)]"
-=======
-                  className={`inline-block size-1.5 shrink-0 rounded-full ${isAwaitingReply ? "animate-pulse bg-brand-yellow-deep" : "bg-[#3d8b40]"}`}
->>>>>>> check
+                  className={`inline-block size-1.5 shrink-0 rounded-full ${isAwaitingReply ? "animate-pulse bg-brand-yellow-deep shadow-[0_0_6px_rgba(250,204,21,0.9)]" : "bg-[#4caf50] shadow-[0_0_6px_rgba(76,175,80,0.9)]"}`}
                 />
                 <span className="min-w-0 truncate" aria-live="off">
                   {waitingLabel || t("Usually replies in minutes")}
@@ -2157,13 +2227,9 @@ export function LiveChatWidget() {
           </header>
 
           <div
-<<<<<<< HEAD
-            className="flex flex-1 flex-col overflow-y-auto bg-brand-cream/60 px-4 py-4"
-=======
             aria-label={t("Messages")}
             aria-live="polite"
-            className="flex flex-1 flex-col overflow-y-auto bg-brand-cream px-4 py-4"
->>>>>>> check
+            className="flex flex-1 flex-col overflow-y-auto bg-brand-cream/60 px-4 py-4"
             ref={listRef}
             role="log"
           >
@@ -2225,14 +2291,11 @@ export function LiveChatWidget() {
                   visit,
                   code,
                   chips,
-<<<<<<< HEAD
                   image,
                   gallery,
-=======
                   product: productCard,
                   order: orderCard,
                   photo: photoCard,
->>>>>>> check
                 } = isCustomer
                   ? {
                       text: message.body,
@@ -2243,14 +2306,11 @@ export function LiveChatWidget() {
                       visit: undefined,
                       code: undefined,
                       chips: undefined,
-<<<<<<< HEAD
                       image: undefined,
                       gallery: undefined,
-=======
                       product: undefined,
                       order: undefined,
                       photo: undefined,
->>>>>>> check
                     }
                   : splitChatAction(
                       steering && steering.id === message.id
@@ -2307,18 +2367,12 @@ export function LiveChatWidget() {
                           ) : null}
                         </div>
                       ) : (
-<<<<<<< HEAD
                         <div className="max-w-[16.5rem] rounded-[18px] rounded-bl-[6px] bg-white px-3.5 py-2 text-[15px] leading-6 text-brand-navy shadow-[0_1px_2px_rgba(15,35,60,0.06),0_2px_8px_rgba(15,35,60,0.04)] ring-1 ring-brand-border-warm/70">
                           {gallery?.length ? (
                             <ChatGallery shots={gallery} path={action?.path} />
                           ) : image ? (
                             <ChatProductImage src={image} path={action?.path} />
                           ) : null}
-                          {bodyText ? <ChatText text={bodyText} /> : null}
-                          {bag &&
-                            (autoBag ? <ChatAutoBag bag={bag} /> : <ChatBagEditButton bag={bag} />)}
-=======
-                        <div className="text-[15px] leading-6 text-brand-navy">
                           {bodyText ? (
                             <ChatText
                               text={bodyText}
@@ -2326,12 +2380,19 @@ export function LiveChatWidget() {
                             />
                           ) : null}
                           {productCard && (
-                            <ChatProductCardView card={productCard} messageId={message.id} />
+                            <ChatProductCardView
+                              card={productCard}
+                              messageId={message.id}
+                            />
                           )}
                           {orderCard && <ChatOrderCardView card={orderCard} />}
                           {photoCard && <ChatPhotoView card={photoCard} />}
-                          {bag && <ChatBagEditButton bag={bag} />}
->>>>>>> check
+                          {bag &&
+                            (autoBag ? (
+                              <ChatAutoBag bag={bag} />
+                            ) : (
+                              <ChatBagEditButton bag={bag} />
+                            ))}
                           {visit && <ChatVisitButton visit={visit} />}
                           {code && <ChatCodeButton code={code} />}
                           {chips?.length ? (
@@ -2385,14 +2446,10 @@ export function LiveChatWidget() {
               {isAwaitingReply && (
                 <div className="site-chat-typing mt-4 flex items-center">
                   <ShopMark />
-<<<<<<< HEAD
-                  <span className="ml-2 flex items-center gap-1.5 rounded-[18px] rounded-bl-[6px] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(15,35,60,0.06)] ring-1 ring-brand-border-warm/70">
-=======
                   <span
                     aria-hidden="true"
-                    className="ml-2 flex items-center gap-1.5 py-2"
+                    className="ml-2 flex items-center gap-1.5 rounded-[18px] rounded-bl-[6px] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(15,35,60,0.06)] ring-1 ring-brand-border-warm/70"
                   >
->>>>>>> check
                     <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_infinite]" />
                     <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.2s_infinite]" />
                     <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.4s_infinite]" />
@@ -2431,11 +2488,18 @@ export function LiveChatWidget() {
           )}
 
           {humanHandoffPending ? (
-            <div className="mx-3 mb-2 rounded-xl bg-[#fff6e5] px-3 py-2" role="status">
+            <div
+              className="mx-3 mb-2 rounded-xl bg-[#fff6e5] px-3 py-2"
+              role="status"
+            >
               <p className="text-xs font-semibold leading-5 text-[#78520a]">
                 {shopHours.open
-                  ? t("A team member is on now — expect a reply within about 15 minutes.")
-                  : t("Our team is offline. They read this thread from 09:00 and will reply then — you can also leave a number below.")}
+                  ? t(
+                      "A team member is on now — expect a reply within about 15 minutes.",
+                    )
+                  : t(
+                      "Our team is offline. They read this thread from 09:00 and will reply then — you can also leave a number below.",
+                    )}
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {queueReplies.map((reply) => (
@@ -2758,19 +2822,12 @@ export function LiveChatWidget() {
                       ? t("Stop voice input")
                       : t("Speak your message")
                 }
-<<<<<<< HEAD
                 className={`grid size-10 shrink-0 place-items-center rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95 ${
-                  isListening
-                    ? "bg-red-50 text-red-600"
-                    : "text-brand-muted hover:bg-white hover:text-brand-navy"
-=======
-                className={`grid size-10 shrink-0 place-items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-95 ${
                   isSpeaking
                     ? "bg-brand-navy text-brand-yellow"
                     : isListening
                       ? "bg-red-50 text-red-600"
                       : "text-brand-muted hover:bg-white hover:text-brand-navy"
->>>>>>> check
                 }`}
                 onClick={() => {
                   if (isSpeaking) {
@@ -2798,10 +2855,7 @@ export function LiveChatWidget() {
                     fill="none"
                     viewBox="0 0 24 24"
                   >
-                    <path
-                      d="M8 8v8h8V8H8Z"
-                      fill="currentColor"
-                    />
+                    <path d="M8 8v8h8V8H8Z" fill="currentColor" />
                   </svg>
                 ) : isListening ? (
                   <svg
@@ -3032,10 +3086,15 @@ function ChatProductCardView({
           </span>
         </span>
       </Link>
-      {!card.soldOut && card.addId && !/^(menu:custom:|menu:[a-z0-9-]+:custom-)/.test(card.addId) ? (
+      {!card.soldOut &&
+      card.addId &&
+      !/^(menu:custom:|menu:[a-z0-9-]+:custom-)/.test(card.addId) ? (
         <div className="px-2.5 pb-2.5" key={`${messageId}:${card.addId}`}>
           {added ? (
-            <p className="rounded-full bg-[#e8f5e9] px-3 py-2 text-center text-xs font-bold text-[#2c6a2f]" role="status">
+            <p
+              className="rounded-full bg-[#e8f5e9] px-3 py-2 text-center text-xs font-bold text-[#2c6a2f]"
+              role="status"
+            >
               {t("Added to your bag")}
             </p>
           ) : (
@@ -3108,11 +3167,13 @@ function ChatPhotoView({ card }: { card: ChatPhotoCard }) {
  */
 function ChatOrderCardView({ card }: { card: ChatOrderCard }) {
   const { t, language } = useLanguage();
-  const interrupted = card.status === "cancelled" || card.status === "payment_failed";
+  const interrupted =
+    card.status === "cancelled" || card.status === "payment_failed";
   const current = Math.max(0, ORDER_STEPS.indexOf(card.status));
   const stepLabels: Record<string, string> = {
     processing: t("Confirmed"),
-    ready: card.fulfillment === "delivery" ? t("Packed") : t("Ready for pickup"),
+    ready:
+      card.fulfillment === "delivery" ? t("Packed") : t("Ready for pickup"),
     out_for_delivery: t("On the way"),
     delivered: t("Delivered"),
   };
@@ -3143,7 +3204,10 @@ function ChatOrderCardView({ card }: { card: ChatOrderCard }) {
           {ORDER_STEPS.map((step, index) => {
             const done = index <= current;
             return (
-              <li className="flex min-w-0 flex-1 flex-col items-center gap-1" key={step}>
+              <li
+                className="flex min-w-0 flex-1 flex-col items-center gap-1"
+                key={step}
+              >
                 <span className="flex w-full items-center">
                   <span
                     aria-hidden="true"
@@ -3224,7 +3288,10 @@ function LeaveMessageForm({ onSend }: { onSend: (text: string) => void }) {
 
   return (
     <form className="mt-2 space-y-1.5" onSubmit={submit}>
-      <label className="block text-[12px] font-bold text-[#78520a]" htmlFor="chat-leave-phone">
+      <label
+        className="block text-[12px] font-bold text-[#78520a]"
+        htmlFor="chat-leave-phone"
+      >
         {t("Leave a phone number")}
       </label>
       <div className="flex gap-1.5">
@@ -3263,8 +3330,6 @@ function LeaveMessageForm({ onSend }: { onSend: (text: string) => void }) {
     </form>
   );
 }
-
-
 
 // The button an AI reply can carry (from its [ACTION:...] line): a full-width,
 // thumb-friendly jump to the page the customer needs, e.g. the All Menu page.
@@ -3563,7 +3628,7 @@ function ChatActionButton({
       className={
         quiet
           ? "text-sm font-bold text-brand-navy underline decoration-brand-yellow decoration-2 underline-offset-2 transition-[text-decoration-color] hover:decoration-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
-        : "group flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.4)] transition-all hover:bg-brand-gold-light hover:shadow-[0_4px_14px_rgba(250,204,21,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+          : "group flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.4)] transition-all hover:bg-brand-gold-light hover:shadow-[0_4px_14px_rgba(250,204,21,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
       }
       onClick={() => window.dispatchEvent(new CustomEvent("chat:navigate"))}
       to={action.path}
@@ -3680,7 +3745,9 @@ function ChatAutoBag({ bag }: { bag: BagEdit }) {
   const { t } = useLanguage();
   const { clearCart, removeFromCart, updateQuantity, cartItems } = useCart();
   const { flavors } = useFlavors();
-  const [state, setState] = useState<"applying" | "applied" | "gone">("applying");
+  const [state, setState] = useState<"applying" | "applied" | "gone">(
+    "applying",
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -3717,7 +3784,9 @@ function ChatAutoBag({ bag }: { bag: BagEdit }) {
                 ?.availableQuantity ?? target.availableQuantity);
         updateQuantity(
           target.id,
-          Number.isSafeInteger(available) && available > 0 && quantity > available
+          Number.isSafeInteger(available) &&
+            available > 0 &&
+            quantity > available
             ? available
             : quantity,
         );

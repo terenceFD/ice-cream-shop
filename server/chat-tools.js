@@ -1,9 +1,6 @@
 import { describeBranch } from "./chat-offer.js";
-<<<<<<< HEAD
 import { formatDistance, nearestBranch } from "../shared/nearestStore.js";
-=======
 import { safeChatImageReference } from "./storage.js";
->>>>>>> check
 
 // Tool calling for the chat assistant (#2: answers from the live database).
 //

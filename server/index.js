@@ -3741,12 +3741,9 @@ app.post('/api/chat/messages', chatLimiter, optionalCustomer, async (request, re
       customerContext,
       imageUrl,
       bag: chatBag(request.body.bag),
-<<<<<<< HEAD
       location,
-=======
       // Each tool lookup becomes a named stage ("Looking up Chocolate Devotion…").
       onTool: (name, args) => setChatProgress(threadId, 'lookup', progressLabelForTool(name, args)),
->>>>>>> check
     })
     // The reply exists (or will not): from here the stage is writing it.
     setChatProgress(threadId, 'writing')
