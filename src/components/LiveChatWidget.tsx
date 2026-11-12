@@ -1938,6 +1938,9 @@ export function LiveChatWidget() {
   // A spoken reply being read aloud keeps it too, as a stop control (#4).
   const showSend = Boolean(draft.trim() || attachment) && !isListening;
   const showMic = speechSupported && !showSend;
+  // The "Voice" pill sits inside the field on phones, so the input keeps room
+  // for it; from `sm` up it straddles the top edge and the text can run under it.
+  const voicePillVisible = speechSupported && showMic && !isListening;
   const humanHandoffPending = messages.some(
     (message) => message.needsAttention,
   );
@@ -2426,10 +2429,16 @@ export function LiveChatWidget() {
               })}
               {/* Opened from the "Find my flavor" button, not from a reply: it sits at the
                   end of the conversation like the newest message and stays there. */}
+              {/* On a phone the panel is the whole screen, so the quiz drops the
+                  avatar gutter and takes the full width: the card's own 16.5rem
+                  cap was leaving a third of the screen empty and squeezing the
+                  tap targets. From `sm` up it sits in the bubble column again. */}
               {quizOpen && !menuQuizOpen && (
                 <div className="mt-4 flex items-start">
-                  <ShopMark />
-                  <div className="min-w-0 max-w-[calc(100%-2.25rem)]">
+                  <span className="max-sm:hidden">
+                    <ShopMark />
+                  </span>
+                  <div className="min-w-0 flex-1 sm:max-w-[calc(100%-2.25rem)]">
                     <ChatQuizView
                       forceOpen
                       onClose={() => setQuizOpen(false)}
@@ -2439,8 +2448,10 @@ export function LiveChatWidget() {
               )}
               {menuQuizOpen && (
                 <div className="mt-4 flex items-start">
-                  <ShopMark />
-                  <div className="min-w-0 max-w-[calc(100%-2.25rem)]">
+                  <span className="max-sm:hidden">
+                    <ShopMark />
+                  </span>
+                  <div className="min-w-0 flex-1 sm:max-w-[calc(100%-2.25rem)]">
                     <MenuQuizCard
                       forceOpen
                       onClose={() => setMenuQuizOpen(false)}
@@ -2767,8 +2778,8 @@ export function LiveChatWidget() {
                 className={`w-full rounded-lg border border-brand-border-warm bg-white py-2.5 text-[15px] font-medium text-brand-navy shadow-[0_1px_2px_rgba(9,42,83,0.06)] outline-none! transition-all placeholder:text-brand-gray/80 focus:border-brand-yellow focus:bg-white focus:shadow-[0_0_0_3px_rgba(250,204,21,0.25)] ${
                   isListening && draft.trim()
                     ? "pl-3.5 pr-16 sm:pl-4"
-                    : "px-3.5 sm:px-4"
-                }`}
+                    : "pl-3.5 sm:px-4"
+                } ${voicePillVisible ? "pr-14 sm:pr-4" : "pr-3.5 sm:pr-4"}`}
                 maxLength={1000}
                 onChange={(event) => setDraft(event.target.value)}
                 placeholder={isListening ? "" : t("Type a message…")}
@@ -2776,11 +2787,15 @@ export function LiveChatWidget() {
               />
               {/* Voice (#4): a switch-step beside the mic. "Listen" dictates and
                   waits for a send tap; "Voice" also reads replies and sends on a
-                  pause. Nothing speaks unless this is chosen. */}
-              {speechSupported && showMic && !isListening && (
+                  pause. Nothing speaks unless this is chosen.
+
+                  On a phone the field is only ~10rem wide, so the pill sits inside
+                  the field's right edge (not straddling it) and the input reserves
+                  room for it — otherwise it covered the placeholder and the text. */}
+              {voicePillVisible && (
                 <button
                   aria-pressed={autoSpeak}
-                  className={`absolute -top-2 right-1.5 rounded-full px-2 py-0.5 text-[10px] font-extrabold ring-1 transition ${
+                  className={`absolute right-1 top-1/2 -translate-y-1/2 rounded-full px-2 py-1 text-[10px] font-extrabold leading-none ring-1 transition sm:-top-2 sm:right-1.5 sm:translate-y-0 sm:px-2 sm:py-0.5 ${
                     autoSpeak
                       ? "bg-brand-navy text-brand-yellow ring-brand-navy"
                       : "bg-white text-brand-muted ring-brand-border-warm hover:text-brand-navy"
@@ -2805,7 +2820,7 @@ export function LiveChatWidget() {
                       : "inset-x-0 justify-center gap-1"
                   }`}
                 >
-                  {Array.from({ length: draft.trim() ? 5 : 14 }, (_, index) => (
+                  {Array.from({ length: draft.trim() ? 5 : 10 }, (_, index) => (
                     <span
                       key={index}
                       style={{
@@ -3211,7 +3226,7 @@ function QuizTasteOption({
   const fruity = taste.value === "fruity";
   return (
     <button
-      className={`group flex w-full items-center gap-2.5 rounded-2xl border bg-white p-2 text-left transition hover:-translate-y-px hover:shadow-[0_6px_16px_rgba(71,42,59,0.12)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:translate-y-0 active:scale-[0.99] ${
+      className={`group flex min-h-14 w-full items-center gap-3 rounded-2xl border bg-white p-2.5 text-left transition hover:-translate-y-px hover:shadow-[0_6px_16px_rgba(71,42,59,0.12)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:translate-y-0 active:scale-[0.99] sm:min-h-0 sm:gap-2.5 sm:p-2 ${
         fruity
           ? "border-[#f3d3d8] hover:border-[#e9a7b3]"
           : "border-[#e3c8ab] hover:border-[#cfa773]"
@@ -3221,17 +3236,17 @@ function QuizTasteOption({
     >
       <span
         aria-hidden="true"
-        className={`grid size-10 shrink-0 place-items-center rounded-xl text-[19px] ${
+        className={`grid size-11 shrink-0 place-items-center rounded-xl text-[21px] sm:size-10 sm:text-[19px] ${
           fruity ? "bg-[#fdeef1]" : "bg-[#f6ead9]"
         }`}
       >
         {fruity ? "🍓" : "🍫"}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-extrabold leading-5 text-brand-navy">
+        <span className="block text-[16px] font-extrabold leading-5 text-brand-navy sm:text-[15px]">
           {t(taste.label)}
         </span>
-        <span className="mt-0.5 block text-[11.5px] font-medium leading-4 text-brand-muted">
+        <span className="mt-0.5 block text-[12.5px] font-medium leading-4 text-brand-muted sm:text-[11.5px]">
           {t(taste.hint)}
         </span>
       </span>
@@ -3314,9 +3329,9 @@ function ChatQuizView({
 
   if (!open) {
     return (
-      <div className="mt-2.5 max-w-[16rem]">
+      <div className="mt-2.5 w-full max-w-[16rem] sm:w-auto">
         <button
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.4)] transition-all hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-yellow px-4 py-2.5 text-sm font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.4)] transition-all hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
           onClick={start}
           type="button"
         >
@@ -3329,7 +3344,7 @@ function ChatQuizView({
   // Allergen chips: a soft outlined pill when off, a checked plum pill when on,
   // so "selected" is legible at a glance without shouting.
   const chipClass = (active: boolean) =>
-    `inline-flex items-center gap-1 rounded-full border px-2.5 py-1.5 text-[12.5px] font-bold leading-none transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.97] ${
+    `inline-flex min-h-9 items-center gap-1 rounded-full border px-3 py-2 text-[13px] font-bold leading-none transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.97] sm:min-h-0 sm:px-2.5 sm:py-1.5 sm:text-[12.5px] ${
       active
         ? "border-brand-navy bg-brand-navy text-white shadow-[0_2px_6px_rgba(71,42,59,0.25)]"
         : "border-brand-border-warm bg-white text-brand-navy hover:border-brand-navy/40 hover:bg-brand-cream"
@@ -3338,16 +3353,16 @@ function ChatQuizView({
   const progress = step >= 2 ? 2 : step + 1;
 
   return (
-    <div className="mt-2.5 w-full max-w-[16.5rem] overflow-hidden rounded-[20px] border border-brand-border-warm bg-white shadow-[0_14px_34px_rgba(71,42,59,0.16)]">
+    <div className="mt-2.5 w-full overflow-hidden rounded-[20px] border border-brand-border-warm bg-white shadow-[0_14px_34px_rgba(71,42,59,0.16)] sm:max-w-[16.5rem]">
       {/* A warm banner and a hairline progress bar: the customer can see at a
           glance that this is short and how far in they are. */}
-      <div className="relative bg-gradient-to-r from-brand-navy to-[#6b3f58] px-3.5 pb-2.5 pt-3 text-white">
+      <div className="relative bg-gradient-to-r from-brand-navy to-[#6b3f58] px-3.5 pb-2.5 pt-3 text-white sm:px-3.5">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-brand-yellow">
               {t("Find your flavor")}
             </p>
-            <p className="mt-1 ml-[-0.5px] truncate text-[15px] font-extrabold leading-5">
+            <p className="mt-1 ml-[-0.5px] truncate text-[16px] font-extrabold leading-5 sm:text-[15px]">
               {step < 2
                 ? t("Question {n} of 2", { n: step + 1 })
                 : t("Your flavor")}
@@ -3355,7 +3370,7 @@ function ChatQuizView({
           </div>
           <button
             aria-label={t("Close the quiz")}
-            className="grid size-7 shrink-0 place-items-center rounded-full text-white/70 transition hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
+            className="grid size-9 shrink-0 place-items-center rounded-full text-white/70 transition hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow sm:size-7"
             onClick={close}
             type="button"
           >
@@ -3389,13 +3404,13 @@ function ChatQuizView({
         </div>
       </div>
 
-      <div className="p-3">
+      <div className="p-3 sm:p-3">
         {step === 0 && (
           <div>
-            <p className="text-[13.5px] font-bold text-brand-navy">
+            <p className="text-[15px] font-bold text-brand-navy sm:text-[13.5px]">
               {t("Fruity or chocolatey?")}
             </p>
-            <div className="mt-2 flex flex-col gap-1.5">
+            <div className="mt-2 flex flex-col gap-2 sm:gap-1.5">
               {QUIZ_TASTES.map((option) => (
                 <QuizTasteOption
                   key={option.value}
@@ -3408,7 +3423,7 @@ function ChatQuizView({
               ))}
             </div>
             <button
-              className="mt-2 w-full rounded-full py-1.5 text-center text-[12px] font-bold text-brand-muted underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+              className="mt-2 min-h-10 w-full rounded-full py-2 text-center text-[13px] font-bold text-brand-muted underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:min-h-0 sm:py-1.5 sm:text-[12px]"
               onClick={() => {
                 setTaste("either");
                 setStep(1);
@@ -3422,15 +3437,15 @@ function ChatQuizView({
 
         {step === 1 && (
           <div>
-            <p className="text-[13.5px] font-bold text-brand-navy">
+            <p className="text-[15px] font-bold text-brand-navy sm:text-[13.5px]">
               {t("Any allergies?")}
             </p>
             {/* Safety framing: the filter is hard, and saying so is what earns the
               customer's trust in the recommendation. */}
-            <p className="mt-0.5 text-[11.5px] leading-4 text-brand-muted">
+            <p className="mt-0.5 text-[12.5px] leading-4 text-brand-muted sm:text-[11.5px]">
               {t("Anything you pick here is never recommended.")}
             </p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
+            <div className="mt-2 flex flex-wrap gap-2 sm:gap-1.5">
               {QUIZ_ALLERGENS.map((label) => (
                 <button
                   aria-pressed={avoid.includes(label)}
@@ -3460,7 +3475,7 @@ function ChatQuizView({
               ))}
             </div>
             <button
-              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-yellow px-3 py-2.5 text-[14px] font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.35)] transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+              className="mt-3 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-brand-yellow px-3 py-2.5 text-[15px] font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.35)] transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] sm:min-h-0 sm:text-[14px]"
               onClick={() => setStep(2)}
               type="button"
             >
@@ -3525,7 +3540,7 @@ function ChatQuizView({
             </Link>
             <div className="mt-2 flex items-center gap-1.5">
               <Link
-                className="flex min-h-9 flex-1 items-center justify-center rounded-xl bg-brand-yellow px-3 text-center text-[13px] font-extrabold text-brand-navy shadow-[0_2px_8px_rgba(250,204,21,0.3)] transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+                className="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-brand-yellow px-3 text-center text-[14px] font-extrabold text-brand-navy shadow-[0_2px_8px_rgba(250,204,21,0.3)] transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] sm:min-h-9 sm:text-[13px]"
                 onClick={() =>
                   window.dispatchEvent(new CustomEvent("chat:navigate"))
                 }
@@ -3534,7 +3549,7 @@ function ChatQuizView({
                 {t("View this flavor")}
               </Link>
               <button
-                className="min-h-9 rounded-xl border border-brand-border-warm px-3 text-[13px] font-bold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy disabled:border-[#cfe6d2] disabled:bg-[#eef7ef] disabled:text-[#2f6b37]"
+                className="min-h-11 rounded-xl border border-brand-border-warm px-3 text-[14px] font-bold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy disabled:border-[#cfe6d2] disabled:bg-[#eef7ef] disabled:text-[#2f6b37] sm:min-h-9 sm:text-[13px]"
                 disabled={added}
                 onClick={() => {
                   const ok = addToCart({
@@ -3558,7 +3573,7 @@ function ChatQuizView({
             </div>
             <div className="mt-2 flex items-center justify-between gap-2 border-t border-brand-border-warm/70 pt-2">
               <button
-                className="rounded-full px-1 py-1 text-[11.5px] font-bold text-brand-navy underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+                className="min-h-9 rounded-full px-1 py-1 text-[12.5px] font-bold text-brand-navy underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:min-h-0 sm:text-[11.5px]"
                 onClick={() => {
                   setStep(0);
                   setAdded(false);
@@ -3569,7 +3584,7 @@ function ChatQuizView({
               </button>
               <div className="flex items-center gap-2.5">
                 <button
-                  className="py-1 text-[11.5px] font-bold text-brand-muted underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+                  className="min-h-9 py-1 text-[12.5px] font-bold text-brand-muted underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:min-h-0 sm:text-[11.5px]"
                   onClick={() => {
                     setStep(1);
                     setAdded(false);
@@ -3579,7 +3594,7 @@ function ChatQuizView({
                   {t("Change allergies")}
                 </button>
                 <button
-                  className="py-1 text-[11.5px] font-bold text-brand-muted transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+                  className="min-h-9 py-1 text-[12.5px] font-bold text-brand-muted transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:min-h-0 sm:text-[11.5px]"
                   onClick={close}
                   type="button"
                 >
@@ -3608,7 +3623,7 @@ function ChatQuizView({
                   )}
             </p>
             <button
-              className="mt-2.5 w-full rounded-xl border border-brand-border-warm px-3 py-2 text-[12.5px] font-extrabold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+              className="mt-2.5 min-h-11 w-full rounded-xl border border-brand-border-warm px-3 py-2 text-[13.5px] font-extrabold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] sm:min-h-0 sm:text-[12.5px]"
               onClick={() => setStep(0)}
               type="button"
             >

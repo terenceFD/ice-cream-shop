@@ -171,9 +171,9 @@ export function MenuQuizCard({
 
   if (!open) {
     return (
-      <div className="mt-2 max-w-[16rem]">
+      <div className="mt-2 w-full max-w-[16rem] sm:w-auto">
         <button
-          className="flex w-full items-center justify-between gap-2 rounded-xl bg-brand-navy px-3.5 py-2.5 text-left text-white transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+          className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl bg-brand-navy px-3.5 py-2.5 text-left text-white transition hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
           onClick={start}
           type="button"
         >
@@ -214,7 +214,7 @@ export function MenuQuizCard({
     }`;
 
   const allergenChip = (active: boolean) =>
-    `inline-flex items-center gap-1 rounded-full border px-2.5 py-1.5 text-[12.5px] font-bold leading-none transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.97] ${
+    `inline-flex min-h-9 items-center gap-1 rounded-full border px-3 py-2 text-[13px] font-bold leading-none transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.97] sm:min-h-0 sm:px-2.5 sm:py-1.5 sm:text-[12.5px] ${
       active
         ? "border-brand-navy bg-brand-navy text-white"
         : "border-brand-border-warm bg-white text-brand-navy hover:bg-brand-cream"
@@ -223,7 +223,7 @@ export function MenuQuizCard({
   const total = items?.length ?? 0;
 
   return (
-    <div className="mt-2.5 w-full max-w-68 overflow-hidden rounded-[20px] border border-brand-border-warm bg-white shadow-[0_16px_38px_rgba(71,42,59,0.18)]">
+    <div className="mt-2.5 w-full overflow-hidden rounded-[20px] border border-brand-border-warm bg-white shadow-[0_16px_38px_rgba(71,42,59,0.18)] sm:max-w-68">
       {/* The head: a menu card's title block. The question is set as the dish
           name, with the kitchen line beneath — the one memorable moment. */}
       <div className="relative border-b border-brand-border-warm bg-brand-cream px-3.5 pb-3 pt-3">
@@ -235,7 +235,7 @@ export function MenuQuizCard({
                 ? t("Your pick")
                 : t("Question {n} of 2", { n: step + 1 })}
             </p>
-            <p className="mt-1 font-display text-[17px] font-extrabold leading-[1.2] text-brand-navy">
+            <p className="mt-1 font-display text-[18px] font-extrabold leading-[1.2] text-brand-navy sm:text-[17px]">
               {step === 0
                 ? t("What are you in the mood for?")
                 : step === 1
@@ -245,7 +245,7 @@ export function MenuQuizCard({
           </div>
           <button
             aria-label={t("Close the quiz")}
-            className="grid size-7 shrink-0 place-items-center rounded-full text-brand-muted transition hover:bg-brand-navy/5 hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+            className="grid size-9 shrink-0 place-items-center rounded-full text-brand-muted transition hover:bg-brand-navy/5 hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:size-7"
             onClick={close}
             type="button"
           >
@@ -307,7 +307,7 @@ export function MenuQuizCard({
 
         {items && step === 0 && (
           <div>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-2 sm:gap-1.5">
               {KIND_OPTIONS.map((option) => (
                 <button
                   aria-pressed={kind === option.value}
@@ -321,15 +321,15 @@ export function MenuQuizCard({
                 >
                   <span
                     aria-hidden="true"
-                    className="block bg-brand-surface py-2 text-center text-[22px]"
+                    className="block bg-brand-surface py-2.5 text-center text-[26px] sm:py-2 sm:text-[22px]"
                   >
                     {option.icon}
                   </span>
-                  <span className="flex-1 px-2 pb-2 pt-1.5">
-                    <span className="block text-[12.5px] font-extrabold leading-4 text-brand-navy">
+                  <span className="flex-1 px-2 pb-2.5 pt-2 sm:pb-2 sm:pt-1.5">
+                    <span className="block text-[13.5px] font-extrabold leading-4 text-brand-navy sm:text-[12.5px]">
                       {t(option.label)}
                     </span>
-                    <span className="mt-0.5 block text-[10.5px] font-medium leading-3.5 text-brand-muted">
+                    <span className="mt-0.5 block text-[11.5px] font-medium leading-4 text-brand-muted sm:text-[10.5px] sm:leading-3.5">
                       {t(option.hint)}
                     </span>
                   </span>
@@ -338,7 +338,7 @@ export function MenuQuizCard({
               ))}
             </div>
             <button
-              className="mt-2 w-full rounded-full py-1.5 text-[12px] font-bold text-brand-muted underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+              className="mt-2 min-h-10 w-full rounded-full py-2 text-[13px] font-bold text-brand-muted underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:min-h-0 sm:py-1.5 sm:text-[12px]"
               onClick={() => {
                 setKind("any");
                 setStep(1);
@@ -347,7 +347,7 @@ export function MenuQuizCard({
             >
               {t("Surprise me, anything on the menu")}
             </button>
-            <p className="mt-1 text-center text-[10.5px] text-brand-muted">
+            <p className="mt-1 text-center text-[11.5px] text-brand-muted sm:text-[10.5px]">
               {t("{count} items on today's menu", { count: total })}
             </p>
           </div>
@@ -355,11 +355,11 @@ export function MenuQuizCard({
 
         {items && step === 1 && (
           <div>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-1.5">
               {CROWD_OPTIONS.map((option) => (
                 <button
                   aria-pressed={crowd === option.value}
-                  className={`flex flex-col items-center gap-1 rounded-xl border px-1 py-2 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.97] ${
+                  className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-1 py-2.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.97] sm:min-h-0 sm:py-2 ${
                     crowd === option.value
                       ? "border-brand-navy bg-brand-navy text-white"
                       : "border-brand-border-warm bg-white text-brand-navy hover:bg-brand-cream"
@@ -368,14 +368,14 @@ export function MenuQuizCard({
                   onClick={() => setCrowd(option.value)}
                   type="button"
                 >
-                  <span aria-hidden="true" className="text-[17px] leading-none">
+                  <span aria-hidden="true" className="text-[20px] leading-none sm:text-[17px]">
                     {option.icon}
                   </span>
-                  <span className="text-[11.5px] font-extrabold leading-3.5">
+                  <span className="text-[12.5px] font-extrabold leading-4 sm:text-[11.5px] sm:leading-3.5">
                     {t(option.label)}
                   </span>
                   <span
-                    className={`text-[10px] leading-3 ${crowd === option.value ? "text-white/70" : "text-brand-muted"}`}
+                    className={`text-[11px] leading-3.5 sm:text-[10px] sm:leading-3 ${crowd === option.value ? "text-white/70" : "text-brand-muted"}`}
                   >
                     {t(option.hint)}
                   </span>
@@ -384,14 +384,14 @@ export function MenuQuizCard({
             </div>
 
             <div className="mt-3 flex items-baseline justify-between gap-2">
-              <p className="text-[12.5px] font-extrabold text-brand-navy">
+              <p className="text-[13.5px] font-extrabold text-brand-navy sm:text-[12.5px]">
                 {t("Leave out any allergies?")}
               </p>
-              <span className="text-[10.5px] font-semibold text-brand-muted">
+              <span className="text-[11.5px] font-semibold text-brand-muted sm:text-[10.5px]">
                 {t("Optional")}
               </span>
             </div>
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
+            <div className="mt-1.5 flex flex-wrap gap-2 sm:gap-1.5">
               {MENU_QUIZ_ALLERGENS.map((label) => (
                 <button
                   aria-pressed={avoid.includes(label)}
@@ -422,7 +422,7 @@ export function MenuQuizCard({
             </div>
 
             <button
-              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-yellow px-3 py-2.5 text-[14px] font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.35)] transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+              className="mt-3 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-brand-yellow px-3 py-2.5 text-[15px] font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.35)] transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] sm:min-h-0 sm:text-[14px]"
               onClick={() => setStep(2)}
               type="button"
             >
@@ -501,7 +501,7 @@ export function MenuQuizCard({
 
             <div className="mt-2.5 flex items-center gap-1.5">
               <button
-                className={`min-h-9 flex-1 rounded-xl text-[13px] font-extrabold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] ${
+                className={`min-h-11 flex-1 rounded-xl text-[14px] font-extrabold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] sm:min-h-9 sm:text-[13px] ${
                   added
                     ? "border border-[#cfe6d2] bg-[#eef7ef] text-[#2f6b37]"
                     : "bg-brand-yellow text-brand-navy shadow-[0_2px_8px_rgba(250,204,21,0.3)] hover:bg-brand-gold-light"
@@ -525,7 +525,7 @@ export function MenuQuizCard({
                 {added ? t("Added to your bag") : t("Add to bag")}
               </button>
               <button
-                className="min-h-9 rounded-xl border border-brand-border-warm px-3 text-[12.5px] font-bold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+                className="min-h-11 rounded-xl border border-brand-border-warm px-3 text-[13.5px] font-bold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] sm:min-h-9 sm:text-[12.5px]"
                 onClick={() => {
                   setStep(0);
                   setAdded(false);
@@ -538,7 +538,7 @@ export function MenuQuizCard({
 
             <div className="mt-2 flex items-center justify-between gap-2 border-t border-brand-border-warm/70 pt-2">
               <button
-                className="py-1 text-[11.5px] font-bold text-brand-navy underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+                className="min-h-9 py-1 text-[12.5px] font-bold text-brand-navy underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:min-h-0 sm:text-[11.5px]"
                 onClick={() => {
                   setStep(0);
                   setKind("any");
@@ -551,7 +551,7 @@ export function MenuQuizCard({
                 {t("Start over")}
               </button>
               <Link
-                className="py-1 text-[11.5px] font-bold text-brand-muted transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+                className="min-h-9 py-1 text-[12.5px] font-bold text-brand-muted transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy sm:min-h-0 sm:text-[11.5px]"
                 onClick={() =>
                   window.dispatchEvent(new CustomEvent("chat:navigate"))
                 }
@@ -581,7 +581,7 @@ export function MenuQuizCard({
                   )}
             </p>
             <button
-              className="mt-2.5 w-full rounded-xl border border-brand-border-warm px-3 py-2 text-[12.5px] font-extrabold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+              className="mt-2.5 min-h-11 w-full rounded-xl border border-brand-border-warm px-3 py-2 text-[13.5px] font-extrabold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98] sm:min-h-0 sm:text-[12.5px]"
               onClick={() => {
                 setStep(0);
                 setAvoid([]);
