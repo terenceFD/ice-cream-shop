@@ -559,9 +559,12 @@ export function CartPage() {
                             <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
                               <div className="flex items-center gap-3">
                                 <div className="inline-flex items-center rounded-lg bg-[#f4f6f8] p-1">
+                                  {/* 36px on a phone: the cart is where a mis-tap costs
+                                      an order line, so the pair meets the thumb sizing used
+                                      elsewhere in the checkout flow. */}
                                   <button
                                     aria-label={t('Decrease quantity')}
-                                    className="grid size-8 place-items-center rounded-md text-[#65748a] transition hover:bg-white hover:text-brand-navy"
+                                    className="grid size-9 place-items-center rounded-md text-[#65748a] transition hover:bg-white hover:text-brand-navy sm:size-8"
                                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
                                     type="button"
                                   >
@@ -572,7 +575,7 @@ export function CartPage() {
                                   </span>
                                   <button
                                     aria-label={t('Increase quantity')}
-                                    className="grid size-8 place-items-center rounded-md text-[#65748a] transition hover:bg-white hover:text-brand-navy disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent"
+                                    className="grid size-9 place-items-center rounded-md text-[#65748a] transition hover:bg-white hover:text-brand-navy disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent sm:size-8"
                                     disabled={item.quantity >= item.availableQuantity}
                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                     type="button"
