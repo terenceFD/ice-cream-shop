@@ -85,12 +85,6 @@ interface ChatPhotoCard {
   path?: string;
 }
 
-/** The "Find Your Flavor" quiz, opened by a [QUIZ:start] tag in a reply. */
-interface ChatQuizCard {
-  /** Only "start" today; the field leaves room for a pre-filled quiz later. */
-  mode: "start";
-}
-
 type OrderStatus = ChatOrderCard["status"];
 
 // The steps a shopper cares about, in order. A cancelled or failed payment is not a
@@ -150,7 +144,13 @@ function ChatChevron() {
       fill="none"
       viewBox="0 0 24 24"
     >
-      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
+      <path
+        d="M9 6l6 6-6 6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2.2"
+      />
     </svg>
   );
 }
@@ -430,12 +430,6 @@ function parsePhotoCard(raw: string): ChatPhotoCard | undefined {
   }
 }
 
-function parseQuizCard(raw: string): ChatQuizCard | undefined {
-  // Only the start tag exists today. Anything else is dropped rather than
-  // rendered as an empty card.
-  return raw.trim().toLowerCase() === "start" ? { mode: "start" } : undefined;
-}
-
 function parseVisitTag(raw: string): ChatVisit | undefined {
   const [type, location, date, slotId] = raw
     .split("|")
@@ -469,7 +463,6 @@ function splitChatAction(body: string): {
   product?: ChatProductCard;
   order?: ChatOrderCard;
   photo?: ChatPhotoCard;
-  quiz?: ChatQuizCard;
 } {
   let text = body.trim();
   let action: { path: string; label: string } | undefined;
@@ -1300,8 +1293,6 @@ export function LiveChatWidget() {
       setIsOpen(false);
     }
   }, [location.pathname]);
-
-
 
   // ------------------------------------------------------------- voice input (#4)
   //
@@ -2213,23 +2204,61 @@ export function LiveChatWidget() {
                         "Ask about flavors, cakes, delivery — anything. We are happy to help.",
                       )}
                     </p>
-                    {/* Starter questions: tappable suggestions matched to the page the
-                      customer is on. Tapping fills the input; the row disappears once the
-                      conversation starts. */}
-                    {showStarters && (
-                      <div className="mt-3 flex max-w-full flex-wrap gap-1.5">
-                        {starterQuestions.map((question) => (
-                          <button
-                            className="rounded-full border border-brand-border-warm bg-white px-3 py-1.5 text-left text-[13px] font-semibold text-brand-navy transition hover:border-brand-yellow hover:bg-brand-yellow/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow-deep active:scale-[0.98]"
-                            key={question}
-                            onClick={() => applyStarter(question)}
-                            type="button"
-                          >
-                            {question}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                    {/* The two quizzes' front doors, visible the moment the chat
+                        opens, so neither depends on a reply that may never come.
+
+                        One block, not two stacked buttons: a single white card with
+                        a menu-style intro line and the two quizzes as numbered
+                        choices, split by a hairline. Equal rows, same weight, so the
+                        card reads as "pick one of two" rather than a loud button
+                        that lost its shadow. */}
+                    <div className="mt-3 max-w-[16.5rem] overflow-hidden rounded-2xl border border-brand-border-warm bg-white shadow-[0_6px_18px_rgba(71,42,59,0.08)]">
+                      <p className="border-b border-brand-border-warm/70 px-3 py-2 text-[11px] font-bold text-brand-muted">
+                        {t("Two quick ways to pick your treat")}
+                      </p>
+                      <button
+                        className="group flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-navy active:bg-brand-cream"
+                        onClick={() => setQuizOpen(true)}
+                        type="button"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="grid size-7 shrink-0 place-items-center rounded-full bg-brand-yellow text-[12px] font-extrabold text-brand-navy"
+                        >
+                          1
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[13.5px] font-extrabold leading-5 text-brand-navy">
+                            {t("Find my flavor")}
+                          </span>
+                          <span className="block text-[11px] leading-4 text-brand-muted">
+                            {t("For a scoop, cone or sundae")}
+                          </span>
+                        </span>
+                        <ChatChevron />
+                      </button>
+                      <button
+                        className="group flex w-full items-center gap-2.5 border-t border-brand-border-warm/70 px-3 py-2.5 text-left transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-navy active:bg-brand-cream"
+                        onClick={() => setMenuQuizOpen(true)}
+                        type="button"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="grid size-7 shrink-0 place-items-center rounded-full bg-brand-cream text-[12px] font-extrabold text-brand-navy ring-1 ring-brand-border-warm"
+                        >
+                          2
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[13.5px] font-extrabold leading-5 text-brand-navy">
+                            {t("What will it be?")}
+                          </span>
+                          <span className="block text-[11px] leading-4 text-brand-muted">
+                            {t("For cakes, shakes and more")}
+                          </span>
+                        </span>
+                        <ChatChevron />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -2253,7 +2282,6 @@ export function LiveChatWidget() {
                   product: productCard,
                   order: orderCard,
                   photo: photoCard,
-                  quiz: quizCard,
                 } = isCustomer
                   ? {
                       text: message.body,
@@ -2269,7 +2297,6 @@ export function LiveChatWidget() {
                       product: undefined,
                       order: undefined,
                       photo: undefined,
-                      quiz: undefined,
                     }
                   : splitChatAction(
                       steering && steering.id === message.id
@@ -2399,11 +2426,14 @@ export function LiveChatWidget() {
               })}
               {/* Opened from the "Find my flavor" button, not from a reply: it sits at the
                   end of the conversation like the newest message and stays there. */}
-              {quizOpen && !menuQuizOpen && messages.every((message) => !message.body.includes("[QUIZ:")) && (
+              {quizOpen && !menuQuizOpen && (
                 <div className="mt-4 flex items-start">
                   <ShopMark />
                   <div className="min-w-0 max-w-[calc(100%-2.25rem)]">
-                    <ChatQuizView forceOpen onClose={() => setQuizOpen(false)} />
+                    <ChatQuizView
+                      forceOpen
+                      onClose={() => setQuizOpen(false)}
+                    />
                   </div>
                 </div>
               )}
@@ -2411,7 +2441,10 @@ export function LiveChatWidget() {
                 <div className="mt-4 flex items-start">
                   <ShopMark />
                   <div className="min-w-0 max-w-[calc(100%-2.25rem)]">
-                    <MenuQuizCard forceOpen onClose={() => setMenuQuizOpen(false)} />
+                    <MenuQuizCard
+                      forceOpen
+                      onClose={() => setMenuQuizOpen(false)}
+                    />
                   </div>
                 </div>
               )}
@@ -3149,7 +3182,11 @@ const QUIZ_ALLERGEN_LABELS: Record<(typeof QUIZ_ALLERGENS)[number], string> = {
 // hint, and a small swatch of the flavor range. Rows, not a 3-up grid — the card
 // lives in a ~16rem bubble column, where "Chocolatey" and "Either" side by side
 // do not fit and clip. "Either" is a quiet third choice text, not a third box.
-const QUIZ_TASTES: { value: Exclude<QuizTaste, "either">; label: string; hint: string }[] = [
+const QUIZ_TASTES: {
+  value: Exclude<QuizTaste, "either">;
+  label: string;
+  hint: string;
+}[] = [
   {
     value: "fruity",
     label: "Fruity",
@@ -3204,7 +3241,13 @@ function QuizTasteOption({
         fill="none"
         viewBox="0 0 24 24"
       >
-        <path d="M9 6l6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
+        <path
+          d="M9 6l6 6-6 6"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2.2"
+        />
       </svg>
     </button>
   );
@@ -3305,7 +3348,9 @@ function ChatQuizView({
               {t("Find your flavor")}
             </p>
             <p className="mt-1 ml-[-0.5px] truncate text-[15px] font-extrabold leading-5">
-              {step < 2 ? t("Question {n} of 2", { n: step + 1 }) : t("Your flavor")}
+              {step < 2
+                ? t("Question {n} of 2", { n: step + 1 })
+                : t("Your flavor")}
             </p>
           </div>
           <button
@@ -3314,8 +3359,18 @@ function ChatQuizView({
             onClick={close}
             type="button"
           >
-            <svg aria-hidden="true" className="size-3.5" fill="none" viewBox="0 0 24 24">
-              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5" />
+            <svg
+              aria-hidden="true"
+              className="size-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeWidth="2.5"
+              />
             </svg>
           </button>
         </div>
@@ -3327,202 +3382,240 @@ function ChatQuizView({
             />
           ))}
           <span className="ml-1 text-[10px] font-bold text-white/70">
-            {step >= 2 ? t("Done") : t("{done} of {total}", { done: progress, total: 2 })}
+            {step >= 2
+              ? t("Done")
+              : t("{done} of {total}", { done: progress, total: 2 })}
           </span>
         </div>
       </div>
 
       <div className="p-3">
-      {step === 0 && (
-        <div>
-          <p className="text-[13.5px] font-bold text-brand-navy">{t("Fruity or chocolatey?")}</p>
-          <div className="mt-2 flex flex-col gap-1.5">
-            {QUIZ_TASTES.map((option) => (
-              <QuizTasteOption
-                key={option.value}
-                onPick={() => {
-                  setTaste(option.value);
-                  setStep(1);
-                }}
-                taste={option}
-              />
-            ))}
-          </div>
-          <button
-            className="mt-2 w-full rounded-full py-1.5 text-center text-[12px] font-bold text-brand-muted underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
-            onClick={() => {
-              setTaste("either");
-              setStep(1);
-            }}
-            type="button"
-          >
-            {t("I like anything")}
-          </button>
-        </div>
-      )}
-
-      {step === 1 && (
-        <div>
-          <p className="text-[13.5px] font-bold text-brand-navy">{t("Any allergies?")}</p>
-          {/* Safety framing: the filter is hard, and saying so is what earns the
-              customer's trust in the recommendation. */}
-          <p className="mt-0.5 text-[11.5px] leading-4 text-brand-muted">
-            {t("Anything you pick here is never recommended.")}
-          </p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {QUIZ_ALLERGENS.map((label) => (
-              <button
-                aria-pressed={avoid.includes(label)}
-                className={chipClass(avoid.includes(label))}
-                key={label}
-                onClick={() => toggleAllergen(label)}
-                type="button"
-              >
-                {avoid.includes(label) && (
-                  <svg aria-hidden="true" className="size-3" fill="none" viewBox="0 0 24 24">
-                    <path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
-                  </svg>
-                )}
-                {t(QUIZ_ALLERGEN_LABELS[label])}
-              </button>
-            ))}
-          </div>
-          <button
-            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-yellow px-3 py-2.5 text-[14px] font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.35)] transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
-            onClick={() => setStep(2)}
-            type="button"
-          >
-            {avoid.length ? t("Show my flavor") : t("No allergies, show my flavor")}
-            <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-              <path d="M9 6l6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" />
-            </svg>
-          </button>
-        </div>
-      )}
-
-      {step >= 2 && result && (
-        <div>
-          {/* The photo carries the answer: a full-width 4:3 image with the name
-              and price laid over its foot, so the result reads as a card, not a list row. */}
-          <Link
-            className="group block overflow-hidden rounded-2xl bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
-            onClick={() => window.dispatchEvent(new CustomEvent("chat:navigate"))}
-            to={`/flavor/${result.id}`}
-          >
-            <span className="relative block aspect-[4/3] w-full overflow-hidden">
-              {result.image ? (
-                <img
-                  alt={result.name}
-                  className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-                  decoding="async"
-                  loading="lazy"
-                  src={result.image}
-                  onError={(event) => {
-                    event.currentTarget.style.display = "none";
+        {step === 0 && (
+          <div>
+            <p className="text-[13.5px] font-bold text-brand-navy">
+              {t("Fruity or chocolatey?")}
+            </p>
+            <div className="mt-2 flex flex-col gap-1.5">
+              {QUIZ_TASTES.map((option) => (
+                <QuizTasteOption
+                  key={option.value}
+                  onPick={() => {
+                    setTaste(option.value);
+                    setStep(1);
                   }}
+                  taste={option}
                 />
-              ) : (
-                <span className="grid size-full place-items-center text-brand-muted">
-                  <ChatMark className="size-8" />
-                </span>
-              )}
-              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-navy/85 via-brand-navy/45 to-transparent px-3 pb-2.5 pt-8">
-                <span className="line-clamp-2 block text-[14.5px] font-extrabold leading-5 text-white">
-                  {result.name}
-                </span>
-                <span className="mt-0.5 block text-[12px] font-bold text-brand-yellow">
-                  {chatPrice(result.price, language)}
-                </span>
-              </span>
-            </span>
-          </Link>
-          <div className="mt-2 flex items-center gap-1.5">
+              ))}
+            </div>
+            <button
+              className="mt-2 w-full rounded-full py-1.5 text-center text-[12px] font-bold text-brand-muted underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+              onClick={() => {
+                setTaste("either");
+                setStep(1);
+              }}
+              type="button"
+            >
+              {t("I like anything")}
+            </button>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div>
+            <p className="text-[13.5px] font-bold text-brand-navy">
+              {t("Any allergies?")}
+            </p>
+            {/* Safety framing: the filter is hard, and saying so is what earns the
+              customer's trust in the recommendation. */}
+            <p className="mt-0.5 text-[11.5px] leading-4 text-brand-muted">
+              {t("Anything you pick here is never recommended.")}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {QUIZ_ALLERGENS.map((label) => (
+                <button
+                  aria-pressed={avoid.includes(label)}
+                  className={chipClass(avoid.includes(label))}
+                  key={label}
+                  onClick={() => toggleAllergen(label)}
+                  type="button"
+                >
+                  {avoid.includes(label) && (
+                    <svg
+                      aria-hidden="true"
+                      className="size-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="3"
+                      />
+                    </svg>
+                  )}
+                  {t(QUIZ_ALLERGEN_LABELS[label])}
+                </button>
+              ))}
+            </div>
+            <button
+              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-yellow px-3 py-2.5 text-[14px] font-extrabold text-brand-navy shadow-[0_2px_10px_rgba(250,204,21,0.35)] transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+              onClick={() => setStep(2)}
+              type="button"
+            >
+              {avoid.length
+                ? t("Show my flavor")
+                : t("No allergies, show my flavor")}
+              <svg
+                aria-hidden="true"
+                className="size-4"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M9 6l6 6-6 6"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2.4"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        {step >= 2 && result && (
+          <div>
+            {/* The photo carries the answer: a full-width 4:3 image with the name
+              and price laid over its foot, so the result reads as a card, not a list row. */}
             <Link
-              className="flex min-h-9 flex-1 items-center justify-center rounded-xl bg-brand-yellow px-3 text-center text-[13px] font-extrabold text-brand-navy shadow-[0_2px_8px_rgba(250,204,21,0.3)] transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
-              onClick={() => window.dispatchEvent(new CustomEvent("chat:navigate"))}
+              className="group block overflow-hidden rounded-2xl bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent("chat:navigate"))
+              }
               to={`/flavor/${result.id}`}
             >
-              {t("View this flavor")}
+              <span className="relative block aspect-[4/3] w-full overflow-hidden">
+                {result.image ? (
+                  <img
+                    alt={result.name}
+                    className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                    decoding="async"
+                    loading="lazy"
+                    src={result.image}
+                    onError={(event) => {
+                      event.currentTarget.style.display = "none";
+                    }}
+                  />
+                ) : (
+                  <span className="grid size-full place-items-center text-brand-muted">
+                    <ChatMark className="size-8" />
+                  </span>
+                )}
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-navy/85 via-brand-navy/45 to-transparent px-3 pb-2.5 pt-8">
+                  <span className="line-clamp-2 block text-[14.5px] font-extrabold leading-5 text-white">
+                    {result.name}
+                  </span>
+                  <span className="mt-0.5 block text-[12px] font-bold text-brand-yellow">
+                    {chatPrice(result.price, language)}
+                  </span>
+                </span>
+              </span>
             </Link>
-            <button
-              className="min-h-9 rounded-xl border border-brand-border-warm px-3 text-[13px] font-bold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy disabled:border-[#cfe6d2] disabled:bg-[#eef7ef] disabled:text-[#2f6b37]"
-              disabled={added}
-              onClick={() => {
-                const ok = addToCart({
-                  id: result.id,
-                  name: result.name,
-                  detail: result.detail,
-                  description: result.description,
-                  image: result.image,
-                  price: result.price,
-                  itemType: "flavor",
-                  stock: result.stock,
-                  availableQuantity: result.availableQuantity,
-                  allergies: result.allergies,
-                });
-                if (ok) setAdded(true);
-              }}
-              type="button"
-            >
-              {added ? t("Added to your bag") : t("Add to bag")}
-            </button>
-          </div>
-          <div className="mt-2 flex items-center justify-between gap-2 border-t border-brand-border-warm/70 pt-2">
-            <button
-              className="rounded-full px-1 py-1 text-[11.5px] font-bold text-brand-navy underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
-              onClick={() => {
-                setStep(0);
-                setAdded(false);
-              }}
-              type="button"
-            >
-              {t("Start over")}
-            </button>
-            <div className="flex items-center gap-2.5">
+            <div className="mt-2 flex items-center gap-1.5">
+              <Link
+                className="flex min-h-9 flex-1 items-center justify-center rounded-xl bg-brand-yellow px-3 text-center text-[13px] font-extrabold text-brand-navy shadow-[0_2px_8px_rgba(250,204,21,0.3)] transition hover:bg-brand-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+                onClick={() =>
+                  window.dispatchEvent(new CustomEvent("chat:navigate"))
+                }
+                to={`/flavor/${result.id}`}
+              >
+                {t("View this flavor")}
+              </Link>
               <button
-                className="py-1 text-[11.5px] font-bold text-brand-muted underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+                className="min-h-9 rounded-xl border border-brand-border-warm px-3 text-[13px] font-bold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy disabled:border-[#cfe6d2] disabled:bg-[#eef7ef] disabled:text-[#2f6b37]"
+                disabled={added}
                 onClick={() => {
-                  setStep(1);
+                  const ok = addToCart({
+                    id: result.id,
+                    name: result.name,
+                    detail: result.detail,
+                    description: result.description,
+                    image: result.image,
+                    price: result.price,
+                    itemType: "flavor",
+                    stock: result.stock,
+                    availableQuantity: result.availableQuantity,
+                    allergies: result.allergies,
+                  });
+                  if (ok) setAdded(true);
+                }}
+                type="button"
+              >
+                {added ? t("Added to your bag") : t("Add to bag")}
+              </button>
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-2 border-t border-brand-border-warm/70 pt-2">
+              <button
+                className="rounded-full px-1 py-1 text-[11.5px] font-bold text-brand-navy underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+                onClick={() => {
+                  setStep(0);
                   setAdded(false);
                 }}
                 type="button"
               >
-                {t("Change allergies")}
+                {t("Start over")}
               </button>
-              <button
-                className="py-1 text-[11.5px] font-bold text-brand-muted transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
-                onClick={close}
-                type="button"
-              >
-                {t("Close")}
-              </button>
+              <div className="flex items-center gap-2.5">
+                <button
+                  className="py-1 text-[11.5px] font-bold text-brand-muted underline decoration-brand-yellow decoration-2 underline-offset-[3px] transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+                  onClick={() => {
+                    setStep(1);
+                    setAdded(false);
+                  }}
+                  type="button"
+                >
+                  {t("Change allergies")}
+                </button>
+                <button
+                  className="py-1 text-[11.5px] font-bold text-brand-muted transition hover:text-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+                  onClick={close}
+                  type="button"
+                >
+                  {t("Close")}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {step >= 2 && !result && (
-        <div className="py-1 text-center">
-          <span
-            aria-hidden="true"
-            className="mx-auto grid size-10 place-items-center rounded-full bg-brand-cream text-[18px]"
-          >
-            🍦
-          </span>
-          <p className="mt-2 text-[13px] font-bold leading-5 text-brand-navy">
-            {noMatchReason(flavors, avoid) === "allergens"
-              ? t("Nothing in the catalog fits those allergies. Ask the shop team and they will find something safe.")
-              : t("Nothing is in stock right now. Try again later or ask the shop team.")}
-          </p>
-          <button
-            className="mt-2.5 w-full rounded-xl border border-brand-border-warm px-3 py-2 text-[12.5px] font-extrabold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
-            onClick={() => setStep(0)}
-            type="button"
-          >
-            {t("Start over")}
-          </button>
-        </div>
-      )}
+        {step >= 2 && !result && (
+          <div className="py-1 text-center">
+            <span
+              aria-hidden="true"
+              className="mx-auto grid size-10 place-items-center rounded-full bg-brand-cream text-[18px]"
+            >
+              🍦
+            </span>
+            <p className="mt-2 text-[13px] font-bold leading-5 text-brand-navy">
+              {noMatchReason(flavors, avoid) === "allergens"
+                ? t(
+                    "Nothing in the catalog fits those allergies. Ask the shop team and they will find something safe.",
+                  )
+                : t(
+                    "Nothing is in stock right now. Try again later or ask the shop team.",
+                  )}
+            </p>
+            <button
+              className="mt-2.5 w-full rounded-xl border border-brand-border-warm px-3 py-2 text-[12.5px] font-extrabold text-brand-navy transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-[0.98]"
+              onClick={() => setStep(0)}
+              type="button"
+            >
+              {t("Start over")}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
