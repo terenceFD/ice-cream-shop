@@ -967,8 +967,54 @@ export function LiveChatWidget() {
   const threadIdRef = useRef<string>("");
   const listRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const isOpenRef = useRef(isOpen);
   isOpenRef.current = isOpen;
+
+  // Keyboard shortcuts: Escape closes the chat, "/" jumps to the message field,
+  // and "c" opens the chat from anywhere (when no field already owns the keys).
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const inField = Boolean(
+        target?.closest("input, textarea, select, [contenteditable=true]"),
+      );
+      if (event.key === "Escape") {
+        // Quizzes first: Escape backs out of what is open on top of the thread.
+        if (quizOpen) {
+          setQuizOpen(false);
+          return;
+        }
+        if (menuQuizOpen) {
+          setMenuQuizOpen(false);
+          return;
+        }
+        if (isOpenRef.current) {
+          event.preventDefault();
+          setIsOpen(false);
+        }
+        return;
+      }
+      if (mobileMenuOpen || !showFloating) return;
+      // "/" focuses the composer, as on GitHub and Slack; "c" opens the chat.
+      // Only outside fields, so typing a slash in a form never hijacks the key.
+      if (inField || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.key === "/") {
+        event.preventDefault();
+        setIsOpen(true);
+        requestAnimationFrame(() => inputRef.current?.focus());
+      } else if (
+        event.key.toLowerCase() === "c" &&
+        !isOpenRef.current &&
+        !event.shiftKey
+      ) {
+        setIsOpen(true);
+        requestAnimationFrame(() => inputRef.current?.focus());
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [quizOpen, menuQuizOpen, mobileMenuOpen, showFloating]);
 
   // A typing bubble shows after the customer sends, until the store's reply lands.
   // It gives up after a while so a failed auto-reply never leaves a stuck bubble.
@@ -1961,6 +2007,24 @@ export function LiveChatWidget() {
     writeStorage(RESUME_KEY, String(Date.now()));
   };
 
+  // A hint under the composer, desktop only: shortcuts nobody can guess help no one.
+  const shortcutsHint = (
+    <p className="hidden px-4 pb-1.5 text-[11px] text-brand-muted sm:block">
+      <kbd className="rounded border border-brand-border-warm bg-white px-1 font-sans text-[10px] font-bold">
+        C
+      </kbd>{" "}
+      {t("open chat")} ·{" "}
+      <kbd className="rounded border border-brand-border-warm bg-white px-1 font-sans text-[10px] font-bold">
+        /
+      </kbd>{" "}
+      {t("jump to message box")} ·{" "}
+      <kbd className="rounded border border-brand-border-warm bg-white px-1 font-sans text-[10px] font-bold">
+        Esc
+      </kbd>{" "}
+      {t("close")}
+    </p>
+  );
+
   if (mobileMenuOpen) return null;
 
   return (
@@ -2774,6 +2838,7 @@ export function LiveChatWidget() {
             <div className="relative min-w-0 flex-1">
               <input
                 aria-label={t("Your message")}
+                ref={inputRef}
                 autoComplete="off"
                 className={`w-full rounded-lg border border-brand-border-warm bg-white py-2.5 text-[15px] font-medium text-brand-navy shadow-[0_1px_2px_rgba(9,42,83,0.06)] outline-none! transition-all placeholder:text-brand-gray/80 focus:border-brand-yellow focus:bg-white focus:shadow-[0_0_0_3px_rgba(250,204,21,0.25)] ${
                   isListening && draft.trim()
@@ -2965,6 +3030,7 @@ export function LiveChatWidget() {
               </button>
             )}
           </form>
+          {shortcutsHint}
         </section>
       )}
     </>
