@@ -1,5 +1,9 @@
 import { describeBranch } from "./chat-offer.js";
+<<<<<<< HEAD
 import { formatDistance, nearestBranch } from "../shared/nearestStore.js";
+=======
+import { safeChatImageReference } from "./storage.js";
+>>>>>>> check
 
 // Tool calling for the chat assistant (#2: answers from the live database).
 //
@@ -440,6 +444,89 @@ export function customerProductCard(product) {
 
 const ADDABLE_ID = /^(?:menu:(?!custom:)[a-z0-9-]+:[a-z0-9-]+|flavor:\d{1,8})$/;
 
+/**
+ * The product card a reply can carry as a `product_card` line: exactly the record
+ * the model was quoted for that product, so the card and the sentence never
+ * disagree. `addId` is only kept when it is a real addable id, the same test the
+ * [ADD:] tag uses, so a card can never offer an item the bag cannot take.
+ */
+/**
+ * A photo address the widget may load. Catalog images are site paths; an uploaded
+ * image is a stored path the server already validates. Anything else — another
+ * site, a data: URL, a frozen path with ".." — yields "", so a reply can never
+ * point the customer's browser somewhere else.
+ */
+export function catalogPhotoUrl(image) {
+  const value = String(image || "").trim();
+  if (!value || value.length > 300) return "";
+  if (value.includes("..") || value.includes("\\") || value.includes("\0")) return "";
+  // A site file: one leading slash, no protocol-relative //host, no query tricks.
+  if (/^\/(?!\/)[A-Za-z0-9._~%/-]+$/.test(value)) return value;
+  // An uploaded photo, local or in Supabase, checked exactly as chat uploads are.
+  return safeChatImageReference(value);
+}
+
+/**
+ * A menu path only when it is one of the two shapes the site actually serves —
+ * the same test the widget applies, so the server never emits a link it will
+ * refuse to draw.
+ */
+export function safeChatLinkPath(path) {
+  const value = String(path || "");
+  if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\") || value.includes("..")) return "";
+  let url;
+  try {
+    url = new URL(value, "https://shop.local");
+  } catch {
+    return "";
+  }
+  if (url.origin !== "https://shop.local") return "";
+  if (url.pathname === "/menu") {
+    const category = url.searchParams.get("category")?.trim() || "";
+    const item = url.searchParams.get("item")?.trim() || "";
+    return category && item && category.length <= 80 && item.length <= 120 ? value : "";
+  }
+  if (/^\/flavor\/\d{1,8}$/.test(url.pathname) && url.search === "") return url.pathname;
+  if (/^\/treat\/[a-z0-9-]+\/[a-z0-9-]+$/.test(url.pathname) && url.search === "") return url.pathname;
+  return "";
+}
+
+/**
+ * A photo of a product the assistant is talking about. `image` is the catalog
+ * photo resolved on the server; `fallback` is true when the catalog has none and
+ * the widget should draw the shop's own mark instead of a blank box.
+ */
+export function productPhotoLine(item) {
+  if (!item?.name) return "";
+  // The catalog photos are the site's own public files (/menu-official/…, /cake-images/…),
+  // plus anything the store uploaded (locally under /uploads or in Supabase Storage).
+  const image = catalogPhotoUrl(String(item.image || ""));
+  const path = safeChatLinkPath(item.path);
+  const photo = {
+    name: String(item.name).slice(0, 80),
+    ...(image ? { image } : { fallback: true }),
+    ...(path ? { path } : {}),
+  };
+  return `\n[PHOTO:${JSON.stringify(photo).replace(/\]/g, " ")}]`;
+}
+
+export function productCardLine(item) {
+  if (!item?.path || !item.name) return "";
+  const image = String(item.image || "");
+  const card = {
+    name: String(item.name).slice(0, 80),
+    price: Number.isFinite(Number(item.price)) && Number(item.price) > 0 ? Math.round(Number(item.price)) : 0,
+    soldOut: Boolean(item.soldOut),
+    path: String(item.path),
+    ...(image.startsWith("/") && !image.includes("..") ? { image: image.slice(0, 200) } : {}),
+    ...(typeof item.addId === "string" && ADDABLE_ID.test(item.addId) && !item.soldOut
+      ? { addId: item.addId }
+      : {}),
+  };
+  // The tag format is [KEY:json|after]; a nested ] would end the tag early.
+  return `\n[PRODUCT:${JSON.stringify(card).replace(/[\]]/g, " ")}|${item.soldOut ? "out" : "in"}]`;
+}
+
 export function productActionLines(item) {
   const image = typeof item?.image === "string" && item.image.startsWith("/")
     ? `\n[IMG:${item.image}]`
@@ -729,6 +816,11 @@ function getProduct(shopFacts, name, branch) {
       ? `Photos available (${photos.length}): ${photos.join(" | ")} — for ONE photo end with [IMG:${photos[0]}]; for a gallery of every angle end with [IMGS:${photos.join("|")}]. If the customer asks for more photos and there is only one (${photos.length === 1 ? "true for this product" : "not the case here — there are " + photos.length}), say that honestly: that photo is the only one the shop has.`
       : "Photos available: none. Do not invent an image path; tell the customer there is no photo for this product yet.",
     match.addId && !match.soldOut ? `Add to bag id: ${match.addId}` : "",
+    match.path ? `Card tag (copy it EXACTLY as your last line): ${productCardLine(match)}` : "",
+    `Photo tag (offer the product's picture with): ${productPhotoLine(match)}`,
+    match.image
+      ? "A catalog photo of this product exists — when the customer asks to SEE it, say yes and end with its photo tag."
+      : "The catalog has no photo of this product. When the customer asks to see one, say kindly that you do not have a photo of it, and offer the link instead — never describe a photo you do not have.",
     match.soldOut || !match.path
       ? ""
       : `When it is in stock and it does not conflict with an allergy they stated, END the reply with the tags on their own last line(s): ${photos.length ? `[IMG:${photos[0]}]` : "a [IMG:] tag only if the facts give a photo path"} then [LINK:${match.path}]${match.addId ? ` then [ADD:${match.addId}]` : ""}. Never put a tag inside a sentence. That opens and adds THIS product. Then ask the customer in one short question whether they want more details about it or want it added to their bag. Do not send them to /menu or /menu/all.`,
@@ -991,7 +1083,33 @@ async function getOrderStatus(database, orderNumber) {
     `Status: ${order.status} (${ORDER_STATUS_MEANINGS[order.status] || "in progress"})`,
     `Total: ${formatMoney(order.total)}`,
     `Type: ${order.fulfillment || "not recorded"}`,
+    `Order tag (copy it EXACTLY as your last line): ${orderCardLine(order)}`,
   ].join(" | ");
+}
+
+const ORDER_STATUSES = new Set([
+  "processing",
+  "ready",
+  "out_for_delivery",
+  "delivered",
+  "payment_failed",
+  "cancelled",
+]);
+
+/**
+ * The order timeline card: the status the database just returned, for the widget's
+ * Confirmed → Preparing → Ready → On the way → Delivered steps. Only the live
+ * status travels — the widget decides which steps are done, not a guess here.
+ */
+export function orderCardLine(order) {
+  const status = ORDER_STATUSES.has(order?.status) ? order.status : "processing";
+  const card = {
+    id: Number(order.id),
+    status,
+    fulfillment: order.fulfillment === "pickup" || order.fulfillment === "delivery" ? order.fulfillment : "",
+    total: Number.isFinite(Number(order.total)) ? Math.round(Number(order.total)) : 0,
+  };
+  return `[ORDER:${JSON.stringify(card).replace(/[\]]/g, " ")}]`;
 }
 
 /**
