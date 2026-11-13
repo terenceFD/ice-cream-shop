@@ -14,7 +14,9 @@ import {
 const SHOWN_THIS_SESSION_KEY = 'cold-stone-install-shown-this-session'
 // Announced so the floating currency switcher can step aside while this card is open.
 const INSTALL_CARD_EVENT = 'cold-stone-install-card'
-const SHOW_AFTER_MS = 2500
+// Long enough that the cookie banner (3s) has been seen — or answered — first, so
+// the two never stack in the same corner and compete for the visitor's attention.
+const SHOW_AFTER_MS = 8000
 // Pages where a purchase or admin work is in progress are never interrupted.
 const QUIET_PATHS = ['/admin', '/checkout', '/payment']
 

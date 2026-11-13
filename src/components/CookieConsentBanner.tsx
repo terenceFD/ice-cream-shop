@@ -13,6 +13,10 @@ import { useLanguage } from "../language/useLanguage";
  * once, stores the answer in localStorage, and stays away afterwards. Shown on
  * every public page except the admin desk.
  */
+// The hero lands first; the banner joins three seconds in. The install card
+// waits past this (8s) so the two never stack in the same corner.
+const DELAY_BEFORE_SHOW_MS = 3000;
+
 export function CookieConsentBanner() {
   const { t } = useLanguage();
   const [visible, setVisible] = useState(false);
@@ -22,7 +26,7 @@ export function CookieConsentBanner() {
     // impression stays on the photography and the call to action.
     const timer = window.setTimeout(
       () => setVisible(readCookieConsent() === null),
-      3000,
+      DELAY_BEFORE_SHOW_MS,
     );
     return () => window.clearTimeout(timer);
   }, []);
