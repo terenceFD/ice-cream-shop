@@ -11,6 +11,7 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 import Stripe from 'stripe'
 import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'node:crypto'
 import { existsSync } from 'node:fs'
+import path from 'node:path'
 import { promises as dns } from 'node:dns'
 import { fileURLToPath } from 'node:url'
 import { z } from 'zod'
@@ -6504,7 +6505,48 @@ const frontendEntry = fileURLToPath(new URL('../dist/index.html', import.meta.ur
 const seo = createSeo({ templatePath: frontendEntry, listFlavors, getActivePromotion, siteUrl, listMenuInventory })
 app.get('/robots.txt', seo.robots)
 app.get('/sitemap.xml', seo.sitemap)
+// Serves the pre-compressed copy of a hashed build asset (scripts/compress-dist.mjs
+// writes `.js` as `.js.br` / `.js.gz` at build time). Streaming an 82 KB brotli file
+// from disk replaces compressing a 334 KB bundle on every request — and unlike the
+// `compression` middleware, the size reduction applies no matter what the CDN asks for.
+// Only files under /assets are matched: they are content-hashed, so a stale compressed
+// copy can never be sent for changed content.
+function precompressedAssets(request, response, next) {
+  const encodings = String(request.headers['accept-encoding'] || '')
+  const brotliAccepted = /\bbr\b/.test(encodings)
+  const gzipAccepted = /\bgzip\b/.test(encodings)
+  if (!brotliAccepted && !gzipAccepted) {
+    next()
+    return
+  }
+  // The regex also pins the extension so only build output is rewritten —
+  // uploads and other files keep their original names.
+  const match = /^\/assets\/(?:[A-Za-z0-9_-]+\.)+[0-9a-f]{8,}\.(?:js|css)$/.exec(request.path)
+  if (!match) {
+    next()
+    return
+  }
+  const brotliPath = path.join(frontendDirectory, 'assets', `${path.basename(request.path)}.br`)
+  const gzipPath = path.join(frontendDirectory, 'assets', `${path.basename(request.path)}.gz`)
+  const candidate = brotliAccepted && existsSync(brotliPath)
+    ? { file: brotliPath, encoding: 'br' }
+    : gzipAccepted && existsSync(gzipPath)
+      ? { file: gzipPath, encoding: 'gzip' }
+      : null
+  if (!candidate) {
+    next()
+    return
+  }
+  response.setHeader('Content-Encoding', candidate.encoding)
+  response.setHeader('Vary', 'Accept-Encoding')
+  response.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+  response.setHeader('CDN-Cache-Control', 'public, max-age=31536000')
+  response.type(path.extname(request.path).slice(1))
+  response.sendFile(candidate.file)
+}
+
 if (existsSync(frontendEntry)) {
+  app.use(precompressedAssets)
   app.use(express.static(frontendDirectory, {
     index: false,
     setHeaders(response, filePath) {

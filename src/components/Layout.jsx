@@ -813,13 +813,17 @@ function AccountDropdown({ customer, customerName, location, handleLogout, t, mo
 }
 
 function BrandMark({ compact = false }) {
+  // 96px covers the largest render (48 CSS px on a 2x screen); the 160px original
+  // is the share/social image, too big to ship for a header icon.
   return (
     <img decoding="async" loading="eager"
       alt=""
       aria-hidden="true"
       className={`shrink-0 rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.3)] transition-all group-hover:rotate-[-6deg] ${compact ? "size-11" : "size-12"}`}
       height={48}
-      src="/logo.png"
+      src="/logo-96.png"
+      srcSet="/logo-96.png 96w, /logo.png 160w"
+      sizes="48px"
       width={48}
     />
   );
@@ -1715,7 +1719,8 @@ export function Footer() {
                 decoding="async"
                 height={64}
                 loading="eager"
-                src="/logo.png"
+                sizes="64px"
+                src="/logo-96.png"
                 width={64}
               />
               <span className="font-display text-3xl font-extrabold leading-none tracking-tight sm:text-4xl">

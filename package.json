@@ -9,7 +9,7 @@
     "dev:server": "node server/index.js",
     "start": "node server/index.js",
     "typecheck": "tsc --noEmit",
-    "build": "npm run typecheck && node scripts/make-thumbnails.mjs && vite build",
+    "build": "npm run typecheck && node scripts/make-thumbnails.mjs && vite build && node scripts/compress-dist.mjs",
     "lint": "oxlint",
     "test": "node --test \"server/*.test.js\" \"scripts/*.test.js\" \"shared/*.test.js\"",
     "test:migration": "node --test scripts/sqlite-postgres-schema.test.js server/postgres.test.js",
