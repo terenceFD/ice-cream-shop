@@ -339,6 +339,21 @@ export function buildWelcomeNotification({ name } = {}) {
   }
 }
 
+/** The notification when a staff member replies in the customer's chat thread. */
+export function buildChatReplyNotification({ body } = {}) {
+  return {
+    title: `${SITE_NAME}: New chat reply`,
+    body: normalizeNotificationMessage(body)
+      .slice(0, MAX_NOTIFICATION_MESSAGE_LENGTH)
+      || 'The shop replied to your message. Tap to read it.',
+    icon: NOTIFICATION_ICON,
+    badge: NOTIFICATION_BADGE,
+    // One notification per thread: a burst of replies replaces, not stacks.
+    tag: 'chat-reply',
+    url: '/',
+  }
+}
+
 export function buildReviewReminderNotification({ orderId }) {
   return {
     title: `${SITE_NAME}: How was order #${orderId}?`,

@@ -55,6 +55,8 @@ export function AdminChatPage() {
   const [isAcknowledging, setIsAcknowledging] = useState(false);
   const [error, setError] = useState("");
   const [suggestionNote, setSuggestionNote] = useState("");
+  // CSAT (#8): the shopper's thumbs up/down on this thread, shown in the header.
+  const [csatRating, setCsatRating] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const activeThreadIdRef = useRef<string | null>(null);
   const threadListRequestRef = useRef(0);
@@ -79,9 +81,12 @@ export function AdminChatPage() {
     async (threadId: string) => {
       if (!threadId) return;
       try {
-        const result = await request(`/admin/chat/threads/${threadId}`);
+        const result = (await request(
+          `/admin/chat/threads/${threadId}`,
+        )) as { messages?: ChatMessage[]; csatRating?: number | null };
         if (activeThreadIdRef.current !== threadId) return;
         setMessages(result.messages || []);
+        setCsatRating(typeof result.csatRating === "number" ? result.csatRating : null);
         setError("");
       } catch (loadError) {
         setError(
@@ -114,6 +119,26 @@ export function AdminChatPage() {
     }, POLL_INTERVAL_MS);
     return () => window.clearInterval(interval);
   }, [activeThreadId, loadMessages]);
+  // "Someone is typing…" on the customer's side (#6): a beat while the staff member
+  // has text in the box. Each draft change and each poll cycle renews the flag;
+  // a silent thread lets the 12-second TTL drop it on its own.
+  const typingThreadRef = useRef<string | null>(null);
+  useEffect(() => {
+    typingThreadRef.current = activeThreadId;
+  }, [activeThreadId]);
+  useEffect(() => {
+    if (!activeThreadId || !draft.trim()) return undefined;
+    const beat = () => {
+      const threadId = typingThreadRef.current;
+      if (!threadId || document.visibilityState === 'hidden') return;
+      void request(`/admin/chat/threads/${threadId}/typing`, { method: 'POST' }).catch(
+        () => {},
+      );
+    };
+    beat();
+    const interval = window.setInterval(beat, 6000);
+    return () => window.clearInterval(interval);
+  }, [activeThreadId, draft, request]);
 
   useEffect(() => {
     const list = listRef.current;
@@ -375,6 +400,18 @@ export function AdminChatPage() {
                   {messages.some((message) => message.needsAttention) && (
                     <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-extrabold text-red-700 ring-1 ring-red-200">
                       {t("Needs attention")}
+                    </span>
+                  )}
+                  {/* CSAT (#8): how the shopper rated this conversation. */}
+                  {csatRating !== null && (
+                    <span
+                      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold ring-1 ${
+                        csatRating === 1
+                          ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                          : "bg-amber-50 text-amber-700 ring-amber-200"
+                      }`}
+                    >
+                      {csatRating === 1 ? "👍" : "👎"}
                     </span>
                   )}
                 </p>

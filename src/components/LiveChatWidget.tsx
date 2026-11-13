@@ -779,6 +779,43 @@ function rememberSeen(id: number) {
   return true;
 }
 
+/**
+ * A two-note chime for a store reply that landed while the panel was closed (#2).
+ * Synthesised with the Web Audio API — no asset, no request, and it obeys the
+ * browser's own autoplay rules because it only ever plays on a poll, after the
+ * customer has interacted with the site. Fails silently where audio is blocked.
+ */
+function playReplyChime() {
+  try {
+    const AudioContextImpl =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+    if (!AudioContextImpl) return;
+    const ctx = new AudioContextImpl();
+    const now = ctx.currentTime;
+    const gain = ctx.createGain();
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.08, now + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+    for (const [frequency, offset] of [
+      [880, 0],
+      [1174.7, 0.12],
+    ] as const) {
+      const tone = ctx.createOscillator();
+      tone.type = "sine";
+      tone.frequency.value = frequency;
+      tone.connect(gain);
+      tone.start(now + offset);
+      tone.stop(now + offset + 0.35);
+    }
+    window.setTimeout(() => void ctx.close().catch(() => {}), 700);
+  } catch {
+    // Audio unavailable or blocked: the red dot still tells the story.
+  }
+}
+
 /** The chat's own words for what it is doing, from the server stage (#1). */
 function progressText(
   progress: ChatProgress,
@@ -880,6 +917,15 @@ export function LiveChatWidget() {
   const setReplyLanguage = (next: "en" | "fr") => setPinnedLanguage(next);
   // What the assistant is doing (#1): polled with the thread, null when idle.
   const [progress, setProgress] = useState<ChatProgress | null>(null);
+  // "Sarah from the shop is typing…" (#6): the human-side counterpart of the
+  // progress stages, polled with the thread like everything else.
+  const [staffTyping, setStaffTyping] = useState(false);
+  // The shopper's rating on this thread (#8): 1 or -1, or null while unrated.
+  const [csatRating, setCsatRating] = useState<number | null>(null);
+  // Chime + red dot (#2): an unseen store reply while the panel is closed. The
+  // count drives the dot, and the chime plays once per newly-arrived reply batch.
+  const [unreadReplyCount, setUnreadReplyCount] = useState(0);
+  const [dotVisible, setDotVisible] = useState(false);
   // Typewriter (#6): the reply that arrived while this was open, and how much of
   // it is shown. Opening an old thread cascades history; it never types.
   const [steering, setSteering] = useState<{
@@ -980,6 +1026,40 @@ export function LiveChatWidget() {
   const storeCountAtWaitStart = useRef(0);
 
   useEffect(() => () => window.clearTimeout(typingTimeout.current), []);
+
+  // Chime + red dot (#2): a store reply that arrives while the panel is closed
+  // lights the launcher and plays a soft two-note chime, once per batch. Opening
+  // the panel clears the dot — the shopper has now read the reply.
+  const lastSeenStoreIdRef = useRef(0);
+  useEffect(() => {
+    const latest = [...messages].reverse().find((m) => m.sender === "store");
+    if (!latest) return;
+    if (lastSeenStoreIdRef.current >= latest.id) return;
+    const isFirstLoad = lastSeenStoreIdRef.current === 0;
+    lastSeenStoreIdRef.current = latest.id;
+    // The history loaded on open is not news: only arrivals after the first
+    // load, with the panel closed, count as unseen.
+    if (isFirstLoad || isOpenRef.current) return;
+    setUnreadReplyCount((count) => count + 1);
+    playReplyChime();
+  }, [messages]);
+  useEffect(() => {
+    if (!isOpen) return;
+    setUnreadReplyCount(0);
+  }, [isOpen]);
+  useEffect(() => {
+    // A soft blink keeps the dot from looking like a rendering artefact.
+    if (!unreadReplyCount) {
+      setDotVisible(false);
+      return undefined;
+    }
+    setDotVisible(true);
+    const timer = window.setInterval(
+      () => setDotVisible((visible) => !visible),
+      1200,
+    );
+    return () => window.clearInterval(timer);
+  }, [unreadReplyCount]);
 
   // A new store message ends the wait; polling picks it up within a few seconds.
   useEffect(() => {
@@ -1175,11 +1255,17 @@ export function LiveChatWidget() {
         const result = await apiRequest<{
           messages: ChatMessage[];
           progress?: ChatProgress | null;
+          /** "Sarah from the shop is typing…" — the staff composing flag (#6). */
+          staffTyping?: boolean;
+          /** This browser's own verdict on the thread, or null when unrated (#8). */
+          csatRating?: number | null;
         }>(`/chat/messages/${threadId}`);
         // A fresh thread may have been started while this answer was in flight.
         if (threadId !== threadIdRef.current) return;
         setMessages(result.messages || []);
         setProgress(result.progress || null);
+        setStaffTyping(result.staffTyping === true);
+        setCsatRating(typeof result.csatRating === "number" ? result.csatRating : null);
         setError("");
       } catch (loadError) {
         // The thread id in this browser no longer belongs to it — the device cookie was
@@ -1196,6 +1282,19 @@ export function LiveChatWidget() {
     },
     [startFreshThread],
   );
+  /** Thumbs the whole thread up or down (#8); optimistic, and it can be changed. */
+  const rateThread = useCallback(async (rating: 1 | -1) => {
+    const previous = csatRating;
+    setCsatRating(rating);
+    try {
+      await apiRequest(`/chat/messages/${threadIdRef.current}/rating`, {
+        method: "POST",
+        body: { rating },
+      });
+    } catch {
+      setCsatRating(previous);
+    }
+  }, [csatRating]);
 
   // A different signed-in person gets a different storage key, so switching
   // accounts (or signing out) starts an empty chat instead of inheriting the
@@ -1978,7 +2077,7 @@ export function LiveChatWidget() {
         <button
           aria-expanded={isOpen}
           aria-label={isOpen ? t("Close chat") : t("Chat with us")}
-          className="grid size-14 place-items-center rounded-full bg-gradient-to-br from-brand-navy to-brand-blue text-brand-yellow shadow-[0_10px_24px_rgba(15,35,60,0.28),0_20px_48px_rgba(15,35,60,0.22),0_0_0_1px_rgba(255,255,255,0.12)_inset] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
+          className="relative grid size-14 place-items-center rounded-full bg-gradient-to-br from-brand-navy to-brand-blue text-brand-yellow shadow-[0_10px_24px_rgba(15,35,60,0.28),0_20px_48px_rgba(15,35,60,0.22),0_0_0_1px_rgba(255,255,255,0.12)_inset] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2"
           onClick={() => setIsOpen((open) => !open)}
           type="button"
         >
@@ -1986,6 +2085,17 @@ export function LiveChatWidget() {
             <ChatCloseIcon className="size-6" />
           ) : (
             <ChatMark className="size-7" />
+          )}
+          {/* Red dot (#2): an unseen store reply while the panel was closed. */}
+          {unreadReplyCount > 0 && (
+            <span
+              aria-hidden="true"
+              className={`pointer-events-none absolute right-0.5 top-0.5 grid min-w-5 place-items-center rounded-full bg-red-500 px-1 text-[11px] font-extrabold leading-5 text-white ring-2 ring-white transition-opacity duration-300 motion-reduce:transition-none ${
+                dotVisible ? "opacity-100" : "opacity-60"
+              }`}
+            >
+              {unreadReplyCount > 9 ? "9+" : unreadReplyCount}
+            </span>
           )}
         </button>
         {!isOpen && (
@@ -2424,6 +2534,21 @@ export function LiveChatWidget() {
                   </div>
                 );
               })}
+              {/* CSAT (#8): after the thread has been answered, the shopper thumbs it
+                  up or down once. Feeds the shop's own view of which answers land. */}
+              <ChatCsatRow
+                rating={csatRating}
+                onRate={rateThread}
+                visible={
+                  messages.length > 0 &&
+                  messages.some((m) => m.sender === "store") &&
+                  !isAwaitingReply &&
+                  !staffTyping &&
+                  !progress &&
+                  !quizOpen &&
+                  !menuQuizOpen
+                }
+              />
               {/* Opened from the "Find my flavor" button, not from a reply: it sits at the
                   end of the conversation like the newest message and stays there. */}
               {quizOpen && !menuQuizOpen && (
@@ -2446,6 +2571,25 @@ export function LiveChatWidget() {
                       onClose={() => setMenuQuizOpen(false)}
                     />
                   </div>
+                </div>
+              )}
+              {staffTyping && !isAwaitingReply && (
+                <div className="site-chat-typing mt-4 flex items-center">
+                  <ShopMark />
+                  <span
+                    aria-hidden="true"
+                    className="ml-2 flex items-center gap-1.5 rounded-[18px] rounded-bl-[6px] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(15,35,60,0.06)] ring-1 ring-brand-border-warm/70"
+                  >
+                    <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_infinite]" />
+                    <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.2s_infinite]" />
+                    <span className="size-1.5 rounded-full bg-brand-navy/35 [animation:chat-typing-dot_1.2s_ease-in-out_0.4s_infinite]" />
+                  </span>
+                  <span
+                    aria-live="off"
+                    className="ml-2 truncate text-xs font-semibold text-brand-muted"
+                  >
+                    {t("Someone from the shop is typing…")}
+                  </span>
                 </div>
               )}
               {isAwaitingReply && (
@@ -4470,6 +4614,59 @@ function ChatAutoAdd({
           t("This item could not be added. It may be sold out.")
         ) : (
           t("Adding to your bag…")
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** The thumbs row under a finished thread: rate the conversation once, change it later. */
+function ChatCsatRow({
+  rating,
+  onRate,
+  visible,
+}: {
+  rating: number | null;
+  onRate: (rating: 1 | -1) => void;
+  visible: boolean;
+}) {
+  const { t } = useLanguage();
+  if (!visible) return null;
+  return (
+    <div className="mt-4 flex items-start">
+      <div className="flex min-w-0 flex-col items-start gap-1.5 rounded-[18px] rounded-bl-[6px] bg-white px-3.5 py-2.5 shadow-[0_1px_2px_rgba(15,35,60,0.06)] ring-1 ring-brand-border-warm/70">
+        {rating === null ? (
+          <>
+            <p className="text-xs font-semibold text-brand-navy">
+              {t("Was this conversation helpful?")}
+            </p>
+            <div className="flex gap-1.5">
+              <button
+                aria-label={t("Good reply")}
+                className="grid size-8 place-items-center rounded-full text-base transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-90"
+                onClick={() => onRate(1)}
+                title={t("Good reply")}
+                type="button"
+              >
+                👍
+              </button>
+              <button
+                aria-label={t("Not helpful")}
+                className="grid size-8 place-items-center rounded-full text-base transition hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy active:scale-90"
+                onClick={() => onRate(-1)}
+                title={t("Not helpful")}
+                type="button"
+              >
+                👎
+              </button>
+            </div>
+          </>
+        ) : (
+          <p className="text-xs font-medium text-brand-muted" role="status">
+            {rating === 1
+              ? t("Thanks for the thumbs up!")
+              : t("Thanks — we'll use this to do better.")}
+          </p>
         )}
       </div>
     </div>

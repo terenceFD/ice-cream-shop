@@ -130,6 +130,7 @@ import {
   buildWelcomeNotification,
   sendToCustomer,
   buildAdminOrderNotification,
+  buildChatReplyNotification,
   sendToAdmins,
 } from './push.js'
 import { registerEventOrderRoutes } from './event-orders.js'
@@ -139,6 +140,7 @@ import { getCashOnDeliveryConfig } from './commerce.js'
 import { isWhatsAppMessagingConfigured, sendWhatsAppText } from './whatsapp.js'
 import { aiConfigured, detectMessageLanguage, gatherCustomerContext, suggestReply } from './chat-assistant.js'
 import { clearChatProgress, progressLabelForTool, readChatProgress, setChatProgress } from './chat-progress.js'
+import { clearStaffTyping, isStaffTyping, setStaffTyping } from './chat-typing.js'
 import { statedAllergies } from './chat-offer.js'
 import {
   AdminMfaConfigurationError,
@@ -3828,6 +3830,35 @@ async function raiseThreadNeedsAttention(threadId) {
     console.error('chat needs_attention flag failed:', flagError)
   }
 }
+// Push on the store-reply path: the shopper learns a staff member answered even with the
+// site closed. The thread's linked customer is the recipient; guest threads have none.
+// Runs in the background so the reply endpoint never waits on it, and never throws.
+function notifyCustomerOfChatReply(threadId, body) {
+  ;(async () => {
+    const linked = await database.prepare(`
+      SELECT customer_id AS "customerId" FROM chat_messages
+      WHERE thread_id = ? AND customer_id IS NOT NULL LIMIT 1
+    `).get(threadId)
+    if (!linked?.customerId) return
+    const result = await sendToCustomer(
+      database,
+      Number(linked.customerId),
+      buildChatReplyNotification({ body }),
+    )
+    if (result.devices > 0) {
+      console.log(`Chat reply alert on thread ${threadId}: ${result.sent} sent, ${result.failed} failed.`)
+    }
+  })().catch((error) => {
+    console.error('chat reply push failed:', error.message)
+  })
+}
+/** The thread's latest CSAT rating, or null when the shopper has not rated it. */
+async function chatThreadRating(threadId) {
+  const row = await database.prepare(
+    'SELECT rating FROM chat_csat WHERE thread_id = ?',
+  ).get(threadId)
+  return row ? Number(row.rating) : null
+}
 
 // Guest chats are scoped to one browser with a random device token in an HttpOnly
 // cookie. The token is created on first contact, and a guest thread can only be read
@@ -3930,12 +3961,58 @@ app.get('/api/chat/messages/:threadId', optionalCustomer, async (request, respon
   // What the assistant is doing right now (#1), null when idle. Read only by the
   // thread's owner (checked above), and never stored.
   const progress = readChatProgress(threadId)
+  // "Sarah from the shop is typing…" — the staff member's composing flag (#6),
+  // shown only while it makes sense: a person, not the assistant, is writing.
+  const staffTyping = isStaffTyping(threadId)
+  // The shopper's own verdict on the thread, so the widget shows the question
+  // only while it is unanswered (and their choice afterwards).
+  const csatRating = await chatThreadRating(threadId)
   // Only store replies count as read by the shopper; their own messages already are.
   await database.prepare(`
     UPDATE chat_messages SET is_read_by_customer = 1
     WHERE thread_id = ? AND sender = 'store'
   `).run(threadId)
-  response.json({ messages: messages.reverse(), progress })
+  response.json({ messages: messages.reverse(), progress, staffTyping, csatRating })
+})
+
+// CSAT (#8): the shopper thumbs the conversation up or down once it has ended. The
+// thread's owner (customer or device) is the only one allowed to rate it, and the
+// thread must contain at least one store reply so a fresh panel cannot be rated.
+app.post('/api/chat/messages/:threadId/rating', chatLimiter, optionalCustomer, async (request, response) => {
+  const threadId = request.params.threadId
+  if (!chatThreadIdValid(threadId)) {
+    response.status(400).json({ error: 'Chat thread is invalid.' })
+    return
+  }
+  const rating = Number(request.body?.rating)
+  if (rating !== 1 && rating !== -1) {
+    response.status(400).json({ error: 'Rate the chat with a thumbs up or down.' })
+    return
+  }
+  const deviceToken = ensureChatDeviceToken(request, response)
+  if (!(await chatThreadAllowed(threadId, request.customer, deviceToken))) {
+    response.status(403).json({ error: await chatAccessError(threadId) })
+    return
+  }
+  const replied = await database.prepare(`
+    SELECT 1 FROM chat_messages WHERE thread_id = ? AND sender = 'store' LIMIT 1
+  `).get(threadId)
+  if (!replied) {
+    response.status(409).json({ error: 'Rate the conversation after the shop has replied.' })
+    return
+  }
+  if (databaseKind === 'sqlite') {
+    database.prepare(`
+      INSERT INTO chat_csat (thread_id, rating) VALUES (?, ?)
+      ON CONFLICT (thread_id) DO UPDATE SET rating = excluded.rating, created_at = CURRENT_TIMESTAMP
+    `).run(threadId, rating)
+  } else {
+    await database.prepare(`
+      INSERT INTO chat_csat (thread_id, rating) VALUES (?, ?)
+      ON CONFLICT (thread_id) DO UPDATE SET rating = excluded.rating, created_at = now()
+    `).run(threadId, rating)
+  }
+  response.status(201).json({ rating })
 })
 
 app.post('/api/chat/messages/:threadId/handoff', chatLimiter, optionalCustomer, async (request, response) => {
@@ -4034,8 +4111,12 @@ app.delete('/api/chat/messages/:threadId', optionalCustomer, async (request, res
   if (!request.customer) {
     // A guest thread must not stay readable under the same id: retire it entirely.
     await database.prepare('DELETE FROM chat_messages WHERE thread_id = ?').run(threadId)
+    await database.prepare('DELETE FROM chat_csat WHERE thread_id = ?').run(threadId)
   } else {
     await database.prepare('DELETE FROM chat_messages WHERE thread_id = ? AND customer_id = ?').run(threadId, request.customer.id)
+    // A thread emptied of its messages has no conversation left to rate.
+    const left = await database.prepare('SELECT 1 FROM chat_messages WHERE thread_id = ? LIMIT 1').get(threadId)
+    if (!left) await database.prepare('DELETE FROM chat_csat WHERE thread_id = ?').run(threadId)
   }
   response.json({ cleared: true })
 })
@@ -4069,11 +4150,13 @@ app.delete('/api/admin/chat/threads', requireAdmin, async (_request, response) =
   if (databaseKind === 'sqlite') {
     database.transaction(() => {
       database.prepare('DELETE FROM chat_corrections').run()
+      database.prepare('DELETE FROM chat_csat').run()
       database.prepare('DELETE FROM chat_messages').run()
     })()
   } else {
     await database.transaction(async () => {
       await database.prepare('DELETE FROM chat_corrections').run()
+      await database.prepare('DELETE FROM chat_csat').run()
       await database.prepare('DELETE FROM chat_messages').run()
     })
   }
@@ -4091,6 +4174,7 @@ app.delete('/api/admin/chat/threads/:threadId', requireAdmin, async (request, re
     return
   }
   await database.prepare('DELETE FROM chat_messages WHERE thread_id = ?').run(threadId)
+  await database.prepare('DELETE FROM chat_csat WHERE thread_id = ?').run(threadId)
   response.json({ cleared: true })
 })
 
@@ -4110,7 +4194,21 @@ app.get('/api/admin/chat/threads/:threadId', requireAdmin, async (request, respo
   await database.prepare(`
     UPDATE chat_messages SET is_read_by_store = 1 WHERE thread_id = ? AND sender = 'customer'
   `).run(threadId)
-  response.json({ messages })
+  // CSAT (#8): the shopper's verdict on this thread, for the inbox header.
+  const csatRating = await chatThreadRating(threadId)
+  response.json({ messages, csatRating })
+})
+// "Sarah is typing…" (#6): the inbox pings this while a staff member composes, and
+// the customer's poll picks the flag up within its usual cycle. Send a beat while
+// typing (the inbox refresh interval does this naturally) to keep the flag alive.
+app.post('/api/admin/chat/threads/:threadId/typing', requireAdmin, async (request, response) => {
+  const threadId = request.params.threadId
+  if (!chatThreadIdValid(threadId)) {
+    response.status(400).json({ error: 'Chat thread is invalid.' })
+    return
+  }
+  setStaffTyping(threadId)
+  response.json({ typing: true })
 })
 
 // Staff have taken over the thread (#10): clear the AI's handoff flag. A human reply
@@ -4139,10 +4237,14 @@ app.post('/api/admin/chat/threads/:threadId/reply', requireAdmin, async (request
     INSERT INTO chat_messages (thread_id, customer_id, sender, body, needs_attention, is_human)
     VALUES (?, NULL, 'store', ?, 0, ?)
   `).run(threadId, body, request.body.isHuman === false ? 0 : 1)
-  // A human has answered, so the AI's handoff flag is no longer needed.
+  // A human has answered, so the AI's handoff flag is no longer needed — and neither is
+  // the "Sarah is typing…" bubble the customer may still be seeing.
   await database.prepare(`
     UPDATE chat_messages SET needs_attention = 0 WHERE thread_id = ?
   `).run(threadId)
+  clearStaffTyping(threadId)
+  // Push (#1): the shopper with the site closed hears the reply arrived.
+  notifyCustomerOfChatReply(threadId, body)
   // Correction learning (#8): if this thread has a pending AI draft, record what was
   // actually sent. Staff edits are the signal the shop learns from; sending the draft
   // untouched is a positive signal too.
@@ -6536,6 +6638,53 @@ function handleAbandonedCheckouts({ released, abandoned }) {
   }
 }
 
+// Escalation SLA (#11): a handoff the team has not answered within the window gets a
+// courtesy line in the thread — "we've seen it, here's what to expect" — so the shopper
+// is never left staring at dead air. Configurable with CHAT_SLA_MINUTES (0 disables).
+const CHAT_SLA_MINUTES = Math.max(0, Number(process.env.CHAT_SLA_MINUTES ?? 10) || 0)
+const CHAT_SLA_CHECK_MS = 60 * 1000
+const CHAT_SLA_MAX_AGE_HOURS = 24
+async function postChatSlaNotice() {
+  if (!CHAT_SLA_MINUTES) return
+  try {
+    const cutoff = new Date(Date.now() - CHAT_SLA_MINUTES * 60 * 1000).toISOString()
+    const floor = new Date(Date.now() - CHAT_SLA_MAX_AGE_HOURS * 60 * 60 * 1000).toISOString()
+    // Handoff rows carry needs_attention = 1; a thread whose flag is still up has seen
+    // no staff reply (the reply endpoint clears the flag across the whole thread).
+    const stale = await database.prepare(`
+      SELECT m.thread_id, MAX(m.created_at) AS "askedAt"
+      FROM chat_messages m
+      WHERE m.needs_attention = 1 AND m.created_at <= ? AND m.created_at >= ?
+        AND NOT EXISTS (
+          SELECT 1 FROM chat_messages later
+          WHERE later.thread_id = m.thread_id
+            AND later.id > m.id
+            AND (later.sender = 'customer' OR later.needs_attention = 0)
+        )
+      GROUP BY m.thread_id
+      LIMIT 50
+    `).all(cutoff, floor)
+    for (const row of stale) {
+      // One notice per wait: the thread must not already have a store message after
+      // its handoff ask (a staff reply would have cleared the flag, and a previous
+      // notice would already sit after the ask).
+      const answered = await database.prepare(`
+        SELECT 1 FROM chat_messages
+        WHERE thread_id = ? AND sender = 'store' AND created_at > ? LIMIT 1
+      `).get(row.threadId, row.askedAt)
+      if (answered) continue
+      const notice = `We've made sure the shop team has your message — typical response time is about ${CHAT_SLA_MINUTES} minutes. You can also call us on +237 677 000 000 and we'll sort it out right away.`
+      await database.prepare(`
+        INSERT INTO chat_messages (thread_id, customer_id, sender, body, needs_attention)
+        SELECT thread_id, NULL, 'store', ?, MAX(needs_attention)
+        FROM chat_messages WHERE thread_id = ?
+      `).run(notice, row.threadId)
+      console.log(`chat SLA notice posted on thread ${row.threadId} (waiting ${CHAT_SLA_MINUTES} min)`)
+    }
+  } catch (error) {
+    console.error('chat SLA notice failed:', error.message)
+  }
+}
 // Review reminders: a day after delivery, ask the customer to rate their order once, by phone
 // notification and email. Orders older than a week, already reviewed, or already reminded are skipped.
 const REVIEW_REMINDER_DELAY_HOURS = Math.max(0, Number(process.env.REVIEW_REMINDER_DELAY_HOURS ?? 24) || 0)
@@ -6663,6 +6812,11 @@ const server = app.listen(port, () => {
   // Check for due review reminders a minute after start-up, then every hour.
   setTimeout(() => { sendDueReviewReminders() }, 60_000)
   setInterval(() => { sendDueReviewReminders() }, 60 * 60 * 1000)
+  // Escalation SLA notices: a handoff nobody answered for CHAT_SLA_MINUTES gets a
+  // courtesy line so the shopper is not left staring at dead air.
+  if (CHAT_SLA_MINUTES) {
+    setInterval(() => { postChatSlaNotice() }, CHAT_SLA_CHECK_MS)
+  }
   reconcileStaleCheckouts().catch((error) => {
     console.error('Unable to reconcile expired checkouts:', error.message)
   })
