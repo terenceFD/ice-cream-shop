@@ -1,0 +1,39 @@
+# Local PostgreSQL for development, so the dev database matches production
+# (Supabase runs PostgreSQL too) instead of drifting against SQLite.
+#
+#   docker compose up -d        start the database
+#   docker compose down         stop it (data is kept in the named volume)
+#   docker compose down -v      stop it AND wipe the data
+#
+# Then point the app at it in .env:
+#   DATABASE_BACKEND=postgres
+#   DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/ice_cream_dev
+#   # Local Docker Postgres does not use TLS; only the hosted one does.
+#   DATABASE_SSL=disable
+#
+# The runtime schema bootstrap (server/postgres.js translating the SQLite DDL)
+# creates every table on the first start, so no migration is needed for a fresh
+# development database. To bring existing SQLite data over instead, run:
+#   npm run migrate:supabase
+# (the migration script reads DATABASE_URL, so it works against Docker too).
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ice-cream-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ice_cream_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - ice-cream-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ice_cream_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  ice-cream-pgdata:

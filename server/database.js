@@ -430,6 +430,17 @@ if (configuredDatabaseBackend === "postgres") {
   // auto-reply path, powers the admin Reports chat questions chart.
   addColumnIfMissing("chat_messages", "topic", "TEXT NOT NULL DEFAULT ''");
 
+  // CSAT (#8): one thumbs-up/down per thread, cast when the conversation closes.
+  // A thread rated a second time updates its row rather than duplicating it.
+  sqliteDatabase.exec(`
+    CREATE TABLE IF NOT EXISTS chat_csat (
+      thread_id TEXT PRIMARY KEY,
+      rating INTEGER NOT NULL CHECK (rating IN (-1, 1)),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_chat_csat_time ON chat_csat(created_at);
+  `);
+
   // Correction learning (#8): what the AI drafted vs what the staff actually sent.
   // The diffs show which facts the model gets wrong, so they can be added to the
   // prompt or the retrieval index — a self-improving loop with no ML work.
@@ -1410,6 +1421,18 @@ export async function verifyDatabaseSchema() {
     .prepare(
       `
     CREATE INDEX IF NOT EXISTS idx_chat_corrections_time ON chat_corrections(created_at)
+  `,
+    )
+    .run();
+  // CSAT (#8): one thumbs-up/down per thread, cast when the conversation closes.
+  await database
+    .prepare(
+      `
+    CREATE TABLE IF NOT EXISTS chat_csat (
+      thread_id TEXT PRIMARY KEY,
+      rating SMALLINT NOT NULL CHECK (rating IN (-1, 1)),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
   `,
     )
     .run();

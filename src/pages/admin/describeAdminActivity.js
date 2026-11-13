@@ -72,6 +72,7 @@ const RULES = [
   ['POST', /^\/api\/admin\/chat\/threads\/(\w+)\/reply$/, 'Replied in live-chat thread #{id}', 'customers'],
   ['POST', /^\/api\/admin\/chat\/threads\/(\w+)\/suggest$/, 'Requested an AI suggestion for thread #{id}', 'customers'],
   ['POST', /^\/api\/admin\/chat\/threads\/(\w+)\/acknowledge$/, 'Marked chat thread #{id} as handled', 'customers'],
+  ['POST', /^\/api\/admin\/chat\/threads\/(\w+)\/typing$/, 'Started typing in chat thread #{id}', 'customers'],
   ['PATCH', /^\/api\/admin\/subscriptions\/(\d+)\/status$/, 'Updated subscription #{id}', 'customers'],
 ]
 

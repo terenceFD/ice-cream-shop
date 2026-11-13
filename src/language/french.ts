@@ -4523,6 +4523,11 @@ const french: Record<string, string> = {
   "Back to the shop": "Retour à la boutique",
   "Cash on delivery is limited to {limit} FCFA. Pay online for a larger order.":
     "Le paiement à la livraison est limité à {limit} FCFA. Payez en ligne pour une commande plus importante.",
+  "Someone from the shop is typing…": "Quelqu'un de la boutique est en train d'écrire…",
+  "Was this conversation helpful?": "Cette conversation vous a-t-elle aidé ?",
+  "Good reply": "Bonne réponse",
+  "Not helpful": "Pas utile",
+  "Thanks for the thumbs up!": "Merci pour votre pouce levé !",
+  "Thanks — we'll use this to do better.": "Merci — nous allons nous en servir pour faire mieux.",
 };
-
 export default french;
